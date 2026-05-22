@@ -911,7 +911,9 @@ export function createPageComposer(
         layout.placements = layout.placements.filter(
             (p) => p && typeof p.id === "string",
         );
-        layout.hidden = layout.hidden.filter((id) => typeof id === "string");
+        layout.hidden = layout.hidden.filter(
+            (id) => id && typeof id === "string",
+        );
         for (const element of elements) {
             if (layout.hidden.includes(element.id)) continue;
             if (layout.placements.some((p) => p.id === element.id)) continue;
@@ -962,7 +964,7 @@ export function createPageComposer(
 
     function renderMissingElementContent(elementId) {
         return `
-      <div class="composer-missing-element">
+      <div class="composer-missing-element" role="status" aria-label="${escapeHtml(`${i18n.t("ui.reuse.unknown")}: ${elementId}`)}">
         <div class="composer-missing-element-icon" aria-hidden="true">❗</div>
         <p class="composer-missing-element-label">${escapeHtml(i18n.t("ui.reuse.unknown"))}</p>
         <p class="composer-missing-element-id">${escapeHtml(elementId)}</p>
@@ -972,7 +974,8 @@ export function createPageComposer(
 
     function createMissingCell(placement) {
         const cell = document.createElement("div");
-        cell.className = "composer-cell composer-cell--missing composer-cell--editable";
+        cell.className =
+            "composer-cell composer-cell--missing composer-cell--editable";
         cell.dataset.composerElement = placement.id;
         cell.style.left = `${placement.col * UNIT}px`;
         cell.style.top = `${placement.row * UNIT}px`;

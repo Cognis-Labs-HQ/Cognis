@@ -23,7 +23,7 @@
         },
         {
             "path": "ui/dashboard-element.js",
-            "sha256": "c1e94ab59ee543d45c6e950068d98876e95e29e5cd62f6f9f91b58c00205b4ff"
+            "sha256": "fd7f409a32319480d32b1d79cd6a48269160daadceeb49678443015200aa1794"
         },
         {
             "path": "cli/index.js",

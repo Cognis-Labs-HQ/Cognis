@@ -241,13 +241,16 @@ test("page composer preserves missing placements and shows warning placeholders"
 
     assert.match(source, /function renderMissingElementContent\(elementId\)/);
     assert.match(source, /class="composer-missing-element-icon"/);
-    assert.match(source, /section\.appendChild\(createMissingCell\(placement\)\)/);
+    assert.match(
+        source,
+        /section\.appendChild\(createMissingCell\(placement\)\)/,
+    );
     assert.match(
         source,
         /layout\.placements = layout\.placements\.filter\(\s*\(p\) => p && typeof p\.id === "string",\s*\)/m,
     );
     assert.match(
         source,
-        /layout\.hidden = layout\.hidden\.filter\(\(id\) => typeof id === "string"\);/,
+        /layout\.hidden = layout\.hidden\.filter\(\s*\(id\) => id && typeof id === "string",\s*\)/m,
     );
 });

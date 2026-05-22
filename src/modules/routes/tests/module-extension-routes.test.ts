@@ -132,6 +132,7 @@ test("module extension routes fail closed on invalid role access policies", asyn
 });
 
 test("module extension routes register module page extensions with enable hooks", async () => {
+    let enabled = false;
     const pageExtensions: Array<{
         pageId: string;
         element: {
@@ -150,7 +151,7 @@ test("module extension routes register module page extensions with enable hooks"
                 },
             ],
         } as any,
-        () => true,
+        () => enabled,
         undefined,
         {
             requireRoleAccess,
@@ -171,5 +172,7 @@ test("module extension routes register module page extensions with enable hooks"
         pageExtensions[0].element.scriptUrl,
         "/static/modules/sample-analytics/dashboard-element.js",
     );
+    assert.equal(pageExtensions[0].element.isEnabled?.(), false);
+    enabled = true;
     assert.equal(pageExtensions[0].element.isEnabled?.(), true);
 });

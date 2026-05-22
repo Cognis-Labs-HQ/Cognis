@@ -1,14 +1,14 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-export function createPageElement() {
+export function createPageElement({ i18n }) {
     return {
         id: "sample-analytics-dashboard-overview",
-        label: "Sample Analytics",
+        label: i18n.t("ui.app.dashboard.element.sample_analytics.label"),
         gridSize: { default: [4, 2], min: [3, 2], max: [6, 3] },
         render: () => `
-      <h3>Sample Analytics</h3>
-      <p>${escapeHtml("Preview metrics from the Sample Analytics module.")}</p>
-      <a href="/analytics" class="btn-confirm btn-animated">Open analytics</a>
+      <h3>${escapeHtml(i18n.t("ui.app.dashboard.element.sample_analytics.label"))}</h3>
+      <p>${escapeHtml(i18n.t("ui.app.dashboard.element.sample_analytics.description"))}</p>
+      <a href="/analytics" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.dashboard.element.sample_analytics.open"))}</a>
     `,
     };
 }
