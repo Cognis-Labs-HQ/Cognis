@@ -13,6 +13,8 @@ export interface AdminSection {
     scriptUrl: string;
     /** Optional role access policy for this section. */
     access?: RoleAccessPolicy;
+    /** Optional runtime predicate used to hide sections while their owner is disabled. */
+    isEnabled?: () => boolean;
     /**
      * Optional base URL for component-specific locale strings.
      * The admin page will fetch `{stringsBaseUrl}/{locale}/strings.xml`

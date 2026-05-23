@@ -57,7 +57,9 @@ export function createGatewayRoutes(
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const sections = (uiRegistry?.listAdminSections() ?? []).filter(
-                (section) => isRoleAllowed(claims.role, section.access),
+                (section) =>
+                    (!section.isEnabled || section.isEnabled()) &&
+                    isRoleAllowed(claims.role, section.access),
             );
             log?.("debug", "Listed admin sections.", {
                 ...logMeta,

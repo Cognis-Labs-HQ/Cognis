@@ -305,6 +305,34 @@ test("GET /api/v1/admin/sections filters sections by role access policy", async 
     );
 });
 
+test("GET /api/v1/admin/sections omits disabled sections", async () => {
+    const registry = new GatewayRegistry();
+    const uiReg = new UIRegistry();
+    uiReg.registerAdminSection({
+        id: "disabled-section",
+        label: "Disabled",
+        scriptUrl: "/static/gateways/logging/disabled.js",
+        isEnabled: () => false,
+    });
+    uiReg.registerAdminSection({
+        id: "enabled-section",
+        label: "Enabled",
+        scriptUrl: "/static/gateways/logging/enabled.js",
+        isEnabled: () => true,
+    });
+    const handler = createGatewayRoutes(registry, uiReg);
+
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
+    await handler(req, res, new URL("/api/v1/admin/sections", "http://localhost"));
+
+    const body = JSON.parse(res.payload);
+    assert.deepEqual(
+        body.data.map((entry: { id: string }) => entry.id),
+        ["enabled-section"],
+    );
+});
+
 test("POST /api/v1/gateways/:id/enable sets gateway status to active", async () => {
     const registry = new GatewayRegistry();
     registry.register({
