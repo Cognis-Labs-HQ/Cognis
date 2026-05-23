@@ -15,11 +15,15 @@
     "files": [
         {
             "path": "api/index.js",
-            "sha256": "b4176ed90b66b3e99fb532f19bc7f5dbb125c00677d1cf7594c01fc3ae6cd86d"
+            "sha256": "1b6b00e1b3ad4ecd52afb7861bb8c625133782145589116b1376463cf3609b31"
         },
         {
             "path": "ui/pages/analytics.html",
             "sha256": "adaf6a8ef132313ac70e09d3ea35b6564c38cc770da25556602f85b941f4d0df"
+        },
+        {
+            "path": "ui/dashboard-element.js",
+            "sha256": "fd7f409a32319480d32b1d79cd6a48269160daadceeb49678443015200aa1794"
         },
         {
             "path": "cli/index.js",

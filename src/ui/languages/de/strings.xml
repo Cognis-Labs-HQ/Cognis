@@ -203,6 +203,9 @@
   <string name="ui.app.dashboard.element.analogue_clock.label">Analoge Uhr</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">Meine Klassen</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">Noch keine Klassen zugewiesen.</string>
+  <string name="ui.app.dashboard.element.sample_analytics.label">Beispiel-Analytik</string>
+  <string name="ui.app.dashboard.element.sample_analytics.description">Vorschau von Metriken aus dem Beispiel-Analytik-Modul.</string>
+  <string name="ui.app.dashboard.element.sample_analytics.open">Analytik öffnen</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
