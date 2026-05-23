@@ -36,9 +36,8 @@
   <string name="gateway.auth.security.tfa_recovery_codes_used">Terpakai</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready_marker">Siap</string>
   <string name="gateway.auth.security.tfa_manual_secret">Rahasia Manual</string>
-  <string name="gateway.auth.security.tfa_otp_auth_uri">URI OTPAuth</string>
   <string name="gateway.auth.security.tfa_qr_code_alt">Kode QR Penyiapan TOTP</string>
   <string name="gateway.auth.security.tfa_required_title">Penyiapan Dua Faktor Wajib</string>
   <string name="gateway.auth.security.tfa_required_prompt">Pilih metode yang harus dikonfigurasi sebelum melanjutkan.</string>
-  <string name="gateway.auth.security.tfa_totp_prompt">Pindai URI payload QR di aplikasi autentikator Anda, lalu masukkan kode 6 digit untuk memverifikasi penyiapan.</string>
+  <string name="gateway.auth.security.tfa_totp_prompt">Pindai kode QR di aplikasi autentikator Anda, lalu masukkan kode 6 digit untuk memverifikasi penyiapan.</string>
 </resources>

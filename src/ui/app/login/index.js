@@ -60,6 +60,39 @@ export async function mount(root) {
         });
     }
 
+    function resolveTranslatedMessage(key) {
+        if (typeof key !== "string" || !key.trim()) {
+            return null;
+        }
+        const translated = i18n.t(key);
+        if (translated && translated !== key) {
+            return translated;
+        }
+        return null;
+    }
+
+    function resolveTfaLoginErrorMessage(message) {
+        const normalizedMessage = String(message ?? "").trim();
+        const messageKeyByCode = {
+            invalid_totp_code: "ui.app.login.tfa.error_invalid",
+            invalid_recovery_code: "ui.app.login.tfa.error_invalid",
+            code_required: "ui.app.login.tfa.error_invalid",
+            recovery_code_required: "ui.app.login.tfa.error_invalid",
+            method_not_configured: "ui.app.login.tfa.error_invalid",
+            tfa_method_unavailable: "ui.app.login.tfa.error_invalid",
+        };
+        const mappedMessage = resolveTranslatedMessage(
+            messageKeyByCode[normalizedMessage],
+        );
+        if (mappedMessage) {
+            return mappedMessage;
+        }
+        return (
+            resolveTranslatedMessage(normalizedMessage) ||
+            i18n.t("ui.app.login.tfa.error_invalid")
+        );
+    }
+
     async function loadLoginMethods() {
         try {
             const res = await fetch("/api/v1/auth/login-methods");
@@ -520,10 +553,9 @@ export async function mount(root) {
                                     return;
                                 }
                                 showToast(
-                                    tfaBody?.error?.message ||
-                                        i18n.t(
-                                            "ui.app.login.tfa.error_invalid",
-                                        ),
+                                    resolveTfaLoginErrorMessage(
+                                        tfaBody?.error?.message,
+                                    ),
                                     { variant: "error" },
                                 );
                                 return;

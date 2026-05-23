@@ -36,9 +36,8 @@
   <string name="gateway.auth.security.tfa_recovery_codes_used">使用済み</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready_marker">有効</string>
   <string name="gateway.auth.security.tfa_manual_secret">手動シークレット</string>
-  <string name="gateway.auth.security.tfa_otp_auth_uri">OTPAuth URI</string>
   <string name="gateway.auth.security.tfa_qr_code_alt">TOTP 設定 QR コード</string>
   <string name="gateway.auth.security.tfa_required_title">二要素認証の設定が必要です</string>
   <string name="gateway.auth.security.tfa_required_prompt">続行する前に設定する方式を選択してください。</string>
-  <string name="gateway.auth.security.tfa_totp_prompt">認証アプリで QR ペイロード URI を読み取り、6 桁コードを入力して設定を確認してください。</string>
+  <string name="gateway.auth.security.tfa_totp_prompt">認証アプリで QR コードを読み取り、6 桁コードを入力して設定を確認してください。</string>
 </resources>

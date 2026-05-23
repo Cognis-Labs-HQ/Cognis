@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createAdapter } from "../index.js";
 
-test("totp adapter setup returns otpauth details", async () => {
+test("totp adapter setup returns secret and qr svg details", async () => {
     const adapter = createAdapter();
     const setup = await adapter.beginSetup({
         accountId: "alice",
@@ -10,12 +10,6 @@ test("totp adapter setup returns otpauth details", async () => {
         issuer: "Cognis",
     });
     assert.equal(typeof setup.pendingPayload.secret, "string");
-    assert.equal(
-        setup.view.details?.otpAuthUri?.startsWith("otpauth://totp/"),
-        true,
-    );
-    assert.equal(
-        setup.view.details?.qrDataUrl?.startsWith("data:image/png;base64,"),
-        true,
-    );
+    assert.equal(typeof setup.view.details?.manualSecret === "string", true);
+    assert.equal(setup.view.details?.qrSvg?.includes("<svg"), true);
 });

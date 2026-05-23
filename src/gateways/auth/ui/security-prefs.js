@@ -139,6 +139,58 @@ export function createSettingsSection({ i18n, root }) {
         return payload?.data?.recoveryCodes ?? null;
     }
 
+    function resolveTranslatedMessage(key) {
+        if (typeof key !== "string" || !key.trim()) {
+            return null;
+        }
+        const translated = i18n.t(key);
+        if (translated && translated !== key) {
+            return translated;
+        }
+        return null;
+    }
+
+    function resolveTfaErrorMessage(message) {
+        const normalizedMessage = String(message ?? "").trim();
+        const messageKeyByCode = {
+            invalid_totp_code: "ui.app.login.tfa.error_invalid",
+            invalid_recovery_code: "ui.app.login.tfa.error_invalid",
+            code_required: "ui.app.login.tfa.error_invalid",
+            recovery_code_required: "ui.app.login.tfa.error_invalid",
+            setup_not_found: "gateway.auth.security.tfa_setup_failed",
+            setup_expired: "gateway.auth.security.tfa_setup_failed",
+            tfa_method_unavailable: "gateway.auth.security.tfa_setup_failed",
+            method_not_configured: "gateway.auth.security.tfa_setup_failed",
+            verification_failed: "gateway.auth.security.tfa_setup_failed",
+        };
+        const mappedMessage = resolveTranslatedMessage(
+            messageKeyByCode[normalizedMessage],
+        );
+        if (mappedMessage) {
+            return mappedMessage;
+        }
+        return (
+            resolveTranslatedMessage(normalizedMessage) ||
+            i18n.t("gateway.auth.security.tfa_setup_failed")
+        );
+    }
+
+    function createQrImageSource(qrSvg) {
+        if (typeof qrSvg !== "string" || !qrSvg.trim()) {
+            return { src: "", revoke: () => {} };
+        }
+        try {
+            const qrBlob = new Blob([qrSvg], { type: "image/svg+xml" });
+            const qrBlobUrl = URL.createObjectURL(qrBlob);
+            return {
+                src: qrBlobUrl,
+                revoke: () => URL.revokeObjectURL(qrBlobUrl),
+            };
+        } catch {
+            return { src: "", revoke: () => {} };
+        }
+    }
+
     async function loadRecoveryCodesStatus() {
         const response = await apiFetch("/api/v1/tfa/recovery-codes").catch(
             () => null,
@@ -319,61 +371,55 @@ export function createSettingsSection({ i18n, root }) {
             setup.view?.details && typeof setup.view.details === "object"
                 ? setup.view.details
                 : {};
-        const otpAuthUri =
-            typeof setupDetails.otpAuthUri === "string"
-                ? setupDetails.otpAuthUri
-                : "";
         const manualSecret =
             typeof setupDetails.manualSecret === "string"
                 ? setupDetails.manualSecret
                 : "";
-        const qrDataUrl =
-            typeof setupDetails.qrDataUrl === "string"
-                ? setupDetails.qrDataUrl
-                : "";
+        const qrSvg =
+            typeof setupDetails.qrSvg === "string" ? setupDetails.qrSvg : "";
+        const qrImage = createQrImageSource(qrSvg);
         const detailsHtml = Object.entries(setupDetails)
-            .filter(
-                ([key]) =>
-                    key !== "otpAuthUri" &&
-                    key !== "manualSecret" &&
-                    key !== "qrDataUrl",
-            )
+            .filter(([key]) => key !== "manualSecret" && key !== "qrSvg")
             .map(
                 ([key, value]) => `
                   <p><strong>${escapeHtml(key)}</strong>: ${escapeHtml(String(value))}</p>`,
             )
             .join("");
-        const action = await openPopup({
-            title: i18n.t("gateway.auth.security.tfa_setup_title"),
-            maxWidth: "520px",
-            body: () => `
+        let action;
+        try {
+            action = await openPopup({
+                title: i18n.t("gateway.auth.security.tfa_setup_title"),
+                maxWidth: "520px",
+                body: () => `
                 <div class="stack">
                   <p class="settings-tfa-setup-prompt">${escapeHtml(setupPrompt)}</p>
-                  ${qrDataUrl ? `<img src="${escapeHtml(qrDataUrl)}" alt="${escapeHtml(i18n.t("gateway.auth.security.tfa_qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
+                  ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.auth.security.tfa_qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
                   ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.auth.security.tfa_manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
-                  ${otpAuthUri ? `<label>${escapeHtml(i18n.t("gateway.auth.security.tfa_otp_auth_uri"))}<code class="settings-tfa-setup-code settings-tfa-setup-uri">${escapeHtml(otpAuthUri)}</code></label>` : ""}
                   ${detailsHtml}
                   <label>
                     ${escapeHtml(codeLabel)}
                     <input id="settings-tfa-code" type="text" inputmode="numeric" maxlength="12" />
                   </label>
                 </div>`,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.reuse.confirm"),
-                    variant: "confirm",
+                actions: [
+                    {
+                        id: "confirm",
+                        label: i18n.t("ui.reuse.confirm"),
+                        variant: "confirm",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    codeInput = overlay.querySelector("#settings-tfa-code");
                 },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-            onOpen: (overlay) => {
-                codeInput = overlay.querySelector("#settings-tfa-code");
-            },
-        });
+            });
+        } finally {
+            qrImage.revoke();
+        }
         if (action !== "confirm" || !(codeInput instanceof HTMLInputElement)) {
             await cancelTfaSetup(methodId, setup.setupId);
             return false;
@@ -382,7 +428,9 @@ export function createSettingsSection({ i18n, root }) {
             code: codeInput.value.trim(),
         });
         if (!result.ok) {
-            showToast(result.message, { variant: "error" });
+            showToast(resolveTfaErrorMessage(result.message), {
+                variant: "error",
+            });
             return false;
         }
         return true;

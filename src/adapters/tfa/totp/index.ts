@@ -1,5 +1,5 @@
 import { createHmac, randomBytes } from "node:crypto";
-import { toDataURL } from "qrcode";
+import { toString } from "qrcode";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const TOTP_DIGITS = 6;
@@ -115,7 +115,8 @@ class TotpAdapter implements TfaMethodAdapter {
             accountId: input.accountId,
             secret,
         });
-        const qrDataUrl = await toDataURL(otpAuthUri, {
+        const qrSvg = await toString(otpAuthUri, {
+            type: "svg",
             errorCorrectionLevel: "M",
             margin: 1,
             width: 220,
@@ -136,9 +137,8 @@ class TotpAdapter implements TfaMethodAdapter {
                     },
                 ],
                 details: {
-                    otpAuthUri,
                     manualSecret: secret,
-                    qrDataUrl,
+                    qrSvg,
                 },
             },
         };
