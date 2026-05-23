@@ -63,6 +63,8 @@ interface PendingTfaLoginAttempt {
     expiresAt: number;
 }
 
+const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
+
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
     log?: GatewayBootstrapContext["log"],
@@ -289,7 +291,7 @@ function createAuthGatewayRoutes(
         pruneExpiredTfaLoginAttempts();
         const pendingAttempt: PendingTfaLoginAttempt = {
             ...input,
-            id: `tfa_login_${randomBytes(18).toString("base64url")}`,
+            id: `tfa_login_${randomBytes(TFA_LOGIN_ATTEMPT_ID_BYTES).toString("base64url")}`,
             expiresAt: Date.now() + 5 * 60 * 1000,
         };
         pendingTfaLoginAttempts.set(pendingAttempt.id, pendingAttempt);

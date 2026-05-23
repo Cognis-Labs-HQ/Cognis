@@ -407,3 +407,7 @@ body[data-theme="light"] .email-badge-unverified {
 .settings-tfa-option--configured .settings-tfa-option-badge {
     color: var(--accent);
 }
+
+.settings-tfa-option.settings-tfa-option-dragging {
+    opacity: 0.55;
+}

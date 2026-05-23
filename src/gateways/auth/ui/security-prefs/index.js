@@ -245,13 +245,13 @@ export function createSettingsSection({ i18n, root }) {
         };
     }
 
-    function makeEmptyDropZoneRow() {
+    function renderEmptyTfaPlaceholder() {
         return `<div class="settings-tfa-option-empty">\u00A0</div>`;
     }
 
     function renderTfaRows(methods) {
         if (!Array.isArray(methods) || methods.length === 0) {
-            return makeEmptyDropZoneRow();
+            return renderEmptyTfaPlaceholder();
         }
         return methods
             .map(
@@ -286,10 +286,10 @@ export function createSettingsSection({ i18n, root }) {
 
     function renderRecoveryCodesRows() {
         if (!Array.isArray(recoveryCodesStatus.codes)) {
-            return makeEmptyDropZoneRow();
+            return renderEmptyTfaPlaceholder();
         }
         if (recoveryCodesStatus.codes.length === 0) {
-            return makeEmptyDropZoneRow();
+            return renderEmptyTfaPlaceholder();
         }
         return recoveryCodesStatus.codes
             .map((entry, index) => {
@@ -313,13 +313,13 @@ export function createSettingsSection({ i18n, root }) {
     function clearTfaDropMarkers() {
         settingsRoot
             .querySelectorAll(
-                ".drop-target-before, .drop-target-after, .language-row-dragging",
+                ".drop-target-before, .drop-target-after, .settings-tfa-option-dragging",
             )
             .forEach((row) => {
                 row.classList.remove(
                     "drop-target-before",
                     "drop-target-after",
-                    "language-row-dragging",
+                    "settings-tfa-option-dragging",
                 );
             });
     }
@@ -537,7 +537,7 @@ export function createSettingsSection({ i18n, root }) {
             const row = target.closest("[data-tfa-method-row]");
             if (!row) return;
             dragTfaMethodId = row.getAttribute("data-tfa-method-row");
-            row.classList.add("language-row-dragging");
+            row.classList.add("settings-tfa-option-dragging");
             event.dataTransfer?.setData("text/plain", dragTfaMethodId || "");
         });
 

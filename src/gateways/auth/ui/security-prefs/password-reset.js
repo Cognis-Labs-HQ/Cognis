@@ -16,10 +16,10 @@ async function loadPasswordPolicy(apiFetch) {
     return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
 }
 
-function buildPasswordCriteria(i18n, policy) {
+function buildPasswordCriteria(i18n, passwordPolicy) {
     const criteria = [];
-    if (policy.minLength > 0) {
-        const minLength = policy.minLength;
+    if (passwordPolicy.minLength > 0) {
+        const minLength = passwordPolicy.minLength;
         criteria.push({
             test: (value) => value.length >= minLength,
             message: i18n
@@ -27,17 +27,18 @@ function buildPasswordCriteria(i18n, policy) {
                 .replace("{min}", String(minLength)),
         });
     }
-    if (policy.requireUppercase > 0) {
+    if (passwordPolicy.requireUppercase > 0) {
         criteria.push({
             test: (value) =>
-                countPatternMatches(value, /[A-Z]/g) >= policy.requireUppercase,
+                countPatternMatches(value, /[A-Z]/g) >=
+                passwordPolicy.requireUppercase,
             message: i18n
                 .t("gateway.auth.security.password_requires_uppercase")
-                .replace("{count}", String(policy.requireUppercase)),
+                .replace("{count}", String(passwordPolicy.requireUppercase)),
         });
     }
-    if (policy.requireLowercase > 0) {
-        const minLowercaseCount = policy.requireLowercase;
+    if (passwordPolicy.requireLowercase > 0) {
+        const minLowercaseCount = passwordPolicy.requireLowercase;
         criteria.push({
             test: (value) =>
                 countPatternMatches(value, /[a-z]/g) >= minLowercaseCount,
@@ -46,23 +47,24 @@ function buildPasswordCriteria(i18n, policy) {
                 .replace("{count}", String(minLowercaseCount)),
         });
     }
-    if (policy.requireDigit > 0) {
+    if (passwordPolicy.requireDigit > 0) {
         criteria.push({
             test: (value) =>
-                countPatternMatches(value, /[0-9]/g) >= policy.requireDigit,
+                countPatternMatches(value, /[0-9]/g) >=
+                passwordPolicy.requireDigit,
             message: i18n
                 .t("gateway.auth.security.password_requires_digit")
-                .replace("{count}", String(policy.requireDigit)),
+                .replace("{count}", String(passwordPolicy.requireDigit)),
         });
     }
-    if (policy.requireSpecial > 0) {
+    if (passwordPolicy.requireSpecial > 0) {
         criteria.push({
             test: (value) =>
                 countPatternMatches(value, /[^A-Za-z0-9]/g) >=
-                policy.requireSpecial,
+                passwordPolicy.requireSpecial,
             message: i18n
                 .t("gateway.auth.security.password_requires_special")
-                .replace("{count}", String(policy.requireSpecial)),
+                .replace("{count}", String(passwordPolicy.requireSpecial)),
         });
     }
     return criteria;

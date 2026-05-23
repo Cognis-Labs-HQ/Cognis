@@ -2,8 +2,8 @@ import { createHmac, randomBytes } from "node:crypto";
 import { toString } from "qrcode";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
-const TOTP_DIGITS = 6;
-const TOTP_PERIOD_SECONDS = 30;
+const TOTP_DIGITS: number = 6;
+const TOTP_PERIOD_SECONDS: number = 30;
 
 function base32Encode(input: Buffer): string {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";

@@ -99,6 +99,8 @@ type NotifyDispatch = (envelope: {
     metadata?: Record<string, unknown>;
 }) => Promise<unknown>;
 
+const TFA_SETUP_ID_BYTES = 18;
+
 export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
     private readonly adapters = new Map<string, TfaMethodAdapter>();
@@ -251,7 +253,7 @@ export class CoreTfaGateway {
             throw new Error("tfa_method_unavailable");
         }
 
-        const setupId = `tfa_setup_${randomBytes(18).toString("base64url")}`;
+        const setupId = `tfa_setup_${randomBytes(TFA_SETUP_ID_BYTES).toString("base64url")}`;
         const issuer = process.env.COGNIS_TOTP_ISSUER || "Cognis";
         const started = await adapter.beginSetup({
             accountId: input.accountId,
