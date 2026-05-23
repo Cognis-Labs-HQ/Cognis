@@ -20,7 +20,7 @@ Balkendiagramm und Ereignisprotokoll ohne Neuladen der Seite.
 
 ## API zum Aufzeichnen benutzerdefinierter Ereignisse
 
-Ein neuer Endpunkt `POST /api/v1/modules/sample-analytics/events` erlaubt Admins das
+Ein neuer Endpunkt `POST /api/v1/modules/analytics/events` erlaubt Admins das
 Aufzeichnen benutzerdefinierter benannter Ereignisse (mit optionalen Metadaten) in der
 Analytik-Ereignistabelle. Aufgezeichnete Ereignisse erscheinen im Ereignisprotokoll
 des Analytik-Bereichs.
@@ -28,6 +28,6 @@ des Analytik-Bereichs.
 ## Neue API-Endpunkte für Metriken und Zeitreihendaten
 
 Drei admin-authentifizierte API-Routen ersetzen den bisherigen Stub-Endpunkt:
-`/api/v1/modules/sample-analytics/metrics` (Zusammenfassung und Rollenverteilung),
-`/api/v1/modules/sample-analytics/series` (tägliche Registrierungsreihe) und
-`/api/v1/modules/sample-analytics/events` (Protokoll benutzerdefinierter Ereignisse).
+`/api/v1/modules/analytics/metrics` (Zusammenfassung und Rollenverteilung),
+`/api/v1/modules/analytics/series` (tägliche Registrierungsreihe) und
+`/api/v1/modules/analytics/events` (Protokoll benutzerdefinierter Ereignisse).

@@ -7,7 +7,7 @@ function ensureStyles() {
     const link = document.createElement("link");
     link.id = STYLE_ID;
     link.rel = "stylesheet";
-    link.href = "/static/modules/sample-analytics/admin-section.css";
+    link.href = "/static/modules/analytics/admin-section.css";
     document.head.appendChild(link);
 }
 
@@ -19,7 +19,7 @@ function parseDays(value, fallback = 30) {
 
 function buildBarChart(series, { i18n, escapeHtml }) {
     if (!series.length) {
-        return `<p class="analytics-empty">${i18n.t("module.sample-analytics.admin.chart.no_data")}</p>`;
+        return `<p class="analytics-empty">${i18n.t("module.analytics.admin.chart.no_data")}</p>`;
     }
 
     const chartWidth = 600;
@@ -97,7 +97,7 @@ function buildBarChart(series, { i18n, escapeHtml }) {
 
 function buildStatCards(metrics, { i18n }) {
     if (!metrics) {
-        return `<p class="analytics-empty">${i18n.t("module.sample-analytics.admin.loading")}</p>`;
+        return `<p class="analytics-empty">${i18n.t("module.analytics.admin.loading")}</p>`;
     }
 
     const roleOrder = ["owner", "admin", "moderator", "teacher", "user"];
@@ -132,15 +132,15 @@ function buildStatCards(metrics, { i18n }) {
       <div class="analytics-stat-cards">
         <div class="analytics-stat-card">
           <span class="analytics-stat-value">${metrics.totalUsers}</span>
-          <span class="analytics-stat-label">${i18n.t("module.sample-analytics.admin.stat.total_users")}</span>
+          <span class="analytics-stat-label">${i18n.t("module.analytics.admin.stat.total_users")}</span>
         </div>
         <div class="analytics-stat-card">
           <span class="analytics-stat-value">${metrics.activeUsers7d}</span>
-          <span class="analytics-stat-label">${i18n.t("module.sample-analytics.admin.stat.active_7d")}</span>
+          <span class="analytics-stat-label">${i18n.t("module.analytics.admin.stat.active_7d")}</span>
         </div>
         <div class="analytics-stat-card">
           <span class="analytics-stat-value">${metrics.newUsersDays}</span>
-          <span class="analytics-stat-label">${i18n.t("module.sample-analytics.admin.stat.new_users_days", { days: metrics.days })}</span>
+          <span class="analytics-stat-label">${i18n.t("module.analytics.admin.stat.new_users_days", { days: metrics.days })}</span>
         </div>
       </div>
       ${allRoles.length > 0 ? `<div class="analytics-role-breakdown">${roleRows}</div>` : ""}
@@ -149,18 +149,18 @@ function buildStatCards(metrics, { i18n }) {
 
 function buildEventsSection(events, { i18n, escapeHtml }) {
     if (!events.length) {
-        return `<p class="analytics-empty">${i18n.t("module.sample-analytics.admin.events.empty")}</p>`;
+        return `<p class="analytics-empty">${i18n.t("module.analytics.admin.events.empty")}</p>`;
     }
 
     const rows = events
         .map((event) => {
             const timestamp = formatDateTime(
                 event.created_at,
-                i18n.t("module.sample-analytics.admin.events.unknown_time"),
+                i18n.t("module.analytics.admin.events.unknown_time"),
             );
             const accountLabel = event.account_id
                 ? escapeHtml(String(event.account_id))
-                : i18n.t("module.sample-analytics.admin.events.system");
+                : i18n.t("module.analytics.admin.events.system");
             return `
           <tr class="analytics-events-row">
             <td class="analytics-events-cell analytics-events-cell--type">${escapeHtml(event.event_type)}</td>
@@ -175,9 +175,9 @@ function buildEventsSection(events, { i18n, escapeHtml }) {
       <table class="analytics-events-table">
         <thead>
           <tr>
-            <th class="analytics-events-cell">${i18n.t("module.sample-analytics.admin.events.col.type")}</th>
-            <th class="analytics-events-cell">${i18n.t("module.sample-analytics.admin.events.col.actor")}</th>
-            <th class="analytics-events-cell">${i18n.t("module.sample-analytics.admin.events.col.time")}</th>
+            <th class="analytics-events-cell">${i18n.t("module.analytics.admin.events.col.type")}</th>
+            <th class="analytics-events-cell">${i18n.t("module.analytics.admin.events.col.actor")}</th>
+            <th class="analytics-events-cell">${i18n.t("module.analytics.admin.events.col.time")}</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -216,9 +216,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     async function fetchData(days) {
         const [metricsRes, seriesRes, eventsRes] = await Promise.all([
-            apiFetch(`/api/v1/modules/sample-analytics/metrics?days=${days}`),
-            apiFetch(`/api/v1/modules/sample-analytics/series?days=${days}`),
-            apiFetch("/api/v1/modules/sample-analytics/events?limit=20"),
+            apiFetch(`/api/v1/modules/analytics/metrics?days=${days}`),
+            apiFetch(`/api/v1/modules/analytics/series?days=${days}`),
+            apiFetch("/api/v1/modules/analytics/events?limit=20"),
         ]);
 
         if (metricsRes.ok) {
@@ -287,10 +287,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                     await fetchData(activeDays);
                     updateView();
                 } catch {
-                    showToast(
-                        i18n.t("module.sample-analytics.admin.fetch_failed"),
-                        { variant: "error" },
-                    );
+                    showToast(i18n.t("module.analytics.admin.fetch_failed"), {
+                        variant: "error",
+                    });
                 } finally {
                     isLoading = false;
                     applyBtn.disabled = false;
@@ -308,26 +307,26 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     return {
         id: "analytics",
-        label: i18n.t("module.sample-analytics.admin.label"),
+        label: i18n.t("module.analytics.admin.label"),
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-analytics-layout",
-            heading: i18n.t("module.sample-analytics.admin.heading"),
+            heading: i18n.t("module.analytics.admin.heading"),
             elements: [
                 {
                     id: "analytics-content",
-                    label: i18n.t("module.sample-analytics.admin.label"),
+                    label: i18n.t("module.analytics.admin.label"),
                     pinned: true,
                     render: () => `
                       <section class="analytics-panel">
                         <div class="analytics-filter-row">
                           <label class="analytics-filter">
-                            ${i18n.t("module.sample-analytics.admin.filter.time_range")}
+                            ${i18n.t("module.analytics.admin.filter.time_range")}
                             <select name="analyticsRange" class="theme-select">
-                              <option value="7">${i18n.t("module.sample-analytics.admin.filter.days_7")}</option>
-                              <option value="30">${i18n.t("module.sample-analytics.admin.filter.days_30")}</option>
-                              <option value="90">${i18n.t("module.sample-analytics.admin.filter.days_90")}</option>
+                              <option value="7">${i18n.t("module.analytics.admin.filter.days_7")}</option>
+                              <option value="30">${i18n.t("module.analytics.admin.filter.days_30")}</option>
+                              <option value="90">${i18n.t("module.analytics.admin.filter.days_90")}</option>
                             </select>
                           </label>
                           <button type="button" class="btn-confirm btn-animated analytics-apply">
@@ -336,11 +335,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                         </div>
                         <div class="analytics-stats">${renderStats()}</div>
                         <div class="analytics-chart-section">
-                          <h4 class="analytics-chart-title">${i18n.t("module.sample-analytics.admin.chart.registrations_title")}</h4>
+                          <h4 class="analytics-chart-title">${i18n.t("module.analytics.admin.chart.registrations_title")}</h4>
                           <div class="analytics-chart-wrap">${renderChart()}</div>
                         </div>
                         <div class="analytics-events-section">
-                          <h4 class="analytics-events-title">${i18n.t("module.sample-analytics.admin.events.title")}</h4>
+                          <h4 class="analytics-events-title">${i18n.t("module.analytics.admin.events.title")}</h4>
                           <div class="analytics-events-wrap">${renderEvents()}</div>
                         </div>
                       </section>

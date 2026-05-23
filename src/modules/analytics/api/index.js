@@ -110,7 +110,7 @@ export function registerApiRoutes(router, ctx) {
     }
 
     router.get(
-        "/api/v1/modules/sample-analytics/metrics",
+        "/api/v1/modules/analytics/metrics",
         async (req, res) => {
             const url = new URL(req.url, "http://localhost");
             const days = parseDays(url.searchParams.get("days"), 30);
@@ -141,7 +141,7 @@ export function registerApiRoutes(router, ctx) {
     );
 
     router.get(
-        "/api/v1/modules/sample-analytics/series",
+        "/api/v1/modules/analytics/series",
         async (req, res) => {
             const url = new URL(req.url, "http://localhost");
             const days = parseDays(url.searchParams.get("days"), 30);
@@ -172,7 +172,7 @@ export function registerApiRoutes(router, ctx) {
     );
 
     router.get(
-        "/api/v1/modules/sample-analytics/events",
+        "/api/v1/modules/analytics/events",
         async (req, res) => {
             const url = new URL(req.url, "http://localhost");
             const limit = parseLimit(url.searchParams.get("limit"), 50);
@@ -193,7 +193,7 @@ export function registerApiRoutes(router, ctx) {
     );
 
     router.post(
-        "/api/v1/modules/sample-analytics/events",
+        "/api/v1/modules/analytics/events",
         async (req, res) => {
             if (!store) {
                 sendJson(res, 503, {
@@ -259,8 +259,8 @@ export function registerUi(ctx) {
     ctx.registerAdminSection({
         id: "analytics",
         label: "Analytics",
-        scriptUrl: "/static/modules/sample-analytics/admin-section.js",
-        stringsBaseUrl: "/static/modules/sample-analytics/languages",
+        scriptUrl: "/static/modules/analytics/admin-section.js",
+        stringsBaseUrl: "/static/modules/analytics/languages",
         access: { minRole: "admin" },
     });
 }

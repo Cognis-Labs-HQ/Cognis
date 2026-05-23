@@ -1,6 +1,6 @@
 export function registerApiRoutes(router) {
     router.get(
-        "/api/v1/modules/sample-analytics-invalid/metrics",
+        "/api/v1/modules/analytics-invalid/metrics",
         async (_req, res) => {
             res.writeHead(200, { "content-type": "application/json" });
             res.end(

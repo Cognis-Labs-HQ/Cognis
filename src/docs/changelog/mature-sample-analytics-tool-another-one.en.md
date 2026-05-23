@@ -20,13 +20,13 @@ in place without a full page reload.
 
 ## Custom event recording API
 
-A new `POST /api/v1/modules/sample-analytics/events` endpoint allows any admin to
+A new `POST /api/v1/modules/analytics/events` endpoint allows any admin to
 record a custom named event (with optional metadata) against the analytics events
 table. Recorded events appear in the Events log within the Analytics admin section.
 
 ## New API endpoints for metrics and series data
 
 Three admin-authenticated API routes replace the former stub metrics endpoint:
-`/api/v1/modules/sample-analytics/metrics` (summary counts and role breakdown),
-`/api/v1/modules/sample-analytics/series` (daily registration series), and
-`/api/v1/modules/sample-analytics/events` (recent custom events log).
+`/api/v1/modules/analytics/metrics` (summary counts and role breakdown),
+`/api/v1/modules/analytics/series` (daily registration series), and
+`/api/v1/modules/analytics/events` (recent custom events log).

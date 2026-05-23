@@ -1,0 +1,22 @@
+<resources>
+  <string name="module.analytics.admin.label">Analitik</string>
+  <string name="module.analytics.admin.heading">Analitik</string>
+  <string name="module.analytics.admin.loading">Memuat…</string>
+  <string name="module.analytics.admin.fetch_failed">Gagal memuat data analitik.</string>
+  <string name="module.analytics.admin.stat.total_users">Total Pengguna</string>
+  <string name="module.analytics.admin.stat.active_7d">Aktif (7 Hari Terakhir)</string>
+  <string name="module.analytics.admin.stat.new_users_days">Pengguna Baru ({days} Hari Terakhir)</string>
+  <string name="module.analytics.admin.filter.time_range">Rentang Waktu</string>
+  <string name="module.analytics.admin.filter.days_7">7 Hari Terakhir</string>
+  <string name="module.analytics.admin.filter.days_30">30 Hari Terakhir</string>
+  <string name="module.analytics.admin.filter.days_90">90 Hari Terakhir</string>
+  <string name="module.analytics.admin.chart.registrations_title">Tren Pendaftaran</string>
+  <string name="module.analytics.admin.chart.no_data">Tidak ada data untuk periode yang dipilih.</string>
+  <string name="module.analytics.admin.events.title">Acara Kustom</string>
+  <string name="module.analytics.admin.events.empty">Belum ada acara kustom yang dicatat.</string>
+  <string name="module.analytics.admin.events.col.type">Jenis Acara</string>
+  <string name="module.analytics.admin.events.col.actor">Sumber</string>
+  <string name="module.analytics.admin.events.col.time">Waktu</string>
+  <string name="module.analytics.admin.events.system">Sistem</string>
+  <string name="module.analytics.admin.events.unknown_time">Tidak Diketahui</string>
+</resources>

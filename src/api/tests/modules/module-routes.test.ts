@@ -6,7 +6,7 @@ import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 test("module routes list modules", async () => {
     const route = createModuleRoutes({
         list: async () => [
-            { id: "sample-analytics", version: "1.0.0", class: "extension" },
+            { id: "analytics", version: "1.0.0", class: "extension" },
         ],
         enable: async () => ({ moduleId: "x", enabled: true }),
         disable: async () => ({ moduleId: "x", enabled: false }),
@@ -31,7 +31,7 @@ test("module routes list modules", async () => {
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /sample-analytics/);
+    assert.match(body, /analytics/);
 });
 
 test("module routes log enable operations", async () => {
@@ -67,7 +67,7 @@ test("module routes log enable operations", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/modules/sample-analytics/enable"),
+        new URL("http://localhost/api/v1/modules/analytics/enable"),
     );
 
     assert.equal(status, 200);
@@ -78,9 +78,9 @@ test("module routes log enable operations", async () => {
             meta: {
                 component: "api-modules",
                 method: "POST",
-                path: "/api/v1/modules/sample-analytics/enable",
+                path: "/api/v1/modules/analytics/enable",
                 accountId: "admin-user",
-                moduleId: "sample-analytics",
+                moduleId: "analytics",
                 acknowledgedExternalDisclaimer: false,
             },
         },

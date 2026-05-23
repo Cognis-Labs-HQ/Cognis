@@ -208,7 +208,7 @@ test("module ui routes can be published outside /modules prefix", async () => {
     const route = createUiRoutes({
         listManifests: async () => [
             {
-                id: "sample-analytics",
+                id: "analytics",
                 entrypoints: { ui: "./ui/pages/analytics.html" },
             },
         ],
@@ -228,7 +228,7 @@ test("module ui routes honor role access policies declared in routes.json", asyn
     const route = createUiRoutes({
         listManifests: async () => [
             {
-                id: "sample-analytics",
+                id: "analytics",
                 entrypoints: { ui: "./ui/pages/analytics.html" },
             },
         ],
@@ -258,7 +258,7 @@ test("module ui routes fail closed on invalid role access policies in routes.jso
     const route = createUiRoutes({
         listManifests: async () => [
             {
-                id: "sample-analytics-invalid-policy",
+                id: "analytics-invalid-policy",
                 entrypoints: { ui: "./ui/pages/analytics.html" },
             },
         ],

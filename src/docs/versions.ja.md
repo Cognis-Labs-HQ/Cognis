@@ -47,7 +47,7 @@
 
 | コンポーネント | パス                              | バージョン |
 | -------------- | --------------------------------- | ---------- |
-| サンプル分析   | `src/modules/sample-analytics/`   | `0.1.0`    |
+| 分析           | `src/modules/analytics/`          | `2.0.0`    |
 | Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.0.0`    |
 | Cognis 日本語  | `src/modules/study/languages/ja/` | `1.2.4`    |
 | Cognis 英語    | `src/modules/study/languages/en/` | `1.2.2`    |

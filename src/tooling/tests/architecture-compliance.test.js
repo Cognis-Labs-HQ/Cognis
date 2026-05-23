@@ -276,7 +276,7 @@ test("ai instructions keep the compliance guardrails explicit", () => {
 const MODULE_STRUCTURE_EXEMPTIONS = new Set([
     "docs",
     "routes",
-    "sample-analytics-invalid-policy",
+    "analytics-invalid-policy",
     "study",
 ]);
 

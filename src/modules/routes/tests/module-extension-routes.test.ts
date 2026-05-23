@@ -20,7 +20,7 @@ test("module extension routes expose module API endpoints", async () => {
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/index.js" },
                 },
             ],
@@ -52,7 +52,7 @@ test("module extension routes expose module API endpoints", async () => {
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/modules/sample-analytics/metrics"),
+        new URL("http://localhost/api/v1/modules/analytics/metrics"),
     );
 
     assert.equal(handled, true);
@@ -65,7 +65,7 @@ test("module extension routes enforce declared minimum role policies", async () 
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/index.js" },
                 },
             ],
@@ -93,7 +93,7 @@ test("module extension routes enforce declared minimum role policies", async () 
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/modules/sample-analytics/metrics"),
+        new URL("http://localhost/api/v1/modules/analytics/metrics"),
     );
 
     assert.equal(handled, true);
@@ -106,7 +106,7 @@ test("module extension routes fail closed on invalid role access policies", asyn
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/invalid-access.js" },
                 },
             ],
@@ -134,9 +134,7 @@ test("module extension routes fail closed on invalid role access policies", asyn
                 body = payload;
             },
         } as any,
-        new URL(
-            "http://localhost/api/v1/modules/sample-analytics-invalid/metrics",
-        ),
+        new URL("http://localhost/api/v1/modules/analytics-invalid/metrics"),
     );
 
     assert.equal(handled, true);
@@ -157,7 +155,7 @@ test("module extension routes register module admin sections with enable hooks",
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/index.js" },
                 },
             ],
@@ -180,7 +178,7 @@ test("module extension routes register module admin sections with enable hooks",
     assert.equal(adminSections[0].id, "analytics");
     assert.equal(
         adminSections[0].scriptUrl,
-        "/static/modules/sample-analytics/admin-section.js",
+        "/static/modules/analytics/admin-section.js",
     );
     assert.equal(adminSections[0].isEnabled?.(), false);
     enabled = true;

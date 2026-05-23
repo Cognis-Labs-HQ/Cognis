@@ -1,0 +1,60 @@
+{
+    "id": "analytics",
+    "name": "Analytics",
+    "version": "2.0.0",
+    "class": "extension",
+    "coreApiVersion": "v1",
+    "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
+    "entrypoints": {
+        "api": "./api/index.js",
+        "cli": "./cli/index.js",
+        "db": "./db/001_analytics.sql"
+    },
+    "publisher": "Cognis Labs",
+    "files": [
+        {
+            "path": "api/index.js",
+            "sha256": "4229e210415bcd28e9cb39f334dfdc4802e69bb5e245c14d8d3c7da0925997a2"
+        },
+        {
+            "path": "api/store.js",
+            "sha256": "3cabf3dee36d70dfbf556694856fc1997f1646c6405a8a52061fb51a3a8c89cb"
+        },
+        {
+            "path": "ui/admin-section.js",
+            "sha256": "9d6b586a2699579167fdd9cf3f92a74c7c974700f2e3238d687a4c78bb67388e"
+        },
+        {
+            "path": "ui/admin-section.css",
+            "sha256": "4e1f957528789c553a5d5db8fe076656671328fefa0c1f8f4f05289054f48df7"
+        },
+        {
+            "path": "ui/languages/en/strings.xml",
+            "sha256": "5d9c4a57f43a05366691a0f3417edbf8cef11cdce1fa6b5e427e7ce3c548cd3d"
+        },
+        {
+            "path": "ui/languages/de/strings.xml",
+            "sha256": "7cae3e92afea4c0691c91ed3d5249d6652eda6a5ca6f2810f152e84dfd872f4a"
+        },
+        {
+            "path": "ui/languages/id/strings.xml",
+            "sha256": "b2ad49371a8c771cc225e9cfac4b85526cf1720d0bf645b24884dfe25a65ea9d"
+        },
+        {
+            "path": "ui/languages/ja/strings.xml",
+            "sha256": "0e4d0fab6e95082166ab510ac0aa1811cb6bb0a24093d862a844fc03e2f80416"
+        },
+        {
+            "path": "cli/index.js",
+            "sha256": "a8fef6e11c67754b7ee96bea983be069771d23a06640bc45c23f749b923019ee"
+        },
+        {
+            "path": "db/001_analytics.sql",
+            "sha256": "ce32c37e42fb73ced351b34b3bfd1b08b49912bd1c018280aa28fd096644a114"
+        },
+        {
+            "path": "content/README.en.md",
+            "sha256": "b54ab131c7aab6bb4919c9390c187d6551c407f4a4e0bd691b33beb51abb3d79"
+        }
+    ]
+}

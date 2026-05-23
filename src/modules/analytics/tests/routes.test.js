@@ -140,7 +140,7 @@ function setupRoutes(options = {}) {
     return { db, router };
 }
 
-test("GET /api/v1/modules/sample-analytics/metrics returns total user count", async () => {
+test("GET /api/v1/modules/analytics/metrics returns total user count", async () => {
     const { router } = setupRoutes({
         accountRows: [
             buildAccountRow({ id: "u1", role: "admin" }),
@@ -148,14 +148,9 @@ test("GET /api/v1/modules/sample-analytics/metrics returns total user count", as
             buildAccountRow({ id: "u3", role: "teacher" }),
         ],
     });
-    const req = makeRequest("GET", "/api/v1/modules/sample-analytics/metrics");
+    const req = makeRequest("GET", "/api/v1/modules/analytics/metrics");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/metrics",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/metrics", req, res);
     assert.equal(res.status, 200);
     const { data } = res.json;
     assert.equal(data.totalUsers, 3);
@@ -164,7 +159,7 @@ test("GET /api/v1/modules/sample-analytics/metrics returns total user count", as
     assert.ok(data.roleBreakdown);
 });
 
-test("GET /api/v1/modules/sample-analytics/metrics computes role breakdown correctly", async () => {
+test("GET /api/v1/modules/analytics/metrics computes role breakdown correctly", async () => {
     const { router } = setupRoutes({
         accountRows: [
             buildAccountRow({ id: "u1", role: "admin" }),
@@ -173,21 +168,16 @@ test("GET /api/v1/modules/sample-analytics/metrics computes role breakdown corre
             buildAccountRow({ id: "u4", role: "teacher" }),
         ],
     });
-    const req = makeRequest("GET", "/api/v1/modules/sample-analytics/metrics");
+    const req = makeRequest("GET", "/api/v1/modules/analytics/metrics");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/metrics",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/metrics", req, res);
     const { data } = res.json;
     assert.equal(data.roleBreakdown.admin, 1);
     assert.equal(data.roleBreakdown.user, 2);
     assert.equal(data.roleBreakdown.teacher, 1);
 });
 
-test("GET /api/v1/modules/sample-analytics/metrics counts active users within 7 days", async () => {
+test("GET /api/v1/modules/analytics/metrics counts active users within 7 days", async () => {
     const recentLogin = new Date(
         Date.now() - 3 * 24 * 60 * 60 * 1000,
     ).toISOString();
@@ -202,51 +192,33 @@ test("GET /api/v1/modules/sample-analytics/metrics counts active users within 7 
             buildAccountRow({ id: "u4", last_login: null }),
         ],
     });
-    const req = makeRequest("GET", "/api/v1/modules/sample-analytics/metrics");
+    const req = makeRequest("GET", "/api/v1/modules/analytics/metrics");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/metrics",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/metrics", req, res);
     const { data } = res.json;
     assert.equal(data.activeUsers7d, 2);
 });
 
-test("GET /api/v1/modules/sample-analytics/metrics returns 503 when db is unavailable", async () => {
+test("GET /api/v1/modules/analytics/metrics returns 503 when db is unavailable", async () => {
     const router = makeRouter();
     const ctx = { getCapability: () => undefined };
     registerApiRoutes(router, ctx);
-    const req = makeRequest("GET", "/api/v1/modules/sample-analytics/metrics");
+    const req = makeRequest("GET", "/api/v1/modules/analytics/metrics");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/metrics",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/metrics", req, res);
     assert.equal(res.status, 503);
 });
 
-test("GET /api/v1/modules/sample-analytics/series returns one entry per day for the requested range", async () => {
+test("GET /api/v1/modules/analytics/series returns one entry per day for the requested range", async () => {
     const twoDaysAgo = new Date(
         Date.now() - 2 * 24 * 60 * 60 * 1000,
     ).toISOString();
     const { router } = setupRoutes({
         accountRows: [buildAccountRow({ id: "u1", created_at: twoDaysAgo })],
     });
-    const req = makeRequest(
-        "GET",
-        "/api/v1/modules/sample-analytics/series?days=7",
-    );
+    const req = makeRequest("GET", "/api/v1/modules/analytics/series?days=7");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/series",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/series", req, res);
     assert.equal(res.status, 200);
     const { data } = res.json;
     assert.equal(data.length, 7);
@@ -257,26 +229,18 @@ test("GET /api/v1/modules/sample-analytics/series returns one entry per day for 
     assert.equal(total, 1);
 });
 
-test("GET /api/v1/modules/sample-analytics/series returns all-zero counts when no accounts exist", async () => {
+test("GET /api/v1/modules/analytics/series returns all-zero counts when no accounts exist", async () => {
     const { router } = setupRoutes({ accountRows: [] });
-    const req = makeRequest(
-        "GET",
-        "/api/v1/modules/sample-analytics/series?days=7",
-    );
+    const req = makeRequest("GET", "/api/v1/modules/analytics/series?days=7");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/series",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/series", req, res);
     assert.equal(res.status, 200);
     const { data } = res.json;
     assert.equal(data.length, 7);
     assert.ok(data.every((point) => point.count === 0));
 });
 
-test("GET /api/v1/modules/sample-analytics/events returns recent events ordered descending", async () => {
+test("GET /api/v1/modules/analytics/events returns recent events ordered descending", async () => {
     const { router } = setupRoutes({
         eventRows: [
             buildEventRow({
@@ -291,17 +255,9 @@ test("GET /api/v1/modules/sample-analytics/events returns recent events ordered 
             }),
         ],
     });
-    const req = makeRequest(
-        "GET",
-        "/api/v1/modules/sample-analytics/events?limit=5",
-    );
+    const req = makeRequest("GET", "/api/v1/modules/analytics/events?limit=5");
     const res = makeResponse();
-    await router.handle(
-        "GET",
-        "/api/v1/modules/sample-analytics/events",
-        req,
-        res,
-    );
+    await router.handle("GET", "/api/v1/modules/analytics/events", req, res);
     assert.equal(res.status, 200);
     const { data } = res.json;
     assert.equal(data.length, 2);
@@ -309,19 +265,14 @@ test("GET /api/v1/modules/sample-analytics/events returns recent events ordered 
     assert.equal(data[1].id, "e1");
 });
 
-test("POST /api/v1/modules/sample-analytics/events records an event and returns 201", async () => {
+test("POST /api/v1/modules/analytics/events records an event and returns 201", async () => {
     const { db, router } = setupRoutes();
-    const req = makeRequest("POST", "/api/v1/modules/sample-analytics/events", {
+    const req = makeRequest("POST", "/api/v1/modules/analytics/events", {
         eventType: "custom_action",
         meta: { page: "/home" },
     });
     const res = makeResponse();
-    await router.handle(
-        "POST",
-        "/api/v1/modules/sample-analytics/events",
-        req,
-        res,
-    );
+    await router.handle("POST", "/api/v1/modules/analytics/events", req, res);
     assert.equal(res.status, 201);
     const { data } = res.json;
     assert.ok(data.id);
@@ -330,41 +281,31 @@ test("POST /api/v1/modules/sample-analytics/events records an event and returns 
     assert.equal(db.insertedRows[0].meta, JSON.stringify({ page: "/home" }));
 });
 
-test("POST /api/v1/modules/sample-analytics/events rejects missing eventType with 400", async () => {
+test("POST /api/v1/modules/analytics/events rejects missing eventType with 400", async () => {
     const { router } = setupRoutes();
-    const req = makeRequest("POST", "/api/v1/modules/sample-analytics/events", {
+    const req = makeRequest("POST", "/api/v1/modules/analytics/events", {
         meta: { page: "/home" },
     });
     const res = makeResponse();
-    await router.handle(
-        "POST",
-        "/api/v1/modules/sample-analytics/events",
-        req,
-        res,
-    );
+    await router.handle("POST", "/api/v1/modules/analytics/events", req, res);
     assert.equal(res.status, 400);
     const { error } = res.json;
     assert.equal(error.code, "missing_event_type");
 });
 
-test("POST /api/v1/modules/sample-analytics/events rejects invalid JSON body with 400", async () => {
+test("POST /api/v1/modules/analytics/events rejects invalid JSON body with 400", async () => {
     const { router } = setupRoutes();
     const invalidChunks = [Buffer.from("not-valid-json")];
     const req = {
         method: "POST",
-        url: "http://localhost/api/v1/modules/sample-analytics/events",
+        url: "http://localhost/api/v1/modules/analytics/events",
         headers: {},
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of invalidChunks) yield chunk;
         },
     };
     const res = makeResponse();
-    await router.handle(
-        "POST",
-        "/api/v1/modules/sample-analytics/events",
-        req,
-        res,
-    );
+    await router.handle("POST", "/api/v1/modules/analytics/events", req, res);
     assert.equal(res.status, 400);
     const { error } = res.json;
     assert.equal(error.code, "invalid_body");

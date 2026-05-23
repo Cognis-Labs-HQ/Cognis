@@ -1,0 +1,22 @@
+<resources>
+  <string name="module.analytics.admin.label">分析</string>
+  <string name="module.analytics.admin.heading">分析</string>
+  <string name="module.analytics.admin.loading">読み込み中…</string>
+  <string name="module.analytics.admin.fetch_failed">分析データの読み込みに失敗しました。</string>
+  <string name="module.analytics.admin.stat.total_users">総ユーザー数</string>
+  <string name="module.analytics.admin.stat.active_7d">アクティブ（過去7日間）</string>
+  <string name="module.analytics.admin.stat.new_users_days">新規ユーザー（過去{days}日間）</string>
+  <string name="module.analytics.admin.filter.time_range">期間</string>
+  <string name="module.analytics.admin.filter.days_7">過去7日間</string>
+  <string name="module.analytics.admin.filter.days_30">過去30日間</string>
+  <string name="module.analytics.admin.filter.days_90">過去90日間</string>
+  <string name="module.analytics.admin.chart.registrations_title">登録トレンド</string>
+  <string name="module.analytics.admin.chart.no_data">選択した期間のデータがありません。</string>
+  <string name="module.analytics.admin.events.title">カスタムイベント</string>
+  <string name="module.analytics.admin.events.empty">カスタムイベントは記録されていません。</string>
+  <string name="module.analytics.admin.events.col.type">イベントタイプ</string>
+  <string name="module.analytics.admin.events.col.actor">発信元</string>
+  <string name="module.analytics.admin.events.col.time">日時</string>
+  <string name="module.analytics.admin.events.system">システム</string>
+  <string name="module.analytics.admin.events.unknown_time">不明</string>
+</resources>
