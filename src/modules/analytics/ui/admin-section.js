@@ -218,7 +218,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         const [metricsRes, seriesRes, eventsRes] = await Promise.all([
             apiFetch(`/api/v1/modules/analytics/metrics?days=${days}`),
             apiFetch(`/api/v1/modules/analytics/series?days=${days}`),
-            apiFetch("/api/v1/modules/analytics/events?limit=20"),
+            apiFetch("/api/v1/modules/analytics/activity-log?limit=20"),
         ]);
 
         if (metricsRes.ok) {

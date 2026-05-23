@@ -19,7 +19,7 @@
 
 ## カスタムイベント記録 API
 
-新しいエンドポイント `POST /api/v1/modules/analytics/events` により、
+新しいエンドポイント `POST /api/v1/modules/analytics/activity-log` により、
 管理者は任意の名前付きカスタムイベント（オプションのメタデータ付き）を
 分析イベントテーブルに記録できます。記録されたイベントは管理画面の
 分析セクション内のイベントログに表示されます。
@@ -29,4 +29,4 @@
 3つの管理者認証済み API ルートが従来のスタブ指標エンドポイントに代わります：
 `/api/v1/modules/analytics/metrics`（概要とロール内訳）、
 `/api/v1/modules/analytics/series`（日別登録時系列）、
-`/api/v1/modules/analytics/events`（最近のカスタムイベントログ）。
+`/api/v1/modules/analytics/activity-log`（最近のカスタムイベントログ）。

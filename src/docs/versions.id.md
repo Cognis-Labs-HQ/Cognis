@@ -47,7 +47,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 | Komponen       | Path                              | Versi   |
 | -------------- | --------------------------------- | ------- |
-| Analitik       | `src/modules/analytics/`          | `2.0.0` |
+| Analitik       | `src/modules/analytics/`          | `2.0.1` |
 | Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.0.0` |
 | Cognis Jepang  | `src/modules/study/languages/ja/` | `1.2.4` |
 | Cognis Inggris | `src/modules/study/languages/en/` | `1.2.2` |

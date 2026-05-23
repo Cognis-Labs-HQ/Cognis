@@ -172,7 +172,7 @@ export function registerApiRoutes(router, ctx) {
     );
 
     router.get(
-        "/api/v1/modules/analytics/events",
+        "/api/v1/modules/analytics/activity-log",
         async (req, res) => {
             const url = new URL(req.url, "http://localhost");
             const limit = parseLimit(url.searchParams.get("limit"), 50);
@@ -193,7 +193,7 @@ export function registerApiRoutes(router, ctx) {
     );
 
     router.post(
-        "/api/v1/modules/analytics/events",
+        "/api/v1/modules/analytics/activity-log",
         async (req, res) => {
             if (!store) {
                 sendJson(res, 503, {

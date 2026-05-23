@@ -20,7 +20,7 @@ batang, dan log acara tanpa memuat ulang halaman.
 
 ## API pencatatan acara kustom
 
-Endpoint baru `POST /api/v1/modules/analytics/events` memungkinkan admin
+Endpoint baru `POST /api/v1/modules/analytics/activity-log` memungkinkan admin
 mencatat acara bernama kustom (dengan metadata opsional) ke tabel acara analitik.
 Acara yang dicatat muncul di log Acara dalam bagian Analitik administrasi.
 
@@ -29,4 +29,4 @@ Acara yang dicatat muncul di log Acara dalam bagian Analitik administrasi.
 Tiga rute API yang diautentikasi admin menggantikan endpoint metrik stub sebelumnya:
 `/api/v1/modules/analytics/metrics` (ringkasan dan rincian peran),
 `/api/v1/modules/analytics/series` (deret pendaftaran harian), dan
-`/api/v1/modules/analytics/events` (log acara kustom terbaru).
+`/api/v1/modules/analytics/activity-log` (log acara kustom terbaru).

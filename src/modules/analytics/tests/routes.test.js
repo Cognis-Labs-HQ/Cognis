@@ -240,7 +240,7 @@ test("GET /api/v1/modules/analytics/series returns all-zero counts when no accou
     assert.ok(data.every((point) => point.count === 0));
 });
 
-test("GET /api/v1/modules/analytics/events returns recent events ordered descending", async () => {
+test("GET /api/v1/modules/analytics/activity-log returns recent events ordered descending", async () => {
     const { router } = setupRoutes({
         eventRows: [
             buildEventRow({
@@ -255,9 +255,17 @@ test("GET /api/v1/modules/analytics/events returns recent events ordered descend
             }),
         ],
     });
-    const req = makeRequest("GET", "/api/v1/modules/analytics/events?limit=5");
+    const req = makeRequest(
+        "GET",
+        "/api/v1/modules/analytics/activity-log?limit=5",
+    );
     const res = makeResponse();
-    await router.handle("GET", "/api/v1/modules/analytics/events", req, res);
+    await router.handle(
+        "GET",
+        "/api/v1/modules/analytics/activity-log",
+        req,
+        res,
+    );
     assert.equal(res.status, 200);
     const { data } = res.json;
     assert.equal(data.length, 2);
@@ -265,14 +273,19 @@ test("GET /api/v1/modules/analytics/events returns recent events ordered descend
     assert.equal(data[1].id, "e1");
 });
 
-test("POST /api/v1/modules/analytics/events records an event and returns 201", async () => {
+test("POST /api/v1/modules/analytics/activity-log records an event and returns 201", async () => {
     const { db, router } = setupRoutes();
-    const req = makeRequest("POST", "/api/v1/modules/analytics/events", {
+    const req = makeRequest("POST", "/api/v1/modules/analytics/activity-log", {
         eventType: "custom_action",
         meta: { page: "/home" },
     });
     const res = makeResponse();
-    await router.handle("POST", "/api/v1/modules/analytics/events", req, res);
+    await router.handle(
+        "POST",
+        "/api/v1/modules/analytics/activity-log",
+        req,
+        res,
+    );
     assert.equal(res.status, 201);
     const { data } = res.json;
     assert.ok(data.id);
@@ -281,31 +294,41 @@ test("POST /api/v1/modules/analytics/events records an event and returns 201", a
     assert.equal(db.insertedRows[0].meta, JSON.stringify({ page: "/home" }));
 });
 
-test("POST /api/v1/modules/analytics/events rejects missing eventType with 400", async () => {
+test("POST /api/v1/modules/analytics/activity-log rejects missing eventType with 400", async () => {
     const { router } = setupRoutes();
-    const req = makeRequest("POST", "/api/v1/modules/analytics/events", {
+    const req = makeRequest("POST", "/api/v1/modules/analytics/activity-log", {
         meta: { page: "/home" },
     });
     const res = makeResponse();
-    await router.handle("POST", "/api/v1/modules/analytics/events", req, res);
+    await router.handle(
+        "POST",
+        "/api/v1/modules/analytics/activity-log",
+        req,
+        res,
+    );
     assert.equal(res.status, 400);
     const { error } = res.json;
     assert.equal(error.code, "missing_event_type");
 });
 
-test("POST /api/v1/modules/analytics/events rejects invalid JSON body with 400", async () => {
+test("POST /api/v1/modules/analytics/activity-log rejects invalid JSON body with 400", async () => {
     const { router } = setupRoutes();
     const invalidChunks = [Buffer.from("not-valid-json")];
     const req = {
         method: "POST",
-        url: "http://localhost/api/v1/modules/analytics/events",
+        url: "http://localhost/api/v1/modules/analytics/activity-log",
         headers: {},
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of invalidChunks) yield chunk;
         },
     };
     const res = makeResponse();
-    await router.handle("POST", "/api/v1/modules/analytics/events", req, res);
+    await router.handle(
+        "POST",
+        "/api/v1/modules/analytics/activity-log",
+        req,
+        res,
+    );
     assert.equal(res.status, 400);
     const { error } = res.json;
     assert.equal(error.code, "invalid_body");
