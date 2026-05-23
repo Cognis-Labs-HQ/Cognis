@@ -739,12 +739,12 @@ html[data-message-style="speech_bubbles"] .jitsi-chat-message {
     position: relative;
     border-radius: 1.1rem;
     padding: 0.6rem 0.85rem;
-    box-shadow: 0 2px 10px rgba(2, 6, 23, 0.2);
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.34);
 }
 
 html[data-message-style="speech_bubbles"]
     .jitsi-chat-message:not(.jitsi-chat-message-own) {
-    background: var(--color-surface);
+    background: var(--color-surface-elevated);
     border-color: var(--color-border);
     color: var(--color-text);
 }
