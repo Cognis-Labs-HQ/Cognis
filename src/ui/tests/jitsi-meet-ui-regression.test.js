@@ -233,6 +233,37 @@ test("meetings mini chat sends on Enter and hides explicit send button", () => {
     assert.match(source, /chatForm\.requestSubmit\(\)/);
 });
 
+test("meetings mini chat supports participant private-chat switching and return-to-meeting action", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const markupSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
+        "utf8",
+    );
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    const stringsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
+        "utf8",
+    );
+    assert.match(markupSource, /id="jitsi-chat-participant-strip"/);
+    assert.match(markupSource, /id="jitsi-chat-return-btn"/);
+    assert.match(appSource, /chatMode:\s*"meeting"/);
+    assert.match(appSource, /lastMeetingChatRoomId/);
+    assert.match(appSource, /async function activatePrivateChatForParticipant/);
+    assert.match(appSource, /async function activateMeetingChat/);
+    assert.match(appSource, /state\.chatMode !== "private"/);
+    assert.match(appSource, /\/api\/v1\/messages\/rooms/);
+    assert.match(cssSource, /\.jitsi-chat-participant-strip/);
+    assert.match(cssSource, /\.jitsi-chat-participant-item-selected/);
+    assert.match(stringsSource, /module\.jitsi_meet\.chat\.return_to_meeting/);
+    assert.match(stringsSource, /module\.jitsi_meet\.chat\.private_open_failed/);
+});
+
 test("meetings session state polling handles closed meetings and distinct leave messaging", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),

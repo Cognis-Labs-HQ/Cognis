@@ -89,6 +89,7 @@ async function fetchCurrentProfile() {
         handle,
         displayName: displayName || handle || "Cognis User",
         email,
+        avatarKey: avatarKey || null,
         avatarUrl,
     };
 }
@@ -116,6 +117,38 @@ function createParticipantAvatarEl({ username, displayName, avatarKey }) {
 
     wrapper.appendChild(label);
     return wrapper;
+}
+
+function createChatParticipantAvatarButton({
+    username,
+    displayName,
+    avatarKey,
+    selected,
+}) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "jitsi-chat-participant-item";
+    if (selected) {
+        button.classList.add("jitsi-chat-participant-item-selected");
+    }
+    button.setAttribute("role", "listitem");
+    button.dataset.username = username;
+    button.setAttribute("aria-pressed", String(selected));
+    button.setAttribute(
+        "aria-label",
+        displayName ? `${displayName} (@${username})` : `@${username}`,
+    );
+    button.title = displayName ? `${displayName} (@${username})` : `@${username}`;
+    button.innerHTML = buildProfileAvatarMarkup({
+        avatarKey,
+        label: displayName || username,
+        colorSeed: username,
+        avatarClass: "jitsi-chat-participant-avatar",
+        imageClass: "jitsi-chat-participant-avatar-img",
+        fallbackClass: "jitsi-chat-participant-avatar-bubble",
+        profileHandle: null,
+    });
+    return button;
 }
 
 async function fetchParticipants(query) {
@@ -153,6 +186,10 @@ export async function mount(root, { signal } = {}) {
         chatRefreshTimer: null,
         chatRoomId: "",
         chatRoomKey: null,
+        chatMode: "meeting",
+        privateChatUsername: "",
+        lastMeetingChatRoomId: "",
+        lastMeetingParticipants: [],
         currentProfile: null,
         preflightStatus: "idle",
         preflightPassed: false,
@@ -455,6 +492,112 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    function applyActiveChatRoom(roomId) {
+        if (state.chatRoomId === roomId) return;
+        state.chatRoomId = roomId;
+        state.chatRoomKey = null;
+        stopNativeChatPolling();
+    }
+
+    function resolveParticipantChatEntries() {
+        if (!Array.isArray(state.lastMeetingParticipants)) return [];
+        const localHandle = normalizeUsername(state.currentProfile?.handle ?? "");
+        return Array.from(
+            new Set(
+                state.lastMeetingParticipants
+                    .map((entry) => normalizeUsername(entry))
+                    .filter(Boolean)
+                    .filter((entry) => entry !== localHandle),
+            ),
+        )
+            .map((username) => {
+                if (state.currentProfile?.handle === username) {
+                    return {
+                        username,
+                        displayName: state.currentProfile.displayName || username,
+                        avatarKey: state.currentProfile.avatarKey ?? null,
+                    };
+                }
+                const participant = state.allParticipants.find(
+                    (entry) => normalizeUsername(entry?.username) === username,
+                );
+                return {
+                    username,
+                    displayName:
+                        participant?.displayName ||
+                        state.currentProfile?.displayName ||
+                        username,
+                    avatarKey: participant?.avatarKey ?? null,
+                };
+            })
+            .sort((left, right) => left.username.localeCompare(right.username));
+    }
+
+    function renderChatParticipantStrip() {
+        const strip = root.querySelector("#jitsi-chat-participant-strip");
+        const returnButton = root.querySelector("#jitsi-chat-return-btn");
+        if (!(strip instanceof HTMLElement)) {
+            return;
+        }
+        const entries = resolveParticipantChatEntries();
+        strip.replaceChildren(
+            ...entries.map((entry) =>
+                createChatParticipantAvatarButton({
+                    ...entry,
+                    selected:
+                        state.chatMode === "private" &&
+                        state.privateChatUsername === entry.username,
+                }),
+            ),
+        );
+        void hydrateProfileAvatars(strip);
+        if (returnButton instanceof HTMLButtonElement) {
+            returnButton.hidden =
+                state.chatMode !== "private" || !state.lastMeetingChatRoomId;
+            returnButton.disabled = !state.lastMeetingChatRoomId;
+        }
+    }
+
+    async function activateMeetingChat() {
+        state.chatMode = "meeting";
+        state.privateChatUsername = "";
+        applyActiveChatRoom(state.lastMeetingChatRoomId);
+        renderChatParticipantStrip();
+        await refreshNativeChat();
+        startNativeChatPolling();
+    }
+
+    async function activatePrivateChatForParticipant(username) {
+        const normalizedUsername = normalizeUsername(username);
+        if (!normalizedUsername) return;
+        const response = await apiFetch("/api/v1/messages/rooms", {
+            method: "POST",
+            body: JSON.stringify({
+                handles: [normalizedUsername],
+            }),
+        });
+        if (!response.ok) {
+            showToast(i18n.t("module.jitsi_meet.chat.private_open_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        const payload = await response.json().catch(() => ({ data: null }));
+        const roomId = normalizeChatRoomId(payload?.data?.id);
+        if (!roomId) {
+            showToast(i18n.t("module.jitsi_meet.chat.private_open_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        state.chatMode = "private";
+        state.privateChatUsername = normalizedUsername;
+        applyActiveChatRoom(roomId);
+        renderChatParticipantStrip();
+        await refreshNativeChat();
+        startNativeChatPolling();
+    }
+
     async function refreshNativeChat() {
         const roomId = state.chatRoomId;
         if (!roomId) {
@@ -511,13 +654,17 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function updateNativeChat() {
-        state.chatRoomId = resolveMeetingChatRoomId(state.meeting);
-        if (!state.chatRoomId) {
-            state.chatRoomKey = null;
-            stopNativeChatPolling();
-            await refreshNativeChat();
-            return;
+        const meetingChatRoomId = resolveMeetingChatRoomId(state.meeting);
+        if (meetingChatRoomId) {
+            state.lastMeetingChatRoomId = meetingChatRoomId;
         }
+        if (Array.isArray(state.meeting?.participants)) {
+            state.lastMeetingParticipants = state.meeting.participants;
+        }
+        if (state.chatMode !== "private") {
+            applyActiveChatRoom(state.lastMeetingChatRoomId);
+        }
+        renderChatParticipantStrip();
         await refreshNativeChat();
         startNativeChatPolling();
     }
@@ -585,8 +732,6 @@ export async function mount(root, { signal } = {}) {
         state.alonePromptDismissedMeetingId = "";
         state.alonePromptBlockedUntil = 0;
         state.meeting = null;
-        state.chatRoomId = "";
-        state.chatRoomKey = null;
         stopNativeChatPolling();
         await updateNativeChat();
     }
@@ -651,6 +796,8 @@ export async function mount(root, { signal } = {}) {
             state.alonePromptBlockedUntil = 0;
         }
         state.meeting = meetingPayload.data;
+        state.chatMode = "meeting";
+        state.privateChatUsername = "";
         await updateNativeChat();
         const joinState = await joinMeeting();
         if (joinState?.trackingAllowed) {
@@ -734,8 +881,6 @@ export async function mount(root, { signal } = {}) {
         state.alonePromptDismissedMeetingId = "";
         state.alonePromptBlockedUntil = 0;
         state.meeting = null;
-        state.chatRoomId = "";
-        state.chatRoomKey = null;
         stopNativeChatPolling();
         resetParticipantSelection();
         renderParticipants();
@@ -1503,6 +1648,8 @@ export async function mount(root, { signal } = {}) {
             .json()
             .catch(() => ({ data: null }));
         state.meeting = createPayload?.data;
+        state.chatMode = "meeting";
+        state.privateChatUsername = "";
         await updateNativeChat();
 
         updateOverlay({
@@ -1548,6 +1695,10 @@ export async function mount(root, { signal } = {}) {
         const reclaimButton = container.querySelector("#jitsi-reclaim-btn");
         const chatForm = container.querySelector("#jitsi-chat-form");
         const chatInput = container.querySelector("#jitsi-chat-input");
+        const chatParticipantStrip = container.querySelector(
+            "#jitsi-chat-participant-strip",
+        );
+        const chatReturnButton = container.querySelector("#jitsi-chat-return-btn");
         const activeMeetingsEl = container.querySelector(
             "#jitsi-active-meetings",
         );
@@ -1716,6 +1867,33 @@ export async function mount(root, { signal } = {}) {
                     );
                     if (!meetingId) return;
                     void joinMeetingById(meetingId);
+                },
+                { signal: bindSignal },
+            );
+        }
+
+        if (chatParticipantStrip instanceof HTMLElement) {
+            chatParticipantStrip.addEventListener(
+                "click",
+                (event) => {
+                    const button = event.target.closest(
+                        ".jitsi-chat-participant-item[data-username]",
+                    );
+                    if (!(button instanceof HTMLButtonElement)) return;
+                    const username = normalizeUsername(button.dataset.username);
+                    if (!username) return;
+                    void activatePrivateChatForParticipant(username);
+                },
+                { signal: bindSignal },
+            );
+        }
+
+        if (chatReturnButton instanceof HTMLButtonElement) {
+            chatReturnButton.addEventListener(
+                "click",
+                () => {
+                    if (!state.lastMeetingChatRoomId) return;
+                    void activateMeetingChat();
                 },
                 { signal: bindSignal },
             );

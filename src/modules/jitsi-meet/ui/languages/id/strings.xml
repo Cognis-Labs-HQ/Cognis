@@ -41,6 +41,9 @@
   <string name="module.jitsi_meet.chat.placeholder">Tulis pesan ke chat rapat</string>
   <string name="module.jitsi_meet.chat.send_failed">Gagal mengirim pesan chat.</string>
   <string name="module.jitsi_meet.chat.open">Buka Chat</string>
+  <string name="module.jitsi_meet.chat.participants">Peserta Rapat</string>
+  <string name="module.jitsi_meet.chat.return_to_meeting">Kembali ke Chat Rapat</string>
+  <string name="module.jitsi_meet.chat.private_open_failed">Gagal membuka chat pribadi.</string>
   <string name="module.jitsi_meet.participants.heading">Peserta</string>
   <string name="module.jitsi_meet.participants.search">Cari Peserta</string>
   <string name="module.jitsi_meet.participants.available">Peserta Tersedia</string>
