@@ -1,5 +1,0 @@
-<resources>
-  <string name="module.sample-analytics.dashboard.element.label">Beispiel-Analytik</string>
-  <string name="module.sample-analytics.dashboard.element.description">Vorschau von Metriken aus dem Beispiel-Analytik-Modul.</string>
-  <string name="module.sample-analytics.dashboard.element.open">Analytik öffnen</string>
-</resources>

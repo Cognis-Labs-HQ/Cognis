@@ -1,5 +1,0 @@
-<resources>
-  <string name="module.sample-analytics.dashboard.element.label">サンプル分析</string>
-  <string name="module.sample-analytics.dashboard.element.description">サンプル分析モジュールのメトリクスをプレビューします。</string>
-  <string name="module.sample-analytics.dashboard.element.open">分析を開く</string>
-</resources>

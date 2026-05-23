@@ -62,14 +62,14 @@ test("module lifecycle writes nginx-style pointer for internal modules", async (
     const internalModulesPath = path.join(root, "internal");
     const externalModulesPath = path.join(root, "external");
     const enabledPointersPath = path.join(root, "enabled.d");
-    await mkdir(path.join(internalModulesPath, "sample-analytics"), {
+    await mkdir(path.join(internalModulesPath, "analytics"), {
         recursive: true,
     });
 
     const service = new ModuleService(
         runtime([
             {
-                id: "sample-analytics",
+                id: "analytics",
                 name: "Analytics",
                 version: "1.0.0",
                 class: "extension",
@@ -81,13 +81,13 @@ test("module lifecycle writes nginx-style pointer for internal modules", async (
         { internalModulesPath, externalModulesPath, enabledPointersPath },
     );
 
-    await service.enable("sample-analytics");
+    await service.enable("analytics");
     const target = await readlink(
-        path.join(enabledPointersPath, "sample-analytics.load"),
+        path.join(enabledPointersPath, "analytics.load"),
     );
-    assert.match(target, /sample-analytics$/);
+    assert.match(target, /analytics$/);
 
-    const disabled = await service.disable("sample-analytics");
+    const disabled = await service.disable("analytics");
     assert.equal(disabled.enabled, false);
 });
 

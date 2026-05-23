@@ -1,0 +1,11 @@
+[
+    "/api/v1/modules/analytics/metrics",
+    "/api/v1/modules/analytics/series",
+    "/api/v1/modules/analytics/activity-log",
+    {
+        "path": "/analytics",
+        "access": {
+            "minRole": "admin"
+        }
+    }
+]
