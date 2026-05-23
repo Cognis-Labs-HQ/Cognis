@@ -24,6 +24,7 @@ import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
+    let currentTfaLoginAttemptId = null;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -276,6 +277,84 @@ export async function mount(root) {
         }
     }
 
+    function persistSession(data) {
+        localStorage.setItem("cognis_access_token", data.token);
+        localStorage.setItem("cognis_account", data.accountId);
+        localStorage.setItem(
+            "cognis_display_name",
+            data.displayName || data.accountId,
+        );
+        localStorage.setItem("cognis_role", data.role || "user");
+        localStorage.setItem(
+            "cognis_is_founder",
+            data.isFounder ? "true" : "false",
+        );
+        localStorage.setItem("cognis_login_time", new Date().toISOString());
+        localStorage.setItem(
+            "cognis_user_validation_mode",
+            data.userValidationMode || "none",
+        );
+    }
+
+    function renderTfaMethodTabs(methods) {
+        const tabsEl = document.querySelector("#login-tfa-method-tabs");
+        const methodInput = document.querySelector("#login-tfa-method");
+        if (!(tabsEl instanceof HTMLElement) || !(methodInput instanceof HTMLInputElement)) {
+            return;
+        }
+        tabsEl.replaceChildren();
+        const normalizedMethods = Array.isArray(methods) ? methods : [];
+        normalizedMethods.forEach((method, index) => {
+            const tabButton = document.createElement("button");
+            tabButton.type = "button";
+            tabButton.className = "auth-provider-btn";
+            tabButton.textContent = method.name;
+            tabButton.addEventListener("click", () => {
+                methodInput.value = method.id;
+                tabsEl.querySelectorAll(".auth-provider-btn").forEach((entry) => {
+                    entry.classList.toggle("auth-provider-btn--active", entry === tabButton);
+                });
+            });
+            if (index === 0) {
+                tabButton.classList.add("auth-provider-btn--active");
+                methodInput.value = method.id;
+            }
+            tabsEl.appendChild(tabButton);
+        });
+        tabsEl.hidden = normalizedMethods.length <= 1;
+    }
+
+    function switchToTfaPrompt(payload) {
+        const credentialFields = document.querySelector("#login-credential-fields");
+        const tfaFields = document.querySelector("#login-tfa-fields");
+        const usernameInput = document.querySelector("#login-username");
+        const passwordInput = document.querySelector("#login-password");
+        const tfaCodeInput = document.querySelector("#login-tfa-code");
+        if (!(credentialFields instanceof HTMLElement) || !(tfaFields instanceof HTMLElement)) {
+            return;
+        }
+        currentTfaLoginAttemptId = payload.loginAttemptId;
+        credentialFields.hidden = true;
+        tfaFields.hidden = false;
+        if (usernameInput instanceof HTMLInputElement) {
+            usernameInput.required = false;
+            usernameInput.disabled = true;
+        }
+        if (passwordInput instanceof HTMLInputElement) {
+            passwordInput.required = false;
+            passwordInput.disabled = true;
+        }
+        if (tfaCodeInput instanceof HTMLInputElement) {
+            tfaCodeInput.required = true;
+            tfaCodeInput.value = "";
+            tfaCodeInput.focus();
+        }
+        renderTfaMethodTabs(payload.methods ?? []);
+        showToast(i18n.t("ui.app.login.tfa.required_prompt"), {
+            variant: "info",
+        });
+    }
+
     function renderLoginShell() {
         const brandlineHtml = renderAuthBrandline(
             i18n.t("ui.shared.brand.name"),
@@ -308,14 +387,24 @@ export async function mount(root) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-          <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
-        </label>
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-          <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
-        </label>
+        <div id="login-credential-fields">
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+            <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+          </label>
+        </div>
+        <div id="login-tfa-fields" hidden>
+          <div id="login-tfa-method-tabs" class="auth-provider-toggle"></div>
+          <input type="hidden" id="login-tfa-method" value="" />
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}</span>
+            <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}" />
+          </label>
+        </div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
@@ -365,6 +454,59 @@ export async function mount(root) {
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
                             const form = event.target;
+                            const tfaFields = form.querySelector("#login-tfa-fields");
+                            const isTfaMode =
+                                tfaFields instanceof HTMLElement && !tfaFields.hidden;
+                            if (isTfaMode) {
+                                const tfaMethodEl =
+                                    form.querySelector("#login-tfa-method");
+                                const tfaCodeEl = form.querySelector("#login-tfa-code");
+                                const payload = {
+                                    loginAttemptId: currentTfaLoginAttemptId,
+                                    methodId:
+                                        tfaMethodEl instanceof HTMLInputElement
+                                            ? tfaMethodEl.value
+                                            : "",
+                                    code:
+                                        tfaCodeEl instanceof HTMLInputElement
+                                            ? tfaCodeEl.value.trim()
+                                            : "",
+                                };
+                                const tfaResponse = await fetch(
+                                    "/api/v1/auth/login/tfa",
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "content-type": "application/json",
+                                        },
+                                        body: JSON.stringify(payload),
+                                    },
+                                );
+                                const tfaBody = await tfaResponse
+                                    .json()
+                                    .catch(() => null);
+                                if (tfaResponse.ok && tfaBody?.data) {
+                                    persistSession(tfaBody.data);
+                                    const requiresUserValidation =
+                                        tfaBody.data.requiredUserValidation ===
+                                            true &&
+                                        tfaBody.data.userValidationMode === "smtp";
+                                    if (requiresUserValidation) {
+                                        await enforceRequiredEmailSetup(
+                                            tfaBody.data.accountId,
+                                        );
+                                    }
+                                    await syncTimezoneOnLogin(tfaBody.data.accountId);
+                                    window.location.href = "/dashboard";
+                                    return;
+                                }
+                                showToast(
+                                    tfaBody?.error?.message ||
+                                        i18n.t("ui.app.login.tfa.error_invalid"),
+                                    { variant: "error" },
+                                );
+                                return;
+                            }
                             const usernameEl =
                                 form.querySelector("#login-username");
                             const passwordEl =
@@ -385,35 +527,11 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                localStorage.setItem(
-                                    "cognis_access_token",
-                                    body.data.token,
-                                );
-                                localStorage.setItem(
-                                    "cognis_account",
-                                    body.data.accountId,
-                                );
-                                localStorage.setItem(
-                                    "cognis_display_name",
-                                    body.data.displayName ||
-                                        body.data.accountId,
-                                );
-                                localStorage.setItem(
-                                    "cognis_role",
-                                    body.data.role || "user",
-                                );
-                                localStorage.setItem(
-                                    "cognis_is_founder",
-                                    body.data.isFounder ? "true" : "false",
-                                );
-                                localStorage.setItem(
-                                    "cognis_login_time",
-                                    new Date().toISOString(),
-                                );
-                                localStorage.setItem(
-                                    "cognis_user_validation_mode",
-                                    body.data.userValidationMode || "none",
-                                );
+                                if (body.data.tfaRequired === true) {
+                                    switchToTfaPrompt(body.data);
+                                    return;
+                                }
+                                persistSession(body.data);
                                 const requiresUserValidation =
                                     body.data.requiredUserValidation === true &&
                                     body.data.userValidationMode === "smtp";

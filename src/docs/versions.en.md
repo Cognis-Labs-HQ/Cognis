@@ -33,6 +33,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.1` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.0` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
@@ -49,7 +50,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                         | Version |
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
-| Authentication (auth) | `src/gateways/auth/`         | `1.3.6` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.4.0` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.0` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.5` |
 | Social                | `src/gateways/social/`       | `1.2.4` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |

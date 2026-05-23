@@ -17,4 +17,14 @@
   <string name="gateway.auth.security.password_requires_lowercase">Muss mindestens {count} Kleinbuchstaben enthalten.</string>
   <string name="gateway.auth.security.password_requires_digit">Muss mindestens {count} Ziffer(n) enthalten.</string>
   <string name="gateway.auth.security.password_requires_special">Muss mindestens {count} Sonderzeichen enthalten.</string>
+  <string name="gateway.auth.security.tfa_section_title">Zwei-Faktor-Authentifizierung</string>
+  <string name="gateway.auth.security.tfa_available_methods">Verfügbare Methoden</string>
+  <string name="gateway.auth.security.tfa_preferred_methods">Bevorzugte Methoden</string>
+  <string name="gateway.auth.security.tfa_setup_title">Zwei-Faktor-Methode Einrichten</string>
+  <string name="gateway.auth.security.tfa_setup_failed">Die Zwei-Faktor-Einrichtung konnte nicht gestartet werden.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_action">Wiederherstellungscodes Erneuern</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_title">Wiederherstellungscodes</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_failed">Wiederherstellungscodes konnten nicht erneuert werden.</string>
+  <string name="gateway.auth.security.tfa_required_title">Zwei-Faktor-Einrichtung Erforderlich</string>
+  <string name="gateway.auth.security.tfa_required_prompt">Wählen Sie eine Methode aus, die Sie vor dem Fortfahren konfigurieren möchten.</string>
 </resources>

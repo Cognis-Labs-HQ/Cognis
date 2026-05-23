@@ -24,6 +24,26 @@ async function validateStoredAccountSession() {
         return { authenticated: false, reason: "session_expired" };
     }
 
+    async function enforceTfaSetupIfRequired() {
+        const token = localStorage.getItem("cognis_access_token");
+        if (!token) return false;
+        try {
+            const response = await fetch("/api/v1/tfa/status", {
+                headers: { authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) return false;
+            const payload = await response.json().catch(() => null);
+            if (payload?.data?.requiresSetup !== true) return false;
+            if (window.location.pathname !== "/settings") {
+                window.location.replace("/settings?enforce_tfa=1");
+                return true;
+            }
+        } catch {
+            return false;
+        }
+        return false;
+    }
+
     try {
         const response = await fetch(
             `/api/v1/users/${encodeURIComponent(account)}/info`,
@@ -71,7 +91,10 @@ export async function checkIsAuthenticated() {
 
 export async function ensureFullAccountSession() {
     const session = await validateStoredAccountSession();
-    if (session.authenticated) return true;
+    if (session.authenticated) {
+        const redirectedForTfa = await enforceTfaSetupIfRequired();
+        return !redirectedForTfa;
+    }
     const reason = session.reason
         ? `?reason=${encodeURIComponent(session.reason)}`
         : "";

@@ -17,4 +17,14 @@
   <string name="gateway.auth.security.password_requires_lowercase">Must contain at least {count} lowercase letter(s).</string>
   <string name="gateway.auth.security.password_requires_digit">Must contain at least {count} digit(s).</string>
   <string name="gateway.auth.security.password_requires_special">Must contain at least {count} special character(s).</string>
+  <string name="gateway.auth.security.tfa_section_title">Two-Factor Authentication</string>
+  <string name="gateway.auth.security.tfa_available_methods">Available Methods</string>
+  <string name="gateway.auth.security.tfa_preferred_methods">Preferred Methods</string>
+  <string name="gateway.auth.security.tfa_setup_title">Setup Two-Factor Method</string>
+  <string name="gateway.auth.security.tfa_setup_failed">Could not start two-factor setup.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_action">Rotate Recovery Codes</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_title">Recovery Codes</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_failed">Could not rotate recovery codes.</string>
+  <string name="gateway.auth.security.tfa_required_title">Two-Factor Setup Required</string>
+  <string name="gateway.auth.security.tfa_required_prompt">Select a method to configure before continuing.</string>
 </resources>

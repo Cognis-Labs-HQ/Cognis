@@ -1,4 +1,5 @@
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 import {
     canAccessUserData,
     getAuthClaims,
@@ -161,7 +162,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.7",
+        version: "1.4.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -256,6 +257,53 @@ function createAuthGatewayRoutes(
     capabilities: CapabilityStore,
     log?: GatewayBootstrapContext["log"],
 ) {
+    interface PendingTfaLoginAttempt {
+        id: string;
+        accountId: string;
+        role: AccessRole;
+        isFounder: boolean;
+        provider: string;
+        providerId: string;
+        displayName: string;
+        userValidationMode: "none" | "smtp";
+        requiredUserValidation: boolean;
+        expiresAt: number;
+    }
+
+    const pendingTfaLoginAttempts = new Map<string, PendingTfaLoginAttempt>();
+
+    function pruneExpiredTfaLoginAttempts(now = Date.now()): void {
+        for (const [loginAttemptId, entry] of pendingTfaLoginAttempts.entries()) {
+            if (entry.expiresAt < now) {
+                pendingTfaLoginAttempts.delete(loginAttemptId);
+            }
+        }
+    }
+
+    function createPendingTfaLoginAttempt(
+        input: Omit<PendingTfaLoginAttempt, "id" | "expiresAt">,
+    ): PendingTfaLoginAttempt {
+        pruneExpiredTfaLoginAttempts();
+        const pendingAttempt: PendingTfaLoginAttempt = {
+            ...input,
+            id: `tfa_login_${randomBytes(18).toString("base64url")}`,
+            expiresAt: Date.now() + 5 * 60 * 1000,
+        };
+        pendingTfaLoginAttempts.set(pendingAttempt.id, pendingAttempt);
+        return pendingAttempt;
+    }
+
+    function getPendingTfaLoginAttempt(
+        loginAttemptId: string,
+    ): PendingTfaLoginAttempt | null {
+        pruneExpiredTfaLoginAttempts();
+        return pendingTfaLoginAttempts.get(loginAttemptId) ?? null;
+    }
+
+    function clearPendingTfaLoginAttempt(loginAttemptId: string): void {
+        pendingTfaLoginAttempts.delete(loginAttemptId);
+    }
+
     async function readSecuritySettings(): Promise<{
         registrationsEnabled: boolean;
         userValidationMode: "none" | "smtp";
@@ -682,6 +730,72 @@ function createAuthGatewayRoutes(
             const requiresUserValidation = shouldRequireSmtpValidation
                 ? Boolean(canSendVerificationEmail?.())
                 : false;
+            const isSecondFactorEnabled = capabilities.get<
+                (accountId: string) => Promise<boolean>
+            >("tfa:isSecondFactorEnabled");
+            const getTfaLoginMethods = capabilities.get<
+                (
+                    accountId: string,
+                ) => Promise<Array<{ id: string; name: string }>>
+            >("tfa:getLoginMethods");
+            const requiresTfa = isSecondFactorEnabled
+                ? await isSecondFactorEnabled(session.accountId).catch(
+                      () => false,
+                  )
+                : false;
+            if (requiresTfa && getTfaLoginMethods) {
+                const methods = await getTfaLoginMethods(session.accountId)
+                    .catch(() => [])
+                    .then((items) =>
+                        items.filter(
+                            (item) =>
+                                typeof item.id === "string" &&
+                                typeof item.name === "string",
+                        ),
+                    );
+                if (methods.length > 0) {
+                    const pendingAttempt = createPendingTfaLoginAttempt({
+                        accountId: session.accountId,
+                        role,
+                        isFounder,
+                        provider: session.provider,
+                        providerId: adapter.id,
+                        displayName: accountDisplayName ?? session.accountId,
+                        userValidationMode: securitySettings.userValidationMode,
+                        requiredUserValidation: requiresUserValidation,
+                    });
+                    log?.("info", "Login entered TFA challenge flow.", {
+                        ...logMeta,
+                        accountId: session.accountId,
+                        provider: session.provider,
+                        role,
+                        methodCount: methods.length,
+                    });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            data: {
+                                tfaRequired: true,
+                                loginAttemptId: pendingAttempt.id,
+                                methods,
+                                accountId: session.accountId,
+                                displayName:
+                                    accountDisplayName ?? session.accountId,
+                                provider: session.provider,
+                                providerId: adapter.id,
+                                role,
+                                isFounder,
+                                userValidationMode:
+                                    securitySettings.userValidationMode,
+                                requiredUserValidation: requiresUserValidation,
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
             log?.("info", "Login succeeded.", {
                 ...logMeta,
                 accountId: session.accountId,
@@ -709,6 +823,124 @@ function createAuthGatewayRoutes(
                         token: apiToken,
                         userValidationMode: securitySettings.userValidationMode,
                         requiredUserValidation: requiresUserValidation,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/login/tfa" && req.method === "POST") {
+            const body = await readJson(req);
+            const loginAttemptId = String(body.loginAttemptId ?? "").trim();
+            const methodId = String(body.methodId ?? "").trim();
+            if (!loginAttemptId || !methodId) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "loginAttemptId and methodId are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const pendingAttempt = getPendingTfaLoginAttempt(loginAttemptId);
+            if (!pendingAttempt) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_attempt_expired",
+                            message: "TFA login attempt expired",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const verifyTfaLogin = capabilities.get<
+                (
+                    accountId: string,
+                    tfaMethodId: string,
+                    payload: Record<string, unknown>,
+                ) => Promise<{ verified: boolean; message?: string }>
+            >("tfa:verifyLogin");
+            if (!verifyTfaLogin) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_unavailable",
+                            message: "Two-factor verification is unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const tfaResult = await verifyTfaLogin(
+                pendingAttempt.accountId,
+                methodId,
+                body,
+            ).catch(() => ({ verified: false, message: "verification_failed" }));
+            if (!tfaResult.verified) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: tfaResult.message || "tfa_verification_failed",
+                            message:
+                                tfaResult.message ||
+                                "Two-factor verification failed",
+                        },
+                    }),
+                );
+                return true;
+            }
+            clearPendingTfaLoginAttempt(loginAttemptId);
+            const parsedTtlSeconds = Number.parseInt(
+                process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
+                10,
+            );
+            const accessTokenTtlSeconds =
+                Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
+                    ? parsedTtlSeconds
+                    : 43200;
+            const apiToken = issueAccessToken(
+                pendingAttempt.accountId,
+                pendingAttempt.role,
+                accessTokenTtlSeconds,
+                {
+                    providerId: pendingAttempt.providerId,
+                },
+            );
+            log?.("info", "Login succeeded after TFA verification.", {
+                ...logMeta,
+                accountId: pendingAttempt.accountId,
+                provider: pendingAttempt.provider,
+                role: pendingAttempt.role,
+                methodId,
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": buildAccessTokenCookie(
+                    apiToken,
+                    accessTokenTtlSeconds,
+                    shouldSetSecureCookie(req),
+                ),
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        accountId: pendingAttempt.accountId,
+                        displayName: pendingAttempt.displayName,
+                        provider: pendingAttempt.provider,
+                        providerId: pendingAttempt.providerId,
+                        role: pendingAttempt.role,
+                        isFounder: pendingAttempt.isFounder,
+                        token: apiToken,
+                        userValidationMode: pendingAttempt.userValidationMode,
+                        requiredUserValidation:
+                            pendingAttempt.requiredUserValidation,
                     },
                 }),
             );

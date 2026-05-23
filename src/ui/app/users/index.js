@@ -252,6 +252,20 @@ async function runUserMenuAction(action, username) {
             });
             return;
         }
+
+        if (action === "tfa-reset") {
+            const resetResponse = await apiFetch(
+                `/api/v1/tfa/admin/users/${encodeURIComponent(username)}/reset`,
+                { method: "POST" },
+            );
+            showToast(
+                resetResponse.ok
+                    ? i18n.t("ui.app.users.tfa_reset_done")
+                    : i18n.t("ui.reuse.save_failed"),
+                { variant: resetResponse.ok ? "success" : "error" },
+            );
+            return;
+        }
         const res = await apiFetch(
             `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(unverifiedEmail.email)}/resend`,
             { method: "POST" },
@@ -382,6 +396,10 @@ function bindUsersInteractions() {
                 {
                     id: "password",
                     label: i18n.t("ui.app.users.reset_password"),
+                },
+                {
+                    id: "tfa-reset",
+                    label: i18n.t("ui.app.users.reset_tfa"),
                 },
                 ...(!hasPrimaryVerified
                     ? [

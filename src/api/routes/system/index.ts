@@ -60,12 +60,14 @@ function serializeSecuritySettings(input: {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
+    enforceTfaForAllUsers: boolean;
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
         registrationsEnabled: input.registrationsEnabled,
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
+        enforceTfaForAllUsers: input.enforceTfaForAllUsers,
     });
 }
 
@@ -74,6 +76,7 @@ export function createSystemRoutes(
     preferenceStore?: UserPreferenceStore,
     log?: BootstrapLog,
     routeContext?: RouteContext,
+    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const licenseMarkdownFile = resolve(
@@ -167,6 +170,12 @@ export function createSystemRoutes(
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
             const data = parseSecuritySettings(raw);
+            const getEnforceTfaForAllUsers = getCapability
+                ? getCapability<() => Promise<boolean>>("tfa:getEnforceAllUsers")
+                : undefined;
+            const enforceTfaForAllUsers = getEnforceTfaForAllUsers
+                ? await getEnforceTfaForAllUsers().catch(() => false)
+                : data?.enforceTfaForAllUsers === true;
             if (!data && raw) {
                 log?.("warn", "Failed to parse persisted security settings.", {
                     ...logMeta,
@@ -180,7 +189,10 @@ export function createSystemRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: data ?? defaultSecuritySettings(),
+                    data: {
+                        ...(data ?? defaultSecuritySettings()),
+                        enforceTfaForAllUsers,
+                    },
                 }),
             );
             return true;
@@ -202,6 +214,7 @@ export function createSystemRoutes(
                 body.userValidationMode === "smtp" ? "smtp" : "none";
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
+            const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
@@ -211,8 +224,17 @@ export function createSystemRoutes(
                         registrationsEnabled,
                         userValidationMode,
                         requireTeacherManualApproval,
+                        enforceTfaForAllUsers,
                     }),
                 );
+            }
+            const setEnforceTfaForAllUsers = getCapability
+                ? getCapability<(required: boolean) => Promise<void>>(
+                      "tfa:setEnforceAllUsers",
+                  )
+                : undefined;
+            if (setEnforceTfaForAllUsers) {
+                await setEnforceTfaForAllUsers(enforceTfaForAllUsers);
             }
             log?.("info", "Updated security settings.", {
                 ...logMeta,
@@ -221,6 +243,7 @@ export function createSystemRoutes(
                 registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
+                enforceTfaForAllUsers,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));

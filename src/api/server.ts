@@ -141,6 +141,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
         log,
         routeContext,
+        deps.getModuleCapability,
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(

@@ -17,4 +17,14 @@
   <string name="gateway.auth.security.password_requires_lowercase">少なくとも {count} 個の小文字を含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_digit">数字を{count}文字以上含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_special">特殊文字を{count}文字以上含める必要があります。</string>
+  <string name="gateway.auth.security.tfa_section_title">二要素認証</string>
+  <string name="gateway.auth.security.tfa_available_methods">利用可能な方式</string>
+  <string name="gateway.auth.security.tfa_preferred_methods">優先方式</string>
+  <string name="gateway.auth.security.tfa_setup_title">二要素方式の設定</string>
+  <string name="gateway.auth.security.tfa_setup_failed">二要素認証の設定を開始できませんでした。</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_action">復旧コードを再発行</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_title">復旧コード</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_failed">復旧コードを再発行できませんでした。</string>
+  <string name="gateway.auth.security.tfa_required_title">二要素認証の設定が必要です</string>
+  <string name="gateway.auth.security.tfa_required_prompt">続行する前に設定する方式を選択してください。</string>
 </resources>

@@ -17,4 +17,14 @@
   <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung setidaknya {count} huruf kecil.</string>
   <string name="gateway.auth.security.password_requires_digit">Harus mengandung minimal {count} angka.</string>
   <string name="gateway.auth.security.password_requires_special">Harus mengandung minimal {count} karakter khusus.</string>
+  <string name="gateway.auth.security.tfa_section_title">Autentikasi Dua Faktor</string>
+  <string name="gateway.auth.security.tfa_available_methods">Metode Tersedia</string>
+  <string name="gateway.auth.security.tfa_preferred_methods">Metode Pilihan</string>
+  <string name="gateway.auth.security.tfa_setup_title">Siapkan Metode Dua Faktor</string>
+  <string name="gateway.auth.security.tfa_setup_failed">Tidak dapat memulai penyiapan dua faktor.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_action">Putar Ulang Kode Pemulihan</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_title">Kode Pemulihan</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_failed">Tidak dapat memutar ulang kode pemulihan.</string>
+  <string name="gateway.auth.security.tfa_required_title">Penyiapan Dua Faktor Wajib</string>
+  <string name="gateway.auth.security.tfa_required_prompt">Pilih metode yang harus dikonfigurasi sebelum melanjutkan.</string>
 </resources>
