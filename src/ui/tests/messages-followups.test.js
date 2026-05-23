@@ -84,4 +84,12 @@ test("messages speech bubbles render with clear tails", () => {
         variantsCssSource,
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message--own::after/,
     );
+    assert.match(
+        variantsCssSource,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message:not\(\.messages-message--own\)[\s\S]*background:\s*var\(--color-surface\);[\s\S]*border:\s*1px solid var\(--color-border\);/,
+    );
+    assert.match(
+        variantsCssSource,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message--own[\s\S]*background:\s*var\(--color-accent\);[\s\S]*color:\s*var\(--color-accent-contrast\);/,
+    );
 });

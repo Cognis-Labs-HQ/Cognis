@@ -451,6 +451,21 @@ test("meetings mini chat supports the Messages reaction floating menu", () => {
     assert.match(cssSource, /\.messages-emoji-picker/);
 });
 
+test("meetings speech bubbles use the same contrast-oriented color tokens as Messages", () => {
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    assert.match(
+        cssSource,
+        /html\[data-message-style="speech_bubbles"\][\s\S]*\.jitsi-chat-message:not\(\.jitsi-chat-message-own\)[\s\S]*background:\s*var\(--color-surface\);[\s\S]*border-color:\s*var\(--color-border\);/,
+    );
+    assert.match(
+        cssSource,
+        /html\[data-message-style="speech_bubbles"\][\s\S]*\.jitsi-chat-message-own[\s\S]*background:\s*var\(--color-accent\);[\s\S]*color:\s*var\(--color-accent-contrast\);/,
+    );
+});
+
 test("jitsi API dispatches meeting lifecycle and participant notifications", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),

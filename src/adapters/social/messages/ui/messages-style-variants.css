@@ -5,6 +5,13 @@
     box-shadow: 0 2px 10px rgba(2, 6, 23, 0.2);
 }
 
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message:not(.messages-message--own) {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+
 .messages-page[data-message-style="speech_bubbles"] .messages-message::after {
     content: "";
     position: absolute;
@@ -17,6 +24,9 @@
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message--own {
     border-bottom-right-radius: 0.35rem;
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent-contrast);
 }
 
 .messages-page[data-message-style="speech_bubbles"]
