@@ -138,7 +138,9 @@ function createChatParticipantAvatarButton({
         "aria-label",
         displayName ? `${displayName} (@${username})` : `@${username}`,
     );
-    button.title = displayName ? `${displayName} (@${username})` : `@${username}`;
+    button.title = displayName
+        ? `${displayName} (@${username})`
+        : `@${username}`;
     button.innerHTML = buildProfileAvatarMarkup({
         avatarKey,
         label: displayName || username,
@@ -501,7 +503,9 @@ export async function mount(root, { signal } = {}) {
 
     function resolveParticipantChatEntries() {
         if (!Array.isArray(state.lastMeetingParticipants)) return [];
-        const localHandle = normalizeUsername(state.currentProfile?.handle ?? "");
+        const localHandle = normalizeUsername(
+            state.currentProfile?.handle ?? "",
+        );
         return Array.from(
             new Set(
                 state.lastMeetingParticipants
@@ -514,7 +518,8 @@ export async function mount(root, { signal } = {}) {
                 if (state.currentProfile?.handle === username) {
                     return {
                         username,
-                        displayName: state.currentProfile.displayName || username,
+                        displayName:
+                            state.currentProfile.displayName || username,
                         avatarKey: state.currentProfile.avatarKey ?? null,
                     };
                 }
@@ -1698,7 +1703,9 @@ export async function mount(root, { signal } = {}) {
         const chatParticipantStrip = container.querySelector(
             "#jitsi-chat-participant-strip",
         );
-        const chatReturnButton = container.querySelector("#jitsi-chat-return-btn");
+        const chatReturnButton = container.querySelector(
+            "#jitsi-chat-return-btn",
+        );
         const activeMeetingsEl = container.querySelector(
             "#jitsi-active-meetings",
         );

@@ -261,7 +261,10 @@ test("meetings mini chat supports participant private-chat switching and return-
     assert.match(cssSource, /\.jitsi-chat-participant-strip/);
     assert.match(cssSource, /\.jitsi-chat-participant-item-selected/);
     assert.match(stringsSource, /module\.jitsi_meet\.chat\.return_to_meeting/);
-    assert.match(stringsSource, /module\.jitsi_meet\.chat\.private_open_failed/);
+    assert.match(
+        stringsSource,
+        /module\.jitsi_meet\.chat\.private_open_failed/,
+    );
 });
 
 test("meetings session state polling handles closed meetings and distinct leave messaging", () => {
