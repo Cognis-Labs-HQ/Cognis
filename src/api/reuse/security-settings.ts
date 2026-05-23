@@ -20,7 +20,7 @@ export function defaultSecuritySettings(): SecuritySettings {
     };
 }
 
-function normalizeMethodIds(rawMethodIds: unknown): string[] {
+export function normalizeMethodIds(rawMethodIds: unknown): string[] {
     if (!Array.isArray(rawMethodIds)) return [];
     return Array.from(
         new Set(

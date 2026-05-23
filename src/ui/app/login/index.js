@@ -519,7 +519,7 @@ export async function mount(root) {
                                         openPopup,
                                         showToast,
                                         escapeHtml,
-                                        ensureRequiredEmailSetup,
+                                        enforceRequiredEmailSetup,
                                     });
                                 }
                                 await syncTimezoneOnLogin(loginData.accountId);

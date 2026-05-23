@@ -58,7 +58,7 @@ interface AuthAccountStore {
     getDisplayName(username: string): Promise<string | null>;
 }
 
-const TFA_ONBOARDING_PENDING_PREF_KEY = "auth-tfa-onboarding-pending";
+const AUTH_TFA_ONBOARDING_PENDING_PREF_KEY = "auth-tfa-onboarding-pending";
 
 interface ResolvedTfaMethod {
     id: string;
@@ -68,6 +68,23 @@ interface ResolvedTfaMethod {
     available: boolean;
     configured: boolean;
 }
+
+type EmailTfaAdapter = AuthProviderAdapter & {
+    shouldRequireEmailTfa(accountId: string): Promise<boolean>;
+    beginEmailTfaLoginChallenge(
+        session: AuthPendingSession,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaLoginChallenge(
+        challengeId: string,
+        code: string,
+    ): Promise<AuthPendingSession | null>;
+    getEmailTfaState(accountId: string): Promise<{
+        enabled: boolean;
+        enforced: boolean;
+        available: boolean;
+    }>;
+    setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void>;
+};
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
@@ -113,22 +130,7 @@ function isCredentialLoginAdapter(adapter: AuthProviderAdapter): boolean {
 
 function isEmailTfaAdapter(
     adapter: AuthProviderAdapter | null,
-): adapter is AuthProviderAdapter & {
-    shouldRequireEmailTfa(accountId: string): Promise<boolean>;
-    beginEmailTfaLoginChallenge(
-        session: AuthPendingSession,
-    ): Promise<{ challengeId: string }>;
-    completeEmailTfaLoginChallenge(
-        challengeId: string,
-        code: string,
-    ): Promise<AuthPendingSession | null>;
-    getEmailTfaState(accountId: string): Promise<{
-        enabled: boolean;
-        enforced: boolean;
-        available: boolean;
-    }>;
-    setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void>;
-} {
+): adapter is EmailTfaAdapter {
     return Boolean(
         adapter &&
         typeof adapter.shouldRequireEmailTfa === "function" &&
@@ -158,27 +160,7 @@ function hasEmailTfaResetHook(
 function findTfaAdapter(
     authGateway: CoreAuthGateway,
     options: { enabledOnly: boolean },
-):
-    | (AuthProviderAdapter & {
-          shouldRequireEmailTfa(accountId: string): Promise<boolean>;
-          beginEmailTfaLoginChallenge(
-              session: AuthPendingSession,
-          ): Promise<{ challengeId: string }>;
-          completeEmailTfaLoginChallenge(
-              challengeId: string,
-              code: string,
-          ): Promise<AuthPendingSession | null>;
-          getEmailTfaState(accountId: string): Promise<{
-              enabled: boolean;
-              enforced: boolean;
-              available: boolean;
-          }>;
-          setEmailTfaEnabled(
-              accountId: string,
-              enabled: boolean,
-          ): Promise<void>;
-      })
-    | null {
+): EmailTfaAdapter | null {
     function getRegisteredAdapters(): AuthProviderAdapter[] {
         return authGateway
             .listAdapters()
@@ -508,7 +490,7 @@ function createAuthGatewayRoutes(
         if (!setupState.hasConfiguredMethod) return;
         await preferenceStore.set(
             accountId,
-            TFA_ONBOARDING_PENDING_PREF_KEY,
+            AUTH_TFA_ONBOARDING_PENDING_PREF_KEY,
             JSON.stringify({ enabled: false }),
         );
     }
@@ -621,7 +603,7 @@ function createAuthGatewayRoutes(
             const pendingOnboarding = await readBooleanPreference(
                 preferenceStore,
                 claims.sub,
-                TFA_ONBOARDING_PENDING_PREF_KEY,
+                AUTH_TFA_ONBOARDING_PENDING_PREF_KEY,
             );
             const requiresSetup =
                 pendingOnboarding &&
@@ -830,7 +812,7 @@ function createAuthGatewayRoutes(
                 );
                 await preferenceStore.set(
                     result.username,
-                    TFA_ONBOARDING_PENDING_PREF_KEY,
+                    AUTH_TFA_ONBOARDING_PENDING_PREF_KEY,
                     JSON.stringify({
                         enabled: setupState.hasAvailableMethod,
                     }),
@@ -1012,7 +994,7 @@ function createAuthGatewayRoutes(
             const pendingOnboarding = await readBooleanPreference(
                 preferenceStore,
                 pendingSession.accountId,
-                TFA_ONBOARDING_PENDING_PREF_KEY,
+                AUTH_TFA_ONBOARDING_PENDING_PREF_KEY,
             );
             const tfaSetupState = await resolveAccountTfaSetupState(
                 pendingSession.accountId,
@@ -1210,7 +1192,7 @@ function createAuthGatewayRoutes(
             const pendingOnboarding = await readBooleanPreference(
                 preferenceStore,
                 session.accountId,
-                TFA_ONBOARDING_PENDING_PREF_KEY,
+                AUTH_TFA_ONBOARDING_PENDING_PREF_KEY,
             );
             const tfaSetupState = await resolveAccountTfaSetupState(
                 session.accountId,

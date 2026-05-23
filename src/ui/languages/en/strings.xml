@@ -60,6 +60,7 @@
   <string name="ui.reuse.tfa_setup_title">Set Up Two-Factor Authentication</string>
   <string name="ui.reuse.tfa_setup_required">You must configure a Two-Factor Authentication method before continuing.</string>
   <string name="ui.reuse.tfa_setup_confirm">Configure Now</string>
+  <string name="ui.reuse.tfa_setup_method_label">TFA Method</string>
   <string name="ui.reuse.tfa_setup_saved">Two-Factor Authentication configured.</string>
   <string name="ui.reuse.tfa_setup_save_failed">Failed to configure Two-Factor Authentication.</string>
   <string name="ui.reuse.system">System</string>
@@ -483,6 +484,7 @@
   <string name="ui.app.admin.security.tfa_methods_hint">Drag methods between available and active. Only active methods are enforced for new users.</string>
   <string name="ui.app.admin.security.tfa_available_methods">Available Methods</string>
   <string name="ui.app.admin.security.tfa_active_methods">Active Methods</string>
+  <string name="ui.app.admin.security.tfa_drag_handle_label">Drag to reorder method</string>
   <string name="ui.app.admin.security.enforce_tfa_for_new_users_label">Enforce Two-Factor Authentication for New Users</string>
   <string name="ui.app.admin.security.password_policy_heading">Password Policy</string>
   <string name="ui.app.admin.security.policy_min_length">Minimum Length</string>

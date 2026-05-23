@@ -60,6 +60,7 @@
   <string name="ui.reuse.tfa_setup_title">Siapkan Autentikasi Dua Faktor</string>
   <string name="ui.reuse.tfa_setup_required">Anda harus mengonfigurasi metode Autentikasi Dua Faktor sebelum melanjutkan.</string>
   <string name="ui.reuse.tfa_setup_confirm">Konfigurasi Sekarang</string>
+  <string name="ui.reuse.tfa_setup_method_label">Metode TFA</string>
   <string name="ui.reuse.tfa_setup_saved">Autentikasi Dua Faktor dikonfigurasi.</string>
   <string name="ui.reuse.tfa_setup_save_failed">Gagal mengonfigurasi Autentikasi Dua Faktor.</string>
   <string name="ui.reuse.system">Sistem</string>
@@ -483,6 +484,7 @@
   <string name="ui.app.admin.security.tfa_methods_hint">Seret metode antara tersedia dan aktif. Hanya metode aktif yang diberlakukan untuk pengguna baru.</string>
   <string name="ui.app.admin.security.tfa_available_methods">Metode Tersedia</string>
   <string name="ui.app.admin.security.tfa_active_methods">Metode Aktif</string>
+  <string name="ui.app.admin.security.tfa_drag_handle_label">Seret untuk mengurutkan ulang metode</string>
   <string name="ui.app.admin.security.enforce_tfa_for_new_users_label">Wajibkan Autentikasi Dua Faktor untuk Pengguna Baru</string>
   <string name="ui.app.admin.security.password_policy_heading">Kebijakan Kata Sandi</string>
   <string name="ui.app.admin.security.policy_min_length">Panjang Minimum</string>

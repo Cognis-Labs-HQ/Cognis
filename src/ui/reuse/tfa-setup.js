@@ -22,7 +22,7 @@
  *   openPopup: (options: Record<string, unknown>) => Promise<string | null | undefined>,
  *   showToast: (message: string, options?: Record<string, unknown>) => void,
  *   escapeHtml: (value: string) => string,
- *   ensureRequiredEmailSetup?: (accountId: string, authToken?: string) => Promise<void>,
+ *   enforceRequiredEmailSetup?: (accountId: string, authToken?: string) => Promise<void>,
  * }} deps
  * @returns {Promise<void>}
  */
@@ -33,9 +33,9 @@ export async function enforceRequiredTfaSetup({
     openPopup,
     showToast,
     escapeHtml,
-    ensureRequiredEmailSetup,
+    enforceRequiredEmailSetup,
 }) {
-    async function request(path, init = {}) {
+    async function authenticatedRequest(path, init = {}) {
         const headers = new Headers(init.headers || {});
         if (authToken) {
             headers.set("authorization", `Bearer ${authToken}`);
@@ -45,7 +45,9 @@ export async function enforceRequiredTfaSetup({
     }
 
     async function readSetupStatus() {
-        const response = await request("/api/v1/auth/tfa/setup-status");
+        const response = await authenticatedRequest(
+            "/api/v1/auth/tfa/setup-status",
+        );
         if (!response.ok) return null;
         const payload = await response.json().catch(() => null);
         return payload?.data ?? null;
@@ -62,12 +64,22 @@ export async function enforceRequiredTfaSetup({
         if (availableMethods.length < 1) {
             return;
         }
-        const selectedMethod = availableMethods[0];
+        let selectedMethodId = availableMethods[0].id;
+        const methodOptionsHtml = availableMethods
+            .map(
+                (method) =>
+                    `<option value="${escapeHtml(method.id)}">${escapeHtml(method.name)}</option>`,
+            )
+            .join("");
+        let methodSelect = null;
         const action = await openPopup({
             title: i18n.t("ui.reuse.tfa_setup_title"),
             body: `
         <p>${escapeHtml(i18n.t("ui.reuse.tfa_setup_required"))}</p>
-        <p><strong>${escapeHtml(selectedMethod.name)}</strong></p>
+        <label class="stack">
+          <span>${escapeHtml(i18n.t("ui.reuse.tfa_setup_method_label"))}</span>
+          <select id="required-tfa-method-select" class="theme-select">${methodOptionsHtml}</select>
+        </label>
       `,
             actions: [
                 {
@@ -76,18 +88,38 @@ export async function enforceRequiredTfaSetup({
                     variant: "confirm",
                 },
             ],
+            onOpen: (overlay) => {
+                methodSelect = overlay.querySelector(
+                    "#required-tfa-method-select",
+                );
+                if (methodSelect instanceof HTMLSelectElement) {
+                    methodSelect.value = selectedMethodId;
+                }
+            },
         });
         if (action !== "confirm") {
             continue;
         }
-        if (selectedMethod.requiresVerifiedEmail === true) {
-            await ensureRequiredEmailSetup?.(accountId, authToken);
+        if (methodSelect instanceof HTMLSelectElement) {
+            selectedMethodId = methodSelect.value;
         }
-        const saveResponse = await request(selectedMethod.settingsPath, {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ enabled: true }),
-        });
+        const selectedMethod = availableMethods.find(
+            (method) => method.id === selectedMethodId,
+        );
+        if (!selectedMethod) {
+            continue;
+        }
+        if (selectedMethod.requiresVerifiedEmail === true) {
+            await enforceRequiredEmailSetup?.(accountId, authToken);
+        }
+        const saveResponse = await authenticatedRequest(
+            selectedMethod.settingsPath,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ enabled: true }),
+            },
+        );
         if (!saveResponse.ok) {
             showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
                 variant: "error",

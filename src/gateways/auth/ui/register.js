@@ -853,7 +853,7 @@ export async function mount(root, { signal } = {}) {
                                             openPopup,
                                             showToast,
                                             escapeHtml,
-                                            ensureRequiredEmailSetup:
+                                            enforceRequiredEmailSetup:
                                                 enforceRequiredEmailSetupDuringRegister,
                                         });
                                     }

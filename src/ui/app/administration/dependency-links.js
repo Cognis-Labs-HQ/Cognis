@@ -7,6 +7,15 @@ function buildAdapterMap(adapters) {
     );
 }
 
+/**
+ * Validates canonical adapter dependency format: `gatewayId:adapterId`.
+ * The separator must exist exactly once and cannot be the first or last
+ * character so both gateway and adapter identifiers are present.
+ *
+ * @param {string} dependencyId
+ * @param {number} separatorIndex
+ * @returns {boolean}
+ */
 function isValidAdapterReference(dependencyId, separatorIndex) {
     return (
         separatorIndex > 0 &&

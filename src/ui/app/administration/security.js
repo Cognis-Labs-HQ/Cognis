@@ -227,15 +227,19 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
     }
 
-    function createTfaRow(id, labelText) {
+    function createTfaRow(methodId, labelText) {
         const row = document.createElement("tr");
         row.setAttribute("draggable", "true");
-        row.setAttribute("data-tfa-row", id);
+        row.setAttribute("data-tfa-row", methodId);
         const labelCell = document.createElement("td");
         labelCell.textContent = labelText;
         const handleCell = document.createElement("td");
         handleCell.className = "drag-handle";
-        handleCell.textContent = "⬍";
+        handleCell.textContent = "≡";
+        handleCell.setAttribute(
+            "aria-label",
+            i18n.t("ui.app.admin.security.tfa_drag_handle_label"),
+        );
         row.append(labelCell, handleCell);
         return row;
     }
@@ -305,6 +309,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         });
     }
 
+    /**
+     * Resolves drop metadata for the current pointer position.
+     *
+     * @param {EventTarget | null} targetNode
+     * @param {number} clientY
+     * @returns {{ targetTable: Element | null, targetRow: Element | null, targetIsAfter: boolean }}
+     */
     function resolveTfaDropTarget(targetNode, clientY) {
         const targetTable = targetNode?.closest(
             "#security-tfa-available, #security-tfa-active",

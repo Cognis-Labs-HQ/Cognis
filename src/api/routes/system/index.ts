@@ -10,6 +10,7 @@ import {
 } from "../../reuse/route-context.js";
 import {
     defaultSecuritySettings,
+    normalizeMethodIds,
     normalizeTrustedDomains,
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
@@ -206,19 +207,7 @@ export function createSystemRoutes(
                 body.userValidationMode === "smtp" ? "smtp" : "none";
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
-            const activeTfaMethods = Array.isArray(body.activeTfaMethods)
-                ? Array.from(
-                      new Set(
-                          body.activeTfaMethods
-                              .filter(
-                                  (entry): entry is string =>
-                                      typeof entry === "string",
-                              )
-                              .map((entry) => entry.trim())
-                              .filter(Boolean),
-                      ),
-                  )
-                : [];
+            const activeTfaMethods = normalizeMethodIds(body.activeTfaMethods);
             const enforceTfaForNewUsers =
                 body.enforceTfaForNewUsers === true ? true : false;
             if (preferenceStore) {

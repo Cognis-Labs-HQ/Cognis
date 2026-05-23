@@ -30,6 +30,11 @@ test("smtp-tfa adapter registers itself as a tfa method via ctx capability", () 
         id: string;
         name: string;
         settingsPath: string;
+        requiresVerifiedEmail: boolean;
+        isAvailable: () => boolean | Promise<boolean>;
+        isConfiguredForAccount: (
+            accountId: string,
+        ) => boolean | Promise<boolean>;
     }> = [];
     const capabilities = new Map<string, unknown>([
         [
@@ -38,6 +43,11 @@ test("smtp-tfa adapter registers itself as a tfa method via ctx capability", () 
                 id: string;
                 name: string;
                 settingsPath: string;
+                requiresVerifiedEmail: boolean;
+                isAvailable: () => boolean | Promise<boolean>;
+                isConfiguredForAccount: (
+                    accountId: string,
+                ) => boolean | Promise<boolean>;
             }) => registeredMethods.push(registration),
         ],
     ]);
@@ -48,6 +58,12 @@ test("smtp-tfa adapter registers itself as a tfa method via ctx capability", () 
     assert.equal(
         registeredMethods[0].settingsPath,
         "/api/v1/auth/smtp-tfa/settings",
+    );
+    assert.equal(registeredMethods[0].requiresVerifiedEmail, true);
+    assert.equal(typeof registeredMethods[0].isAvailable, "function");
+    assert.equal(
+        typeof registeredMethods[0].isConfiguredForAccount,
+        "function",
     );
 });
 

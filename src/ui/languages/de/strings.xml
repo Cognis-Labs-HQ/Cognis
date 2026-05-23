@@ -60,6 +60,7 @@
   <string name="ui.reuse.tfa_setup_title">Zwei-Faktor-Authentifizierung einrichten</string>
   <string name="ui.reuse.tfa_setup_required">Sie müssen eine Zwei-Faktor-Authentifizierungsmethode konfigurieren, bevor Sie fortfahren.</string>
   <string name="ui.reuse.tfa_setup_confirm">Jetzt konfigurieren</string>
+  <string name="ui.reuse.tfa_setup_method_label">TFA-Methode</string>
   <string name="ui.reuse.tfa_setup_saved">Zwei-Faktor-Authentifizierung konfiguriert.</string>
   <string name="ui.reuse.tfa_setup_save_failed">Zwei-Faktor-Authentifizierung konnte nicht konfiguriert werden.</string>
   <string name="ui.reuse.system">System</string>
@@ -483,6 +484,7 @@
   <string name="ui.app.admin.security.tfa_methods_hint">Ziehen Sie Methoden zwischen verfügbar und aktiv. Nur aktive Methoden werden für neue Benutzer erzwungen.</string>
   <string name="ui.app.admin.security.tfa_available_methods">Verfügbare Methoden</string>
   <string name="ui.app.admin.security.tfa_active_methods">Aktive Methoden</string>
+  <string name="ui.app.admin.security.tfa_drag_handle_label">Methode zum Neusortieren ziehen</string>
   <string name="ui.app.admin.security.enforce_tfa_for_new_users_label">Zwei-Faktor-Authentifizierung für neue Benutzer erzwingen</string>
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
