@@ -502,6 +502,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     function resolveParticipantChatEntries() {
+        if (!state.meeting?.id) return [];
         if (!Array.isArray(state.lastMeetingParticipants)) return [];
         const localHandle = normalizeUsername(
             state.currentProfile?.handle ?? "",
@@ -534,6 +535,7 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         const entries = resolveParticipantChatEntries();
+        strip.hidden = entries.length === 0;
         strip.replaceChildren(
             ...entries.map((entry) =>
                 createChatParticipantAvatarButton({
@@ -772,6 +774,9 @@ export async function mount(root, { signal } = {}) {
         state.alonePromptDismissedMeetingId = "";
         state.alonePromptBlockedUntil = 0;
         state.meeting = null;
+        state.chatMode = "meeting";
+        state.privateChatUsername = "";
+        state.lastMeetingParticipants = [];
         stopNativeChatPolling();
         await updateNativeChat();
     }
@@ -921,6 +926,9 @@ export async function mount(root, { signal } = {}) {
         state.alonePromptDismissedMeetingId = "";
         state.alonePromptBlockedUntil = 0;
         state.meeting = null;
+        state.chatMode = "meeting";
+        state.privateChatUsername = "";
+        state.lastMeetingParticipants = [];
         stopNativeChatPolling();
         resetParticipantSelection();
         renderParticipants();

@@ -252,13 +252,24 @@ test("meetings mini chat supports participant private-chat switching and return-
     );
     assert.match(markupSource, /id="jitsi-chat-participant-strip"/);
     assert.match(markupSource, /id="jitsi-chat-return-btn"/);
+    assert.match(markupSource, /<header class="jitsi-chat-header">/);
     assert.match(appSource, /chatMode:\s*"meeting"/);
     assert.match(appSource, /lastMeetingChatRoomId/);
     assert.match(appSource, /async function activatePrivateChatForParticipant/);
     assert.match(appSource, /async function activateMeetingChat/);
     assert.match(appSource, /state\.chatMode !== "private"/);
+    assert.match(appSource, /if \(!state\.meeting\?\.id\) return \[\];/);
+    assert.match(appSource, /strip\.hidden = entries\.length === 0;/);
+    assert.match(appSource, /state\.lastMeetingParticipants = \[\];/);
     assert.match(appSource, /\/api\/v1\/messages\/rooms/);
     assert.match(cssSource, /\.jitsi-chat-participant-strip/);
+    assert.match(cssSource, /overflow-y: hidden;/);
+    assert.match(
+        cssSource,
+        /\.jitsi-chat-participant-strip::-webkit-scrollbar/,
+    );
+    assert.match(cssSource, /\.jitsi-chat-header/);
+    assert.match(cssSource, /\.jitsi-chat-return-btn/);
     assert.match(cssSource, /\.jitsi-chat-participant-item-selected/);
     assert.match(stringsSource, /module\.jitsi_meet\.chat\.return_to_meeting/);
     assert.match(
