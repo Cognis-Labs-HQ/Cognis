@@ -17,7 +17,7 @@
  *
  * @returns {Promise<boolean>}
  */
-async function enforceTFASetupIfRequired() {
+async function enforceTfaSetupIfRequired() {
     const token = localStorage.getItem("cognis_access_token");
     if (!token) return false;
     try {
@@ -93,8 +93,8 @@ export async function checkIsAuthenticated() {
 export async function ensureFullAccountSession() {
     const session = await validateStoredAccountSession();
     if (session.authenticated) {
-        const redirectedForTFA = await enforceTFASetupIfRequired();
-        return !redirectedForTFA;
+        const redirectedForTfa = await enforceTfaSetupIfRequired();
+        return !redirectedForTfa;
     }
     const reason = session.reason
         ? `?reason=${encodeURIComponent(session.reason)}`

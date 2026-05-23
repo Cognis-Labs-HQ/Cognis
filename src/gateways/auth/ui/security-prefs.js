@@ -43,159 +43,145 @@ export function createSettingsSection({ i18n, root }) {
         capability = payload.data ?? null;
     }
 
-    async function loadPasswordPolicy() {
-        const response = await apiFetch("/api/v1/auth/password-policy").catch(
+    async function loadTfaStatus() {
+        const response = await apiFetch("/api/v1/tfa/methods").catch(
             () => null,
         );
         if (!response?.ok) {
-            return { ...DEFAULT_PASSWORD_POLICY };
-        }
-
-        async function loadTfaStatus() {
-            const response = await apiFetch("/api/v1/tfa/methods").catch(
-                () => null,
-            );
-            if (!response?.ok) {
-                return {
-                    availableMethods: [],
-                    enabledMethods: [],
-                    preferredMethodIds: [],
-                };
-            }
-            const payload = await response.json().catch(() => null);
-            return (
-                payload?.data ?? {
-                    availableMethods: [],
-                    enabledMethods: [],
-                    preferredMethodIds: [],
-                }
-            );
-        }
-
-        async function beginTfaSetup(methodId) {
-            const response = await apiFetch(
-                `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/begin`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({}),
-                },
-            );
-            if (!response.ok) return null;
-            const payload = await response.json().catch(() => null);
-            return payload?.data ?? null;
-        }
-
-        async function verifyTfaSetup(methodId, setupId, verification) {
-            const response = await apiFetch(
-                `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/verify`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ setupId, verification }),
-                },
-            );
-            if (response.ok) return { ok: true };
-            const payload = await response.json().catch(() => null);
             return {
-                ok: false,
-                message:
-                    payload?.error?.message ?? i18n.t("ui.reuse.save_failed"),
+                availableMethods: [],
+                enabledMethods: [],
+                preferredMethodIds: [],
             };
         }
+        const payload = await response.json().catch(() => null);
+        return (
+            payload?.data ?? {
+                availableMethods: [],
+                enabledMethods: [],
+                preferredMethodIds: [],
+            }
+        );
+    }
 
-        async function cancelTfaSetup(methodId, setupId) {
-            await apiFetch(
-                `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/cancel`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ setupId }),
-                },
-            );
-        }
-
-        async function disableTfaMethod(methodId) {
-            await apiFetch(
-                `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/disable`,
-                { method: "POST" },
-            );
-        }
-
-        async function savePreferredTfaMethods(methodIds) {
-            await apiFetch("/api/v1/tfa/methods/preferences", {
-                method: "PUT",
+    async function beginTfaSetup(methodId) {
+        const response = await apiFetch(
+            `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/begin`,
+            {
+                method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ methodIds }),
-            });
-        }
+                body: JSON.stringify({}),
+            },
+        );
+        if (!response.ok) return null;
+        const payload = await response.json().catch(() => null);
+        return payload?.data ?? null;
+    }
 
-        async function rotateRecoveryCodes() {
-            const response = await apiFetch(
-                "/api/v1/tfa/recovery-codes/rotate",
-                {
-                    method: "POST",
-                },
-            );
-            if (!response.ok) return null;
-            const payload = await response.json().catch(() => null);
-            return payload?.data?.recoveryCodes ?? null;
-        }
+    async function verifyTfaSetup(methodId, setupId, verification) {
+        const response = await apiFetch(
+            `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/verify`,
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ setupId, verification }),
+            },
+        );
+        if (response.ok) return { ok: true };
+        const payload = await response.json().catch(() => null);
+        return {
+            ok: false,
+            message: payload?.error?.message ?? i18n.t("ui.reuse.save_failed"),
+        };
+    }
 
-        function renderTfaRows(methods) {
-            return methods
-                .map(
-                    (method) => `
+    async function cancelTfaSetup(methodId, setupId) {
+        await apiFetch(
+            `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/cancel`,
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ setupId }),
+            },
+        );
+    }
+
+    async function disableTfaMethod(methodId) {
+        await apiFetch(
+            `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/disable`,
+            { method: "POST" },
+        );
+    }
+
+    async function savePreferredTfaMethods(methodIds) {
+        await apiFetch("/api/v1/tfa/methods/preferences", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ methodIds }),
+        });
+    }
+
+    async function rotateRecoveryCodes() {
+        const response = await apiFetch("/api/v1/tfa/recovery-codes/rotate", {
+            method: "POST",
+        });
+        if (!response.ok) return null;
+        const payload = await response.json().catch(() => null);
+        return payload?.data?.recoveryCodes ?? null;
+    }
+
+    function renderTfaRows(methods) {
+        return methods
+            .map(
+                (method) => `
                 <tr data-tfa-method-row="${escapeHtml(method.id)}" draggable="true">
                   <td>${escapeHtml(method.name)}</td>
-                  <td class="drag-handle">⬍</td>
+                  <td class="drag-handle">\u2b4d</td>
                 </tr>`,
-                )
-                .join("");
-        }
+            )
+            .join("");
+    }
 
-        function resolveTfaLists() {
-            const available = Array.isArray(tfaStatus?.availableMethods)
-                ? tfaStatus.availableMethods
-                : [];
-            const enabled = Array.isArray(tfaStatus?.enabledMethods)
-                ? tfaStatus.enabledMethods
-                : [];
-            const enabledIds = new Set(enabled.map((method) => method.id));
-            return {
-                preferred: enabled,
-                available: available.filter(
-                    (method) => !enabledIds.has(method.id),
-                ),
-            };
-        }
+    function resolveTfaLists() {
+        const available = Array.isArray(tfaStatus?.availableMethods)
+            ? tfaStatus.availableMethods
+            : [];
+        const enabled = Array.isArray(tfaStatus?.enabledMethods)
+            ? tfaStatus.enabledMethods
+            : [];
+        const enabledIds = new Set(enabled.map((method) => method.id));
+        return {
+            preferred: enabled,
+            available: available.filter((method) => !enabledIds.has(method.id)),
+        };
+    }
 
-        async function runTfaSetupFlow(methodId) {
-            const setup = await beginTfaSetup(methodId);
-            if (!setup?.setupId) {
-                showToast(i18n.t("gateway.auth.security.tfa_setup_failed"), {
-                    variant: "error",
-                });
-                return false;
-            }
-            let codeInput = null;
-            const setupPrompt = setup.view?.prompt
-                ? i18n.t(setup.view.prompt) || setup.view.prompt
-                : "";
-            const codeLabelKey = setup.view?.fields?.[0]?.label;
-            const codeLabel = codeLabelKey
-                ? i18n.t(codeLabelKey) || codeLabelKey
-                : i18n.t("ui.app.login.tfa.code_label");
-            const detailsHtml = Object.entries(setup.view?.details ?? {})
-                .map(
-                    ([key, value]) => `
+    async function runTfaSetupFlow(methodId) {
+        const setup = await beginTfaSetup(methodId);
+        if (!setup?.setupId) {
+            showToast(i18n.t("gateway.auth.security.tfa_setup_failed"), {
+                variant: "error",
+            });
+            return false;
+        }
+        let codeInput = null;
+        const setupPrompt = setup.view?.prompt
+            ? i18n.t(setup.view.prompt) || setup.view.prompt
+            : "";
+        const codeLabelKey = setup.view?.fields?.[0]?.label;
+        const codeLabel = codeLabelKey
+            ? i18n.t(codeLabelKey) || codeLabelKey
+            : i18n.t("ui.app.login.tfa.code_label");
+        const detailsHtml = Object.entries(setup.view?.details ?? {})
+            .map(
+                ([key, value]) => `
                   <p><strong>${escapeHtml(key)}</strong>: ${escapeHtml(String(value))}</p>`,
-                )
-                .join("");
-            const action = await openPopup({
-                title: i18n.t("gateway.auth.security.tfa_setup_title"),
-                maxWidth: "520px",
-                body: () => `
+            )
+            .join("");
+        const action = await openPopup({
+            title: i18n.t("gateway.auth.security.tfa_setup_title"),
+            maxWidth: "520px",
+            body: () => `
                 <div class="stack">
                   <p>${escapeHtml(setupPrompt)}</p>
                   ${detailsHtml}
@@ -204,138 +190,125 @@ export function createSettingsSection({ i18n, root }) {
                     <input id="settings-tfa-code" type="text" inputmode="numeric" maxlength="12" />
                   </label>
                 </div>`,
-                actions: [
-                    {
-                        id: "confirm",
-                        label: i18n.t("ui.reuse.confirm"),
-                        variant: "confirm",
-                    },
-                    {
-                        id: "cancel",
-                        label: i18n.t("ui.reuse.cancel"),
-                        variant: "cancel",
-                    },
-                ],
-                onOpen: (overlay) => {
-                    codeInput = overlay.querySelector("#settings-tfa-code");
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.reuse.confirm"),
+                    variant: "confirm",
                 },
-            });
-            if (
-                action !== "confirm" ||
-                !(codeInput instanceof HTMLInputElement)
-            ) {
-                await cancelTfaSetup(methodId, setup.setupId);
-                return false;
-            }
-            const result = await verifyTfaSetup(methodId, setup.setupId, {
-                code: codeInput.value.trim(),
-            });
-            if (!result.ok) {
-                showToast(result.message, { variant: "error" });
-                return false;
-            }
-            return true;
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onOpen: (overlay) => {
+                codeInput = overlay.querySelector("#settings-tfa-code");
+            },
+        });
+        if (action !== "confirm" || !(codeInput instanceof HTMLInputElement)) {
+            await cancelTfaSetup(methodId, setup.setupId);
+            return false;
         }
-
-        function bindTfaDragAndDrop() {
-            if (tfaDnDBound) return;
-            tfaDnDBound = true;
-            settingsRoot.addEventListener("dragstart", (event) => {
-                const target =
-                    event.target instanceof Element ? event.target : null;
-                if (!target) return;
-                const row = target.closest("tr[data-tfa-method-row]");
-                if (!row) return;
-                dragTfaMethodId = row.getAttribute("data-tfa-method-row");
-                event.dataTransfer?.setData(
-                    "text/plain",
-                    dragTfaMethodId || "",
-                );
-            });
-
-            settingsRoot.addEventListener("dragend", () => {
-                dragTfaMethodId = null;
-            });
-
-            settingsRoot.addEventListener("dragover", (event) => {
-                const target =
-                    event.target instanceof Element ? event.target : null;
-                if (!target) return;
-                const zone = target.closest(
-                    "#available-tfa-methods, #preferred-tfa-methods, tr[data-tfa-method-row]",
-                );
-                if (!zone) return;
-                event.preventDefault();
-            });
-
-            settingsRoot.addEventListener("drop", async (event) => {
-                const target =
-                    event.target instanceof Element ? event.target : null;
-                if (!target) return;
-                const targetTable = target.closest(
-                    "#available-tfa-methods, #preferred-tfa-methods",
-                );
-                if (!targetTable) return;
-                event.preventDefault();
-                const methodId =
-                    dragTfaMethodId ||
-                    event.dataTransfer?.getData("text/plain");
-                if (!methodId) return;
-                const status = await loadTfaStatus();
-                const preferred = [...(status.enabledMethods ?? [])];
-                const isInPreferred = preferred.some(
-                    (entry) => entry.id === methodId,
-                );
-                if (
-                    targetTable.id === "available-tfa-methods" &&
-                    isInPreferred
-                ) {
-                    await disableTfaMethod(methodId);
-                }
-                if (
-                    targetTable.id === "preferred-tfa-methods" &&
-                    !isInPreferred
-                ) {
-                    const setupCompleted = await runTfaSetupFlow(methodId);
-                    if (!setupCompleted) {
-                        tfaStatus = await loadTfaStatus();
-                        const panel = settingsRoot.querySelector(
-                            "#auth-security-reset-panel",
-                        );
-                        if (panel) panel.innerHTML = renderBody();
-                        bindTfaInteractions();
-                        return;
-                    }
-                }
-                tfaStatus = await loadTfaStatus();
-                const latestPreferred = [...(tfaStatus.enabledMethods ?? [])];
-                await savePreferredTfaMethods(
-                    latestPreferred.map((entry) => entry.id),
-                );
-                tfaStatus = await loadTfaStatus();
-                const panel = settingsRoot.querySelector(
-                    "#auth-security-reset-panel",
-                );
-                if (panel) panel.innerHTML = renderBody();
-                bindTfaInteractions();
-            });
+        const result = await verifyTfaSetup(methodId, setup.setupId, {
+            code: codeInput.value.trim(),
+        });
+        if (!result.ok) {
+            showToast(result.message, { variant: "error" });
+            return false;
         }
+        return true;
+    }
 
-        async function enforceTfaSetupFlow() {
-            if (enforcingTfaSetup) return;
-            const searchParams = new URL(window.location.href).searchParams;
-            if (searchParams.get("enforce_tfa") !== "1") return;
-            if ((tfaStatus?.enabledMethods?.length ?? 0) > 0) return;
-            enforcingTfaSetup = true;
-            while ((tfaStatus?.enabledMethods?.length ?? 0) === 0) {
-                const available = resolveTfaLists().available;
-                if (available.length === 0) {
-                    break;
+    function bindTfaDragAndDrop() {
+        if (tfaDnDBound) return;
+        tfaDnDBound = true;
+        settingsRoot.addEventListener("dragstart", (event) => {
+            const target =
+                event.target instanceof Element ? event.target : null;
+            if (!target) return;
+            const row = target.closest("tr[data-tfa-method-row]");
+            if (!row) return;
+            dragTfaMethodId = row.getAttribute("data-tfa-method-row");
+            event.dataTransfer?.setData("text/plain", dragTfaMethodId || "");
+        });
+
+        settingsRoot.addEventListener("dragend", () => {
+            dragTfaMethodId = null;
+        });
+
+        settingsRoot.addEventListener("dragover", (event) => {
+            const target =
+                event.target instanceof Element ? event.target : null;
+            if (!target) return;
+            const zone = target.closest(
+                "#available-tfa-methods, #preferred-tfa-methods, tr[data-tfa-method-row]",
+            );
+            if (!zone) return;
+            event.preventDefault();
+        });
+
+        settingsRoot.addEventListener("drop", async (event) => {
+            const target =
+                event.target instanceof Element ? event.target : null;
+            if (!target) return;
+            const targetTable = target.closest(
+                "#available-tfa-methods, #preferred-tfa-methods",
+            );
+            if (!targetTable) return;
+            event.preventDefault();
+            const methodId =
+                dragTfaMethodId || event.dataTransfer?.getData("text/plain");
+            if (!methodId) return;
+            const status = await loadTfaStatus();
+            const preferred = [...(status.enabledMethods ?? [])];
+            const isInPreferred = preferred.some(
+                (entry) => entry.id === methodId,
+            );
+            if (targetTable.id === "available-tfa-methods" && isInPreferred) {
+                await disableTfaMethod(methodId);
+            }
+            if (targetTable.id === "preferred-tfa-methods" && !isInPreferred) {
+                const setupCompleted = await runTfaSetupFlow(methodId);
+                if (!setupCompleted) {
+                    tfaStatus = await loadTfaStatus();
+                    const panel = settingsRoot.querySelector(
+                        "#auth-security-reset-panel",
+                    );
+                    if (panel) panel.innerHTML = renderBody();
+                    bindTfaInteractions();
+                    return;
                 }
-                let methodSelect = null;
-                const action = await openPopup({
-                    title: i18n.t("gateway.auth.security.tfa_required_title"),
-                    body: () => `
+            }
+            tfaStatus = await loadTfaStatus();
+            const latestPreferred = [...(tfaStatus.enabledMethods ?? [])];
+            await savePreferredTfaMethods(
+                latestPreferred.map((entry) => entry.id),
+            );
+            tfaStatus = await loadTfaStatus();
+            const panel = settingsRoot.querySelector(
+                "#auth-security-reset-panel",
+            );
+            if (panel) panel.innerHTML = renderBody();
+            bindTfaInteractions();
+        });
+    }
+
+    async function enforceTfaSetupFlow() {
+        if (enforcingTfaSetup) return;
+        const searchParams = new URL(window.location.href).searchParams;
+        if (searchParams.get("enforce_tfa") !== "1") return;
+        if ((tfaStatus?.enabledMethods?.length ?? 0) > 0) return;
+        enforcingTfaSetup = true;
+        while ((tfaStatus?.enabledMethods?.length ?? 0) === 0) {
+            const available = resolveTfaLists().available;
+            if (available.length === 0) {
+                break;
+            }
+            let methodSelect = null;
+            const action = await openPopup({
+                title: i18n.t("gateway.auth.security.tfa_required_title"),
+                body: () => `
                     <label>
                       ${escapeHtml(i18n.t("gateway.auth.security.tfa_required_prompt"))}
                       <select id="settings-required-tfa-method" class="theme-select">
@@ -347,6 +320,62 @@ export function createSettingsSection({ i18n, root }) {
                             .join("")}
                       </select>
                     </label>`,
+                actions: [
+                    {
+                        id: "confirm",
+                        label: i18n.t("ui.reuse.confirm"),
+                        variant: "confirm",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    methodSelect = overlay.querySelector(
+                        "#settings-required-tfa-method",
+                    );
+                },
+            });
+            if (
+                action !== "confirm" ||
+                !(methodSelect instanceof HTMLSelectElement)
+            ) {
+                continue;
+            }
+            const setupCompleted = await runTfaSetupFlow(methodSelect.value);
+            if (!setupCompleted) continue;
+            tfaStatus = await loadTfaStatus();
+            const panel = settingsRoot.querySelector(
+                "#auth-security-reset-panel",
+            );
+            if (panel) panel.innerHTML = renderBody();
+            bindTfaInteractions();
+        }
+        enforcingTfaSetup = false;
+    }
+
+    function bindTfaInteractions() {
+        const recoveryCodesButton = settingsRoot.querySelector(
+            "#settings-tfa-recovery-codes-btn",
+        );
+        if (recoveryCodesButton instanceof HTMLButtonElement) {
+            recoveryCodesButton.onclick = async () => {
+                const recoveryCodes = await rotateRecoveryCodes();
+                if (!recoveryCodes) {
+                    showToast(
+                        i18n.t(
+                            "gateway.auth.security.tfa_recovery_codes_failed",
+                        ),
+                        {
+                            variant: "error",
+                        },
+                    );
+                    return;
+                }
+                await openPopup({
+                    title: i18n.t(
+                        "gateway.auth.security.tfa_recovery_codes_title",
+                    ),
+                    body: `<div class="stack">${recoveryCodes
+                        .map((code) => `<p>${escapeHtml(code)}</p>`)
+                        .join("")}</div>`,
                     actions: [
                         {
                             id: "confirm",
@@ -354,30 +383,17 @@ export function createSettingsSection({ i18n, root }) {
                             variant: "confirm",
                         },
                     ],
-                    onOpen: (overlay) => {
-                        methodSelect = overlay.querySelector(
-                            "#settings-required-tfa-method",
-                        );
-                    },
                 });
-                if (
-                    action !== "confirm" ||
-                    !(methodSelect instanceof HTMLSelectElement)
-                ) {
-                    continue;
-                }
-                const setupCompleted = await runTfaSetupFlow(
-                    methodSelect.value,
-                );
-                if (!setupCompleted) continue;
-                tfaStatus = await loadTfaStatus();
-                const panel = settingsRoot.querySelector(
-                    "#auth-security-reset-panel",
-                );
-                if (panel) panel.innerHTML = renderBody();
-                bindTfaInteractions();
-            }
-            enforcingTfaSetup = false;
+            };
+        }
+    }
+
+    async function loadPasswordPolicy() {
+        const response = await apiFetch("/api/v1/auth/password-policy").catch(
+            () => null,
+        );
+        if (!response?.ok) {
+            return { ...DEFAULT_PASSWORD_POLICY };
         }
         const payload = await response.json().catch(() => null);
         return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
@@ -545,47 +561,6 @@ export function createSettingsSection({ i18n, root }) {
                             ],
                             {},
                         );
-                    }
-
-                    function bindTfaInteractions() {
-                        const recoveryCodesButton = settingsRoot.querySelector(
-                            "#settings-tfa-recovery-codes-btn",
-                        );
-                        if (recoveryCodesButton instanceof HTMLButtonElement) {
-                            recoveryCodesButton.onclick = async () => {
-                                const recoveryCodes =
-                                    await rotateRecoveryCodes();
-                                if (!recoveryCodes) {
-                                    showToast(
-                                        i18n.t(
-                                            "gateway.auth.security.tfa_recovery_codes_failed",
-                                        ),
-                                        {
-                                            variant: "error",
-                                        },
-                                    );
-                                    return;
-                                }
-                                await openPopup({
-                                    title: i18n.t(
-                                        "gateway.auth.security.tfa_recovery_codes_title",
-                                    ),
-                                    body: `<div class="stack">${recoveryCodes
-                                        .map(
-                                            (code) =>
-                                                `<p>${escapeHtml(code)}</p>`,
-                                        )
-                                        .join("")}</div>`,
-                                    actions: [
-                                        {
-                                            id: "confirm",
-                                            label: i18n.t("ui.reuse.confirm"),
-                                            variant: "confirm",
-                                        },
-                                    ],
-                                });
-                            };
-                        }
                     }
                 }
             },
