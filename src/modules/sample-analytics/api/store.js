@@ -3,7 +3,7 @@ const ANALYTICS_EVENTS_TABLE = "sample_analytics_events";
 /**
  * Persistence layer for the Sample Analytics module.
  *
- * Manages the analytics_events table via the structured DbExecutor abstraction.
+ * Manages the sample_analytics_events table via the structured DbExecutor abstraction.
  * The accounts table is queried directly in route handlers; this store only
  * manages custom event records contributed by the analytics module itself.
  *

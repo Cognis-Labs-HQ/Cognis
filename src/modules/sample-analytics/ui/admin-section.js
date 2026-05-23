@@ -192,10 +192,14 @@ function buildEventsSection(events, { i18n, escapeHtml }) {
  * trends) derived from the accounts table, plus a log of custom analytics
  * events. Supports time-range filtering.
  *
- * Exports createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) which
- * returns an admin section descriptor consumed by the administration page.
+ * Exports createAdminSection which returns an admin section descriptor
+ * consumed by the administration page.
  *
- * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, showToast: Function }} deps
+ * @param {object} deps
+ * @param {object} deps.i18n - i18n instance for resolving string keys
+ * @param {Function} deps.apiFetch - authenticated fetch helper
+ * @param {Function} deps.escapeHtml - HTML-escape utility
+ * @param {Function} deps.showToast - toast notification helper
  * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
  */
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
