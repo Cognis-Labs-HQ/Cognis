@@ -7,6 +7,25 @@ function buildAdapterMap(adapters) {
     );
 }
 
+function isValidAdapterReference(dependencyId, separatorIndex) {
+    return (
+        separatorIndex > 0 &&
+        separatorIndex === dependencyId.lastIndexOf(":") &&
+        separatorIndex < dependencyId.length - 1
+    );
+}
+
+export function parseAdapterDependencyId(dependencyId) {
+    const separatorIndex = dependencyId.indexOf(":");
+    if (!isValidAdapterReference(dependencyId, separatorIndex)) {
+        return null;
+    }
+    return {
+        gatewayId: dependencyId.slice(0, separatorIndex),
+        adapterId: dependencyId.slice(separatorIndex + 1),
+    };
+}
+
 function renderDependencyLink(
     dependencyId,
     gatewayById,
@@ -23,16 +42,11 @@ function renderDependencyLink(
         return `<a class="dependency-link" href="#" data-scroll-to="gateway-${escapeHtml(dependencyId)}">${dependencyLabel}</a>`;
     }
 
-    const separatorIndex = dependencyId.indexOf(":");
-    const isInvalidAdapterReference =
-        separatorIndex <= 0 ||
-        separatorIndex !== dependencyId.lastIndexOf(":") ||
-        separatorIndex >= dependencyId.length - 1;
-    if (isInvalidAdapterReference) {
+    const parsedDependency = parseAdapterDependencyId(dependencyId);
+    if (!parsedDependency) {
         return escapeHtml(dependencyId);
     }
-    const gatewayId = dependencyId.slice(0, separatorIndex);
-    const adapterId = dependencyId.slice(separatorIndex + 1);
+    const { gatewayId, adapterId } = parsedDependency;
     const adapterDependency = adapterByCompositeKey.get(
         `${gatewayId}:${adapterId}`,
     );

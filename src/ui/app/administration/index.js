@@ -34,7 +34,10 @@ import {
     isModuleEnabled,
     shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
-import { renderDependencyLinks } from "./dependency-links.js";
+import {
+    parseAdapterDependencyId,
+    renderDependencyLinks,
+} from "./dependency-links.js";
 
 let root = null;
 let i18n = null;
@@ -769,12 +772,12 @@ function bindIntegrityRerun() {
 function findDependencyTargetElement(targetId) {
     if (targetId.startsWith("adapter-")) {
         const adapterReference = targetId.slice("adapter-".length);
-        const separatorIndex = adapterReference.indexOf(":");
-        if (separatorIndex < 1) {
+        const parsedAdapterReference =
+            parseAdapterDependencyId(adapterReference);
+        if (!parsedAdapterReference) {
             return null;
         }
-        const gatewayId = adapterReference.slice(0, separatorIndex);
-        const adapterId = adapterReference.slice(separatorIndex + 1);
+        const { gatewayId, adapterId } = parsedAdapterReference;
         return root.querySelector(
             `.adapter-inline-row[data-gateway-id="${CSS.escape(gatewayId)}"][data-adapter-id="${CSS.escape(adapterId)}"]`,
         );

@@ -11,7 +11,7 @@ import {
     TfaCodeService,
 } from "../../../api/reuse/tfa-code.js";
 
-const SMTP_TFA_PREF_KEY = "auth-smtp-tfa";
+export const SMTP_TFA_PREF_KEY = "auth-smtp-tfa";
 const CHALLENGE_EXPIRY_MS = 10 * 60 * 1000;
 
 interface EmailTfaPrefValue {

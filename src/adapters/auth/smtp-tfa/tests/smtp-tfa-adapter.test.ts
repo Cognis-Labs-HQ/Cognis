@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createAdapter, SmtpTfaAuthAdapter } from "../index.js";
+import {
+    createAdapter,
+    SMTP_TFA_PREF_KEY,
+    SmtpTfaAuthAdapter,
+} from "../index.js";
 import type { AuthAdapterContext } from "../../../../gateways/auth/gateway.js";
 
 function createContext(
@@ -50,7 +54,7 @@ test("smtp-tfa adapter writes account preference and requires verified SMTP setu
 
     await adapter.setEmailTfaEnabled("alice", true);
     assert.equal(preferenceWrites.length, 1);
-    assert.equal(preferenceWrites[0].key, "auth-smtp-tfa");
+    assert.equal(preferenceWrites[0].key, SMTP_TFA_PREF_KEY);
 });
 
 test("smtp-tfa adapter issues and validates login challenge codes", async () => {

@@ -135,7 +135,7 @@ function hasEmailTfaResetHook(
     return Boolean(adapter && typeof adapter.resetEmailTfa === "function");
 }
 
-function findEmailTfaAdapter(
+function findTfaAdapter(
     authGateway: CoreAuthGateway,
     options: { enabledOnly: boolean },
 ):
@@ -159,14 +159,17 @@ function findEmailTfaAdapter(
           ): Promise<void>;
       })
     | null {
+    function getRegisteredAdapters(): AuthProviderAdapter[] {
+        return authGateway
+            .listAdapters()
+            .map((adapterInfo) => authGateway.getAdapter(adapterInfo.id))
+            .filter(
+                (adapter): adapter is AuthProviderAdapter => adapter !== null,
+            );
+    }
     const candidateAdapters = options.enabledOnly
         ? authGateway.getEnabledAdapters()
-        : authGateway
-              .listAdapters()
-              .map((adapterInfo) => authGateway.getAdapter(adapterInfo.id))
-              .filter(
-                  (adapter): adapter is AuthProviderAdapter => adapter !== null,
-              );
+        : getRegisteredAdapters();
     const adapter = candidateAdapters.find((candidateAdapter) =>
         isEmailTfaAdapter(candidateAdapter),
     );
@@ -311,7 +314,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "auth:resetEmailTfaForUser",
         async (accountId: string) => {
-            const adapter = findEmailTfaAdapter(authGateway, {
+            const adapter = findTfaAdapter(authGateway, {
                 enabledOnly: false,
             });
             if (!hasEmailTfaResetHook(adapter)) return;
@@ -404,7 +407,7 @@ function createAuthGatewayRoutes(
     }
 
     function getEnabledEmailTfaAdapter() {
-        return findEmailTfaAdapter(authGateway, { enabledOnly: true });
+        return findTfaAdapter(authGateway, { enabledOnly: true });
     }
 
     const parsedTtlSeconds = Number.parseInt(
@@ -651,7 +654,7 @@ function createAuthGatewayRoutes(
                 email,
                 displayName: displayName || undefined,
             });
-            const emailTfaAdapter = findEmailTfaAdapter(authGateway, {
+            const emailTfaAdapter = findTfaAdapter(authGateway, {
                 enabledOnly: false,
             });
             if (
