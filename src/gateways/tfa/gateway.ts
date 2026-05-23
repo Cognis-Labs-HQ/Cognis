@@ -95,6 +95,7 @@ type NotifyDispatch = (envelope: {
 }) => Promise<unknown>;
 
 export class CoreTfaGateway {
+    private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
     private readonly adapters = new Map<string, TfaMethodAdapter>();
     private readonly enabledAdapters = new Set<string>();
 
@@ -383,7 +384,7 @@ export class CoreTfaGateway {
             totalCount: codes.length,
             usedCount,
             remainingCount,
-            lowThreshold: 2,
+            lowThreshold: CoreTfaGateway.RECOVERY_CODE_LOW_THRESHOLD,
         };
     }
 
@@ -472,7 +473,7 @@ export class CoreTfaGateway {
         }
         const remainingCount =
             await this.store.countUnusedRecoveryCodes(accountId);
-        if (remainingCount > 2) {
+        if (remainingCount > CoreTfaGateway.RECOVERY_CODE_LOW_THRESHOLD) {
             return;
         }
         try {

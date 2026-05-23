@@ -495,15 +495,16 @@ export function createSettingsSection({ i18n, root }) {
         if (searchParams.get("enforce_tfa") !== "1") return;
         if ((tfaStatus?.enabledMethods?.length ?? 0) > 0) return;
         enforcingTfaSetup = true;
-        while ((tfaStatus?.enabledMethods?.length ?? 0) === 0) {
-            const available = resolveTfaLists().available;
-            if (available.length === 0) {
-                break;
-            }
-            let methodSelect = null;
-            const action = await openPopup({
-                title: i18n.t("gateway.auth.security.tfa_required_title"),
-                body: () => `
+        try {
+            while ((tfaStatus?.enabledMethods?.length ?? 0) === 0) {
+                const available = resolveTfaLists().available;
+                if (available.length === 0) {
+                    break;
+                }
+                let methodSelect = null;
+                const action = await openPopup({
+                    title: i18n.t("gateway.auth.security.tfa_required_title"),
+                    body: () => `
                     <label>
                       ${escapeHtml(i18n.t("gateway.auth.security.tfa_required_prompt"))}
                       <select id="settings-required-tfa-method" class="theme-select">
@@ -515,35 +516,39 @@ export function createSettingsSection({ i18n, root }) {
                             .join("")}
                       </select>
                     </label>`,
-                actions: [
-                    {
-                        id: "confirm",
-                        label: i18n.t("ui.reuse.confirm"),
-                        variant: "confirm",
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: i18n.t("ui.reuse.confirm"),
+                            variant: "confirm",
+                        },
+                    ],
+                    onOpen: (overlay) => {
+                        methodSelect = overlay.querySelector(
+                            "#settings-required-tfa-method",
+                        );
                     },
-                ],
-                onOpen: (overlay) => {
-                    methodSelect = overlay.querySelector(
-                        "#settings-required-tfa-method",
-                    );
-                },
-            });
-            if (
-                action !== "confirm" ||
-                !(methodSelect instanceof HTMLSelectElement)
-            ) {
-                continue;
+                });
+                if (
+                    action !== "confirm" ||
+                    !(methodSelect instanceof HTMLSelectElement)
+                ) {
+                    break;
+                }
+                const setupCompleted = await runTfaSetupFlow(
+                    methodSelect.value,
+                );
+                if (!setupCompleted) continue;
+                tfaStatus = await loadTfaStatus();
+                const panel = settingsRoot.querySelector(
+                    "#auth-security-reset-panel",
+                );
+                if (panel) panel.innerHTML = renderBody();
+                bindTfaInteractions();
             }
-            const setupCompleted = await runTfaSetupFlow(methodSelect.value);
-            if (!setupCompleted) continue;
-            tfaStatus = await loadTfaStatus();
-            const panel = settingsRoot.querySelector(
-                "#auth-security-reset-panel",
-            );
-            if (panel) panel.innerHTML = renderBody();
-            bindTfaInteractions();
+        } finally {
+            enforcingTfaSetup = false;
         }
-        enforcingTfaSetup = false;
     }
 
     function bindTfaInteractions() {
@@ -667,6 +672,9 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function renderBody() {
+        if (generatedRecoveryCodes.length === 0) {
+            recoveryCodesVisible = false;
+        }
         const { available, preferred } = resolveTfaLists();
         const hasRecoveryCodes = tfaStatus?.hasRecoveryCodes === true;
         if (!capability) {

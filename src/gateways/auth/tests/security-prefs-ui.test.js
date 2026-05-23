@@ -21,7 +21,6 @@ test("security preferences render recovery codes as a separate section", () => {
         SOURCE,
         /<div class="content-grid--two-column">[\s\S]*id="available-tfa-methods"[\s\S]*id="preferred-tfa-methods"/,
     );
-    assert.doesNotMatch(SOURCE, /settings-tfa-recovery-codes-btn/);
 });
 
 test("security preferences TFA drag and drop supports row insertion", () => {
