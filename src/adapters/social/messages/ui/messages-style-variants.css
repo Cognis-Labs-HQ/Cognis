@@ -10,6 +10,7 @@
     background: var(--color-surface-elevated);
     border: 1px solid var(--color-border);
     color: var(--color-text);
+    border-bottom-left-radius: 0.35rem;
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message::after {
@@ -32,11 +33,6 @@
 .messages-page[data-message-style="speech_bubbles"]
     .messages-message--own::after {
     right: -0.17rem;
-}
-
-.messages-page[data-message-style="speech_bubbles"]
-    .messages-message:not(.messages-message--own) {
-    border-bottom-left-radius: 0.35rem;
 }
 
 .messages-page[data-message-style="speech_bubbles"]

@@ -747,6 +747,7 @@ html[data-message-style="speech_bubbles"]
     background: var(--color-surface-elevated);
     border-color: var(--color-border);
     color: var(--color-text);
+    border-bottom-left-radius: 0.35rem;
 }
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message::after {
@@ -768,11 +769,6 @@ html[data-message-style="speech_bubbles"] .jitsi-chat-message-own {
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message-own::after {
     right: -0.17rem;
-}
-
-html[data-message-style="speech_bubbles"]
-    .jitsi-chat-message:not(.jitsi-chat-message-own) {
-    border-bottom-left-radius: 0.35rem;
 }
 
 html[data-message-style="speech_bubbles"]
