@@ -285,7 +285,6 @@ export async function mount(root, { signal } = {}) {
     for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
         ensureStylesheetLoaded(stylesheetUrl);
     }
-    let refreshReactionsThread = async () => undefined;
     const i18n = await createI18n({
         componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
@@ -294,7 +293,7 @@ export async function mount(root, { signal } = {}) {
             messageUiResources,
             i18n,
             async () => {
-                await refreshReactionsThread();
+                await refreshNativeChat();
             },
         )) ?? NULL_MESSAGE_REACTIONS_CONTROLLER;
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
@@ -817,8 +816,6 @@ export async function mount(root, { signal } = {}) {
         renderChatMessages(decoded);
         setNativeChatReady(true);
     }
-
-    refreshReactionsThread = refreshNativeChat;
 
     function stopNativeChatPolling() {
         if (state.chatRefreshTimer === null) return;

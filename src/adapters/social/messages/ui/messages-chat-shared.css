@@ -152,7 +152,3 @@
     background: var(--color-surface-elevated);
     border-color: var(--color-border);
 }
-
-html[data-message-style="irc"] .jitsi-chat-message .messages-reactions-row {
-    margin-top: 0.12rem;
-}

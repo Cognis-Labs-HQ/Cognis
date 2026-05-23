@@ -43,6 +43,28 @@ function emojiDisplayName(emoji, i18n, cache) {
     return i18n?.t(matchingEntry.name) ?? emoji;
 }
 
+/**
+ * Builds a reusable message-reactions controller used by Messages and Meetings
+ * chat surfaces. The controller renders reaction rows, handles hover popups,
+ * loads emoji usage data, opens the emoji picker popup, and toggles reactions.
+ *
+ * @param {{
+ *   i18n: { t: (key: string) => string },
+ *   maxEmojiDisplayCount?: number,
+ *   onReactionUpdated?: (input: { roomId: string, messageId: string, emoji: string }) => Promise<void> | void
+ * }} [options]
+ * @returns {{
+ *   destroy: () => void,
+ *   hideReactionHoverPopup: () => void,
+ *   loadEmojiUsage: () => Promise<Array<{ emoji: string, usageCount: number }>>,
+ *   openEmojiPickerPopup: (roomId: string, messageId: string) => Promise<void>,
+ *   recordEmojiUsage: (emoji: string) => void,
+ *   renderReactionRow: (message: { id?: string, reactions?: Array<unknown> }) => string,
+ *   repositionReactionHoverPopup: () => void,
+ *   showReactionHoverPopup: (button: HTMLButtonElement) => void,
+ *   toggleReaction: (roomId: string, messageId: string, emoji: string) => Promise<void>
+ * }}
+ */
 export function createMessageReactionsController({
     i18n,
     maxEmojiDisplayCount = MAX_EMOJI_PICKER_DISPLAY_COUNT,
@@ -254,8 +276,6 @@ export function createMessageReactionsController({
             },
         );
         if (!response.ok) return;
-        const payload = await response.json().catch(() => null);
-        if (payload?.error) return;
         await onReactionUpdated?.({
             roomId,
             messageId,

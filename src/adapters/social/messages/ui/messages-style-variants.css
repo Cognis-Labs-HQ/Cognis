@@ -185,6 +185,10 @@ html[data-message-style="irc"] .jitsi-chat-message-body {
     display: inline;
 }
 
+html[data-message-style="irc"] .jitsi-chat-message .messages-reactions-row {
+    margin-top: 0.12rem;
+}
+
 html[data-message-style="irc"]
     body[data-theme="light"]
     .jitsi-chat-message-head

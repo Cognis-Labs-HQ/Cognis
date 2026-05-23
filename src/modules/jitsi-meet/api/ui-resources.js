@@ -66,10 +66,16 @@ export function registerJitsiUiResourcesRoute({
                     : buildJitsiUiResourcesPayload(messagesUiResources),
             });
         } catch {
+            console.error(
+                "[jitsi-meet-module] failed to build UI resources payload",
+                {
+                    operation: "build_ui_resources_payload",
+                },
+            );
             sendJson(res, 500, {
                 error: {
                     code: "ui_resources_unavailable",
-                    message: "UI resources are unavailable.",
+                    message: "Failed to build UI resources payload.",
                 },
             });
         }
