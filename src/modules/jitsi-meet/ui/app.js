@@ -23,6 +23,7 @@ import {
     normalizeUsername,
     resolveUrlHost,
 } from "/static/reuse/value-normalizers.js";
+import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import {
     ALONE_PROMPT_GRACE_PERIOD_MS,
     ACTIVE_MEETINGS_REFRESH_INTERVAL_MS,
@@ -48,7 +49,7 @@ import {
     buildStageMarkup,
 } from "./markup.js";
 
-const MAX_EMOJI_GRID_SIZE = 80;
+const MAX_EMOJI_PICKER_DISPLAY_COUNT = 80;
 
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
@@ -142,15 +143,11 @@ function emojiDisplayName(emoji, i18n) {
     return i18n?.t(matchingEntry.name) ?? emoji;
 }
 
-function participantDisplayName(participant) {
-    return String(
-        participant?.displayName ?? participant?.handle ?? participant?.accountId ?? "",
-    ).trim();
-}
-
 function renderReactionRow(message, i18n) {
     if (!message?.id) return "";
-    const reactionEntries = Array.isArray(message.reactions) ? message.reactions : [];
+    const reactionEntries = Array.isArray(message.reactions)
+        ? message.reactions
+        : [];
     const mergedByEmoji = new Map();
     for (const reaction of reactionEntries) {
         const normalizedEmoji = normalizeReactionEmoji(reaction.emoji);
@@ -178,7 +175,9 @@ function renderReactionRow(message, i18n) {
             emoji: normalizedEmoji,
             count: Number(reaction.count ?? 0),
             reactedByMe: Boolean(reaction.reactedByMe),
-            reactedBy: Array.isArray(reaction.reactedBy) ? reaction.reactedBy : [],
+            reactedBy: Array.isArray(reaction.reactedBy)
+                ? reaction.reactedBy
+                : [],
         });
     }
     const hasChips = mergedByEmoji.size > 0;
@@ -189,7 +188,7 @@ function renderReactionRow(message, i18n) {
                 : "";
             const emojiName = emojiDisplayName(reaction.emoji, i18n);
             const reactedByLabels = reaction.reactedBy
-                .map((reactor) => participantDisplayName(reactor))
+                .map((reactor) => resolveMemberDisplayName(reactor))
                 .filter(Boolean);
             const reactedByPayload = stableJson(reactedByLabels);
             return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
@@ -197,7 +196,8 @@ function renderReactionRow(message, i18n) {
         .join("");
     const quick = Array.from(new Set(getQuickReactionEmojis()))
         .filter(
-            (emoji) => emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
+            (emoji) =>
+                emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
         )
         .map(
             (emoji) =>
@@ -706,7 +706,7 @@ export async function mount(root, { signal } = {}) {
 
         function buildEmojiGridHtml(entries) {
             return entries
-                .slice(0, MAX_EMOJI_GRID_SIZE)
+                .slice(0, MAX_EMOJI_PICKER_DISPLAY_COUNT)
                 .map((entry) => {
                     const resolvedName = i18n.t(entry.name) ?? entry.name;
                     return `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(resolvedName)}">${escapeHtml(entry.emoji)}</button>`;
@@ -726,7 +726,9 @@ export async function mount(root, { signal } = {}) {
                 },
             ],
             onOpen: (overlay) => {
-                const searchInput = overlay.querySelector(".messages-emoji-search");
+                const searchInput = overlay.querySelector(
+                    ".messages-emoji-search",
+                );
                 const grid = overlay.querySelector(".messages-emoji-grid");
                 grid?.addEventListener("click", async (clickEvent) => {
                     const emojiButton = clickEvent.target.closest(
@@ -2254,7 +2256,8 @@ export async function mount(root, { signal } = {}) {
                         "[data-reaction-more]",
                     );
                     if (moreButton instanceof HTMLButtonElement) {
-                        const messageId = moreButton.getAttribute("data-message-id");
+                        const messageId =
+                            moreButton.getAttribute("data-message-id");
                         const roomId = state.chatRoomId;
                         if (messageId && roomId) {
                             await openEmojiPickerPopup(roomId, messageId);
@@ -2268,11 +2271,14 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
                     const roomId = state.chatRoomId;
-                    const messageId = reactionButton.getAttribute("data-message-id");
+                    const messageId =
+                        reactionButton.getAttribute("data-message-id");
                     const emoji = reactionButton.getAttribute("data-emoji");
                     if (!roomId || !messageId || !emoji) return;
                     if (
-                        reactionButton.classList.contains("messages-reaction-add-btn")
+                        reactionButton.classList.contains(
+                            "messages-reaction-add-btn",
+                        )
                     ) {
                         recordEmojiUsage(emoji);
                     }
@@ -2285,9 +2291,11 @@ export async function mount(root, { signal } = {}) {
                 (mouseEvent) => {
                     const hoveredElement = mouseEvent.target;
                     if (!(hoveredElement instanceof Element)) return;
-                    const reactionChipButton =
-                        hoveredElement.closest(".messages-reaction-chip");
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const reactionChipButton = hoveredElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
                     const relatedElement = mouseEvent.relatedTarget;
                     if (
                         relatedElement instanceof Element &&
@@ -2304,9 +2312,11 @@ export async function mount(root, { signal } = {}) {
                 (mouseEvent) => {
                     const originElement = mouseEvent.target;
                     if (!(originElement instanceof Element)) return;
-                    const reactionChipButton =
-                        originElement.closest(".messages-reaction-chip");
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const reactionChipButton = originElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
                     const relatedElement = mouseEvent.relatedTarget;
                     if (
                         relatedElement instanceof Element &&
@@ -2323,9 +2333,11 @@ export async function mount(root, { signal } = {}) {
                 (focusEvent) => {
                     const focusedElement = focusEvent.target;
                     if (!(focusedElement instanceof Element)) return;
-                    const reactionChipButton =
-                        focusedElement.closest(".messages-reaction-chip");
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const reactionChipButton = focusedElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
                     showReactionHoverPopup(reactionChipButton);
                 },
                 { signal: bindSignal },
@@ -2335,9 +2347,11 @@ export async function mount(root, { signal } = {}) {
                 (focusEvent) => {
                     const blurredElement = focusEvent.target;
                     if (!(blurredElement instanceof Element)) return;
-                    const reactionChipButton =
-                        blurredElement.closest(".messages-reaction-chip");
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const reactionChipButton = blurredElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
                     const nextFocusedElement = focusEvent.relatedTarget;
                     if (
                         nextFocusedElement instanceof Element &&
@@ -2653,11 +2667,11 @@ export async function mount(root, { signal } = {}) {
 
     const [allParticipants, currentProfile, loadedEmojis, loadedUsage] =
         await Promise.all([
-        fetchParticipants(""),
-        fetchCurrentProfile(),
-        loadAllEmojis(),
-        fetchEmojiUsage(),
-    ]);
+            fetchParticipants(""),
+            fetchCurrentProfile(),
+            loadAllEmojis(),
+            fetchEmojiUsage(),
+        ]);
     cachedEmojiList = loadedEmojis;
     cachedEmojiUsage = loadedUsage;
     state.currentProfile = currentProfile;

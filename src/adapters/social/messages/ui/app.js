@@ -22,6 +22,7 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { formatDate, getEffectiveTimezone } from "/static/reuse/timestamp.js";
 import { normalizeMessageStyle } from "/static/reuse/message-style-options.js";
@@ -318,15 +319,6 @@ async function getRoomKey(roomId) {
     return key;
 }
 
-function memberDisplayName(member) {
-    return (
-        member.displayName ||
-        member.username ||
-        member.handle ||
-        member.accountId
-    );
-}
-
 function profileHref(handle) {
     if (!handle) return "";
     return `/profile/${encodeURIComponent(String(handle).replace(/^@/, ""))}`;
@@ -339,13 +331,15 @@ function selectedRoomTitle(room, currentAccountId) {
     );
     if (room.kind === "dm") {
         return (
-            otherMembers.map(memberDisplayName).join(", ") ||
+            otherMembers.map(resolveMemberDisplayName).join(", ") ||
             room.title ||
             room.id
         );
     }
     return (
-        room.title || otherMembers.map(memberDisplayName).join(", ") || room.id
+        room.title ||
+        otherMembers.map(resolveMemberDisplayName).join(", ") ||
+        room.id
     );
 }
 
@@ -366,7 +360,7 @@ function randomSample(values, count) {
 }
 
 function renderMemberInitials(member) {
-    const label = memberDisplayName(member);
+    const label = resolveMemberDisplayName(member);
     const color = pickInitialsColor(member.handle || member.accountId || label);
     return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
 }
@@ -393,7 +387,9 @@ function renderRoomAvatar(room, currentAccountId) {
     const other =
         members.find((member) => member.accountId !== currentAccountId) ??
         members[0];
-    const label = other ? memberDisplayName(other) : room.title || room.id;
+    const label = other
+        ? resolveMemberDisplayName(other)
+        : room.title || room.id;
     return buildProfileAvatarMarkup({
         avatarKey: room.avatarKey || other?.avatarKey || null,
         label,
@@ -666,7 +662,7 @@ function renderReactionRow(message, i18n) {
                 : "";
             const emojiName = emojiDisplayName(reaction.emoji, i18n);
             const reactedByLabels = reaction.reactedBy
-                .map((reactor) => memberDisplayName(reactor))
+                .map((reactor) => resolveMemberDisplayName(reactor))
                 .filter(Boolean);
             const reactedByPayload = stableJson(reactedByLabels);
             return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
@@ -735,7 +731,7 @@ function showReactionHoverPopup(reactionChipButton) {
 
 function formatRoomListAvatar(room, displayedMember, titleSource) {
     const label = displayedMember
-        ? memberDisplayName(displayedMember)
+        ? resolveMemberDisplayName(displayedMember)
         : titleSource;
     return buildProfileAvatarMarkup({
         avatarKey: room?.avatarKey || displayedMember?.avatarKey || null,
@@ -756,7 +752,7 @@ function renderMemberSummaryItem(
     member,
     { avatarClass, imageClass, fallbackClass, statusText = "" },
 ) {
-    const label = memberDisplayName(member);
+    const label = resolveMemberDisplayName(member);
     return `
         <li class="messages-member-summary-item">
             ${buildProfileAvatarMarkup({

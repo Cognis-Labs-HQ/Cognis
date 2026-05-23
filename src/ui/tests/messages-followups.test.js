@@ -31,39 +31,57 @@ test("messages member count control opens local member summary without jitsi cal
 });
 
 test("messages IRC layout keeps read receipts inline and centered", () => {
-    const cssSource = readFileSync(
+    const baseCssSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
     );
-    assert.match(
-        cssSource,
-        /\.messages-message-status \.messages-avatar-link[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/,
+    const variantsCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-style-variants.css",
+        ),
+        "utf8",
     );
     assert.match(
-        cssSource,
+        baseCssSource,
+        /\.messages-message-status \.messages-avatar-link[\s\S]*align-items:\s*center;/,
+    );
+    assert.match(
+        baseCssSource,
+        /\.messages-message-status \.messages-avatar-link[\s\S]*justify-content:\s*center;/,
+    );
+    assert.match(
+        variantsCssSource,
         /\.messages-page\[data-message-style="irc"\] \.messages-message-row[\s\S]*display:\s*flex;[\s\S]*align-items:\s*baseline;/,
     );
     assert.match(
-        cssSource,
+        variantsCssSource,
         /\.messages-page\[data-message-style="irc"\] \.messages-message-status[\s\S]*align-self:\s*center;/,
+    );
+    assert.match(
+        baseCssSource,
+        /@import url\("\/static\/adapters\/social\/messages\/messages-style-variants\.css"\);/,
     );
 });
 
 test("messages speech bubbles render with clear tails", () => {
-    const cssSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
+    const variantsCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-style-variants.css",
+        ),
         "utf8",
     );
     assert.match(
-        cssSource,
-        /\.messages-page\[data-message-style="speech_bubbles"\] \.messages-message::after/,
+        variantsCssSource,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message::after/,
     );
     assert.match(
-        cssSource,
+        variantsCssSource,
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*box-shadow:/,
     );
     assert.match(
-        cssSource,
-        /\.messages-page\[data-message-style="speech_bubbles"\] \.messages-message--own::after/,
+        variantsCssSource,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message--own::after/,
     );
 });

@@ -442,7 +442,10 @@ test("meetings mini chat supports the Messages reaction floating menu", () => {
         appSource,
         /\/api\/v1\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\/\$\{encodeURIComponent\(messageId\)\}\/reactions/,
     );
-    assert.match(appSource, /async function openEmojiPickerPopup\(roomId, messageId\)/);
+    assert.match(
+        appSource,
+        /async function openEmojiPickerPopup\(roomId, messageId\)/,
+    );
     assert.match(cssSource, /\.jitsi-chat-message \.messages-reactions-row/);
     assert.match(cssSource, /\.messages-reaction-hover-popup/);
     assert.match(cssSource, /\.messages-emoji-picker/);
