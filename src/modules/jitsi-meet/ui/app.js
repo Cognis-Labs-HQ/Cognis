@@ -69,7 +69,16 @@ async function loadMessageUiResources() {
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/ui-resources",
         );
-        if (!response.ok) return FALLBACK_MESSAGE_UI_RESOURCES;
+        if (!response.ok) {
+            console.warn(
+                "[jitsi-meet] message UI resources unavailable; using fallback resources",
+                {
+                    operation: "load_message_ui_resources",
+                    status: response.status,
+                },
+            );
+            return FALLBACK_MESSAGE_UI_RESOURCES;
+        }
         const payload = await response.json().catch(() => ({ data: null }));
         const responseData = payload?.data ?? {};
         const languageBaseUrls = Array.isArray(responseData.languageBaseUrls)
@@ -96,6 +105,10 @@ async function loadMessageUiResources() {
             reactionHelpersModuleUrl,
         };
     } catch {
+        console.warn(
+            "[jitsi-meet] failed to load message UI resources; using fallback resources",
+            { operation: "load_message_ui_resources" },
+        );
         return FALLBACK_MESSAGE_UI_RESOURCES;
     }
 }
@@ -272,6 +285,7 @@ export async function mount(root, { signal } = {}) {
     for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
         ensureStylesheetLoaded(stylesheetUrl);
     }
+    let refreshReactionsThread = async () => undefined;
     const i18n = await createI18n({
         componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
@@ -280,7 +294,7 @@ export async function mount(root, { signal } = {}) {
             messageUiResources,
             i18n,
             async () => {
-                await refreshNativeChat();
+                await refreshReactionsThread();
             },
         )) ?? NULL_MESSAGE_REACTIONS_CONTROLLER;
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
@@ -803,6 +817,8 @@ export async function mount(root, { signal } = {}) {
         renderChatMessages(decoded);
         setNativeChatReady(true);
     }
+
+    refreshReactionsThread = refreshNativeChat;
 
     function stopNativeChatPolling() {
         if (state.chatRefreshTimer === null) return;

@@ -59,10 +59,19 @@ export function registerJitsiUiResourcesRoute({
     router.get("/api/v1/modules/jitsi-meet/ui-resources", async (req, res) => {
         const claims = requireAuth(req, res, "user");
         if (!claims) return;
-        sendJson(res, 200, {
-            data: unavailable
-                ? buildUnavailableJitsiUiResourcesPayload()
-                : buildJitsiUiResourcesPayload(messagesUiResources),
-        });
+        try {
+            sendJson(res, 200, {
+                data: unavailable
+                    ? buildUnavailableJitsiUiResourcesPayload()
+                    : buildJitsiUiResourcesPayload(messagesUiResources),
+            });
+        } catch {
+            sendJson(res, 500, {
+                error: {
+                    code: "ui_resources_unavailable",
+                    message: "UI resources are unavailable.",
+                },
+            });
+        }
     });
 }
