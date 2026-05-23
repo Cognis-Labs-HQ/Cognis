@@ -135,6 +135,42 @@ function hasEmailTfaResetHook(
     return Boolean(adapter && typeof adapter.resetEmailTfa === "function");
 }
 
+function findEmailTfaAdapter(
+    authGateway: CoreAuthGateway,
+    options: { enabledOnly: boolean },
+): (AuthProviderAdapter & {
+    shouldRequireEmailTfa(accountId: string): Promise<boolean>;
+    beginEmailTfaLoginChallenge(
+        session: AuthPendingSession,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaLoginChallenge(
+        challengeId: string,
+        code: string,
+    ): Promise<AuthPendingSession | null>;
+    getEmailTfaState(accountId: string): Promise<{
+        enabled: boolean;
+        enforced: boolean;
+        available: boolean;
+    }>;
+    setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void>;
+}) | null {
+    const candidateAdapters = options.enabledOnly
+        ? authGateway.getEnabledAdapters()
+        : authGateway
+              .listAdapters()
+              .map((adapterInfo) => authGateway.getAdapter(adapterInfo.id))
+              .filter((adapter): adapter is AuthProviderAdapter =>
+                  adapter !== null,
+              );
+    const adapter = candidateAdapters.find((candidateAdapter) =>
+        isEmailTfaAdapter(candidateAdapter),
+    );
+    if (!adapter || !isEmailTfaAdapter(adapter)) {
+        return null;
+    }
+    return adapter;
+}
+
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
@@ -212,7 +248,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.7",
+        version: "1.3.8",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -270,9 +306,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "auth:resetEmailTfaForUser",
         async (accountId: string) => {
-            const adapter =
-                authGateway.getEnabledAdapter("email-tfa") ??
-                authGateway.getAdapter("email-tfa");
+            const adapter = findEmailTfaAdapter(authGateway, {
+                enabledOnly: false,
+            });
             if (!hasEmailTfaResetHook(adapter)) return;
             await adapter.resetEmailTfa(accountId);
         },
@@ -363,8 +399,7 @@ function createAuthGatewayRoutes(
     }
 
     function getEnabledEmailTfaAdapter() {
-        const adapter = authGateway.getEnabledAdapter("email-tfa");
-        return isEmailTfaAdapter(adapter) ? adapter : null;
+        return findEmailTfaAdapter(authGateway, { enabledOnly: true });
     }
 
     const parsedTtlSeconds = Number.parseInt(
@@ -611,9 +646,9 @@ function createAuthGatewayRoutes(
                 email,
                 displayName: displayName || undefined,
             });
-            const emailTfaAdapter =
-                authGateway.getEnabledAdapter("email-tfa") ??
-                authGateway.getAdapter("email-tfa");
+            const emailTfaAdapter = findEmailTfaAdapter(authGateway, {
+                enabledOnly: false,
+            });
             if (
                 emailTfaAdapter &&
                 hasEmailTfaRegistrationHook(emailTfaAdapter)
@@ -677,7 +712,7 @@ function createAuthGatewayRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/auth/email-tfa/settings" &&
+            url.pathname === "/api/v1/auth/smtp-tfa/settings" &&
             req.method === "GET"
         ) {
             const claims = requireAuth(req, res, "user");
@@ -703,7 +738,7 @@ function createAuthGatewayRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/auth/email-tfa/settings" &&
+            url.pathname === "/api/v1/auth/smtp-tfa/settings" &&
             req.method === "PUT"
         ) {
             const claims = requireAuth(req, res, "user");
@@ -730,7 +765,7 @@ function createAuthGatewayRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/auth/email-tfa/verify-login" &&
+            url.pathname === "/api/v1/auth/smtp-tfa/verify-login" &&
             req.method === "POST"
         ) {
             const adapter = getEnabledEmailTfaAdapter();

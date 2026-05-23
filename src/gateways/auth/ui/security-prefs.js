@@ -53,7 +53,7 @@ export function createSettingsSection({ i18n, root }) {
 
     async function loadEmailTfaState() {
         const response = await apiFetch(
-            "/api/v1/auth/email-tfa/settings",
+            "/api/v1/auth/smtp-tfa/settings",
         ).catch(() => null);
         if (!response?.ok) {
             emailTfaState = {
@@ -72,7 +72,7 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function saveEmailTfaState(enabled) {
-        const response = await apiFetch("/api/v1/auth/email-tfa/settings", {
+        const response = await apiFetch("/api/v1/auth/smtp-tfa/settings", {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ enabled }),
@@ -170,7 +170,7 @@ export function createSettingsSection({ i18n, root }) {
         <h3>${i18n.t("gateway.auth.security.email_tfa_title")}</h3>
         <p>${escapeHtml(tfaHint)}</p>
         <label class="switch">
-          <input id="settings-email-tfa-toggle" type="checkbox"${tfaChecked}${tfaDisabled} />
+          <input id="settings-smtp-tfa-toggle" type="checkbox"${tfaChecked}${tfaDisabled} />
           <span class="slider"></span>
         </label>
       </div>
@@ -352,7 +352,7 @@ export function createSettingsSection({ i18n, root }) {
                 openPasswordResetPopup();
             };
             const tfaToggle = settingsRoot.querySelector(
-                "#settings-email-tfa-toggle",
+                "#settings-smtp-tfa-toggle",
             );
             if (tfaToggle instanceof HTMLInputElement) {
                 tfaToggle.onchange = async () => {

@@ -1,3 +1,5 @@
+import { renderDependencyLinks } from "./dependency-links.js";
+
 function resolveAdapterId(adapter) {
     return adapter.senderId ?? adapter.id;
 }
@@ -34,25 +36,7 @@ function renderDetailRows(pairs) {
         .join("");
 }
 
-function renderDependencyLinks(ids, scrollPrefix, gateways, i18n, escapeHtml) {
-    if (!ids || ids.length === 0) {
-        return i18n.t("ui.app.admin.gateway.no_dependencies");
-    }
-    const gatewayById = new Map(
-        gateways.map((gateway) => [gateway.id, gateway]),
-    );
-    return ids
-        .map((id) => {
-            const dependency = gatewayById.get(id);
-            const label = dependency
-                ? escapeHtml(dependency.name)
-                : escapeHtml(id);
-            return `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${label}</a>`;
-        })
-        .join(", ");
-}
-
-function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
+function renderDetailsList(moduleRecord, gateways, allAdapters, i18n, escapeHtml) {
     const pairs = [
         [i18n.t("ui.reuse.id"), moduleRecord.id],
         [i18n.t("ui.reuse.version"), moduleRecord.version],
@@ -73,8 +57,8 @@ function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
             depsKey,
             renderDependencyLinks(
                 moduleRecord.requires,
-                "gateway-",
                 gateways,
+                allAdapters,
                 i18n,
                 escapeHtml,
             ),
@@ -83,7 +67,7 @@ function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
     return renderDetailRows(pairs);
 }
 
-function renderModulesContent(modules, gateways, deps) {
+function renderModulesContent(modules, gateways, allAdapters, deps) {
     const { i18n, escapeHtml, resolveModuleConfigScriptUrl, isModuleEnabled } =
         deps;
     return modules
@@ -110,7 +94,7 @@ function renderModulesContent(modules, gateways, deps) {
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderDetailsList(moduleRecord, gateways, i18n, escapeHtml)}</ul>
+            <ul class="module-details">${renderDetailsList(moduleRecord, gateways, allAdapters, i18n, escapeHtml)}</ul>
           </div>
         </details>
       `;
@@ -118,7 +102,13 @@ function renderModulesContent(modules, gateways, deps) {
         .join("");
 }
 
-function renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml) {
+function renderGatewayDetailsList(
+    gateway,
+    gateways,
+    allAdapters,
+    i18n,
+    escapeHtml,
+) {
     const pairs = [
         [i18n.t("ui.reuse.id"), escapeHtml(gateway.id)],
         [i18n.t("ui.reuse.version"), escapeHtml(gateway.version ?? "")],
@@ -143,8 +133,8 @@ function renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml) {
         i18n.t("ui.app.admin.gateway.dependencies"),
         renderDependencyLinks(
             gateway.requires,
-            "gateway-",
             gateways,
+            allAdapters,
             i18n,
             escapeHtml,
         ),
@@ -226,7 +216,7 @@ function renderGatewaysContent(gateways, allAdapters, i18n, escapeHtml) {
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml)}</ul>
+            <ul class="module-details">${renderGatewayDetailsList(gateway, gateways, allAdapters, i18n, escapeHtml)}</ul>
             ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, i18n, escapeHtml)}
           </div>
         </details>
@@ -241,7 +231,7 @@ export function renderComponentsContent(modules, gateways, allAdapters, deps) {
     <div class="components-section">
       <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
       <div class="components-section-body">
-        ${renderModulesContent(modules, gateways, deps)}
+        ${renderModulesContent(modules, gateways, allAdapters, deps)}
       </div>
     </div>
     <div class="components-section">

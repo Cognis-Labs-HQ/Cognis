@@ -11,7 +11,7 @@ import {
     TfaCodeService,
 } from "../../../api/reuse/tfa-code.js";
 
-const EMAIL_TFA_PREF_KEY = "auth-email-tfa";
+const SMTP_TFA_PREF_KEY = "auth-smtp-tfa";
 const CHALLENGE_EXPIRY_MS = 10 * 60 * 1000;
 
 interface EmailTfaPrefValue {
@@ -37,8 +37,8 @@ type NotifyDispatch = (envelope: {
     metadata?: Record<string, unknown>;
 }) => Promise<{ dispatched: string[] }>;
 
-export class EmailTfaAuthAdapter implements AuthProviderAdapter {
-    readonly id = "email-tfa";
+export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
+    readonly id = "smtp-tfa";
     readonly name = "Email TFA";
     readonly supportsCredentialLogin = false;
 
@@ -106,7 +106,7 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
     ): Promise<EmailTfaPrefValue> {
         const prefStore = this.getPreferenceStore();
         if (!prefStore) return { enabled: false };
-        const raw = await prefStore.get(accountId, EMAIL_TFA_PREF_KEY);
+        const raw = await prefStore.get(accountId, SMTP_TFA_PREF_KEY);
         if (!raw) return { enabled: false };
         try {
             const parsed = JSON.parse(raw) as Partial<EmailTfaPrefValue>;
@@ -124,7 +124,7 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
         if (!prefStore) return;
         await prefStore.set(
             accountId,
-            EMAIL_TFA_PREF_KEY,
+            SMTP_TFA_PREF_KEY,
             JSON.stringify(value),
         );
     }
@@ -175,7 +175,7 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
             subject: "Your Cognis sign-in code",
             body: `Your Cognis email TFA code is: ${code}\n\nThis code expires in 10 minutes.`,
             metadata: {
-                source: "auth-email-tfa",
+                source: "auth-smtp-tfa",
             },
         });
         if (
@@ -244,5 +244,5 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
 }
 
 export function createAdapter(ctx?: AuthAdapterContext): AuthProviderAdapter {
-    return new EmailTfaAuthAdapter(ctx);
+    return new SmtpTfaAuthAdapter(ctx);
 }

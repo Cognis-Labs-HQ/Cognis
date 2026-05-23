@@ -34,6 +34,7 @@ import {
     isModuleEnabled,
     shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
+import { renderDependencyLinks } from "./dependency-links.js";
 
 let root = null;
 let i18n = null;
@@ -765,26 +766,79 @@ function bindIntegrityRerun() {
     });
 }
 
-function bindDependencyLinks() {
-    root.querySelectorAll(".dependency-link[data-scroll-to]").forEach(
+function findDependencyTargetElement(targetId) {
+    if (targetId.startsWith("adapter-")) {
+        const adapterReference = targetId.slice("adapter-".length);
+        const separatorIndex = adapterReference.indexOf(":");
+        if (separatorIndex < 1) {
+            return null;
+        }
+        const gatewayId = adapterReference.slice(0, separatorIndex);
+        const adapterId = adapterReference.slice(separatorIndex + 1);
+        return root.querySelector(
+            `.adapter-inline-row[data-gateway-id="${CSS.escape(gatewayId)}"][data-adapter-id="${CSS.escape(adapterId)}"]`,
+        );
+    }
+    if (targetId.startsWith("gateway-")) {
+        const gatewayId = targetId.slice("gateway-".length);
+        return root.querySelector(`[data-gateway="${CSS.escape(gatewayId)}"]`);
+    }
+    if (targetId.startsWith("module-")) {
+        const moduleId = targetId.slice("module-".length);
+        return root.querySelector(`[data-module="${CSS.escape(moduleId)}"]`);
+    }
+    return null;
+}
+
+function revealDependencyTarget(targetId) {
+    const targetElement = findDependencyTargetElement(targetId);
+    if (!(targetElement instanceof HTMLElement)) return;
+    const detailsElement =
+        targetElement instanceof HTMLDetailsElement
+            ? targetElement
+            : targetElement.closest("details");
+    if (detailsElement instanceof HTMLDetailsElement) {
+        detailsElement.setAttribute("open", "");
+    }
+    targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+    });
+}
+
+function bindDependencyLinks(container = root) {
+    container.querySelectorAll(".dependency-link[data-scroll-to]").forEach(
         (link) => {
             if (!(link instanceof HTMLAnchorElement)) return;
             const targetId = link.dataset.scrollTo;
             if (!targetId) return;
             link.addEventListener("click", (e) => {
                 e.preventDefault();
-                const targetElement = root.querySelector(
-                    `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"], [data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
-                );
-                if (!(targetElement instanceof HTMLElement)) return;
-                targetElement.setAttribute("open", "");
-                targetElement.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
+                revealDependencyTarget(targetId);
             });
         },
     );
+}
+
+function renderAdapterDependencyDetails(adapterRecord) {
+    const requires = Array.isArray(adapterRecord?.requires)
+        ? adapterRecord.requires
+        : [];
+    const dependenciesHtml = renderDependencyLinks(
+        requires,
+        gateways,
+        allAdapters,
+        i18n,
+        escapeHtml,
+    );
+    return `
+      <ul class="module-details">
+        <li class="module-detail-item">
+          <span class="module-detail-key">${escapeHtml(i18n.t("ui.app.admin.gateway.dependencies"))}</span>
+          <span class="module-detail-value">${dependenciesHtml}</span>
+        </li>
+      </ul>
+    `;
 }
 
 /**
@@ -986,6 +1040,7 @@ async function openAdapterConfig(
     name,
     adapterOverride = null,
 ) {
+    const adapterRecord = findAdapterRecord(gatewayId, adapterId, adapterOverride);
     const configUrl = resolveAdapterControlUrl(
         gatewayId,
         adapterId,
@@ -1051,11 +1106,10 @@ async function openAdapterConfig(
 
     const result = await openPopup({
         title: name,
-        body: renderGenericAdapterForm(
-            descriptors,
-            requiredFields,
-            supportsTest,
-        ),
+        body: `
+          ${renderAdapterDependencyDetails(adapterRecord)}
+          ${renderGenericAdapterForm(descriptors, requiredFields, supportsTest)}
+        `,
         maxWidth: "640px",
         actions: [
             {
@@ -1070,6 +1124,7 @@ async function openAdapterConfig(
             },
         ],
         onOpen: (overlay) => {
+            bindDependencyLinks(overlay);
             popupFormEl = overlay.querySelector(".provider-popup-form");
             if (!popupFormEl) return;
 

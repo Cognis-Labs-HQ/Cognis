@@ -227,7 +227,7 @@ export async function mount(root) {
       <p>${escapeHtml(i18n.t("ui.app.login.email_tfa.prompt"))}</p>
       <label class="stack">
         <span>${escapeHtml(i18n.t("ui.app.login.email_tfa.code_label"))}</span>
-        <input id="login-email-tfa-code-input" type="text" inputmode="numeric" maxlength="6" />
+        <input id="login-smtp-tfa-code-input" type="text" inputmode="numeric" maxlength="6" />
       </label>
     `,
             actions: [
@@ -238,7 +238,7 @@ export async function mount(root) {
                 },
             ],
             onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#login-email-tfa-code-input");
+                inputEl = overlay.querySelector("#login-smtp-tfa-code-input");
             },
         });
         if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
@@ -252,7 +252,7 @@ export async function mount(root) {
             const code = await promptEmailTfaCode();
             if (!code) return null;
             const response = await fetch(
-                "/api/v1/auth/email-tfa/verify-login",
+                "/api/v1/auth/smtp-tfa/verify-login",
                 {
                     method: "POST",
                     headers: { "content-type": "application/json" },
