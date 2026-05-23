@@ -168,15 +168,17 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function clearTfaDropMarkers() {
-        settingsRoot.querySelectorAll(
-            ".drop-target-before, .drop-target-after, .language-row-dragging",
-        ).forEach((row) => {
-            row.classList.remove(
-                "drop-target-before",
-                "drop-target-after",
-                "language-row-dragging",
-            );
-        });
+        settingsRoot
+            .querySelectorAll(
+                ".drop-target-before, .drop-target-after, .language-row-dragging",
+            )
+            .forEach((row) => {
+                row.classList.remove(
+                    "drop-target-before",
+                    "drop-target-after",
+                    "language-row-dragging",
+                );
+            });
     }
 
     function resolveTfaDropTarget(targetNode, clientY) {
@@ -186,9 +188,9 @@ export function createSettingsSection({ i18n, root }) {
         const targetRow = targetNode?.closest("tr[data-tfa-method-row]");
         const targetIsAfter = Boolean(
             targetRow &&
-                clientY >
-                    targetRow.getBoundingClientRect().top +
-                        targetRow.getBoundingClientRect().height / 2,
+            clientY >
+                targetRow.getBoundingClientRect().top +
+                    targetRow.getBoundingClientRect().height / 2,
         );
         return { targetTable, targetRow, targetIsAfter };
     }
@@ -212,7 +214,11 @@ export function createSettingsSection({ i18n, root }) {
             nextPreferredMethodIds.push(methodId);
             return nextPreferredMethodIds;
         }
-        nextPreferredMethodIds.splice(targetIsAfter ? targetIndex + 1 : targetIndex, 0, methodId);
+        nextPreferredMethodIds.splice(
+            targetIsAfter ? targetIndex + 1 : targetIndex,
+            0,
+            methodId,
+        );
         return nextPreferredMethodIds;
     }
 
@@ -318,7 +324,9 @@ export function createSettingsSection({ i18n, root }) {
                 );
                 return;
             }
-            const placeholderRow = zone.querySelector("tr:not([data-tfa-method-row])");
+            const placeholderRow = zone.querySelector(
+                "tr:not([data-tfa-method-row])",
+            );
             if (placeholderRow) {
                 placeholderRow.classList.add("drop-target-before");
             }

@@ -28,6 +28,6 @@ test("security preferences TFA drag and drop supports row insertion", () => {
     assert.match(SOURCE, /insertPreferredMethodId/);
     assert.match(
         SOURCE,
-        /nextPreferredMethodIds\.splice\(targetIsAfter \? targetIndex \+ 1 : targetIndex, 0, methodId\)/,
+        /nextPreferredMethodIds\.splice\(\s*targetIsAfter \? targetIndex \+ 1 : targetIndex,\s*0,\s*methodId,\s*\)/,
     );
 });
