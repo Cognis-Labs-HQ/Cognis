@@ -1,7 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
-import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -23,7 +22,6 @@ import {
     normalizeUsername,
     resolveUrlHost,
 } from "/static/reuse/value-normalizers.js";
-import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import {
     ALONE_PROMPT_GRACE_PERIOD_MS,
     ACTIVE_MEETINGS_REFRESH_INTERVAL_MS,
@@ -49,209 +47,88 @@ import {
     buildStageMarkup,
 } from "./markup.js";
 
-const MAX_EMOJI_PICKER_DISPLAY_COUNT = 80;
-
-let cachedEmojiList = null;
-let cachedEmojiUsage = [];
-const reactionHoverPopup = createAnchoredPopup({
-    className: "messages-reaction-hover-popup",
+const DEFAULT_MESSAGE_UI_RESOURCES = Object.freeze({
+    languageBaseUrls: ["/static/modules/jitsi-meet/languages"],
+    stylesheetUrls: [],
+    reactionHelpersModuleUrl: null,
 });
 
-function stableJson(value) {
-    return JSON.stringify(value);
-}
-
-function normalizeReactionEmoji(emoji) {
-    return String(emoji ?? "")
-        .trim()
-        .replace(/[\uFE0E\uFE0F]/g, "")
-        .normalize("NFC");
-}
-
-async function loadAllEmojis() {
-    if (cachedEmojiList) return cachedEmojiList;
+async function loadMessageUiResources() {
     try {
-        const response = await fetch("/static/gateways/social/emojis.json");
-        if (response.ok) {
-            cachedEmojiList = await response.json();
-        }
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/ui-resources",
+        );
+        if (!response.ok) return DEFAULT_MESSAGE_UI_RESOURCES;
+        const payload = await response.json().catch(() => ({ data: null }));
+        const responseData = payload?.data ?? {};
+        const languageBaseUrls = Array.isArray(responseData.languageBaseUrls)
+            ? responseData.languageBaseUrls.filter(
+                  (entry) => typeof entry === "string" && entry.length > 0,
+              )
+            : DEFAULT_MESSAGE_UI_RESOURCES.languageBaseUrls;
+        const stylesheetUrls = Array.isArray(responseData.stylesheetUrls)
+            ? responseData.stylesheetUrls.filter(
+                  (entry) => typeof entry === "string" && entry.length > 0,
+              )
+            : [];
+        const reactionHelpersModuleUrl =
+            typeof responseData.reactionHelpersModuleUrl === "string" &&
+            responseData.reactionHelpersModuleUrl.length > 0
+                ? responseData.reactionHelpersModuleUrl
+                : null;
+        return {
+            languageBaseUrls:
+                languageBaseUrls.length > 0
+                    ? languageBaseUrls
+                    : DEFAULT_MESSAGE_UI_RESOURCES.languageBaseUrls,
+            stylesheetUrls,
+            reactionHelpersModuleUrl,
+        };
     } catch {
-        cachedEmojiList = cachedEmojiList ?? [];
-    }
-    cachedEmojiList = cachedEmojiList ?? [];
-    return cachedEmojiList;
-}
-
-async function fetchEmojiUsage() {
-    try {
-        const response = await apiFetch("/api/v1/messages/emoji-usage");
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
-    } catch {
-        return [];
+        return DEFAULT_MESSAGE_UI_RESOURCES;
     }
 }
 
-function recordEmojiUsage(emoji) {
-    const normalizedEmoji = normalizeReactionEmoji(emoji);
-    if (!normalizedEmoji) return;
-    const usageEntry = cachedEmojiUsage.find(
-        (entry) => normalizeReactionEmoji(entry.emoji) === normalizedEmoji,
-    );
-    if (usageEntry) {
-        usageEntry.usageCount += 1;
-    } else {
-        cachedEmojiUsage.push({ emoji: normalizedEmoji, usageCount: 1 });
-    }
-    cachedEmojiUsage.sort((left, right) => right.usageCount - left.usageCount);
-    apiFetch("/api/v1/messages/emoji-usage", {
-        method: "POST",
-        body: JSON.stringify({ emoji: normalizedEmoji }),
-    }).catch(() => undefined);
-}
-
-function getQuickReactionEmojis() {
-    const sortedByUsage = cachedEmojiUsage
-        .map((entry) => normalizeReactionEmoji(entry.emoji))
-        .filter(Boolean);
-    const result = [];
-    for (const emoji of sortedByUsage) {
-        if (result.length >= 5) break;
-        if (!result.includes(emoji)) result.push(emoji);
-    }
-    for (const entry of cachedEmojiList ?? []) {
-        if (result.length >= 5) break;
-        const normalizedEmoji = normalizeReactionEmoji(entry.emoji);
-        if (normalizedEmoji && !result.includes(normalizedEmoji)) {
-            result.push(normalizedEmoji);
-        }
-    }
-    return result;
-}
-
-function emojiDisplayName(emoji, i18n) {
-    const normalizedEmoji = normalizeReactionEmoji(emoji);
-    let matchingEntry = null;
-    for (const entry of cachedEmojiList ?? []) {
-        if (normalizeReactionEmoji(entry.emoji) === normalizedEmoji) {
-            matchingEntry = entry;
-            break;
-        }
-    }
-    if (!matchingEntry) return emoji;
-    return i18n?.t(matchingEntry.name) ?? emoji;
-}
-
-function renderReactionRow(message, i18n) {
-    if (!message?.id) return "";
-    const reactionEntries = Array.isArray(message.reactions)
-        ? message.reactions
-        : [];
-    const mergedByEmoji = new Map();
-    for (const reaction of reactionEntries) {
-        const normalizedEmoji = normalizeReactionEmoji(reaction.emoji);
-        if (!normalizedEmoji) continue;
-        const existing = mergedByEmoji.get(normalizedEmoji);
-        if (existing) {
-            existing.count += Number(reaction.count ?? 0);
-            existing.reactedByMe = existing.reactedByMe || reaction.reactedByMe;
-            const reactedByRows = Array.isArray(reaction.reactedBy)
-                ? reaction.reactedBy
-                : [];
-            for (const reactor of reactedByRows) {
-                if (
-                    existing.reactedBy.some(
-                        (entry) => entry.accountId === reactor.accountId,
-                    )
-                ) {
-                    continue;
-                }
-                existing.reactedBy.push(reactor);
-            }
-            continue;
-        }
-        mergedByEmoji.set(normalizedEmoji, {
-            emoji: normalizedEmoji,
-            count: Number(reaction.count ?? 0),
-            reactedByMe: Boolean(reaction.reactedByMe),
-            reactedBy: Array.isArray(reaction.reactedBy)
-                ? reaction.reactedBy
-                : [],
-        });
-    }
-    const hasChips = mergedByEmoji.size > 0;
-    const chips = Array.from(mergedByEmoji.values())
-        .map((reaction) => {
-            const ownClass = reaction.reactedByMe
-                ? " messages-reaction-chip--active"
-                : "";
-            const emojiName = emojiDisplayName(reaction.emoji, i18n);
-            const reactedByLabels = reaction.reactedBy
-                .map((reactor) => resolveMemberDisplayName(reactor))
-                .filter(Boolean);
-            const reactedByPayload = stableJson(reactedByLabels);
-            return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
-        })
-        .join("");
-    const quick = Array.from(new Set(getQuickReactionEmojis()))
-        .filter(
-            (emoji) =>
-                emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
+function ensureStylesheetLoaded(stylesheetUrl) {
+    if (!stylesheetUrl) return;
+    if (
+        document.querySelector(
+            `link[rel="stylesheet"][href="${CSS.escape(stylesheetUrl)}"]`,
         )
-        .map(
-            (emoji) =>
-                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
-        )
-        .join("");
-    const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
-    const moreButton = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
-    const rowClass = hasChips
-        ? "messages-reactions-row messages-reactions-row--has-chips"
-        : "messages-reactions-row";
-    return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreButton}</span></div>`;
-}
-
-function hideReactionHoverPopup() {
-    reactionHoverPopup.hide();
-}
-
-function showReactionHoverPopup(reactionChipButton) {
-    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
-    const emojiName = String(
-        reactionChipButton.getAttribute("data-reaction-emoji-name") ?? "",
-    ).trim();
-    if (!emojiName) {
-        hideReactionHoverPopup();
+    ) {
         return;
     }
-    const rawReactedBy = String(
-        reactionChipButton.getAttribute("data-reacted-by") ?? "[]",
-    );
-    let reactedByLabels = [];
+    const stylesheetLink = document.createElement("link");
+    stylesheetLink.rel = "stylesheet";
+    stylesheetLink.href = stylesheetUrl;
+    document.head.append(stylesheetLink);
+}
+
+async function loadMessageReactionsController(
+    messageUiResources,
+    i18n,
+    onReactionUpdated,
+) {
+    const moduleUrl = messageUiResources?.reactionHelpersModuleUrl;
+    if (!moduleUrl) return null;
     try {
-        const parsedReactedBy = JSON.parse(rawReactedBy);
-        reactedByLabels = Array.isArray(parsedReactedBy)
-            ? parsedReactedBy
-                  .map((label) => String(label ?? "").trim())
-                  .filter(Boolean)
-            : [];
+        const moduleExports = await import(moduleUrl);
+        if (
+            typeof moduleExports?.createMessageReactionsController !==
+            "function"
+        ) {
+            return null;
+        }
+        const reactionsController =
+            moduleExports.createMessageReactionsController({
+                i18n,
+                onReactionUpdated,
+            });
+        await reactionsController.loadEmojiUsage?.();
+        return reactionsController;
     } catch {
-        reactedByLabels = [];
+        return null;
     }
-    const participantsMarkup =
-        reactedByLabels.length > 0
-            ? `<ul class="messages-reaction-hover-popup-users">${reactedByLabels
-                  .map(
-                      (participantLabel) =>
-                          `<li class="messages-reaction-hover-popup-user">${escapeHtml(participantLabel)}</li>`,
-                  )
-                  .join("")}</ul>`
-            : "";
-    reactionHoverPopup.show(
-        reactionChipButton,
-        `<h3 class="messages-reaction-hover-popup-title">${escapeHtml(emojiName)}</h3>${participantsMarkup}`,
-    );
 }
 
 function normalizeChatRoomId(value) {
@@ -380,15 +257,38 @@ async function fetchParticipants(query) {
  * @returns {Promise<void>}
  */
 export async function mount(root, { signal } = {}) {
+    const messageUiResources = await loadMessageUiResources();
+    for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
+        ensureStylesheetLoaded(stylesheetUrl);
+    }
     const i18n = await createI18n({
-        componentStringBaseUrls: [
-            "/static/modules/jitsi-meet/languages",
-            "/static/adapters/social/messages/languages",
-            "/static/gateways/social/languages",
-        ],
+        componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
+    const messageReactions = (await loadMessageReactionsController(
+        messageUiResources,
+        i18n,
+        async () => {
+            await refreshNativeChat();
+        },
+    )) ?? {
+        destroy: () => undefined,
+        hideReactionHoverPopup: () => undefined,
+        openEmojiPickerPopup: async () => undefined,
+        recordEmojiUsage: () => undefined,
+        renderReactionRow: () => "",
+        repositionReactionHoverPopup: () => undefined,
+        showReactionHoverPopup: () => undefined,
+        toggleReaction: async () => undefined,
+    };
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
-    signal?.addEventListener("abort", hideReactionHoverPopup, { once: true });
+    signal?.addEventListener(
+        "abort",
+        () => {
+            messageReactions.hideReactionHoverPopup();
+            messageReactions.destroy();
+        },
+        { once: true },
+    );
 
     const state = {
         allParticipants: [],
@@ -644,7 +544,7 @@ export async function mount(root, { signal } = {}) {
     function renderChatMessages(messages) {
         const chatThread = root.querySelector("#jitsi-chat-thread");
         if (!(chatThread instanceof HTMLElement)) return;
-        hideReactionHoverPopup();
+        messageReactions.hideReactionHoverPopup();
         if (!Array.isArray(messages) || messages.length === 0) {
             chatThread.innerHTML = `<p class="jitsi-chat-empty">${escapeHtml(i18n.t("module.jitsi_meet.chat.empty"))}</p>`;
             return;
@@ -675,94 +575,18 @@ export async function mount(root, { signal } = {}) {
                 <time>${escapeHtml(safeTime)}</time>
               </header>
               <p class="jitsi-chat-message-body">${body}</p>
-              ${renderReactionRow(message, i18n)}
+              ${messageReactions.renderReactionRow(message)}
             </article>`;
             })
             .join("");
     }
 
     async function toggleReaction(roomId, messageId, emoji) {
-        if (!roomId || !messageId || !emoji) return;
-        const normalizedEmoji = normalizeReactionEmoji(emoji);
-        if (!normalizedEmoji) return;
-        const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
-            {
-                method: "POST",
-                body: JSON.stringify({ emoji: normalizedEmoji }),
-            },
-        );
-        if (!response.ok) return;
-        await refreshNativeChat();
+        await messageReactions.toggleReaction(roomId, messageId, emoji);
     }
 
     async function openEmojiPickerPopup(roomId, messageId) {
-        if (!roomId || !messageId) return;
-        const allEmojis = await loadAllEmojis();
-        const pickerPlaceholder = i18n.t(
-            "module.social.messages.emoji_search_placeholder",
-        );
-        const pickerTitle = i18n.t("module.social.messages.emoji_more");
-
-        function buildEmojiGridHtml(entries) {
-            return entries
-                .slice(0, MAX_EMOJI_PICKER_DISPLAY_COUNT)
-                .map((entry) => {
-                    const resolvedName = i18n.t(entry.name) ?? entry.name;
-                    return `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(resolvedName)}">${escapeHtml(entry.emoji)}</button>`;
-                })
-                .join("");
-        }
-
-        await openPopup({
-            title: pickerTitle,
-            maxWidth: "420px",
-            body: `<div class="messages-emoji-picker"><input type="text" class="messages-emoji-search" placeholder="${escapeHtml(pickerPlaceholder)}" autocomplete="off" /><div class="messages-emoji-grid">${buildEmojiGridHtml(allEmojis)}</div></div>`,
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-            onOpen: (overlay) => {
-                const searchInput = overlay.querySelector(
-                    ".messages-emoji-search",
-                );
-                const grid = overlay.querySelector(".messages-emoji-grid");
-                grid?.addEventListener("click", async (clickEvent) => {
-                    const emojiButton = clickEvent.target.closest(
-                        ".messages-emoji-picker-btn",
-                    );
-                    if (!(emojiButton instanceof HTMLButtonElement)) return;
-                    const chosenEmoji = emojiButton.dataset.emoji;
-                    if (!chosenEmoji) return;
-                    overlay.querySelector("[data-popup-action]")?.click();
-                    recordEmojiUsage(chosenEmoji);
-                    await toggleReaction(roomId, messageId, chosenEmoji);
-                });
-                searchInput?.addEventListener("input", () => {
-                    const query = searchInput.value
-                        .normalize("NFC")
-                        .toLowerCase()
-                        .trim();
-                    const filtered = query
-                        ? allEmojis.filter((entry) => {
-                              const resolvedName = (
-                                  i18n.t(entry.name) ?? entry.name
-                              )
-                                  .normalize("NFC")
-                                  .toLowerCase();
-                              return resolvedName.includes(query);
-                          })
-                        : allEmojis;
-                    if (grid) {
-                        grid.innerHTML = buildEmojiGridHtml(filtered);
-                    }
-                });
-                searchInput?.focus();
-            },
-        });
+        await messageReactions.openEmojiPickerPopup(roomId, messageId);
     }
 
     function clearNativeChatThread() {
@@ -2251,7 +2075,7 @@ export async function mount(root, { signal } = {}) {
             chatThread.addEventListener(
                 "click",
                 async (clickEvent) => {
-                    hideReactionHoverPopup();
+                    messageReactions.hideReactionHoverPopup();
                     const moreButton = clickEvent.target.closest(
                         "[data-reaction-more]",
                     );
@@ -2280,7 +2104,7 @@ export async function mount(root, { signal } = {}) {
                             "messages-reaction-add-btn",
                         )
                     ) {
-                        recordEmojiUsage(emoji);
+                        messageReactions.recordEmojiUsage(emoji);
                     }
                     await toggleReaction(roomId, messageId, emoji);
                 },
@@ -2303,7 +2127,7 @@ export async function mount(root, { signal } = {}) {
                     ) {
                         return;
                     }
-                    showReactionHoverPopup(reactionChipButton);
+                    messageReactions.showReactionHoverPopup(reactionChipButton);
                 },
                 { signal: bindSignal },
             );
@@ -2324,7 +2148,7 @@ export async function mount(root, { signal } = {}) {
                     ) {
                         return;
                     }
-                    hideReactionHoverPopup();
+                    messageReactions.hideReactionHoverPopup();
                 },
                 { signal: bindSignal },
             );
@@ -2338,7 +2162,7 @@ export async function mount(root, { signal } = {}) {
                     );
                     if (!(reactionChipButton instanceof HTMLButtonElement))
                         return;
-                    showReactionHoverPopup(reactionChipButton);
+                    messageReactions.showReactionHoverPopup(reactionChipButton);
                 },
                 { signal: bindSignal },
             );
@@ -2359,7 +2183,14 @@ export async function mount(root, { signal } = {}) {
                     ) {
                         return;
                     }
-                    hideReactionHoverPopup();
+                    messageReactions.hideReactionHoverPopup();
+                },
+                { signal: bindSignal },
+            );
+            window.addEventListener(
+                "resize",
+                () => {
+                    messageReactions.repositionReactionHoverPopup();
                 },
                 { signal: bindSignal },
             );

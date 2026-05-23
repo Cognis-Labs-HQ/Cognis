@@ -426,42 +426,51 @@ test("meetings mini chat supports the Messages reaction floating menu", () => {
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    const cssSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+    const reactionsSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/reactions.js"),
         "utf8",
     );
-    assert.match(appSource, /createAnchoredPopup, openPopup/);
-    assert.match(
-        appSource,
-        /const reactionHoverPopup = createAnchoredPopup\(\{\s*className: "messages-reaction-hover-popup"/,
+    const sharedCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-chat-shared.css",
+        ),
+        "utf8",
     );
-    assert.match(appSource, /function renderReactionRow\(message, i18n\)/);
-    assert.match(appSource, /\$\{renderReactionRow\(message, i18n\)\}/);
-    assert.match(appSource, /data-reaction-more="1"/);
     assert.match(
         appSource,
+        /async function loadMessageUiResources\(\)[\s\S]*\/api\/v1\/modules\/jitsi-meet\/ui-resources/,
+    );
+    assert.match(appSource, /async function loadMessageReactionsController\(/);
+    assert.match(appSource, /messageReactions\.renderReactionRow\(message\)/);
+    assert.match(appSource, /messageReactions\.openEmojiPickerPopup/);
+    assert.match(reactionsSource, /data-reaction-more="1"/);
+    assert.match(
+        reactionsSource,
         /\/api\/v1\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\/\$\{encodeURIComponent\(messageId\)\}\/reactions/,
     );
     assert.match(
-        appSource,
-        /async function openEmojiPickerPopup\(roomId, messageId\)/,
+        sharedCssSource,
+        /\.jitsi-chat-message \.messages-reactions-row/,
     );
-    assert.match(cssSource, /\.jitsi-chat-message \.messages-reactions-row/);
-    assert.match(cssSource, /\.messages-reaction-hover-popup/);
-    assert.match(cssSource, /\.messages-emoji-picker/);
+    assert.match(sharedCssSource, /\.messages-reaction-hover-popup/);
+    assert.match(sharedCssSource, /\.messages-emoji-picker/);
 });
 
 test("meetings speech bubbles use the same contrast-oriented color tokens as Messages", () => {
-    const cssSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+    const variantsCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-style-variants.css",
+        ),
         "utf8",
     );
     assert.match(
-        cssSource,
+        variantsCssSource,
         /html\[data-message-style="speech_bubbles"\][\s\S]*\.jitsi-chat-message:not\(\.jitsi-chat-message-own\)[\s\S]*background:\s*var\(--color-surface-elevated\);[\s\S]*border-color:\s*var\(--color-border\);/,
     );
     assert.match(
-        cssSource,
+        variantsCssSource,
         /html\[data-message-style="speech_bubbles"\][\s\S]*\.jitsi-chat-message-own[\s\S]*background:\s*var\(--color-accent\);[\s\S]*color:\s*var\(--color-accent-contrast\);/,
     );
 });
@@ -469,6 +478,10 @@ test("meetings speech bubbles use the same contrast-oriented color tokens as Mes
 test("jitsi API dispatches meeting lifecycle and participant notifications", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    const uiResourcesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
         "utf8",
     );
     assert.match(
@@ -491,6 +504,11 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
     assert.match(source, /!excludedRecipients\.has\(username\)/);
     assert.match(source, /senderName:/);
     assert.match(source, /actionUrl: buildMeetingActionUrl/);
+    assert.match(source, /resolveMessagesUiResources/);
+    assert.match(
+        uiResourcesSource,
+        /\/api\/v1\/modules\/jitsi-meet\/ui-resources/,
+    );
 });
 
 test("meetings UI renders active meetings panel and deep-link join support", () => {
