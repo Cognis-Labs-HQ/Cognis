@@ -434,65 +434,6 @@ export function createSettingsSection({ i18n, root }) {
                     if (actionId !== "confirm") {
                         return true;
                     }
-
-                    async function openConfiguredMethodPopup(methodId) {
-                        const details = await loadTfaMethodDetails(methodId);
-                        if (!details || typeof details !== "object") {
-                            showToast(
-                                i18n.t(
-                                    "gateway.auth.security.tfa_method_details_failed",
-                                ),
-                                {
-                                    variant: "error",
-                                },
-                            );
-                            return false;
-                        }
-                        const manualSecret =
-                            typeof details.manualSecret === "string"
-                                ? details.manualSecret
-                                : "";
-                        const qrSvg =
-                            typeof details.qrSvg === "string"
-                                ? details.qrSvg
-                                : "";
-                        const qrImage = createQrImageSource(qrSvg);
-                        let action = null;
-                        try {
-                            action = await openPopup({
-                                title: i18n.t(
-                                    "gateway.auth.security.tfa_method_manage_title",
-                                ),
-                                maxWidth: "520px",
-                                body: () => `
-                                <div class="stack">
-                                  <p class="settings-tfa-setup-prompt">${escapeHtml(i18n.t("gateway.auth.security.tfa_method_manage_prompt"))}</p>
-                                  ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.auth.security.tfa_qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
-                                  ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.auth.security.tfa_manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
-                                </div>`,
-                                actions: [
-                                    {
-                                        id: "rotate",
-                                        label: i18n.t(
-                                            "gateway.auth.security.tfa_method_rotate",
-                                        ),
-                                        variant: "confirm",
-                                    },
-                                    {
-                                        id: "close",
-                                        label: i18n.t("ui.reuse.close"),
-                                        variant: "cancel",
-                                    },
-                                ],
-                            });
-                        } finally {
-                            qrImage.revoke();
-                        }
-                        if (action !== "rotate") {
-                            return false;
-                        }
-                        return runTfaSetupFlow(methodId);
-                    }
                     if (!(codeInput instanceof HTMLInputElement)) {
                         showToast(
                             i18n.t("gateway.auth.security.tfa_setup_failed"),
@@ -532,6 +473,58 @@ export function createSettingsSection({ i18n, root }) {
             return false;
         }
         return true;
+    }
+
+    async function openConfiguredMethodPopup(methodId) {
+        const details = await loadTfaMethodDetails(methodId);
+        if (!details || typeof details !== "object") {
+            showToast(
+                i18n.t("gateway.auth.security.tfa_method_details_failed"),
+                {
+                    variant: "error",
+                },
+            );
+            return false;
+        }
+        const manualSecret =
+            typeof details.manualSecret === "string"
+                ? details.manualSecret
+                : "";
+        const qrSvg = typeof details.qrSvg === "string" ? details.qrSvg : "";
+        const qrImage = createQrImageSource(qrSvg);
+        let action = null;
+        try {
+            action = await openPopup({
+                title: i18n.t("gateway.auth.security.tfa_method_manage_title"),
+                maxWidth: "520px",
+                body: () => `
+                <div class="stack">
+                  <p class="settings-tfa-setup-prompt">${escapeHtml(i18n.t("gateway.auth.security.tfa_method_manage_prompt"))}</p>
+                  ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.auth.security.tfa_qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
+                  ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.auth.security.tfa_manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
+                </div>`,
+                actions: [
+                    {
+                        id: "rotate",
+                        label: i18n.t(
+                            "gateway.auth.security.tfa_method_rotate",
+                        ),
+                        variant: "confirm",
+                    },
+                    {
+                        id: "close",
+                        label: i18n.t("ui.reuse.close"),
+                        variant: "cancel",
+                    },
+                ],
+            });
+        } finally {
+            qrImage.revoke();
+        }
+        if (action !== "rotate") {
+            return false;
+        }
+        return runTfaSetupFlow(methodId);
     }
 
     function bindTfaDragAndDrop() {
