@@ -1,9 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    createAdapter,
-    SmtpTfaAuthAdapter,
-} from "../index.js";
+import { createAdapter, SmtpTfaAuthAdapter } from "../index.js";
 import type { AuthAdapterContext } from "../../../../gateways/auth/gateway.js";
 
 function createContext(

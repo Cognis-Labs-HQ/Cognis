@@ -36,7 +36,13 @@ function renderDetailRows(pairs) {
         .join("");
 }
 
-function renderDetailsList(moduleRecord, gateways, allAdapters, i18n, escapeHtml) {
+function renderDetailsList(
+    moduleRecord,
+    gateways,
+    allAdapters,
+    i18n,
+    escapeHtml,
+) {
     const pairs = [
         [i18n.t("ui.reuse.id"), moduleRecord.id],
         [i18n.t("ui.reuse.version"), moduleRecord.version],

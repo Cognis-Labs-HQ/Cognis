@@ -52,9 +52,9 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function loadEmailTfaState() {
-        const response = await apiFetch(
-            "/api/v1/auth/smtp-tfa/settings",
-        ).catch(() => null);
+        const response = await apiFetch("/api/v1/auth/smtp-tfa/settings").catch(
+            () => null,
+        );
         if (!response?.ok) {
             emailTfaState = {
                 enabled: false,

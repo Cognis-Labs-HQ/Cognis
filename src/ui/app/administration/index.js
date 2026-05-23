@@ -807,8 +807,9 @@ function revealDependencyTarget(targetId) {
 }
 
 function bindDependencyLinks(container = root) {
-    container.querySelectorAll(".dependency-link[data-scroll-to]").forEach(
-        (link) => {
+    container
+        .querySelectorAll(".dependency-link[data-scroll-to]")
+        .forEach((link) => {
             if (!(link instanceof HTMLAnchorElement)) return;
             const targetId = link.dataset.scrollTo;
             if (!targetId) return;
@@ -816,8 +817,7 @@ function bindDependencyLinks(container = root) {
                 e.preventDefault();
                 revealDependencyTarget(targetId);
             });
-        },
-    );
+        });
 }
 
 function renderAdapterDependencyDetails(adapterRecord) {
@@ -1040,7 +1040,11 @@ async function openAdapterConfig(
     name,
     adapterOverride = null,
 ) {
-    const adapterRecord = findAdapterRecord(gatewayId, adapterId, adapterOverride);
+    const adapterRecord = findAdapterRecord(
+        gatewayId,
+        adapterId,
+        adapterOverride,
+    );
     const configUrl = resolveAdapterControlUrl(
         gatewayId,
         adapterId,

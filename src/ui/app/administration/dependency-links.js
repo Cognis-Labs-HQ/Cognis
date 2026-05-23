@@ -23,17 +23,38 @@ function renderDependencyLink(
         return `<a class="dependency-link" href="#" data-scroll-to="gateway-${escapeHtml(dependencyId)}">${dependencyLabel}</a>`;
     }
 
-    const [gatewayId, adapterId] = dependencyId.split(":");
-    const adapterDependency = adapterByCompositeKey.get(`${gatewayId}:${adapterId}`);
+    const separatorIndex = dependencyId.indexOf(":");
+    const isInvalidAdapterReference =
+        separatorIndex <= 0 ||
+        separatorIndex !== dependencyId.lastIndexOf(":") ||
+        separatorIndex >= dependencyId.length - 1;
+    if (isInvalidAdapterReference) {
+        return escapeHtml(dependencyId);
+    }
+    const gatewayId = dependencyId.slice(0, separatorIndex);
+    const adapterId = dependencyId.slice(separatorIndex + 1);
+    const adapterDependency = adapterByCompositeKey.get(
+        `${gatewayId}:${adapterId}`,
+    );
     const fallbackAdapterLabel = `${gatewayId}:${adapterId}`;
     const dependencyLabel = adapterDependency
-        ? escapeHtml(adapterDependency.name ?? adapterDependency.id ?? fallbackAdapterLabel)
+        ? escapeHtml(
+              adapterDependency.name ??
+                  adapterDependency.id ??
+                  fallbackAdapterLabel,
+          )
         : escapeHtml(fallbackAdapterLabel);
     const targetId = `adapter-${gatewayId}:${adapterId}`;
     return `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(targetId)}">${dependencyLabel}</a>`;
 }
 
-export function renderDependencyLinks(ids, gateways, adapters, i18n, escapeHtml) {
+export function renderDependencyLinks(
+    ids,
+    gateways,
+    adapters,
+    i18n,
+    escapeHtml,
+) {
     if (!Array.isArray(ids) || ids.length === 0) {
         return i18n.t("ui.app.admin.gateway.no_dependencies");
     }

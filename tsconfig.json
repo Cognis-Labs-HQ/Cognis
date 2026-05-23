@@ -3,9 +3,6 @@
     "files": [],
     "references": [
         {
-            "path": "./src/adapters/auth/email-tfa"
-        },
-        {
             "path": "./src/adapters/auth/ldap"
         },
         {
@@ -16,6 +13,9 @@
         },
         {
             "path": "./src/adapters/auth/saml"
+        },
+        {
+            "path": "./src/adapters/auth/smtp-tfa"
         },
         {
             "path": "./src/adapters/db/mariadb"

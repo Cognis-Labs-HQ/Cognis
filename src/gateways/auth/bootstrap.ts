@@ -138,29 +138,34 @@ function hasEmailTfaResetHook(
 function findEmailTfaAdapter(
     authGateway: CoreAuthGateway,
     options: { enabledOnly: boolean },
-): (AuthProviderAdapter & {
-    shouldRequireEmailTfa(accountId: string): Promise<boolean>;
-    beginEmailTfaLoginChallenge(
-        session: AuthPendingSession,
-    ): Promise<{ challengeId: string }>;
-    completeEmailTfaLoginChallenge(
-        challengeId: string,
-        code: string,
-    ): Promise<AuthPendingSession | null>;
-    getEmailTfaState(accountId: string): Promise<{
-        enabled: boolean;
-        enforced: boolean;
-        available: boolean;
-    }>;
-    setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void>;
-}) | null {
+):
+    | (AuthProviderAdapter & {
+          shouldRequireEmailTfa(accountId: string): Promise<boolean>;
+          beginEmailTfaLoginChallenge(
+              session: AuthPendingSession,
+          ): Promise<{ challengeId: string }>;
+          completeEmailTfaLoginChallenge(
+              challengeId: string,
+              code: string,
+          ): Promise<AuthPendingSession | null>;
+          getEmailTfaState(accountId: string): Promise<{
+              enabled: boolean;
+              enforced: boolean;
+              available: boolean;
+          }>;
+          setEmailTfaEnabled(
+              accountId: string,
+              enabled: boolean,
+          ): Promise<void>;
+      })
+    | null {
     const candidateAdapters = options.enabledOnly
         ? authGateway.getEnabledAdapters()
         : authGateway
               .listAdapters()
               .map((adapterInfo) => authGateway.getAdapter(adapterInfo.id))
-              .filter((adapter): adapter is AuthProviderAdapter =>
-                  adapter !== null,
+              .filter(
+                  (adapter): adapter is AuthProviderAdapter => adapter !== null,
               );
     const adapter = candidateAdapters.find((candidateAdapter) =>
         isEmailTfaAdapter(candidateAdapter),

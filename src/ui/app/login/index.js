@@ -251,14 +251,11 @@ export async function mount(root) {
         while (true) {
             const code = await promptEmailTfaCode();
             if (!code) return null;
-            const response = await fetch(
-                "/api/v1/auth/smtp-tfa/verify-login",
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ challengeId, code }),
-                },
-            );
+            const response = await fetch("/api/v1/auth/smtp-tfa/verify-login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ challengeId, code }),
+            });
             const body = await response.json().catch(() => null);
             if (response.ok && body?.data) {
                 return body.data;
