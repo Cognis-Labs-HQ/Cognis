@@ -130,7 +130,18 @@ export function createSettingsSection({ i18n, root }) {
         return payload?.data?.recoveryCodes ?? null;
     }
 
+    function makeEmptyDropZoneRow() {
+        return `
+            <tr>
+              <td colspan="2" class="language-table-empty-cell">\u00A0</td>
+            </tr>
+        `;
+    }
+
     function renderTfaRows(methods) {
+        if (!Array.isArray(methods) || methods.length === 0) {
+            return makeEmptyDropZoneRow();
+        }
         return methods
             .map(
                 (method) => `
@@ -154,6 +165,55 @@ export function createSettingsSection({ i18n, root }) {
             preferred: enabled,
             available: available.filter((method) => !enabledIds.has(method.id)),
         };
+    }
+
+    function clearTfaDropMarkers() {
+        settingsRoot.querySelectorAll(
+            ".drop-target-before, .drop-target-after, .language-row-dragging",
+        ).forEach((row) => {
+            row.classList.remove(
+                "drop-target-before",
+                "drop-target-after",
+                "language-row-dragging",
+            );
+        });
+    }
+
+    function resolveTfaDropTarget(targetNode, clientY) {
+        const targetTable = targetNode?.closest(
+            "#available-tfa-methods, #preferred-tfa-methods",
+        );
+        const targetRow = targetNode?.closest("tr[data-tfa-method-row]");
+        const targetIsAfter = Boolean(
+            targetRow &&
+                clientY >
+                    targetRow.getBoundingClientRect().top +
+                        targetRow.getBoundingClientRect().height / 2,
+        );
+        return { targetTable, targetRow, targetIsAfter };
+    }
+
+    function insertPreferredMethodId({
+        preferredMethodIds,
+        methodId,
+        targetRow,
+        targetIsAfter,
+    }) {
+        const nextPreferredMethodIds = preferredMethodIds.filter(
+            (entry) => entry !== methodId,
+        );
+        if (!targetRow) {
+            nextPreferredMethodIds.push(methodId);
+            return nextPreferredMethodIds;
+        }
+        const targetMethodId = targetRow.getAttribute("data-tfa-method-row");
+        const targetIndex = nextPreferredMethodIds.indexOf(targetMethodId);
+        if (targetIndex < 0) {
+            nextPreferredMethodIds.push(methodId);
+            return nextPreferredMethodIds;
+        }
+        nextPreferredMethodIds.splice(targetIsAfter ? targetIndex + 1 : targetIndex, 0, methodId);
+        return nextPreferredMethodIds;
     }
 
     async function runTfaSetupFlow(methodId) {
@@ -230,10 +290,12 @@ export function createSettingsSection({ i18n, root }) {
             const row = target.closest("tr[data-tfa-method-row]");
             if (!row) return;
             dragTfaMethodId = row.getAttribute("data-tfa-method-row");
+            row.classList.add("language-row-dragging");
             event.dataTransfer?.setData("text/plain", dragTfaMethodId || "");
         });
 
         settingsRoot.addEventListener("dragend", () => {
+            clearTfaDropMarkers();
             dragTfaMethodId = null;
         });
 
@@ -246,27 +308,42 @@ export function createSettingsSection({ i18n, root }) {
             );
             if (!zone) return;
             event.preventDefault();
+            clearTfaDropMarkers();
+            const row = zone.closest("tr[data-tfa-method-row]");
+            if (row) {
+                const rect = row.getBoundingClientRect();
+                const isAfter = event.clientY > rect.top + rect.height / 2;
+                row.classList.add(
+                    isAfter ? "drop-target-after" : "drop-target-before",
+                );
+                return;
+            }
+            const placeholderRow = zone.querySelector("tr:not([data-tfa-method-row])");
+            if (placeholderRow) {
+                placeholderRow.classList.add("drop-target-before");
+            }
         });
 
         settingsRoot.addEventListener("drop", async (event) => {
             const target =
                 event.target instanceof Element ? event.target : null;
             if (!target) return;
-            const targetTable = target.closest(
-                "#available-tfa-methods, #preferred-tfa-methods",
-            );
+            const { targetTable, targetRow, targetIsAfter } =
+                resolveTfaDropTarget(target, event.clientY);
             if (!targetTable) return;
             event.preventDefault();
+            clearTfaDropMarkers();
             const methodId =
                 dragTfaMethodId || event.dataTransfer?.getData("text/plain");
+            dragTfaMethodId = null;
             if (!methodId) return;
-            const status = await loadTfaStatus();
-            const preferred = [...(status.enabledMethods ?? [])];
-            const isInPreferred = preferred.some(
+            let status = await loadTfaStatus();
+            const isInPreferred = (status.enabledMethods ?? []).some(
                 (entry) => entry.id === methodId,
             );
             if (targetTable.id === "available-tfa-methods" && isInPreferred) {
                 await disableTfaMethod(methodId);
+                status = await loadTfaStatus();
             }
             if (targetTable.id === "preferred-tfa-methods" && !isInPreferred) {
                 const setupCompleted = await runTfaSetupFlow(methodId);
@@ -279,12 +356,20 @@ export function createSettingsSection({ i18n, root }) {
                     bindTfaInteractions();
                     return;
                 }
+                status = await loadTfaStatus();
             }
-            tfaStatus = await loadTfaStatus();
-            const latestPreferred = [...(tfaStatus.enabledMethods ?? [])];
-            await savePreferredTfaMethods(
-                latestPreferred.map((entry) => entry.id),
+            let preferredMethodIds = (status.enabledMethods ?? []).map(
+                (entry) => entry.id,
             );
+            if (targetTable.id === "preferred-tfa-methods") {
+                preferredMethodIds = insertPreferredMethodId({
+                    preferredMethodIds,
+                    methodId,
+                    targetRow,
+                    targetIsAfter,
+                });
+            }
+            await savePreferredTfaMethods(preferredMethodIds);
             tfaStatus = await loadTfaStatus();
             const panel = settingsRoot.querySelector(
                 "#auth-security-reset-panel",
@@ -353,7 +438,7 @@ export function createSettingsSection({ i18n, root }) {
 
     function bindTfaInteractions() {
         const recoveryCodesButton = settingsRoot.querySelector(
-            "#settings-tfa-recovery-codes-btn",
+            "#settings-recovery-codes-btn",
         );
         if (recoveryCodesButton instanceof HTMLButtonElement) {
             recoveryCodesButton.onclick = async () => {
@@ -454,6 +539,7 @@ export function createSettingsSection({ i18n, root }) {
 
     function renderBody() {
         const { available, preferred } = resolveTfaLists();
+        const hasRecoveryCodes = tfaStatus?.hasRecoveryCodes === true;
         if (!capability) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
         }
@@ -469,14 +555,18 @@ export function createSettingsSection({ i18n, root }) {
       <div class="settings-auth-tfa">
         <h3>${i18n.t("gateway.auth.security.tfa_section_title")}</h3>
         <div class="settings-language-heading-row">
-          <h4>${i18n.t("gateway.auth.security.tfa_available_methods")}</h4>
+          <h3>${i18n.t("gateway.auth.security.tfa_available_methods")}</h3>
         </div>
         <table id="available-tfa-methods" class="language-table">${renderTfaRows(available)}</table>
         <div class="settings-language-heading-row">
-          <h4>${i18n.t("gateway.auth.security.tfa_preferred_methods")}</h4>
-          <button class="btn-animated" type="button" id="settings-tfa-recovery-codes-btn">${i18n.t("gateway.auth.security.tfa_recovery_codes_action")}</button>
+          <h3>${i18n.t("gateway.auth.security.tfa_preferred_methods")}</h3>
         </div>
         <table id="preferred-tfa-methods" class="language-table">${renderTfaRows(preferred)}</table>
+      </div>
+      <div class="settings-auth-recovery-codes">
+        <h3>${i18n.t("gateway.auth.security.tfa_recovery_codes_title")}</h3>
+        <p>${i18n.t(hasRecoveryCodes ? "gateway.auth.security.tfa_recovery_codes_ready" : "gateway.auth.security.tfa_recovery_codes_missing")}</p>
+        <button class="btn-animated" type="button" id="settings-recovery-codes-btn">${i18n.t(hasRecoveryCodes ? "gateway.auth.security.tfa_recovery_codes_action" : "gateway.auth.security.tfa_recovery_codes_create_action")}</button>
       </div>
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>

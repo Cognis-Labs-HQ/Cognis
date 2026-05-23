@@ -23,8 +23,11 @@
   <string name="gateway.auth.security.tfa_setup_title">Zwei-Faktor-Methode Einrichten</string>
   <string name="gateway.auth.security.tfa_setup_failed">Die Zwei-Faktor-Einrichtung konnte nicht gestartet werden.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_action">Wiederherstellungscodes Erneuern</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_create_action">Wiederherstellungscodes Erstellen</string>
   <string name="gateway.auth.security.tfa_recovery_codes_title">Wiederherstellungscodes</string>
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Wiederherstellungscodes konnten nicht erneuert werden.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_ready">Für dieses Konto sind Wiederherstellungscodes verfügbar.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_missing">Für dieses Konto sind keine Wiederherstellungscodes aktiv.</string>
   <string name="gateway.auth.security.tfa_required_title">Zwei-Faktor-Einrichtung Erforderlich</string>
   <string name="gateway.auth.security.tfa_required_prompt">Wählen Sie eine Methode aus, die Sie vor dem Fortfahren konfigurieren möchten.</string>
   <string name="gateway.auth.security.tfa_totp_prompt">Scannen Sie die QR-Payload-URI mit Ihrer Authenticator-App und geben Sie danach einen 6-stelligen Code ein, um die Einrichtung zu bestätigen.</string>

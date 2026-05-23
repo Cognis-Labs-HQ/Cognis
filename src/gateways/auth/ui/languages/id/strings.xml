@@ -23,8 +23,11 @@
   <string name="gateway.auth.security.tfa_setup_title">Siapkan Metode Dua Faktor</string>
   <string name="gateway.auth.security.tfa_setup_failed">Tidak dapat memulai penyiapan dua faktor.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_action">Putar Ulang Kode Pemulihan</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_create_action">Buat Kode Pemulihan</string>
   <string name="gateway.auth.security.tfa_recovery_codes_title">Kode Pemulihan</string>
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Tidak dapat memutar ulang kode pemulihan.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_ready">Kode pemulihan tersedia untuk akun ini.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_missing">Tidak ada kode pemulihan aktif untuk akun ini.</string>
   <string name="gateway.auth.security.tfa_required_title">Penyiapan Dua Faktor Wajib</string>
   <string name="gateway.auth.security.tfa_required_prompt">Pilih metode yang harus dikonfigurasi sebelum melanjutkan.</string>
   <string name="gateway.auth.security.tfa_totp_prompt">Pindai URI payload QR di aplikasi autentikator Anda, lalu masukkan kode 6 digit untuk memverifikasi penyiapan.</string>

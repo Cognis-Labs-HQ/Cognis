@@ -23,8 +23,11 @@
   <string name="gateway.auth.security.tfa_setup_title">Setup Two-Factor Method</string>
   <string name="gateway.auth.security.tfa_setup_failed">Could not start two-factor setup.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_action">Rotate Recovery Codes</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_create_action">Generate Recovery Codes</string>
   <string name="gateway.auth.security.tfa_recovery_codes_title">Recovery Codes</string>
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Could not rotate recovery codes.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_ready">Recovery codes are available for this account.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_missing">No recovery codes are active for this account.</string>
   <string name="gateway.auth.security.tfa_required_title">Two-Factor Setup Required</string>
   <string name="gateway.auth.security.tfa_required_prompt">Select a method to configure before continuing.</string>
   <string name="gateway.auth.security.tfa_totp_prompt">Scan the QR payload URI in your authenticator app, then enter a 6-digit code to verify setup.</string>
