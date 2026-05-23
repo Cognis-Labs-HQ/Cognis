@@ -63,7 +63,9 @@ interface PendingTfaLoginAttempt {
     expiresAt: number;
 }
 
+// 18 random bytes provide ample entropy for short-lived login-attempt IDs.
 const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
+// Pending TFA login attempts expire after 5 minutes to limit replay windows.
 const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
 
 async function loadLocalAccountStore(

@@ -2,7 +2,9 @@ import { createHmac, randomBytes } from "node:crypto";
 import { toString } from "qrcode";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
+// RFC 6238 default token length; broadly supported by authenticator apps.
 const TOTP_DIGITS: number = 6;
+// RFC 6238 default step window used by common authenticator clients.
 const TOTP_PERIOD_SECONDS: number = 30;
 
 function base32Encode(input: Buffer): string {

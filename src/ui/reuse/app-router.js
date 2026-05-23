@@ -68,6 +68,7 @@ const ROUTE_STYLE_BUNDLES = {
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
+// Keep TFA enforcement checks fresh while avoiding a status API call per route.
 const TFA_ENFORCEMENT_CACHE_TTL_MS = 5_000;
 
 let _studyChildComponentsPromise = null;
