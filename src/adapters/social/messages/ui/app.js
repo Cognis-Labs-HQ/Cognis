@@ -1754,8 +1754,8 @@ export async function mount(root, { signal } = {}) {
                 `<section class="messages-thread">
                     <div id="messages-thread-header-slot"></div>
                     <div id="messages-request-banner-slot"></div>
-                    <div class="messages-typing-status" id="messages-typing-status"></div>
                     <div class="messages-thread-list" id="messages-thread-list"></div>
+                    <div class="messages-typing-status" id="messages-typing-status"></div>
                     <form class="messages-composer" id="messages-composer">
                         <textarea
                             id="messages-composer-input"
