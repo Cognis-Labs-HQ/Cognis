@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
     clearStoredAuthSession,
+    ensureFullAccountSession,
     redirectToDashboardIfAuthenticated,
 } from "../auth-session.js";
 
@@ -27,6 +28,7 @@ function createLocalStorageMock(entries = {}) {
 function installBrowserMocks({
     entries = {},
     fetchImpl = async () => ({ ok: false, status: 401 }),
+    pathname = "/dashboard",
 } = {}) {
     const localStorage = createLocalStorageMock(entries);
     const redirects = [];
@@ -36,6 +38,7 @@ function installBrowserMocks({
     globalThis.fetch = fetchImpl;
     globalThis.window = {
         location: {
+            pathname,
             replace(url) {
                 redirects.push(url);
             },
@@ -108,4 +111,174 @@ test("clearStoredAuthSession clears the access-token cookie", () => {
     assert.deepEqual(mocks.cookieWrites, [
         "cognis_access_token=; Path=/; Max-Age=0",
     ]);
+});
+
+test("ensureFullAccountSession returns true when authenticated and TFA setup not required", async () => {
+    const mocks = installBrowserMocks({
+        entries: {
+            cognis_access_token: "token-abc",
+            cognis_account: "bob",
+        },
+        fetchImpl: async (url) => {
+            if (String(url).includes("/info")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { username: "bob", enabled: true } };
+                    },
+                };
+            }
+            if (String(url).includes("/tfa/status")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { requiresSetup: false } };
+                    },
+                };
+            }
+            return { ok: false, status: 500 };
+        },
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, true);
+    assert.deepEqual(mocks.redirects, []);
+});
+
+test("ensureFullAccountSession redirects to /settings when TFA setup is required", async () => {
+    const mocks = installBrowserMocks({
+        entries: {
+            cognis_access_token: "token-abc",
+            cognis_account: "bob",
+        },
+        fetchImpl: async (url) => {
+            if (String(url).includes("/info")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { username: "bob", enabled: true } };
+                    },
+                };
+            }
+            if (String(url).includes("/tfa/status")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { requiresSetup: true } };
+                    },
+                };
+            }
+            return { ok: false, status: 500 };
+        },
+        pathname: "/dashboard",
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, false);
+    assert.deepEqual(mocks.redirects, ["/settings?enforce_tfa=1"]);
+});
+
+test("ensureFullAccountSession does not redirect when already on /settings with TFA required", async () => {
+    const mocks = installBrowserMocks({
+        entries: {
+            cognis_access_token: "token-abc",
+            cognis_account: "bob",
+        },
+        fetchImpl: async (url) => {
+            if (String(url).includes("/info")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { username: "bob", enabled: true } };
+                    },
+                };
+            }
+            if (String(url).includes("/tfa/status")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { requiresSetup: true } };
+                    },
+                };
+            }
+            return { ok: false, status: 500 };
+        },
+        pathname: "/settings",
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, true);
+    assert.deepEqual(mocks.redirects, []);
+});
+
+test("ensureFullAccountSession redirects to /login when not authenticated", async () => {
+    const mocks = installBrowserMocks({
+        entries: {},
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, false);
+    assert.deepEqual(mocks.redirects, ["/login?reason=session_expired"]);
+});
+
+test("ensureFullAccountSession redirects to /login with account_disabled reason", async () => {
+    const mocks = installBrowserMocks({
+        entries: {
+            cognis_access_token: "token-abc",
+            cognis_account: "carol",
+        },
+        fetchImpl: async (url) => {
+            if (String(url).includes("/info")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { username: "carol", enabled: false } };
+                    },
+                };
+            }
+            return { ok: false, status: 500 };
+        },
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, false);
+    assert.deepEqual(mocks.redirects, ["/login?reason=account_disabled"]);
+});
+
+test("ensureFullAccountSession proceeds when TFA status check fails with a network error", async () => {
+    const mocks = installBrowserMocks({
+        entries: {
+            cognis_access_token: "token-abc",
+            cognis_account: "bob",
+        },
+        fetchImpl: async (url) => {
+            if (String(url).includes("/info")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { username: "bob", enabled: true } };
+                    },
+                };
+            }
+            throw new Error("network error");
+        },
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, true);
+    assert.deepEqual(mocks.redirects, []);
 });

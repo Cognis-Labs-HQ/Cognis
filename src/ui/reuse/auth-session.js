@@ -9,6 +9,7 @@
  *   when still valid, without performing any redirect.
  * - ensureFullAccountSession() — redirects dashboard-shell pages to login unless
  *   local storage contains a token/account pair that resolves to an enabled user.
+ *   Also redirects to /settings when TFA setup is required before proceeding.
  *
  * Usage:
  *   const redirected = await redirectToDashboardIfAuthenticated();
@@ -16,6 +17,26 @@
  *
  * @returns {Promise<boolean>}
  */
+async function enforceTFASetupIfRequired() {
+    const token = localStorage.getItem("cognis_access_token");
+    if (!token) return false;
+    try {
+        const response = await fetch("/api/v1/tfa/status", {
+            headers: { authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) return false;
+        const payload = await response.json().catch(() => null);
+        if (payload?.data?.requiresSetup !== true) return false;
+        if (window.location.pathname !== "/settings") {
+            window.location.replace("/settings?enforce_tfa=1");
+            return true;
+        }
+    } catch {
+        return false;
+    }
+    return false;
+}
+
 async function validateStoredAccountSession() {
     const token = localStorage.getItem("cognis_access_token");
     const account = localStorage.getItem("cognis_account");
@@ -47,26 +68,6 @@ async function validateStoredAccountSession() {
             clearStoredAuthSession();
             return { authenticated: false, reason: "session_expired" };
         }
-
-        async function enforceTfaSetupIfRequired() {
-            const token = localStorage.getItem("cognis_access_token");
-            if (!token) return false;
-            try {
-                const response = await fetch("/api/v1/tfa/status", {
-                    headers: { authorization: `Bearer ${token}` },
-                });
-                if (!response.ok) return false;
-                const payload = await response.json().catch(() => null);
-                if (payload?.data?.requiresSetup !== true) return false;
-                if (window.location.pathname !== "/settings") {
-                    window.location.replace("/settings?enforce_tfa=1");
-                    return true;
-                }
-            } catch {
-                return false;
-            }
-            return false;
-        }
     } catch {
         // Network/temporary failures should not force logout on auth pages.
         return { authenticated: false, reason: null };
@@ -92,8 +93,8 @@ export async function checkIsAuthenticated() {
 export async function ensureFullAccountSession() {
     const session = await validateStoredAccountSession();
     if (session.authenticated) {
-        const redirectedForTfa = await enforceTfaSetupIfRequired();
-        return !redirectedForTfa;
+        const redirectedForTFA = await enforceTFASetupIfRequired();
+        return !redirectedForTFA;
     }
     const reason = session.reason
         ? `?reason=${encodeURIComponent(session.reason)}`
