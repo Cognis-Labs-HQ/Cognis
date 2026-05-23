@@ -320,6 +320,11 @@ test("GET /api/v1/admin/sections omits disabled sections", async () => {
         scriptUrl: "/static/gateways/logging/enabled.js",
         isEnabled: () => true,
     });
+    uiReg.registerAdminSection({
+        id: "default-enabled-section",
+        label: "Default Enabled",
+        scriptUrl: "/static/gateways/logging/default-enabled.js",
+    });
     const handler = createGatewayRoutes(registry, uiReg);
 
     const req = makeRequest("GET", adminToken);
@@ -333,7 +338,7 @@ test("GET /api/v1/admin/sections omits disabled sections", async () => {
     const body = JSON.parse(res.payload);
     assert.deepEqual(
         body.data.map((entry: { id: string }) => entry.id),
-        ["enabled-section"],
+        ["enabled-section", "default-enabled-section"],
     );
 });
 

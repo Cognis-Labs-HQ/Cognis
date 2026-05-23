@@ -30,6 +30,9 @@ export function createGatewayRoutes(
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    function isSectionEnabled(section: { isEnabled?: () => boolean }): boolean {
+        return section.isEnabled?.() ?? true;
+    }
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -58,7 +61,7 @@ export function createGatewayRoutes(
             if (!claims) return true;
             const sections = (uiRegistry?.listAdminSections() ?? []).filter(
                 (section) =>
-                    (!section.isEnabled || section.isEnabled()) &&
+                    isSectionEnabled(section) &&
                     isRoleAllowed(claims.role, section.access),
             );
             log?.("debug", "Listed admin sections.", {
