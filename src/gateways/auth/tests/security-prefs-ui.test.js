@@ -15,9 +15,11 @@ test("security preferences render recovery codes as a separate section", () => {
         SOURCE,
         /<div class="settings-auth-recovery-codes">[\s\S]*id="settings-recovery-codes-btn"/,
     );
+    assert.match(SOURCE, /id="settings-recovery-codes-toggle-btn"/);
+    assert.match(SOURCE, /id="settings-recovery-codes-table"/);
     assert.match(
         SOURCE,
-        /<div class="settings-language-heading-row">\s*<h3>\$\{i18n\.t\("gateway\.auth\.security\.tfa_preferred_methods"\)\}<\/h3>\s*<\/div>/,
+        /<div class="content-grid--two-column">[\s\S]*id="available-tfa-methods"[\s\S]*id="preferred-tfa-methods"/,
     );
     assert.doesNotMatch(SOURCE, /settings-tfa-recovery-codes-btn/);
 });

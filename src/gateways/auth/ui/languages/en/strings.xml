@@ -28,6 +28,16 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Could not rotate recovery codes.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready">Recovery codes are available for this account.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_missing">No recovery codes are active for this account.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_remaining_label">{count} code(s) remaining.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_generated">Recovery codes generated. Reveal them and store them safely.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_reveal">Reveal Codes</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_hide">Hide Codes</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_code_prefix">Recovery Code</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_used">Used</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_ready_marker">Ready</string>
+  <string name="gateway.auth.security.tfa_manual_secret">Manual Secret</string>
+  <string name="gateway.auth.security.tfa_otp_auth_uri">OTPAuth URI</string>
+  <string name="gateway.auth.security.tfa_qr_code_alt">TOTP Setup QR Code</string>
   <string name="gateway.auth.security.tfa_required_title">Two-Factor Setup Required</string>
   <string name="gateway.auth.security.tfa_required_prompt">Select a method to configure before continuing.</string>
   <string name="gateway.auth.security.tfa_totp_prompt">Scan the QR payload URI in your authenticator app, then enter a 6-digit code to verify setup.</string>

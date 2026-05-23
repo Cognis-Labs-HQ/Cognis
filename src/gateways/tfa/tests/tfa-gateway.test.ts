@@ -18,6 +18,12 @@ function createStoreMock() {
             enabled: boolean;
             config: Record<string, unknown>;
         }>,
+        recoveryCodes: [] as Array<{
+            accountId: string;
+            codeHash: string;
+            createdAt: string;
+            usedAt: string | null;
+        }>,
     };
     return {
         listAdapterConfigs: async () => state.adapterConfigs,
@@ -63,12 +69,39 @@ function createStoreMock() {
         savePendingSetup: async () => undefined,
         getPendingSetup: async () => null,
         deletePendingSetup: async () => undefined,
-        hasUnusedRecoveryCodes: async () => false,
-        consumeRecoveryCode: async () => false,
+        hasUnusedRecoveryCodes: async (accountId: string) =>
+            state.recoveryCodes.some(
+                (entry) =>
+                    entry.accountId === accountId && entry.usedAt == null,
+            ),
+        countUnusedRecoveryCodes: async (accountId: string) =>
+            state.recoveryCodes.filter(
+                (entry) =>
+                    entry.accountId === accountId && entry.usedAt == null,
+            ).length,
+        listRecoveryCodes: async (accountId: string) =>
+            state.recoveryCodes.filter(
+                (entry) => entry.accountId === accountId,
+            ),
+        consumeRecoveryCode: async (
+            accountId: string,
+            recoveryCode: string,
+        ) => {
+            const target = state.recoveryCodes.find(
+                (entry) =>
+                    entry.accountId === accountId &&
+                    entry.codeHash === recoveryCode &&
+                    entry.usedAt == null,
+            );
+            if (!target) return false;
+            target.usedAt = new Date().toISOString();
+            return true;
+        },
         replaceRecoveryCodes: async () => undefined,
         clearUserState: async () => undefined,
         getEnforceAllUsers: async () => false,
         setEnforceAllUsers: async () => undefined,
+        recoveryCodes: state.recoveryCodes,
     };
 }
 
@@ -107,4 +140,35 @@ test("tfa gateway exposes enabled method status for a user", async () => {
     const status = await gateway.getUserStatus("alice");
     assert.equal(status.enabledMethods.length, 1);
     assert.equal(status.enabledMethods[0].id, "totp");
+});
+
+test("tfa gateway dispatches low recovery-code notification after recovery login", async () => {
+    const storeMock = createStoreMock();
+    storeMock.recoveryCodes.push(
+        {
+            accountId: "alice",
+            codeHash: "code-1",
+            createdAt: new Date().toISOString(),
+            usedAt: null,
+        },
+        {
+            accountId: "alice",
+            codeHash: "code-2",
+            createdAt: new Date().toISOString(),
+            usedAt: null,
+        },
+    );
+    const notifications: Array<Record<string, unknown>> = [];
+    const gateway = new CoreTfaGateway(storeMock as any, {
+        dispatchNotification: async (envelope) => {
+            notifications.push(envelope);
+        },
+    });
+    const result = await gateway.verifyLogin("alice", "recovery_code", {
+        code: "code-1",
+    });
+    assert.equal(result.verified, true);
+    assert.equal(notifications.length, 1);
+    assert.equal(notifications[0].category, "security");
+    assert.equal(notifications[0].recipientUsername, "alice");
 });

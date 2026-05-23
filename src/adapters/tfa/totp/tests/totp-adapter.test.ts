@@ -14,4 +14,8 @@ test("totp adapter setup returns otpauth details", async () => {
         setup.view.details?.otpAuthUri?.startsWith("otpauth://totp/"),
         true,
     );
+    assert.equal(
+        setup.view.details?.qrDataUrl?.startsWith("data:image/png;base64,"),
+        true,
+    );
 });

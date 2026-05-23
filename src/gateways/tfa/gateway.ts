@@ -75,13 +75,40 @@ export interface UserTfaStatus {
     hasRecoveryCodes: boolean;
     enforcementRequired: boolean;
     requiresSetup: boolean;
+    recoveryCodesTotal: number;
+    recoveryCodesRemaining: number;
 }
+
+export interface UserRecoveryCodeStatus {
+    id: string;
+    label: string;
+    used: boolean;
+    usedAt: string | null;
+}
+
+type NotifyDispatch = (envelope: {
+    category: string;
+    recipientUsername: string;
+    subject: string;
+    body: string;
+    metadata?: Record<string, unknown>;
+}) => Promise<unknown>;
 
 export class CoreTfaGateway {
     private readonly adapters = new Map<string, TfaMethodAdapter>();
     private readonly enabledAdapters = new Set<string>();
 
-    constructor(private readonly store: DbTfaStore) {}
+    constructor(
+        private readonly store: DbTfaStore,
+        private readonly options: {
+            dispatchNotification?: NotifyDispatch;
+            log?: (
+                level: string,
+                message: string,
+                metadata?: Record<string, unknown>,
+            ) => void;
+        } = {},
+    ) {}
 
     registerAdapter(adapter: TfaMethodAdapter): void {
         this.adapters.set(adapter.id, adapter);
@@ -182,6 +209,10 @@ export class CoreTfaGateway {
 
         const hasRecoveryCodes =
             await this.store.hasUnusedRecoveryCodes(accountId);
+        const recoveryCodes = await this.store.listRecoveryCodes(accountId);
+        const recoveryCodesRemaining = recoveryCodes.filter(
+            (entry) => entry.usedAt == null,
+        ).length;
         const enforcementRequired = await this.store.getEnforceAllUsers();
         const hasConfiguredMethod = enabledMethods.length > 0;
 
@@ -193,6 +224,8 @@ export class CoreTfaGateway {
             hasRecoveryCodes,
             enforcementRequired,
             requiresSetup: enforcementRequired && !hasConfiguredMethod,
+            recoveryCodesTotal: recoveryCodes.length,
+            recoveryCodesRemaining,
         };
     }
 
@@ -329,6 +362,31 @@ export class CoreTfaGateway {
         return this.store.hasUnusedRecoveryCodes(accountId);
     }
 
+    async getRecoveryCodesStatus(accountId: string): Promise<{
+        codes: UserRecoveryCodeStatus[];
+        totalCount: number;
+        usedCount: number;
+        remainingCount: number;
+        lowThreshold: number;
+    }> {
+        const records = await this.store.listRecoveryCodes(accountId);
+        const codes = records.map((record, index) => ({
+            id: record.codeHash.slice(0, 8),
+            label: String(index + 1),
+            used: record.usedAt != null,
+            usedAt: record.usedAt,
+        }));
+        const remainingCount = codes.filter((entry) => !entry.used).length;
+        const usedCount = codes.length - remainingCount;
+        return {
+            codes,
+            totalCount: codes.length,
+            usedCount,
+            remainingCount,
+            lowThreshold: 2,
+        };
+    }
+
     async verifyLogin(
         accountId: string,
         methodId: string,
@@ -343,6 +401,9 @@ export class CoreTfaGateway {
                 accountId,
                 recoveryCode,
             );
+            if (valid) {
+                await this.notifyLowRecoveryCodeCount(accountId);
+            }
             return valid
                 ? { verified: true }
                 : { verified: false, message: "invalid_recovery_code" };
@@ -402,6 +463,44 @@ export class CoreTfaGateway {
 
     async setEnforceAllUsers(required: boolean): Promise<void> {
         await this.store.setEnforceAllUsers(required);
+    }
+
+    private async notifyLowRecoveryCodeCount(accountId: string): Promise<void> {
+        const dispatchNotification = this.options.dispatchNotification;
+        if (typeof dispatchNotification !== "function") {
+            return;
+        }
+        const remainingCount =
+            await this.store.countUnusedRecoveryCodes(accountId);
+        if (remainingCount > 2) {
+            return;
+        }
+        try {
+            await dispatchNotification({
+                category: "security",
+                recipientUsername: accountId,
+                subject: "Recovery Codes Running Low",
+                body: `You have ${remainingCount} recovery code(s) remaining. Generate a new set in Settings > Security.`,
+                metadata: {
+                    component: "tfa-gateway",
+                    event: "recovery_codes_low",
+                    remainingCount,
+                },
+            });
+        } catch (error) {
+            this.options.log?.(
+                "error",
+                "Failed to dispatch low recovery-code notification.",
+                {
+                    component: "tfa-gateway",
+                    operation: "notify_low_recovery_codes",
+                    accountId,
+                    remainingCount,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+        }
     }
 
     async discoverAdapters(tfaAdaptersRoot: string): Promise<void> {

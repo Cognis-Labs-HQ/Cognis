@@ -13,6 +13,15 @@ export function createSettingsSection({ i18n, root }) {
     let capability = null;
     let lastUnsupportedToastKey = null;
     let tfaStatus = null;
+    let recoveryCodesStatus = {
+        codes: [],
+        totalCount: 0,
+        usedCount: 0,
+        remainingCount: 0,
+        lowThreshold: 2,
+    };
+    let generatedRecoveryCodes = [];
+    let recoveryCodesVisible = false;
     let dragTfaMethodId = null;
     let enforcingTfaSetup = false;
     let tfaDragAndDropBound = false;
@@ -130,6 +139,48 @@ export function createSettingsSection({ i18n, root }) {
         return payload?.data?.recoveryCodes ?? null;
     }
 
+    async function loadRecoveryCodesStatus() {
+        const response = await apiFetch("/api/v1/tfa/recovery-codes").catch(
+            () => null,
+        );
+        if (!response?.ok) {
+            return {
+                codes: [],
+                totalCount: 0,
+                usedCount: 0,
+                remainingCount: 0,
+                lowThreshold: 2,
+            };
+        }
+        const payload = await response.json().catch(() => null);
+        const data = payload?.data;
+        if (!data || typeof data !== "object") {
+            return {
+                codes: [],
+                totalCount: 0,
+                usedCount: 0,
+                remainingCount: 0,
+                lowThreshold: 2,
+            };
+        }
+        const codes = Array.isArray(data.codes) ? data.codes : [];
+        return {
+            codes: codes.map((entry) => ({
+                id: String(entry.id ?? ""),
+                label: String(entry.label ?? ""),
+                used: entry.used === true,
+                usedAt:
+                    typeof entry.usedAt === "string" && entry.usedAt.trim()
+                        ? entry.usedAt
+                        : null,
+            })),
+            totalCount: Number(data.totalCount ?? 0),
+            usedCount: Number(data.usedCount ?? 0),
+            remainingCount: Number(data.remainingCount ?? 0),
+            lowThreshold: Number(data.lowThreshold ?? 2),
+        };
+    }
+
     function makeEmptyDropZoneRow() {
         return `
             <tr>
@@ -147,7 +198,7 @@ export function createSettingsSection({ i18n, root }) {
                 (method) => `
                 <tr data-tfa-method-row="${escapeHtml(method.id)}" draggable="true">
                   <td>${escapeHtml(method.name)}</td>
-                  <td class="drag-handle">\u2b4d</td>
+                  <td class="drag-handle">\u2630</td>
                 </tr>`,
             )
             .join("");
@@ -165,6 +216,32 @@ export function createSettingsSection({ i18n, root }) {
             preferred: enabled,
             available: available.filter((method) => !enabledIds.has(method.id)),
         };
+    }
+
+    function renderRecoveryCodesRows() {
+        if (!Array.isArray(recoveryCodesStatus.codes)) {
+            return makeEmptyDropZoneRow();
+        }
+        if (recoveryCodesStatus.codes.length === 0) {
+            return makeEmptyDropZoneRow();
+        }
+        return recoveryCodesStatus.codes
+            .map((entry, index) => {
+                const codeText = generatedRecoveryCodes[index];
+                const canRevealCode = typeof codeText === "string";
+                const codeDisplay = canRevealCode
+                    ? recoveryCodesVisible
+                        ? escapeHtml(codeText)
+                        : "\u2022\u2022\u2022\u2022-\u2022\u2022\u2022\u2022"
+                    : `${i18n.t("gateway.auth.security.tfa_recovery_codes_code_prefix")} ${escapeHtml(entry.label)}`;
+                return `
+                    <tr data-recovery-code-row="${escapeHtml(entry.id)}">
+                      <td class="settings-recovery-code-cell">${codeDisplay}</td>
+                      <td class="settings-recovery-code-status-cell">${entry.used ? `<span class="settings-recovery-code-used-marker">\u2715 ${i18n.t("gateway.auth.security.tfa_recovery_codes_used")}</span>` : `<span class="settings-recovery-code-ready-marker">${i18n.t("gateway.auth.security.tfa_recovery_codes_ready_marker")}</span>`}</td>
+                    </tr>
+                `;
+            })
+            .join("");
     }
 
     function clearTfaDropMarkers() {
@@ -238,7 +315,29 @@ export function createSettingsSection({ i18n, root }) {
         const codeLabel = codeLabelKey
             ? i18n.t(codeLabelKey) || codeLabelKey
             : i18n.t("ui.app.login.tfa.code_label");
-        const detailsHtml = Object.entries(setup.view?.details ?? {})
+        const setupDetails =
+            setup.view?.details && typeof setup.view.details === "object"
+                ? setup.view.details
+                : {};
+        const otpAuthUri =
+            typeof setupDetails.otpAuthUri === "string"
+                ? setupDetails.otpAuthUri
+                : "";
+        const manualSecret =
+            typeof setupDetails.manualSecret === "string"
+                ? setupDetails.manualSecret
+                : "";
+        const qrDataUrl =
+            typeof setupDetails.qrDataUrl === "string"
+                ? setupDetails.qrDataUrl
+                : "";
+        const detailsHtml = Object.entries(setupDetails)
+            .filter(
+                ([key]) =>
+                    key !== "otpAuthUri" &&
+                    key !== "manualSecret" &&
+                    key !== "qrDataUrl",
+            )
             .map(
                 ([key, value]) => `
                   <p><strong>${escapeHtml(key)}</strong>: ${escapeHtml(String(value))}</p>`,
@@ -249,7 +348,10 @@ export function createSettingsSection({ i18n, root }) {
             maxWidth: "520px",
             body: () => `
                 <div class="stack">
-                  <p>${escapeHtml(setupPrompt)}</p>
+                  <p class="settings-tfa-setup-prompt">${escapeHtml(setupPrompt)}</p>
+                  ${qrDataUrl ? `<img src="${escapeHtml(qrDataUrl)}" alt="${escapeHtml(i18n.t("gateway.auth.security.tfa_qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
+                  ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.auth.security.tfa_manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
+                  ${otpAuthUri ? `<label>${escapeHtml(i18n.t("gateway.auth.security.tfa_otp_auth_uri"))}<code class="settings-tfa-setup-code settings-tfa-setup-uri">${escapeHtml(otpAuthUri)}</code></label>` : ""}
                   ${detailsHtml}
                   <label>
                     ${escapeHtml(codeLabel)}
@@ -462,21 +564,40 @@ export function createSettingsSection({ i18n, root }) {
                     );
                     return;
                 }
-                await openPopup({
-                    title: i18n.t(
-                        "gateway.auth.security.tfa_recovery_codes_title",
+                generatedRecoveryCodes = [...recoveryCodes];
+                recoveryCodesVisible = false;
+                recoveryCodesStatus = await loadRecoveryCodesStatus();
+                tfaStatus = await loadTfaStatus();
+                const panel = settingsRoot.querySelector(
+                    "#auth-security-reset-panel",
+                );
+                if (panel) {
+                    panel.innerHTML = renderBody();
+                }
+                bindTfaInteractions();
+                showToast(
+                    i18n.t(
+                        "gateway.auth.security.tfa_recovery_codes_generated",
                     ),
-                    body: `<div class="stack">${recoveryCodes
-                        .map((code) => `<p>${escapeHtml(code)}</p>`)
-                        .join("")}</div>`,
-                    actions: [
-                        {
-                            id: "confirm",
-                            label: i18n.t("ui.reuse.confirm"),
-                            variant: "confirm",
-                        },
-                    ],
-                });
+                    {
+                        variant: "success",
+                    },
+                );
+            };
+        }
+        const recoveryCodesToggleButton = settingsRoot.querySelector(
+            "#settings-recovery-codes-toggle-btn",
+        );
+        if (recoveryCodesToggleButton instanceof HTMLButtonElement) {
+            recoveryCodesToggleButton.onclick = () => {
+                recoveryCodesVisible = !recoveryCodesVisible;
+                const panel = settingsRoot.querySelector(
+                    "#auth-security-reset-panel",
+                );
+                if (panel) {
+                    panel.innerHTML = renderBody();
+                }
+                bindTfaInteractions();
             };
         }
     }
@@ -562,19 +683,29 @@ export function createSettingsSection({ i18n, root }) {
         return `
       <div class="settings-auth-tfa">
         <h3>${i18n.t("gateway.auth.security.tfa_section_title")}</h3>
-        <div class="settings-language-heading-row">
-          <h3>${i18n.t("gateway.auth.security.tfa_available_methods")}</h3>
+        <div class="content-grid--two-column">
+          <div>
+            <div class="settings-language-heading-row">
+              <h3>${i18n.t("gateway.auth.security.tfa_available_methods")}</h3>
+            </div>
+            <table id="available-tfa-methods" class="language-table">${renderTfaRows(available)}</table>
+          </div>
+          <div>
+            <div class="settings-language-heading-row">
+              <h3>${i18n.t("gateway.auth.security.tfa_preferred_methods")}</h3>
+            </div>
+            <table id="preferred-tfa-methods" class="language-table">${renderTfaRows(preferred)}</table>
+          </div>
         </div>
-        <table id="available-tfa-methods" class="language-table">${renderTfaRows(available)}</table>
-        <div class="settings-language-heading-row">
-          <h3>${i18n.t("gateway.auth.security.tfa_preferred_methods")}</h3>
-        </div>
-        <table id="preferred-tfa-methods" class="language-table">${renderTfaRows(preferred)}</table>
       </div>
       <div class="settings-auth-recovery-codes">
         <h3>${i18n.t("gateway.auth.security.tfa_recovery_codes_title")}</h3>
-        <p>${i18n.t(hasRecoveryCodes ? "gateway.auth.security.tfa_recovery_codes_ready" : "gateway.auth.security.tfa_recovery_codes_missing")}</p>
-        <button class="btn-animated" type="button" id="settings-recovery-codes-btn">${i18n.t(hasRecoveryCodes ? "gateway.auth.security.tfa_recovery_codes_action" : "gateway.auth.security.tfa_recovery_codes_create_action")}</button>
+        <p>${i18n.t(hasRecoveryCodes ? "gateway.auth.security.tfa_recovery_codes_ready" : "gateway.auth.security.tfa_recovery_codes_missing")} ${i18n.t("gateway.auth.security.tfa_recovery_codes_remaining_label").replace("{count}", String(recoveryCodesStatus.remainingCount))}</p>
+        <div class="settings-auth-recovery-actions">
+          <button class="btn-animated" type="button" id="settings-recovery-codes-btn">${i18n.t(hasRecoveryCodes ? "gateway.auth.security.tfa_recovery_codes_action" : "gateway.auth.security.tfa_recovery_codes_create_action")}</button>
+          <button class="btn-animated" type="button" id="settings-recovery-codes-toggle-btn" ${generatedRecoveryCodes.length === 0 ? "disabled" : ""}>${i18n.t(recoveryCodesVisible ? "gateway.auth.security.tfa_recovery_codes_hide" : "gateway.auth.security.tfa_recovery_codes_reveal")}</button>
+        </div>
+        <table id="settings-recovery-codes-table" class="language-table">${renderRecoveryCodesRows()}</table>
       </div>
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
@@ -721,12 +852,13 @@ export function createSettingsSection({ i18n, root }) {
         preferenceKey: "settings-security-layout",
         renderContent,
         async onRender() {
-            [capability, tfaStatus] = await Promise.all([
+            [capability, tfaStatus, recoveryCodesStatus] = await Promise.all([
                 (async () => {
                     await loadCapability();
                     return capability;
                 })(),
                 loadTfaStatus(),
+                loadRecoveryCodesStatus(),
             ]);
             const panel = settingsRoot.querySelector(
                 "#auth-security-reset-panel",

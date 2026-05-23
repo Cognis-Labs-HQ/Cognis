@@ -283,3 +283,59 @@ body[data-theme="light"] .email-badge-unverified {
     flex: 1 1 0;
     min-width: 0;
 }
+
+.settings-auth-recovery-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.settings-recovery-code-cell {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    letter-spacing: 0.04em;
+}
+
+.settings-recovery-code-status-cell {
+    width: 120px;
+}
+
+.settings-recovery-code-used-marker {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.settings-recovery-code-ready-marker {
+    color: var(--text-muted);
+}
+
+.settings-tfa-setup-prompt {
+    margin: 0;
+}
+
+.settings-tfa-setup-qr {
+    width: 220px;
+    max-width: 100%;
+    align-self: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    background: var(--panel-bg);
+}
+
+.settings-tfa-setup-code {
+    display: block;
+    margin-top: 6px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--control-bg);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+.settings-tfa-setup-uri {
+    max-height: 132px;
+    overflow-y: auto;
+}

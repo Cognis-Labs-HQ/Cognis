@@ -20,7 +20,23 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const store = new DbTfaStore(dbExecutor);
     await store.ensureSchema();
 
-    const gateway = new CoreTfaGateway(store);
+    const dispatchNotification =
+        ctx.capabilities.get<
+            (envelope: {
+                category: string;
+                recipientUsername: string;
+                subject: string;
+                body: string;
+                metadata?: Record<string, unknown>;
+            }) => Promise<unknown>
+        >("notify:dispatch");
+    const registerNotificationCategory = ctx.capabilities.get<
+        (id: string, label: string) => void
+    >("notify:registerCategory");
+    const gateway = new CoreTfaGateway(store, {
+        dispatchNotification,
+        log: ctx.log,
+    });
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -36,6 +52,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createTfaAdapterAdminRoutes(gateway, ctx.log),
         "tfa",
     );
+    if (typeof registerNotificationCategory === "function") {
+        registerNotificationCategory("security", "Security");
+    }
 
     ctx.gatewayRegistry.register({
         id: "tfa",
@@ -128,6 +147,9 @@ function createTfaRoutes(
                         availableMethods: status.availableMethods,
                         enabledMethods: status.enabledMethods,
                         preferredMethodIds: status.preferredMethodIds,
+                        hasRecoveryCodes: status.hasRecoveryCodes,
+                        recoveryCodesTotal: status.recoveryCodesTotal,
+                        recoveryCodesRemaining: status.recoveryCodesRemaining,
                     },
                 }),
             );
@@ -262,6 +284,20 @@ function createTfaRoutes(
             await gateway.setPreferredMethods(claims.sub, preferredMethodIds);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/tfa/recovery-codes" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const recoveryStatus = await gateway.getRecoveryCodesStatus(
+                claims.sub,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: recoveryStatus }));
             return true;
         }
 

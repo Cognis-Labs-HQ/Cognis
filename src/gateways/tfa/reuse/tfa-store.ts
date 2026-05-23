@@ -49,6 +49,13 @@ export interface PendingTfaSetup {
     expiresAt: string;
 }
 
+export interface RecoveryCodeRecord {
+    accountId: string;
+    codeHash: string;
+    createdAt: string;
+    usedAt: string | null;
+}
+
 export class DbTfaStore {
     constructor(private readonly db: DbExecutor) {}
 
@@ -457,6 +464,38 @@ export class DbTfaStore {
             limit: 1,
         });
         return (result.rows?.length ?? 0) > 0;
+    }
+
+    async countUnusedRecoveryCodes(accountId: string): Promise<number> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "tfa_recovery_codes",
+            columns: ["code_hash"],
+            where: [
+                { column: "account_id", value: accountId },
+                { column: "used_at", operator: "IS NULL" },
+            ],
+        });
+        return result.rows?.length ?? 0;
+    }
+
+    async listRecoveryCodes(accountId: string): Promise<RecoveryCodeRecord[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "tfa_recovery_codes",
+            columns: ["account_id", "code_hash", "created_at", "used_at"],
+            where: [{ column: "account_id", value: accountId }],
+            orderBy: [
+                { column: "created_at", direction: "ASC" },
+                { column: "code_hash", direction: "ASC" },
+            ],
+        });
+        return (result.rows ?? []).map((row) => ({
+            accountId: String(row.account_id ?? accountId),
+            codeHash: String(row.code_hash ?? ""),
+            createdAt: String(row.created_at ?? nowIso()),
+            usedAt: row.used_at ? String(row.used_at) : null,
+        }));
     }
 
     async consumeRecoveryCode(

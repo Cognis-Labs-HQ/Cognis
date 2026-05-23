@@ -1,4 +1,5 @@
 import { createHmac, randomBytes } from "node:crypto";
+import { toDataURL } from "qrcode";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const TOTP_DIGITS = 6;
@@ -90,7 +91,7 @@ class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
     readonly name = "Authenticator App (TOTP)";
 
-    beginSetup(input: {
+    async beginSetup(input: {
         accountId: string;
         displayName: string;
         issuer: string;
@@ -114,7 +115,12 @@ class TotpAdapter implements TfaMethodAdapter {
             accountId: input.accountId,
             secret,
         });
-        return Promise.resolve({
+        const qrDataUrl = await toDataURL(otpAuthUri, {
+            errorCorrectionLevel: "M",
+            margin: 1,
+            width: 220,
+        });
+        return {
             pendingPayload: {
                 secret,
             },
@@ -132,9 +138,10 @@ class TotpAdapter implements TfaMethodAdapter {
                 details: {
                     otpAuthUri,
                     manualSecret: secret,
+                    qrDataUrl,
                 },
             },
-        });
+        };
     }
 
     verifySetup(input: {
