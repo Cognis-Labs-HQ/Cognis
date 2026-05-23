@@ -41,6 +41,12 @@
   <string name="module.jitsi_meet.chat.placeholder">Tulis pesan ke chat rapat</string>
   <string name="module.jitsi_meet.chat.send_failed">Gagal mengirim pesan chat.</string>
   <string name="module.jitsi_meet.chat.open">Buka Chat</string>
+  <string name="module.jitsi_meet.chat.participants">Peserta Rapat</string>
+  <string name="module.jitsi_meet.chat.return_to_meeting">Kembali ke Chat Rapat</string>
+  <string name="module.jitsi_meet.chat.private_open_failed">Gagal membuka chat pribadi.</string>
+  <string name="module.jitsi_meet.chat.private_open_forbidden">Anda tidak memiliki izin untuk membuka chat pribadi ini.</string>
+  <string name="module.jitsi_meet.chat.private_open_unavailable">Chat pribadi sedang tidak tersedia.</string>
+  <string name="module.jitsi_meet.chat.private_open_invalid_response">Chat pribadi mengembalikan respons yang tidak valid.</string>
   <string name="module.jitsi_meet.participants.heading">Peserta</string>
   <string name="module.jitsi_meet.participants.search">Cari Peserta</string>
   <string name="module.jitsi_meet.participants.available">Peserta Tersedia</string>

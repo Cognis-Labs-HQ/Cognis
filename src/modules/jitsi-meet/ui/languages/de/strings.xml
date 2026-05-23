@@ -41,6 +41,12 @@
   <string name="module.jitsi_meet.chat.placeholder">Nachricht an den Meeting-Chat schreiben</string>
   <string name="module.jitsi_meet.chat.send_failed">Die Chatnachricht konnte nicht gesendet werden.</string>
   <string name="module.jitsi_meet.chat.open">Chat Öffnen</string>
+  <string name="module.jitsi_meet.chat.participants">Meeting-Teilnehmende</string>
+  <string name="module.jitsi_meet.chat.return_to_meeting">Zum Meeting-Chat zurückkehren</string>
+  <string name="module.jitsi_meet.chat.private_open_failed">Der private Chat konnte nicht geöffnet werden.</string>
+  <string name="module.jitsi_meet.chat.private_open_forbidden">Du hast keine Berechtigung, diesen privaten Chat zu öffnen.</string>
+  <string name="module.jitsi_meet.chat.private_open_unavailable">Der private Chat ist derzeit nicht verfügbar.</string>
+  <string name="module.jitsi_meet.chat.private_open_invalid_response">Der private Chat lieferte eine ungültige Antwort.</string>
   <string name="module.jitsi_meet.participants.heading">Teilnehmer</string>
   <string name="module.jitsi_meet.participants.search">Teilnehmer Suchen</string>
   <string name="module.jitsi_meet.participants.available">Verfügbare Teilnehmer</string>

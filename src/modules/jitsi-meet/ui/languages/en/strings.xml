@@ -41,6 +41,12 @@
   <string name="module.jitsi_meet.chat.placeholder">Write a message to the meeting chat</string>
   <string name="module.jitsi_meet.chat.send_failed">Failed to send the chat message.</string>
   <string name="module.jitsi_meet.chat.open">Open Chat</string>
+  <string name="module.jitsi_meet.chat.participants">Meeting Participants</string>
+  <string name="module.jitsi_meet.chat.return_to_meeting">Return to Meeting Chat</string>
+  <string name="module.jitsi_meet.chat.private_open_failed">Failed to open the private chat.</string>
+  <string name="module.jitsi_meet.chat.private_open_forbidden">You do not have permission to open this private chat.</string>
+  <string name="module.jitsi_meet.chat.private_open_unavailable">Private chat is unavailable right now.</string>
+  <string name="module.jitsi_meet.chat.private_open_invalid_response">Private chat returned an invalid response.</string>
   <string name="module.jitsi_meet.participants.heading">Participants</string>
   <string name="module.jitsi_meet.participants.search">Find Participants</string>
   <string name="module.jitsi_meet.participants.available">Available Participants</string>

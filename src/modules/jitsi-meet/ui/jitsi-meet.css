@@ -134,6 +134,95 @@
         filter 0.15s ease;
 }
 
+.jitsi-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.jitsi-chat-header h3 {
+    margin: 0;
+}
+
+.jitsi-chat-participant-strip {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.1rem 0.1rem 0.25rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.jitsi-chat-participant-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.jitsi-chat-participant-item {
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.45);
+    border-radius: 999px;
+    width: 2.35rem;
+    height: 2.35rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.jitsi-chat-participant-item-selected {
+    border-color: rgba(59, 130, 246, 0.85);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+}
+
+.jitsi-chat-participant-avatar,
+.jitsi-chat-participant-avatar-img,
+.jitsi-chat-participant-avatar-bubble {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+}
+
+.jitsi-chat-participant-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.jitsi-chat-participant-avatar-img {
+    object-fit: cover;
+    display: block;
+}
+
+.jitsi-chat-participant-avatar-bubble {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--initials-bg, #64748b);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+.jitsi-chat-return-btn {
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: rgba(15, 23, 42, 0.28);
+    color: inherit;
+    border-radius: 999px;
+    padding: 0.22rem 0.56rem;
+    font: inherit;
+    font-size: 0.76rem;
+    line-height: 1.15;
+    cursor: pointer;
+}
+
+.jitsi-chat-return-btn:hover {
+    background: rgba(30, 41, 59, 0.38);
+}
+
 .jitsi-chat-pane.jitsi-chat-disabled {
     opacity: 0.55;
     filter: grayscale(0.2);
@@ -442,6 +531,14 @@ body[data-theme="light"] .jitsi-chat-message {
 
 body[data-theme="light"] .jitsi-chat-message-own {
     background: rgba(191, 219, 254, 0.95);
+}
+
+body[data-theme="light"] .jitsi-chat-participant-item {
+    background: rgba(248, 250, 252, 0.96);
+}
+
+body[data-theme="light"] .jitsi-chat-return-btn {
+    background: rgba(248, 250, 252, 0.96);
 }
 
 body[data-theme="light"]

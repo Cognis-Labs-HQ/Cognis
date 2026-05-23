@@ -41,6 +41,12 @@
   <string name="module.jitsi_meet.chat.placeholder">ミーティング チャットにメッセージを書く</string>
   <string name="module.jitsi_meet.chat.send_failed">チャットメッセージの送信に失敗しました。</string>
   <string name="module.jitsi_meet.chat.open">チャットを開く</string>
+  <string name="module.jitsi_meet.chat.participants">ミーティング参加者</string>
+  <string name="module.jitsi_meet.chat.return_to_meeting">ミーティング チャットに戻る</string>
+  <string name="module.jitsi_meet.chat.private_open_failed">プライベートチャットを開けませんでした。</string>
+  <string name="module.jitsi_meet.chat.private_open_forbidden">このプライベートチャットを開く権限がありません。</string>
+  <string name="module.jitsi_meet.chat.private_open_unavailable">現在プライベートチャットを利用できません。</string>
+  <string name="module.jitsi_meet.chat.private_open_invalid_response">プライベートチャットから不正な応答が返されました。</string>
   <string name="module.jitsi_meet.participants.heading">参加者</string>
   <string name="module.jitsi_meet.participants.search">参加者を検索</string>
   <string name="module.jitsi_meet.participants.available">利用可能な参加者</string>

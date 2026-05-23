@@ -29,7 +29,11 @@ export function buildStageMarkup(i18n) {
 export function buildChatMarkup(i18n) {
     return `
     <aside class="jitsi-chat-pane jitsi-chat-disabled card-elevated" aria-disabled="true">
-      <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
+      <header class="jitsi-chat-header">
+        <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
+        <button id="jitsi-chat-return-btn" class="jitsi-chat-return-btn" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.chat.return_to_meeting"))}</button>
+      </header>
+      <div id="jitsi-chat-participant-strip" class="jitsi-chat-participant-strip" role="list" aria-label="${escapeHtml(i18n.t("module.jitsi_meet.chat.participants"))}"></div>
       <div id="jitsi-chat-thread" class="jitsi-chat-thread" aria-live="polite" aria-busy="true"></div>
       <form id="jitsi-chat-form" class="jitsi-chat-form" hidden>
         <textarea id="jitsi-chat-input" class="jitsi-chat-input" rows="3" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.chat.placeholder"))}" disabled></textarea>
