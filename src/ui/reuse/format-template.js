@@ -9,6 +9,7 @@
  *
  * @param {string} template
  * @param {Record<string, string | number | boolean | null | undefined>} values
+ * Token keys must use letters, numbers, or underscores only.
  * @returns {string}
  */
 export function formatTemplate(template, values) {

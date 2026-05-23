@@ -2,6 +2,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 
 const STYLE_ID = "analytics-admin-section-styles";
+const MIN_INDEX_DISTANCE_BETWEEN_ENDPOINT_LABELS = 2;
 
 function ensureStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -79,7 +80,10 @@ function buildBarChart(series, { i18n, escapeHtml }) {
     }
     if (xAxisLabelIndices.length > 1) {
         const previousIndex = xAxisLabelIndices[xAxisLabelIndices.length - 2];
-        if (lastIndex - previousIndex < 2) {
+        if (
+            lastIndex - previousIndex <
+            MIN_INDEX_DISTANCE_BETWEEN_ENDPOINT_LABELS
+        ) {
             xAxisLabelIndices.splice(xAxisLabelIndices.length - 2, 1);
         }
     }
