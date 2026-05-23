@@ -324,7 +324,11 @@ test("GET /api/v1/admin/sections omits disabled sections", async () => {
 
     const req = makeRequest("GET", adminToken);
     const res = makeResponse();
-    await handler(req, res, new URL("/api/v1/admin/sections", "http://localhost"));
+    await handler(
+        req,
+        res,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
 
     const body = JSON.parse(res.payload);
     assert.deepEqual(
