@@ -214,7 +214,10 @@ export function createModuleExtensionRoutes(
                             });
                         },
                         registerAdminSection(section) {
-                            options.uiRegistry?.registerAdminSection(section);
+                            options.uiRegistry?.registerAdminSection({
+                                ...section,
+                                isEnabled: () => isModuleEnabled(manifest.id),
+                            });
                         },
                         registerStaticDir(urlPrefix, absoluteDir) {
                             const normalizedPrefix = String(urlPrefix ?? "")

@@ -7,6 +7,15 @@ import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
 const { requireRoleAccess } = createDefaultRouteContext();
 
 test("module extension routes expose module API endpoints", async () => {
+    const mockDb = {
+        async ensureTable() {},
+        async executeCommand(_command: any) {
+            return { rows: [] };
+        },
+        async transaction(callback: (executor: any) => Promise<any>) {
+            return callback(this);
+        },
+    };
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
@@ -18,7 +27,11 @@ test("module extension routes expose module API endpoints", async () => {
         } as any,
         () => true,
         undefined,
-        { requireRoleAccess },
+        {
+            requireRoleAccess,
+            getCapability: (id: string) =>
+                id === "db:executor" ? mockDb : undefined,
+        },
     );
     await extensions.refresh();
 
@@ -44,7 +57,7 @@ test("module extension routes expose module API endpoints", async () => {
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /visitors/);
+    assert.match(body, /totalUsers/);
 });
 
 test("module extension routes enforce declared minimum role policies", async () => {
@@ -131,16 +144,14 @@ test("module extension routes fail closed on invalid role access policies", asyn
     assert.match(body, /invalid access policy/i);
 });
 
-test("module extension routes register module page extensions with enable hooks", async () => {
+test("module extension routes register module admin sections with enable hooks", async () => {
     let enabled = false;
-    const pageExtensions: Array<{
-        pageId: string;
-        element: {
-            id: string;
-            label: string;
-            scriptUrl: string;
-            isEnabled?: () => boolean;
-        };
+    const adminSections: Array<{
+        id: string;
+        label: string;
+        scriptUrl: string;
+        access?: { minRole: string };
+        isEnabled?: () => boolean;
     }> = [];
     const extensions = createModuleExtensionRoutes(
         {
@@ -157,22 +168,21 @@ test("module extension routes register module page extensions with enable hooks"
             requireRoleAccess,
             uiRegistry: {
                 registerModuleStaticDir() {},
-                registerPageExtension(pageId: string, element: any) {
-                    pageExtensions.push({ pageId, element });
+                registerAdminSection(section: any) {
+                    adminSections.push(section);
                 },
             } as any,
         },
     );
     await extensions.refresh();
 
-    assert.equal(pageExtensions.length, 1);
-    assert.equal(pageExtensions[0].pageId, "dashboard");
-    assert.equal(pageExtensions[0].element.id, "sample-analytics-dashboard");
+    assert.equal(adminSections.length, 1);
+    assert.equal(adminSections[0].id, "analytics");
     assert.equal(
-        pageExtensions[0].element.scriptUrl,
-        "/static/modules/sample-analytics/dashboard-element.js",
+        adminSections[0].scriptUrl,
+        "/static/modules/sample-analytics/admin-section.js",
     );
-    assert.equal(pageExtensions[0].element.isEnabled?.(), false);
+    assert.equal(adminSections[0].isEnabled?.(), false);
     enabled = true;
-    assert.equal(pageExtensions[0].element.isEnabled?.(), true);
+    assert.equal(adminSections[0].isEnabled?.(), true);
 });

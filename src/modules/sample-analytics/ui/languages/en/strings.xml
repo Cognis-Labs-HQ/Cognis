@@ -1,5 +1,22 @@
 <resources>
-  <string name="module.sample-analytics.dashboard.element.label">Sample Analytics</string>
-  <string name="module.sample-analytics.dashboard.element.description">Preview metrics from the Sample Analytics module.</string>
-  <string name="module.sample-analytics.dashboard.element.open">Open analytics</string>
+  <string name="module.sample-analytics.admin.label">Analytics</string>
+  <string name="module.sample-analytics.admin.heading">Analytics</string>
+  <string name="module.sample-analytics.admin.loading">Loading…</string>
+  <string name="module.sample-analytics.admin.fetch_failed">Failed to load analytics data.</string>
+  <string name="module.sample-analytics.admin.stat.total_users">Total Users</string>
+  <string name="module.sample-analytics.admin.stat.active_7d">Active (Last 7 Days)</string>
+  <string name="module.sample-analytics.admin.stat.new_users_days">New Users (Last {days} Days)</string>
+  <string name="module.sample-analytics.admin.filter.time_range">Time Range</string>
+  <string name="module.sample-analytics.admin.filter.days_7">Last 7 Days</string>
+  <string name="module.sample-analytics.admin.filter.days_30">Last 30 Days</string>
+  <string name="module.sample-analytics.admin.filter.days_90">Last 90 Days</string>
+  <string name="module.sample-analytics.admin.chart.registrations_title">Registration Trend</string>
+  <string name="module.sample-analytics.admin.chart.no_data">No data available for the selected period.</string>
+  <string name="module.sample-analytics.admin.events.title">Custom Events</string>
+  <string name="module.sample-analytics.admin.events.empty">No custom events have been recorded.</string>
+  <string name="module.sample-analytics.admin.events.col.type">Event Type</string>
+  <string name="module.sample-analytics.admin.events.col.actor">Source</string>
+  <string name="module.sample-analytics.admin.events.col.time">Time</string>
+  <string name="module.sample-analytics.admin.events.system">System</string>
+  <string name="module.sample-analytics.admin.events.unknown_time">Unknown</string>
 </resources>

@@ -1,13 +1,12 @@
 {
     "id": "sample-analytics",
     "name": "Sample Analytics",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "class": "extension",
     "coreApiVersion": "v1",
-    "capabilities": ["metrics:read", "ui:page", "db:migrations"],
+    "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
     "entrypoints": {
         "api": "./api/index.js",
-        "ui": "./ui/pages/analytics.html",
         "cli": "./cli/index.js",
         "db": "./db/001_sample_analytics.sql"
     },
@@ -15,43 +14,47 @@
     "files": [
         {
             "path": "api/index.js",
-            "sha256": "1b6b00e1b3ad4ecd52afb7861bb8c625133782145589116b1376463cf3609b31"
+            "sha256": ""
         },
         {
-            "path": "ui/pages/analytics.html",
-            "sha256": "d465a16d7109e7f33d52cbfeae3083f2d2930c6fe67ea3c10cd266e5c3f58464"
+            "path": "api/store.js",
+            "sha256": ""
         },
         {
-            "path": "ui/dashboard-element.js",
-            "sha256": "cc7151c9799bd276e46af2072011aa1cc177995c85bece16103bb9b9691976d9"
+            "path": "ui/admin-section.js",
+            "sha256": ""
+        },
+        {
+            "path": "ui/admin-section.css",
+            "sha256": ""
         },
         {
             "path": "ui/languages/en/strings.xml",
-            "sha256": "b16682b39cc8edc9044b0fbfbff26a3bc1f7f836f6bcf4d7cf25e945ab54e9f2"
+            "sha256": ""
         },
         {
             "path": "ui/languages/de/strings.xml",
-            "sha256": "cf243e772711ff78b0419f89c32f5d2903a1a6c6f030030109af4c7a93f4554c"
+            "sha256": ""
         },
         {
             "path": "ui/languages/id/strings.xml",
-            "sha256": "dc552cc10066dbd08a3ab7dceb81f03f21afa0bbb963f3814828690135acb399"
+            "sha256": ""
         },
         {
             "path": "ui/languages/ja/strings.xml",
-            "sha256": "722adbdfbcd06993a5736afa74482fed4c929c47997618971f4b2c3731439b15"
+            "sha256": ""
         },
         {
             "path": "cli/index.js",
-            "sha256": "8a2b8c18dc7e5c45786ff58076679b6e32404a80961bda6ad1c17f8fdf0509ff"
+            "sha256": ""
         },
         {
             "path": "db/001_sample_analytics.sql",
-            "sha256": "ce32c37e42fb73ced351b34b3bfd1b08b49912bd1c018280aa28fd096644a114"
+            "sha256": ""
         },
         {
             "path": "content/README.en.md",
-            "sha256": "ceb17b5f8bada669e23aee2fb3bf0cc546a788edc7a1011b3611993120f9181d"
+            "sha256": ""
         }
     ]
 }

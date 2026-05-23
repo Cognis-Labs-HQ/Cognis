@@ -1,5 +1,7 @@
 [
     "/api/v1/modules/sample-analytics/metrics",
+    "/api/v1/modules/sample-analytics/series",
+    "/api/v1/modules/sample-analytics/events",
     {
         "path": "/analytics",
         "access": {
