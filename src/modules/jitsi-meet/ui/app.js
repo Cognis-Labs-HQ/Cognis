@@ -515,23 +515,12 @@ export async function mount(root, { signal } = {}) {
             ),
         )
             .map((username) => {
-                if (state.currentProfile?.handle === username) {
-                    return {
-                        username,
-                        displayName:
-                            state.currentProfile.displayName || username,
-                        avatarKey: state.currentProfile.avatarKey ?? null,
-                    };
-                }
                 const participant = state.allParticipants.find(
                     (entry) => normalizeUsername(entry?.username) === username,
                 );
                 return {
                     username,
-                    displayName:
-                        participant?.displayName ||
-                        state.currentProfile?.displayName ||
-                        username,
+                    displayName: participant?.displayName || username,
                     avatarKey: participant?.avatarKey ?? null,
                 };
             })
@@ -574,7 +563,22 @@ export async function mount(root, { signal } = {}) {
 
     async function activatePrivateChatForParticipant(username) {
         const normalizedUsername = normalizeUsername(username);
-        if (!normalizedUsername) return;
+        if (!normalizedUsername) {
+            console.warn(
+                "[jitsi-meet] invalid participant username for private chat",
+                {
+                    operation: "open_private_chat",
+                    rawUsername: username,
+                },
+            );
+            showToast(
+                i18n.t("module.jitsi_meet.chat.private_open_unavailable"),
+                {
+                    variant: "warning",
+                },
+            );
+            return;
+        }
         const response = await apiFetch("/api/v1/messages/rooms", {
             method: "POST",
             body: JSON.stringify({
@@ -582,7 +586,25 @@ export async function mount(root, { signal } = {}) {
             }),
         });
         if (!response.ok) {
-            showToast(i18n.t("module.jitsi_meet.chat.private_open_failed"), {
+            const payload = await response.json().catch(() => null);
+            const errorCode = String(payload?.error?.code ?? "").trim();
+            const errorMessageKey =
+                response.status === 401 ||
+                response.status === 403 ||
+                errorCode === "forbidden"
+                    ? "module.jitsi_meet.chat.private_open_forbidden"
+                    : "module.jitsi_meet.chat.private_open_unavailable";
+            console.error("[jitsi-meet] failed to open private chat room", {
+                operation: "open_private_chat",
+                targetUsername: normalizedUsername,
+                status: response.status,
+                errorCode,
+                errorMessage:
+                    typeof payload?.error?.message === "string"
+                        ? payload.error.message
+                        : null,
+            });
+            showToast(i18n.t(errorMessageKey), {
                 variant: "error",
             });
             return;
@@ -590,9 +612,20 @@ export async function mount(root, { signal } = {}) {
         const payload = await response.json().catch(() => ({ data: null }));
         const roomId = normalizeChatRoomId(payload?.data?.id);
         if (!roomId) {
-            showToast(i18n.t("module.jitsi_meet.chat.private_open_failed"), {
-                variant: "error",
-            });
+            console.error(
+                "[jitsi-meet] private chat room response missing room id",
+                {
+                    operation: "open_private_chat",
+                    targetUsername: normalizedUsername,
+                    payload,
+                },
+            );
+            showToast(
+                i18n.t("module.jitsi_meet.chat.private_open_invalid_response"),
+                {
+                    variant: "error",
+                },
+            );
             return;
         }
         state.chatMode = "private";
@@ -662,6 +695,8 @@ export async function mount(root, { signal } = {}) {
         const meetingChatRoomId = resolveMeetingChatRoomId(state.meeting);
         if (meetingChatRoomId) {
             state.lastMeetingChatRoomId = meetingChatRoomId;
+        } else if (state.meeting?.id) {
+            state.lastMeetingChatRoomId = "";
         }
         if (Array.isArray(state.meeting?.participants)) {
             state.lastMeetingParticipants = state.meeting.participants;
