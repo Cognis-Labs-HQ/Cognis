@@ -2,7 +2,7 @@
 
 ## Participant Avatars in Meeting Chat
 
-The Meetings chat panel now shows participant avatars in a horizontal scroll bar directly under the Meeting Chat title. Clicking a participant avatar opens the current user's private chat with that participant without leaving the Meetings page.
+The Meetings chat panel now shows participant avatars in a horizontal scrollbar directly under the Meeting Chat title. Clicking a participant avatar opens the current user's private chat with that participant without leaving the Meetings page.
 
 ## Return to Meeting Chat
 

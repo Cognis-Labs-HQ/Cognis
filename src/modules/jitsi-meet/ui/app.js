@@ -89,7 +89,7 @@ async function fetchCurrentProfile() {
         handle,
         displayName: displayName || handle || "Cognis User",
         email,
-        avatarKey: avatarKey || null,
+        avatarKey: avatarKey ?? null,
         avatarUrl,
     };
 }
@@ -503,7 +503,6 @@ export async function mount(root, { signal } = {}) {
 
     function resolveParticipantChatEntries() {
         if (!state.meeting?.id) return [];
-        if (!Array.isArray(state.lastMeetingParticipants)) return [];
         const localHandle = normalizeUsername(
             state.currentProfile?.handle ?? "",
         );
@@ -701,7 +700,7 @@ export async function mount(root, { signal } = {}) {
             state.lastMeetingChatRoomId = "";
         }
         if (Array.isArray(state.meeting?.participants)) {
-            state.lastMeetingParticipants = state.meeting.participants;
+            state.lastMeetingParticipants = state.meeting.participants.slice();
         }
         if (state.chatMode !== "private") {
             applyActiveChatRoom(state.lastMeetingChatRoomId);
