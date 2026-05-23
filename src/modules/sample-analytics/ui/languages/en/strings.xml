@@ -1,0 +1,5 @@
+<resources>
+  <string name="module.sample-analytics.dashboard.element.label">Sample Analytics</string>
+  <string name="module.sample-analytics.dashboard.element.description">Preview metrics from the Sample Analytics module.</string>
+  <string name="module.sample-analytics.dashboard.element.open">Open analytics</string>
+</resources>

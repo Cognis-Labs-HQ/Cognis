@@ -1,0 +1,5 @@
+<resources>
+  <string name="module.sample-analytics.dashboard.element.label">Analitik Contoh</string>
+  <string name="module.sample-analytics.dashboard.element.description">Pratinjau metrik dari modul Analitik Contoh.</string>
+  <string name="module.sample-analytics.dashboard.element.open">Buka analitik</string>
+</resources>

@@ -203,10 +203,6 @@
   <string name="ui.app.dashboard.element.analogue_clock.label">アナログ時計</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">担当クラス</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">まだクラスが割り当てられていません。</string>
-  <string name="ui.app.dashboard.element.sample_analytics.label">サンプル分析</string>
-  <string name="ui.app.dashboard.element.sample_analytics.description">サンプル分析モジュールのメトリクスをプレビューします。</string>
-  <string name="ui.app.dashboard.element.sample_analytics.open">分析を開く</string>
-
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
