@@ -91,6 +91,28 @@ class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
     readonly name = "Authenticator App (TOTP)";
 
+    private async buildSetupDetails(input: {
+        accountId: string;
+        issuer: string;
+        secret: string;
+    }): Promise<Record<string, string>> {
+        const otpAuthUri = toOtpAuthUri({
+            issuer: input.issuer,
+            accountId: input.accountId,
+            secret: input.secret,
+        });
+        const qrSvg = await toString(otpAuthUri, {
+            type: "svg",
+            errorCorrectionLevel: "M",
+            margin: 1,
+            width: 220,
+        });
+        return {
+            manualSecret: input.secret,
+            qrSvg,
+        };
+    }
+
     async beginSetup(input: {
         accountId: string;
         displayName: string;
@@ -110,16 +132,10 @@ class TotpAdapter implements TfaMethodAdapter {
         };
     }> {
         const secret = base32Encode(randomBytes(20));
-        const otpAuthUri = toOtpAuthUri({
-            issuer: input.issuer,
+        const details = await this.buildSetupDetails({
             accountId: input.accountId,
+            issuer: input.issuer,
             secret,
-        });
-        const qrSvg = await toString(otpAuthUri, {
-            type: "svg",
-            errorCorrectionLevel: "M",
-            margin: 1,
-            width: 220,
         });
         return {
             pendingPayload: {
@@ -136,10 +152,7 @@ class TotpAdapter implements TfaMethodAdapter {
                         maxLength: 6,
                     },
                 ],
-                details: {
-                    manualSecret: secret,
-                    qrSvg,
-                },
+                details,
             },
         };
     }
@@ -200,6 +213,23 @@ class TotpAdapter implements TfaMethodAdapter {
             });
         }
         return Promise.resolve({ verified: true });
+    }
+
+    async renderMethodDetails(input: {
+        accountId: string;
+        state: Record<string, unknown>;
+        issuer: string;
+    }): Promise<{ details: Record<string, string> } | null> {
+        const secret = String(input.state.secret ?? "").trim();
+        if (!secret) {
+            return null;
+        }
+        const details = await this.buildSetupDetails({
+            accountId: input.accountId,
+            issuer: input.issuer,
+            secret,
+        });
+        return { details };
     }
 
     getConfigSchema() {

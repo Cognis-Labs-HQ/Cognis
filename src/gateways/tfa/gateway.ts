@@ -48,6 +48,11 @@ export interface TfaMethodAdapter {
         state: Record<string, unknown>;
         payload: Record<string, unknown>;
     }): Promise<{ verified: boolean; message?: string }>;
+    renderMethodDetails?(input: {
+        accountId: string;
+        state: Record<string, unknown>;
+        issuer: string;
+    }): Promise<{ details: Record<string, string> } | null>;
     getConfigSchema(): TfaConfigField[];
     configure(config: Record<string, unknown>): void;
 }
@@ -338,6 +343,50 @@ export class CoreTfaGateway {
             state: existing.state,
             configuredAt: existing.configuredAt,
         });
+    }
+
+    async enableMethod(accountId: string, methodId: string): Promise<boolean> {
+        const methods = await this.store.listUserMethods(accountId);
+        const existing = methods.find((method) => method.methodId === methodId);
+        if (!existing) return false;
+        const adapter = this.adapters.get(methodId);
+        if (!adapter || !this.enabledAdapters.has(methodId)) {
+            return false;
+        }
+        await this.store.upsertUserMethod({
+            accountId,
+            methodId,
+            enabled: true,
+            sortOrder: existing.sortOrder,
+            state: existing.state,
+            configuredAt: existing.configuredAt,
+        });
+        return true;
+    }
+
+    async getMethodDetails(
+        accountId: string,
+        methodId: string,
+    ): Promise<{ details: Record<string, string> } | null> {
+        const methods = await this.store.listUserMethods(accountId);
+        const existing = methods.find((method) => method.methodId === methodId);
+        if (!existing) return null;
+        const adapter = this.adapters.get(methodId);
+        if (
+            !adapter ||
+            !this.enabledAdapters.has(methodId) ||
+            typeof adapter.renderMethodDetails !== "function"
+        ) {
+            return null;
+        }
+        const issuer = process.env.COGNIS_TOTP_ISSUER || "Cognis";
+        return (
+            (await adapter.renderMethodDetails({
+                accountId,
+                state: existing.state,
+                issuer,
+            })) ?? null
+        );
     }
 
     async setPreferredMethods(

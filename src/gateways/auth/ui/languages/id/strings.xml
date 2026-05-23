@@ -22,6 +22,13 @@
   <string name="gateway.auth.security.tfa_preferred_methods">Metode Pilihan</string>
   <string name="gateway.auth.security.tfa_setup_title">Siapkan Metode Dua Faktor</string>
   <string name="gateway.auth.security.tfa_setup_failed">Tidak dapat memulai penyiapan dua faktor.</string>
+  <string name="gateway.auth.security.tfa_setup_success">Penyiapan metode dua faktor selesai.</string>
+  <string name="gateway.auth.security.tfa_method_enabled_success">Metode tersimpan berhasil diaktifkan kembali.</string>
+  <string name="gateway.auth.security.tfa_method_moved_available">Metode dipindahkan ke daftar tersedia.</string>
+  <string name="gateway.auth.security.tfa_method_manage_title">Kelola Metode Dua Faktor</string>
+  <string name="gateway.auth.security.tfa_method_manage_prompt">Metode ini sudah dikonfigurasi. Anda dapat meninjau kode QR dan rahasia, atau memutar rahasia baru.</string>
+  <string name="gateway.auth.security.tfa_method_rotate">Putar Rahasia</string>
+  <string name="gateway.auth.security.tfa_method_details_failed">Tidak dapat memuat detail QR untuk metode ini.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_action">Putar Ulang Kode Pemulihan</string>
   <string name="gateway.auth.security.tfa_recovery_codes_create_action">Buat Kode Pemulihan</string>
   <string name="gateway.auth.security.tfa_recovery_codes_title">Kode Pemulihan</string>

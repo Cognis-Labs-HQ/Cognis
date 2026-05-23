@@ -59,7 +59,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.0.1",
+        version: "1.0.2",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs",
@@ -263,6 +263,59 @@ function createTfaRoutes(
             await gateway.disableMethod(claims.sub, methodId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
+        const enableMatch = url.pathname.match(
+            /^\/api\/v1\/tfa\/methods\/([^/]+)\/enable$/,
+        );
+        if (enableMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const methodId = decodeURIComponent(enableMatch[1]);
+            const enabled = await gateway.enableMethod(claims.sub, methodId);
+            if (!enabled) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "method_not_configured",
+                            message: "method_not_configured",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
+        const detailsMatch = url.pathname.match(
+            /^\/api\/v1\/tfa\/methods\/([^/]+)\/details$/,
+        );
+        if (detailsMatch && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const methodId = decodeURIComponent(detailsMatch[1]);
+            const details = await gateway.getMethodDetails(
+                claims.sub,
+                methodId,
+            );
+            if (!details) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "method_details_unavailable",
+                            message: "method_details_unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: details }));
             return true;
         }
 

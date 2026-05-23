@@ -22,6 +22,13 @@
   <string name="gateway.auth.security.tfa_preferred_methods">Bevorzugte Methoden</string>
   <string name="gateway.auth.security.tfa_setup_title">Zwei-Faktor-Methode Einrichten</string>
   <string name="gateway.auth.security.tfa_setup_failed">Die Zwei-Faktor-Einrichtung konnte nicht gestartet werden.</string>
+  <string name="gateway.auth.security.tfa_setup_success">Die Einrichtung der Zwei-Faktor-Methode ist abgeschlossen.</string>
+  <string name="gateway.auth.security.tfa_method_enabled_success">Gespeicherte Methode wurde wieder aktiviert.</string>
+  <string name="gateway.auth.security.tfa_method_moved_available">Methode wurde zu den verfügbaren Methoden verschoben.</string>
+  <string name="gateway.auth.security.tfa_method_manage_title">Zwei-Faktor-Methode Verwalten</string>
+  <string name="gateway.auth.security.tfa_method_manage_prompt">Diese Methode ist bereits konfiguriert. Sie können QR-Code und Geheimnis prüfen oder das Geheimnis rotieren.</string>
+  <string name="gateway.auth.security.tfa_method_rotate">Geheimnis Rotieren</string>
+  <string name="gateway.auth.security.tfa_method_details_failed">QR-Details dieser Methode konnten nicht geladen werden.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_action">Wiederherstellungscodes Erneuern</string>
   <string name="gateway.auth.security.tfa_recovery_codes_create_action">Wiederherstellungscodes Erstellen</string>
   <string name="gateway.auth.security.tfa_recovery_codes_title">Wiederherstellungscodes</string>
