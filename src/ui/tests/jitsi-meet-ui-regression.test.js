@@ -421,6 +421,33 @@ test("meetings mini chat filters room-event records from rendering", () => {
     );
 });
 
+test("meetings mini chat supports the Messages reaction floating menu", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    assert.match(appSource, /createAnchoredPopup, openPopup/);
+    assert.match(
+        appSource,
+        /const reactionHoverPopup = createAnchoredPopup\(\{\s*className: "messages-reaction-hover-popup"/,
+    );
+    assert.match(appSource, /function renderReactionRow\(message, i18n\)/);
+    assert.match(appSource, /\$\{renderReactionRow\(message, i18n\)\}/);
+    assert.match(appSource, /data-reaction-more="1"/);
+    assert.match(
+        appSource,
+        /\/api\/v1\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\/\$\{encodeURIComponent\(messageId\)\}\/reactions/,
+    );
+    assert.match(appSource, /async function openEmojiPickerPopup\(roomId, messageId\)/);
+    assert.match(cssSource, /\.jitsi-chat-message \.messages-reactions-row/);
+    assert.match(cssSource, /\.messages-reaction-hover-popup/);
+    assert.match(cssSource, /\.messages-emoji-picker/);
+});
+
 test("jitsi API dispatches meeting lifecycle and participant notifications", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
