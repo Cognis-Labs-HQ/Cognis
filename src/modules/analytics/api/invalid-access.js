@@ -1,14 +1,14 @@
 export function registerApiRoutes(router) {
     router.get(
-        "/api/v1/modules/sample-analytics/metrics",
+        "/api/v1/modules/analytics-invalid/metrics",
         async (_req, res) => {
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: { visitors: 42, conversionRate: 0.12 },
+                    data: { visitors: 7, conversionRate: 0.05 },
                 }),
             );
         },
-        { access: { minRole: "admin" } },
+        { access: { minRole: "admn" } },
     );
 }

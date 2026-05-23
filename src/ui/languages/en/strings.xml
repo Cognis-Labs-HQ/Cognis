@@ -209,7 +209,6 @@
   <string name="ui.app.dashboard.element.analogue_clock.label">Analogue Clock</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">My Classes</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">No classes assigned yet.</string>
-
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>

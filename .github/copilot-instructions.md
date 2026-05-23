@@ -405,6 +405,7 @@ Any UI avatar that represents a user must support the same interaction model eve
 ## i18n requirements
 
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
+- The entire app must respect the user's selected font preference from Settings. Do not hardcode or import external fonts in ways that bypass user font settings.
 - Route all user-facing date/time output through `src/ui/reuse/timestamp.js` (for example `formatDate` / `formatDateTime`), including Administration surfaces that render DB-backed values.
 - Use flat `ui.reuse.*` keys for all cross-component labels and generic phrases (for example `save`, `confirm`, `message`, `users`, `settings`, `modules`, `language`, `error`). Do not introduce `ui.reuse` sub-namespaces.
 - Basic phrases must never be monopolized inside feature, gateway, adapter, or module domains. Before adding a non-`ui.reuse.*` key, check whether the text is reusable; if yes, use or add a `ui.reuse.*` key and remove duplicates from specific domains.

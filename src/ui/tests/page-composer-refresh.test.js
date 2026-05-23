@@ -232,3 +232,25 @@ test("page composer persists drafts and renders large-form draft reset control",
     );
     assert.match(source, /i18n\.t\("ui\.reuse\.reset_draft"\)/);
 });
+
+test("page composer preserves missing placements and shows warning placeholders", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function renderMissingElementContent\(elementId\)/);
+    assert.match(source, /class="composer-missing-element-icon"/);
+    assert.match(
+        source,
+        /section\.appendChild\(createMissingCell\(placement\)\)/,
+    );
+    assert.match(
+        source,
+        /layout\.placements = layout\.placements\.filter\(\s*\(p\) =>[\s\S]*?typeof p\.id === "string"[\s\S]*?Number\.isFinite\(p\.col\)[\s\S]*?Number\.isFinite\(p\.row\)[\s\S]*?Number\.isFinite\(p\.w\)[\s\S]*?Number\.isFinite\(p\.h\)[\s\S]*?p\.w > 0[\s\S]*?p\.h > 0,/m,
+    );
+    assert.match(
+        source,
+        /layout\.hidden = layout\.hidden\.filter\(\s*\(id\) => id && typeof id === "string",\s*\)/m,
+    );
+});

@@ -208,7 +208,7 @@ test("module ui routes can be published outside /modules prefix", async () => {
     const route = createUiRoutes({
         listManifests: async () => [
             {
-                id: "sample-analytics",
+                id: "analytics",
                 entrypoints: { ui: "./ui/pages/analytics.html" },
             },
         ],
@@ -221,14 +221,14 @@ test("module ui routes can be published outside /modules prefix", async () => {
         new URL("http://localhost/analytics"),
     );
     assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /Sample Analytics Module/);
+    assert.match(recorder.body, /Analytics Module/);
 });
 
 test("module ui routes honor role access policies declared in routes.json", async () => {
     const route = createUiRoutes({
         listManifests: async () => [
             {
-                id: "sample-analytics",
+                id: "analytics",
                 entrypoints: { ui: "./ui/pages/analytics.html" },
             },
         ],
@@ -251,14 +251,14 @@ test("module ui routes honor role access policies declared in routes.json", asyn
         new URL("http://localhost/analytics"),
     );
     assert.equal(ownerRecorder.status, 200);
-    assert.match(ownerRecorder.body, /Sample Analytics Module/);
+    assert.match(ownerRecorder.body, /Analytics Module/);
 });
 
 test("module ui routes fail closed on invalid role access policies in routes.json", async () => {
     const route = createUiRoutes({
         listManifests: async () => [
             {
-                id: "sample-analytics-invalid-policy",
+                id: "analytics-invalid-policy",
                 entrypoints: { ui: "./ui/pages/analytics.html" },
             },
         ],

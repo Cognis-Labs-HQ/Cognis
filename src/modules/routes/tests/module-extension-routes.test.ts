@@ -7,18 +7,31 @@ import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
 const { requireRoleAccess } = createDefaultRouteContext();
 
 test("module extension routes expose module API endpoints", async () => {
+    const mockDb = {
+        async ensureTable() {},
+        async executeCommand(_command: any) {
+            return { rows: [] };
+        },
+        async transaction(callback: (executor: any) => Promise<any>) {
+            return callback(this);
+        },
+    };
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/index.js" },
                 },
             ],
         } as any,
         () => true,
         undefined,
-        { requireRoleAccess },
+        {
+            requireRoleAccess,
+            getCapability: (id: string) =>
+                id === "db:executor" ? mockDb : undefined,
+        },
     );
     await extensions.refresh();
 
@@ -39,12 +52,12 @@ test("module extension routes expose module API endpoints", async () => {
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/modules/sample-analytics/metrics"),
+        new URL("http://localhost/api/v1/modules/analytics/metrics"),
     );
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /visitors/);
+    assert.match(body, /totalUsers/);
 });
 
 test("module extension routes enforce declared minimum role policies", async () => {
@@ -52,7 +65,7 @@ test("module extension routes enforce declared minimum role policies", async () 
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/index.js" },
                 },
             ],
@@ -80,7 +93,7 @@ test("module extension routes enforce declared minimum role policies", async () 
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/modules/sample-analytics/metrics"),
+        new URL("http://localhost/api/v1/modules/analytics/metrics"),
     );
 
     assert.equal(handled, true);
@@ -93,7 +106,7 @@ test("module extension routes fail closed on invalid role access policies", asyn
         {
             listManifests: async () => [
                 {
-                    id: "sample-analytics",
+                    id: "analytics",
                     entrypoints: { api: "./api/invalid-access.js" },
                 },
             ],
@@ -121,12 +134,53 @@ test("module extension routes fail closed on invalid role access policies", asyn
                 body = payload;
             },
         } as any,
-        new URL(
-            "http://localhost/api/v1/modules/sample-analytics-invalid/metrics",
-        ),
+        new URL("http://localhost/api/v1/modules/analytics-invalid/metrics"),
     );
 
     assert.equal(handled, true);
     assert.equal(status, 403);
     assert.match(body, /invalid access policy/i);
+});
+
+test("module extension routes register module admin sections with enable hooks", async () => {
+    let enabled = false;
+    const adminSections: Array<{
+        id: string;
+        label: string;
+        scriptUrl: string;
+        access?: { minRole: string };
+        isEnabled?: () => boolean;
+    }> = [];
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "analytics",
+                    entrypoints: { api: "./api/index.js" },
+                },
+            ],
+        } as any,
+        () => enabled,
+        undefined,
+        {
+            requireRoleAccess,
+            uiRegistry: {
+                registerModuleStaticDir() {},
+                registerAdminSection(section: any) {
+                    adminSections.push(section);
+                },
+            } as any,
+        },
+    );
+    await extensions.refresh();
+
+    assert.equal(adminSections.length, 1);
+    assert.equal(adminSections[0].id, "analytics");
+    assert.equal(
+        adminSections[0].scriptUrl,
+        "/static/modules/analytics/admin-section.js",
+    );
+    assert.equal(adminSections[0].isEnabled?.(), false);
+    enabled = true;
+    assert.equal(adminSections[0].isEnabled?.(), true);
 });

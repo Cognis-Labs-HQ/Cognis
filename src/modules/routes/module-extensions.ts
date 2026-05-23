@@ -61,6 +61,15 @@ interface ModuleUiRegistrationContext {
         access?: RoleAccessPolicy;
         stringsBaseUrl?: string;
     }): void;
+    registerPageExtension(
+        pageId: string,
+        element: {
+            id: string;
+            label: string;
+            scriptUrl: string;
+            access?: RoleAccessPolicy;
+        },
+    ): void;
     registerAdminSection(section: {
         id: string;
         label: string;
@@ -198,8 +207,17 @@ export function createModuleExtensionRoutes(
                                 isEnabled: () => isModuleEnabled(manifest.id),
                             });
                         },
+                        registerPageExtension(pageId, element) {
+                            options.uiRegistry?.registerPageExtension(pageId, {
+                                ...element,
+                                isEnabled: () => isModuleEnabled(manifest.id),
+                            });
+                        },
                         registerAdminSection(section) {
-                            options.uiRegistry?.registerAdminSection(section);
+                            options.uiRegistry?.registerAdminSection({
+                                ...section,
+                                isEnabled: () => isModuleEnabled(manifest.id),
+                            });
                         },
                         registerStaticDir(urlPrefix, absoluteDir) {
                             const normalizedPrefix = String(urlPrefix ?? "")

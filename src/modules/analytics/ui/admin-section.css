@@ -1,0 +1,193 @@
+.analytics-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.analytics-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.analytics-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.analytics-stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.analytics-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1rem;
+    background: var(--surface-2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+    gap: 0.25rem;
+}
+
+.analytics-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-2);
+    line-height: 1;
+}
+
+.analytics-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.analytics-role-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.analytics-role-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 3rem;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.analytics-role-name {
+    text-transform: capitalize;
+    color: var(--text-muted);
+}
+
+.analytics-role-bar-wrap {
+    height: 10px;
+    background: var(--surface-soft);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.analytics-role-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    min-width: 2px;
+}
+
+.analytics-role-count {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.analytics-chart-section,
+.analytics-events-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.analytics-chart-title,
+.analytics-events-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.analytics-chart-figure {
+    margin: 0;
+}
+
+.analytics-chart-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+}
+
+.analytics-chart-bar {
+    fill: var(--color-accent, #1a73e8);
+    opacity: 0.85;
+}
+
+.analytics-chart-grid {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+
+.analytics-chart-axis {
+    stroke: var(--border-strong);
+    stroke-width: 1.5;
+}
+
+.analytics-chart-label {
+    font-size: 9px;
+    fill: var(--text-muted);
+    font-family: inherit;
+}
+
+.analytics-events-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.analytics-events-table thead .analytics-events-cell {
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.analytics-events-row:nth-child(even) {
+    background: var(--surface-soft);
+}
+
+.analytics-events-cell {
+    padding: 0.4rem 0.5rem;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+}
+
+.analytics-events-cell--type {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--accent-2);
+    width: 35%;
+}
+
+.analytics-events-cell--actor {
+    width: 35%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.analytics-events-cell--time {
+    color: var(--text-muted);
+    white-space: nowrap;
+    width: 30%;
+}
+
+.analytics-empty {
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+}
