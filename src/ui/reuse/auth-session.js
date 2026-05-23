@@ -9,7 +9,8 @@
  *   when still valid, without performing any redirect.
  * - ensureFullAccountSession() — redirects dashboard-shell pages to login unless
  *   local storage contains a token/account pair that resolves to an enabled user.
- *   Also redirects to /settings when TFA setup is required before proceeding.
+ *   Also redirects to /settings#security when TFA setup is required before
+ *   proceeding.
  *
  * Usage:
  *   const redirected = await redirectToDashboardIfAuthenticated();
@@ -27,8 +28,15 @@ async function enforceTfaSetupIfRequired() {
         if (!response.ok) return false;
         const payload = await response.json().catch(() => null);
         if (payload?.data?.requiresSetup !== true) return false;
-        if (window.location.pathname !== "/settings") {
-            window.location.replace("/settings?enforce_tfa=1");
+        const normalizedHash =
+            typeof window.location.hash === "string"
+                ? window.location.hash.toLowerCase()
+                : "";
+        const isSecuritySettingsRoute =
+            window.location.pathname === "/settings" &&
+            normalizedHash === "#security";
+        if (!isSecuritySettingsRoute) {
+            window.location.replace("/settings#security");
             return true;
         }
     } catch {

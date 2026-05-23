@@ -64,6 +64,7 @@ interface PendingTfaLoginAttempt {
 }
 
 const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
+const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
@@ -177,7 +178,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.4.3",
+        version: "1.4.4",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -292,7 +293,7 @@ function createAuthGatewayRoutes(
         const pendingAttempt: PendingTfaLoginAttempt = {
             ...input,
             id: `tfa_login_${randomBytes(TFA_LOGIN_ATTEMPT_ID_BYTES).toString("base64url")}`,
-            expiresAt: Date.now() + 5 * 60 * 1000,
+            expiresAt: Date.now() + TFA_LOGIN_ATTEMPT_TTL_MS,
         };
         pendingTfaLoginAttempts.set(pendingAttempt.id, pendingAttempt);
         return pendingAttempt;

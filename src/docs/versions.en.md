@@ -50,8 +50,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                         | Version |
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
-| Authentication (auth) | `src/gateways/auth/`         | `1.4.3` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.2` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.4.4` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.3` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.5` |
 | Social                | `src/gateways/social/`       | `1.2.4` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |

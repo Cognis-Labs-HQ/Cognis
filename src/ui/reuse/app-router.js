@@ -68,13 +68,54 @@ const ROUTE_STYLE_BUNDLES = {
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
+const TFA_ENFORCEMENT_CACHE_TTL_MS = 5_000;
 
 let _studyChildComponentsPromise = null;
 let _studyChildComponentsCache = null;
 let _studyChildComponentsCacheExpiresAt = 0;
+let _tfaEnforcementCacheExpiresAt = 0;
+let _tfaEnforcementRequiresSetup = false;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
+}
+
+function normalizeHash(path) {
+    const hashIndex = String(path).indexOf("#");
+    if (hashIndex < 0) return "";
+    return String(path).slice(hashIndex).toLowerCase();
+}
+
+async function readTfaSetupRequirement() {
+    if (Date.now() < _tfaEnforcementCacheExpiresAt) {
+        return _tfaEnforcementRequiresSetup;
+    }
+    const token = localStorage.getItem("cognis_access_token");
+    if (!token) {
+        _tfaEnforcementRequiresSetup = false;
+        _tfaEnforcementCacheExpiresAt =
+            Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
+        return false;
+    }
+    try {
+        const response = await apiFetch("/api/v1/tfa/status");
+        if (!response.ok) {
+            _tfaEnforcementRequiresSetup = false;
+            _tfaEnforcementCacheExpiresAt =
+                Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
+            return false;
+        }
+        const payload = await response.json().catch(() => null);
+        _tfaEnforcementRequiresSetup = payload?.data?.requiresSetup === true;
+        _tfaEnforcementCacheExpiresAt =
+            Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
+        return _tfaEnforcementRequiresSetup;
+    } catch {
+        _tfaEnforcementRequiresSetup = false;
+        _tfaEnforcementCacheExpiresAt =
+            Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
+        return false;
+    }
 }
 
 function isPotentialStudyChildPath(path) {
@@ -324,6 +365,25 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
+    const requiresTfaSetup = await readTfaSetupRequirement();
+    const isSecuritySettingsRoute =
+        normalizePath(path) === "/settings" &&
+        normalizeHash(path) === "#security";
+    if (requiresTfaSetup && !isSecuritySettingsRoute) {
+        const enforcedPath = "/settings#security";
+        if (
+            `${window.location.pathname}${window.location.hash}` !==
+            enforcedPath
+        ) {
+            history.replaceState(
+                { routerPage: enforcedPath },
+                "",
+                enforcedPath,
+            );
+        }
+        return loadRoute(enforcedPath);
+    }
+
     if (_mountController) {
         _mountController.abort();
     }
@@ -439,6 +499,7 @@ export function initRouter(root) {
 
     window.addEventListener("popstate", async (event) => {
         const path = window.location.pathname;
+        const pathWithHash = `${window.location.pathname}${window.location.hash}`;
         const route = await resolveRoute(path);
         if (!route) return;
         if (isPotentialStudyChildPath(path)) {
@@ -452,6 +513,6 @@ export function initRouter(root) {
         // so its presence means the router itself triggered this history entry and
         // must handle the transition even if the base path hasn't changed.
         if (route.base === _currentBase && !event.state?.routerPage) return;
-        await loadRoute(path);
+        await loadRoute(pathWithHash);
     });
 }

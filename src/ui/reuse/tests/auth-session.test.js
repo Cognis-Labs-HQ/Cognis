@@ -29,6 +29,7 @@ function installBrowserMocks({
     entries = {},
     fetchImplementation = async () => ({ ok: false, status: 401 }),
     pathname = "/dashboard",
+    hash = "",
 } = {}) {
     const localStorage = createLocalStorageMock(entries);
     const redirects = [];
@@ -39,6 +40,7 @@ function installBrowserMocks({
     globalThis.window = {
         location: {
             pathname,
+            hash,
             replace(url) {
                 redirects.push(url);
             },
@@ -148,7 +150,7 @@ test("ensureFullAccountSession returns true when authenticated and TFA setup not
     assert.deepEqual(mocks.redirects, []);
 });
 
-test("ensureFullAccountSession redirects to /settings when TFA setup is required", async () => {
+test("ensureFullAccountSession redirects to /settings#security when TFA setup is required", async () => {
     const mocks = installBrowserMocks({
         entries: {
             cognis_access_token: "token-abc",
@@ -181,10 +183,10 @@ test("ensureFullAccountSession redirects to /settings when TFA setup is required
     const result = await ensureFullAccountSession();
 
     assert.equal(result, false);
-    assert.deepEqual(mocks.redirects, ["/settings?enforce_tfa=1"]);
+    assert.deepEqual(mocks.redirects, ["/settings#security"]);
 });
 
-test("ensureFullAccountSession does not redirect when already on /settings with TFA required", async () => {
+test("ensureFullAccountSession redirects to /settings#security when on another settings tab with TFA required", async () => {
     const mocks = installBrowserMocks({
         entries: {
             cognis_access_token: "token-abc",
@@ -212,6 +214,44 @@ test("ensureFullAccountSession does not redirect when already on /settings with 
             return { ok: false, status: 500 };
         },
         pathname: "/settings",
+        hash: "#appearance",
+    });
+
+    const result = await ensureFullAccountSession();
+
+    assert.equal(result, false);
+    assert.deepEqual(mocks.redirects, ["/settings#security"]);
+});
+
+test("ensureFullAccountSession does not redirect when already on /settings#security with TFA required", async () => {
+    const mocks = installBrowserMocks({
+        entries: {
+            cognis_access_token: "token-abc",
+            cognis_account: "bob",
+        },
+        fetchImplementation: async (url) => {
+            if (String(url).includes("/info")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { username: "bob", enabled: true } };
+                    },
+                };
+            }
+            if (String(url).includes("/tfa/status")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    async json() {
+                        return { data: { requiresSetup: true } };
+                    },
+                };
+            }
+            return { ok: false, status: 500 };
+        },
+        pathname: "/settings",
+        hash: "#security",
     });
 
     const result = await ensureFullAccountSession();

@@ -100,6 +100,7 @@ type NotifyDispatch = (envelope: {
 }) => Promise<unknown>;
 
 const TFA_SETUP_ID_BYTES = 18;
+const TFA_METHOD_ISSUER = process.env.COGNIS_TOTP_ISSUER || "Cognis";
 
 export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
@@ -254,11 +255,10 @@ export class CoreTfaGateway {
         }
 
         const setupId = `tfa_setup_${randomBytes(TFA_SETUP_ID_BYTES).toString("base64url")}`;
-        const issuer = process.env.COGNIS_TOTP_ISSUER || "Cognis";
         const started = await adapter.beginSetup({
             accountId: input.accountId,
             displayName: input.displayName,
-            issuer,
+            issuer: TFA_METHOD_ISSUER,
         });
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
@@ -381,12 +381,11 @@ export class CoreTfaGateway {
         ) {
             return null;
         }
-        const issuer = process.env.COGNIS_TOTP_ISSUER || "Cognis";
         return (
             (await adapter.renderMethodDetails({
                 accountId,
                 state: existing.state,
-                issuer,
+                issuer: TFA_METHOD_ISSUER,
             })) ?? null
         );
     }

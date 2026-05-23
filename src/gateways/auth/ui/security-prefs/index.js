@@ -56,6 +56,7 @@ export function createSettingsSection({ i18n, root }) {
                 availableMethods: [],
                 enabledMethods: [],
                 preferredMethodIds: [],
+                requiresSetup: false,
             };
         }
         const payload = await response.json().catch(() => null);
@@ -64,6 +65,7 @@ export function createSettingsSection({ i18n, root }) {
                 availableMethods: [],
                 enabledMethods: [],
                 preferredMethodIds: [],
+                requiresSetup: false,
             }
         );
     }
@@ -658,8 +660,7 @@ export function createSettingsSection({ i18n, root }) {
 
     async function enforceTfaSetupFlow() {
         if (enforcingTfaSetup) return;
-        const searchParams = new URL(window.location.href).searchParams;
-        if (searchParams.get("enforce_tfa") !== "1") return;
+        if (tfaStatus?.requiresSetup !== true) return;
         if ((tfaStatus?.enabledMethods?.length ?? 0) > 0) return;
         enforcingTfaSetup = true;
         try {
