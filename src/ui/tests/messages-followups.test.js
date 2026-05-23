@@ -86,7 +86,7 @@ test("messages speech bubbles render with clear tails", () => {
     );
     assert.match(
         variantsCssSource,
-        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message:not\(\.messages-message--own\)[\s\S]*background:\s*var\(--color-surface\);[\s\S]*border:\s*1px solid var\(--color-border\);/,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message:not\(\.messages-message--own\)[\s\S]*background:\s*var\(--color-surface-elevated\);[\s\S]*border:\s*1px solid var\(--color-border\);/,
     );
     assert.match(
         variantsCssSource,

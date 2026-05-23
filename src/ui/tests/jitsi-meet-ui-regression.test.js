@@ -458,7 +458,7 @@ test("meetings speech bubbles use the same contrast-oriented color tokens as Mes
     );
     assert.match(
         cssSource,
-        /html\[data-message-style="speech_bubbles"\][\s\S]*\.jitsi-chat-message:not\(\.jitsi-chat-message-own\)[\s\S]*background:\s*var\(--color-surface\);[\s\S]*border-color:\s*var\(--color-border\);/,
+        /html\[data-message-style="speech_bubbles"\][\s\S]*\.jitsi-chat-message:not\(\.jitsi-chat-message-own\)[\s\S]*background:\s*var\(--color-surface-elevated\);[\s\S]*border-color:\s*var\(--color-border\);/,
     );
     assert.match(
         cssSource,
