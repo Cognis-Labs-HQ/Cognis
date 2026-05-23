@@ -23,4 +23,8 @@
   <string name="gateway.auth.security.email_tfa_enforced">Email TFA dipaksakan oleh administrator untuk semua pengguna.</string>
   <string name="gateway.auth.security.email_tfa_saved">Preferensi Email TFA diperbarui.</string>
   <string name="gateway.auth.security.email_tfa_save_failed">Gagal memperbarui preferensi Email TFA.</string>
+  <string name="gateway.auth.security.tfa_methods_title">Metode Autentikasi Dua Faktor</string>
+  <string name="gateway.auth.security.tfa_methods_hint">Seret metode antara tersedia dan aktif untuk mengelola opsi verifikasi Anda.</string>
+  <string name="gateway.auth.security.tfa_available_methods">Metode Tersedia</string>
+  <string name="gateway.auth.security.tfa_active_methods">Metode Aktif</string>
 </resources>

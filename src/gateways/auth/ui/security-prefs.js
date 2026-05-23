@@ -11,8 +11,9 @@ import {
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
-    let emailTfaState = null;
+    let tfaMethods = [];
     let lastUnsupportedToastKey = null;
+    let tfaDndBound = false;
     const settingsRoot = root ?? document;
 
     async function loadCapability() {
@@ -51,39 +52,191 @@ export function createSettingsSection({ i18n, root }) {
         return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
     }
 
-    async function loadEmailTfaState() {
-        const response = await apiFetch("/api/v1/auth/smtp-tfa/settings").catch(
+    async function loadTfaSetupStatus() {
+        const response = await apiFetch("/api/v1/auth/tfa/setup-status").catch(
             () => null,
         );
         if (!response?.ok) {
-            emailTfaState = {
-                enabled: false,
-                enforced: false,
-                available: false,
-            };
+            tfaMethods = [];
             return;
         }
         const payload = await response.json().catch(() => null);
-        emailTfaState = {
-            enabled: payload?.data?.enabled === true,
-            enforced: payload?.data?.enforced === true,
-            available: payload?.data?.available === true,
-        };
+        tfaMethods = Array.isArray(payload?.data?.methods)
+            ? payload.data.methods
+            : [];
     }
 
-    async function saveEmailTfaState(enabled) {
-        const response = await apiFetch("/api/v1/auth/smtp-tfa/settings", {
+    function activeTfaMethodIds() {
+        return tfaMethods
+            .filter((method) => method.configured === true)
+            .map((method) => method.id);
+    }
+
+    function availableTfaMethods() {
+        return tfaMethods.filter((method) => method.available === true);
+    }
+
+    async function saveTfaMethodEnabled(method, enabled) {
+        const response = await apiFetch(method.settingsPath, {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ enabled }),
         });
-        if (!response.ok) throw new Error("save_failed");
+        return response.ok;
+    }
+
+    async function requestTfaSetupChallenge(method) {
+        if (!method.setupRequestPath) return null;
+        const response = await apiFetch(method.setupRequestPath, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({}),
+        });
+        if (!response.ok) {
+            const payload = await response.json().catch(() => null);
+            const code = String(payload?.error?.code ?? "setup_failed");
+            if (code === "email_tfa_requires_verified_email") {
+                showToast(
+                    i18n.t("gateway.auth.security.email_tfa_unavailable"),
+                    {
+                        variant: "error",
+                    },
+                );
+            } else {
+                showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+                    variant: "error",
+                });
+            }
+            return null;
+        }
         const payload = await response.json().catch(() => null);
-        emailTfaState = {
-            enabled: payload?.data?.enabled === true,
-            enforced: payload?.data?.enforced === true,
-            available: payload?.data?.available === true,
-        };
+        return String(payload?.data?.challengeId ?? "");
+    }
+
+    async function verifyTfaSetupChallenge(method, challengeId, code) {
+        if (!method.setupVerifyPath) return false;
+        const response = await apiFetch(method.setupVerifyPath, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ challengeId, code }),
+        });
+        if (response.ok) return true;
+        if (response.status === 422) {
+            showToast(i18n.t("ui.app.login.email_tfa.invalid_code"), {
+                variant: "error",
+            });
+            return false;
+        }
+        showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+            variant: "error",
+        });
+        return false;
+    }
+
+    async function promptSetupCode() {
+        let inputEl = null;
+        const action = await openPopup({
+            title: i18n.t("ui.reuse.tfa_setup_title"),
+            body: `
+        <p>${escapeHtml(i18n.t("ui.reuse.tfa_setup_required"))}</p>
+        <label class="stack">
+          <span>${escapeHtml(i18n.t("ui.app.login.email_tfa.code_label"))}</span>
+          <input id="settings-tfa-setup-code-input" type="text" inputmode="numeric" maxlength="6" />
+        </label>
+      `,
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.reuse.confirm"),
+                    variant: "confirm",
+                },
+            ],
+            onOpen: (overlay) => {
+                inputEl = overlay.querySelector(
+                    "#settings-tfa-setup-code-input",
+                );
+            },
+        });
+        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+            return null;
+        }
+        return inputEl.value.trim();
+    }
+
+    async function runSetupFlowForMethod(method) {
+        if (!method.setupRequestPath || !method.setupVerifyPath) {
+            return saveTfaMethodEnabled(method, true);
+        }
+        const challengeId = await requestTfaSetupChallenge(method);
+        if (!challengeId) return false;
+        while (true) {
+            const code = await promptSetupCode();
+            if (!code) return false;
+            const verified = await verifyTfaSetupChallenge(
+                method,
+                challengeId,
+                code,
+            );
+            if (!verified) continue;
+            return true;
+        }
+    }
+
+    function makeTfaRow(method) {
+        const row = document.createElement("tr");
+        row.setAttribute("draggable", "true");
+        row.setAttribute("data-tfa-method", method.id);
+        const labelCell = document.createElement("td");
+        labelCell.textContent = method.name;
+        const handleCell = document.createElement("td");
+        handleCell.className = "drag-handle";
+        handleCell.textContent = "≡";
+        row.append(labelCell, handleCell);
+        return row;
+    }
+
+    function makeEmptyDropZoneRow() {
+        const row = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.setAttribute("colspan", "2");
+        emptyCell.className = "language-table-empty-cell";
+        emptyCell.textContent = "\u00A0";
+        row.append(emptyCell);
+        return row;
+    }
+
+    function renderTfaTables() {
+        const availableTable = settingsRoot.querySelector(
+            "#settings-tfa-available",
+        );
+        const activeTable = settingsRoot.querySelector("#settings-tfa-active");
+        if (!(availableTable instanceof HTMLTableElement)) return;
+        if (!(activeTable instanceof HTMLTableElement)) return;
+        const activeIds = new Set(activeTfaMethodIds());
+        const availableMethodsList = availableTfaMethods();
+        const availableRows = availableMethodsList
+            .filter((method) => !activeIds.has(method.id))
+            .map((method) => makeTfaRow(method));
+        availableTable.replaceChildren(
+            ...(availableRows.length > 0
+                ? availableRows
+                : [makeEmptyDropZoneRow()]),
+        );
+        const activeRows = availableMethodsList
+            .filter((method) => activeIds.has(method.id))
+            .map((method) => makeTfaRow(method));
+        activeTable.replaceChildren(
+            ...(activeRows.length > 0 ? activeRows : [makeEmptyDropZoneRow()]),
+        );
+        const section = settingsRoot.querySelector(
+            ".settings-tfa-table-section",
+        );
+        if (section instanceof HTMLElement) {
+            section.classList.toggle(
+                "security-tfa-section--disabled",
+                availableMethodsList.length < 1,
+            );
+        }
     }
 
     function buildPasswordCriteria(policy) {
@@ -151,15 +304,10 @@ export function createSettingsSection({ i18n, root }) {
                       capability?.reason ||
                           i18n.t("gateway.auth.security.unsupported_default"),
                   )}</p>`;
-        const tfaChecked = emailTfaState?.enabled === true ? " checked" : "";
-        const tfaEnforced = emailTfaState?.enforced === true;
-        const tfaUnavailable = emailTfaState?.available !== true;
-        const tfaDisabled = tfaEnforced || tfaUnavailable ? " disabled" : "";
-        const tfaHint = tfaEnforced
-            ? i18n.t("gateway.auth.security.email_tfa_enforced")
-            : tfaUnavailable
-              ? i18n.t("gateway.auth.security.email_tfa_unavailable")
-              : i18n.t("gateway.auth.security.email_tfa_hint");
+        const tfaUnavailable = availableTfaMethods().length < 1;
+        const tfaHint = tfaUnavailable
+            ? i18n.t("gateway.auth.security.email_tfa_unavailable")
+            : i18n.t("gateway.auth.security.tfa_methods_hint");
         return `
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
@@ -167,12 +315,22 @@ export function createSettingsSection({ i18n, root }) {
         <button class="btn-animated" type="button" id="settings-reset-password-btn"${disabled}>${i18n.t("gateway.auth.security.reset_action")}</button>
       </div>
       <div class="settings-auth-password-reset">
-        <h3>${i18n.t("gateway.auth.security.email_tfa_title")}</h3>
+        <h3>${i18n.t("gateway.auth.security.tfa_methods_title")}</h3>
         <p>${escapeHtml(tfaHint)}</p>
-        <label class="switch">
-          <input id="settings-smtp-tfa-toggle" type="checkbox"${tfaChecked}${tfaDisabled} />
-          <span class="slider"></span>
-        </label>
+        <div class="content-grid--two-column settings-tfa-table-section">
+          <div>
+            <div class="settings-language-heading-row">
+              <h4>${escapeHtml(i18n.t("gateway.auth.security.tfa_available_methods"))}</h4>
+            </div>
+            <table id="settings-tfa-available" class="language-table"></table>
+          </div>
+          <div>
+            <div class="settings-language-heading-row">
+              <h4>${escapeHtml(i18n.t("gateway.auth.security.tfa_active_methods"))}</h4>
+            </div>
+            <table id="settings-tfa-active" class="language-table"></table>
+          </div>
+        </div>
       </div>
     `;
     }
@@ -314,12 +472,13 @@ export function createSettingsSection({ i18n, root }) {
         preferenceKey: "settings-security-layout",
         renderContent,
         async onRender() {
-            await Promise.all([loadCapability(), loadEmailTfaState()]);
+            await Promise.all([loadCapability(), loadTfaSetupStatus()]);
             const panel = settingsRoot.querySelector(
                 "#auth-security-reset-panel",
             );
             if (panel) {
                 panel.innerHTML = renderBody();
+                renderTfaTables();
             }
             if (capability?.supported === true) {
                 lastUnsupportedToastKey = null;
@@ -351,32 +510,113 @@ export function createSettingsSection({ i18n, root }) {
             button.onclick = () => {
                 openPasswordResetPopup();
             };
-            const tfaToggle = settingsRoot.querySelector(
-                "#settings-smtp-tfa-toggle",
-            );
-            if (tfaToggle instanceof HTMLInputElement) {
-                tfaToggle.onchange = async () => {
-                    try {
-                        await saveEmailTfaState(tfaToggle.checked);
-                        showToast(
-                            i18n.t("gateway.auth.security.email_tfa_saved"),
-                            {
-                                variant: "success",
-                            },
-                        );
-                    } catch {
-                        tfaToggle.checked = !tfaToggle.checked;
-                        showToast(
-                            i18n.t(
-                                "gateway.auth.security.email_tfa_save_failed",
-                            ),
-                            {
-                                variant: "error",
-                            },
-                        );
-                    }
-                };
+            if (tfaDndBound) {
+                return;
             }
+            tfaDndBound = true;
+            let draggedMethodId = null;
+            const clearDropMarkers = () => {
+                settingsRoot
+                    .querySelectorAll(".drop-target-before, .drop-target-after")
+                    .forEach((row) => {
+                        row.classList.remove(
+                            "drop-target-before",
+                            "drop-target-after",
+                        );
+                    });
+            };
+            const resolveDropTarget = (targetNode, clientY) => {
+                const targetTable = targetNode?.closest(
+                    "#settings-tfa-available, #settings-tfa-active",
+                );
+                const targetRow = targetNode?.closest("tr[data-tfa-method]");
+                const targetIsAfter = Boolean(
+                    targetRow &&
+                    clientY >
+                        targetRow.getBoundingClientRect().top +
+                            targetRow.getBoundingClientRect().height / 2,
+                );
+                return { targetTable, targetRow, targetIsAfter };
+            };
+            settingsRoot.addEventListener("dragstart", (event) => {
+                const row = event.target.closest("tr[data-tfa-method]");
+                if (!row) return;
+                draggedMethodId = row.getAttribute("data-tfa-method");
+                event.dataTransfer?.setData(
+                    "text/plain",
+                    draggedMethodId || "",
+                );
+            });
+            settingsRoot.addEventListener("dragend", () => {
+                clearDropMarkers();
+                draggedMethodId = null;
+            });
+            settingsRoot.addEventListener("dragover", (event) => {
+                const zone = event.target.closest(
+                    "#settings-tfa-available, #settings-tfa-active, tr[data-tfa-method]",
+                );
+                if (!zone) return;
+                event.preventDefault();
+                clearDropMarkers();
+                const row = zone.closest("tr[data-tfa-method]");
+                if (row) {
+                    const rect = row.getBoundingClientRect();
+                    const after = event.clientY > rect.top + rect.height / 2;
+                    row.classList.add(
+                        after ? "drop-target-after" : "drop-target-before",
+                    );
+                    return;
+                }
+                const placeholderRow = zone.querySelector(
+                    "tr:not([data-tfa-method])",
+                );
+                if (placeholderRow) {
+                    placeholderRow.classList.add("drop-target-before");
+                }
+            });
+            settingsRoot.addEventListener("drop", async (event) => {
+                const { targetTable } = resolveDropTarget(
+                    event.target,
+                    event.clientY,
+                );
+                clearDropMarkers();
+                const methodId =
+                    draggedMethodId ||
+                    event.dataTransfer?.getData("text/plain");
+                draggedMethodId = null;
+                if (!methodId || !targetTable?.id) return;
+                const method = tfaMethods.find(
+                    (entry) => entry.id === methodId,
+                );
+                if (!method || method.available !== true) return;
+                if (
+                    targetTable.id === "settings-tfa-active" &&
+                    method.configured !== true
+                ) {
+                    const setupComplete = await runSetupFlowForMethod(method);
+                    if (!setupComplete) {
+                        renderTfaTables();
+                        return;
+                    }
+                    showToast(i18n.t("ui.reuse.tfa_setup_saved"), {
+                        variant: "success",
+                    });
+                } else if (
+                    targetTable.id === "settings-tfa-available" &&
+                    method.configured === true
+                ) {
+                    const saved = await saveTfaMethodEnabled(method, false);
+                    if (!saved) {
+                        showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+                            variant: "error",
+                        });
+                        renderTfaTables();
+                        return;
+                    }
+                }
+                await loadTfaSetupStatus();
+                renderTfaTables();
+            });
         },
         isDirty: () => false,
         save: async () => undefined,

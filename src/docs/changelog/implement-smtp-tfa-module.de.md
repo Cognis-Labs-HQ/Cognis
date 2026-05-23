@@ -23,3 +23,15 @@ Im Bereich Administration → Sicherheit wurde ein neuer TFA-Abschnitt mit Tabel
 ## TFA-Onboarding für neue Nutzer erzwungen
 
 Bei aktivierter Erzwingung wurde ein verpflichtender TFA-Onboarding-Ablauf für neue Nutzer ergänzt, inklusive Setup-Status-APIs und nicht schließbarer Setup-Popups, die bei SMTP-TFA eine verifizierte E-Mail erzwingen können.
+
+## TFA-Methodentabellen in Benutzereinstellungen verschoben
+
+Die Drag-and-drop-Tabellen für verfügbare und aktive TFA-Methoden wurden von Administration in die Sicherheitssektion der Benutzereinstellungen verschoben. Die Erzwingung bleibt in Administration.
+
+## SMTP-Setup-Challenge bei Aktivierung ergänzt
+
+Beim Aktivieren von SMTP-TFA wird nun ein per E-Mail versendeter Setup-Code im Popup abgefragt, damit die Methode erst nach erfolgreicher Verifizierung aktiv wird.
+
+## Login-TFA-Eingabe im Auth-Panel gerendert
+
+Die TFA-Verifizierung wird beim Login jetzt direkt im Auth-Panel angezeigt und unterstützt Tabs für mehrere Medien; bei nur einem Medium werden die Tabs ausgeblendet.

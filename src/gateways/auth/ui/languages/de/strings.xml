@@ -23,4 +23,8 @@
   <string name="gateway.auth.security.email_tfa_enforced">E-Mail-TFA wird von einem Administrator für alle Benutzer erzwungen.</string>
   <string name="gateway.auth.security.email_tfa_saved">E-Mail-TFA-Einstellung aktualisiert.</string>
   <string name="gateway.auth.security.email_tfa_save_failed">E-Mail-TFA-Einstellung konnte nicht aktualisiert werden.</string>
+  <string name="gateway.auth.security.tfa_methods_title">Zwei-Faktor-Authentifizierungsmethoden</string>
+  <string name="gateway.auth.security.tfa_methods_hint">Ziehen Sie Methoden zwischen verfügbar und aktiv, um Ihre Verifizierungsoptionen zu verwalten.</string>
+  <string name="gateway.auth.security.tfa_available_methods">Verfügbare Methoden</string>
+  <string name="gateway.auth.security.tfa_active_methods">Aktive Methoden</string>
 </resources>

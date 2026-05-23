@@ -769,6 +769,15 @@ function bindIntegrityRerun() {
     });
 }
 
+/**
+ * Resolves dependency-link targets by supported identifier formats:
+ * - adapter-<gatewayId>:<adapterId>
+ * - gateway-<gatewayId>
+ * - module-<moduleId>
+ *
+ * @param {string} targetId
+ * @returns {Element | null}
+ */
 function findDependencyTargetElement(targetId) {
     if (targetId.startsWith("adapter-")) {
         const adapterReference = targetId.slice("adapter-".length);
@@ -796,6 +805,19 @@ function findDependencyTargetElement(targetId) {
 function revealDependencyTarget(targetId) {
     const targetElement = findDependencyTargetElement(targetId);
     if (!(targetElement instanceof HTMLElement)) return;
+    if (targetId.startsWith("adapter-")) {
+        const adapterReference = targetId.slice("adapter-".length);
+        const parsedAdapterReference =
+            parseAdapterDependencyId(adapterReference);
+        if (parsedAdapterReference) {
+            const gatewayElement = root.querySelector(
+                `[data-gateway="${CSS.escape(parsedAdapterReference.gatewayId)}"]`,
+            );
+            if (gatewayElement instanceof HTMLDetailsElement) {
+                gatewayElement.setAttribute("open", "");
+            }
+        }
+    }
     const detailsElement =
         targetElement instanceof HTMLDetailsElement
             ? targetElement
@@ -818,7 +840,20 @@ function bindDependencyLinks(container = root) {
             if (!targetId) return;
             link.addEventListener("click", (e) => {
                 e.preventDefault();
-                revealDependencyTarget(targetId);
+                const owningOverlay = link.closest(".popup-overlay");
+                if (!(owningOverlay instanceof HTMLElement)) {
+                    revealDependencyTarget(targetId);
+                    return;
+                }
+                const closeButton = owningOverlay.querySelector(
+                    '[data-popup-action="close"]',
+                );
+                if (closeButton instanceof HTMLButtonElement) {
+                    closeButton.click();
+                }
+                window.setTimeout(() => {
+                    revealDependencyTarget(targetId);
+                }, 120);
             });
         });
 }

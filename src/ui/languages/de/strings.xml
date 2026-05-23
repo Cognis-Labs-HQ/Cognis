@@ -480,8 +480,8 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.tfa_methods_heading">Zwei-Faktor-Authentifizierungsmethoden</string>
-  <string name="ui.app.admin.security.tfa_methods_hint">Ziehen Sie Methoden zwischen verfügbar und aktiv. Nur aktive Methoden werden für neue Benutzer erzwungen.</string>
+  <string name="ui.app.admin.security.tfa_methods_heading">Zwei-Faktor-Authentifizierungsdurchsetzung</string>
+  <string name="ui.app.admin.security.tfa_methods_hint">Verlangen Sie, dass neu registrierte Benutzer die TFA-Einrichtung abschließen, bevor sie die App verwenden.</string>
   <string name="ui.app.admin.security.tfa_available_methods">Verfügbare Methoden</string>
   <string name="ui.app.admin.security.tfa_active_methods">Aktive Methoden</string>
   <string name="ui.app.admin.security.tfa_drag_handle_label">Methode zum Neusortieren ziehen</string>

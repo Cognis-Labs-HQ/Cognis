@@ -23,4 +23,8 @@
   <string name="gateway.auth.security.email_tfa_enforced">メール TFA は管理者により全ユーザーに強制されています。</string>
   <string name="gateway.auth.security.email_tfa_saved">メール TFA 設定を更新しました。</string>
   <string name="gateway.auth.security.email_tfa_save_failed">メール TFA 設定の更新に失敗しました。</string>
+  <string name="gateway.auth.security.tfa_methods_title">二要素認証の方式</string>
+  <string name="gateway.auth.security.tfa_methods_hint">利用可能と有効の間で方式をドラッグして、認証オプションを管理します。</string>
+  <string name="gateway.auth.security.tfa_available_methods">利用可能な方式</string>
+  <string name="gateway.auth.security.tfa_active_methods">有効な方式</string>
 </resources>

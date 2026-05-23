@@ -54,6 +54,8 @@ export interface AuthTfaMethodRegistration {
     name: string;
     description?: string;
     settingsPath: string;
+    setupRequestPath?: string;
+    setupVerifyPath?: string;
     requiresVerifiedEmail?: boolean;
     isAvailable: () => boolean | Promise<boolean>;
     isConfiguredForAccount: (accountId: string) => boolean | Promise<boolean>;
@@ -83,6 +85,14 @@ export interface AuthProviderAdapter {
     ): Promise<AuthPendingSession | null>;
     getEmailTfaState?(accountId: string): Promise<AuthEmailTfaState>;
     setEmailTfaEnabled?(accountId: string, enabled: boolean): Promise<void>;
+    beginEmailTfaSetupChallenge?(
+        accountId: string,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaSetupChallenge?(
+        accountId: string,
+        challengeId: string,
+        code: string,
+    ): Promise<boolean>;
     resetEmailTfa?(accountId: string): Promise<void>;
     onAccountRegistered?(accountId: string): Promise<void>;
 }

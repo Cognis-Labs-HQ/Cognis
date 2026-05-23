@@ -480,8 +480,8 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.tfa_methods_heading">二要素認証の方式</string>
-  <string name="ui.app.admin.security.tfa_methods_hint">方式を利用可能と有効の間でドラッグしてください。有効な方式のみ新規ユーザーに強制されます。</string>
+  <string name="ui.app.admin.security.tfa_methods_heading">二要素認証の強制</string>
+  <string name="ui.app.admin.security.tfa_methods_hint">新規登録ユーザーがアプリを利用する前に TFA 設定を完了するよう必須化します。</string>
   <string name="ui.app.admin.security.tfa_available_methods">利用可能な方式</string>
   <string name="ui.app.admin.security.tfa_active_methods">有効な方式</string>
   <string name="ui.app.admin.security.tfa_drag_handle_label">方式を並べ替えるにはドラッグ</string>

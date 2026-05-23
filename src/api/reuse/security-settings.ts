@@ -20,6 +20,13 @@ export function defaultSecuritySettings(): SecuritySettings {
     };
 }
 
+/**
+ * Normalizes TFA/security method IDs by trimming string entries, dropping empty
+ * or non-string values, and removing duplicates while preserving order.
+ *
+ * @param {unknown} rawMethodIds
+ * @returns {string[]}
+ */
 export function normalizeMethodIds(rawMethodIds: unknown): string[] {
     if (!Array.isArray(rawMethodIds)) return [];
     return Array.from(

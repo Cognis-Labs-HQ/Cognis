@@ -1096,8 +1096,18 @@ test("auth tfa routes expose smtp-tfa availability and setup status", async () =
             preferenceState.set(`${accountId}:${key}`, value);
         },
     });
+    let hasVerifiedEmail = false;
+    let lastSetupCode = "";
     capabilities.contribute("notify:canSendVerificationEmail", () => true);
-    capabilities.contribute("notify:hasVerifiedEmail", async () => false);
+    capabilities.contribute(
+        "notify:hasVerifiedEmail",
+        async () => hasVerifiedEmail,
+    );
+    capabilities.contribute("notify:dispatch", async ({ body }) => {
+        const match = String(body ?? "").match(/(\d{6})/);
+        lastSetupCode = match?.[1] ?? "";
+        return { dispatched: ["smtp"] };
+    });
     await bootstrap({
         dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
@@ -1129,13 +1139,66 @@ test("auth tfa routes expose smtp-tfa availability and setup status", async () =
     );
     assert.equal(methodsResult.res.status, 200);
     const methodsPayload = JSON.parse(methodsResult.res.payload) as {
-        data: Array<{ id: string; available: boolean }>;
+        data: Array<{
+            id: string;
+            available: boolean;
+            setupRequestPath?: string;
+            setupVerifyPath?: string;
+        }>;
     };
     const smtpMethod = methodsPayload.data.find(
         (entry) => entry.id === "smtp-tfa",
     );
     assert.equal(Boolean(smtpMethod), true);
     assert.equal(smtpMethod?.available, true);
+    assert.equal(
+        smtpMethod?.setupRequestPath,
+        "/api/v1/auth/smtp-tfa/setup-request",
+    );
+    assert.equal(
+        smtpMethod?.setupVerifyPath,
+        "/api/v1/auth/smtp-tfa/setup-verify",
+    );
+
+    const userToken = issueAccessToken("alice", "user", 120);
+    const setupRequestWithoutEmail = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {}, { authorization: `Bearer ${userToken}` }),
+        "/api/v1/auth/smtp-tfa/setup-request",
+    );
+    assert.equal(setupRequestWithoutEmail.res.status, 409);
+
+    hasVerifiedEmail = true;
+    const setupRequestResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {}, { authorization: `Bearer ${userToken}` }),
+        "/api/v1/auth/smtp-tfa/setup-request",
+    );
+    assert.equal(setupRequestResult.res.status, 200);
+    const setupRequestPayload = JSON.parse(setupRequestResult.res.payload) as {
+        data: { challengeId: string };
+    };
+    assert.equal(lastSetupCode.length, 6);
+    assert.equal(setupRequestPayload.data.challengeId.length > 0, true);
+
+    const setupVerifyResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                challengeId: setupRequestPayload.data.challengeId,
+                code: lastSetupCode,
+            },
+            { authorization: `Bearer ${userToken}` },
+        ),
+        "/api/v1/auth/smtp-tfa/setup-verify",
+    );
+    assert.equal(setupVerifyResult.res.status, 200);
+    await capabilities
+        .get<{
+            set(accountId: string, key: string, value: string): Promise<void>;
+        }>("preferences:store")
+        ?.set("alice", "auth-smtp-tfa", JSON.stringify({ enabled: false }));
 
     await capabilities
         .get<{
@@ -1162,7 +1225,6 @@ test("auth tfa routes expose smtp-tfa availability and setup status", async () =
             JSON.stringify({ enabled: true }),
         );
 
-    const userToken = issueAccessToken("alice", "user", 120);
     const setupStatusResult = await dispatchRoute(
         routeRegistry,
         makeJsonRequest("GET", {}, { authorization: `Bearer ${userToken}` }),

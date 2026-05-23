@@ -261,26 +261,29 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             "#security-enforce-tfa-for-new-users",
         );
         const tfaSection = root.querySelector(".security-tfa-section");
-        if (!(availableTable instanceof HTMLTableElement)) return;
-        if (!(activeTable instanceof HTMLTableElement)) return;
+        const hasTables =
+            availableTable instanceof HTMLTableElement &&
+            activeTable instanceof HTMLTableElement;
         const activeMethodSet = new Set(currentActiveTfaMethods);
-        const activeRows = currentActiveTfaMethods
-            .map((methodId) =>
-                tfaMethodCatalog.find((method) => method.id === methodId),
-            )
-            .filter(Boolean)
-            .map((method) => createTfaRow(method.id, method.name));
-        activeTable.replaceChildren(
-            ...(activeRows.length > 0 ? activeRows : [createEmptyTfaRow()]),
-        );
-        const availableRows = tfaMethodCatalog
-            .filter((method) => !activeMethodSet.has(method.id))
-            .map((method) => createTfaRow(method.id, method.name));
-        availableTable.replaceChildren(
-            ...(availableRows.length > 0
-                ? availableRows
-                : [createEmptyTfaRow()]),
-        );
+        if (hasTables) {
+            const activeRows = currentActiveTfaMethods
+                .map((methodId) =>
+                    tfaMethodCatalog.find((method) => method.id === methodId),
+                )
+                .filter(Boolean)
+                .map((method) => createTfaRow(method.id, method.name));
+            activeTable.replaceChildren(
+                ...(activeRows.length > 0 ? activeRows : [createEmptyTfaRow()]),
+            );
+            const availableRows = tfaMethodCatalog
+                .filter((method) => !activeMethodSet.has(method.id))
+                .map((method) => createTfaRow(method.id, method.name));
+            availableTable.replaceChildren(
+                ...(availableRows.length > 0
+                    ? availableRows
+                    : [createEmptyTfaRow()]),
+            );
+        }
         const hasAvailableMethods = tfaMethodCatalog.some(
             (method) => method.available === true,
         );
@@ -491,7 +494,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             );
             settings.registrationsEnabled = publicRegistrationEnabled;
             bindSecurityInputs(settings, passwordPolicy);
-            bindTfaTableInteractions();
         },
 
         async save() {
@@ -629,20 +631,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               ${escapeHtml(i18n.t("ui.app.admin.security.tfa_methods_heading"))}
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.tfa_methods_hint"), tooltipAria)}
             </h3>
-            <div class="content-grid--two-column security-tfa-section">
-              <div>
-                <div class="settings-language-heading-row">
-                  <h4>${escapeHtml(i18n.t("ui.app.admin.security.tfa_available_methods"))}</h4>
-                </div>
-                <table id="security-tfa-available" class="language-table"></table>
-              </div>
-              <div>
-                <div class="settings-language-heading-row">
-                  <h4>${escapeHtml(i18n.t("ui.app.admin.security.tfa_active_methods"))}</h4>
-                </div>
-                <table id="security-tfa-active" class="language-table"></table>
-              </div>
-            </div>
             <div class="security-field-row">
               <label class="switch">
                 <input id="security-enforce-tfa-for-new-users" type="checkbox" />

@@ -23,4 +23,8 @@
   <string name="gateway.auth.security.email_tfa_enforced">Email TFA is enforced by an administrator for all users.</string>
   <string name="gateway.auth.security.email_tfa_saved">Email TFA preference updated.</string>
   <string name="gateway.auth.security.email_tfa_save_failed">Failed to update Email TFA preference.</string>
+  <string name="gateway.auth.security.tfa_methods_title">Two-Factor Authentication Methods</string>
+  <string name="gateway.auth.security.tfa_methods_hint">Drag methods between available and active to manage your verification options.</string>
+  <string name="gateway.auth.security.tfa_available_methods">Available Methods</string>
+  <string name="gateway.auth.security.tfa_active_methods">Active Methods</string>
 </resources>

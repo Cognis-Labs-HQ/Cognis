@@ -25,6 +25,11 @@ interface StoredChallenge {
     session: AuthPendingSession;
 }
 
+interface StoredSetupChallenge {
+    accountId: string;
+    expiresAt: number;
+}
+
 interface UserPreferenceStoreLike {
     get(accountId: string, key: string): Promise<string | null>;
     set(accountId: string, key: string, value: string): Promise<void>;
@@ -38,6 +43,11 @@ type NotifyDispatch = (envelope: {
     metadata?: Record<string, unknown>;
 }) => Promise<{ dispatched: string[] }>;
 
+/**
+ * SMTP-backed TFA adapter that registers the `smtp-tfa` verification method,
+ * manages login/setup challenge codes, and persists per-account enablement via
+ * the preference store capability.
+ */
 export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
     readonly id = "smtp-tfa";
     readonly name = "Email TFA";
@@ -46,6 +56,10 @@ export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
     private enforceForAll = false;
     private readonly tfaService = new TfaCodeService(new InMemoryTfaStore());
     private readonly pendingChallenges = new Map<string, StoredChallenge>();
+    private readonly pendingSetupChallenges = new Map<
+        string,
+        StoredSetupChallenge
+    >();
 
     constructor(private readonly adapterContext?: AuthAdapterContext) {
         this.registerTfaMethod();
@@ -155,6 +169,8 @@ export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
             id: this.id,
             name: this.name,
             settingsPath: "/api/v1/auth/smtp-tfa/settings",
+            setupRequestPath: "/api/v1/auth/smtp-tfa/setup-request",
+            setupVerifyPath: "/api/v1/auth/smtp-tfa/setup-verify",
             requiresVerifiedEmail: true,
             isAvailable: () => this.canDispatchEmailCodes(),
             isConfiguredForAccount: async (accountId: string) => {
@@ -258,11 +274,76 @@ export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
         await this.writePreference(accountId, { enabled });
     }
 
+    async beginEmailTfaSetupChallenge(
+        accountId: string,
+    ): Promise<{ challengeId: string }> {
+        const dispatch = this.getDispatch();
+        if (!dispatch || !this.canDispatchEmailCodes()) {
+            throw new Error("smtp_unavailable");
+        }
+        const hasVerifiedEmail = await this.hasVerifiedEmailAddress(accountId);
+        if (!hasVerifiedEmail) {
+            throw new Error("email_tfa_requires_verified_email");
+        }
+        const challengeId = randomUUID();
+        const code = this.tfaService.issue(
+            `setup:${challengeId}`,
+            CHALLENGE_EXPIRY_MS,
+        );
+        const sendResult = await dispatch({
+            category: "system",
+            recipientUsername: accountId,
+            subject: "Your Cognis TFA setup code",
+            body: `Your Cognis setup verification code is: ${code}\n\nThis code expires in 10 minutes.`,
+            metadata: {
+                source: "auth-smtp-tfa",
+                purpose: "setup",
+            },
+        });
+        if (
+            !Array.isArray(sendResult?.dispatched) ||
+            sendResult.dispatched.length < 1
+        ) {
+            throw new Error("smtp_unavailable");
+        }
+        this.pendingSetupChallenges.set(challengeId, {
+            accountId,
+            expiresAt: Date.now() + CHALLENGE_EXPIRY_MS,
+        });
+        return { challengeId };
+    }
+
+    async completeEmailTfaSetupChallenge(
+        accountId: string,
+        challengeId: string,
+        code: string,
+    ): Promise<boolean> {
+        const challenge = this.pendingSetupChallenges.get(challengeId);
+        if (!challenge) return false;
+        if (challenge.accountId !== accountId) return false;
+        if (Date.now() > challenge.expiresAt) {
+            this.pendingSetupChallenges.delete(challengeId);
+            return false;
+        }
+        const valid = this.tfaService.verify(`setup:${challengeId}`, code);
+        if (!valid) return false;
+        this.pendingSetupChallenges.delete(challengeId);
+        await this.writePreference(accountId, { enabled: true });
+        return true;
+    }
+
     async resetEmailTfa(accountId: string): Promise<void> {
         await this.writePreference(accountId, { enabled: false });
         for (const [challengeId, value] of this.pendingChallenges.entries()) {
             if (value.accountId !== accountId) continue;
             this.pendingChallenges.delete(challengeId);
+        }
+        for (const [
+            challengeId,
+            setupChallenge,
+        ] of this.pendingSetupChallenges.entries()) {
+            if (setupChallenge.accountId !== accountId) continue;
+            this.pendingSetupChallenges.delete(challengeId);
         }
     }
 

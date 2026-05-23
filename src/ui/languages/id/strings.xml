@@ -480,8 +480,8 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.tfa_methods_heading">Metode Autentikasi Dua Faktor</string>
-  <string name="ui.app.admin.security.tfa_methods_hint">Seret metode antara tersedia dan aktif. Hanya metode aktif yang diberlakukan untuk pengguna baru.</string>
+  <string name="ui.app.admin.security.tfa_methods_heading">Penerapan Autentikasi Dua Faktor</string>
+  <string name="ui.app.admin.security.tfa_methods_hint">Wajibkan pengguna baru menyelesaikan pengaturan TFA sebelum menggunakan aplikasi.</string>
   <string name="ui.app.admin.security.tfa_available_methods">Metode Tersedia</string>
   <string name="ui.app.admin.security.tfa_active_methods">Metode Aktif</string>
   <string name="ui.app.admin.security.tfa_drag_handle_label">Seret untuk mengurutkan ulang metode</string>

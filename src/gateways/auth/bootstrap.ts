@@ -64,6 +64,8 @@ interface ResolvedTfaMethod {
     id: string;
     name: string;
     settingsPath: string;
+    setupRequestPath: string | null;
+    setupVerifyPath: string | null;
     requiresVerifiedEmail: boolean;
     available: boolean;
     configured: boolean;
@@ -84,6 +86,14 @@ type EmailTfaAdapter = AuthProviderAdapter & {
         available: boolean;
     }>;
     setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void>;
+    beginEmailTfaSetupChallenge?(
+        accountId: string,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaSetupChallenge?(
+        accountId: string,
+        challengeId: string,
+        code: string,
+    ): Promise<boolean>;
 };
 
 async function loadLocalAccountStore(
@@ -157,6 +167,25 @@ function hasEmailTfaResetHook(
     return Boolean(adapter && typeof adapter.resetEmailTfa === "function");
 }
 
+function hasEmailTfaSetupHooks(
+    adapter: EmailTfaAdapter | null,
+): adapter is EmailTfaAdapter & {
+    beginEmailTfaSetupChallenge(
+        accountId: string,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaSetupChallenge(
+        accountId: string,
+        challengeId: string,
+        code: string,
+    ): Promise<boolean>;
+} {
+    return Boolean(
+        adapter &&
+        typeof adapter.beginEmailTfaSetupChallenge === "function" &&
+        typeof adapter.completeEmailTfaSetupChallenge === "function",
+    );
+}
+
 function findTfaAdapter(
     authGateway: CoreAuthGateway,
     options: { enabledOnly: boolean },
@@ -199,26 +228,27 @@ async function readBooleanPreference(
 
 async function resolveTfaMethodsForAccount(
     methodRegistry: Map<string, AuthTfaMethodRegistration>,
-    activeMethodIds: string[],
     accountId: string,
 ): Promise<ResolvedTfaMethod[]> {
-    const methods: ResolvedTfaMethod[] = [];
-    for (const methodId of activeMethodIds) {
-        const registration = methodRegistry.get(methodId);
-        if (!registration) continue;
-        const available = (await registration.isAvailable()) === true;
-        const configured =
-            (await registration.isConfiguredForAccount(accountId)) === true;
-        methods.push({
-            id: registration.id,
-            name: registration.name,
-            settingsPath: registration.settingsPath,
-            requiresVerifiedEmail: registration.requiresVerifiedEmail === true,
-            available,
-            configured,
-        });
-    }
-    return methods;
+    return Promise.all(
+        Array.from(methodRegistry.values()).map(async (registration) => {
+            const [available, configured] = await Promise.all([
+                registration.isAvailable(),
+                registration.isConfiguredForAccount(accountId),
+            ]);
+            return {
+                id: registration.id,
+                name: registration.name,
+                settingsPath: registration.settingsPath,
+                setupRequestPath: registration.setupRequestPath ?? null,
+                setupVerifyPath: registration.setupVerifyPath ?? null,
+                requiresVerifiedEmail:
+                    registration.requiresVerifiedEmail === true,
+                available: available === true,
+                configured: configured === true,
+            };
+        }),
+    );
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
@@ -306,7 +336,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.4.0",
+        version: "1.5.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -459,6 +489,8 @@ function createAuthGatewayRoutes(
                 id: method.id,
                 name: method.name,
                 settingsPath: method.settingsPath,
+                setupRequestPath: method.setupRequestPath ?? null,
+                setupVerifyPath: method.setupVerifyPath ?? null,
                 requiresVerifiedEmail: method.requiresVerifiedEmail === true,
                 available: (await method.isAvailable()) === true,
             })),
@@ -471,10 +503,8 @@ function createAuthGatewayRoutes(
         hasAvailableMethod: boolean;
         hasConfiguredMethod: boolean;
     }> {
-        const securitySettings = await readSecuritySettings();
         const methods = await resolveTfaMethodsForAccount(
             tfaMethodRegistry,
-            securitySettings.activeTfaMethods,
             accountId,
         );
         const hasAvailableMethod = methods.some((method) => method.available);
@@ -931,6 +961,111 @@ function createAuthGatewayRoutes(
         }
 
         if (
+            url.pathname === "/api/v1/auth/smtp-tfa/setup-request" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const adapter = getEnabledEmailTfaAdapter();
+            if (!hasEmailTfaSetupHooks(adapter)) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Email TFA setup is unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            try {
+                const challenge = await adapter.beginEmailTfaSetupChallenge(
+                    claims.sub,
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: { challengeId: challenge.challengeId },
+                    }),
+                );
+            } catch (error) {
+                const code =
+                    error instanceof Error
+                        ? error.message
+                        : "setup_unavailable";
+                const status =
+                    code === "email_tfa_requires_verified_email" ? 409 : 503;
+                res.writeHead(status, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code, message: code },
+                    }),
+                );
+            }
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/smtp-tfa/setup-verify" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const adapter = getEnabledEmailTfaAdapter();
+            if (!hasEmailTfaSetupHooks(adapter)) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Email TFA setup is unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = await readJson(req);
+            const challengeId = String(body.challengeId ?? "").trim();
+            const code = String(body.code ?? "").trim();
+            if (!challengeId || !code) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "challengeId and code are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const verified = await adapter.completeEmailTfaSetupChallenge(
+                claims.sub,
+                challengeId,
+                code,
+            );
+            if (!verified) {
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_code",
+                            message:
+                                "Invalid or expired TFA setup verification code",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await clearPendingTfaOnboardingIfConfigured(claims.sub);
+            const state = await adapter.getEmailTfaState(claims.sub);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: state }));
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/auth/smtp-tfa/verify-login" &&
             req.method === "POST"
         ) {
@@ -1164,9 +1299,19 @@ function createAuthGatewayRoutes(
                     res.end(
                         JSON.stringify({
                             data: {
+                                requiresTfa: true,
                                 requiresEmailTfa: true,
                                 challengeId: challenge.challengeId,
                                 accountId: session.accountId,
+                                methods: [
+                                    {
+                                        id: emailTfaAdapter.id,
+                                        name: emailTfaAdapter.name,
+                                        challengeId: challenge.challengeId,
+                                        verifyPath:
+                                            "/api/v1/auth/smtp-tfa/verify-login",
+                                    },
+                                ],
                             },
                         }),
                     );

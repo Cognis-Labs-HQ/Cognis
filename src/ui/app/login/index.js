@@ -232,61 +232,125 @@ export async function mount(root) {
         }
     }
 
-    async function promptEmailTfaCode() {
-        let inputEl = null;
-        const action = await openPopup({
-            title: i18n.t("ui.app.login.email_tfa.title"),
-            body: `
-      <p>${escapeHtml(i18n.t("ui.app.login.email_tfa.prompt"))}</p>
-      <label class="stack">
-        <span>${escapeHtml(i18n.t("ui.app.login.email_tfa.code_label"))}</span>
-        <input id="login-smtp-tfa-code-input" type="text" inputmode="numeric" maxlength="6" />
-      </label>
-    `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.login.email_tfa.submit"),
-                    variant: "confirm",
-                },
-            ],
-            onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#login-smtp-tfa-code-input");
-            },
-        });
-        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
-            return null;
+    let pendingTfaMethods = [];
+    let selectedTfaMethodId = null;
+
+    /**
+     * Normalizes login TFA challenge payloads into a uniform method list for
+     * in-panel rendering and verification dispatch.
+     *
+     * @param {Record<string, unknown> | null | undefined} payloadData
+     * @returns {Array<{ id: string, name: string, challengeId: string, verifyPath: string }>}
+     */
+    function normalizeLoginTfaMethods(payloadData) {
+        const declaredMethods = Array.isArray(payloadData?.methods)
+            ? payloadData.methods
+            : [];
+        if (declaredMethods.length > 0) {
+            return declaredMethods.map((method) => ({
+                id: String(method.id ?? ""),
+                name:
+                    String(method.name ?? "").trim() ||
+                    i18n.t("ui.app.login.email_tfa.title"),
+                challengeId: String(method.challengeId ?? "").trim(),
+                verifyPath:
+                    String(method.verifyPath ?? "").trim() ||
+                    "/api/v1/auth/smtp-tfa/verify-login",
+            }));
         }
-        return inputEl.value.trim();
+        return [];
     }
 
-    async function completeEmailTfaLogin(challengeId) {
-        while (true) {
-            const code = await promptEmailTfaCode();
-            if (!code) return null;
-            const response = await fetch("/api/v1/auth/smtp-tfa/verify-login", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ challengeId, code }),
-            });
-            const body = await response.json().catch(() => null);
-            if (response.ok && body?.data) {
-                return body.data;
+    function toggleLoginTfaPrompt(isVisible) {
+        const loginForm = root.querySelector("#login-form");
+        const tfaForm = root.querySelector("#login-tfa-form");
+        if (loginForm instanceof HTMLFormElement) {
+            loginForm.hidden = isVisible;
+        }
+        if (tfaForm instanceof HTMLFormElement) {
+            tfaForm.hidden = !isVisible;
+        }
+    }
+
+    function renderLoginTfaTabs() {
+        const tabsHost = root.querySelector("#login-tfa-tabs");
+        const methodLabel = root.querySelector("#login-tfa-method-label");
+        if (!(tabsHost instanceof HTMLElement)) return;
+        if (pendingTfaMethods.length < 1) {
+            tabsHost.hidden = true;
+            tabsHost.innerHTML = "";
+            if (methodLabel instanceof HTMLElement) {
+                methodLabel.textContent = "";
             }
-            if (response.status === 401) {
-                showToast(i18n.t("ui.app.login.email_tfa.invalid_code"), {
-                    variant: "error",
+            return;
+        }
+        if (!selectedTfaMethodId) {
+            selectedTfaMethodId = pendingTfaMethods[0].id;
+        }
+        const selectedMethod = pendingTfaMethods.find(
+            (method) => method.id === selectedTfaMethodId,
+        );
+        if (methodLabel instanceof HTMLElement) {
+            methodLabel.textContent = selectedMethod?.name ?? "";
+        }
+        if (pendingTfaMethods.length < 2) {
+            tabsHost.hidden = true;
+            tabsHost.innerHTML = "";
+            return;
+        }
+        tabsHost.hidden = false;
+        tabsHost.innerHTML = pendingTfaMethods
+            .map(
+                (method) => `
+            <button
+              type="button"
+              class="theme-btn${method.id === selectedTfaMethodId ? " active" : ""}"
+              data-login-tfa-method="${escapeHtml(method.id)}"
+            >${escapeHtml(method.name)}</button>`,
+            )
+            .join("");
+        tabsHost
+            .querySelectorAll("[data-login-tfa-method]")
+            .forEach((button) => {
+                button.addEventListener("click", () => {
+                    selectedTfaMethodId = button.getAttribute(
+                        "data-login-tfa-method",
+                    );
+                    renderLoginTfaTabs();
                 });
-                continue;
-            }
-            showToast(
-                body?.error?.message || i18n.t("ui.app.login.email_tfa.failed"),
-                {
-                    variant: "error",
-                },
-            );
+            });
+    }
+
+    async function verifyPendingTfaLogin(code) {
+        const selectedMethod = pendingTfaMethods.find(
+            (method) => method.id === selectedTfaMethodId,
+        );
+        if (!selectedMethod || !code) return null;
+        const response = await fetch(selectedMethod.verifyPath, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+                challengeId: selectedMethod.challengeId,
+                code,
+            }),
+        });
+        const body = await response.json().catch(() => null);
+        if (response.ok && body?.data) {
+            return body.data;
+        }
+        if (response.status === 401) {
+            showToast(i18n.t("ui.app.login.email_tfa.invalid_code"), {
+                variant: "error",
+            });
             return null;
         }
+        showToast(
+            body?.error?.message || i18n.t("ui.app.login.email_tfa.failed"),
+            {
+                variant: "error",
+            },
+        );
+        return null;
     }
 
     async function enforceRequiredEmailSetup(accountId, authToken) {
@@ -395,6 +459,17 @@ export async function mount(root) {
         ${signupCalloutHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
+      <form id="login-tfa-form" class="stack auth-form" method="POST" hidden>
+        <h3>${escapeHtml(i18n.t("ui.app.login.email_tfa.title"))}</h3>
+        <div id="login-tfa-tabs" class="auth-provider-toggle" hidden></div>
+        <p>${escapeHtml(i18n.t("ui.app.login.email_tfa.prompt"))}</p>
+        <p id="login-tfa-method-label"></p>
+        <label>
+          <span>${escapeHtml(i18n.t("ui.app.login.email_tfa.code_label"))}</span>
+          <input id="login-tfa-code" type="text" inputmode="numeric" maxlength="6" required />
+        </label>
+        <button type="submit">${escapeHtml(i18n.t("ui.app.login.email_tfa.submit"))}</button>
+      </form>
       <div id="sso-buttons" class="sso-buttons"></div>
     `;
         return renderAuthLayout({
@@ -462,74 +537,151 @@ export async function mount(root) {
                             let loginData = null;
                             if (response.ok && body?.data) {
                                 loginData = body.data;
-                            } else if (
-                                response.status === 202 &&
-                                body?.data?.requiresEmailTfa === true &&
-                                body?.data?.challengeId
-                            ) {
-                                loginData = await completeEmailTfaLogin(
-                                    body.data.challengeId,
+                            } else if (response.status === 202 && body?.data) {
+                                pendingTfaMethods = normalizeLoginTfaMethods(
+                                    body.data,
+                                ).filter(
+                                    (method) =>
+                                        method.id &&
+                                        method.challengeId &&
+                                        method.verifyPath,
                                 );
-                                if (!loginData) return;
-                            }
-                            if (loginData) {
-                                localStorage.setItem(
-                                    "cognis_access_token",
-                                    loginData.token,
-                                );
-                                localStorage.setItem(
-                                    "cognis_account",
-                                    loginData.accountId,
-                                );
-                                localStorage.setItem(
-                                    "cognis_display_name",
-                                    loginData.displayName ||
-                                        loginData.accountId,
-                                );
-                                localStorage.setItem(
-                                    "cognis_role",
-                                    loginData.role || "user",
-                                );
-                                localStorage.setItem(
-                                    "cognis_is_founder",
-                                    loginData.isFounder ? "true" : "false",
-                                );
-                                localStorage.setItem(
-                                    "cognis_login_time",
-                                    new Date().toISOString(),
-                                );
-                                localStorage.setItem(
-                                    "cognis_user_validation_mode",
-                                    loginData.userValidationMode || "none",
-                                );
-                                const requiresUserValidation =
-                                    loginData.requiredUserValidation === true &&
-                                    loginData.userValidationMode === "smtp";
-                                if (requiresUserValidation) {
-                                    await enforceRequiredEmailSetup(
-                                        loginData.accountId,
-                                        loginData.token,
+                                if (pendingTfaMethods.length < 1) {
+                                    showToast(
+                                        i18n.t("ui.app.login.email_tfa.failed"),
+                                        { variant: "error" },
                                     );
+                                    return;
                                 }
-                                if (loginData.requiresTfaSetup === true) {
-                                    await enforceRequiredTfaSetup({
-                                        i18n,
-                                        accountId: loginData.accountId,
-                                        authToken: loginData.token,
-                                        openPopup,
-                                        showToast,
-                                        escapeHtml,
-                                        enforceRequiredEmailSetup,
-                                    });
-                                }
-                                await syncTimezoneOnLogin(loginData.accountId);
-                                window.location.href = "/dashboard";
+                                selectedTfaMethodId = pendingTfaMethods[0].id;
+                                toggleLoginTfaPrompt(true);
+                                renderLoginTfaTabs();
                                 return;
                             }
-                            const errorMsg =
-                                body?.error?.message ||
-                                i18n.t("ui.app.login.error.generic");
-                            showToast(errorMsg, { variant: "error" });
+                            if (!loginData) {
+                                const errorMsg =
+                                    body?.error?.message ||
+                                    i18n.t("ui.app.login.error.generic");
+                                showToast(errorMsg, { variant: "error" });
+                                return;
+                            }
+                            localStorage.setItem(
+                                "cognis_access_token",
+                                loginData.token,
+                            );
+                            localStorage.setItem(
+                                "cognis_account",
+                                loginData.accountId,
+                            );
+                            localStorage.setItem(
+                                "cognis_display_name",
+                                loginData.displayName || loginData.accountId,
+                            );
+                            localStorage.setItem(
+                                "cognis_role",
+                                loginData.role || "user",
+                            );
+                            localStorage.setItem(
+                                "cognis_is_founder",
+                                loginData.isFounder ? "true" : "false",
+                            );
+                            localStorage.setItem(
+                                "cognis_login_time",
+                                new Date().toISOString(),
+                            );
+                            localStorage.setItem(
+                                "cognis_user_validation_mode",
+                                loginData.userValidationMode || "none",
+                            );
+                            const requiresUserValidation =
+                                loginData.requiredUserValidation === true &&
+                                loginData.userValidationMode === "smtp";
+                            if (requiresUserValidation) {
+                                await enforceRequiredEmailSetup(
+                                    loginData.accountId,
+                                    loginData.token,
+                                );
+                            }
+                            if (loginData.requiresTfaSetup === true) {
+                                await enforceRequiredTfaSetup({
+                                    i18n,
+                                    accountId: loginData.accountId,
+                                    authToken: loginData.token,
+                                    openPopup,
+                                    showToast,
+                                    escapeHtml,
+                                    enforceRequiredEmailSetup,
+                                });
+                            }
+                            await syncTimezoneOnLogin(loginData.accountId);
+                            window.location.href = "/dashboard";
+                        });
+                    document
+                        .querySelector("#login-tfa-form")
+                        ?.addEventListener("submit", async (event) => {
+                            event.preventDefault();
+                            const form = event.target;
+                            const codeInput =
+                                form.querySelector("#login-tfa-code");
+                            const code =
+                                codeInput instanceof HTMLInputElement
+                                    ? codeInput.value.trim()
+                                    : "";
+                            const loginData = await verifyPendingTfaLogin(code);
+                            if (!loginData) return;
+                            pendingTfaMethods = [];
+                            selectedTfaMethodId = null;
+                            toggleLoginTfaPrompt(false);
+                            localStorage.setItem(
+                                "cognis_access_token",
+                                loginData.token,
+                            );
+                            localStorage.setItem(
+                                "cognis_account",
+                                loginData.accountId,
+                            );
+                            localStorage.setItem(
+                                "cognis_display_name",
+                                loginData.displayName || loginData.accountId,
+                            );
+                            localStorage.setItem(
+                                "cognis_role",
+                                loginData.role || "user",
+                            );
+                            localStorage.setItem(
+                                "cognis_is_founder",
+                                loginData.isFounder ? "true" : "false",
+                            );
+                            localStorage.setItem(
+                                "cognis_login_time",
+                                new Date().toISOString(),
+                            );
+                            localStorage.setItem(
+                                "cognis_user_validation_mode",
+                                loginData.userValidationMode || "none",
+                            );
+                            const requiresUserValidation =
+                                loginData.requiredUserValidation === true &&
+                                loginData.userValidationMode === "smtp";
+                            if (requiresUserValidation) {
+                                await enforceRequiredEmailSetup(
+                                    loginData.accountId,
+                                    loginData.token,
+                                );
+                            }
+                            if (loginData.requiresTfaSetup === true) {
+                                await enforceRequiredTfaSetup({
+                                    i18n,
+                                    accountId: loginData.accountId,
+                                    authToken: loginData.token,
+                                    openPopup,
+                                    showToast,
+                                    escapeHtml,
+                                    enforceRequiredEmailSetup,
+                                });
+                            }
+                            await syncTimezoneOnLogin(loginData.accountId);
+                            window.location.href = "/dashboard";
                         });
                 },
             },

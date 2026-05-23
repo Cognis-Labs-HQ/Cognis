@@ -23,3 +23,15 @@ Added a new Administration → Security TFA area with available and active metho
 ## Enforce new-user TFA onboarding
 
 Added mandatory TFA onboarding flow for new users when enforcement is enabled, including setup-status APIs and non-dismissible setup popups that can require verified email before SMTP TFA activation.
+
+## Move TFA Method Tables to User Preferences
+
+Moved the Available/Active TFA method drag-and-drop tables from Administration to User Preferences security settings, while keeping enforcement control in Administration.
+
+## Add SMTP Setup Challenge During Activation
+
+Activating SMTP TFA now triggers an emailed setup code challenge flow in a popup so users must verify the setup before the method becomes active.
+
+## Render Login TFA Prompt In Auth Panel
+
+Login now renders the TFA verification prompt directly in the auth panel and supports method tabs when multiple verification media are available, hiding tabs when there is only one method.

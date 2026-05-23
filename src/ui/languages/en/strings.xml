@@ -480,8 +480,8 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.tfa_methods_heading">Two-Factor Authentication Methods</string>
-  <string name="ui.app.admin.security.tfa_methods_hint">Drag methods between available and active. Only active methods are enforced for new users.</string>
+  <string name="ui.app.admin.security.tfa_methods_heading">Two-Factor Authentication Enforcement</string>
+  <string name="ui.app.admin.security.tfa_methods_hint">Require newly registered users to complete TFA setup before using the app.</string>
   <string name="ui.app.admin.security.tfa_available_methods">Available Methods</string>
   <string name="ui.app.admin.security.tfa_active_methods">Active Methods</string>
   <string name="ui.app.admin.security.tfa_drag_handle_label">Drag to reorder method</string>

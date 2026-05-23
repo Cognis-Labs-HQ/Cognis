@@ -924,6 +924,10 @@ body[data-theme="light"] .slider::before {
     align-items: start;
 }
 
+.settings-tfa-table-section {
+    align-items: start;
+}
+
 .sub-composer-heading {
     margin: 0 0 12px;
 }

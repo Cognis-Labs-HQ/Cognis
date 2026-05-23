@@ -12,18 +12,17 @@
  *     openPopup,
  *     showToast,
  *     escapeHtml,
- *     ensureRequiredEmailSetup,
+ *     enforceRequiredEmailSetup,
  *   });
  *
- * @param {{
- *   i18n: { t: (key: string) => string },
- *   accountId: string,
- *   authToken?: string,
- *   openPopup: (options: Record<string, unknown>) => Promise<string | null | undefined>,
- *   showToast: (message: string, options?: Record<string, unknown>) => void,
- *   escapeHtml: (value: string) => string,
- *   enforceRequiredEmailSetup?: (accountId: string, authToken?: string) => Promise<void>,
- * }} deps
+ * @param {object} deps
+ * @param {{ t: (key: string) => string }} deps.i18n
+ * @param {string} deps.accountId
+ * @param {string} [deps.authToken]
+ * @param {(options: Record<string, unknown>) => Promise<string | null | undefined>} deps.openPopup
+ * @param {(message: string, options?: Record<string, unknown>) => void} deps.showToast
+ * @param {(value: string) => string} deps.escapeHtml
+ * @param {(accountId: string, authToken?: string) => Promise<void>} [deps.enforceRequiredEmailSetup]
  * @returns {Promise<void>}
  */
 export async function enforceRequiredTfaSetup({
@@ -110,7 +109,90 @@ export async function enforceRequiredTfaSetup({
             continue;
         }
         if (selectedMethod.requiresVerifiedEmail === true) {
-            await enforceRequiredEmailSetup?.(accountId, authToken);
+            try {
+                await enforceRequiredEmailSetup?.(accountId, authToken);
+            } catch {
+                showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+                    variant: "error",
+                });
+                continue;
+            }
+        }
+        if (selectedMethod.setupRequestPath && selectedMethod.setupVerifyPath) {
+            const requestResponse = await authenticatedRequest(
+                selectedMethod.setupRequestPath,
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({}),
+                },
+            );
+            if (!requestResponse.ok) {
+                showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+                    variant: "error",
+                });
+                continue;
+            }
+            const requestPayload = await requestResponse
+                .json()
+                .catch(() => null);
+            const challengeId = String(requestPayload?.data?.challengeId ?? "");
+            if (!challengeId) {
+                showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+                    variant: "error",
+                });
+                continue;
+            }
+            let codeInput = null;
+            const verifyAction = await openPopup({
+                title: i18n.t("ui.reuse.tfa_setup_title"),
+                body: `
+          <label class="stack">
+            <span>${escapeHtml(i18n.t("ui.app.login.email_tfa.code_label"))}</span>
+            <input id="required-tfa-setup-code" type="text" inputmode="numeric" maxlength="6" />
+          </label>
+        `,
+                actions: [
+                    {
+                        id: "confirm",
+                        label: i18n.t("ui.reuse.confirm"),
+                        variant: "confirm",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    codeInput = overlay.querySelector(
+                        "#required-tfa-setup-code",
+                    );
+                },
+            });
+            if (verifyAction !== "confirm") {
+                continue;
+            }
+            const code =
+                codeInput instanceof HTMLInputElement
+                    ? codeInput.value.trim()
+                    : "";
+            if (!code) {
+                continue;
+            }
+            const verifyResponse = await authenticatedRequest(
+                selectedMethod.setupVerifyPath,
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ challengeId, code }),
+                },
+            );
+            if (!verifyResponse.ok) {
+                showToast(i18n.t("ui.reuse.tfa_setup_save_failed"), {
+                    variant: "error",
+                });
+                continue;
+            }
+            showToast(i18n.t("ui.reuse.tfa_setup_saved"), {
+                variant: "success",
+            });
+            continue;
         }
         const saveResponse = await authenticatedRequest(
             selectedMethod.settingsPath,

@@ -16,6 +16,14 @@ function buildAdapterMap(adapters) {
  * @param {number} separatorIndex
  * @returns {boolean}
  */
+/**
+ * Returns true when the dependency string is a valid adapter reference in the
+ * form `gatewayId:adapterId`, with exactly one separator and non-empty sides.
+ *
+ * @param {string} dependencyId
+ * @param {number} separatorIndex
+ * @returns {boolean}
+ */
 function isValidAdapterReference(dependencyId, separatorIndex) {
     return (
         separatorIndex > 0 &&
@@ -24,6 +32,15 @@ function isValidAdapterReference(dependencyId, separatorIndex) {
     );
 }
 
+/**
+ * Parses adapter dependency IDs in the format `gatewayId:adapterId`.
+ *
+ * Returns `null` when the value is malformed (missing separator, multiple
+ * separators, or missing gateway/adapter segment).
+ *
+ * @param {string} dependencyId
+ * @returns {{ gatewayId: string, adapterId: string } | null}
+ */
 export function parseAdapterDependencyId(dependencyId) {
     const separatorIndex = dependencyId.indexOf(":");
     if (!isValidAdapterReference(dependencyId, separatorIndex)) {
