@@ -547,6 +547,9 @@ export function createSettingsSection({ i18n, root }) {
                 bindTfaInteractions();
             }
         } finally {
+            if (generatedRecoveryCodes.length === 0) {
+                recoveryCodesVisible = false;
+            }
             enforcingTfaSetup = false;
         }
     }
@@ -672,9 +675,6 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function renderBody() {
-        if (generatedRecoveryCodes.length === 0) {
-            recoveryCodesVisible = false;
-        }
         const { available, preferred } = resolveTfaLists();
         const hasRecoveryCodes = tfaStatus?.hasRecoveryCodes === true;
         if (!capability) {
