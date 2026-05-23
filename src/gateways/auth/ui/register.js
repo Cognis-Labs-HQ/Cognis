@@ -27,6 +27,7 @@ import {
     countPatternMatches,
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
+import { enforceRequiredTfaSetup } from "/static/reuse/tfa-setup.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
@@ -506,6 +507,70 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    async function loadUserEmailsForRegister(accountId, verifyToken) {
+        const response = await fetch(
+            `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+            {
+                headers: { authorization: `Bearer ${verifyToken}` },
+            },
+        );
+        if (!response.ok) return [];
+        const payload = await response.json().catch(() => null);
+        return Array.isArray(payload?.data) ? payload.data : [];
+    }
+
+    async function promptRequiredEmailAddressForRegister() {
+        let inputEl = null;
+        const action = await openPopup({
+            title: i18n.t("ui.app.settings.emails_add"),
+            body: () => `
+      <label class="stack">
+        <span>${i18n.t("ui.reuse.invite_email")}</span>
+        <input id="required-register-email-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
+      </label>
+    `,
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.reuse.confirm"),
+                    variant: "confirm",
+                },
+            ],
+            onOpen: (overlay) => {
+                inputEl = overlay.querySelector(
+                    "#required-register-email-input",
+                );
+            },
+        });
+        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+            return null;
+        }
+        return inputEl.value.trim().toLowerCase();
+    }
+
+    async function enforceRequiredEmailSetupDuringRegister(
+        accountId,
+        verifyToken,
+    ) {
+        while (true) {
+            const emails = await loadUserEmailsForRegister(
+                accountId,
+                verifyToken,
+            );
+            const hasVerifiedPrimary = emails.some(
+                (entry) => entry.primary && entry.verified,
+            );
+            if (hasVerifiedPrimary) return;
+            const emailAddress = await promptRequiredEmailAddressForRegister();
+            if (!emailAddress) continue;
+            await runEmailVerificationAfterRegister(
+                accountId,
+                emailAddress,
+                verifyToken,
+            );
+        }
+    }
+
     const composer = createPageComposer(root, {
         allowCustomization: false,
         i18n,
@@ -779,6 +844,18 @@ export async function mount(root, { signal } = {}) {
                                             email,
                                             verifyToken,
                                         );
+                                    }
+                                    if (verifyToken) {
+                                        await enforceRequiredTfaSetup({
+                                            i18n,
+                                            accountId: registeredUsername,
+                                            authToken: verifyToken,
+                                            openPopup,
+                                            showToast,
+                                            escapeHtml,
+                                            ensureRequiredEmailSetup:
+                                                enforceRequiredEmailSetupDuringRegister,
+                                        });
                                     }
                                 }
                                 setPreferredLanguages(

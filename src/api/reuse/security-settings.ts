@@ -3,6 +3,8 @@ export interface SecuritySettings {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
+    activeTfaMethods: string[];
+    enforceTfaForNewUsers: boolean;
 }
 
 export const SECURITY_SETTINGS_KEY = "security-settings";
@@ -13,7 +15,21 @@ export function defaultSecuritySettings(): SecuritySettings {
         registrationsEnabled: false,
         userValidationMode: "none",
         requireTeacherManualApproval: true,
+        activeTfaMethods: [],
+        enforceTfaForNewUsers: false,
     };
+}
+
+function normalizeMethodIds(rawMethodIds: unknown): string[] {
+    if (!Array.isArray(rawMethodIds)) return [];
+    return Array.from(
+        new Set(
+            rawMethodIds
+                .filter((entry): entry is string => typeof entry === "string")
+                .map((entry) => entry.trim())
+                .filter(Boolean),
+        ),
+    );
 }
 
 export function normalizeTrustedDomains(rawDomains: unknown): string[] {
@@ -49,6 +65,9 @@ export function parseSecuritySettings(
                 parsed.userValidationMode === "smtp" ? "smtp" : "none",
             requireTeacherManualApproval:
                 parsed.requireTeacherManualApproval === false ? false : true,
+            activeTfaMethods: normalizeMethodIds(parsed.activeTfaMethods),
+            enforceTfaForNewUsers:
+                parsed.enforceTfaForNewUsers === true ? true : false,
         };
     } catch {
         return null;

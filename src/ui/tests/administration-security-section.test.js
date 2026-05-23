@@ -21,4 +21,7 @@ test("administration security section renders password policy controls", () => {
     assert.match(source, /id: "security-policy-require-digit"/);
     assert.match(source, /id: "security-policy-require-special"/);
     assert.match(source, /password_policy_heading/);
+    assert.match(source, /security-tfa-available/);
+    assert.match(source, /security-tfa-active/);
+    assert.match(source, /security-enforce-tfa-for-new-users/);
 });

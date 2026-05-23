@@ -14,6 +14,7 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
+import { enforceRequiredTfaSetup } from "../../reuse/tfa-setup.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -130,9 +131,16 @@ export async function mount(root) {
         }
     }
 
-    async function loadUserEmails(accountId) {
+    async function loadUserEmails(accountId, authToken) {
         const response = await apiFetch(
             `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+            authToken
+                ? {
+                      headers: {
+                          authorization: `Bearer ${authToken}`,
+                      },
+                  }
+                : undefined,
         );
         if (!response.ok) return [];
         const payload = await response.json();
@@ -194,7 +202,7 @@ export async function mount(root) {
         return inputEl.value.trim();
     }
 
-    async function verifyRequiredEmailLoop(accountId, emailAddress) {
+    async function verifyRequiredEmailLoop(accountId, emailAddress, authToken) {
         while (true) {
             const code = await promptVerificationCode(emailAddress);
             if (!code) continue;
@@ -202,7 +210,12 @@ export async function mount(root) {
                 `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
                 {
                     method: "POST",
-                    headers: { "content-type": "application/json" },
+                    headers: {
+                        "content-type": "application/json",
+                        ...(authToken
+                            ? { authorization: `Bearer ${authToken}` }
+                            : {}),
+                    },
                     body: JSON.stringify({ code }),
                 },
             );
@@ -276,9 +289,9 @@ export async function mount(root) {
         }
     }
 
-    async function enforceRequiredEmailSetup(accountId) {
+    async function enforceRequiredEmailSetup(accountId, authToken) {
         while (true) {
-            const emails = await loadUserEmails(accountId);
+            const emails = await loadUserEmails(accountId, authToken);
             const hasVerifiedPrimary = emails.some(
                 (entry) => entry.primary && entry.verified,
             );
@@ -291,7 +304,12 @@ export async function mount(root) {
                 `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
                 {
                     method: "POST",
-                    headers: { "content-type": "application/json" },
+                    headers: {
+                        "content-type": "application/json",
+                        ...(authToken
+                            ? { authorization: `Bearer ${authToken}` }
+                            : {}),
+                    },
                     body: JSON.stringify({ email: emailAddress }),
                 },
             );
@@ -329,7 +347,7 @@ export async function mount(root) {
                 continue;
             }
 
-            await verifyRequiredEmailLoop(accountId, emailAddress);
+            await verifyRequiredEmailLoop(accountId, emailAddress, authToken);
         }
     }
 
@@ -490,7 +508,19 @@ export async function mount(root) {
                                 if (requiresUserValidation) {
                                     await enforceRequiredEmailSetup(
                                         loginData.accountId,
+                                        loginData.token,
                                     );
+                                }
+                                if (loginData.requiresTfaSetup === true) {
+                                    await enforceRequiredTfaSetup({
+                                        i18n,
+                                        accountId: loginData.accountId,
+                                        authToken: loginData.token,
+                                        openPopup,
+                                        showToast,
+                                        escapeHtml,
+                                        ensureRequiredEmailSetup,
+                                    });
                                 }
                                 await syncTimezoneOnLogin(loginData.accountId);
                                 window.location.href = "/dashboard";

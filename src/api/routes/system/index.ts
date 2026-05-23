@@ -60,12 +60,16 @@ function serializeSecuritySettings(input: {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
+    activeTfaMethods: string[];
+    enforceTfaForNewUsers: boolean;
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
         registrationsEnabled: input.registrationsEnabled,
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
+        activeTfaMethods: input.activeTfaMethods,
+        enforceTfaForNewUsers: input.enforceTfaForNewUsers,
     });
 }
 
@@ -202,6 +206,21 @@ export function createSystemRoutes(
                 body.userValidationMode === "smtp" ? "smtp" : "none";
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
+            const activeTfaMethods = Array.isArray(body.activeTfaMethods)
+                ? Array.from(
+                      new Set(
+                          body.activeTfaMethods
+                              .filter(
+                                  (entry): entry is string =>
+                                      typeof entry === "string",
+                              )
+                              .map((entry) => entry.trim())
+                              .filter(Boolean),
+                      ),
+                  )
+                : [];
+            const enforceTfaForNewUsers =
+                body.enforceTfaForNewUsers === true ? true : false;
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
@@ -211,6 +230,8 @@ export function createSystemRoutes(
                         registrationsEnabled,
                         userValidationMode,
                         requireTeacherManualApproval,
+                        activeTfaMethods,
+                        enforceTfaForNewUsers,
                     }),
                 );
             }
@@ -221,6 +242,8 @@ export function createSystemRoutes(
                 registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
+                activeTfaMethods,
+                enforceTfaForNewUsers,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));

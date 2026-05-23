@@ -57,6 +57,11 @@
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>
   <string name="ui.reuse.save_failed">Speichern fehlgeschlagen</string>
   <string name="ui.reuse.more_information">Weitere Informationen</string>
+  <string name="ui.reuse.tfa_setup_title">Zwei-Faktor-Authentifizierung einrichten</string>
+  <string name="ui.reuse.tfa_setup_required">Sie müssen eine Zwei-Faktor-Authentifizierungsmethode konfigurieren, bevor Sie fortfahren.</string>
+  <string name="ui.reuse.tfa_setup_confirm">Jetzt konfigurieren</string>
+  <string name="ui.reuse.tfa_setup_saved">Zwei-Faktor-Authentifizierung konfiguriert.</string>
+  <string name="ui.reuse.tfa_setup_save_failed">Zwei-Faktor-Authentifizierung konnte nicht konfiguriert werden.</string>
   <string name="ui.reuse.system">System</string>
   <string name="ui.reuse.authentication">Authentifizierung</string>
   <string name="ui.reuse.adapters">Adapter</string>
@@ -474,6 +479,11 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.tfa_methods_heading">Zwei-Faktor-Authentifizierungsmethoden</string>
+  <string name="ui.app.admin.security.tfa_methods_hint">Ziehen Sie Methoden zwischen verfügbar und aktiv. Nur aktive Methoden werden für neue Benutzer erzwungen.</string>
+  <string name="ui.app.admin.security.tfa_available_methods">Verfügbare Methoden</string>
+  <string name="ui.app.admin.security.tfa_active_methods">Aktive Methoden</string>
+  <string name="ui.app.admin.security.enforce_tfa_for_new_users_label">Zwei-Faktor-Authentifizierung für neue Benutzer erzwingen</string>
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>

@@ -29,11 +29,20 @@ import {
 } from "./access-tokens.js";
 import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AuthPendingSession, AuthProviderAdapter } from "./gateway.js";
+import type {
+    AuthPendingSession,
+    AuthProviderAdapter,
+    AuthTfaMethodRegistration,
+} from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import { validateUsername } from "../../api/reuse/account-store.js";
+import {
+    parseSecuritySettings,
+    SECURITY_SETTINGS_KEY,
+    type SecuritySettings,
+} from "../../api/reuse/security-settings.js";
 import {
     AUTH_PASSWORD_POLICY_KEY,
     defaultPasswordPolicy,
@@ -47,6 +56,17 @@ interface AuthAccountStore {
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
     getDisplayName(username: string): Promise<string | null>;
+}
+
+const TFA_ONBOARDING_PENDING_PREF_KEY = "auth-tfa-onboarding-pending";
+
+interface ResolvedTfaMethod {
+    id: string;
+    name: string;
+    settingsPath: string;
+    requiresVerifiedEmail: boolean;
+    available: boolean;
+    configured: boolean;
 }
 
 async function loadLocalAccountStore(
@@ -179,6 +199,46 @@ function findTfaAdapter(
     return adapter;
 }
 
+async function readBooleanPreference(
+    preferenceStore: UserPreferenceStore | undefined,
+    accountId: string,
+    key: string,
+): Promise<boolean> {
+    if (!preferenceStore) return false;
+    const rawValue = await preferenceStore.get(accountId, key);
+    if (!rawValue) return false;
+    try {
+        const parsed = JSON.parse(rawValue) as { enabled?: boolean };
+        return parsed.enabled === true;
+    } catch {
+        return false;
+    }
+}
+
+async function resolveTfaMethodsForAccount(
+    methodRegistry: Map<string, AuthTfaMethodRegistration>,
+    activeMethodIds: string[],
+    accountId: string,
+): Promise<ResolvedTfaMethod[]> {
+    const methods: ResolvedTfaMethod[] = [];
+    for (const methodId of activeMethodIds) {
+        const registration = methodRegistry.get(methodId);
+        if (!registration) continue;
+        const available = (await registration.isAvailable()) === true;
+        const configured =
+            (await registration.isConfiguredForAccount(accountId)) === true;
+        methods.push({
+            id: registration.id,
+            name: registration.name,
+            settingsPath: registration.settingsPath,
+            requiresVerifiedEmail: registration.requiresVerifiedEmail === true,
+            available,
+            configured,
+        });
+    }
+    return methods;
+}
+
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
@@ -197,6 +257,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",
     });
+    const tfaMethodRegistry = new Map<string, AuthTfaMethodRegistration>();
+    ctx.capabilities.contribute(
+        "auth:registerTfaMethod",
+        (registration: AuthTfaMethodRegistration) => {
+            tfaMethodRegistry.set(registration.id, registration);
+        },
+    );
 
     const localAdapterPath = path.resolve(
         process.cwd(),
@@ -241,6 +308,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             authGateway,
             accountStore,
             ctx.capabilities,
+            tfaMethodRegistry,
             ctx.log,
         ),
         "auth",
@@ -256,7 +324,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.8",
+        version: "1.4.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -360,43 +428,35 @@ function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
+    tfaMethodRegistry: Map<string, AuthTfaMethodRegistration>,
     log?: GatewayBootstrapContext["log"],
 ) {
-    async function readSecuritySettings(): Promise<{
-        registrationsEnabled: boolean;
-        userValidationMode: "none" | "smtp";
-    }> {
+    async function readSecuritySettings(): Promise<SecuritySettings> {
         const prefStore =
             capabilities.get<UserPreferenceStore>("preferences:store");
         if (!prefStore) {
-            return {
+            return (
+                parseSecuritySettings(null) ?? {
+                    trustedDomains: [],
+                    registrationsEnabled: false,
+                    userValidationMode: "none",
+                    requireTeacherManualApproval: true,
+                    activeTfaMethods: [],
+                    enforceTfaForNewUsers: false,
+                }
+            );
+        }
+        const raw = await prefStore.get("__system__", SECURITY_SETTINGS_KEY);
+        return (
+            parseSecuritySettings(raw) ?? {
+                trustedDomains: [],
                 registrationsEnabled: false,
                 userValidationMode: "none",
-            };
-        }
-        const raw = await prefStore.get("__system__", "security-settings");
-        if (!raw) {
-            return {
-                registrationsEnabled: false,
-                userValidationMode: "none",
-            };
-        }
-        try {
-            const parsed = JSON.parse(raw) as Record<string, unknown>;
-            return {
-                registrationsEnabled:
-                    typeof parsed.registrationsEnabled === "boolean"
-                        ? parsed.registrationsEnabled
-                        : false,
-                userValidationMode:
-                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
-            };
-        } catch {
-            return {
-                registrationsEnabled: false,
-                userValidationMode: "none",
-            };
-        }
+                requireTeacherManualApproval: true,
+                activeTfaMethods: [],
+                enforceTfaForNewUsers: false,
+            }
+        );
     }
 
     async function registrationsEnabled(): Promise<boolean> {
@@ -408,6 +468,49 @@ function createAuthGatewayRoutes(
 
     function getEnabledEmailTfaAdapter() {
         return findTfaAdapter(authGateway, { enabledOnly: true });
+    }
+
+    async function listRegisteredTfaMethodsForAdmin() {
+        const methods = Array.from(tfaMethodRegistry.values());
+        const rows = await Promise.all(
+            methods.map(async (method) => ({
+                id: method.id,
+                name: method.name,
+                settingsPath: method.settingsPath,
+                requiresVerifiedEmail: method.requiresVerifiedEmail === true,
+                available: (await method.isAvailable()) === true,
+            })),
+        );
+        return rows;
+    }
+
+    async function resolveAccountTfaSetupState(accountId: string): Promise<{
+        methods: ResolvedTfaMethod[];
+        hasAvailableMethod: boolean;
+        hasConfiguredMethod: boolean;
+    }> {
+        const securitySettings = await readSecuritySettings();
+        const methods = await resolveTfaMethodsForAccount(
+            tfaMethodRegistry,
+            securitySettings.activeTfaMethods,
+            accountId,
+        );
+        const hasAvailableMethod = methods.some((method) => method.available);
+        const hasConfiguredMethod = methods.some((method) => method.configured);
+        return { methods, hasAvailableMethod, hasConfiguredMethod };
+    }
+
+    async function clearPendingTfaOnboardingIfConfigured(accountId: string) {
+        const preferenceStore =
+            capabilities.get<UserPreferenceStore>("preferences:store");
+        if (!preferenceStore) return;
+        const setupState = await resolveAccountTfaSetupState(accountId);
+        if (!setupState.hasConfiguredMethod) return;
+        await preferenceStore.set(
+            accountId,
+            TFA_ONBOARDING_PENDING_PREF_KEY,
+            JSON.stringify({ enabled: false }),
+        );
     }
 
     const parsedTtlSeconds = Number.parseInt(
@@ -423,6 +526,10 @@ function createAuthGatewayRoutes(
         req: IncomingMessage,
         res: ServerResponse,
         session: AuthPendingSession,
+        options?: {
+            requiresTfaSetup?: boolean;
+            tfaSetupMethods?: ResolvedTfaMethod[];
+        },
     ) {
         const apiToken = issueAccessToken(
             session.accountId,
@@ -452,6 +559,8 @@ function createAuthGatewayRoutes(
                     token: apiToken,
                     userValidationMode: session.userValidationMode,
                     requiredUserValidation: session.requiredUserValidation,
+                    requiresTfaSetup: options?.requiresTfaSetup === true,
+                    tfaSetupMethods: options?.tfaSetupMethods ?? [],
                 },
             }),
         );
@@ -484,6 +593,52 @@ function createAuthGatewayRoutes(
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: methods }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/tfa/methods" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const methods = await listRegisteredTfaMethodsForAdmin();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: methods }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/tfa/setup-status" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const securitySettings = await readSecuritySettings();
+            const setupState = await resolveAccountTfaSetupState(claims.sub);
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            const pendingOnboarding = await readBooleanPreference(
+                preferenceStore,
+                claims.sub,
+                TFA_ONBOARDING_PENDING_PREF_KEY,
+            );
+            const requiresSetup =
+                pendingOnboarding &&
+                securitySettings.enforceTfaForNewUsers === true &&
+                setupState.hasAvailableMethod &&
+                !setupState.hasConfiguredMethod;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        required: requiresSetup,
+                        enforceForNewUsers:
+                            securitySettings.enforceTfaForNewUsers === true,
+                        methods: setupState.methods,
+                    },
+                }),
+            );
             return true;
         }
 
@@ -663,6 +818,24 @@ function createAuthGatewayRoutes(
             ) {
                 await emailTfaAdapter.onAccountRegistered(result.username);
             }
+            const securitySettings = await readSecuritySettings();
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            if (
+                preferenceStore &&
+                securitySettings.enforceTfaForNewUsers === true
+            ) {
+                const setupState = await resolveAccountTfaSetupState(
+                    result.username,
+                );
+                await preferenceStore.set(
+                    result.username,
+                    TFA_ONBOARDING_PENDING_PREF_KEY,
+                    JSON.stringify({
+                        enabled: setupState.hasAvailableMethod,
+                    }),
+                );
+            }
             const verifyToken = issueAccessToken(
                 result.username,
                 result.role ?? "user",
@@ -766,6 +939,9 @@ function createAuthGatewayRoutes(
             }
             const body = await readJson(req);
             await adapter.setEmailTfaEnabled(claims.sub, body.enabled === true);
+            if (body.enabled === true) {
+                await clearPendingTfaOnboardingIfConfigured(claims.sub);
+            }
             const state = await adapter.getEmailTfaState(claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: state }));
@@ -827,13 +1003,36 @@ function createAuthGatewayRoutes(
                     .updateLastLogin(pendingSession.accountId)
                     .catch(() => undefined);
             }
+            await clearPendingTfaOnboardingIfConfigured(
+                pendingSession.accountId,
+            );
+            const securitySettings = await readSecuritySettings();
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            const pendingOnboarding = await readBooleanPreference(
+                preferenceStore,
+                pendingSession.accountId,
+                TFA_ONBOARDING_PENDING_PREF_KEY,
+            );
+            const tfaSetupState = await resolveAccountTfaSetupState(
+                pendingSession.accountId,
+            );
+            const requiresTfaSetup =
+                pendingOnboarding &&
+                securitySettings.enforceTfaForNewUsers === true &&
+                tfaSetupState.hasAvailableMethod &&
+                !tfaSetupState.hasConfiguredMethod;
             log?.("info", "Login succeeded after email TFA challenge.", {
                 ...logMeta,
                 accountId: pendingSession.accountId,
                 provider: pendingSession.provider,
                 role: pendingSession.role,
+                requiresTfaSetup,
             });
-            respondWithAuthSession(req, res, pendingSession);
+            respondWithAuthSession(req, res, pendingSession, {
+                requiresTfaSetup,
+                tfaSetupMethods: tfaSetupState.methods,
+            });
             return true;
         }
 
@@ -1005,6 +1204,22 @@ function createAuthGatewayRoutes(
                     );
                 }
             }
+            await clearPendingTfaOnboardingIfConfigured(session.accountId);
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            const pendingOnboarding = await readBooleanPreference(
+                preferenceStore,
+                session.accountId,
+                TFA_ONBOARDING_PENDING_PREF_KEY,
+            );
+            const tfaSetupState = await resolveAccountTfaSetupState(
+                session.accountId,
+            );
+            const requiresTfaSetup =
+                pendingOnboarding &&
+                securitySettings.enforceTfaForNewUsers === true &&
+                tfaSetupState.hasAvailableMethod &&
+                !tfaSetupState.hasConfiguredMethod;
             const localAdapter = authGateway.getLocalAdapter();
             if (localAdapter) {
                 await localAdapter
@@ -1017,8 +1232,12 @@ function createAuthGatewayRoutes(
                 provider: session.provider,
                 role,
                 requiresUserValidation,
+                requiresTfaSetup,
             });
-            respondWithAuthSession(req, res, pendingSession);
+            respondWithAuthSession(req, res, pendingSession, {
+                requiresTfaSetup,
+                tfaSetupMethods: tfaSetupState.methods,
+            });
             return true;
         }
 

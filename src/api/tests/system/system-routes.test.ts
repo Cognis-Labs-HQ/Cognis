@@ -192,6 +192,8 @@ test("system security settings sanitize and survive malformed persisted data", a
     assert.deepEqual(JSON.parse(body).data.trustedDomains, ["example.com"]);
     assert.equal(JSON.parse(body).data.registrationsEnabled, false);
     assert.equal(JSON.parse(body).data.userValidationMode, "smtp");
+    assert.deepEqual(JSON.parse(body).data.activeTfaMethods, []);
+    assert.equal(JSON.parse(body).data.enforceTfaForNewUsers, false);
 
     const malformedStore = { get: async () => "not-json" };
     const malformedRoute = createSystemRoutes(
@@ -216,6 +218,8 @@ test("system security settings sanitize and survive malformed persisted data", a
     assert.deepEqual(JSON.parse(body).data.trustedDomains, []);
     assert.equal(JSON.parse(body).data.registrationsEnabled, false);
     assert.equal(JSON.parse(body).data.userValidationMode, "none");
+    assert.deepEqual(JSON.parse(body).data.activeTfaMethods, []);
+    assert.equal(JSON.parse(body).data.enforceTfaForNewUsers, false);
 });
 
 test("system security settings log malformed persisted data", async () => {

@@ -71,6 +71,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
+    let tfaMethodCatalog = [];
+    let originalActiveTfaMethods = [];
+    let currentActiveTfaMethods = [];
+    let originalEnforceTfaForNewUsers = false;
+    let dragTfaMethodId = null;
 
     async function loadSettings() {
         const response = await apiFetch("/api/v1/system/security");
@@ -99,11 +104,20 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return publicAdapter?.enabled === true;
     }
 
+    async function loadTfaMethods() {
+        const response = await apiFetch("/api/v1/auth/tfa/methods");
+        if (!response.ok) return [];
+        const payload = await response.json();
+        return Array.isArray(payload?.data) ? payload.data : [];
+    }
+
     async function persistSettings(
         trustedDomains,
         registrationsEnabled,
         userValidationMode,
         requireTeacherManualApproval,
+        activeTfaMethods,
+        enforceTfaForNewUsers,
     ) {
         const response = await apiFetch("/api/v1/system/security", {
             method: "PUT",
@@ -113,6 +127,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
+                activeTfaMethods,
+                enforceTfaForNewUsers,
             }),
         });
         if (!response.ok) throw new Error("save_failed");
@@ -154,6 +170,12 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
+    function getEnforceTfaForNewUsersValue() {
+        const input = root.querySelector("#security-enforce-tfa-for-new-users");
+        if (!(input instanceof HTMLInputElement)) return false;
+        return input.checked;
+    }
+
     function getPasswordPolicyValue() {
         return Object.fromEntries(
             POLICY_FIELDS.map(({ key, id, min }) => {
@@ -188,14 +210,189 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         const teacherApprovalChanged =
             getTeacherManualApprovalValue() !== originalTeacherManualApproval;
+        const tfaMethodsChanged =
+            JSON.stringify(currentActiveTfaMethods) !==
+            JSON.stringify(originalActiveTfaMethods);
+        const tfaEnforcementChanged =
+            getEnforceTfaForNewUsersValue() !== originalEnforceTfaForNewUsers;
 
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
                 registrationsChanged ||
                 teacherApprovalChanged ||
+                tfaMethodsChanged ||
+                tfaEnforcementChanged ||
                 isPasswordPolicyChanged(),
         );
+    }
+
+    function createTfaRow(id, labelText) {
+        const row = document.createElement("tr");
+        row.setAttribute("draggable", "true");
+        row.setAttribute("data-tfa-row", id);
+        const labelCell = document.createElement("td");
+        labelCell.textContent = labelText;
+        const handleCell = document.createElement("td");
+        handleCell.className = "drag-handle";
+        handleCell.textContent = "⬍";
+        row.append(labelCell, handleCell);
+        return row;
+    }
+
+    function createEmptyTfaRow() {
+        const row = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.setAttribute("colspan", "2");
+        emptyCell.className = "language-table-empty-cell";
+        emptyCell.textContent = "\u00A0";
+        row.append(emptyCell);
+        return row;
+    }
+
+    function renderTfaTables() {
+        const availableTable = root.querySelector("#security-tfa-available");
+        const activeTable = root.querySelector("#security-tfa-active");
+        const enforceToggle = root.querySelector(
+            "#security-enforce-tfa-for-new-users",
+        );
+        const tfaSection = root.querySelector(".security-tfa-section");
+        if (!(availableTable instanceof HTMLTableElement)) return;
+        if (!(activeTable instanceof HTMLTableElement)) return;
+        const activeMethodSet = new Set(currentActiveTfaMethods);
+        const activeRows = currentActiveTfaMethods
+            .map((methodId) =>
+                tfaMethodCatalog.find((method) => method.id === methodId),
+            )
+            .filter(Boolean)
+            .map((method) => createTfaRow(method.id, method.name));
+        activeTable.replaceChildren(
+            ...(activeRows.length > 0 ? activeRows : [createEmptyTfaRow()]),
+        );
+        const availableRows = tfaMethodCatalog
+            .filter((method) => !activeMethodSet.has(method.id))
+            .map((method) => createTfaRow(method.id, method.name));
+        availableTable.replaceChildren(
+            ...(availableRows.length > 0
+                ? availableRows
+                : [createEmptyTfaRow()]),
+        );
+        const hasAvailableMethods = tfaMethodCatalog.some(
+            (method) => method.available === true,
+        );
+        if (tfaSection instanceof HTMLElement) {
+            tfaSection.classList.toggle(
+                "security-tfa-section--disabled",
+                !hasAvailableMethods,
+            );
+        }
+        if (enforceToggle instanceof HTMLInputElement) {
+            enforceToggle.disabled = !hasAvailableMethods;
+            if (!hasAvailableMethods) {
+                enforceToggle.checked = false;
+            }
+        }
+        if (!hasAvailableMethods) {
+            currentActiveTfaMethods = [];
+        }
+    }
+
+    function clearTfaDropMarkers() {
+        root.querySelectorAll(
+            ".drop-target-before, .drop-target-after",
+        ).forEach((row) => {
+            row.classList.remove("drop-target-before", "drop-target-after");
+        });
+    }
+
+    function resolveTfaDropTarget(targetNode, clientY) {
+        const targetTable = targetNode?.closest(
+            "#security-tfa-available, #security-tfa-active",
+        );
+        const targetRow = targetNode?.closest("tr[data-tfa-row]");
+        const targetIsAfter = Boolean(
+            targetRow &&
+            clientY >
+                targetRow.getBoundingClientRect().top +
+                    targetRow.getBoundingClientRect().height / 2,
+        );
+        return { targetTable, targetRow, targetIsAfter };
+    }
+
+    function applyTfaDrop(methodId, targetTable, targetRow, targetIsAfter) {
+        if (!methodId) return;
+        if (targetTable?.id === "security-tfa-active") {
+            currentActiveTfaMethods = currentActiveTfaMethods.filter(
+                (entry) => entry !== methodId,
+            );
+            if (targetRow) {
+                const targetId = targetRow.getAttribute("data-tfa-row");
+                const targetIndex = currentActiveTfaMethods.indexOf(targetId);
+                if (targetIndex >= 0) {
+                    currentActiveTfaMethods.splice(
+                        targetIsAfter ? targetIndex + 1 : targetIndex,
+                        0,
+                        methodId,
+                    );
+                } else {
+                    currentActiveTfaMethods.push(methodId);
+                }
+            } else {
+                currentActiveTfaMethods.push(methodId);
+            }
+        }
+        if (targetTable?.id === "security-tfa-available") {
+            currentActiveTfaMethods = currentActiveTfaMethods.filter(
+                (entry) => entry !== methodId,
+            );
+        }
+        renderTfaTables();
+        markDirtyState();
+    }
+
+    function bindTfaTableInteractions() {
+        root.addEventListener("dragstart", (event) => {
+            const row = event.target.closest("tr[data-tfa-row]");
+            if (!row) return;
+            dragTfaMethodId = row.getAttribute("data-tfa-row");
+            event.dataTransfer?.setData("text/plain", dragTfaMethodId || "");
+        });
+        root.addEventListener("dragend", () => {
+            clearTfaDropMarkers();
+            dragTfaMethodId = null;
+        });
+        root.addEventListener("dragover", (event) => {
+            const zone = event.target.closest(
+                "#security-tfa-available, #security-tfa-active, tr[data-tfa-row]",
+            );
+            if (!zone) return;
+            event.preventDefault();
+            clearTfaDropMarkers();
+            const row = zone.closest("tr[data-tfa-row]");
+            if (row) {
+                const rect = row.getBoundingClientRect();
+                const after = event.clientY > rect.top + rect.height / 2;
+                row.classList.add(
+                    after ? "drop-target-after" : "drop-target-before",
+                );
+            } else {
+                const placeholderRow = zone.querySelector(
+                    "tr:not([data-tfa-row])",
+                );
+                if (placeholderRow) {
+                    placeholderRow.classList.add("drop-target-before");
+                }
+            }
+        });
+        root.addEventListener("drop", (event) => {
+            const { targetTable, targetRow, targetIsAfter } =
+                resolveTfaDropTarget(event.target, event.clientY);
+            clearTfaDropMarkers();
+            const methodId =
+                dragTfaMethodId || event.dataTransfer?.getData("text/plain");
+            applyTfaDrop(methodId, targetTable, targetRow, targetIsAfter);
+            dragTfaMethodId = null;
+        });
     }
 
     function bindSecurityInputs(settings, passwordPolicy) {
@@ -210,6 +407,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
+        originalActiveTfaMethods = Array.isArray(settings.activeTfaMethods)
+            ? settings.activeTfaMethods.filter((entry) =>
+                  tfaMethodCatalog.some((method) => method.id === entry),
+              )
+            : [];
+        currentActiveTfaMethods = [...originalActiveTfaMethods];
+        originalEnforceTfaForNewUsers =
+            settings.enforceTfaForNewUsers === true &&
+            tfaMethodCatalog.some((method) => method.available === true);
         originalPasswordPolicy = normalizePasswordPolicy(
             passwordPolicy,
             originalPasswordPolicy,
@@ -234,6 +440,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
         }
+        const tfaEnforcementToggle = root.querySelector(
+            "#security-enforce-tfa-for-new-users",
+        );
+        if (tfaEnforcementToggle instanceof HTMLInputElement) {
+            tfaEnforcementToggle.checked = originalEnforceTfaForNewUsers;
+            tfaEnforcementToggle.addEventListener("change", markDirtyState);
+        }
+        renderTfaTables();
         for (const { key, id } of POLICY_FIELDS) {
             const policyInput = root.querySelector(`#${id}`);
             if (policyInput instanceof HTMLInputElement) {
@@ -250,14 +464,23 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     return {
         async init() {
-            const [settings, publicRegistrationEnabled, passwordPolicy] =
-                await Promise.all([
-                    loadSettings(),
-                    loadPublicRegistrationAdapterState(),
-                    loadPasswordPolicy(),
-                ]);
+            const [
+                settings,
+                publicRegistrationEnabled,
+                passwordPolicy,
+                loadedTfaMethods,
+            ] = await Promise.all([
+                loadSettings(),
+                loadPublicRegistrationAdapterState(),
+                loadPasswordPolicy(),
+                loadTfaMethods(),
+            ]);
+            tfaMethodCatalog = loadedTfaMethods.filter(
+                (method) => method.available === true,
+            );
             settings.registrationsEnabled = publicRegistrationEnabled;
             bindSecurityInputs(settings, passwordPolicy);
+            bindTfaTableInteractions();
         },
 
         async save() {
@@ -266,6 +489,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
+            const enforceTfaForNewUsers = getEnforceTfaForNewUsersValue();
             const passwordPolicy = getPasswordPolicyValue();
 
             await persistSettings(
@@ -273,6 +497,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 registrationsEnabled,
                 validationMode,
                 requireTeacherManualApproval,
+                currentActiveTfaMethods,
+                enforceTfaForNewUsers,
             );
             await persistPasswordPolicy(passwordPolicy);
             clearTrustedDomainsCache();
@@ -287,6 +513,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
+            originalActiveTfaMethods = [...currentActiveTfaMethods];
+            originalEnforceTfaForNewUsers = enforceTfaForNewUsers;
             originalPasswordPolicy = passwordPolicy;
         },
 
@@ -314,6 +542,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
             }
+            const tfaEnforcementToggle = root.querySelector(
+                "#security-enforce-tfa-for-new-users",
+            );
+            currentActiveTfaMethods = [...originalActiveTfaMethods];
+            if (tfaEnforcementToggle instanceof HTMLInputElement) {
+                tfaEnforcementToggle.checked = originalEnforceTfaForNewUsers;
+            }
+            renderTfaTables();
             for (const { key, id } of POLICY_FIELDS) {
                 const policyInput = root.querySelector(`#${id}`);
                 if (policyInput instanceof HTMLInputElement) {
@@ -375,6 +611,33 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 <input id="security-require-teacher-approval" type="checkbox" />
                 <span class="slider"></span>
               </label>
+            </div>
+          </div>
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.tfa_methods_heading"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.tfa_methods_hint"), tooltipAria)}
+            </h3>
+            <div class="content-grid--two-column security-tfa-section">
+              <div>
+                <div class="settings-language-heading-row">
+                  <h4>${escapeHtml(i18n.t("ui.app.admin.security.tfa_available_methods"))}</h4>
+                </div>
+                <table id="security-tfa-available" class="language-table"></table>
+              </div>
+              <div>
+                <div class="settings-language-heading-row">
+                  <h4>${escapeHtml(i18n.t("ui.app.admin.security.tfa_active_methods"))}</h4>
+                </div>
+                <table id="security-tfa-active" class="language-table"></table>
+              </div>
+            </div>
+            <div class="security-field-row">
+              <label class="switch">
+                <input id="security-enforce-tfa-for-new-users" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <span>${escapeHtml(i18n.t("ui.app.admin.security.enforce_tfa_for_new_users_label"))}</span>
             </div>
           </div>
           <div class="components-section">

@@ -915,6 +915,15 @@ body[data-theme="light"] .slider::before {
     color: transparent;
 }
 
+.security-tfa-section--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.security-tfa-section {
+    align-items: start;
+}
+
 .sub-composer-heading {
     margin: 0 0 12px;
 }

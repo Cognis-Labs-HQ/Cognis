@@ -5,6 +5,7 @@ import type {
     AuthAdapterContext,
     AuthPendingSession,
     AuthEmailTfaState,
+    AuthTfaMethodRegistration,
 } from "../../../gateways/auth/gateway.js";
 import {
     InMemoryTfaStore,
@@ -46,7 +47,9 @@ export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
     private readonly tfaService = new TfaCodeService(new InMemoryTfaStore());
     private readonly pendingChallenges = new Map<string, StoredChallenge>();
 
-    constructor(private readonly adapterContext?: AuthAdapterContext) {}
+    constructor(private readonly adapterContext?: AuthAdapterContext) {
+        this.registerTfaMethod();
+    }
 
     async authenticate(): Promise<null> {
         return null;
@@ -88,6 +91,16 @@ export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
             this.adapterContext?.capabilities.get<() => boolean>(
                 "notify:canSendVerificationEmail",
             ) ?? null
+        );
+    }
+
+    private getRegisterTfaMethod():
+        | ((registration: AuthTfaMethodRegistration) => void)
+        | null {
+        return (
+            this.adapterContext?.capabilities.get<
+                (registration: AuthTfaMethodRegistration) => void
+            >("auth:registerTfaMethod") ?? null
         );
     }
 
@@ -133,6 +146,22 @@ export class SmtpTfaAuthAdapter implements AuthProviderAdapter {
         const canSendVerificationEmail = this.getCanSendVerificationEmail();
         if (!canSendVerificationEmail) return false;
         return canSendVerificationEmail() === true;
+    }
+
+    private registerTfaMethod() {
+        const registerTfaMethod = this.getRegisterTfaMethod();
+        if (!registerTfaMethod) return;
+        registerTfaMethod({
+            id: this.id,
+            name: this.name,
+            settingsPath: "/api/v1/auth/smtp-tfa/settings",
+            requiresVerifiedEmail: true,
+            isAvailable: () => this.canDispatchEmailCodes(),
+            isConfiguredForAccount: async (accountId: string) => {
+                const preference = await this.readPreference(accountId);
+                return preference.enabled === true;
+            },
+        });
     }
 
     private async hasVerifiedEmailAddress(accountId: string): Promise<boolean> {

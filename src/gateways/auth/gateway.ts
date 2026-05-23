@@ -49,6 +49,16 @@ export interface AuthEmailTfaState {
     available: boolean;
 }
 
+export interface AuthTfaMethodRegistration {
+    id: string;
+    name: string;
+    description?: string;
+    settingsPath: string;
+    requiresVerifiedEmail?: boolean;
+    isAvailable: () => boolean | Promise<boolean>;
+    isConfiguredForAccount: (accountId: string) => boolean | Promise<boolean>;
+}
+
 export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;

@@ -15,3 +15,11 @@ Adapter settings popups now display dependency links using the same link behavio
 ## Move SMTP TFA coverage to adapter tests
 
 Removed SMTP TFA behavior test coverage from auth gateway tests and added dedicated adapter tests under `src/adapters/auth/smtp-tfa/tests/`.
+
+## Add admin TFA controls
+
+Added a new Administration → Security TFA area with available and active method tables, drag-and-drop activation, and an enforcement toggle that disables when no functional methods are available.
+
+## Enforce new-user TFA onboarding
+
+Added mandatory TFA onboarding flow for new users when enforcement is enabled, including setup-status APIs and non-dismissible setup popups that can require verified email before SMTP TFA activation.

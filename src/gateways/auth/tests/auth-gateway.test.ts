@@ -1082,3 +1082,95 @@ test("auth bootstrap contributes page script origin registration capability", as
         ["https://meetings.example.test"],
     );
 });
+
+test("auth tfa routes expose smtp-tfa availability and setup status", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const preferenceState = new Map<string, string>();
+    capabilities.contribute("preferences:store", {
+        async get(accountId: string, key: string) {
+            return preferenceState.get(`${accountId}:${key}`) ?? null;
+        },
+        async set(accountId: string, key: string, value: string) {
+            preferenceState.set(`${accountId}:${key}`, value);
+        },
+    });
+    capabilities.contribute("notify:canSendVerificationEmail", () => true);
+    capabilities.contribute("notify:hasVerifiedEmail", async () => false);
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: `${process.cwd()}/src/adapters`,
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const enableResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "PUT",
+            { enabled: true },
+            { authorization: `Bearer ${adminToken}` },
+        ),
+        "/api/v1/gateways/auth/adapters/smtp-tfa/config",
+    );
+    assert.equal(enableResult.res.status, 200);
+
+    const methodsResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}, { authorization: `Bearer ${adminToken}` }),
+        "/api/v1/auth/tfa/methods",
+    );
+    assert.equal(methodsResult.res.status, 200);
+    const methodsPayload = JSON.parse(methodsResult.res.payload) as {
+        data: Array<{ id: string; available: boolean }>;
+    };
+    const smtpMethod = methodsPayload.data.find(
+        (entry) => entry.id === "smtp-tfa",
+    );
+    assert.equal(Boolean(smtpMethod), true);
+    assert.equal(smtpMethod?.available, true);
+
+    await capabilities
+        .get<{
+            set(accountId: string, key: string, value: string): Promise<void>;
+        }>("preferences:store")
+        ?.set(
+            "__system__",
+            "security-settings",
+            JSON.stringify({
+                registrationsEnabled: true,
+                userValidationMode: "none",
+                requireTeacherManualApproval: true,
+                activeTfaMethods: ["smtp-tfa"],
+                enforceTfaForNewUsers: true,
+            }),
+        );
+    await capabilities
+        .get<{
+            set(accountId: string, key: string, value: string): Promise<void>;
+        }>("preferences:store")
+        ?.set(
+            "alice",
+            "auth-tfa-onboarding-pending",
+            JSON.stringify({ enabled: true }),
+        );
+
+    const userToken = issueAccessToken("alice", "user", 120);
+    const setupStatusResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("GET", {}, { authorization: `Bearer ${userToken}` }),
+        "/api/v1/auth/tfa/setup-status",
+    );
+    assert.equal(setupStatusResult.res.status, 200);
+    const setupStatusPayload = JSON.parse(setupStatusResult.res.payload) as {
+        data: { required: boolean };
+    };
+    assert.equal(setupStatusPayload.data.required, true);
+});

@@ -57,6 +57,11 @@
   <string name="ui.reuse.coming_soon">近日公開</string>
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>
+  <string name="ui.reuse.tfa_setup_title">二要素認証を設定</string>
+  <string name="ui.reuse.tfa_setup_required">続行するには二要素認証の方法を設定する必要があります。</string>
+  <string name="ui.reuse.tfa_setup_confirm">今すぐ設定</string>
+  <string name="ui.reuse.tfa_setup_saved">二要素認証を設定しました。</string>
+  <string name="ui.reuse.tfa_setup_save_failed">二要素認証の設定に失敗しました。</string>
   <string name="ui.reuse.system">システム</string>
   <string name="ui.reuse.authentication">認証</string>
   <string name="ui.reuse.adapters">アダプター</string>
@@ -474,6 +479,11 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.tfa_methods_heading">二要素認証の方式</string>
+  <string name="ui.app.admin.security.tfa_methods_hint">方式を利用可能と有効の間でドラッグしてください。有効な方式のみ新規ユーザーに強制されます。</string>
+  <string name="ui.app.admin.security.tfa_available_methods">利用可能な方式</string>
+  <string name="ui.app.admin.security.tfa_active_methods">有効な方式</string>
+  <string name="ui.app.admin.security.enforce_tfa_for_new_users_label">新規ユーザーに二要素認証を強制する</string>
   <string name="ui.app.admin.security.password_policy_heading">パスワードポリシー</string>
   <string name="ui.app.admin.security.policy_min_length">最小文字数</string>
   <string name="ui.app.admin.security.policy_require_uppercase">大文字の最小数（0 = 無効）</string>

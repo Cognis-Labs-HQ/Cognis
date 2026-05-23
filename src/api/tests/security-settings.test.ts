@@ -66,4 +66,6 @@ test("parseSecuritySettings returns default settings when raw is null", () => {
     assert.equal(settings?.registrationsEnabled, false);
     assert.equal(settings?.userValidationMode, "none");
     assert.equal(settings?.requireTeacherManualApproval, true);
+    assert.deepEqual(settings?.activeTfaMethods, []);
+    assert.equal(settings?.enforceTfaForNewUsers, false);
 });

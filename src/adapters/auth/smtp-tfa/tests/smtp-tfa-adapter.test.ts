@@ -25,6 +25,32 @@ test("smtp-tfa adapter exposes internal id and user-facing name", () => {
     assert.equal(adapter.name, "Email TFA");
 });
 
+test("smtp-tfa adapter registers itself as a tfa method via ctx capability", () => {
+    const registeredMethods: Array<{
+        id: string;
+        name: string;
+        settingsPath: string;
+    }> = [];
+    const capabilities = new Map<string, unknown>([
+        [
+            "auth:registerTfaMethod",
+            (registration: {
+                id: string;
+                name: string;
+                settingsPath: string;
+            }) => registeredMethods.push(registration),
+        ],
+    ]);
+    new SmtpTfaAuthAdapter(createContext(capabilities));
+    assert.equal(registeredMethods.length, 1);
+    assert.equal(registeredMethods[0].id, "smtp-tfa");
+    assert.equal(registeredMethods[0].name, "Email TFA");
+    assert.equal(
+        registeredMethods[0].settingsPath,
+        "/api/v1/auth/smtp-tfa/settings",
+    );
+});
+
 test("smtp-tfa adapter writes account preference and requires verified SMTP setup", async () => {
     const preferenceWrites: Array<{
         accountId: string;
