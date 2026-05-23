@@ -203,7 +203,6 @@
   <string name="ui.app.dashboard.element.analogue_clock.label">Jam Analog</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">Kelas Saya</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">Belum ada kelas yang ditugaskan.</string>
-
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>

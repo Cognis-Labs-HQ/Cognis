@@ -908,11 +908,19 @@ export function createPageComposer(
     function initializePlacements() {
         if (!layout.placements) layout.placements = [];
         if (!layout.hidden) layout.hidden = [];
-        layout.placements = layout.placements.filter((p) =>
-            elements.some((e) => e.id === p.id),
+        layout.placements = layout.placements.filter(
+            (p) =>
+                p &&
+                typeof p.id === "string" &&
+                Number.isFinite(p.col) &&
+                Number.isFinite(p.row) &&
+                Number.isFinite(p.w) &&
+                Number.isFinite(p.h) &&
+                p.w > 0 &&
+                p.h > 0,
         );
-        layout.hidden = layout.hidden.filter((id) =>
-            elements.some((e) => e.id === id),
+        layout.hidden = layout.hidden.filter(
+            (id) => id && typeof id === "string",
         );
         for (const element of elements) {
             if (layout.hidden.includes(element.id)) continue;
@@ -960,6 +968,49 @@ export function createPageComposer(
                 }
             }
         }
+    }
+
+    function renderMissingElementContent(elementId) {
+        return `
+      <div class="composer-missing-element" role="status">
+        <div class="composer-missing-element-icon" aria-hidden="true">❗</div>
+        <p class="composer-missing-element-label">${escapeHtml(i18n.t("ui.reuse.unknown"))}</p>
+        <p class="composer-missing-element-id">${escapeHtml(elementId)}</p>
+      </div>
+    `;
+    }
+
+    function createMissingCell(placement) {
+        const cell = document.createElement("div");
+        cell.className =
+            "composer-cell composer-cell--missing composer-cell--editable";
+        cell.dataset.composerElement = placement.id;
+        cell.style.left = `${placement.col * UNIT}px`;
+        cell.style.top = `${placement.row * UNIT}px`;
+        cell.style.width = `${placement.w * UNIT}px`;
+        cell.style.height = `${placement.h * UNIT}px`;
+
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "composer-close-btn";
+        closeBtn.type = "button";
+        closeBtn.textContent = "×";
+        closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
+        closeBtn.addEventListener("click", () => {
+            layout.hidden.push(placement.id);
+            layout.placements = layout.placements.filter(
+                (entry) => entry.id !== placement.id,
+            );
+            renderGridComposer();
+        });
+        cell.appendChild(closeBtn);
+
+        const content = document.createElement("div");
+        content.className =
+            "widget-card composer-cell-content composer-cell-content--missing";
+        content.innerHTML = renderMissingElementContent(placement.id);
+        cell.appendChild(content);
+
+        return cell;
     }
 
     function createGridOverlay() {
@@ -3261,10 +3312,12 @@ export function createPageComposer(
             }
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
-                if (!element) continue;
                 const card = document.createElement("section");
-                card.className = "widget-card";
-                card.dataset.composerElement = element.id;
+                const isMissing = !element;
+                card.className = isMissing
+                    ? "widget-card widget-card--missing"
+                    : "widget-card";
+                card.dataset.composerElement = placement.id;
                 if (!frameless) {
                     const scaledCol = placement.col * scale;
                     const scaledRow = placement.row * scale;
@@ -3273,7 +3326,9 @@ export function createPageComposer(
                     card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
                     card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
                 }
-                card.innerHTML = element.render();
+                card.innerHTML = isMissing
+                    ? renderMissingElementContent(placement.id)
+                    : element.render();
                 section.appendChild(card);
             }
         }
@@ -3281,7 +3336,10 @@ export function createPageComposer(
         if (editing) {
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
-                if (!element) continue;
+                if (!element) {
+                    section.appendChild(createMissingCell(placement));
+                    continue;
+                }
                 section.appendChild(createCell(element, placement));
             }
         }

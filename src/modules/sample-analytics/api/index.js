@@ -12,3 +12,12 @@ export function registerApiRoutes(router) {
         { access: { minRole: "admin" } },
     );
 }
+
+export function registerUi(ctx) {
+    ctx.registerPageExtension("dashboard", {
+        id: "sample-analytics-dashboard",
+        label: "Sample Analytics",
+        scriptUrl: "/static/modules/sample-analytics/dashboard-element.js",
+        access: { minRole: "admin" },
+    });
+}

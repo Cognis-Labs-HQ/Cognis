@@ -61,6 +61,15 @@ interface ModuleUiRegistrationContext {
         access?: RoleAccessPolicy;
         stringsBaseUrl?: string;
     }): void;
+    registerPageExtension(
+        pageId: string,
+        element: {
+            id: string;
+            label: string;
+            scriptUrl: string;
+            access?: RoleAccessPolicy;
+        },
+    ): void;
     registerAdminSection(section: {
         id: string;
         label: string;
@@ -195,6 +204,12 @@ export function createModuleExtensionRoutes(
                         registerSettingsSection(section) {
                             options.uiRegistry?.registerSettingsSection({
                                 ...section,
+                                isEnabled: () => isModuleEnabled(manifest.id),
+                            });
+                        },
+                        registerPageExtension(pageId, element) {
+                            options.uiRegistry?.registerPageExtension(pageId, {
+                                ...element,
                                 isEnabled: () => isModuleEnabled(manifest.id),
                             });
                         },
