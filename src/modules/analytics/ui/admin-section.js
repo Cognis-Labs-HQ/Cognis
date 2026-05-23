@@ -1,4 +1,5 @@
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { formatTemplate } from "/static/reuse/format-template.js";
 
 const STYLE_ID = "analytics-admin-section-styles";
 
@@ -15,14 +16,6 @@ function parseDays(value, fallback = 30) {
     const parsed = Number.parseInt(String(value ?? ""), 10);
     if (!Number.isFinite(parsed) || parsed < 1) return fallback;
     return Math.min(parsed, 365);
-}
-
-function formatTemplate(template, values) {
-    if (typeof template !== "string") return "";
-    return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key) => {
-        const replacementValue = values?.[key];
-        return replacementValue == null ? match : String(replacementValue);
-    });
 }
 
 function buildBarChart(series, { i18n, escapeHtml }) {
@@ -74,24 +67,24 @@ function buildBarChart(series, { i18n, escapeHtml }) {
         .join("");
 
     const labelStep = Math.ceil(series.length / 8);
-    const labelIndices = [];
+    const xAxisLabelIndices = [];
     for (let index = 0; index < series.length; index += 1) {
         if (index % labelStep === 0) {
-            labelIndices.push(index);
+            xAxisLabelIndices.push(index);
         }
     }
     const lastIndex = series.length - 1;
-    if (!labelIndices.includes(lastIndex)) {
-        labelIndices.push(lastIndex);
+    if (!xAxisLabelIndices.includes(lastIndex)) {
+        xAxisLabelIndices.push(lastIndex);
     }
-    if (labelIndices.length > 1) {
-        const previousIndex = labelIndices[labelIndices.length - 2];
+    if (xAxisLabelIndices.length > 1) {
+        const previousIndex = xAxisLabelIndices[xAxisLabelIndices.length - 2];
         if (lastIndex - previousIndex < 2) {
-            labelIndices.splice(labelIndices.length - 2, 1);
+            xAxisLabelIndices.splice(xAxisLabelIndices.length - 2, 1);
         }
     }
 
-    const xLabels = labelIndices
+    const xLabels = xAxisLabelIndices
         .map((index) => {
             const point = series[index];
             const labelX = paddingLeft + index * step + step / 2;
