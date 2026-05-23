@@ -299,7 +299,10 @@ export async function mount(root) {
     function renderTfaMethodTabs(methods) {
         const tabsEl = document.querySelector("#login-tfa-method-tabs");
         const methodInput = document.querySelector("#login-tfa-method");
-        if (!(tabsEl instanceof HTMLElement) || !(methodInput instanceof HTMLInputElement)) {
+        if (
+            !(tabsEl instanceof HTMLElement) ||
+            !(methodInput instanceof HTMLInputElement)
+        ) {
             return;
         }
         tabsEl.replaceChildren();
@@ -311,9 +314,14 @@ export async function mount(root) {
             tabButton.textContent = method.name;
             tabButton.addEventListener("click", () => {
                 methodInput.value = method.id;
-                tabsEl.querySelectorAll(".auth-provider-btn").forEach((entry) => {
-                    entry.classList.toggle("auth-provider-btn--active", entry === tabButton);
-                });
+                tabsEl
+                    .querySelectorAll(".auth-provider-btn")
+                    .forEach((entry) => {
+                        entry.classList.toggle(
+                            "auth-provider-btn--active",
+                            entry === tabButton,
+                        );
+                    });
             });
             if (index === 0) {
                 tabButton.classList.add("auth-provider-btn--active");
@@ -325,12 +333,17 @@ export async function mount(root) {
     }
 
     function switchToTfaPrompt(payload) {
-        const credentialFields = document.querySelector("#login-credential-fields");
+        const credentialFields = document.querySelector(
+            "#login-credential-fields",
+        );
         const tfaFields = document.querySelector("#login-tfa-fields");
         const usernameInput = document.querySelector("#login-username");
         const passwordInput = document.querySelector("#login-password");
         const tfaCodeInput = document.querySelector("#login-tfa-code");
-        if (!(credentialFields instanceof HTMLElement) || !(tfaFields instanceof HTMLElement)) {
+        if (
+            !(credentialFields instanceof HTMLElement) ||
+            !(tfaFields instanceof HTMLElement)
+        ) {
             return;
         }
         currentTfaLoginAttemptId = payload.loginAttemptId;
@@ -454,13 +467,16 @@ export async function mount(root) {
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
                             const form = event.target;
-                            const tfaFields = form.querySelector("#login-tfa-fields");
+                            const tfaFields =
+                                form.querySelector("#login-tfa-fields");
                             const isTfaMode =
-                                tfaFields instanceof HTMLElement && !tfaFields.hidden;
+                                tfaFields instanceof HTMLElement &&
+                                !tfaFields.hidden;
                             if (isTfaMode) {
                                 const tfaMethodEl =
                                     form.querySelector("#login-tfa-method");
-                                const tfaCodeEl = form.querySelector("#login-tfa-code");
+                                const tfaCodeEl =
+                                    form.querySelector("#login-tfa-code");
                                 const payload = {
                                     loginAttemptId: currentTfaLoginAttemptId,
                                     methodId:
@@ -490,19 +506,24 @@ export async function mount(root) {
                                     const requiresUserValidation =
                                         tfaBody.data.requiredUserValidation ===
                                             true &&
-                                        tfaBody.data.userValidationMode === "smtp";
+                                        tfaBody.data.userValidationMode ===
+                                            "smtp";
                                     if (requiresUserValidation) {
                                         await enforceRequiredEmailSetup(
                                             tfaBody.data.accountId,
                                         );
                                     }
-                                    await syncTimezoneOnLogin(tfaBody.data.accountId);
+                                    await syncTimezoneOnLogin(
+                                        tfaBody.data.accountId,
+                                    );
                                     window.location.href = "/dashboard";
                                     return;
                                 }
                                 showToast(
                                     tfaBody?.error?.message ||
-                                        i18n.t("ui.app.login.tfa.error_invalid"),
+                                        i18n.t(
+                                            "ui.app.login.tfa.error_invalid",
+                                        ),
                                     { variant: "error" },
                                 );
                                 return;

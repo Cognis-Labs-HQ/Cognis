@@ -1,5 +1,5 @@
 {
-  "id": "totp",
-  "name": "TOTP",
-  "version": "1.0.0"
+    "id": "totp",
+    "name": "TOTP",
+    "version": "1.0.0"
 }

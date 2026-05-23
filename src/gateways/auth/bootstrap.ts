@@ -50,6 +50,19 @@ interface AuthAccountStore {
     getDisplayName(username: string): Promise<string | null>;
 }
 
+interface PendingTfaLoginAttempt {
+    id: string;
+    accountId: string;
+    role: AccessRole;
+    isFounder: boolean;
+    provider: string;
+    providerId: string;
+    displayName: string;
+    userValidationMode: "none" | "smtp";
+    requiredUserValidation: boolean;
+    expiresAt: number;
+}
+
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
     log?: GatewayBootstrapContext["log"],
@@ -257,23 +270,13 @@ function createAuthGatewayRoutes(
     capabilities: CapabilityStore,
     log?: GatewayBootstrapContext["log"],
 ) {
-    interface PendingTfaLoginAttempt {
-        id: string;
-        accountId: string;
-        role: AccessRole;
-        isFounder: boolean;
-        provider: string;
-        providerId: string;
-        displayName: string;
-        userValidationMode: "none" | "smtp";
-        requiredUserValidation: boolean;
-        expiresAt: number;
-    }
-
     const pendingTfaLoginAttempts = new Map<string, PendingTfaLoginAttempt>();
 
     function pruneExpiredTfaLoginAttempts(now = Date.now()): void {
-        for (const [loginAttemptId, entry] of pendingTfaLoginAttempts.entries()) {
+        for (const [
+            loginAttemptId,
+            entry,
+        ] of pendingTfaLoginAttempts.entries()) {
             if (entry.expiresAt < now) {
                 pendingTfaLoginAttempts.delete(loginAttemptId);
             }
@@ -829,7 +832,10 @@ function createAuthGatewayRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/login/tfa" && req.method === "POST") {
+        if (
+            url.pathname === "/api/v1/auth/login/tfa" &&
+            req.method === "POST"
+        ) {
             const body = await readJson(req);
             const loginAttemptId = String(body.loginAttemptId ?? "").trim();
             const methodId = String(body.methodId ?? "").trim();
@@ -858,13 +864,14 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const verifyTfaLogin = capabilities.get<
-                (
-                    accountId: string,
-                    tfaMethodId: string,
-                    payload: Record<string, unknown>,
-                ) => Promise<{ verified: boolean; message?: string }>
-            >("tfa:verifyLogin");
+            const verifyTfaLogin =
+                capabilities.get<
+                    (
+                        accountId: string,
+                        tfaMethodId: string,
+                        payload: Record<string, unknown>,
+                    ) => Promise<{ verified: boolean; message?: string }>
+                >("tfa:verifyLogin");
             if (!verifyTfaLogin) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
@@ -881,13 +888,17 @@ function createAuthGatewayRoutes(
                 pendingAttempt.accountId,
                 methodId,
                 body,
-            ).catch(() => ({ verified: false, message: "verification_failed" }));
+            ).catch(() => ({
+                verified: false,
+                message: "verification_failed",
+            }));
             if (!tfaResult.verified) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: tfaResult.message || "tfa_verification_failed",
+                            code:
+                                tfaResult.message || "tfa_verification_failed",
                             message:
                                 tfaResult.message ||
                                 "Two-factor verification failed",

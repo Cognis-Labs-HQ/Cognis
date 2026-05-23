@@ -171,7 +171,9 @@ export function createSystemRoutes(
                 : null;
             const data = parseSecuritySettings(raw);
             const getEnforceTfaForAllUsers = getCapability
-                ? getCapability<() => Promise<boolean>>("tfa:getEnforceAllUsers")
+                ? getCapability<() => Promise<boolean>>(
+                      "tfa:getEnforceAllUsers",
+                  )
                 : undefined;
             const enforceTfaForAllUsers = getEnforceTfaForAllUsers
                 ? await getEnforceTfaForAllUsers().catch(() => false)

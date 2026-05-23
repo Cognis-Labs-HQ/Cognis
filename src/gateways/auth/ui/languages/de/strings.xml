@@ -27,4 +27,5 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Wiederherstellungscodes konnten nicht erneuert werden.</string>
   <string name="gateway.auth.security.tfa_required_title">Zwei-Faktor-Einrichtung Erforderlich</string>
   <string name="gateway.auth.security.tfa_required_prompt">Wählen Sie eine Methode aus, die Sie vor dem Fortfahren konfigurieren möchten.</string>
+  <string name="gateway.auth.security.tfa_totp_prompt">Scannen Sie die QR-Payload-URI mit Ihrer Authenticator-App und geben Sie danach einen 6-stelligen Code ein, um die Einrichtung zu bestätigen.</string>
 </resources>

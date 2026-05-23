@@ -27,4 +27,5 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Could not rotate recovery codes.</string>
   <string name="gateway.auth.security.tfa_required_title">Two-Factor Setup Required</string>
   <string name="gateway.auth.security.tfa_required_prompt">Select a method to configure before continuing.</string>
+  <string name="gateway.auth.security.tfa_totp_prompt">Scan the QR payload URI in your authenticator app, then enter a 6-digit code to verify setup.</string>
 </resources>

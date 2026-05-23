@@ -52,7 +52,9 @@ export function createSettingsSection({ i18n, root }) {
         }
 
         async function loadTfaStatus() {
-            const response = await apiFetch("/api/v1/tfa/methods").catch(() => null);
+            const response = await apiFetch("/api/v1/tfa/methods").catch(
+                () => null,
+            );
             if (!response?.ok) {
                 return {
                     availableMethods: [],
@@ -97,7 +99,8 @@ export function createSettingsSection({ i18n, root }) {
             const payload = await response.json().catch(() => null);
             return {
                 ok: false,
-                message: payload?.error?.message ?? i18n.t("ui.reuse.save_failed"),
+                message:
+                    payload?.error?.message ?? i18n.t("ui.reuse.save_failed"),
             };
         }
 
@@ -128,9 +131,12 @@ export function createSettingsSection({ i18n, root }) {
         }
 
         async function rotateRecoveryCodes() {
-            const response = await apiFetch("/api/v1/tfa/recovery-codes/rotate", {
-                method: "POST",
-            });
+            const response = await apiFetch(
+                "/api/v1/tfa/recovery-codes/rotate",
+                {
+                    method: "POST",
+                },
+            );
             if (!response.ok) return null;
             const payload = await response.json().catch(() => null);
             return payload?.data?.recoveryCodes ?? null;
@@ -158,7 +164,9 @@ export function createSettingsSection({ i18n, root }) {
             const enabledIds = new Set(enabled.map((method) => method.id));
             return {
                 preferred: enabled,
-                available: available.filter((method) => !enabledIds.has(method.id)),
+                available: available.filter(
+                    (method) => !enabledIds.has(method.id),
+                ),
             };
         }
 
@@ -171,6 +179,13 @@ export function createSettingsSection({ i18n, root }) {
                 return false;
             }
             let codeInput = null;
+            const setupPrompt = setup.view?.prompt
+                ? i18n.t(setup.view.prompt) || setup.view.prompt
+                : "";
+            const codeLabelKey = setup.view?.fields?.[0]?.label;
+            const codeLabel = codeLabelKey
+                ? i18n.t(codeLabelKey) || codeLabelKey
+                : i18n.t("ui.app.login.tfa.code_label");
             const detailsHtml = Object.entries(setup.view?.details ?? {})
                 .map(
                     ([key, value]) => `
@@ -182,10 +197,10 @@ export function createSettingsSection({ i18n, root }) {
                 maxWidth: "520px",
                 body: () => `
                 <div class="stack">
-                  <p>${escapeHtml(setup.view?.prompt || "")}</p>
+                  <p>${escapeHtml(setupPrompt)}</p>
                   ${detailsHtml}
                   <label>
-                    ${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}
+                    ${escapeHtml(codeLabel)}
                     <input id="settings-tfa-code" type="text" inputmode="numeric" maxlength="12" />
                   </label>
                 </div>`,
@@ -205,7 +220,10 @@ export function createSettingsSection({ i18n, root }) {
                     codeInput = overlay.querySelector("#settings-tfa-code");
                 },
             });
-            if (action !== "confirm" || !(codeInput instanceof HTMLInputElement)) {
+            if (
+                action !== "confirm" ||
+                !(codeInput instanceof HTMLInputElement)
+            ) {
                 await cancelTfaSetup(methodId, setup.setupId);
                 return false;
             }
@@ -223,12 +241,16 @@ export function createSettingsSection({ i18n, root }) {
             if (tfaDnDBound) return;
             tfaDnDBound = true;
             settingsRoot.addEventListener("dragstart", (event) => {
-                const target = event.target instanceof Element ? event.target : null;
+                const target =
+                    event.target instanceof Element ? event.target : null;
                 if (!target) return;
                 const row = target.closest("tr[data-tfa-method-row]");
                 if (!row) return;
                 dragTfaMethodId = row.getAttribute("data-tfa-method-row");
-                event.dataTransfer?.setData("text/plain", dragTfaMethodId || "");
+                event.dataTransfer?.setData(
+                    "text/plain",
+                    dragTfaMethodId || "",
+                );
             });
 
             settingsRoot.addEventListener("dragend", () => {
@@ -236,7 +258,8 @@ export function createSettingsSection({ i18n, root }) {
             });
 
             settingsRoot.addEventListener("dragover", (event) => {
-                const target = event.target instanceof Element ? event.target : null;
+                const target =
+                    event.target instanceof Element ? event.target : null;
                 if (!target) return;
                 const zone = target.closest(
                     "#available-tfa-methods, #preferred-tfa-methods, tr[data-tfa-method-row]",
@@ -246,7 +269,8 @@ export function createSettingsSection({ i18n, root }) {
             });
 
             settingsRoot.addEventListener("drop", async (event) => {
-                const target = event.target instanceof Element ? event.target : null;
+                const target =
+                    event.target instanceof Element ? event.target : null;
                 if (!target) return;
                 const targetTable = target.closest(
                     "#available-tfa-methods, #preferred-tfa-methods",
@@ -254,19 +278,30 @@ export function createSettingsSection({ i18n, root }) {
                 if (!targetTable) return;
                 event.preventDefault();
                 const methodId =
-                    dragTfaMethodId || event.dataTransfer?.getData("text/plain");
+                    dragTfaMethodId ||
+                    event.dataTransfer?.getData("text/plain");
                 if (!methodId) return;
                 const status = await loadTfaStatus();
                 const preferred = [...(status.enabledMethods ?? [])];
-                const isInPreferred = preferred.some((entry) => entry.id === methodId);
-                if (targetTable.id === "available-tfa-methods" && isInPreferred) {
+                const isInPreferred = preferred.some(
+                    (entry) => entry.id === methodId,
+                );
+                if (
+                    targetTable.id === "available-tfa-methods" &&
+                    isInPreferred
+                ) {
                     await disableTfaMethod(methodId);
                 }
-                if (targetTable.id === "preferred-tfa-methods" && !isInPreferred) {
+                if (
+                    targetTable.id === "preferred-tfa-methods" &&
+                    !isInPreferred
+                ) {
                     const setupCompleted = await runTfaSetupFlow(methodId);
                     if (!setupCompleted) {
                         tfaStatus = await loadTfaStatus();
-                        const panel = settingsRoot.querySelector("#auth-security-reset-panel");
+                        const panel = settingsRoot.querySelector(
+                            "#auth-security-reset-panel",
+                        );
                         if (panel) panel.innerHTML = renderBody();
                         bindTfaInteractions();
                         return;
@@ -274,9 +309,13 @@ export function createSettingsSection({ i18n, root }) {
                 }
                 tfaStatus = await loadTfaStatus();
                 const latestPreferred = [...(tfaStatus.enabledMethods ?? [])];
-                await savePreferredTfaMethods(latestPreferred.map((entry) => entry.id));
+                await savePreferredTfaMethods(
+                    latestPreferred.map((entry) => entry.id),
+                );
                 tfaStatus = await loadTfaStatus();
-                const panel = settingsRoot.querySelector("#auth-security-reset-panel");
+                const panel = settingsRoot.querySelector(
+                    "#auth-security-reset-panel",
+                );
                 if (panel) panel.innerHTML = renderBody();
                 bindTfaInteractions();
             });
@@ -316,16 +355,25 @@ export function createSettingsSection({ i18n, root }) {
                         },
                     ],
                     onOpen: (overlay) => {
-                        methodSelect = overlay.querySelector("#settings-required-tfa-method");
+                        methodSelect = overlay.querySelector(
+                            "#settings-required-tfa-method",
+                        );
                     },
                 });
-                if (action !== "confirm" || !(methodSelect instanceof HTMLSelectElement)) {
+                if (
+                    action !== "confirm" ||
+                    !(methodSelect instanceof HTMLSelectElement)
+                ) {
                     continue;
                 }
-                const setupCompleted = await runTfaSetupFlow(methodSelect.value);
+                const setupCompleted = await runTfaSetupFlow(
+                    methodSelect.value,
+                );
                 if (!setupCompleted) continue;
                 tfaStatus = await loadTfaStatus();
-                const panel = settingsRoot.querySelector("#auth-security-reset-panel");
+                const panel = settingsRoot.querySelector(
+                    "#auth-security-reset-panel",
+                );
                 if (panel) panel.innerHTML = renderBody();
                 bindTfaInteractions();
             }
@@ -505,17 +553,28 @@ export function createSettingsSection({ i18n, root }) {
                         );
                         if (recoveryCodesButton instanceof HTMLButtonElement) {
                             recoveryCodesButton.onclick = async () => {
-                                const recoveryCodes = await rotateRecoveryCodes();
+                                const recoveryCodes =
+                                    await rotateRecoveryCodes();
                                 if (!recoveryCodes) {
-                                    showToast(i18n.t("gateway.auth.security.tfa_recovery_codes_failed"), {
-                                        variant: "error",
-                                    });
+                                    showToast(
+                                        i18n.t(
+                                            "gateway.auth.security.tfa_recovery_codes_failed",
+                                        ),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
                                     return;
                                 }
                                 await openPopup({
-                                    title: i18n.t("gateway.auth.security.tfa_recovery_codes_title"),
+                                    title: i18n.t(
+                                        "gateway.auth.security.tfa_recovery_codes_title",
+                                    ),
                                     body: `<div class="stack">${recoveryCodes
-                                        .map((code) => `<p>${escapeHtml(code)}</p>`)
+                                        .map(
+                                            (code) =>
+                                                `<p>${escapeHtml(code)}</p>`,
+                                        )
                                         .join("")}</div>`,
                                     actions: [
                                         {

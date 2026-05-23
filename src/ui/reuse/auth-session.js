@@ -24,26 +24,6 @@ async function validateStoredAccountSession() {
         return { authenticated: false, reason: "session_expired" };
     }
 
-    async function enforceTfaSetupIfRequired() {
-        const token = localStorage.getItem("cognis_access_token");
-        if (!token) return false;
-        try {
-            const response = await fetch("/api/v1/tfa/status", {
-                headers: { authorization: `Bearer ${token}` },
-            });
-            if (!response.ok) return false;
-            const payload = await response.json().catch(() => null);
-            if (payload?.data?.requiresSetup !== true) return false;
-            if (window.location.pathname !== "/settings") {
-                window.location.replace("/settings?enforce_tfa=1");
-                return true;
-            }
-        } catch {
-            return false;
-        }
-        return false;
-    }
-
     try {
         const response = await fetch(
             `/api/v1/users/${encodeURIComponent(account)}/info`,
@@ -66,6 +46,26 @@ async function validateStoredAccountSession() {
         if (response.status === 401 || response.status === 403) {
             clearStoredAuthSession();
             return { authenticated: false, reason: "session_expired" };
+        }
+
+        async function enforceTfaSetupIfRequired() {
+            const token = localStorage.getItem("cognis_access_token");
+            if (!token) return false;
+            try {
+                const response = await fetch("/api/v1/tfa/status", {
+                    headers: { authorization: `Bearer ${token}` },
+                });
+                if (!response.ok) return false;
+                const payload = await response.json().catch(() => null);
+                if (payload?.data?.requiresSetup !== true) return false;
+                if (window.location.pathname !== "/settings") {
+                    window.location.replace("/settings?enforce_tfa=1");
+                    return true;
+                }
+            } catch {
+                return false;
+            }
+            return false;
         }
     } catch {
         // Network/temporary failures should not force logout on auth pages.
