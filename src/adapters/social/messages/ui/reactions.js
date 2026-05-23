@@ -3,7 +3,7 @@ import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 
-const DEFAULT_EMOJI_PICKER_DISPLAY_COUNT = 80;
+const MAX_EMOJI_PICKER_DISPLAY_COUNT = 80;
 
 async function loadAllEmojis(cache) {
     if (cache.emojiList) return cache.emojiList;
@@ -45,7 +45,7 @@ function emojiDisplayName(emoji, i18n, cache) {
 
 export function createMessageReactionsController({
     i18n,
-    maxEmojiDisplayCount = DEFAULT_EMOJI_PICKER_DISPLAY_COUNT,
+    maxEmojiDisplayCount = MAX_EMOJI_PICKER_DISPLAY_COUNT,
     onReactionUpdated,
 } = {}) {
     const stateCache = {
@@ -254,6 +254,8 @@ export function createMessageReactionsController({
             },
         );
         if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        if (payload?.error) return;
         await onReactionUpdated?.({
             roomId,
             messageId,

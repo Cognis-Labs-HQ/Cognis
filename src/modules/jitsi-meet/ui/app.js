@@ -47,10 +47,21 @@ import {
     buildStageMarkup,
 } from "./markup.js";
 
-const DEFAULT_MESSAGE_UI_RESOURCES = Object.freeze({
+const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
     languageBaseUrls: ["/static/modules/jitsi-meet/languages"],
     stylesheetUrls: [],
     reactionHelpersModuleUrl: null,
+});
+
+const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
+    destroy: () => undefined,
+    hideReactionHoverPopup: () => undefined,
+    openEmojiPickerPopup: async () => undefined,
+    recordEmojiUsage: () => undefined,
+    renderReactionRow: () => "",
+    repositionReactionHoverPopup: () => undefined,
+    showReactionHoverPopup: () => undefined,
+    toggleReaction: async () => undefined,
 });
 
 async function loadMessageUiResources() {
@@ -58,14 +69,14 @@ async function loadMessageUiResources() {
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/ui-resources",
         );
-        if (!response.ok) return DEFAULT_MESSAGE_UI_RESOURCES;
+        if (!response.ok) return FALLBACK_MESSAGE_UI_RESOURCES;
         const payload = await response.json().catch(() => ({ data: null }));
         const responseData = payload?.data ?? {};
         const languageBaseUrls = Array.isArray(responseData.languageBaseUrls)
             ? responseData.languageBaseUrls.filter(
                   (entry) => typeof entry === "string" && entry.length > 0,
               )
-            : DEFAULT_MESSAGE_UI_RESOURCES.languageBaseUrls;
+            : FALLBACK_MESSAGE_UI_RESOURCES.languageBaseUrls;
         const stylesheetUrls = Array.isArray(responseData.stylesheetUrls)
             ? responseData.stylesheetUrls.filter(
                   (entry) => typeof entry === "string" && entry.length > 0,
@@ -80,12 +91,12 @@ async function loadMessageUiResources() {
             languageBaseUrls:
                 languageBaseUrls.length > 0
                     ? languageBaseUrls
-                    : DEFAULT_MESSAGE_UI_RESOURCES.languageBaseUrls,
+                    : FALLBACK_MESSAGE_UI_RESOURCES.languageBaseUrls,
             stylesheetUrls,
             reactionHelpersModuleUrl,
         };
     } catch {
-        return DEFAULT_MESSAGE_UI_RESOURCES;
+        return FALLBACK_MESSAGE_UI_RESOURCES;
     }
 }
 
@@ -264,22 +275,14 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
-    const messageReactions = (await loadMessageReactionsController(
-        messageUiResources,
-        i18n,
-        async () => {
-            await refreshNativeChat();
-        },
-    )) ?? {
-        destroy: () => undefined,
-        hideReactionHoverPopup: () => undefined,
-        openEmojiPickerPopup: async () => undefined,
-        recordEmojiUsage: () => undefined,
-        renderReactionRow: () => "",
-        repositionReactionHoverPopup: () => undefined,
-        showReactionHoverPopup: () => undefined,
-        toggleReaction: async () => undefined,
-    };
+    const messageReactions =
+        (await loadMessageReactionsController(
+            messageUiResources,
+            i18n,
+            async () => {
+                await refreshNativeChat();
+            },
+        )) ?? NULL_MESSAGE_REACTIONS_CONTROLLER;
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
     signal?.addEventListener(
         "abort",

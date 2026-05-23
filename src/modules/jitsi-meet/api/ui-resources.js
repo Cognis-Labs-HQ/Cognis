@@ -1,4 +1,6 @@
-const DEFAULT_LANGUAGE_BASE_URLS = ["/static/modules/jitsi-meet/languages"];
+const JITSI_MODULE_LANGUAGE_BASE_URLS = [
+    "/static/modules/jitsi-meet/languages",
+];
 
 export function resolveMessagesUiResources(ctx) {
     const uiResourcesCapability = ctx.getCapability?.(
@@ -27,7 +29,10 @@ export function buildJitsiUiResourcesPayload(messagesUiResources) {
         ? messagesUiResources.stylesheetUrls
         : [];
     return {
-        languageBaseUrls: [...DEFAULT_LANGUAGE_BASE_URLS, ...extraLanguageUrls],
+        languageBaseUrls: [
+            ...JITSI_MODULE_LANGUAGE_BASE_URLS,
+            ...extraLanguageUrls,
+        ],
         stylesheetUrls,
         reactionHelpersModuleUrl:
             typeof messagesUiResources?.reactionHelpersModuleUrl === "string"
@@ -38,7 +43,7 @@ export function buildJitsiUiResourcesPayload(messagesUiResources) {
 
 export function buildUnavailableJitsiUiResourcesPayload() {
     return {
-        languageBaseUrls: DEFAULT_LANGUAGE_BASE_URLS,
+        languageBaseUrls: JITSI_MODULE_LANGUAGE_BASE_URLS,
         stylesheetUrls: [],
         reactionHelpersModuleUrl: null,
     };
