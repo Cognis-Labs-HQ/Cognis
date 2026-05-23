@@ -27,7 +27,7 @@ function createLocalStorageMock(entries = {}) {
 
 function installBrowserMocks({
     entries = {},
-    fetchImpl = async () => ({ ok: false, status: 401 }),
+    fetchImplementation = async () => ({ ok: false, status: 401 }),
     pathname = "/dashboard",
 } = {}) {
     const localStorage = createLocalStorageMock(entries);
@@ -35,7 +35,7 @@ function installBrowserMocks({
     const cookieWrites = [];
 
     globalThis.localStorage = localStorage;
-    globalThis.fetch = fetchImpl;
+    globalThis.fetch = fetchImplementation;
     globalThis.window = {
         location: {
             pathname,
@@ -65,7 +65,7 @@ test("redirectToDashboardIfAuthenticated requires a stored account matching the 
             cognis_access_token: "token-1",
             cognis_account: "alice",
         },
-        fetchImpl: async (url, options) => {
+        fetchImplementation: async (url, options) => {
             requestedUrl = String(url);
             assert.equal(options.headers.authorization, "Bearer token-1");
             return {
@@ -119,7 +119,7 @@ test("ensureFullAccountSession returns true when authenticated and TFA setup not
             cognis_access_token: "token-abc",
             cognis_account: "bob",
         },
-        fetchImpl: async (url) => {
+        fetchImplementation: async (url) => {
             if (String(url).includes("/info")) {
                 return {
                     ok: true,
@@ -154,7 +154,7 @@ test("ensureFullAccountSession redirects to /settings when TFA setup is required
             cognis_access_token: "token-abc",
             cognis_account: "bob",
         },
-        fetchImpl: async (url) => {
+        fetchImplementation: async (url) => {
             if (String(url).includes("/info")) {
                 return {
                     ok: true,
@@ -190,7 +190,7 @@ test("ensureFullAccountSession does not redirect when already on /settings with 
             cognis_access_token: "token-abc",
             cognis_account: "bob",
         },
-        fetchImpl: async (url) => {
+        fetchImplementation: async (url) => {
             if (String(url).includes("/info")) {
                 return {
                     ok: true,
@@ -237,7 +237,7 @@ test("ensureFullAccountSession redirects to /login with account_disabled reason"
             cognis_access_token: "token-abc",
             cognis_account: "carol",
         },
-        fetchImpl: async (url) => {
+        fetchImplementation: async (url) => {
             if (String(url).includes("/info")) {
                 return {
                     ok: true,
@@ -263,7 +263,7 @@ test("ensureFullAccountSession proceeds when TFA status check fails with a netwo
             cognis_access_token: "token-abc",
             cognis_account: "bob",
         },
-        fetchImpl: async (url) => {
+        fetchImplementation: async (url) => {
             if (String(url).includes("/info")) {
                 return {
                     ok: true,

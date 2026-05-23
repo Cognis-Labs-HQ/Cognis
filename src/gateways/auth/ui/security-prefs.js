@@ -15,7 +15,7 @@ export function createSettingsSection({ i18n, root }) {
     let tfaStatus = null;
     let dragTfaMethodId = null;
     let enforcingTfaSetup = false;
-    let tfaDnDBound = false;
+    let tfaDragAndDropBound = false;
     const settingsRoot = root ?? document;
 
     async function loadCapability() {
@@ -221,8 +221,8 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function bindTfaDragAndDrop() {
-        if (tfaDnDBound) return;
-        tfaDnDBound = true;
+        if (tfaDragAndDropBound) return;
+        tfaDragAndDropBound = true;
         settingsRoot.addEventListener("dragstart", (event) => {
             const target =
                 event.target instanceof Element ? event.target : null;
