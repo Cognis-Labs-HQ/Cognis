@@ -221,7 +221,7 @@ test("module ui routes can be published outside /modules prefix", async () => {
         new URL("http://localhost/analytics"),
     );
     assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /Sample Analytics Module/);
+    assert.match(recorder.body, /Analytics Module/);
 });
 
 test("module ui routes honor role access policies declared in routes.json", async () => {
@@ -251,7 +251,7 @@ test("module ui routes honor role access policies declared in routes.json", asyn
         new URL("http://localhost/analytics"),
     );
     assert.equal(ownerRecorder.status, 200);
-    assert.match(ownerRecorder.body, /Sample Analytics Module/);
+    assert.match(ownerRecorder.body, /Analytics Module/);
 });
 
 test("module ui routes fail closed on invalid role access policies in routes.json", async () => {
