@@ -1,7 +1,7 @@
 {
     "id": "analytics",
     "name": "Analytics",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
@@ -22,11 +22,11 @@
         },
         {
             "path": "ui/admin-section.js",
-            "sha256": "0f2ff8bcf8b5c51bb786b9325caeb95833a00dc15159e21cc09ed7f1134d390f"
+            "sha256": "ab9f2373499fd3704e18eaab297f71bdbbab89791a71d99bc94e2e86fac440fd"
         },
         {
             "path": "ui/admin-section.css",
-            "sha256": "4e1f957528789c553a5d5db8fe076656671328fefa0c1f8f4f05289054f48df7"
+            "sha256": "141a8fd1ee6c3fe4e477329b4e95260b42c1c78a785b8a583502089ba2b93c02"
         },
         {
             "path": "ui/languages/en/strings.xml",
