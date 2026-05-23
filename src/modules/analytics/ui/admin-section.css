@@ -16,6 +16,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
+    color: var(--text-muted, #94a3b8);
 }
 
 .analytics-stat-cards {
@@ -30,9 +31,9 @@
     align-items: center;
     justify-content: center;
     padding: 1.25rem 1rem;
-    background: var(--color-surface, #f5f5f5);
+    background: var(--surface-2, rgba(19, 29, 51, 0.92));
     border-radius: 8px;
-    border: 1px solid var(--color-border, #e0e0e0);
+    border: 1px solid var(--border, rgba(148, 163, 184, 0.28));
     text-align: center;
     gap: 0.25rem;
 }
@@ -40,13 +41,13 @@
 .analytics-stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--color-accent, #1a73e8);
+    color: var(--accent-2, #3aa783);
     line-height: 1;
 }
 
 .analytics-stat-label {
     font-size: 0.8rem;
-    color: var(--color-text-secondary, #666);
+    color: var(--text-muted, #94a3b8);
     text-align: center;
 }
 
@@ -67,19 +68,19 @@
 
 .analytics-role-name {
     text-transform: capitalize;
-    color: var(--color-text-secondary, #555);
+    color: var(--text-muted, #94a3b8);
 }
 
 .analytics-role-bar-wrap {
     height: 10px;
-    background: var(--color-border, #e0e0e0);
+    background: var(--surface-soft, rgba(255, 255, 255, 0.06));
     border-radius: 4px;
     overflow: hidden;
 }
 
 .analytics-role-bar {
     height: 100%;
-    background: var(--color-accent, #1a73e8);
+    background: var(--accent, #2a7f62);
     border-radius: 4px;
     transition: width 0.3s ease;
     min-width: 2px;
@@ -88,7 +89,7 @@
 .analytics-role-count {
     text-align: right;
     font-weight: 600;
-    color: var(--color-text, #222);
+    color: var(--text, #e2e8f0);
 }
 
 .analytics-chart-section,
@@ -103,7 +104,7 @@
     font-size: 0.875rem;
     font-weight: 600;
     margin: 0;
-    color: var(--color-text-secondary, #555);
+    color: var(--text-muted, #94a3b8);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -125,19 +126,19 @@
 }
 
 .analytics-chart-grid {
-    stroke: var(--color-border, #e0e0e0);
+    stroke: var(--border, rgba(148, 163, 184, 0.28));
     stroke-width: 1;
     stroke-dasharray: 3 3;
 }
 
 .analytics-chart-axis {
-    stroke: var(--color-border, #ccc);
+    stroke: var(--border-strong, rgba(148, 163, 184, 0.42));
     stroke-width: 1.5;
 }
 
 .analytics-chart-label {
     font-size: 9px;
-    fill: var(--color-text-secondary, #888);
+    fill: var(--text-muted, #94a3b8);
     font-family: inherit;
 }
 
@@ -149,25 +150,25 @@
 
 .analytics-events-table thead .analytics-events-cell {
     font-weight: 600;
-    border-bottom: 2px solid var(--color-border, #e0e0e0);
+    border-bottom: 2px solid var(--border, rgba(148, 163, 184, 0.28));
     padding-bottom: 0.5rem;
 }
 
 .analytics-events-row:nth-child(even) {
-    background: var(--color-surface, #fafafa);
+    background: var(--surface-soft, rgba(255, 255, 255, 0.06));
 }
 
 .analytics-events-cell {
     padding: 0.4rem 0.5rem;
     text-align: left;
     vertical-align: middle;
-    border-bottom: 1px solid var(--color-border, #eee);
+    border-bottom: 1px solid var(--border, rgba(148, 163, 184, 0.28));
 }
 
 .analytics-events-cell--type {
     font-family: monospace;
     font-size: 0.8rem;
-    color: var(--color-accent, #1a73e8);
+    color: var(--accent-2, #3aa783);
     width: 35%;
 }
 
@@ -180,13 +181,13 @@
 }
 
 .analytics-events-cell--time {
-    color: var(--color-text-secondary, #888);
+    color: var(--text-muted, #94a3b8);
     white-space: nowrap;
     width: 30%;
 }
 
 .analytics-empty {
-    color: var(--color-text-secondary, #888);
+    color: var(--text-muted, #94a3b8);
     font-style: italic;
     margin: 0;
 }

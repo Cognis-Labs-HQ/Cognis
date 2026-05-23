@@ -17,6 +17,14 @@ function parseDays(value, fallback = 30) {
     return Math.min(parsed, 365);
 }
 
+function formatTemplate(template, values) {
+    if (typeof template !== "string") return "";
+    return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key) => {
+        const replacementValue = values?.[key];
+        return replacementValue == null ? match : String(replacementValue);
+    });
+}
+
 function buildBarChart(series, { i18n, escapeHtml }) {
     if (!series.length) {
         return `<p class="analytics-empty">${i18n.t("module.analytics.admin.chart.no_data")}</p>`;
@@ -66,13 +74,26 @@ function buildBarChart(series, { i18n, escapeHtml }) {
         .join("");
 
     const labelStep = Math.ceil(series.length / 8);
-    const xLabels = series
-        .filter(
-            (_, index) =>
-                index % labelStep === 0 || index === series.length - 1,
-        )
-        .map((point) => {
-            const index = series.indexOf(point);
+    const labelIndices = [];
+    for (let index = 0; index < series.length; index += 1) {
+        if (index % labelStep === 0) {
+            labelIndices.push(index);
+        }
+    }
+    const lastIndex = series.length - 1;
+    if (!labelIndices.includes(lastIndex)) {
+        labelIndices.push(lastIndex);
+    }
+    if (labelIndices.length > 1) {
+        const previousIndex = labelIndices[labelIndices.length - 2];
+        if (lastIndex - previousIndex < 2) {
+            labelIndices.splice(labelIndices.length - 2, 1);
+        }
+    }
+
+    const xLabels = labelIndices
+        .map((index) => {
+            const point = series[index];
             const labelX = paddingLeft + index * step + step / 2;
             return `<text x="${labelX.toFixed(1)}" y="${chartHeight - 6}" text-anchor="middle" class="analytics-chart-label">${escapeHtml(point.date.slice(5))}</text>`;
         })
@@ -128,6 +149,11 @@ function buildStatCards(metrics, { i18n }) {
         })
         .join("");
 
+    const newUsersDaysLabel = formatTemplate(
+        i18n.t("module.analytics.admin.stat.new_users_days"),
+        { days: metrics.days },
+    );
+
     return `
       <div class="analytics-stat-cards">
         <div class="analytics-stat-card">
@@ -140,7 +166,7 @@ function buildStatCards(metrics, { i18n }) {
         </div>
         <div class="analytics-stat-card">
           <span class="analytics-stat-value">${metrics.newUsersDays}</span>
-          <span class="analytics-stat-label">${i18n.t("module.analytics.admin.stat.new_users_days", { days: metrics.days })}</span>
+          <span class="analytics-stat-label">${newUsersDaysLabel}</span>
         </div>
       </div>
       ${allRoles.length > 0 ? `<div class="analytics-role-breakdown">${roleRows}</div>` : ""}
