@@ -888,6 +888,12 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
         statusElement,
         `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
     );
+    const popupElement = document.querySelector(
+        ".messages-read-receipt-popup:not([hidden])",
+    );
+    if (popupElement instanceof HTMLElement) {
+        void hydrateProfileAvatars(popupElement);
+    }
 }
 
 /**
@@ -928,6 +934,7 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
         i18n?.t("ui.reuse.close") ?? i18n?.t("ui.reuse.cancel") ?? "Close";
     const detailRows = rows.flatMap((row) => {
         const emoji = String(row?.emoji ?? "").trim();
+        const emojiLabel = emojiDisplayName(emoji, i18n);
         const reactedByRows = Array.isArray(row?.reactedBy)
             ? row.reactedBy
             : [];
@@ -935,7 +942,7 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
             const count = Number(row?.count ?? 0);
             return [
                 `<li class="messages-reaction-details-reactor">
-                    <span class="messages-reaction-details-reactor-emoji">${escapeHtml(emoji)}</span>
+                    <span class="messages-reaction-details-reactor-emoji" title="${escapeHtml(emojiLabel)}" aria-label="${escapeHtml(emojiLabel)}">${escapeHtml(emoji)}</span>
                     <span class="messages-reaction-details-reactor-name">${escapeHtml(String(count))}</span>
                 </li>`,
             ];
@@ -959,7 +966,7 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
                     ? `<span class="messages-reaction-details-reactor-time">${escapeHtml(reactedAtLabel)}</span>`
                     : "";
                 return `<li class="messages-reaction-details-reactor">
-                    <span class="messages-reaction-details-reactor-emoji">${escapeHtml(emoji)}</span>
+                    <span class="messages-reaction-details-reactor-emoji" title="${escapeHtml(emojiLabel)}" aria-label="${escapeHtml(emojiLabel)}">${escapeHtml(emoji)}</span>
                     <span class="messages-reaction-details-reactor-name">${escapeHtml(label)}</span>
                     ${reactedAtMarkup}
                 </li>`;

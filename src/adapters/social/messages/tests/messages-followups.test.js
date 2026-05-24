@@ -168,6 +168,15 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         /statusSentSvgMarkup[\s\S]*<path d="M5\.25 8\.1L7\.15 10L10\.75 6\.5"/,
     );
     assert.match(
+        appSource,
+        /messages-reaction-details-reactor-emoji" title="\$\{escapeHtml\(emojiLabel\)\}" aria-label="\$\{escapeHtml\(emojiLabel\)\}"/,
+    );
+    assert.match(
+        appSource,
+        /querySelector\(\s*"\.messages-read-receipt-popup:not\(\[hidden\]\)"/,
+    );
+    assert.match(appSource, /hydrateProfileAvatars\(popupElement\)/);
+    assert.match(
         variantsCssSource,
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-reactions-row[\s\S]*max-width:\s*100%;/,
     );
