@@ -141,6 +141,9 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
         log,
         routeContext,
+        deps.getModuleCapability?.("notify:canSendVerificationEmail") as
+            | (() => boolean)
+            | undefined,
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(

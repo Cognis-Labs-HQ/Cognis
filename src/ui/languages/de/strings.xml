@@ -487,6 +487,7 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (nicht verfügbar — zuerst den SMTP-Adapter aktivieren)</string>
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>
