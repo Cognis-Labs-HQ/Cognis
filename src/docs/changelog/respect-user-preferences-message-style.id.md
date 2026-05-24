@@ -26,7 +26,7 @@ Indikator lingkaran diganti dengan ikon SVG: tanda tanya dalam kotak segera sete
 
 ## Avatar tanda baca bertumpuk
 
-Beberapa avatar pembaca kini ditampilkan bertumpuk dari kanan ke kiri. Lingkaran kosong sebelum dibaca dihapus. Mengarahkan kursor ke tumpukan menampilkan popup dengan nama dan waktu baca setiap pembaca.
+Beberapa avatar pembaca kini ditampilkan bertumpuk dari kanan ke kiri. Lingkaran kosong sebelum dibaca dihapus. Mengarahkan kursor ke tumpukan menampilkan popup dengan nama dan waktu baca setiap pembaca. Avatar status tidak lagi memicu kartu pratinjau profil.
 
 ## Reaksi dipindahkan ke luar gelembung
 
@@ -62,7 +62,7 @@ Rantai tinggi penuh dari viewport hingga panel konten kini menerapkan `height: 1
 
 ## IRC: pesan sendiri rata kiri di semua bagian
 
-Dalam gaya IRC, chip reaksi emoji, pemilih reaksi, dan status tanda baca untuk pesan sendiri kini rata kiri sesuai pesan masuk.
+Dalam gaya IRC, chip reaksi emoji, pemilih reaksi, dan status tanda baca untuk pesan sendiri kini rata kiri sesuai pesan masuk. Jarak antar pesan ditingkatkan untuk keterbacaan yang lebih baik.
 
 ## Avatar gelembung ucapan tumpang tindih di sudut
 
@@ -78,7 +78,7 @@ Ketika emoji yang disarankan digunakan sebagai reaksi, emoji tersebut diganti da
 
 ## Opsi `contentScrolling` pada page composer
 
-Opsi `contentScrolling` baru (default `true`) pada `createPageComposer` memungkinkan halaman mengaktifkan mode tinggi penuh dengan meneruskan `contentScrolling: false`.
+Opsi `contentScrolling` baru (default `true`) pada `createPageComposer` memungkinkan halaman mengaktifkan mode tinggi penuh dengan meneruskan `contentScrolling: false`. Kisi konten kemudian membatasi panel konten ke viewport yang tersedia dan menonaktifkan pengguliran internalnya sendiri, sehingga halaman dapat mengelola pengguliran internal secara mandiri.
 
 ## Komposer tetap terlihat pada utas panjang
 

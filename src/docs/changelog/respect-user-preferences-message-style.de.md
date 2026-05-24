@@ -26,7 +26,7 @@ Kreis-Indikatoren wurden durch SVG-Symbole ersetzt: ein Fragezeichen-im-Kasten d
 
 ## Gestapelte Lesebestätigungs-Avatare
 
-Mehrere Leser-Avatare werden jetzt von rechts nach links überlappend angezeigt. Der leere Kreis vor dem ersten Lesevorgang entfällt. Ein Hover-Popup zeigt Name und Lesezeitpunkt jedes Lesers.
+Mehrere Leser-Avatare werden jetzt von rechts nach links überlappend angezeigt. Der leere Kreis vor dem ersten Lesevorgang entfällt. Ein Hover-Popup zeigt Name und Lesezeitpunkt jedes Lesers. Status-Avatare lösen keine Profil-Vorschaukarten mehr aus.
 
 ## Reaktionen außerhalb der Sprechblase
 
@@ -62,7 +62,7 @@ Die vollständige Höhenkette vom Viewport bis zum Content-Panel erzwingt nun `h
 
 ## IRC: eigene Nachrichten durchgängig linksbündig
 
-Im IRC-Stil sind Emoji-Reaktionschips, die Reaktionsauswahl und der Lesebestätigungsstatus für eigene Nachrichten nun linksbündig ausgerichtet.
+Im IRC-Stil sind Emoji-Reaktionschips, die Reaktionsauswahl und der Lesebestätigungsstatus für eigene Nachrichten nun linksbündig ausgerichtet. Der Abstand zwischen Nachrichten wurde für bessere Lesbarkeit vergrößert.
 
 ## Sprechblasen-Avatar überlappt die Ecke
 
@@ -78,7 +78,7 @@ Wenn ein vorgeschlagenes Emoji als Reaktion verwendet wird, wird es durch ein Em
 
 ## Seiten-Composer `contentScrolling`-Option
 
-Die neue Option `contentScrolling` (Standard `true`) in `createPageComposer` ermöglicht es einer Seite, in den Füllhöhen-Modus zu wechseln, indem `contentScrolling: false` übergeben wird.
+Die neue Option `contentScrolling` (Standard `true`) in `createPageComposer` ermöglicht es einer Seite, in den Füllhöhen-Modus zu wechseln, indem `contentScrolling: false` übergeben wird. Das Content-Grid begrenzt dann den Content-Panel auf den verfügbaren Viewport und deaktiviert sein eigenes Scrollen, sodass die Seite das interne Scrollen eigenständig verwalten kann.
 
 ## Composer bleibt in langen Threads sichtbar
 
