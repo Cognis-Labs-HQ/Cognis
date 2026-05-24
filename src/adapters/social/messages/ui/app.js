@@ -575,6 +575,7 @@ function renderMessageStatus(
         return `<span class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</span>`;
     }
     if (hadPriorReaders) {
+        // Clear stale status badges after readers advance to newer messages.
         return "";
     }
     if (!isDelivered) {
@@ -864,6 +865,7 @@ function parseEncodedPayload(rawPayload) {
     const normalizedRawPayload = String(rawPayload ?? "[]");
     const parseCandidates = [normalizedRawPayload];
     try {
+        // Try URI-decoded JSON first, then fall back to the raw payload.
         parseCandidates.unshift(decodeURIComponent(normalizedRawPayload));
     } catch {
         // continue with raw payload candidate below
@@ -886,6 +888,8 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
         i18n?.t("module.social.messages.emoji_more") ??
         i18n?.t("module.social.messages.reactions") ??
         "Reactions";
+    const closeLabel =
+        i18n?.t("ui.reuse.close") ?? i18n?.t("ui.reuse.cancel") ?? "Close";
     const body = rows
         .map((row) => {
             const emoji = String(row?.emoji ?? "").trim();
@@ -914,7 +918,7 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
         actions: [
             {
                 id: "close",
-                label: i18n.t("ui.reuse.close"),
+                label: closeLabel,
                 variant: "cancel",
             },
         ],
