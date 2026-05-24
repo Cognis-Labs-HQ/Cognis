@@ -37,7 +37,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let savedPreferredIds = [];
     const settingsRoot = root ?? document;
 
-
     const fetchTfaStatus = () => loadTfaStatus(apiFetch);
     const fetchRecoveryCodesStatus = () => loadRecoveryCodesStatus(apiFetch);
     const beginSetup = (methodId) => beginTfaSetup(apiFetch, methodId);
@@ -104,9 +103,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const cell = document.createElement("td");
         cell.setAttribute("colspan", "2");
         cell.className = "language-table-empty-cell";
-        cell.textContent = i18n.t(
-            "gateway.tfa.settings.recovery_codes_none",
-        );
+        cell.textContent = i18n.t("gateway.tfa.settings.recovery_codes_none");
         row.append(cell);
         return row;
     }
@@ -303,12 +300,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                         return true;
                     }
                     if (!(codeInput instanceof HTMLInputElement)) {
-                        showToast(
-                            i18n.t("gateway.tfa.settings.setup_failed"),
-                            {
-                                variant: "error",
-                            },
-                        );
+                        showToast(i18n.t("gateway.tfa.settings.setup_failed"), {
+                            variant: "error",
+                        });
                         return false;
                     }
                     const result = await verifySetup(methodId, setup.setupId, {
@@ -342,12 +336,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     async function openConfiguredMethodPopup(methodId) {
         const details = await fetchMethodDetails(methodId);
         if (!details || typeof details !== "object") {
-            showToast(
-                i18n.t("gateway.tfa.settings.method_details_failed"),
-                {
-                    variant: "error",
-                },
-            );
+            showToast(i18n.t("gateway.tfa.settings.method_details_failed"), {
+                variant: "error",
+            });
             return false;
         }
         const manualSecret =
@@ -370,9 +361,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 actions: [
                     {
                         id: "rotate",
-                        label: i18n.t(
-                            "gateway.tfa.settings.method_rotate",
-                        ),
+                        label: i18n.t("gateway.tfa.settings.method_rotate"),
                         variant: "confirm",
                     },
                     {
@@ -617,9 +606,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 const recoveryCodes = await rotateCodes();
                 if (!recoveryCodes) {
                     showToast(
-                        i18n.t(
-                            "gateway.tfa.settings.recovery_codes_failed",
-                        ),
+                        i18n.t("gateway.tfa.settings.recovery_codes_failed"),
                         {
                             variant: "error",
                         },
@@ -632,9 +619,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 tfaStatus = await fetchTfaStatus();
                 rerender();
                 showToast(
-                    i18n.t(
-                        "gateway.tfa.settings.recovery_codes_generated",
-                    ),
+                    i18n.t("gateway.tfa.settings.recovery_codes_generated"),
                     {
                         variant: "success",
                     },
@@ -729,9 +714,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 (method) => method.id,
             );
             pendingPreferredIds = [...savedPreferredIds];
-            const panel = settingsRoot.querySelector(
-                "#tfa-settings-panel",
-            );
+            const panel = settingsRoot.querySelector("#tfa-settings-panel");
             if (panel) {
                 panel.innerHTML = renderBody();
             }

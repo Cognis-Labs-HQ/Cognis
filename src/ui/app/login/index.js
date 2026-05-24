@@ -1,8 +1,5 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
-import {
-    applyDocumentTitle,
-    createI18n,
-} from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -65,12 +62,15 @@ export async function mount(root) {
     }
 
     async function loadTfaLoginClient() {
-    if (!tfaLoginClientPromise) {
-        tfaLoginClientPromise = import("/static/gateways/tfa/login-flow.js")
-            .then((mod) => mod.createTfaLoginClient({ baseI18n: i18n, root }))
-            .catch(() => null);
+        if (!tfaLoginClientPromise) {
+            tfaLoginClientPromise = import("/static/gateways/tfa/login-flow.js")
+                .then((mod) =>
+                    mod.createTfaLoginClient({ baseI18n: i18n, root }),
+                )
+                .catch(() => null);
+        }
+        return tfaLoginClientPromise;
     }
-    return tfaLoginClientPromise;
 
     async function loadLoginMethods() {
         try {

@@ -108,7 +108,10 @@ function isTfaSetupPendingPathAllowed(
     );
 }
 
-function isRegisteredLimitedPathAllowed(path: string, accountId: string): boolean {
+function isRegisteredLimitedPathAllowed(
+    path: string,
+    accountId: string,
+): boolean {
     for (const predicate of limitedAuthPathAllowances.values()) {
         if (predicate(path, accountId)) {
             return true;

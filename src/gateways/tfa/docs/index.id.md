@@ -48,20 +48,20 @@ Capability ini adalah permukaan integrasi yang didukung. Komponen lain tidak bol
 
 ## Route API
 
-| Metode | Path | Deskripsi | Auth |
-| ------ | ---- | --------- | ---- |
-| `GET` | `/api/v1/tfa/status` | Membaca status setup pengguna saat ini | Bearer |
-| `GET` | `/api/v1/tfa/methods` | Membaca metode dan metadata kode pemulihan | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/begin` | Memulai setup metode | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/verify` | Memverifikasi setup | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/cancel` | Membatalkan setup | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/enable` | Mengaktifkan kembali metode tersimpan | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/disable` | Menonaktifkan metode | Bearer |
-| `PUT` | `/api/v1/tfa/methods/preferences` | Menyimpan urutan metode pilihan | Bearer |
-| `GET` | `/api/v1/tfa/recovery-codes` | Membaca status kode pemulihan | Bearer |
-| `POST` | `/api/v1/tfa/recovery-codes/rotate` | Mengganti kode pemulihan | Bearer |
-| `POST` | `/api/v1/tfa/admin/users/:id/reset` | Mereset status TFA pengguna | Admin |
-| `GET` | `/api/v1/gateways/tfa/adapters` | Menampilkan adapter terdaftar | Admin |
+| Metode | Path                                   | Deskripsi                                  | Auth   |
+| ------ | -------------------------------------- | ------------------------------------------ | ------ |
+| `GET`  | `/api/v1/tfa/status`                   | Membaca status setup pengguna saat ini     | Bearer |
+| `GET`  | `/api/v1/tfa/methods`                  | Membaca metode dan metadata kode pemulihan | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/setup/begin`  | Memulai setup metode                       | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/setup/verify` | Memverifikasi setup                        | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/setup/cancel` | Membatalkan setup                          | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/enable`       | Mengaktifkan kembali metode tersimpan      | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/disable`      | Menonaktifkan metode                       | Bearer |
+| `PUT`  | `/api/v1/tfa/methods/preferences`      | Menyimpan urutan metode pilihan            | Bearer |
+| `GET`  | `/api/v1/tfa/recovery-codes`           | Membaca status kode pemulihan              | Bearer |
+| `POST` | `/api/v1/tfa/recovery-codes/rotate`    | Mengganti kode pemulihan                   | Bearer |
+| `POST` | `/api/v1/tfa/admin/users/:id/reset`    | Mereset status TFA pengguna                | Admin  |
+| `GET`  | `/api/v1/gateways/tfa/adapters`        | Menampilkan adapter terdaftar              | Admin  |
 
 ## Kepemilikan UI
 

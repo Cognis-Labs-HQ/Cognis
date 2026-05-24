@@ -288,11 +288,7 @@ function createTfaRoutes(
             });
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": buildCookie(
-                    req,
-                    apiToken,
-                    accessTokenTtlSeconds,
-                ),
+                "set-cookie": buildCookie(req, apiToken, accessTokenTtlSeconds),
             });
             res.end(
                 JSON.stringify({

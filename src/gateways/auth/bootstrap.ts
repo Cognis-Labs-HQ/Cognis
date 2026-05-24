@@ -326,17 +326,12 @@ function createAuthGatewayRoutes(
             : 43200;
     }
 
-    capabilities.contribute(
-        "auth:getAccessTokenTtlSeconds",
-        () => getAccessTokenTtlSeconds(),
+    capabilities.contribute("auth:getAccessTokenTtlSeconds", () =>
+        getAccessTokenTtlSeconds(),
     );
     capabilities.contribute(
         "auth:buildAccessTokenCookie",
-        (
-            req: IncomingMessage,
-            rawToken: string,
-            ttlSeconds: number | null,
-        ) =>
+        (req: IncomingMessage, rawToken: string, ttlSeconds: number | null) =>
             buildAccessTokenCookie(
                 rawToken,
                 ttlSeconds,
@@ -929,12 +924,16 @@ function createAuthGatewayRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/setup-status" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/auth/setup-status" &&
+            req.method === "GET"
+        ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const getTfaUserStatus = capabilities.get<
-                (accountId: string) => Promise<{ requiresSetup: boolean }>
-            >("tfa:getUserStatus");
+            const getTfaUserStatus =
+                capabilities.get<
+                    (accountId: string) => Promise<{ requiresSetup: boolean }>
+                >("tfa:getUserStatus");
             const status = getTfaUserStatus
                 ? await getTfaUserStatus(claims.sub).catch(() => null)
                 : null;

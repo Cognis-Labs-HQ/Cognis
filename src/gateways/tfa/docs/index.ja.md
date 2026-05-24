@@ -48,20 +48,20 @@ Auth Gateway は TOTP や将来の方式の詳細を知りません。一次認�
 
 ## API Route
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/tfa/status` | 現在ユーザーの設定必須状態を読む | Bearer |
-| `GET` | `/api/v1/tfa/methods` | 方式一覧と復旧コード情報を読む | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/begin` | 方式設定を開始する | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/verify` | 設定を検証する | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/cancel` | 設定を中止する | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/enable` | 保存済み方式を再有効化する | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/disable` | 方式を無効化する | Bearer |
-| `PUT` | `/api/v1/tfa/methods/preferences` | 優先方式順序を保存する | Bearer |
-| `GET` | `/api/v1/tfa/recovery-codes` | 復旧コード状態を読む | Bearer |
-| `POST` | `/api/v1/tfa/recovery-codes/rotate` | 復旧コードを置き換える | Bearer |
-| `POST` | `/api/v1/tfa/admin/users/:id/reset` | ユーザーの TFA 状態をリセットする | Admin |
-| `GET` | `/api/v1/gateways/tfa/adapters` | 登録済みアダプター一覧 | Admin |
+| メソッド | パス                                   | 説明                              | 認証   |
+| -------- | -------------------------------------- | --------------------------------- | ------ |
+| `GET`    | `/api/v1/tfa/status`                   | 現在ユーザーの設定必須状態を読む  | Bearer |
+| `GET`    | `/api/v1/tfa/methods`                  | 方式一覧と復旧コード情報を読む    | Bearer |
+| `POST`   | `/api/v1/tfa/methods/:id/setup/begin`  | 方式設定を開始する                | Bearer |
+| `POST`   | `/api/v1/tfa/methods/:id/setup/verify` | 設定を検証する                    | Bearer |
+| `POST`   | `/api/v1/tfa/methods/:id/setup/cancel` | 設定を中止する                    | Bearer |
+| `POST`   | `/api/v1/tfa/methods/:id/enable`       | 保存済み方式を再有効化する        | Bearer |
+| `POST`   | `/api/v1/tfa/methods/:id/disable`      | 方式を無効化する                  | Bearer |
+| `PUT`    | `/api/v1/tfa/methods/preferences`      | 優先方式順序を保存する            | Bearer |
+| `GET`    | `/api/v1/tfa/recovery-codes`           | 復旧コード状態を読む              | Bearer |
+| `POST`   | `/api/v1/tfa/recovery-codes/rotate`    | 復旧コードを置き換える            | Bearer |
+| `POST`   | `/api/v1/tfa/admin/users/:id/reset`    | ユーザーの TFA 状態をリセットする | Admin  |
+| `GET`    | `/api/v1/gateways/tfa/adapters`        | 登録済みアダプター一覧            | Admin  |
 
 ## UI 所有範囲
 

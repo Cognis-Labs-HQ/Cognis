@@ -48,20 +48,20 @@ Diese Oberfl채che ist der unterst체tzte Integrationspunkt. Andere Komponenten d�
 
 ## API-Routen
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/tfa/status` | Setup-Status des aktuellen Nutzers lesen | Bearer |
-| `GET` | `/api/v1/tfa/methods` | Methoden- und Recovery-Metadaten lesen | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/begin` | Methodensetup starten | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/verify` | Setup verifizieren | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/cancel` | Setup abbrechen | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/enable` | Gespeicherte Methode aktivieren | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/disable` | Methode deaktivieren | Bearer |
-| `PUT` | `/api/v1/tfa/methods/preferences` | Bevorzugte Reihenfolge speichern | Bearer |
-| `GET` | `/api/v1/tfa/recovery-codes` | Recovery-Code-Status lesen | Bearer |
-| `POST` | `/api/v1/tfa/recovery-codes/rotate` | Recovery-Codes ersetzen | Bearer |
-| `POST` | `/api/v1/tfa/admin/users/:id/reset` | TFA-Zustand eines Nutzers zur체cksetzen | Admin |
-| `GET` | `/api/v1/gateways/tfa/adapters` | Registrierte Adapter auflisten | Admin |
+| Methode | Pfad                                   | Beschreibung                             | Auth   |
+| ------- | -------------------------------------- | ---------------------------------------- | ------ |
+| `GET`   | `/api/v1/tfa/status`                   | Setup-Status des aktuellen Nutzers lesen | Bearer |
+| `GET`   | `/api/v1/tfa/methods`                  | Methoden- und Recovery-Metadaten lesen   | Bearer |
+| `POST`  | `/api/v1/tfa/methods/:id/setup/begin`  | Methodensetup starten                    | Bearer |
+| `POST`  | `/api/v1/tfa/methods/:id/setup/verify` | Setup verifizieren                       | Bearer |
+| `POST`  | `/api/v1/tfa/methods/:id/setup/cancel` | Setup abbrechen                          | Bearer |
+| `POST`  | `/api/v1/tfa/methods/:id/enable`       | Gespeicherte Methode aktivieren          | Bearer |
+| `POST`  | `/api/v1/tfa/methods/:id/disable`      | Methode deaktivieren                     | Bearer |
+| `PUT`   | `/api/v1/tfa/methods/preferences`      | Bevorzugte Reihenfolge speichern         | Bearer |
+| `GET`   | `/api/v1/tfa/recovery-codes`           | Recovery-Code-Status lesen               | Bearer |
+| `POST`  | `/api/v1/tfa/recovery-codes/rotate`    | Recovery-Codes ersetzen                  | Bearer |
+| `POST`  | `/api/v1/tfa/admin/users/:id/reset`    | TFA-Zustand eines Nutzers zur체cksetzen   | Admin  |
+| `GET`   | `/api/v1/gateways/tfa/adapters`        | Registrierte Adapter auflisten           | Admin  |
 
 ## UI-Zust채ndigkeit
 

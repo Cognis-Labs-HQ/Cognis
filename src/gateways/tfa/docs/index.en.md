@@ -48,20 +48,20 @@ These capabilities are the supported integration surface for auth and UI code. O
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `GET` | `/api/v1/tfa/status` | Read current user's setup requirement state | Bearer |
-| `GET` | `/api/v1/tfa/methods` | List available/enabled methods and recovery metadata | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/begin` | Start setup for a method | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/verify` | Complete setup verification | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/setup/cancel` | Cancel an in-progress setup | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/enable` | Re-enable a configured method | Bearer |
-| `POST` | `/api/v1/tfa/methods/:id/disable` | Disable a configured method | Bearer |
-| `PUT` | `/api/v1/tfa/methods/preferences` | Save preferred method ordering | Bearer |
-| `GET` | `/api/v1/tfa/recovery-codes` | List recovery-code status | Bearer |
-| `POST` | `/api/v1/tfa/recovery-codes/rotate` | Replace recovery codes | Bearer |
-| `POST` | `/api/v1/tfa/admin/users/:id/reset` | Reset a user's TFA state | Admin |
-| `GET` | `/api/v1/gateways/tfa/adapters` | List registered adapters | Admin |
+| Method | Path                                   | Description                                          | Auth   |
+| ------ | -------------------------------------- | ---------------------------------------------------- | ------ |
+| `GET`  | `/api/v1/tfa/status`                   | Read current user's setup requirement state          | Bearer |
+| `GET`  | `/api/v1/tfa/methods`                  | List available/enabled methods and recovery metadata | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/setup/begin`  | Start setup for a method                             | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/setup/verify` | Complete setup verification                          | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/setup/cancel` | Cancel an in-progress setup                          | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/enable`       | Re-enable a configured method                        | Bearer |
+| `POST` | `/api/v1/tfa/methods/:id/disable`      | Disable a configured method                          | Bearer |
+| `PUT`  | `/api/v1/tfa/methods/preferences`      | Save preferred method ordering                       | Bearer |
+| `GET`  | `/api/v1/tfa/recovery-codes`           | List recovery-code status                            | Bearer |
+| `POST` | `/api/v1/tfa/recovery-codes/rotate`    | Replace recovery codes                               | Bearer |
+| `POST` | `/api/v1/tfa/admin/users/:id/reset`    | Reset a user's TFA state                             | Admin  |
+| `GET`  | `/api/v1/gateways/tfa/adapters`        | List registered adapters                             | Admin  |
 
 ## UI Ownership
 

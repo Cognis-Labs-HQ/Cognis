@@ -116,10 +116,7 @@ function resolveTfaLoginErrorMessage(i18n, message) {
     );
 }
 
-export async function createTfaLoginClient({
-    baseI18n,
-    root = document,
-} = {}) {
+export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
     await ensurePageStylesheet("/static/gateways/tfa/login.css");
     const i18n = await extendI18n(baseI18n, [
         "/static/gateways/tfa/languages",
@@ -129,7 +126,10 @@ export async function createTfaLoginClient({
         i18n,
         switchToTfaPrompt(payload) {
             const fields = root.querySelector("#login-tfa-fields");
-            if (fields instanceof HTMLElement && fields.childElementCount === 0) {
+            if (
+                fields instanceof HTMLElement &&
+                fields.childElementCount === 0
+            ) {
                 fields.innerHTML = `
                   <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
                   <input type="hidden" id="login-tfa-method" value="" />
