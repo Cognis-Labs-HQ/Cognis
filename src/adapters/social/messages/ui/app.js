@@ -696,7 +696,14 @@ function renderReactionRow(message, i18n) {
 function shouldAllowTextWrapping(messageText) {
     if (typeof messageText !== "string") return false;
     if (messageText.includes("\n")) return true;
-    return Array.from(messageText).length > MESSAGE_WRAP_THRESHOLD;
+    let characterCount = 0;
+    for (const unicodeCharacter of messageText) {
+        characterCount += 1;
+        if (characterCount > MESSAGE_WRAP_THRESHOLD) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function renderMessageBodyMarkup(messageText) {

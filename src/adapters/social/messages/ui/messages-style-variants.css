@@ -1,3 +1,8 @@
+.messages-page[data-message-style="speech_bubbles"] {
+    --messages-own-bubble-avatar-offset-right: -1.45rem;
+    --messages-own-bubble-avatar-space: 2.35rem;
+}
+
 .messages-page[data-message-style="speech_bubbles"] .messages-message {
     position: relative;
     border-radius: 1.1rem;
@@ -71,12 +76,15 @@ body:not([data-theme="light"])
     .messages-message-row--own
     .messages-message-bubble-avatar {
     display: block;
+    --messages-bubble-avatar-offset-right: var(
+        --messages-own-bubble-avatar-offset-right
+    );
 }
 
 .messages-page[data-message-style="speech_bubbles"]
     .messages-message-row--own
     .messages-message-wrap {
-    padding-right: 2.35rem;
+    padding-right: var(--messages-own-bubble-avatar-space);
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {

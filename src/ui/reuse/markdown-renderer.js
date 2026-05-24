@@ -38,7 +38,7 @@ function renderLinkMarkup(label, href) {
 function renderInline(markdown) {
     const linkTokens = [];
     let rendered = markdown.replace(
-        /\[([^\]]+)\]\(([^)\s]+)\)/g,
+        /\[((?:\\.|[^\]])+)\]\(([^)\s]+)\)/g,
         (match, label, href) => {
             const token = `@@LINK_${linkTokens.length}@@`;
             linkTokens.push(renderLinkMarkup(label, href));
