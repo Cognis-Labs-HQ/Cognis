@@ -190,7 +190,7 @@ export function createMessageReactionsController({
         return result;
     }
 
-    function renderReactionRow(message) {
+    function renderReactionRows(message) {
         if (!message?.id) return "";
         const reactionEntries = Array.isArray(message.reactions)
             ? message.reactions
@@ -361,7 +361,7 @@ export function createMessageReactionsController({
         loadEmojiUsage,
         openEmojiPickerPopup,
         recordEmojiUsage,
-        renderReactionRow,
+        renderReactionRow: renderReactionRows,
         repositionReactionHoverPopup,
         showReactionHoverPopup,
         toggleReaction,

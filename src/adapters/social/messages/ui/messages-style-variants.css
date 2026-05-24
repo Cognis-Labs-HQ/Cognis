@@ -1,8 +1,14 @@
 .messages-page[data-message-style="speech_bubbles"] {
-    --messages-own-bubble-avatar-offset-right: -0.62rem;
-    --messages-incoming-bubble-avatar-offset-left: -0.62rem;
+    --messages-bubble-avatar-corner-offset: -0.62rem;
+    --messages-own-bubble-avatar-offset-right: var(
+        --messages-bubble-avatar-corner-offset
+    );
+    --messages-incoming-bubble-avatar-offset-left: var(
+        --messages-bubble-avatar-corner-offset
+    );
     --messages-own-bubble-avatar-space: 1.85rem;
     --messages-incoming-bubble-avatar-space: 1.85rem;
+    --messages-bubble-avatar-clearance: 1.1rem;
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message {
@@ -51,7 +57,7 @@ body:not([data-theme="light"])
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message-wrap {
-    padding-top: 1.1rem;
+    padding-top: var(--messages-bubble-avatar-clearance);
     width: fit-content;
     max-width: min(70%, calc(100% - 3rem));
 }
