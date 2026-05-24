@@ -56,7 +56,7 @@ export async function mount(root, { signal } = {}) {
 
     const errorCode = resolveErrorCode(window.location.search);
 
-    const composer = createPageComposer(root, {
+    const sharedComposerOptions = {
         allowCustomization: false,
         i18n,
         preferenceKey: "error-layout",
@@ -64,12 +64,22 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("ui.reuse.error"),
             subtitle: i18n.t("ui.app.error.page_subtitle"),
         },
-        showTopbar: isAuthenticated,
-        showNavbar: isAuthenticated,
-        showFooter: isAuthenticated,
-        showThemeToggle: true,
-        frameless: true,
         persistLayoutPreferences: false,
+    };
+
+    const authComposerOptions = isAuthenticated
+        ? {}
+        : {
+              showTopbar: false,
+              showNavbar: false,
+              showFooter: false,
+              showThemeToggle: true,
+              frameless: true,
+          };
+
+    const composer = createPageComposer(root, {
+        ...sharedComposerOptions,
+        ...authComposerOptions,
         elements: [buildErrorElement(i18n, errorCode, isAuthenticated)],
     });
 
