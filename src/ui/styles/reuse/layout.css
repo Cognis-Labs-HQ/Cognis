@@ -12,6 +12,10 @@
     flex-direction: column;
 }
 
+.app-shell--frameless {
+    padding-bottom: 0;
+}
+
 .site-header {
     width: 98%;
     margin: 0 auto;

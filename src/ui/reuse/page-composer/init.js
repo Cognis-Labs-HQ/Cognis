@@ -3702,6 +3702,9 @@ export function createPageComposer(
         let closeMobileDrawerIfNeeded = () => {};
 
         if (frameless) {
+            root.querySelector(".app-shell")?.classList.add(
+                "app-shell--frameless",
+            );
             root.querySelector(".workspace")?.classList.add(
                 "app-page--frameless",
             );
