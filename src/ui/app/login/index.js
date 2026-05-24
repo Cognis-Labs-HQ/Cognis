@@ -361,22 +361,23 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                if (body.data.tfaRequired === true) {
+                                if (
+                                    body.data.tfaRequired === true ||
+                                    body.data.tfaSetupRequired === true
+                                ) {
                                     const tfaLoginClient =
                                         await loadTfaLoginClient();
-                                    currentTfaLoginAttemptId =
-                                        tfaLoginClient?.switchToTfaPrompt(
+                                    if (body.data.tfaRequired === true) {
+                                        currentTfaLoginAttemptId =
+                                            tfaLoginClient?.switchToTfaPrompt(
+                                                body.data,
+                                            ) ?? null;
+                                    } else {
+                                        tfaLoginClient?.handleSetupRequired(
+                                            persistSession,
                                             body.data,
-                                        ) ?? null;
-                                    return;
-                                }
-                                if (body.data.tfaSetupRequired === true) {
-                                    const tfaLoginClient =
-                                        await loadTfaLoginClient();
-                                    tfaLoginClient?.handleSetupRequired(
-                                        persistSession,
-                                        body.data,
-                                    );
+                                        );
+                                    }
                                     return;
                                 }
                                 persistSession(body.data);

@@ -150,6 +150,16 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             const body = await response.json().catch(() => null);
             return { response, body };
         },
+        /**
+         * Handles a login response where TFA setup is required before full access
+         * is granted. Persists the partial session using the provided callback and
+         * redirects the user to the Security settings page to complete TFA setup.
+         *
+         * @param {(data: object) => void} persistSession - Callback that writes
+         *   the session data (token, accountId, etc.) to persistent storage.
+         * @param {object} data - Login response data containing the partial access
+         *   token and account metadata returned when tfaSetupRequired is true.
+         */
         handleSetupRequired(persistSession, data) {
             persistSession(data);
             window.location.href = "/settings";
