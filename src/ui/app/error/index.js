@@ -3,7 +3,24 @@ import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { checkIsAuthenticated } from "../../reuse/auth-session.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 
-const KNOWN_ERROR_CODES = new Set(["400", "401", "403", "404", "500", "503"]);
+const KNOWN_ERROR_CODES = new Set([
+    "400",
+    "401",
+    "403",
+    "404",
+    "405",
+    "408",
+    "409",
+    "410",
+    "413",
+    "415",
+    "422",
+    "429",
+    "500",
+    "502",
+    "503",
+    "504",
+]);
 
 function resolveErrorCode(search) {
     const rawCode = new URLSearchParams(search).get("code") ?? "";
@@ -48,9 +65,9 @@ function buildErrorElement(i18n, errorCode, isAuthenticated) {
         label: errorCode || "error",
         pinned: true,
         gridSize: {
-            default: [12, 6],
-            min: [6, 4],
-            max: ["full", "fill"],
+            default: [12, 8],
+            min: [12, 6],
+            max: ["fill", "fill"],
         },
         render: () => buildErrorContent(i18n, errorCode, isAuthenticated),
     };
