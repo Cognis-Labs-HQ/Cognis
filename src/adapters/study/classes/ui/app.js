@@ -322,6 +322,12 @@ export async function mount(root, { signal } = {}) {
                     variant: "confirm",
                 },
             ],
+            closeConfirm: {
+                title: i18n.t("ui.reuse.unsaved_changes"),
+                message: i18n.t("ui.reuse.close_form_warning"),
+                discardLabel: i18n.t("ui.reuse.discard"),
+                keepLabel: i18n.t("ui.reuse.cancel"),
+            },
             onAction: (actionId, overlay) => {
                 if (actionId !== "submit") return true;
                 const input = overlay.querySelector("#classes-teacher-reason");
@@ -486,6 +492,12 @@ export async function mount(root, { signal } = {}) {
                                     variant: "confirm",
                                 },
                             ],
+                            closeConfirm: {
+                                title: i18n.t("ui.reuse.unsaved_changes"),
+                                message: i18n.t("ui.reuse.close_form_warning"),
+                                discardLabel: i18n.t("ui.reuse.discard"),
+                                keepLabel: i18n.t("ui.reuse.cancel"),
+                            },
                             onAction: (actionId, overlay) => {
                                 if (actionId !== "invite") return true;
                                 const input = overlay.querySelector(

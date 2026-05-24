@@ -721,6 +721,12 @@ async function openEditPopup() {
                 variant: "confirm",
             },
         ],
+        closeConfirm: {
+            title: i18n.t("ui.reuse.unsaved_changes"),
+            message: i18n.t("ui.reuse.close_form_warning"),
+            discardLabel: i18n.t("ui.reuse.discard"),
+            keepLabel: i18n.t("ui.reuse.cancel"),
+        },
     });
 
     const bioEl = document.getElementById("popup-edit-bio");
