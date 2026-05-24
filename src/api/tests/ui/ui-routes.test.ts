@@ -500,7 +500,9 @@ test("GET /static/gateways/:id/:file serves file from registered static dir", as
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/gateways/auth/security-prefs/index.js"),
+        new URL(
+            "http://localhost/static/gateways/auth/security-prefs/index.js",
+        ),
     );
 
     assert.ok(handled);
@@ -520,7 +522,9 @@ test("GET /static/gateways/:id/:file returns 404 when static dir not registered"
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/gateways/auth/security-prefs/index.js"),
+        new URL(
+            "http://localhost/static/gateways/auth/security-prefs/index.js",
+        ),
     );
 
     assert.ok(handled);
