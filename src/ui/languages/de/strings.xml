@@ -277,6 +277,8 @@
   <string name="ui.app.users.reset_password">Passwort zurücksetzen</string>
   <string name="ui.app.users.new_password">Neues Passwort</string>
   <string name="ui.app.users.password_reset_done">Passwort aktualisiert.</string>
+  <string name="ui.app.users.reset_tfa">Zwei-Faktor-Authentifizierung Zurücksetzen</string>
+  <string name="ui.app.users.tfa_reset_done">Die Zwei-Faktor-Authentifizierung wurde für diesen Benutzer zurückgesetzt.</string>
   <string name="ui.app.users.resend_verification">Bestätigungs-E-Mail erneut senden</string>
   <string name="ui.app.users.verification_resent">Bestätigungs-E-Mail erneut angefordert.</string>
   <string name="ui.app.users.delete_user">Benutzer löschen</string>

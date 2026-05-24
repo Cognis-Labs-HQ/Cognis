@@ -51,3 +51,11 @@ Two-Factor Authentication settings now appear within User Settings → Security,
 ## Administration Page Fix
 
 Fixed a missing `extendI18n` import that caused the Administration page to fail on navigation.
+
+## Users Reset TFA Strings Fixed
+
+Added missing `ui.app.users.reset_tfa` and `ui.app.users.tfa_reset_done` keys to the core UI locale bundles so the Users page action menu and reset-success toast render localized labels.
+
+## Login Email Prompt Regression Fixed
+
+Corrected the login required-email check to use `isPrimary` from the emails API response, preventing users with an already verified primary email from being incorrectly prompted to add an email again after TFA reset.

@@ -277,6 +277,8 @@
   <string name="ui.app.users.reset_password">パスワードをリセット</string>
   <string name="ui.app.users.new_password">新しいパスワード</string>
   <string name="ui.app.users.password_reset_done">パスワードを更新しました。</string>
+  <string name="ui.app.users.reset_tfa">二要素認証をリセット</string>
+  <string name="ui.app.users.tfa_reset_done">このユーザーの二要素認証をリセットしました。</string>
   <string name="ui.app.users.resend_verification">認証メールを再送</string>
   <string name="ui.app.users.verification_resent">認証メールを再送しました。</string>
   <string name="ui.app.users.delete_user">ユーザーを削除</string>

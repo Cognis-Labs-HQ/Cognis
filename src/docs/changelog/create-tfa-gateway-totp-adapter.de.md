@@ -51,3 +51,11 @@ Zwei-Faktor-Authentifizierungs-Einstellungen erscheinen jetzt unter Benutzereins
 ## Administrations-Seite Korrigiert
 
 Ein fehlender `extendI18n`-Import, der dazu führte, dass die Administrations-Seite bei der Navigation fehlschlug, wurde behoben.
+
+## Strings für TFA-Reset bei Benutzern Korrigiert
+
+Die fehlenden Schlüssel `ui.app.users.reset_tfa` und `ui.app.users.tfa_reset_done` wurden in die zentralen UI-Sprachdateien aufgenommen, damit Aktionsmenü und Erfolgs-Toast auf der Benutzerseite korrekt lokalisiert angezeigt werden.
+
+## Login-E-Mail-Prompt Regression Korrigiert
+
+Die Prüfung für verpflichtende E-Mail-Eingabe beim Login verwendet jetzt `isPrimary` aus der E-Mail-API-Antwort, sodass Nutzer mit bereits verifizierter primärer Adresse nach einem TFA-Reset nicht fälschlich erneut zur E-Mail-Eingabe aufgefordert werden.

@@ -277,6 +277,8 @@
   <string name="ui.app.users.reset_password">Reset kata sandi</string>
   <string name="ui.app.users.new_password">Kata sandi baru</string>
   <string name="ui.app.users.password_reset_done">Kata sandi diperbarui.</string>
+  <string name="ui.app.users.reset_tfa">Reset Autentikasi Dua Faktor</string>
+  <string name="ui.app.users.tfa_reset_done">Autentikasi dua faktor untuk pengguna ini telah direset.</string>
   <string name="ui.app.users.resend_verification">Kirim ulang verifikasi email</string>
   <string name="ui.app.users.verification_resent">Permintaan verifikasi email dikirim.</string>
   <string name="ui.app.users.delete_user">Hapus pengguna</string>

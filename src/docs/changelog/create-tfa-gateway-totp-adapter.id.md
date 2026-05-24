@@ -51,3 +51,11 @@ Pengaturan Autentikasi Dua Faktor kini muncul di Pengaturan Pengguna → Keamana
 ## Perbaikan Halaman Administrasi
 
 Memperbaiki import `extendI18n` yang hilang sehingga menyebabkan halaman Administrasi gagal saat navigasi.
+
+## String Reset TFA pada Halaman Pengguna Diperbaiki
+
+Menambahkan kunci `ui.app.users.reset_tfa` dan `ui.app.users.tfa_reset_done` yang hilang ke berkas bahasa UI inti agar label menu aksi dan toast sukses reset pada halaman Pengguna tampil terlokalisasi.
+
+## Regresi Prompt Email Login Diperbaiki
+
+Pemeriksaan email wajib saat login kini menggunakan `isPrimary` dari respons API email, sehingga pengguna yang sudah memiliki email utama terverifikasi tidak lagi diminta menambahkan email lagi setelah reset TFA.
