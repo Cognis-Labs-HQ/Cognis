@@ -19,20 +19,18 @@ test("security preferences render recovery codes as a separate section", () => {
     assert.match(SOURCE, /id="settings-recovery-codes-table"/);
     assert.match(
         SOURCE,
-        /<div class="content-grid--two-column">[\s\S]*id="available-tfa-methods"[\s\S]*id="preferred-tfa-methods"/,
+        /content-grid--two-column[\s\S]*id="available-tfa-methods"[\s\S]*id="preferred-tfa-methods"/,
     );
-    assert.match(SOURCE, /class="settings-tfa-options-grid"/);
-    assert.match(SOURCE, /class="settings-tfa-option-label"/);
+    assert.match(SOURCE, /class="language-table"/);
+    assert.match(SOURCE, /class="drag-handle"/);
 });
 
-test("security preferences TFA drag and drop supports row insertion", () => {
+test("security preferences TFA drag and drop uses dirty tracker", () => {
     assert.match(SOURCE, /drop-target-before/);
     assert.match(SOURCE, /drop-target-after/);
     assert.match(SOURCE, /insertPreferredMethodId/);
-    assert.match(
-        SOURCE,
-        /methodConfigured = Boolean\(methodDetails\?\.configuredAt\)/,
-    );
+    assert.match(SOURCE, /pendingPreferredIds/);
+    assert.match(SOURCE, /isDirtyTfa/);
     assert.match(
         SOURCE,
         /nextPreferredMethodIds\.splice\(\s*targetIsAfter \? targetIndex \+ 1 : targetIndex,\s*0,\s*methodId,\s*\)/,

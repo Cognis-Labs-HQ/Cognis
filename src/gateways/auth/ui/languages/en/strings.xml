@@ -45,6 +45,8 @@
   <string name="gateway.auth.security.tfa_manual_secret">Manual Secret</string>
   <string name="gateway.auth.security.tfa_qr_code_alt">TOTP Setup QR Code</string>
   <string name="gateway.auth.security.tfa_required_title">Two-Factor Setup Required</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_hint">Use recovery codes to access your account when your configured two-factor methods are unavailable.</string>
+  <string name="gateway.auth.security.tfa_method_deactivated">{method} TFA method is no longer active.</string>
   <string name="gateway.auth.security.tfa_required_prompt">Select a method to configure before continuing.</string>
   <string name="gateway.auth.security.tfa_totp_prompt">Scan the QR code in your authenticator app, then enter a 6-digit code to verify setup.</string>
 </resources>

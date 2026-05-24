@@ -473,16 +473,22 @@ function createTfaAdapterAdminRoutes(
                 return true;
             }
             if (req.method === "GET") {
+                const adapterConfig = await gateway.getAdapterConfig(adapterId);
+                const schema = adapter.getConfigSchema();
+                const configData: Record<string, unknown> = {};
+                for (const field of schema) {
+                    configData[field.key] = adapterConfig[field.key] ?? null;
+                }
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        data: {
-                            id: adapter.id,
-                            name: adapter.name,
-                            enabled: gateway.isAdapterEnabled(adapter.id),
-                            schema: adapter.getConfigSchema(),
-                            config: {},
-                        },
+                        data: configData,
+                        envValues: {},
+                        requiredFields: schema
+                            .filter((field) => field.required)
+                            .map((field) => field.key),
+                        schema,
+                        supportsTest: false,
                     }),
                 );
                 return true;

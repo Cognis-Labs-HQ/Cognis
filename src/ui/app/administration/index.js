@@ -846,9 +846,14 @@ function renderGenericAdapterForm(
 
     const authFieldNames = new Set(["user", "password"]);
 
+    const selectFieldKeys = fieldKeys.filter(
+        (name) => descriptors[name]?.schemaType === "select",
+    );
+
     const textFieldKeys = fieldKeys.filter((name) => {
         if (name === "secure") return false;
         if (name === "authDisabled") return false;
+        if (descriptors[name]?.schemaType === "select") return false;
         const rawValue = descriptors[name]?.effectiveValue;
         return !(
             rawValue === true ||
@@ -861,6 +866,7 @@ function renderGenericAdapterForm(
     const boolFieldKeys = fieldKeys.filter((name) => {
         if (name === "secure") return false;
         if (authFieldNames.has(name)) return false;
+        if (descriptors[name]?.schemaType === "select") return false;
         const rawValue = descriptors[name]?.effectiveValue;
         return (
             rawValue === true ||
@@ -877,6 +883,28 @@ function renderGenericAdapterForm(
     const nonAuthTextFieldKeys = textFieldKeys.filter(
         (name) => !authFieldNames.has(name),
     );
+
+    const selectFieldsHtml = selectFieldKeys
+        .map((name) => {
+            const descriptor = descriptors[name];
+            const val = descriptor?.effectiveValue ?? "";
+            const options = Array.isArray(descriptor?.schemaOptions)
+                ? descriptor.schemaOptions
+                : [];
+            const label = descriptor?.schemaLabel ?? fieldNameToLabel(name);
+            const optionsHtml = options
+                .map(
+                    (option) =>
+                        `<option value="${escapeHtml(String(option))}"${val === String(option) ? " selected" : ""}>${escapeHtml(String(option))}</option>`,
+                )
+                .join("");
+            return fieldLabel(
+                name,
+                label,
+                `<select name="${escapeHtml(name)}" class="theme-select">${optionsHtml}</select>`,
+            );
+        })
+        .join("");
 
     const secureFieldHtml = hasSecure
         ? (() => {
@@ -963,6 +991,7 @@ function renderGenericAdapterForm(
         </label>
       </div>
       <div class="provider-fields">
+        ${selectFieldsHtml}
         ${secureFieldHtml}
         ${nonAuthFieldsHtml}
       </div>
@@ -1008,11 +1037,13 @@ async function openAdapterConfig(
         ? payload.requiredFields
         : [];
     const supportsTest = payload.supportsTest === true;
+    const schemaFields = Array.isArray(payload.schema) ? payload.schema : [];
 
     const fieldNames = new Set([
         ...Object.keys(dbData),
         ...Object.keys(envData),
         ...requiredFields,
+        ...schemaFields.map((field) => field.key),
     ]);
     const descriptors = {};
     for (const field of fieldNames) {
@@ -1034,6 +1065,7 @@ async function openAdapterConfig(
             effectiveValue = undefined;
             source = "none";
         }
+        const schemaEntry = schemaFields.find((entry) => entry.key === field);
         descriptors[field] = {
             dbValue,
             envValue,
@@ -1044,6 +1076,9 @@ async function openAdapterConfig(
                 envValue !== undefined &&
                 dbValue !== envValue,
             required: requiredFields.includes(field),
+            schemaType: schemaEntry?.type ?? null,
+            schemaLabel: schemaEntry?.label ?? null,
+            schemaOptions: schemaEntry?.options ?? null,
         };
     }
 

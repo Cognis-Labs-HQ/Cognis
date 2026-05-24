@@ -45,6 +45,8 @@
   <string name="gateway.auth.security.tfa_manual_secret">Manuelles Geheimnis</string>
   <string name="gateway.auth.security.tfa_qr_code_alt">QR-Code Für Die TOTP-Einrichtung</string>
   <string name="gateway.auth.security.tfa_required_title">Zwei-Faktor-Einrichtung Erforderlich</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_hint">Verwenden Sie Wiederherstellungscodes, um auf Ihr Konto zuzugreifen, wenn Ihre konfigurierten Zwei-Faktor-Methoden nicht verfügbar sind.</string>
+  <string name="gateway.auth.security.tfa_method_deactivated">Die TFA-Methode „{method}" ist nicht mehr aktiv.</string>
   <string name="gateway.auth.security.tfa_required_prompt">Wählen Sie eine Methode aus, die Sie vor dem Fortfahren konfigurieren möchten.</string>
   <string name="gateway.auth.security.tfa_totp_prompt">Scannen Sie den QR-Code in Ihrer Authenticator-App und geben Sie danach einen 6-stelligen Code ein, um die Einrichtung zu bestätigen.</string>
 </resources>

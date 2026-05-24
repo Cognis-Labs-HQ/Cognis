@@ -6,9 +6,10 @@ import type { DbTfaStore } from "./reuse/tfa-store.js";
 export interface TfaConfigField {
     key: string;
     label: string;
-    type: "text" | "password" | "number" | "boolean";
+    type: "text" | "password" | "number" | "boolean" | "select";
     required: boolean;
     envVar?: string;
+    options?: string[];
 }
 
 export interface TfaMethodSetupView {
@@ -149,6 +150,15 @@ export class CoreTfaGateway {
                 this.enabledAdapters.delete(entry.adapterId);
             }
         }
+    }
+
+    async getAdapterConfig(
+        adapterId: string,
+    ): Promise<Record<string, unknown>> {
+        const configs = await this.store.listAdapterConfigs();
+        return (
+            configs.find((entry) => entry.adapterId === adapterId)?.config ?? {}
+        );
     }
 
     async saveAdapterConfig(

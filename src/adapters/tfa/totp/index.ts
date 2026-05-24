@@ -6,6 +6,8 @@ import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 const TOTP_DIGITS: number = 6;
 // RFC 6238 default step window used by common authenticator clients.
 const TOTP_PERIOD_SECONDS: number = 30;
+const TOTP_ALGORITHMS = ["SHA1", "SHA256", "SHA512"] as const;
+type TotpAlgorithm = (typeof TOTP_ALGORITHMS)[number];
 
 function base32Encode(input: Buffer): string {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -50,12 +52,25 @@ function base32Decode(input: string): Buffer {
     return Buffer.from(bytes);
 }
 
-function generateTotp(secret: string, now = Date.now()): string {
+function parseAlgorithm(value: string): TotpAlgorithm {
+    const normalized = String(value ?? "")
+        .trim()
+        .toUpperCase();
+    return (TOTP_ALGORITHMS as ReadonlyArray<string>).includes(normalized)
+        ? (normalized as TotpAlgorithm)
+        : "SHA1";
+}
+
+function generateTotp(
+    secret: string,
+    algorithm: TotpAlgorithm,
+    now = Date.now(),
+): string {
     const counter = Math.floor(now / 1000 / TOTP_PERIOD_SECONDS);
     const counterBuffer = Buffer.alloc(8);
     counterBuffer.writeUInt32BE(Math.floor(counter / 2 ** 32), 0);
     counterBuffer.writeUInt32BE(counter % 2 ** 32, 4);
-    const hmac = createHmac("sha1", base32Decode(secret))
+    const hmac = createHmac(algorithm.toLowerCase(), base32Decode(secret))
         .update(counterBuffer)
         .digest();
     const offset = hmac[hmac.length - 1] & 0x0f;
@@ -68,13 +83,18 @@ function generateTotp(secret: string, now = Date.now()): string {
     return token.toString().padStart(TOTP_DIGITS, "0");
 }
 
-function verifyTotp(secret: string, code: string, now = Date.now()): boolean {
+function verifyTotp(
+    secret: string,
+    algorithm: TotpAlgorithm,
+    code: string,
+    now = Date.now(),
+): boolean {
     const normalizedCode = String(code ?? "").trim();
     if (!/^\d{6}$/.test(normalizedCode)) return false;
     const windows = [-1, 0, 1];
     return windows.some((windowOffset) => {
         const comparedTime = now + windowOffset * TOTP_PERIOD_SECONDS * 1000;
-        return generateTotp(secret, comparedTime) === normalizedCode;
+        return generateTotp(secret, algorithm, comparedTime) === normalizedCode;
     });
 }
 
@@ -82,16 +102,19 @@ function toOtpAuthUri(input: {
     issuer: string;
     accountId: string;
     secret: string;
+    algorithm: TotpAlgorithm;
 }): string {
     const label = encodeURIComponent(`${input.issuer}:${input.accountId}`);
     const issuer = encodeURIComponent(input.issuer);
     const secret = encodeURIComponent(input.secret);
-    return `otpauth://totp/${label}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=${TOTP_DIGITS}&period=${TOTP_PERIOD_SECONDS}`;
+    return `otpauth://totp/${label}?secret=${secret}&issuer=${issuer}&algorithm=${encodeURIComponent(input.algorithm)}&digits=${TOTP_DIGITS}&period=${TOTP_PERIOD_SECONDS}`;
 }
 
 class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
     readonly name = "Authenticator App (TOTP)";
+
+    private algorithm: TotpAlgorithm = "SHA1";
 
     private async buildSetupDetails(input: {
         accountId: string;
@@ -102,6 +125,7 @@ class TotpAdapter implements TfaMethodAdapter {
             issuer: input.issuer,
             accountId: input.accountId,
             secret: input.secret,
+            algorithm: this.algorithm,
         });
         const qrSvg = await toString(otpAuthUri, {
             type: "svg",
@@ -176,7 +200,7 @@ class TotpAdapter implements TfaMethodAdapter {
                 message: "code_required",
             });
         }
-        const verified = verifyTotp(secret, code);
+        const verified = verifyTotp(secret, this.algorithm, code);
         if (!verified) {
             return Promise.resolve({
                 verified: false,
@@ -187,7 +211,7 @@ class TotpAdapter implements TfaMethodAdapter {
             verified: true,
             state: {
                 secret,
-                algorithm: "SHA1",
+                algorithm: this.algorithm,
                 digits: TOTP_DIGITS,
                 period: TOTP_PERIOD_SECONDS,
             },
@@ -207,7 +231,10 @@ class TotpAdapter implements TfaMethodAdapter {
                 message: "code_required",
             });
         }
-        const verified = verifyTotp(secret, code);
+        const algorithm = parseAlgorithm(
+            String(input.state.algorithm ?? "SHA1"),
+        );
+        const verified = verifyTotp(secret, algorithm, code);
         if (!verified) {
             return Promise.resolve({
                 verified: false,
@@ -235,11 +262,19 @@ class TotpAdapter implements TfaMethodAdapter {
     }
 
     getConfigSchema() {
-        return [];
+        return [
+            {
+                key: "algorithm",
+                label: "HMAC Algorithm",
+                type: "select" as const,
+                required: false,
+                options: [...TOTP_ALGORITHMS],
+            },
+        ];
     }
 
-    configure(): void {
-        // TOTP adapter has no configurable runtime fields.
+    configure(config: Record<string, unknown>): void {
+        this.algorithm = parseAlgorithm(String(config.algorithm ?? ""));
     }
 }
 

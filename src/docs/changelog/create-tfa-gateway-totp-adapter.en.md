@@ -11,3 +11,27 @@ Added a `totp` adapter under `src/adapters/tfa/totp` with setup verification and
 ## Integrate Login and Security
 
 Updated login and security flows for two-factor prompts, enforced setup redirects, Administration security enforcement toggles, and user-level TFA reset actions.
+
+## TOTP Algorithm Dropdown
+
+The TOTP adapter admin config popup now shows an HMAC Algorithm dropdown (SHA1, SHA256, SHA512) instead of exposing uneditable metadata. The selected algorithm is used when generating QR codes and verifying codes.
+
+## TFA Methods Table Layout
+
+The Available and Preferred Two-Factor Methods panels now use the table-based drag-and-drop layout matching Language Preferences, fixing the empty-state width issue and drop-zone rendering.
+
+## Deferred TFA Method Changes
+
+Dragging methods between Available and Preferred now stages changes locally; setup popups and API calls are deferred until the user saves settings.
+
+## Recovery Codes Tooltip
+
+A tooltip next to the Recovery Codes heading explains that recovery codes are for accessing your account when configured methods are unavailable.
+
+## Deactivated Method Warning Toast
+
+Moving a TFA method from Preferred to Available now shows a warning toast with the method name instead of a generic success message. The tick (✓) now only appears on methods in the Preferred table.
+
+## Enforcement Popup Spacing Fix
+
+Corrected spacing between the instruction text and the method dropdown in the mandatory TFA setup popup.
