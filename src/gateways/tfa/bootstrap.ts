@@ -61,7 +61,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         required: false,
         hasAdapters: true,
     });
-    const gatewayUiDir = path.resolve(process.cwd(), "src", "gateways", "tfa", "ui");
+    const gatewayUiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "tfa",
+        "ui",
+    );
     ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
     const adapterDirs = await readdir(tfaAdaptersRoot, {
         withFileTypes: true,

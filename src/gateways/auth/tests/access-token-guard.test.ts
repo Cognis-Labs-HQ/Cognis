@@ -61,6 +61,7 @@ test("token store persists tokens to disk across module reload", async () => {
             sub: "persisted-user",
             role: "user",
             providerId: "local",
+            tfaSetupPending: false,
         });
     } finally {
         delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
@@ -81,6 +82,7 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         sub: "subject-b",
         role: "user",
         providerId: "local",
+        tfaSetupPending: false,
     });
 });
 

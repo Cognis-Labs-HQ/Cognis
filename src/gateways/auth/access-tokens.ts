@@ -106,8 +106,9 @@ function loadTokenStore(now = Date.now()) {
                     .providerId;
                 const expiresAt = (record as { expiresAt?: unknown }).expiresAt;
                 const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
-                const tfaSetupPending = (record as { tfaSetupPending?: unknown })
-                    .tfaSetupPending;
+                const tfaSetupPending = (
+                    record as { tfaSetupPending?: unknown }
+                ).tfaSetupPending;
 
                 if (typeof subject !== "string" || !isAccessRole(role))
                     continue;
@@ -218,9 +219,7 @@ export function lookupAccessToken(token: string): {
     };
 }
 
-export function verifyAccessToken(
-    token: string,
-): {
+export function verifyAccessToken(token: string): {
     sub: string;
     role: AccessRole;
     providerId: string;

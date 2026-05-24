@@ -1,5 +1,9 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
-import { applyDocumentTitle, createI18n, extendI18n } from "../../reuse/i18n.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    extendI18n,
+} from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -14,9 +18,7 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
-import {
-    persistRecoveryCodeUsageNotice,
-} from "../../../gateways/tfa/ui/reuse/recovery-code-notice.js";
+import { persistRecoveryCodeUsageNotice } from "../../../gateways/tfa/ui/reuse/recovery-code-notice.js";
 import { switchToTfaPrompt } from "../../../gateways/tfa/ui/login-flow.js";
 
 /**
@@ -516,11 +518,11 @@ export async function mount(root) {
                                 .catch(() => null);
                             if (response.ok && body?.data) {
                                 if (body.data.tfaRequired === true) {
-                                currentTfaLoginAttemptId =
-                                    switchToTfaPrompt(i18n, body.data) ??
-                                    null;
-                                return;
-                            }
+                                    currentTfaLoginAttemptId =
+                                        switchToTfaPrompt(i18n, body.data) ??
+                                        null;
+                                    return;
+                                }
                                 persistSession(body.data);
                                 const requiresUserValidation =
                                     body.data.requiredUserValidation === true &&
