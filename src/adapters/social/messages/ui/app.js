@@ -51,6 +51,13 @@ const readReceiptHoverPopup = createAnchoredPopup({
     className: "messages-read-receipt-popup",
 });
 
+const STATUS_ICON_BOX_PATH =
+    "M829.44 911.36c45.245 0 81.92-36.675 81.92-81.92V194.56c0-45.245-36.675-81.92-81.92-81.92H194.56c-45.245 0-81.92 36.675-81.92 81.92v634.88c0 45.245 36.675 81.92 81.92 81.92h634.88zm0 40.96H194.56c-67.866 0-122.88-55.014-122.88-122.88V194.56c0-67.866 55.014-122.88 122.88-122.88h634.88c67.866 0 122.88 55.014 122.88 122.88v634.88c0 67.866-55.014 122.88-122.88 122.88z";
+const STATUS_ICON_UNKNOWN_PATHS =
+    "M378.88 375.014c0-73.517 59.603-133.12 133.12-133.12s133.12 59.603 133.12 133.12-59.603 133.12-133.12 133.12c-11.311 0-20.48 9.169-20.48 20.48s9.169 20.48 20.48 20.48c96.139 0 174.08-77.941 174.08-174.08S608.139 200.934 512 200.934c-96.139 0-174.08 77.941-174.08 174.08 0 11.311 9.169 20.48 20.48 20.48s20.48-9.169 20.48-20.48z M491.276 532.509v122.88c0 11.311 9.169 20.48 20.48 20.48s20.48-9.169 20.48-20.48v-122.88c0-11.311-9.169-20.48-20.48-20.48s-20.48 9.169-20.48 20.48zm64.79 249.597c0 22.62-18.34 40.96-40.96 40.96s-40.96-18.34-40.96-40.96 18.34-40.96 40.96-40.96 40.96 18.34 40.96 40.96z";
+const STATUS_ICON_SENT_PATHS =
+    "M302.806 517.313l139.151 142.131c7.913 8.082 20.879 8.22 28.961.307s8.22-20.879.307-28.961L332.074 488.659c-7.913-8.082-20.879-8.22-28.961-.307s-8.22 20.879-.307 28.961z M471.222 659.447l280.689-286.72c7.912-8.082 7.775-21.049-.308-28.961s-21.049-7.775-28.961.308l-280.689 286.72c-7.912 8.082-7.775 21.049.308 28.961s21.049 7.775 28.961-.308z";
+
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
@@ -158,6 +165,10 @@ function resolveMessageStyle() {
     } catch {
         return normalizeMessageStyle(null);
     }
+}
+
+function formatHandleNotation(handle) {
+    return `{{${handle}}}`;
 }
 
 /**
@@ -680,11 +691,11 @@ function renderReactionRow(message, i18n) {
 }
 
 function statusUnknownSvgMarkup() {
-    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M829.44 911.36c45.245 0 81.92-36.675 81.92-81.92V194.56c0-45.245-36.675-81.92-81.92-81.92H194.56c-45.245 0-81.92 36.675-81.92 81.92v634.88c0 45.245 36.675 81.92 81.92 81.92h634.88zm0 40.96H194.56c-67.866 0-122.88-55.014-122.88-122.88V194.56c0-67.866 55.014-122.88 122.88-122.88h634.88c67.866 0 122.88 55.014 122.88 122.88v634.88c0 67.866-55.014 122.88-122.88 122.88z"/><path d="M378.88 375.014c0-73.517 59.603-133.12 133.12-133.12s133.12 59.603 133.12 133.12-59.603 133.12-133.12 133.12c-11.311 0-20.48 9.169-20.48 20.48s9.169 20.48 20.48 20.48c96.139 0 174.08-77.941 174.08-174.08S608.139 200.934 512 200.934c-96.139 0-174.08 77.941-174.08 174.08 0 11.311 9.169 20.48 20.48 20.48s20.48-9.169 20.48-20.48z"/><path d="M491.276 532.509v122.88c0 11.311 9.169 20.48 20.48 20.48s20.48-9.169 20.48-20.48v-122.88c0-11.311-9.169-20.48-20.48-20.48s-20.48 9.169-20.48 20.48zm64.79 249.597c0 22.62-18.34 40.96-40.96 40.96s-40.96-18.34-40.96-40.96 18.34-40.96 40.96-40.96 40.96 18.34 40.96 40.96z"/></svg>`;
+    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="${STATUS_ICON_BOX_PATH}"/><path d="${STATUS_ICON_UNKNOWN_PATHS}"/></svg>`;
 }
 
 function statusSentSvgMarkup() {
-    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M829.44 911.36c45.245 0 81.92-36.675 81.92-81.92V194.56c0-45.245-36.675-81.92-81.92-81.92H194.56c-45.245 0-81.92 36.675-81.92 81.92v634.88c0 45.245 36.675 81.92 81.92 81.92h634.88zm0 40.96H194.56c-67.866 0-122.88-55.014-122.88-122.88V194.56c0-67.866 55.014-122.88 122.88-122.88h634.88c67.866 0 122.88 55.014 122.88 122.88v634.88c0 67.866-55.014 122.88-122.88 122.88z"/><path d="M302.806 517.313l139.151 142.131c7.913 8.082 20.879 8.22 28.961.307s8.22-20.879.307-28.961L332.074 488.659c-7.913-8.082-20.879-8.22-28.961-.307s-8.22 20.879-.307 28.961z"/><path d="M471.222 659.447l280.689-286.72c7.912-8.082 7.775-21.049-.308-28.961s-21.049-7.775-28.961.308l-280.689 286.72c-7.912 8.082-7.775 21.049.308 28.961s21.049 7.775 28.961-.308z"/></svg>`;
+    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="${STATUS_ICON_BOX_PATH}"/><path d="${STATUS_ICON_SENT_PATHS}"/></svg>`;
 }
 
 function hideReactionHoverPopup() {
@@ -975,7 +986,7 @@ async function renderThread(
             const handle = msg.senderHandle || "";
             const senderDisplaySpan = `<span class="messages-message-sender">${escapeHtml(displayName)}</span>`;
             const senderHandleSpan = handle
-                ? `<span class="messages-message-handle">${escapeHtml(`{{${handle}}}`)}</span>`
+                ? `<span class="messages-message-handle">${escapeHtml(formatHandleNotation(handle))}</span>`
                 : "";
             const senderLabel = isOwn
                 ? senderHandleSpan
@@ -1845,9 +1856,7 @@ export async function mount(root, { signal } = {}) {
                     "messages-thread-list",
                 );
                 const form = document.getElementById("messages-composer");
-                const reactionHoverEventOptions = signal
-                    ? { signal }
-                    : undefined;
+                const passiveEventOptions = signal ? { signal } : undefined;
 
                 threadList?.addEventListener(
                     "click",
@@ -1911,7 +1920,7 @@ export async function mount(root, { signal } = {}) {
                             beforeTime,
                         );
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1936,7 +1945,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         showReactionHoverPopup(reactionChipButton);
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1961,7 +1970,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         hideReactionHoverPopup();
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1979,7 +1988,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         showReactionHoverPopup(reactionChipButton);
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -2004,13 +2013,13 @@ export async function mount(root, { signal } = {}) {
                         }
                         hideReactionHoverPopup();
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
                     "scroll",
                     hideReactionHoverPopup,
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
                 window.addEventListener(
                     "resize",
@@ -2048,7 +2057,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         showReadReceiptHoverPopup(statusElement, readers, i18n);
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -2069,13 +2078,13 @@ export async function mount(root, { signal } = {}) {
                         }
                         hideReadReceiptHoverPopup();
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
                     "scroll",
                     hideReadReceiptHoverPopup,
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 form?.addEventListener("submit", async (event) => {
