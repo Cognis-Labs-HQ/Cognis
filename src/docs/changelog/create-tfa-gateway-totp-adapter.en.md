@@ -35,3 +35,7 @@ Moving a TFA method from Preferred to Available now shows a warning toast with t
 ## Enforcement Popup Spacing Fix
 
 Corrected spacing between the instruction text and the method dropdown in the mandatory TFA setup popup.
+
+## Review Follow-Up Refinements
+
+Set SHA256 as the default TOTP algorithm, shortened the user-facing TOTP adapter name, expanded TFA and TOTP component documentation, moved QR SVG object-URL creation into `src/ui/reuse/qr-image-source.js`, and updated Security settings script registration to `/static/gateways/auth/security-prefs/index.js`.

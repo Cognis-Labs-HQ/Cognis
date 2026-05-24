@@ -35,3 +35,7 @@ TFA 方式を「優先」から「利用可能」に移動すると、方式名�
 ## 強制セットアップダイアログの余白修正
 
 必須 TFA セットアップポップアップの説明文と方式ドロップダウンの間の余白が修正されました。
+
+## レビュー反映の追加調整
+
+TOTP の既定アルゴリズムを SHA256 に変更し、ユーザー向け TOTP アダプター名を短縮し、TFA/TOTP ドキュメントを拡充しました。さらに、QR SVG の object URL 生成を `src/ui/reuse/qr-image-source.js` へ移動し、Security 設定スクリプト登録先を `/static/gateways/auth/security-prefs/index.js` に更新しました。

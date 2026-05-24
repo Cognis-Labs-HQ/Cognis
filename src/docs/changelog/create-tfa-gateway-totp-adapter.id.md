@@ -35,3 +35,7 @@ Memindahkan metode TFA dari Pilihan ke Tersedia kini menampilkan toast peringata
 ## Perbaikan Jarak Popup Setup Wajib
 
 Jarak antara teks petunjuk dan dropdown metode pada popup setup TFA wajib telah diperbaiki.
+
+## Penyempurnaan Lanjutan Review
+
+SHA256 kini menjadi algoritma default TOTP, nama adaptor TOTP untuk pengguna dipersingkat, dokumentasi komponen TFA/TOTP diperluas, pembuatan object URL QR SVG dipindahkan ke `src/ui/reuse/qr-image-source.js`, dan registrasi skrip pengaturan Security diperbarui ke `/static/gateways/auth/security-prefs/index.js`.

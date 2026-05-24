@@ -366,7 +366,7 @@ test("auth gateway bootstrap registers security section without redundant authen
     );
     assert.equal(
         settingsSecuritySection?.scriptUrl,
-        "/static/gateways/auth/security-prefs.js",
+        "/static/gateways/auth/security-prefs/index.js",
     );
 
     const staticDir = uiRegistry.getStaticDir("auth");

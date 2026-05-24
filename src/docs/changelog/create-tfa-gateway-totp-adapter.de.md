@@ -35,3 +35,7 @@ Das Verschieben einer TFA-Methode von „Bevorzugt" nach „Verfügbar" zeigt je
 ## Erzwungener Setup-Dialog: Abstands-Korrektur
 
 Der Abstand zwischen Anweisungstext und Methoden-Dropdown im Pflicht-TFA-Setup-Dialog wurde korrigiert.
+
+## Nacharbeit aus dem Review
+
+SHA256 wurde als Standardalgorithmus für TOTP gesetzt, der benutzerseitige Anzeigename des TOTP-Adapters wurde verkürzt, die TFA/TOTP-Dokumentation wurde erweitert, die QR-SVG-Objekt-URL-Erzeugung wurde nach `src/ui/reuse/qr-image-source.js` verschoben und die Security-Skriptregistrierung auf `/static/gateways/auth/security-prefs/index.js` umgestellt.

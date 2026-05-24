@@ -4,6 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
+import { createQrImageSource } from "/static/reuse/qr-image-source.js";
 import { openPasswordResetPopup } from "/static/gateways/auth/security-prefs/password-reset.js";
 import {
     loadTfaStatus,
@@ -112,22 +113,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             resolveTranslatedMessage(normalizedMessage) ||
             i18n.t("gateway.auth.security.tfa_setup_failed")
         );
-    }
-
-    function createQrImageSource(qrSvg) {
-        if (typeof qrSvg !== "string" || !qrSvg.trim()) {
-            return { src: "", revoke: () => {} };
-        }
-        try {
-            const qrBlob = new Blob([qrSvg], { type: "image/svg+xml" });
-            const qrBlobUrl = URL.createObjectURL(qrBlob);
-            return {
-                src: qrBlobUrl,
-                revoke: () => URL.revokeObjectURL(qrBlobUrl),
-            };
-        } catch {
-            return { src: "", revoke: () => {} };
-        }
     }
 
     function makeEmptyMethodRow() {

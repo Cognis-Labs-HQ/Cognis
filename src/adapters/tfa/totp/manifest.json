@@ -1,5 +1,8 @@
 {
     "id": "totp",
     "name": "TOTP",
-    "version": "1.0.3"
+    "version": "1.0.4",
+    "gateway": "tfa",
+    "description": "Time-based one-time password adapter for authenticator-app verification.",
+    "publisher": "Cognis Labs"
 }

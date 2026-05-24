@@ -58,7 +58,7 @@ function parseAlgorithm(value: string): TotpAlgorithm {
         .toUpperCase();
     return (TOTP_ALGORITHMS as ReadonlyArray<string>).includes(normalized)
         ? (normalized as TotpAlgorithm)
-        : "SHA1";
+        : "SHA256";
 }
 
 function generateTotp(
@@ -112,9 +112,9 @@ function toOtpAuthUri(input: {
 
 class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
-    readonly name = "Authenticator App (TOTP)";
+    readonly name = "Authenticator App";
 
-    private algorithm: TotpAlgorithm = "SHA1";
+    private algorithm: TotpAlgorithm = "SHA256";
 
     private async buildSetupDetails(input: {
         accountId: string;
@@ -232,7 +232,7 @@ class TotpAdapter implements TfaMethodAdapter {
             });
         }
         const algorithm = parseAlgorithm(
-            String(input.state.algorithm ?? "SHA1"),
+            String(input.state.algorithm ?? "SHA256"),
         );
         const verified = verifyTotp(secret, algorithm, code);
         if (!verified) {
