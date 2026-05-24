@@ -56,6 +56,6 @@ Ein fehlender `extendI18n`-Import, der dazu führte, dass die Administrations-Se
 
 Die fehlenden Schlüssel `ui.app.users.reset_tfa` und `ui.app.users.tfa_reset_done` wurden in die zentralen UI-Sprachdateien aufgenommen, damit Aktionsmenü und Erfolgs-Toast auf der Benutzerseite korrekt lokalisiert angezeigt werden.
 
-## Login-E-Mail-Prompt Regression Korrigiert
+## Login-Regression Korrigiert
 
-Die verpflichtende E-Mail-Prüfung beim Login verwendet nun das Feld `primary` aus der E-Mail-API-Antwort (zuvor wurde das nicht vorhandene Feld `isPrimary` geprüft), sodass Nutzer mit bereits verifizierter primärer Adresse nicht mehr fälschlich zur erneuten Eingabe aufgefordert werden.
+Der Schritt zur erzwungenen E-Mail-Eingabe nach dem Login wurde aus dem Login-UI-Ablauf entfernt, damit erfolgreiche Anmeldungen nicht mehr unmittelbar von Aufrufen auf `/api/v1/users/:id/emails` abhängen, was bei neuen Konten zu Login-Regressionen führte.

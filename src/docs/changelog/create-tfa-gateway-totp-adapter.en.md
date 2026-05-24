@@ -56,6 +56,6 @@ Fixed a missing `extendI18n` import that caused the Administration page to fail 
 
 Added missing `ui.app.users.reset_tfa` and `ui.app.users.tfa_reset_done` keys to the core UI locale bundles so the Users page action menu and reset-success toast render localized labels.
 
-## Login Email Prompt Regression Fixed
+## Login Regression Corrected
 
-Corrected the login required-email check to use the `primary` field returned by the emails API (previously used the non-existent `isPrimary` field), preventing users with an already verified primary email from being incorrectly prompted to add one after login.
+Removed the post-login required-email enforcement step from the login UI flow so successful sign-ins no longer depend on immediate `/api/v1/users/:id/emails` calls, which was causing new-user login regressions.

@@ -1,8 +1,6 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
-import { apiFetch } from "../../reuse/api-client.js";
-import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 import {
@@ -143,152 +141,6 @@ export async function mount(root) {
             }
         } catch {
             // Login methods unavailable — form works with local auth by default
-        }
-    }
-
-    async function loadUserEmails(accountId) {
-        const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
-        );
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
-    }
-
-    async function promptRequiredEmailAddress() {
-        let inputEl = null;
-        const action = await openPopup({
-            title: i18n.t("ui.app.settings.emails_add"),
-            body: () => `
-      <label class="stack">
-        <span>${i18n.t("ui.reuse.invite_email")}</span>
-        <input id="required-email-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
-      </label>
-    `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.reuse.confirm"),
-                    variant: "confirm",
-                },
-            ],
-            onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#required-email-input");
-            },
-        });
-        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
-            return null;
-        }
-        return inputEl.value.trim().toLowerCase();
-    }
-
-    async function promptVerificationCode(emailAddress) {
-        let inputEl = null;
-        const action = await openPopup({
-            title: i18n.t("ui.app.settings.emails_verify_title"),
-            body: `
-      <p>${escapeHtml(i18n.t("ui.app.settings.emails_verify_prompt").replace("{email}", emailAddress))}</p>
-      <label class="stack">
-        <span>${i18n.t("ui.app.settings.emails_verify_submit")}</span>
-        <input id="required-email-code-input" type="text" inputmode="numeric" maxlength="6" />
-      </label>
-    `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.settings.emails_verify_submit"),
-                    variant: "confirm",
-                },
-            ],
-            onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#required-email-code-input");
-            },
-        });
-        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
-            return null;
-        }
-        return inputEl.value.trim();
-    }
-
-    async function verifyRequiredEmailLoop(accountId, emailAddress) {
-        while (true) {
-            const code = await promptVerificationCode(emailAddress);
-            if (!code) continue;
-            const verifyResponse = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ code }),
-                },
-            );
-            if (verifyResponse.ok) return;
-            if (verifyResponse.status === 422) {
-                showToast(i18n.t("ui.app.settings.emails_verify_invalid"), {
-                    variant: "error",
-                });
-                continue;
-            }
-            showToast(i18n.t("ui.app.settings.emails_verify_failed"), {
-                variant: "error",
-            });
-        }
-    }
-
-    async function enforceRequiredEmailSetup(accountId) {
-        while (true) {
-            const emails = await loadUserEmails(accountId);
-            const hasVerifiedPrimary = emails.some(
-                (entry) => entry.primary && entry.verified,
-            );
-            if (hasVerifiedPrimary) return;
-
-            const emailAddress = await promptRequiredEmailAddress();
-            if (!emailAddress) continue;
-
-            const addResponse = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ email: emailAddress }),
-                },
-            );
-            if (!addResponse.ok) {
-                let code = "add_failed";
-                try {
-                    const payload = await addResponse.json();
-                    code = String(payload?.error?.code ?? code);
-                } catch {
-                    // parse/network error while reading error JSON; keep default add_failed code
-                }
-                if (code === "email_taken") {
-                    showToast(i18n.t("ui.app.settings.emails_email_taken"), {
-                        variant: "error",
-                    });
-                } else if (code === "rate_limited") {
-                    showToast(
-                        i18n.t("ui.app.settings.emails_verify_rate_limited"),
-                        {
-                            variant: "error",
-                        },
-                    );
-                } else if (code === "smtp_unavailable") {
-                    showToast(
-                        i18n.t("ui.app.settings.emails_verify_unavailable"),
-                        {
-                            variant: "error",
-                        },
-                    );
-                } else {
-                    showToast(i18n.t("ui.app.settings.emails_add_failed"), {
-                        variant: "error",
-                    });
-                }
-                continue;
-            }
-
-            await verifyRequiredEmailLoop(accountId, emailAddress);
         }
     }
 
@@ -439,16 +291,6 @@ export async function mount(root) {
                                     .catch(() => null);
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     persistSession(tfaBody.data);
-                                    const requiresUserValidation =
-                                        tfaBody.data.requiredUserValidation ===
-                                            true &&
-                                        tfaBody.data.userValidationMode ===
-                                            "smtp";
-                                    if (requiresUserValidation) {
-                                        await enforceRequiredEmailSetup(
-                                            tfaBody.data.accountId,
-                                        );
-                                    }
                                     await syncTimezoneOnLogin(
                                         tfaBody.data.accountId,
                                     );
@@ -495,14 +337,6 @@ export async function mount(root) {
                                     return;
                                 }
                                 persistSession(body.data);
-                                const requiresUserValidation =
-                                    body.data.requiredUserValidation === true &&
-                                    body.data.userValidationMode === "smtp";
-                                if (requiresUserValidation) {
-                                    await enforceRequiredEmailSetup(
-                                        body.data.accountId,
-                                    );
-                                }
                                 await syncTimezoneOnLogin(body.data.accountId);
                                 window.location.href = "/dashboard";
                                 return;

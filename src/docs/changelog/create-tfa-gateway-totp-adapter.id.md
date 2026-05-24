@@ -56,6 +56,6 @@ Memperbaiki import `extendI18n` yang hilang sehingga menyebabkan halaman Adminis
 
 Menambahkan kunci `ui.app.users.reset_tfa` dan `ui.app.users.tfa_reset_done` yang hilang ke berkas bahasa UI inti agar label menu aksi dan toast sukses reset pada halaman Pengguna tampil terlokalisasi.
 
-## Regresi Prompt Email Login Diperbaiki
+## Regresi Login Diperbaiki
 
-Pemeriksaan email wajib saat login kini menggunakan kolom `primary` dari respons API email (sebelumnya menggunakan kolom `isPrimary` yang tidak ada), sehingga pengguna yang sudah memiliki email utama terverifikasi tidak lagi diminta menambahkan email saat masuk.
+Langkah pemaksaan email setelah login dihapus dari alur UI login agar login yang berhasil tidak lagi bergantung pada pemanggilan langsung ke `/api/v1/users/:id/emails`, yang sebelumnya memicu regresi login pada akun baru.
