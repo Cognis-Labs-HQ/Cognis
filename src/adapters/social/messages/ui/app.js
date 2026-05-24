@@ -540,7 +540,7 @@ function renderMessageStatus(
     currentAccountId,
     isDelivered,
     readersHere,
-    hasHistoricalReaders,
+    hadPriorReaders,
     i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
@@ -574,7 +574,7 @@ function renderMessageStatus(
             .join("");
         return `<span class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</span>`;
     }
-    if (hasHistoricalReaders) {
+    if (hadPriorReaders) {
         return "";
     }
     if (!isDelivered) {
@@ -627,7 +627,7 @@ function formatRoomEventText(message, i18n) {
     return null;
 }
 
-function renderReactionRows(message, i18n, { isOwn = false } = {}) {
+function renderReactionRows(message, i18n, isOwn = false) {
     if (!message?.id) {
         return {
             pickerRow: "",
@@ -853,6 +853,13 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
     );
 }
 
+/**
+ * Parses a payload that may be URI-encoded JSON or raw JSON and returns an
+ * array shape for safe downstream rendering.
+ *
+ * @param {unknown} rawPayload
+ * @returns {Array<unknown>}
+ */
 function parseEncodedPayload(rawPayload) {
     const normalizedRawPayload = String(rawPayload ?? "[]");
     const parseCandidates = [normalizedRawPayload];
@@ -1093,6 +1100,7 @@ async function renderThread(
             const readers = Array.isArray(msg.readBy) ? msg.readBy : [];
             const deliveredCount = Number(msg.deliveredToCount ?? 0);
             const isDelivered = deliveredCount > 0 || readers.length > 0;
+            const hadPriorReaders = readers.length > 0;
             const readersHere = isOwn
                 ? (readersAtMessage.get(msg.id) ?? []).filter(
                       (reader) => reader.accountId !== currentAccountId,
@@ -1103,7 +1111,7 @@ async function renderThread(
                 currentAccountId,
                 isDelivered,
                 readersHere,
-                readers.length > 0,
+                hadPriorReaders,
                 i18n,
             );
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
@@ -1118,7 +1126,7 @@ async function renderThread(
                 ? senderHandleSpan
                 : `${senderDisplaySpan}${senderHandleSpan}`;
             const bubbleAvatarMarkup = formatMessageBubbleAvatar(msg);
-            const reactionRows = renderReactionRows(msg, i18n, { isOwn });
+            const reactionRows = renderReactionRows(msg, i18n, isOwn);
             const metadataRow =
                 timeLabel || statusBlock
                     ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`

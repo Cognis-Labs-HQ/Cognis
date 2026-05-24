@@ -110,7 +110,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         ),
         "utf8",
     );
-    assert.match(appSource, /if \(hasHistoricalReaders\)\s*\{\s*return "";/);
+    assert.match(appSource, /if \(hadPriorReaders\)\s*\{\s*return "";/);
     assert.match(appSource, /data-reaction-details="1"/);
     assert.match(
         appSource,
