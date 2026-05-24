@@ -39,3 +39,11 @@ Di tata letak IRC, pengirim ditampilkan dalam format `{{handle}}` dengan kurung 
 ## Avatar pengirim pada gelembung ucapan
 
 Di mode gelembung ucapan, pesan sendiri menampilkan avatar pengirim yang semi-besar tumpang tindih di sudut kanan atas gelembung.
+
+## Luapan horizontal pesan sendiri diperbaiki
+
+Gelembung pesan sendiri kini menyesuaikan lebarnya dengan konten terlebar, baik teks pesan maupun baris metadata (stempel waktu + ikon status). Pesan singkat tidak lagi menyebabkan gulir horizontal.
+
+## Tata letak tinggi viewport tanpa gulir halaman
+
+Panel utas pesan kini mengisi penuh tinggi viewport dengan benar. Daftar pesan bergulir secara internal sementara area komposer tetap terpaku di bagian bawah. Tidak ada bilah gulir tingkat halaman yang muncul, dan navigasi ke halaman lain memulihkan perilaku gulir normal mereka.

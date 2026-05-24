@@ -39,3 +39,11 @@ Im IRC-Layout wird die Absenderkennung als `{{Handle}}` in doppelten geschweifte
 ## Sender-Avatar in Sprechblasen
 
 Im Sprechblasen-Modus zeigen eigene Nachrichten einen halbgroßen Avatar, der die obere rechte Ecke der Blase überlappt.
+
+## Horizontaler Überlauf bei eigenen Nachrichten behoben
+
+Eigene Nachrichtenblasen passen sich jetzt an den breiteren Inhalt aus Nachrichtentext oder Metadatenzeile (Zeitstempel + Statussymbol) an. Kurze Nachrichten verursachen keine horizontale Scrollleiste mehr.
+
+## Viewport-Höhen-Layout ohne Seiten-Scroll
+
+Das Nachrichten-Thread-Panel füllt die gesamte Viewport-Höhe korrekt aus. Die Nachrichtenliste scrollt intern, während der Kompositionsbereich unten fixiert bleibt. Es erscheint keine seitliche Scrollleiste, und das Navigieren zu anderen Seiten stellt ihr normales Scrollverhalten wieder her.

@@ -148,8 +148,20 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         /\.messages-message-status--read[\s\S]*flex-direction:\s*row;/,
     );
     assert.match(
-        sharedCssSource,
-        /\.messages-page[\s\S]*--messages-panel-max-height-offset-with-toolbar-desktop:\s*176px;[\s\S]*\.messages-page \.main-window--with-toolbar[\s\S]*max-height:\s*calc\(\s*100dvh - var\(--messages-panel-max-height-offset-with-toolbar-desktop\)\s*\);[\s\S]*overflow:\s*hidden;/,
+        messagesCssSource,
+        /\.messages-page\s*\{[^}]*height:\s*100dvh;/,
+    );
+    assert.match(
+        messagesCssSource,
+        /\.messages-page \.app-shell,[\s\S]{0,400}overflow:\s*hidden;/,
+    );
+    assert.match(
+        messagesCssSource,
+        /\.messages-page \.workspace\s*\{[^}]*flex:\s*1;/,
+    );
+    assert.match(
+        messagesCssSource,
+        /\.messages-page \.content-grid\s*\{[^}]*grid-template-rows:[^}]*minmax\(0,\s*1fr\)/,
     );
     assert.match(
         appSource,

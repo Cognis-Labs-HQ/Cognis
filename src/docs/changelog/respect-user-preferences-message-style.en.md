@@ -39,3 +39,16 @@ In IRC layout, sender identification now uses `{{handle}}` double-curly-brace no
 ## Speech bubble sender avatar
 
 In speech-bubbles mode, own messages display a semi-large avatar overlapping the top-right corner of the bubble.
+
+## Own-message x-overflow fixed
+
+Own-message bubbles now size to the widest of their text body and metadata row
+(timestamp + status badge), so short messages no longer cause a horizontal
+scrollbar in the thread panel.
+
+## Viewport-height layout without page scroll
+
+The messages thread panel fills the full viewport height correctly. The
+thread-list scrolls internally while the composer stays pinned at the bottom.
+No page-level scroll bar appears, and navigating to other pages restores their
+normal scrolling behaviour.

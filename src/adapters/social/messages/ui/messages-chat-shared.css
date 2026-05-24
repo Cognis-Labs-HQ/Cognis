@@ -1,26 +1,3 @@
-.messages-page {
-    --messages-panel-max-height-offset-with-toolbar-desktop: 176px;
-    --messages-panel-max-height-offset-with-toolbar-mobile: 130px;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.messages-page .main-window--with-toolbar {
-    max-height: calc(
-        100dvh - var(--messages-panel-max-height-offset-with-toolbar-desktop)
-    );
-    overflow: hidden;
-}
-
-@media (max-width: 900px) {
-    .messages-page .main-window--with-toolbar {
-        max-height: calc(
-            100dvh - var(--messages-panel-max-height-offset-with-toolbar-mobile)
-        );
-    }
-}
-
 .messages-message-wrap .messages-reactions-row,
 .jitsi-chat-message .messages-reactions-row {
     display: flex;
@@ -124,10 +101,6 @@
 
 .messages-message-row--own .messages-message-wrap {
     align-items: flex-end;
-}
-
-.messages-message--own .messages-message-meta {
-    width: 100%;
 }
 
 .messages-message-row--own .messages-reactions-available {
