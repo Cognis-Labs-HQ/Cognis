@@ -149,11 +149,11 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
     assert.match(
         sharedCssSource,
-        /\.messages-page \.main-window--with-toolbar[\s\S]*max-height:\s*calc\(100dvh - 176px\);[\s\S]*overflow:\s*hidden;/,
+        /\.messages-page[\s\S]*--messages-panel-max-height-offset-desktop:\s*176px;[\s\S]*\.messages-page \.main-window--with-toolbar[\s\S]*max-height:\s*calc\(\s*100dvh - var\(--messages-panel-max-height-offset-desktop\)\s*\);[\s\S]*overflow:\s*hidden;/,
     );
     assert.match(
         appSource,
-        /statusUnknownSvgMarkup[\s\S]*<circle cx="8" cy="8"/,
+        /function statusBadgeSvgMarkup\([\s\S]*<circle cx="8" cy="8"/,
     );
     assert.match(
         appSource,

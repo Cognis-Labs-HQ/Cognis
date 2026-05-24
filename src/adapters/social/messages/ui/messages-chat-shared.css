@@ -1,17 +1,21 @@
 .messages-page {
+    --messages-panel-max-height-offset-desktop: 176px;
+    --messages-panel-max-height-offset-mobile: 130px;
     height: 100%;
     min-height: 0;
     overflow: hidden;
 }
 
 .messages-page .main-window--with-toolbar {
-    max-height: calc(100dvh - 176px);
+    max-height: calc(100dvh - var(--messages-panel-max-height-offset-desktop));
     overflow: hidden;
 }
 
 @media (max-width: 900px) {
     .messages-page .main-window--with-toolbar {
-        max-height: calc(100dvh - 130px);
+        max-height: calc(
+            100dvh - var(--messages-panel-max-height-offset-mobile)
+        );
     }
 }
 
