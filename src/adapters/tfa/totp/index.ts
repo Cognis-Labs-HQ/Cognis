@@ -168,7 +168,7 @@ class TotpAdapter implements TfaMethodAdapter {
                 secret,
             },
             view: {
-                prompt: "gateway.auth.security.tfa_totp_prompt",
+                prompt: "adapter.tfa.totp.setup_prompt",
                 fields: [
                     {
                         key: "code",

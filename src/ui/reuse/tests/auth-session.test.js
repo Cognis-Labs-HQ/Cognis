@@ -131,7 +131,7 @@ test("ensureFullAccountSession returns true when authenticated and TFA setup not
                     },
                 };
             }
-            if (String(url).includes("/tfa/status")) {
+            if (String(url).includes("/auth/setup-status")) {
                 return {
                     ok: true,
                     status: 200,
@@ -166,7 +166,7 @@ test("ensureFullAccountSession redirects to /settings#security when TFA setup is
                     },
                 };
             }
-            if (String(url).includes("/tfa/status")) {
+            if (String(url).includes("/auth/setup-status")) {
                 return {
                     ok: true,
                     status: 200,
@@ -202,7 +202,7 @@ test("ensureFullAccountSession redirects to /settings#security when on another s
                     },
                 };
             }
-            if (String(url).includes("/tfa/status")) {
+            if (String(url).includes("/auth/setup-status")) {
                 return {
                     ok: true,
                     status: 200,
@@ -239,7 +239,7 @@ test("ensureFullAccountSession does not redirect when already on /settings#secur
                     },
                 };
             }
-            if (String(url).includes("/tfa/status")) {
+            if (String(url).includes("/auth/setup-status")) {
                 return {
                     ok: true,
                     status: 200,

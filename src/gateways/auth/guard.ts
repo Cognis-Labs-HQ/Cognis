@@ -11,6 +11,10 @@ export { hasMinRole, isRoleAllowed, isAccessRole };
 export type { RoleAccessPolicy };
 
 const pageScriptOriginsByOwner = new Map<string, Set<string>>();
+const limitedAuthPathAllowances = new Map<
+    string,
+    (path: string, accountId: string) => boolean
+>();
 
 function normalizePageResourceOrigin(
     rawOrigin: string | null | undefined,
@@ -70,6 +74,15 @@ export function registerPageScriptOrigin(
     return registeredOrigins[0] ?? null;
 }
 
+export function registerLimitedAuthPathAllowance(
+    ownerId: string,
+    predicate: (path: string, accountId: string) => boolean,
+): void {
+    const normalizedOwnerId = String(ownerId ?? "").trim();
+    if (!normalizedOwnerId) return;
+    limitedAuthPathAllowances.set(normalizedOwnerId, predicate);
+}
+
 interface AuthClaims {
     sub: string;
     role: AccessRole;
@@ -82,9 +95,9 @@ function isTfaSetupPendingPathAllowed(
     accountId: string,
 ): boolean {
     if (
-        path.startsWith("/api/v1/tfa/") ||
         path.startsWith("/api/v1/ui/") ||
-        path === "/api/v1/auth/password-change-capability"
+        path === "/api/v1/auth/password-change-capability" ||
+        path === "/api/v1/auth/setup-status"
     ) {
         return true;
     }
@@ -93,6 +106,15 @@ function isTfaSetupPendingPathAllowed(
         path === `/api/v1/users/${encodedAccountId}/info` ||
         path.startsWith(`/api/v1/users/${encodedAccountId}/preferences/`)
     );
+}
+
+function isRegisteredLimitedPathAllowed(path: string, accountId: string): boolean {
+    for (const predicate of limitedAuthPathAllowances.values()) {
+        if (predicate(path, accountId)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -116,7 +138,8 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     const requestPath = String(req.url ?? "").split("?")[0] || "/";
     if (
         access.tfaSetupPending &&
-        !isTfaSetupPendingPathAllowed(requestPath, access.sub)
+        !isTfaSetupPendingPathAllowed(requestPath, access.sub) &&
+        !isRegisteredLimitedPathAllowed(requestPath, access.sub)
     ) {
         return null;
     }

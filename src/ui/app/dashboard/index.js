@@ -2,11 +2,9 @@ import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
-    extendI18n,
 } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { showToast } from "../../reuse/toast.js";
 import {
     buildAnalogueClockMarkup,
     buildDigitalClockMarkup,
@@ -15,7 +13,6 @@ import {
 } from "../../reuse/clock-display.js";
 import { getRoleLabel } from "../../reuse/access-role.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
-import { renderRecoveryCodeUsageToasts } from "../../../gateways/tfa/ui/reuse/recovery-code-notice.js";
 
 async function loadAccountInfo(account) {
     if (!account) return null;
@@ -51,12 +48,8 @@ async function loadDashboardExtensions({ i18n, account, role }) {
 }
 
 export async function mount(root) {
-    const i18n = await extendI18n(
-        await createI18n(),
-        "/static/gateways/tfa/languages",
-    );
+    const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
-    renderRecoveryCodeUsageToasts({ i18n, showToast });
 
     const account = localStorage.getItem("cognis_account") ?? "";
     const displayName = localStorage.getItem("cognis_display_name") ?? account;

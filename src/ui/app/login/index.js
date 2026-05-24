@@ -2,7 +2,6 @@ import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import {
     applyDocumentTitle,
     createI18n,
-    extendI18n,
 } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { apiFetch } from "../../reuse/api-client.js";
@@ -18,8 +17,6 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
-import { persistRecoveryCodeUsageNotice } from "../../../gateways/tfa/ui/reuse/recovery-code-notice.js";
-import { switchToTfaPrompt } from "../../../gateways/tfa/ui/login-flow.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -28,12 +25,10 @@ import { switchToTfaPrompt } from "../../../gateways/tfa/ui/login-flow.js";
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
 export async function mount(root) {
-    const i18n = await extendI18n(await createI18n(), [
-        "/static/gateways/tfa/languages",
-        "/static/adapters/tfa/totp/languages",
-    ]);
+    const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
     let currentTfaLoginAttemptId = null;
+    let tfaLoginClientPromise = null;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -69,38 +64,13 @@ export async function mount(root) {
         });
     }
 
-    function resolveTranslatedMessage(key) {
-        if (typeof key !== "string" || !key.trim()) {
-            return null;
-        }
-        const translated = i18n.t(key);
-        if (translated && translated !== key) {
-            return translated;
-        }
-        return null;
+    async function loadTfaLoginClient() {
+    if (!tfaLoginClientPromise) {
+        tfaLoginClientPromise = import("/static/gateways/tfa/login-flow.js")
+            .then((mod) => mod.createTfaLoginClient({ baseI18n: i18n, root }))
+            .catch(() => null);
     }
-
-    function resolveTfaLoginErrorMessage(message) {
-        const normalizedMessage = String(message ?? "").trim();
-        const messageKeyByCode = {
-            invalid_totp_code: "ui.app.login.tfa.error_invalid",
-            invalid_recovery_code: "ui.app.login.tfa.error_invalid",
-            code_required: "ui.app.login.tfa.error_invalid",
-            recovery_code_required: "ui.app.login.tfa.error_invalid",
-            method_not_configured: "ui.app.login.tfa.error_invalid",
-            tfa_method_unavailable: "ui.app.login.tfa.error_invalid",
-        };
-        const mappedMessage = resolveTranslatedMessage(
-            messageKeyByCode[normalizedMessage],
-        );
-        if (mappedMessage) {
-            return mappedMessage;
-        }
-        return (
-            resolveTranslatedMessage(normalizedMessage) ||
-            i18n.t("ui.app.login.tfa.error_invalid")
-        );
-    }
+    return tfaLoginClientPromise;
 
     async function loadLoginMethods() {
         try {
@@ -380,11 +350,7 @@ export async function mount(root) {
             <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
           </label>
         </div>
-        <div id="login-tfa-fields" hidden>
-          <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
-          <input type="hidden" id="login-tfa-method" value="" />
-          <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${escapeHtml(i18n.t("ui.app.login.tfa.code_placeholder_totp"))}" aria-label="${escapeHtml(i18n.t("ui.app.login.tfa.code_placeholder_totp"))}" />
-        </div>
+        <div id="login-tfa-fields" hidden></div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
@@ -470,9 +436,6 @@ export async function mount(root) {
                                     .catch(() => null);
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     persistSession(tfaBody.data);
-                                    persistRecoveryCodeUsageNotice(
-                                        tfaBody.data,
-                                    );
                                     const requiresUserValidation =
                                         tfaBody.data.requiredUserValidation ===
                                             true &&
@@ -489,10 +452,12 @@ export async function mount(root) {
                                     window.location.href = "/dashboard";
                                     return;
                                 }
+                                const tfaLoginClient =
+                                    await loadTfaLoginClient();
                                 showToast(
-                                    resolveTfaLoginErrorMessage(
+                                    tfaLoginClient?.resolveErrorMessage(
                                         tfaBody?.error?.message,
-                                    ),
+                                    ) ?? i18n.t("ui.app.login.error.generic"),
                                     { variant: "error" },
                                 );
                                 return;
@@ -518,9 +483,12 @@ export async function mount(root) {
                                 .catch(() => null);
                             if (response.ok && body?.data) {
                                 if (body.data.tfaRequired === true) {
+                                    const tfaLoginClient =
+                                        await loadTfaLoginClient();
                                     currentTfaLoginAttemptId =
-                                        switchToTfaPrompt(i18n, body.data) ??
-                                        null;
+                                        tfaLoginClient?.switchToTfaPrompt(
+                                            body.data,
+                                        ) ?? null;
                                     return;
                                 }
                                 persistSession(body.data);

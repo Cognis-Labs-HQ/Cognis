@@ -70,7 +70,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
-    let originalEnforceTfaForAllUsers = false;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
 
     async function loadSettings() {
@@ -105,7 +104,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         registrationsEnabled,
         userValidationMode,
         requireTeacherManualApproval,
-        enforceTfaForAllUsers,
     ) {
         const response = await apiFetch("/api/v1/system/security", {
             method: "PUT",
@@ -115,7 +113,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
-                enforceTfaForAllUsers,
             }),
         });
         if (!response.ok) throw new Error("save_failed");
@@ -157,12 +154,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
-    function getEnforceTfaForAllUsersValue() {
-        const input = root.querySelector("#security-enforce-tfa-all-users");
-        if (!(input instanceof HTMLInputElement)) return false;
-        return input.checked;
-    }
-
     function getPasswordPolicyValue() {
         return Object.fromEntries(
             POLICY_FIELDS.map(({ key, id, min }) => {
@@ -197,15 +188,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         const teacherApprovalChanged =
             getTeacherManualApprovalValue() !== originalTeacherManualApproval;
-        const enforceTfaChanged =
-            getEnforceTfaForAllUsersValue() !== originalEnforceTfaForAllUsers;
-
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
                 registrationsChanged ||
                 teacherApprovalChanged ||
-                enforceTfaChanged ||
                 isPasswordPolicyChanged(),
         );
     }
@@ -222,7 +209,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
-        originalEnforceTfaForAllUsers = settings.enforceTfaForAllUsers === true;
         originalPasswordPolicy = normalizePasswordPolicy(
             passwordPolicy,
             originalPasswordPolicy,
@@ -238,9 +224,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const teacherApprovalToggle = root.querySelector(
             "#security-require-teacher-approval",
         );
-        const enforceTfaToggle = root.querySelector(
-            "#security-enforce-tfa-all-users",
-        );
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
         }
@@ -249,9 +232,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         }
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
-        }
-        if (enforceTfaToggle instanceof HTMLInputElement) {
-            enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
         }
         for (const { key, id } of POLICY_FIELDS) {
             const policyInput = root.querySelector(`#${id}`);
@@ -265,7 +245,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         validationSelect?.addEventListener("change", markDirtyState);
         registrationsToggle?.addEventListener("change", markDirtyState);
         teacherApprovalToggle?.addEventListener("change", markDirtyState);
-        enforceTfaToggle?.addEventListener("change", markDirtyState);
     }
 
     return {
@@ -286,7 +265,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
-            const enforceTfaForAllUsers = getEnforceTfaForAllUsersValue();
             const passwordPolicy = getPasswordPolicyValue();
 
             await persistSettings(
@@ -294,7 +272,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 registrationsEnabled,
                 validationMode,
                 requireTeacherManualApproval,
-                enforceTfaForAllUsers,
             );
             await persistPasswordPolicy(passwordPolicy);
             clearTrustedDomainsCache();
@@ -309,7 +286,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
-            originalEnforceTfaForAllUsers = enforceTfaForAllUsers;
             originalPasswordPolicy = passwordPolicy;
         },
 
@@ -330,18 +306,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const teacherApprovalToggle = root.querySelector(
                 "#security-require-teacher-approval",
             );
-            const enforceTfaToggle = root.querySelector(
-                "#security-enforce-tfa-all-users",
-            );
-
             if (registrationsToggle instanceof HTMLInputElement) {
                 registrationsToggle.checked = currentPublicRegistrationEnabled;
             }
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
-            }
-            if (enforceTfaToggle instanceof HTMLInputElement) {
-                enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
             }
             for (const { key, id } of POLICY_FIELDS) {
                 const policyInput = root.querySelector(`#${id}`);
@@ -402,18 +371,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             <div class="security-field-row">
               <label class="switch">
                 <input id="security-require-teacher-approval" type="checkbox" />
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-          <div class="components-section">
-            <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.tfa_enforce_all_users_hint"), tooltipAria)}
-            </h3>
-            <div class="security-field-row">
-              <label class="switch">
-                <input id="security-enforce-tfa-all-users" type="checkbox" />
                 <span class="slider"></span>
               </label>
             </div>

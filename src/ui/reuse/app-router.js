@@ -37,7 +37,6 @@
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
-import { readTfaSetupRequirement } from "../../gateways/tfa/ui/reuse/enforcement.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -53,7 +52,6 @@ const ROUTE_STYLE_BUNDLES = {
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",
         "/static/styles/settings.css",
-        "/static/gateways/tfa/settings.css",
     ],
     docs: [
         "/static/styles/page-builder.css",
@@ -70,9 +68,12 @@ const ROUTE_STYLE_BUNDLES = {
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
+const AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS = 5_000;
 let _studyChildComponentsPromise = null;
 let _studyChildComponentsCache = null;
 let _studyChildComponentsCacheExpiresAt = 0;
+let _authSetupRequirementExpiresAt = 0;
+let _authSetupRequired = false;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
@@ -82,6 +83,38 @@ function normalizeHash(path) {
     const hashIndex = String(path).indexOf("#");
     if (hashIndex < 0) return "";
     return String(path).slice(hashIndex).toLowerCase();
+}
+
+async function readAuthSetupRequirement() {
+    if (Date.now() < _authSetupRequirementExpiresAt) {
+        return _authSetupRequired;
+    }
+    const token = localStorage.getItem("cognis_access_token");
+    if (!token) {
+        _authSetupRequired = false;
+        _authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+        return false;
+    }
+    try {
+        const response = await apiFetch("/api/v1/auth/setup-status");
+        if (!response.ok) {
+            _authSetupRequired = false;
+            _authSetupRequirementExpiresAt =
+                Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+            return false;
+        }
+        const payload = await response.json().catch(() => null);
+        _authSetupRequired = payload?.data?.requiresSetup === true;
+        _authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+        return _authSetupRequired;
+    } catch {
+        _authSetupRequired = false;
+        _authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+        return false;
+    }
 }
 
 function isPotentialStudyChildPath(path) {
@@ -331,7 +364,7 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
-    const requiresTfaSetup = await readTfaSetupRequirement();
+    const requiresTfaSetup = await readAuthSetupRequirement();
     const isSecuritySettingsRoute =
         normalizePath(path) === "/settings" &&
         normalizeHash(path) === "#security";

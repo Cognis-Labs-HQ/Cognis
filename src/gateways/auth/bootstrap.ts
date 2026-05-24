@@ -193,11 +193,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "security",
         label: "Security",
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
-        stringsBaseUrl: [
-            "/static/gateways/auth/languages",
-            "/static/gateways/tfa/languages",
-            "/static/adapters/tfa/totp/languages",
-        ],
+        stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
     /**
@@ -248,7 +244,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             subject: string,
             role: AccessRole,
             ttlSeconds: number | null,
-            options?: { issuedAt?: number },
+            options?: {
+                issuedAt?: number;
+                providerId?: string;
+                tfaSetupPending?: boolean;
+            },
         ) => issueAccessToken(subject, role, ttlSeconds, options),
     );
     const routeContext: RouteContext = {
@@ -315,6 +315,47 @@ function createAuthGatewayRoutes(
     function clearPendingTfaLoginAttempt(loginAttemptId: string): void {
         pendingTfaLoginAttempts.delete(loginAttemptId);
     }
+
+    function getAccessTokenTtlSeconds(): number {
+        const parsedTtlSeconds = Number.parseInt(
+            process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
+            10,
+        );
+        return Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
+            ? parsedTtlSeconds
+            : 43200;
+    }
+
+    capabilities.contribute(
+        "auth:getAccessTokenTtlSeconds",
+        () => getAccessTokenTtlSeconds(),
+    );
+    capabilities.contribute(
+        "auth:buildAccessTokenCookie",
+        (
+            req: IncomingMessage,
+            rawToken: string,
+            ttlSeconds: number | null,
+        ) =>
+            buildAccessTokenCookie(
+                rawToken,
+                ttlSeconds,
+                shouldSetSecureCookie(req),
+            ),
+    );
+    capabilities.contribute(
+        "tfa:createPendingLoginAttempt",
+        (input: Omit<PendingTfaLoginAttempt, "id" | "expiresAt">) =>
+            createPendingTfaLoginAttempt(input),
+    );
+    capabilities.contribute(
+        "tfa:getPendingLoginAttempt",
+        (loginAttemptId: string) => getPendingTfaLoginAttempt(loginAttemptId),
+    );
+    capabilities.contribute(
+        "tfa:clearPendingLoginAttempt",
+        (loginAttemptId: string) => clearPendingTfaLoginAttempt(loginAttemptId),
+    );
 
     async function readSecuritySettings(): Promise<{
         registrationsEnabled: boolean;
@@ -888,136 +929,20 @@ function createAuthGatewayRoutes(
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/auth/login/tfa" &&
-            req.method === "POST"
-        ) {
-            const body = await readJson(req);
-            const loginAttemptId = String(body.loginAttemptId ?? "").trim();
-            const methodId = String(body.methodId ?? "").trim();
-            if (!loginAttemptId || !methodId) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "bad_request",
-                            message: "loginAttemptId and methodId are required",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const pendingAttempt = getPendingTfaLoginAttempt(loginAttemptId);
-            if (!pendingAttempt) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "tfa_attempt_expired",
-                            message: "TFA login attempt expired",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const verifyTfaLogin = capabilities.get<
-                (
-                    accountId: string,
-                    tfaMethodId: string,
-                    payload: Record<string, unknown>,
-                ) => Promise<{
-                    verified: boolean;
-                    message?: string;
-                    usedRecoveryCode?: boolean;
-                    recoveryCodesRemaining?: number;
-                }>
-            >("tfa:verifyLogin");
-            if (!verifyTfaLogin) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "tfa_unavailable",
-                            message: "Two-factor verification is unavailable",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const tfaResult = await verifyTfaLogin(
-                pendingAttempt.accountId,
-                methodId,
-                body,
-            ).catch(() => ({
-                verified: false,
-                message: "verification_failed",
-            }));
-            if (!tfaResult.verified) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code:
-                                tfaResult.message || "tfa_verification_failed",
-                            message:
-                                tfaResult.message ||
-                                "Two-factor verification failed",
-                        },
-                    }),
-                );
-                return true;
-            }
-            clearPendingTfaLoginAttempt(loginAttemptId);
-            const parsedTtlSeconds = Number.parseInt(
-                process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
-                10,
-            );
-            const accessTokenTtlSeconds =
-                Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
-                    ? parsedTtlSeconds
-                    : 43200;
-            const apiToken = issueAccessToken(
-                pendingAttempt.accountId,
-                pendingAttempt.role,
-                accessTokenTtlSeconds,
-                {
-                    providerId: pendingAttempt.providerId,
-                },
-            );
-            log?.("info", "Login succeeded after TFA verification.", {
-                ...logMeta,
-                accountId: pendingAttempt.accountId,
-                provider: pendingAttempt.provider,
-                role: pendingAttempt.role,
-                methodId,
-            });
-            res.writeHead(200, {
-                "content-type": "application/json",
-                "set-cookie": buildAccessTokenCookie(
-                    apiToken,
-                    accessTokenTtlSeconds,
-                    shouldSetSecureCookie(req),
-                ),
-            });
+        if (url.pathname === "/api/v1/auth/setup-status" && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const getTfaUserStatus = capabilities.get<
+                (accountId: string) => Promise<{ requiresSetup: boolean }>
+            >("tfa:getUserStatus");
+            const status = getTfaUserStatus
+                ? await getTfaUserStatus(claims.sub).catch(() => null)
+                : null;
+            res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
-                        accountId: pendingAttempt.accountId,
-                        displayName: pendingAttempt.displayName,
-                        provider: pendingAttempt.provider,
-                        providerId: pendingAttempt.providerId,
-                        role: pendingAttempt.role,
-                        isFounder: pendingAttempt.isFounder,
-                        token: apiToken,
-                        userValidationMode: pendingAttempt.userValidationMode,
-                        requiredUserValidation:
-                            pendingAttempt.requiredUserValidation,
-                        usedRecoveryCode: tfaResult.usedRecoveryCode === true,
-                        recoveryCodesRemaining:
-                            Number.isFinite(tfaResult.recoveryCodesRemaining) &&
-                            Number(tfaResult.recoveryCodesRemaining) >= 0
-                                ? Number(tfaResult.recoveryCodesRemaining)
-                                : null,
+                        requiresSetup: status?.requiresSetup === true,
                     },
                 }),
             );

@@ -94,4 +94,18 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
         uiRegistry.getStaticDir("tfa"),
         path.resolve(process.cwd(), "src", "gateways", "tfa", "ui"),
     );
+    assert.deepEqual(
+        uiRegistry
+            .listSettingsSections()
+            .find((section) => section.id === "tfa")?.stringsBaseUrl,
+        [
+            "/static/gateways/tfa/languages",
+            "/static/adapters/tfa/totp/languages",
+        ],
+    );
+    assert.equal(
+        uiRegistry.listAdminSections().find((section) => section.id === "tfa")
+            ?.scriptUrl,
+        "/static/gateways/tfa/admin-section.js",
+    );
 });

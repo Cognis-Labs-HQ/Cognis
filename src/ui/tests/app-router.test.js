@@ -247,7 +247,7 @@ test("router enforces TFA setup route when required", () => {
     );
     assert.match(
         src,
-        /readTfaSetupRequirement/,
+        /readAuthSetupRequirement/,
         "app-router.js must check TFA setup status before route loads",
     );
     assert.match(

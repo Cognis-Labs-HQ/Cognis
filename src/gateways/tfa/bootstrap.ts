@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     getAuthClaims,
     readJson,
+    registerLimitedAuthPathAllowance,
     requireAuth,
     type GatewayBootstrapContext,
 } from "../shared.js";
@@ -42,7 +43,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
 
-    ctx.routeRegistry.register(createTfaRoutes(gateway, ctx.log), "tfa");
+    ctx.routeRegistry.register(
+        createTfaRoutes(gateway, ctx.capabilities, ctx.log),
+        "tfa",
+    );
     ctx.routeRegistry.register(
         createTfaAdapterAdminRoutes(gateway, ctx.log),
         "tfa",
@@ -69,6 +73,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "ui",
     );
     ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "tfa",
+        label: "Two-Factor Authentication",
+        scriptUrl: "/static/gateways/tfa/settings-section.js",
+        stringsBaseUrl: [
+            "/static/gateways/tfa/languages",
+            "/static/adapters/tfa/totp/languages",
+        ],
+    });
+    ctx.uiRegistry?.registerAdminSection({
+        id: "tfa",
+        label: "Two-Factor Authentication",
+        scriptUrl: "/static/gateways/tfa/admin-section.js",
+        stringsBaseUrl: "/static/gateways/tfa/languages",
+    });
+    registerLimitedAuthPathAllowance("tfa", (path) =>
+        path.startsWith("/api/v1/tfa/"),
+    );
     const adapterDirs = await readdir(tfaAdaptersRoot, {
         withFileTypes: true,
     }).catch(() => []);
@@ -124,6 +146,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
 function createTfaRoutes(
     gateway: CoreTfaGateway,
+    capabilities: GatewayBootstrapContext["capabilities"],
     log?: GatewayBootstrapContext["log"],
 ) {
     return async (
@@ -136,6 +159,165 @@ function createTfaRoutes(
             method: req.method ?? "GET",
             path: url.pathname,
         };
+
+        if (
+            url.pathname === "/api/v1/auth/login/tfa" &&
+            req.method === "POST"
+        ) {
+            const body = await readJson(req);
+            const loginAttemptId = String(body.loginAttemptId ?? "").trim();
+            const methodId = String(body.methodId ?? "").trim();
+            if (!loginAttemptId || !methodId) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "loginAttemptId and methodId are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const getPendingLoginAttempt = capabilities.get<
+                (loginAttemptId: string) => {
+                    accountId: string;
+                    displayName: string;
+                    provider: string;
+                    providerId: string;
+                    role: string;
+                    isFounder: boolean;
+                    userValidationMode: "none" | "smtp";
+                    requiredUserValidation: boolean;
+                } | null
+            >("tfa:getPendingLoginAttempt");
+            const clearPendingLoginAttempt = capabilities.get<
+                (loginAttemptId: string) => void
+            >("tfa:clearPendingLoginAttempt");
+            const issueToken = capabilities.get<
+                (
+                    subject: string,
+                    role: "user" | "teacher" | "moderator" | "admin" | "owner",
+                    ttlSeconds: number | null,
+                    options?: { issuedAt?: number; providerId?: string },
+                ) => string
+            >("auth:issueAccessToken");
+            const getAccessTokenTtlSeconds = capabilities.get<() => number>(
+                "auth:getAccessTokenTtlSeconds",
+            );
+            const buildCookie = capabilities.get<
+                (
+                    req: IncomingMessage,
+                    rawToken: string,
+                    ttlSeconds: number | null,
+                ) => string
+            >("auth:buildAccessTokenCookie");
+            if (
+                !getPendingLoginAttempt ||
+                !clearPendingLoginAttempt ||
+                !issueToken ||
+                !getAccessTokenTtlSeconds ||
+                !buildCookie
+            ) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_unavailable",
+                            message: "Two-factor verification is unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const pendingAttempt = getPendingLoginAttempt(loginAttemptId);
+            if (!pendingAttempt) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_attempt_expired",
+                            message: "TFA login attempt expired",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const tfaResult = await gateway
+                .verifyLogin(pendingAttempt.accountId, methodId, body)
+                .catch(() => ({
+                    verified: false,
+                    message: "verification_failed",
+                }));
+            if (!tfaResult.verified) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code:
+                                tfaResult.message || "tfa_verification_failed",
+                            message:
+                                tfaResult.message ||
+                                "Two-factor verification failed",
+                        },
+                    }),
+                );
+                return true;
+            }
+            clearPendingLoginAttempt(loginAttemptId);
+            const accessTokenTtlSeconds = getAccessTokenTtlSeconds();
+            const apiToken = issueToken(
+                pendingAttempt.accountId,
+                pendingAttempt.role as
+                    | "user"
+                    | "teacher"
+                    | "moderator"
+                    | "admin"
+                    | "owner",
+                accessTokenTtlSeconds,
+                {
+                    providerId: pendingAttempt.providerId,
+                },
+            );
+            log?.("info", "Login succeeded after TFA verification.", {
+                ...logMeta,
+                accountId: pendingAttempt.accountId,
+                provider: pendingAttempt.provider,
+                role: pendingAttempt.role,
+                methodId,
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": buildCookie(
+                    req,
+                    apiToken,
+                    accessTokenTtlSeconds,
+                ),
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        accountId: pendingAttempt.accountId,
+                        displayName: pendingAttempt.displayName,
+                        provider: pendingAttempt.provider,
+                        providerId: pendingAttempt.providerId,
+                        role: pendingAttempt.role,
+                        isFounder: pendingAttempt.isFounder,
+                        token: apiToken,
+                        userValidationMode: pendingAttempt.userValidationMode,
+                        requiredUserValidation:
+                            pendingAttempt.requiredUserValidation,
+                        usedRecoveryCode: tfaResult.usedRecoveryCode === true,
+                        recoveryCodesRemaining:
+                            Number.isFinite(tfaResult.recoveryCodesRemaining) &&
+                            Number(tfaResult.recoveryCodesRemaining) >= 0
+                                ? Number(tfaResult.recoveryCodesRemaining)
+                                : null,
+                    },
+                }),
+            );
+            return true;
+        }
 
         if (url.pathname === "/api/v1/tfa/status" && req.method === "GET") {
             const claims = requireAuth(req, res, "user");

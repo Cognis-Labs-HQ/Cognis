@@ -1,9 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import {
-    applyDocumentTitle,
-    createI18n,
-    extendI18n,
-} from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -1290,10 +1286,7 @@ async function guardSubPageSwitch() {
 
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
-    i18n = await extendI18n(
-        await createI18n(),
-        "/static/gateways/tfa/languages",
-    );
+    i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.administration");
 
     setModules([]);

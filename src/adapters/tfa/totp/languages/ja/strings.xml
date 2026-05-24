@@ -1,5 +1,5 @@
 <resources>
-  <string name="gateway.auth.security.tfa_qr_code_alt">TOTP 設定 QR コード</string>
-  <string name="gateway.auth.security.tfa_totp_prompt">認証アプリで QR コードを読み取り、6 桁コードを入力して設定を確認してください。</string>
+  <string name="adapter.tfa.totp.qr_code_alt">TOTP 設定 QR コード</string>
+  <string name="adapter.tfa.totp.setup_prompt">認証アプリで QR コードを読み取り、6 桁コードを入力して設定を確認してください。</string>
   <string name="ui.app.login.tfa.code_placeholder_totp">TOTP コード</string>
 </resources>

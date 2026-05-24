@@ -2,7 +2,6 @@ import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
-    extendI18n,
 } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -16,7 +15,6 @@ import {
     getRoleLabel,
     hasMinAccessRole,
 } from "../../reuse/access-role.js";
-import { resetTfaForUser } from "../../../gateways/tfa/ui/admin-user-tfa.js";
 
 let root = null;
 let i18n = null;
@@ -271,7 +269,10 @@ async function runUserMenuAction(action, username) {
     }
 
     if (action === "tfa-reset") {
-        const resetResponse = await resetTfaForUser(apiFetch, username);
+        const resetResponse = await apiFetch(
+            `/api/v1/tfa/admin/users/${encodeURIComponent(username)}/reset`,
+            { method: "POST" },
+        );
         showToast(
             resetResponse.ok
                 ? i18n.t("ui.app.users.tfa_reset_done")
@@ -509,10 +510,7 @@ async function triggerInviteFlow() {
 
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
-    i18n = await extendI18n(
-        await createI18n(),
-        "/static/gateways/tfa/languages",
-    );
+    i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.users");
 
     reprompt = createRepromptGuard({ i18n });
