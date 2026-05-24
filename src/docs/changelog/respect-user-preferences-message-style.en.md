@@ -52,3 +52,50 @@ The messages thread panel fills the full viewport height correctly. The
 thread-list scrolls internally while the composer stays pinned at the bottom.
 No page-level scroll bar appears, and navigating to other pages restores their
 normal scrolling behaviour.
+
+## Read receipt hover popup corrected
+
+The "Seen by N people" popup that appears when hovering over read receipt avatars
+was not rendering at the correct screen position. The popup element now uses
+`position: fixed` so it anchors to the hovered avatar wherever it appears on screen.
+
+## x-overflow on own messages eliminated (layout fix)
+
+`max-width` is now applied to the message-wrap flex item rather than the bubble
+itself, so the percentage resolves correctly against the thread width and own
+messages no longer push a horizontal scrollbar.
+
+## Composer no longer cut off
+
+The full height chain from the viewport down to the content panel now enforces
+`height: 100%; overflow: hidden` at every level, including `.content-panel`,
+so the composer stays fully in view at the bottom of the thread.
+
+## IRC own messages left-aligned throughout
+
+In IRC style, emoji reaction chips, the reaction picker, and read receipt status
+for own messages are all now left-aligned to match incoming messages. Gap between
+messages is increased for readability.
+
+## Speech bubble avatar overlaps corner
+
+The sender avatar in speech bubble style now visually overlaps the top-right
+corner of own-message bubbles and the top-left corner of incoming bubbles, instead
+of appearing adjacent to them.
+
+## Read receipt rendered outside speech bubble
+
+In speech bubble style, the timestamp and read receipt row now sits below the
+bubble rather than inside it.
+
+## Emoji quick-reaction deck always shows five options
+
+When a suggested emoji is used as a reaction, it is replaced from the emoji
+pool so the picker bar maintains exactly five suggestions at all times.
+
+## Page composer `contentScrolling` flag
+
+A new `contentScrolling` option (default `true`) on `createPageComposer` lets a
+page opt in to fill-height mode by passing `contentScrolling: false`. The content
+grid then constrains the content panel to the available viewport and disables its
+own scrolling, allowing the page to manage internal scrolling independently.

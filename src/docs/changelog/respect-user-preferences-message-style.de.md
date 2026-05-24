@@ -47,3 +47,35 @@ Eigene Nachrichtenblasen passen sich jetzt an den breiteren Inhalt aus Nachricht
 ## Viewport-Höhen-Layout ohne Seiten-Scroll
 
 Das Nachrichten-Thread-Panel füllt die gesamte Viewport-Höhe korrekt aus. Die Nachrichtenliste scrollt intern, während der Kompositionsbereich unten fixiert bleibt. Es erscheint keine seitliche Scrollleiste, und das Navigieren zu anderen Seiten stellt ihr normales Scrollverhalten wieder her.
+
+## Hover-Popup für Lesebestätigungen korrigiert
+
+Das Popup „Von N Personen gelesen", das beim Überfahren der Lesebestätigungsavatare erscheint, wurde nicht an der richtigen Stelle gerendert. Das Popup-Element verwendet nun `position: fixed` und verankert sich korrekt am überfahrenen Avatar.
+
+## Horizontaler Überlauf bei eigenen Nachrichten behoben (Layout-Korrektur)
+
+`max-width` wird jetzt auf das Nachrichten-Wrap-Flex-Element angewendet statt auf die Blase selbst, sodass der Prozentsatz korrekt gegen die Thread-Breite aufgelöst wird.
+
+## Kompositionsbereich bleibt vollständig sichtbar
+
+Die vollständige Höhenkette vom Viewport bis zum Content-Panel erzwingt nun `height: 100%; overflow: hidden` auf jeder Ebene, einschließlich `.content-panel`, sodass der Kompositionsbereich stets vollständig sichtbar bleibt.
+
+## IRC: eigene Nachrichten durchgängig linksbündig
+
+Im IRC-Stil sind Emoji-Reaktionschips, die Reaktionsauswahl und der Lesebestätigungsstatus für eigene Nachrichten nun linksbündig ausgerichtet.
+
+## Sprechblasen-Avatar überlappt die Ecke
+
+Der Absender-Avatar im Sprechblasen-Stil überlappt jetzt visuell die obere rechte Ecke bei eigenen Nachrichten und die obere linke Ecke bei eingehenden Nachrichten.
+
+## Lesebestätigung außerhalb der Sprechblase
+
+Im Sprechblasen-Stil erscheinen Zeitstempel und Lesebestätigungszeile nun unterhalb der Blase statt darin.
+
+## Emoji-Schnellauswahl zeigt immer fünf Optionen
+
+Wenn ein vorgeschlagenes Emoji als Reaktion verwendet wird, wird es durch ein Emoji aus dem Pool ersetzt, sodass die Auswahlleiste stets fünf Vorschläge anzeigt.
+
+## Seiten-Composer `contentScrolling`-Option
+
+Die neue Option `contentScrolling` (Standard `true`) in `createPageComposer` ermöglicht es einer Seite, in den Füllhöhen-Modus zu wechseln, indem `contentScrolling: false` übergeben wird.

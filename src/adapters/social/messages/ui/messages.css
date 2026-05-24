@@ -160,6 +160,7 @@
 .messages-thread-list {
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -188,7 +189,7 @@
     border-radius: 0.65rem;
     background: var(--color-surface-elevated);
     box-sizing: border-box;
-    max-width: min(70%, calc(100% - 3rem));
+    max-width: 100%;
 }
 
 .messages-message-wrap {
@@ -196,6 +197,7 @@
     flex-direction: column;
     position: relative;
     min-width: 0;
+    max-width: min(70%, calc(100% - 3rem));
 }
 
 .messages-message-row {
@@ -449,7 +451,7 @@
         white-space: nowrap;
     }
 
-    .messages-message {
+    .messages-message-wrap {
         max-width: calc(100% - 2.3rem);
     }
 }
@@ -461,6 +463,7 @@
 
 .messages-page .app-shell,
 .messages-page .workspace,
+.messages-page .content-panel,
 .messages-page .content-grid,
 .messages-page .content-section,
 .messages-page .widget-card,
@@ -507,7 +510,7 @@
         width: min(100vw, 360px);
     }
 
-    .messages-message {
+    .messages-message-wrap {
         max-width: min(95%, calc(100% - 2.3rem));
     }
 }
@@ -915,7 +918,6 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     min-width: 180px;
     max-width: 260px;
-    z-index: 1000;
 }
 
 .messages-receipt-popup-title {
@@ -990,7 +992,7 @@
         align-items: flex-end;
     }
 
-    .messages-message-row--own .messages-message {
+    .messages-message-row--own .messages-message-wrap {
         margin-left: auto;
         max-width: calc(100% - 2.8rem);
     }

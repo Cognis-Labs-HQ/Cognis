@@ -47,3 +47,35 @@ Gelembung pesan sendiri kini menyesuaikan lebarnya dengan konten terlebar, baik 
 ## Tata letak tinggi viewport tanpa gulir halaman
 
 Panel utas pesan kini mengisi penuh tinggi viewport dengan benar. Daftar pesan bergulir secara internal sementara area komposer tetap terpaku di bagian bawah. Tidak ada bilah gulir tingkat halaman yang muncul, dan navigasi ke halaman lain memulihkan perilaku gulir normal mereka.
+
+## Popup hover tanda baca sebagai dibaca diperbaiki
+
+Popup "Dilihat oleh N orang" yang muncul saat mengarahkan kursor ke avatar tanda baca kini menggunakan `position: fixed` agar muncul di posisi yang benar di layar.
+
+## Overflow horizontal pesan sendiri dihilangkan (perbaikan tata letak)
+
+`max-width` kini diterapkan pada flex item pembungkus pesan, bukan pada gelembung itu sendiri, sehingga persentase diselesaikan dengan benar terhadap lebar utas.
+
+## Komposer tidak lagi terpotong
+
+Rantai tinggi penuh dari viewport hingga panel konten kini menerapkan `height: 100%; overflow: hidden` di setiap level, termasuk `.content-panel`.
+
+## IRC: pesan sendiri rata kiri di semua bagian
+
+Dalam gaya IRC, chip reaksi emoji, pemilih reaksi, dan status tanda baca untuk pesan sendiri kini rata kiri sesuai pesan masuk.
+
+## Avatar gelembung ucapan tumpang tindih di sudut
+
+Avatar pengirim dalam gaya gelembung ucapan kini tumpang tindih secara visual di sudut kanan atas gelembung pesan sendiri dan sudut kiri atas gelembung pesan masuk.
+
+## Tanda baca di luar gelembung ucapan
+
+Dalam gaya gelembung ucapan, baris tanda waktu dan tanda baca kini ditampilkan di bawah gelembung, bukan di dalamnya.
+
+## Deck emoji cepat selalu menampilkan lima opsi
+
+Ketika emoji yang disarankan digunakan sebagai reaksi, emoji tersebut diganti dari kumpulan emoji agar bilah saran selalu menampilkan lima pilihan.
+
+## Opsi `contentScrolling` pada page composer
+
+Opsi `contentScrolling` baru (default `true`) pada `createPageComposer` memungkinkan halaman mengaktifkan mode tinggi penuh dengan meneruskan `contentScrolling: false`.

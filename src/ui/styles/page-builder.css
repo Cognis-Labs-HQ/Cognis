@@ -219,6 +219,14 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     overflow: auto;
     min-height: 380px;
 }
+
+.content-grid.app-page--fill-height,
+.content-grid.app-page--fill-height .content-panel,
+.content-grid.app-page--fill-height .content-section {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
 .content-panel,
 .content-panel p,
 .content-panel li,

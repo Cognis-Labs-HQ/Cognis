@@ -6,8 +6,8 @@
     --messages-incoming-bubble-avatar-offset-left: var(
         --messages-bubble-avatar-corner-offset
     );
-    --messages-own-bubble-avatar-space: 1.85rem;
-    --messages-incoming-bubble-avatar-space: 1.85rem;
+    --messages-own-bubble-avatar-space: 0.78rem;
+    --messages-incoming-bubble-avatar-space: 0.43rem;
     --messages-bubble-avatar-clearance: 1.1rem;
 }
 
@@ -69,6 +69,7 @@ body:not([data-theme="light"])
 .messages-page[data-message-style="speech_bubbles"]
     .messages-message-bubble-avatar {
     display: block;
+    top: calc(var(--messages-bubble-avatar-clearance) - 0.62rem);
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message-avatar {
@@ -86,6 +87,7 @@ body:not([data-theme="light"])
 .messages-page[data-message-style="speech_bubbles"]
     .messages-message-row--own
     .messages-message-wrap {
+    margin-right: 0.62rem;
     padding-right: var(--messages-own-bubble-avatar-space);
     padding-left: 0;
 }
@@ -100,6 +102,7 @@ body:not([data-theme="light"])
 .messages-page[data-message-style="speech_bubbles"]
     .messages-message-row:not(.messages-message-row--own)
     .messages-message-wrap {
+    margin-left: 0.62rem;
     padding-left: var(--messages-incoming-bubble-avatar-space);
     padding-right: 0;
 }
@@ -138,8 +141,22 @@ body:not([data-theme="light"])
     background: transparent;
 }
 
+.messages-page[data-message-style="speech_bubbles"] .messages-message-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.25rem 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-message-wrap
+    > .messages-message-meta {
+    justify-content: flex-end;
+}
+
 .messages-page[data-message-style="irc"] .messages-thread-list {
-    gap: 0.15rem;
+    gap: 0.35rem;
 }
 
 .messages-page[data-message-style="irc"] .messages-message {
@@ -210,6 +227,40 @@ body:not([data-theme="light"])
 
 .messages-page[data-message-style="irc"] .messages-reactions-row {
     margin-top: 0.12rem;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-message-wrap {
+    align-items: flex-start;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-reaction-picker-row {
+    left: 0;
+    right: auto;
+    justify-content: flex-start;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-reactions-available {
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-reactions-active {
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message--own
+    .messages-message-meta {
+    justify-content: flex-start;
 }
 
 .messages-page[data-message-style="irc"] {

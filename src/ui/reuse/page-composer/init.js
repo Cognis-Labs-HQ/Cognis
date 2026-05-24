@@ -141,6 +141,7 @@ export function createPageComposer(
         showThemeToggle = true,
         showFooter = true,
         frameless = false,
+        contentScrolling = true,
         persistLayoutPreferences = true,
         pageOverrides = {},
         onBeforeSubPageSwitch,
@@ -3707,6 +3708,11 @@ export function createPageComposer(
             );
         }
 
+        if (!contentScrolling) {
+            root.querySelector(".content-grid")?.classList.add(
+                "app-page--fill-height",
+            );
+        }
         if (Array.isArray(toolbar) && toolbar.length > 0) {
             const toolbarEl = root.querySelector(".toolbar");
             if (toolbarEl) {

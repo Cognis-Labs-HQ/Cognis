@@ -132,18 +132,18 @@ function recordEmojiUsage(emoji) {
  *
  * @returns {string[]}
  */
-function getQuickReactionEmojis() {
+function getQuickReactionEmojis(count = 5) {
     const sortedByUsage = cachedEmojiUsage
         .map((entry) => normalizeReactionEmoji(entry.emoji))
         .filter(Boolean);
 
     const result = [];
     for (const emoji of sortedByUsage) {
-        if (result.length >= 5) break;
+        if (result.length >= count) break;
         if (!result.includes(emoji)) result.push(emoji);
     }
     for (const entry of cachedEmojiList ?? []) {
-        if (result.length >= 5) break;
+        if (result.length >= count) break;
         const normalized = normalizeReactionEmoji(entry.emoji);
         if (normalized && !result.includes(normalized)) result.push(normalized);
     }
@@ -688,12 +688,13 @@ function renderReactionRows(message, i18n, isOwn = false) {
             return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
-    const quickEmojis = getQuickReactionEmojis();
+    const quickEmojis = getQuickReactionEmojis(5 + mergedByEmoji.size);
     const quick = Array.from(new Set(quickEmojis))
         .filter(
             (emoji) =>
                 emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
         )
+        .slice(0, 5)
         .map(
             (emoji) =>
                 `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
@@ -1101,6 +1102,7 @@ async function renderThread(
     );
     let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
+    const isSpeechBubbles = resolveMessageStyle() === "speech_bubbles";
     const html = decoded
         .map((msg) => {
             const dateLabel = formatDate(msg.createdAt, "");
@@ -1154,6 +1156,8 @@ async function renderThread(
                 timeLabel || statusBlock
                     ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
                     : "";
+            const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
+            const outerMetaRow = isSpeechBubbles ? metadataRow : "";
             return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
             ${isOwn ? "" : formatMessageAvatar(msg)}
             <div class="messages-message-wrap">
@@ -1163,9 +1167,10 @@ async function renderThread(
                     ${senderLabel}
                     <div class="messages-message-content">
                         ${renderMessageBodyMarkup(msg.text)}
-                        ${metadataRow}
+                        ${innerMetaRow}
                     </div>
                 </div>
+                ${outerMetaRow}
                 ${reactionRows.activeRow}
             </div>
         </div>`;
