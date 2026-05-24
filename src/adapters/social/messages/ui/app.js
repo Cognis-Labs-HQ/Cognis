@@ -761,12 +761,13 @@ function statusUnknownSvgMarkup() {
 }
 
 function statusSentSvgMarkup() {
-    return statusBadgeSvgMarkup(
-        '<path d="M5.25 8.1L7.15 10L10.75 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>',
-    );
+    return statusBadgeSvgMarkup(true);
 }
 
-function statusBadgeSvgMarkup(extraMarkup = "") {
+function statusBadgeSvgMarkup(includeDeliveredTick = false) {
+    const deliveredTickMarkup = includeDeliveredTick
+        ? '<path d="M5.25 8.1L7.15 10L10.75 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>'
+        : "";
     return `<svg
         class="messages-status-icon"
         width="16"
@@ -783,7 +784,7 @@ function statusBadgeSvgMarkup(extraMarkup = "") {
             stroke="currentColor"
             stroke-width="1.5"
         ></circle>
-        ${extraMarkup}
+        ${deliveredTickMarkup}
     </svg>`;
 }
 

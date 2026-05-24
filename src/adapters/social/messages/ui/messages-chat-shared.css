@@ -1,20 +1,22 @@
 .messages-page {
-    --messages-panel-max-height-offset-desktop: 176px;
-    --messages-panel-max-height-offset-mobile: 130px;
+    --messages-panel-max-height-offset-with-toolbar-desktop: 176px;
+    --messages-panel-max-height-offset-with-toolbar-mobile: 130px;
     height: 100%;
     min-height: 0;
     overflow: hidden;
 }
 
 .messages-page .main-window--with-toolbar {
-    max-height: calc(100dvh - var(--messages-panel-max-height-offset-desktop));
+    max-height: calc(
+        100dvh - var(--messages-panel-max-height-offset-with-toolbar-desktop)
+    );
     overflow: hidden;
 }
 
 @media (max-width: 900px) {
     .messages-page .main-window--with-toolbar {
         max-height: calc(
-            100dvh - var(--messages-panel-max-height-offset-mobile)
+            100dvh - var(--messages-panel-max-height-offset-with-toolbar-mobile)
         );
     }
 }

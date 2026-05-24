@@ -31,7 +31,7 @@ test("messages member count control opens local member summary without jitsi cal
 });
 
 test("messages IRC layout keeps read receipts inline and centered", () => {
-    const baseCssSource = readFileSync(
+    const messagesCssSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
     );
@@ -43,11 +43,11 @@ test("messages IRC layout keeps read receipts inline and centered", () => {
         "utf8",
     );
     assert.match(
-        baseCssSource,
+        messagesCssSource,
         /\.messages-message-status \.messages-avatar-link[\s\S]*align-items:\s*center;/,
     );
     assert.match(
-        baseCssSource,
+        messagesCssSource,
         /\.messages-message-status \.messages-avatar-link[\s\S]*justify-content:\s*center;/,
     );
     assert.match(
@@ -59,7 +59,7 @@ test("messages IRC layout keeps read receipts inline and centered", () => {
         /\.messages-page\[data-message-style="irc"\] \.messages-message-status[\s\S]*align-self:\s*center;/,
     );
     assert.match(
-        baseCssSource,
+        messagesCssSource,
         /@import url\("\/static\/adapters\/social\/messages\/messages-style-variants\.css"\);/,
     );
 });
@@ -103,7 +103,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
-    const baseCssSource = readFileSync(
+    const messagesCssSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
     );
@@ -140,20 +140,20 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         /\.messages-read-receipt-popup[\s\S]*pointer-events:\s*none;/,
     );
     assert.match(
-        baseCssSource,
+        messagesCssSource,
         /\.messages-message--own \.messages-message-meta[\s\S]*width:\s*100%;/,
     );
     assert.match(
-        baseCssSource,
+        messagesCssSource,
         /\.messages-message-status--read[\s\S]*flex-direction:\s*row;/,
     );
     assert.match(
         sharedCssSource,
-        /\.messages-page[\s\S]*--messages-panel-max-height-offset-desktop:\s*176px;[\s\S]*\.messages-page \.main-window--with-toolbar[\s\S]*max-height:\s*calc\(\s*100dvh - var\(--messages-panel-max-height-offset-desktop\)\s*\);[\s\S]*overflow:\s*hidden;/,
+        /\.messages-page[\s\S]*--messages-panel-max-height-offset-with-toolbar-desktop:\s*176px;[\s\S]*\.messages-page \.main-window--with-toolbar[\s\S]*max-height:\s*calc\(\s*100dvh - var\(--messages-panel-max-height-offset-with-toolbar-desktop\)\s*\);[\s\S]*overflow:\s*hidden;/,
     );
     assert.match(
         appSource,
-        /function statusBadgeSvgMarkup\(extraMarkup = ""\)/,
+        /function statusBadgeSvgMarkup\(includeDeliveredTick = false\)/,
     );
     assert.match(
         appSource,
