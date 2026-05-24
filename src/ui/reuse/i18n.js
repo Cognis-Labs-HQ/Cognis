@@ -414,7 +414,10 @@ export async function extendI18n(baseI18n, stringsBaseUrl) {
         ? stringsBaseUrl.filter(
               (entry) => typeof entry === "string" && entry.length > 0,
           )
-        : [stringsBaseUrl];
+        : typeof stringsBaseUrl === "string" && stringsBaseUrl.length > 0
+          ? [stringsBaseUrl]
+          : [];
+    if (baseUrls.length === 0) return baseI18n;
     const extra = await loadComponentStrings(baseI18n.locale, baseUrls);
     const merged = new Map();
 

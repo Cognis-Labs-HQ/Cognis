@@ -1,37 +1,43 @@
 .settings-recovery-code-cell {
-    font-family: monospace;
-    letter-spacing: 0.08em;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    letter-spacing: 0.04em;
 }
 
 .settings-recovery-code-status-cell {
-    white-space: nowrap;
+    width: 120px;
 }
 
 .settings-recovery-code-used-marker {
-    color: var(--danger, #dc2626);
-    font-weight: 700;
+    color: var(--danger);
+    font-weight: 600;
 }
 
 .settings-recovery-code-ready-marker {
-    color: var(--success, #16a34a);
-    font-weight: 700;
+    color: var(--text-muted);
 }
 
 .settings-tfa-setup-prompt {
-    margin-bottom: 12px;
+    margin: 0;
 }
 
 .settings-tfa-setup-qr {
-    display: block;
     width: 220px;
     max-width: 100%;
-    height: auto;
-    margin: 12px auto;
-    border-radius: 12px;
-    background: #fff;
-    padding: 8px;
+    align-self: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    background: var(--panel-bg);
 }
 
 .settings-tfa-setup-code {
-    width: 100%;
+    display: block;
+    margin-top: 6px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--control-bg);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

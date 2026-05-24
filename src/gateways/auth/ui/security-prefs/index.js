@@ -17,7 +17,7 @@ import {
     savePreferredTfaMethods,
     rotateRecoveryCodes,
     loadRecoveryCodesStatus,
-} from "../../../tfa/ui/security-api.js";
+} from "/static/gateways/tfa/security-api.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
