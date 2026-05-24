@@ -466,6 +466,7 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP（利用不可 — 先にSMTPアダプターを有効にしてください）</string>
   <string name="ui.app.admin.security.password_policy_heading">パスワードポリシー</string>
   <string name="ui.app.admin.security.policy_min_length">最小文字数</string>
   <string name="ui.app.admin.security.policy_require_uppercase">大文字の最小数（0 = 無効）</string>

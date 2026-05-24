@@ -72,6 +72,21 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalTeacherManualApproval = true;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
 
+    async function loadSmtpAdapterActive() {
+        try {
+            const response = await apiFetch("/api/v1/gateways/notify/adapters");
+            if (!response.ok) return false;
+            const payload = await response.json();
+            const adapters = Array.isArray(payload?.data) ? payload.data : [];
+            return adapters.some(
+                (adapter) =>
+                    adapter.senderId === "smtp" && adapter.active === true,
+            );
+        } catch {
+            return false;
+        }
+    }
+
     async function loadSettings() {
         const response = await apiFetch("/api/v1/system/security");
         if (!response.ok) return { trustedDomains: [] };
@@ -198,7 +213,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
     }
 
-    function bindSecurityInputs(settings, passwordPolicy) {
+    function bindSecurityInputs(settings, passwordPolicy, smtpActive) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
 
@@ -227,6 +242,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
+            const smtpOption = validationSelect.querySelector(
+                "option[value='smtp']",
+            );
+            if (smtpOption instanceof HTMLOptionElement && !smtpActive) {
+                smtpOption.disabled = true;
+                smtpOption.textContent = i18n.t(
+                    "ui.app.admin.security.user_validation_mode.smtp_unavailable",
+                );
+            }
         }
         if (registrationsToggle instanceof HTMLInputElement) {
             registrationsToggle.checked = currentPublicRegistrationEnabled;
@@ -250,14 +274,19 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     return {
         async init() {
-            const [settings, publicRegistrationEnabled, passwordPolicy] =
-                await Promise.all([
-                    loadSettings(),
-                    loadPublicRegistrationAdapterState(),
-                    loadPasswordPolicy(),
-                ]);
+            const [
+                settings,
+                publicRegistrationEnabled,
+                passwordPolicy,
+                smtpActive,
+            ] = await Promise.all([
+                loadSettings(),
+                loadPublicRegistrationAdapterState(),
+                loadPasswordPolicy(),
+                loadSmtpAdapterActive(),
+            ]);
             settings.registrationsEnabled = publicRegistrationEnabled;
-            bindSecurityInputs(settings, passwordPolicy);
+            bindSecurityInputs(settings, passwordPolicy, smtpActive);
         },
 
         async save() {

@@ -266,3 +266,95 @@ test("system security settings log malformed persisted data", async () => {
         },
     ]);
 });
+
+test("security PUT rejects smtp validation mode when SMTP adapter unavailable", async () => {
+    const token = issueAccessToken("admin", "admin", 60);
+    const headers = {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+    };
+    let status = 0;
+    let body = "";
+    const preferenceStore = {
+        get: async () => null,
+        set: async () => {},
+    };
+    const route = createSystemRoutes(
+        healthService as any,
+        preferenceStore as any,
+        undefined,
+        undefined,
+        () => false,
+    );
+
+    const handled = await route(
+        {
+            method: "PUT",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from(
+                    JSON.stringify({ userValidationMode: "smtp" }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/system/security"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 400);
+    assert.match(body, /"smtp_unavailable"/);
+});
+
+test("security PUT accepts smtp validation mode when SMTP adapter is available", async () => {
+    const token = issueAccessToken("admin", "admin", 60);
+    const headers = {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+    };
+    let status = 0;
+    let savedValue = "";
+    const preferenceStore = {
+        get: async () => null,
+        set: async (_: string, __: string, value: string) => {
+            savedValue = value;
+        },
+    };
+    const route = createSystemRoutes(
+        healthService as any,
+        preferenceStore as any,
+        undefined,
+        undefined,
+        () => true,
+    );
+
+    const handled = await route(
+        {
+            method: "PUT",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from(
+                    JSON.stringify({ userValidationMode: "smtp" }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(_payload: string) {},
+        } as any,
+        new URL("http://localhost/api/v1/system/security"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    assert.match(savedValue, /"userValidationMode":"smtp"/);
+});

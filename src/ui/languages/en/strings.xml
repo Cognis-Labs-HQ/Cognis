@@ -466,6 +466,7 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (unavailable — enable the SMTP adapter first)</string>
   <string name="ui.app.admin.security.password_policy_heading">Password Policy</string>
   <string name="ui.app.admin.security.policy_min_length">Minimum Length</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Minimum Uppercase Letters (0 = off)</string>

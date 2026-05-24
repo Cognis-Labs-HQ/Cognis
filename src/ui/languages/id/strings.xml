@@ -466,6 +466,7 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (tidak tersedia — aktifkan adaptor SMTP terlebih dahulu)</string>
   <string name="ui.app.admin.security.password_policy_heading">Kebijakan Kata Sandi</string>
   <string name="ui.app.admin.security.policy_min_length">Panjang Minimum</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Minimum Huruf Kapital (0 = nonaktif)</string>
