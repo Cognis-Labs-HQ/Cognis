@@ -168,7 +168,7 @@ function resolveMessageStyle() {
 }
 
 function formatHandleNotation(handle) {
-    return `{{${handle}}}`;
+    return `@${handle}`;
 }
 
 /**
@@ -544,14 +544,16 @@ function renderMessageStatus(
     if (message.senderId !== currentAccountId) return "";
     if (readersHere.length > 0) {
         const readerPayload = escapeHtml(
-            stableJson(
-                readersHere.map((reader) => ({
-                    accountId: reader.accountId,
-                    handle: reader.handle || null,
-                    displayName: reader.displayName || null,
-                    avatarKey: reader.avatarKey || null,
-                    readAt: reader.readAt || null,
-                })),
+            encodeURIComponent(
+                stableJson(
+                    readersHere.map((reader) => ({
+                        accountId: reader.accountId,
+                        handle: reader.handle || null,
+                        displayName: reader.displayName || null,
+                        avatarKey: reader.avatarKey || null,
+                        readAt: reader.readAt || null,
+                    })),
+                ),
             ),
         );
         const avatarMarkup = readersHere
@@ -2074,7 +2076,9 @@ export async function mount(root, { signal } = {}) {
                             statusElement.getAttribute("data-readers") ?? "[]";
                         let readers = [];
                         try {
-                            readers = JSON.parse(rawReaders);
+                            readers = JSON.parse(
+                                decodeURIComponent(rawReaders),
+                            );
                         } catch {
                             readers = [];
                         }
