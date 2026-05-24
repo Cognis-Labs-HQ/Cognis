@@ -46,7 +46,7 @@ async function promptVerificationCode(i18n, emailAddress) {
     let inputElement = null;
     const action = await openPopup({
         title: i18n.t("ui.app.settings.emails_verify_title"),
-        body: `
+        body: () => `
       <p>${escapeHtml(formatTemplate(i18n.t("ui.app.settings.emails_verify_prompt"), { email: emailAddress }))}</p>
       <label class="stack">
         <span>${i18n.t("ui.app.settings.emails_verify_submit")}</span>
@@ -73,7 +73,9 @@ async function promptVerificationCode(i18n, emailAddress) {
 async function verifyRequiredEmailLoop({ accountId, emailAddress, i18n }) {
     while (true) {
         const code = await promptVerificationCode(i18n, emailAddress);
-        if (!code) continue;
+        if (!code) {
+            throw new Error("verification_cancelled");
+        }
         const verifyResponse = await apiFetch(
             `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
             {
@@ -149,7 +151,9 @@ export function createRequiredEmailEnforcementClient() {
                 );
                 if (hasVerifiedPrimary) return;
                 const emailAddress = await promptRequiredEmailAddress(i18n);
-                if (!emailAddress) continue;
+                if (!emailAddress) {
+                    throw new Error("required_email_cancelled");
+                }
                 const addResult = await addRequiredEmail({
                     accountId,
                     emailAddress,

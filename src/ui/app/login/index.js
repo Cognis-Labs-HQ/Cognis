@@ -177,6 +177,16 @@ export async function mount(root) {
         );
     }
 
+    function clearPersistedSession() {
+        localStorage.removeItem("cognis_access_token");
+        localStorage.removeItem("cognis_account");
+        localStorage.removeItem("cognis_display_name");
+        localStorage.removeItem("cognis_role");
+        localStorage.removeItem("cognis_is_founder");
+        localStorage.removeItem("cognis_login_time");
+        localStorage.removeItem("cognis_user_validation_mode");
+    }
+
     function renderLoginShell() {
         const brandlineHtml = renderAuthBrandline(
             i18n.t("ui.shared.brand.name"),
@@ -313,13 +323,18 @@ export async function mount(root) {
                                     if (requiresUserValidation) {
                                         const requiredEmailClient =
                                             await loadRequiredEmailEnforcementClient();
-                                        await requiredEmailClient?.enforceRequiredEmailSetup(
-                                            {
-                                                accountId:
-                                                    tfaBody.data.accountId,
-                                                i18n,
-                                            },
-                                        );
+                                        try {
+                                            await requiredEmailClient?.enforceRequiredEmailSetup(
+                                                {
+                                                    accountId:
+                                                        tfaBody.data.accountId,
+                                                    i18n,
+                                                },
+                                            );
+                                        } catch {
+                                            clearPersistedSession();
+                                            return;
+                                        }
                                     }
                                     await syncTimezoneOnLogin(
                                         tfaBody.data.accountId,
@@ -373,12 +388,17 @@ export async function mount(root) {
                                 if (requiresUserValidation) {
                                     const requiredEmailClient =
                                         await loadRequiredEmailEnforcementClient();
-                                    await requiredEmailClient?.enforceRequiredEmailSetup(
-                                        {
-                                            accountId: body.data.accountId,
-                                            i18n,
-                                        },
-                                    );
+                                    try {
+                                        await requiredEmailClient?.enforceRequiredEmailSetup(
+                                            {
+                                                accountId: body.data.accountId,
+                                                i18n,
+                                            },
+                                        );
+                                    } catch {
+                                        clearPersistedSession();
+                                        return;
+                                    }
                                 }
                                 await syncTimezoneOnLogin(body.data.accountId);
                                 window.location.href = "/dashboard";
