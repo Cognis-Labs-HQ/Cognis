@@ -345,7 +345,7 @@ export async function mount(root) {
     }
 
     function renderTfaMethodTabs(methods) {
-        const tabsEl = document.querySelector("#login-tfa-method-tabs");
+        const tabsEl = document.querySelector("#login-tfa-method-nav");
         const methodInput = document.querySelector("#login-tfa-method");
         if (
             !(tabsEl instanceof HTMLElement) ||
@@ -453,11 +453,11 @@ export async function mount(root) {
           </label>
         </div>
         <div id="login-tfa-fields" hidden>
-          <div id="login-tfa-method-tabs" class="auth-provider-toggle"></div>
+          <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
           <input type="hidden" id="login-tfa-method" value="" />
           <label>
            <span id="login-tfa-code-label">${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}</span>
-           <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" />
+           <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" required />
           </label>
         </div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>

@@ -147,7 +147,7 @@ p.auth-intro {
     color: #f1f7ff;
 }
 
-#login-tfa-method-tabs a {
+#login-tfa-method-nav a {
     color: var(--text);
     text-decoration: none;
     opacity: 0.92;
@@ -155,8 +155,8 @@ p.auth-intro {
     white-space: nowrap;
 }
 
-#login-tfa-method-tabs a:hover,
-#login-tfa-method-tabs a.active {
+#login-tfa-method-nav a:hover,
+#login-tfa-method-nav a.active {
     color: var(--text);
     opacity: 1;
     border-bottom: 2px solid var(--accent-2);
