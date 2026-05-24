@@ -1,6 +1,5 @@
 @import url("/static/adapters/social/messages/messages-style-variants.css");
 @import url("/static/adapters/social/messages/messages-chat-shared.css");
-
 .messages-sidebar-content {
     display: flex;
     flex-direction: column;
