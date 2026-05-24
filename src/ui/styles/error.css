@@ -1,0 +1,121 @@
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1.5rem 1rem;
+}
+
+.error-page--fullscreen {
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.error-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: none;
+    gap: 1.5rem;
+}
+
+.error-content--fullscreen {
+    max-width: 640px;
+}
+
+.error-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+.error-brand-icon {
+    width: 56px;
+    height: 56px;
+}
+
+.error-brand-name {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+}
+
+.error-code {
+    font-size: clamp(5rem, 22vw, 14rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background-image: linear-gradient(
+        90deg,
+        #3aa783 0%,
+        #5eead4 30%,
+        #38bdf8 60%,
+        #7dd3fc 80%,
+        #3aa783 100%
+    );
+    background-size: 250%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: error-code-flow 6s linear infinite;
+    user-select: none;
+}
+
+body[data-theme="light"] .error-code {
+    background-image: linear-gradient(
+        90deg,
+        #0d9488 0%,
+        #0e7490 30%,
+        #0369a1 60%,
+        #1d4ed8 80%,
+        #0d9488 100%
+    );
+    background-size: 250%;
+}
+
+@keyframes error-code-flow {
+    0% {
+        background-position: 0% center;
+    }
+
+    100% {
+        background-position: 250% center;
+    }
+}
+
+.error-description {
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.55;
+}
+
+.error-dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: var(--accent);
+    color: #fff;
+    transition: opacity 0.15s ease;
+    margin-top: 0.5rem;
+}
+
+.error-dashboard-btn:hover {
+    opacity: 0.85;
+}
+
+@media (max-width: 480px) {
+    .error-page,
+    .error-page--fullscreen {
+        padding: 2rem 1rem;
+    }
+}

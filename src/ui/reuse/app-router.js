@@ -261,6 +261,16 @@ const STATIC_ROUTES = [
         load: () => import("../app/license/index.js"),
     },
     {
+        pattern: /^\/error$/,
+        base: "/error",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/styles/error.css",
+        ],
+        load: () => import("../app/error/index.js"),
+    },
+    {
         pattern: /^\/study(?:\/welcome|\/settings)?$/,
         base: "/study",
         stylesheets: ROUTE_STYLE_BUNDLES.study,

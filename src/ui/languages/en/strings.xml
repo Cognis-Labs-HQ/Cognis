@@ -215,6 +215,7 @@
   <string name="ui.page.title.register">Cognis - Registration Invite</string>
   <string name="ui.page.title.users">Cognis - Users</string>
   <string name="ui.page.title.invite">Cognis - Invite</string>
+  <string name="ui.page.title.error">Cognis - Error</string>
   <string name="ui.app.verify_email.verifying">Verifying…</string>
   <string name="ui.app.verify_email.success_title">Email Verified</string>
   <string name="ui.app.verify_email.success_body">Your email address has been successfully verified.</string>
@@ -301,6 +302,25 @@
   <string name="ui.app.invite.email_domain_not_allowed">This email domain is not permitted. Please use an address from an allowed domain.</string>
   <string name="ui.app.invite.revoke_success">Invitation revoked.</string>
   <string name="ui.app.invite.revoke_failed">Failed to revoke invitation.</string>
+  <string name="ui.app.error.page_subtitle">Something went wrong.</string>
+  <string name="ui.app.error.aria_prefix">Error code</string>
+  <string name="ui.app.error.code.400">That request wasn't quite right.</string>
+  <string name="ui.app.error.code.401">You need to sign in to see this.</string>
+  <string name="ui.app.error.code.403">You don't have permission to view this.</string>
+  <string name="ui.app.error.code.404">This page doesn't exist or has been moved.</string>
+  <string name="ui.app.error.code.405">This action isn't allowed for this route.</string>
+  <string name="ui.app.error.code.408">This request timed out. Please try again.</string>
+  <string name="ui.app.error.code.409">This request conflicts with the current state.</string>
+  <string name="ui.app.error.code.410">This resource is no longer available.</string>
+  <string name="ui.app.error.code.413">The submitted payload is too large.</string>
+  <string name="ui.app.error.code.415">This media type is not supported.</string>
+  <string name="ui.app.error.code.422">Some submitted fields are invalid.</string>
+  <string name="ui.app.error.code.429">Too many requests were sent too quickly.</string>
+  <string name="ui.app.error.code.500">Something went wrong on our end.</string>
+  <string name="ui.app.error.code.502">An upstream service returned an invalid response.</string>
+  <string name="ui.app.error.code.503">This service is temporarily unavailable.</string>
+  <string name="ui.app.error.code.504">An upstream service took too long to respond.</string>
+  <string name="ui.app.error.code.default">An unexpected error occurred.</string>
   <string name="ui.app.settings.font_preview">Font Preview</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Available languages</string>
@@ -312,6 +332,7 @@
   <string name="ui.reuse.reset_layout">Reset Layout</string>
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
+  <string name="ui.reuse.return_to_dashboard">Return to Dashboard</string>
 
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
   <string name="ui.app.profile.section.profile">My Profile</string>
