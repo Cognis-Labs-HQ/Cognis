@@ -329,19 +329,18 @@ export async function mount(root) {
         );
     }
 
-    function setActiveTfaMethodHeading(activeMethodName) {
-        const headingEl = document.querySelector("#login-tfa-code-label");
-        if (!(headingEl instanceof HTMLElement)) {
+    function setActiveTfaInputPlaceholder(activeMethodId) {
+        const tfaCodeInput = document.querySelector("#login-tfa-code");
+        if (!(tfaCodeInput instanceof HTMLInputElement)) {
             return;
         }
-        const defaultLabel = i18n.t("ui.app.login.tfa.code_label");
-        if (typeof activeMethodName !== "string" || !activeMethodName.trim()) {
-            headingEl.textContent = defaultLabel;
-            return;
-        }
-        headingEl.textContent = i18n
-            .t("ui.app.login.tfa.code_label_for_method")
-            .replace("{method}", activeMethodName);
+        const placeholderKey =
+            activeMethodId === "recovery_code"
+                ? "ui.app.login.tfa.code_placeholder_recovery"
+                : "ui.app.login.tfa.code_placeholder_totp";
+        const placeholderText = i18n.t(placeholderKey);
+        tfaCodeInput.placeholder = placeholderText;
+        tfaCodeInput.setAttribute("aria-label", placeholderText);
     }
 
     function renderTfaMethodTabs(methods) {
@@ -365,12 +364,12 @@ export async function mount(root) {
                 tabsEl.querySelectorAll("a").forEach((entry) => {
                     entry.classList.toggle("active", entry === tabLink);
                 });
-                setActiveTfaMethodHeading(method.name);
+                setActiveTfaInputPlaceholder(method.id);
             });
             if (index === 0) {
                 tabLink.classList.add("active");
                 methodInput.value = method.id;
-                setActiveTfaMethodHeading(method.name);
+                setActiveTfaInputPlaceholder(method.id);
             }
             tabsEl.appendChild(tabLink);
         });
@@ -455,10 +454,7 @@ export async function mount(root) {
         <div id="login-tfa-fields" hidden>
           <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
           <input type="hidden" id="login-tfa-method" value="" />
-          <label>
-           <span id="login-tfa-code-label">${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}</span>
-           <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" aria-labelledby="login-tfa-code-label" />
-          </label>
+          <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${escapeHtml(i18n.t("ui.app.login.tfa.code_placeholder_totp"))}" aria-label="${escapeHtml(i18n.t("ui.app.login.tfa.code_placeholder_totp"))}" />
         </div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
