@@ -67,7 +67,10 @@ export async function mount(root) {
                 .then((mod) =>
                     mod.createTfaLoginClient({ baseI18n: i18n, root }),
                 )
-                .catch(() => null);
+                .catch((error) => {
+                    console.error(error);
+                    return null;
+                });
         }
         return tfaLoginClientPromise;
     }
@@ -422,7 +425,7 @@ export async function mount(root) {
                                             : "",
                                 };
                                 const tfaResponse = await fetch(
-                                    "/api/v1/auth/login/tfa",
+                                    "/api/v1/tfa/login/verify",
                                     {
                                         method: "POST",
                                         headers: {

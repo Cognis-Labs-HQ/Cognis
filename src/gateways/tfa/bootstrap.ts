@@ -88,9 +88,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/tfa/admin-section.js",
         stringsBaseUrl: "/static/gateways/tfa/languages",
     });
-    registerLimitedAuthPathAllowance("tfa", (path, _accountId) =>
-        path.startsWith("/api/v1/tfa/"),
-    );
+    registerLimitedAuthPathAllowance("tfa", (path, _accountId) => {
+        if (path === "/api/v1/tfa/status" || path === "/api/v1/tfa/methods") {
+            return true;
+        }
+        if (path.startsWith("/api/v1/tfa/methods/")) {
+            return true;
+        }
+        if (
+            path === "/api/v1/tfa/recovery-codes" ||
+            path === "/api/v1/tfa/recovery-codes/rotate"
+        ) {
+            return true;
+        }
+        return false;
+    });
     const adapterDirs = await readdir(tfaAdaptersRoot, {
         withFileTypes: true,
     }).catch(() => []);
@@ -161,7 +173,7 @@ function createTfaRoutes(
         };
 
         if (
-            url.pathname === "/api/v1/auth/login/tfa" &&
+            url.pathname === "/api/v1/tfa/login/verify" &&
             req.method === "POST"
         ) {
             const body = await readJson(req);

@@ -35,7 +35,7 @@
   <string name="gateway.tfa.settings.recovery_codes_generated">Wiederherstellungscodes wurden erstellt. Blenden Sie sie ein und speichern Sie sie sicher.</string>
   <string name="gateway.tfa.settings.recovery_codes_reveal">Codes Einblenden</string>
   <string name="gateway.tfa.settings.recovery_codes_hide">Codes Ausblenden</string>
-  <string name="gateway.tfa.settings.recovery_code_prefix">Wiederherstellungscode</string>
+  <string name="gateway.tfa.settings.recovery_codes_prefix">Wiederherstellungscode</string>
   <string name="gateway.tfa.settings.recovery_codes_used">Verwendet</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">Bereit</string>
   <string name="gateway.tfa.settings.manual_secret">Manuelles Geheimnis</string>

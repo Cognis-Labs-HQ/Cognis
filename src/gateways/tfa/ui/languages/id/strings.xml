@@ -35,7 +35,7 @@
   <string name="gateway.tfa.settings.recovery_codes_generated">Kode pemulihan telah dibuat. Tampilkan dan simpan dengan aman.</string>
   <string name="gateway.tfa.settings.recovery_codes_reveal">Tampilkan Kode</string>
   <string name="gateway.tfa.settings.recovery_codes_hide">Sembunyikan Kode</string>
-  <string name="gateway.tfa.settings.recovery_code_prefix">Kode Pemulihan</string>
+  <string name="gateway.tfa.settings.recovery_codes_prefix">Kode Pemulihan</string>
   <string name="gateway.tfa.settings.recovery_codes_used">Terpakai</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">Siap</string>
   <string name="gateway.tfa.settings.manual_secret">Rahasia Manual</string>

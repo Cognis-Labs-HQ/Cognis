@@ -93,7 +93,7 @@ function resolveTranslatedMessage(i18n, key) {
     return null;
 }
 
-function resolveTfaLoginErrorMessage(i18n, message) {
+function resolveTranslatedTfaErrorMessage(i18n, message) {
     const normalizedMessage = String(message ?? "").trim();
     const messageKeyByCode = {
         invalid_totp_code: "ui.app.login.tfa.error_invalid",
@@ -142,7 +142,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             return switchToTfaPrompt(i18n, payload, root);
         },
         resolveErrorMessage(message) {
-            return resolveTfaLoginErrorMessage(i18n, message);
+            return resolveTranslatedTfaErrorMessage(i18n, message);
         },
     };
 }

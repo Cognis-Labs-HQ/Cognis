@@ -35,7 +35,7 @@
   <string name="gateway.tfa.settings.recovery_codes_generated">Recovery codes generated. Reveal them and store them safely.</string>
   <string name="gateway.tfa.settings.recovery_codes_reveal">Reveal Codes</string>
   <string name="gateway.tfa.settings.recovery_codes_hide">Hide Codes</string>
-  <string name="gateway.tfa.settings.recovery_code_prefix">Recovery Code</string>
+  <string name="gateway.tfa.settings.recovery_codes_prefix">Recovery Code</string>
   <string name="gateway.tfa.settings.recovery_codes_used">Used</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">Ready</string>
   <string name="gateway.tfa.settings.manual_secret">Manual Secret</string>

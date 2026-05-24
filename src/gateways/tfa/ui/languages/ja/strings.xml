@@ -35,7 +35,7 @@
   <string name="gateway.tfa.settings.recovery_codes_generated">復旧コードを生成しました。表示して安全に保存してください。</string>
   <string name="gateway.tfa.settings.recovery_codes_reveal">コードを表示</string>
   <string name="gateway.tfa.settings.recovery_codes_hide">コードを非表示</string>
-  <string name="gateway.tfa.settings.recovery_code_prefix">復旧コード</string>
+  <string name="gateway.tfa.settings.recovery_codes_prefix">復旧コード</string>
   <string name="gateway.tfa.settings.recovery_codes_used">使用済み</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">有効</string>
   <string name="gateway.tfa.settings.manual_secret">手動シークレット</string>

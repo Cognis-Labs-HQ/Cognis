@@ -19,7 +19,7 @@ import {
     loadRecoveryCodesStatus,
 } from "/static/gateways/tfa/security-api.js";
 
-export function createSettingsSection({ i18n, root, markDirty }) {
+export function createSettingsSection({ i18n, rootElement, markDirty }) {
     let tfaStatus = null;
     let recoveryCodesStatus = {
         codes: [],
@@ -35,7 +35,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let tfaDragAndDropBound = false;
     let pendingPreferredIds = [];
     let savedPreferredIds = [];
-    const settingsRoot = root ?? document;
+    const settingsRoot = rootElement ?? document;
 
     const fetchTfaStatus = () => loadTfaStatus(apiFetch);
     const fetchRecoveryCodesStatus = () => loadRecoveryCodesStatus(apiFetch);
@@ -63,7 +63,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         return null;
     }
 
-    function resolveTfaErrorMessage(message) {
+    function resolveTranslatedTfaErrorMessage(message) {
         const normalizedMessage = String(message ?? "").trim();
         const messageKeyByCode = {
             invalid_totp_code: "ui.app.login.tfa.error_invalid",
@@ -164,7 +164,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     ? recoveryCodesVisible
                         ? escapeHtml(codeText)
                         : "\u2022\u2022\u2022\u2022-\u2022\u2022\u2022\u2022"
-                    : `${i18n.t("gateway.tfa.settings.recovery_code_prefix")} ${escapeHtml(entry.label)}`;
+                    : `${i18n.t("gateway.tfa.settings.recovery_codes_prefix")} ${escapeHtml(entry.label)}`;
                 return `
                     <tr data-recovery-code-row="${escapeHtml(entry.id)}">
                       <td class="settings-recovery-code-cell">${codeDisplay}</td>
@@ -309,9 +309,12 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                         code: codeInput.value.trim(),
                     });
                     if (!result.ok) {
-                        showToast(resolveTfaErrorMessage(result.message), {
-                            variant: "error",
-                        });
+                        showToast(
+                            resolveTranslatedTfaErrorMessage(result.message),
+                            {
+                                variant: "error",
+                            },
+                        );
                         return false;
                     }
                     showToast(
