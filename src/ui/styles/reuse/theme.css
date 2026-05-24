@@ -91,6 +91,7 @@
 }
 
 body[data-theme="light"] {
+    --surface-soft: rgba(100, 116, 139, 0.08);
     --color-danger: #ef4444;
     --color-danger-text: #fff;
     --color-danger-border: #dc2626;

@@ -51,6 +51,11 @@ export function applyTheme(mode) {
         toggle.dataset.mode = normalized;
         toggle.textContent = normalized === "dark" ? "🌙" : "☀️";
     }
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+        themeColorMeta.content = normalized === "light" ? "#f4f8ff" : "#0f172a";
+    }
 }
 
 export function bindThemeToggle(options = {}) {
