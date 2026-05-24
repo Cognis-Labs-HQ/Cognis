@@ -22,11 +22,11 @@ function buildErrorContent(i18n, errorCode, isAuthenticated) {
     const brandMarkup = isAuthenticated
         ? ""
         : `
-                <div class="error-brand">
-                    <img src="/static/assets/icons/cognis-icon.png" alt="" class="error-brand-icon" />
-                    <span class="error-brand-name">${escapeHtml(i18n.t("ui.shared.brand.name"))}</span>
-                </div>
-          `;
+            <div class="error-brand">
+                <img src="/static/assets/icons/cognis-icon.png" alt="" aria-hidden="true" class="error-brand-icon" />
+                <span class="error-brand-name">${escapeHtml(i18n.t("ui.shared.brand.name"))}</span>
+            </div>
+        `;
 
     return `
         <div class="error-page${fullscreenClass}">
