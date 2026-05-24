@@ -457,7 +457,7 @@ export async function mount(root) {
           <input type="hidden" id="login-tfa-method" value="" />
           <label>
            <span id="login-tfa-code-label">${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}</span>
-           <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" required />
+           <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" aria-labelledby="login-tfa-code-label" required />
           </label>
         </div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
