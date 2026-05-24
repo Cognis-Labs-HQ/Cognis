@@ -35,6 +35,7 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">復旧コードを再発行できませんでした。</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready">このアカウントで復旧コードを利用できます。</string>
   <string name="gateway.auth.security.tfa_recovery_codes_missing">このアカウントでは有効な復旧コードがありません。</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_none">利用可能な復旧コードはありません。</string>
   <string name="gateway.auth.security.tfa_recovery_codes_remaining_label">残り {count} 件のコード。</string>
   <string name="gateway.auth.security.tfa_recovery_codes_generated">復旧コードを生成しました。表示して安全に保存してください。</string>
   <string name="gateway.auth.security.tfa_recovery_codes_reveal">コードを表示</string>

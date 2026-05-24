@@ -92,6 +92,13 @@ export interface UserRecoveryCodeStatus {
     usedAt: string | null;
 }
 
+export interface TfaLoginVerificationResult {
+    verified: boolean;
+    message?: string;
+    usedRecoveryCode?: boolean;
+    recoveryCodesRemaining?: number;
+}
+
 type NotifyDispatch = (envelope: {
     category: string;
     recipientUsername: string;
@@ -452,7 +459,7 @@ export class CoreTfaGateway {
         accountId: string,
         methodId: string,
         payload: Record<string, unknown>,
-    ): Promise<{ verified: boolean; message?: string }> {
+    ): Promise<TfaLoginVerificationResult> {
         if (methodId === "recovery_code") {
             const recoveryCode = String(payload.code ?? "").trim();
             if (!recoveryCode) {
@@ -464,10 +471,15 @@ export class CoreTfaGateway {
             );
             if (valid) {
                 await this.notifyLowRecoveryCodeCount(accountId);
+                const recoveryCodesRemaining =
+                    await this.store.countUnusedRecoveryCodes(accountId);
+                return {
+                    verified: true,
+                    usedRecoveryCode: true,
+                    recoveryCodesRemaining,
+                };
             }
-            return valid
-                ? { verified: true }
-                : { verified: false, message: "invalid_recovery_code" };
+            return { verified: false, message: "invalid_recovery_code" };
         }
 
         const methods = await this.store.listUserMethods(accountId);

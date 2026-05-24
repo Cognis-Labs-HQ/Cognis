@@ -35,6 +35,7 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Tidak dapat memutar ulang kode pemulihan.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready">Kode pemulihan tersedia untuk akun ini.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_missing">Tidak ada kode pemulihan aktif untuk akun ini.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_none">Tidak ada kode pemulihan yang tersedia.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_remaining_label">{count} kode tersisa.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_generated">Kode pemulihan telah dibuat. Tampilkan dan simpan dengan aman.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_reveal">Tampilkan Kode</string>

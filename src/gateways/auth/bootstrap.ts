@@ -875,7 +875,12 @@ function createAuthGatewayRoutes(
                         accountId: string,
                         tfaMethodId: string,
                         payload: Record<string, unknown>,
-                    ) => Promise<{ verified: boolean; message?: string }>
+                    ) => Promise<{
+                        verified: boolean;
+                        message?: string;
+                        usedRecoveryCode?: boolean;
+                        recoveryCodesRemaining?: number;
+                    }>
                 >("tfa:verifyLogin");
             if (!verifyTfaLogin) {
                 res.writeHead(503, { "content-type": "application/json" });
@@ -957,6 +962,12 @@ function createAuthGatewayRoutes(
                         userValidationMode: pendingAttempt.userValidationMode,
                         requiredUserValidation:
                             pendingAttempt.requiredUserValidation,
+                        usedRecoveryCode: tfaResult.usedRecoveryCode === true,
+                        recoveryCodesRemaining:
+                            Number.isFinite(tfaResult.recoveryCodesRemaining) &&
+                            Number(tfaResult.recoveryCodesRemaining) >= 0
+                                ? Number(tfaResult.recoveryCodesRemaining)
+                                : null,
                     },
                 }),
             );

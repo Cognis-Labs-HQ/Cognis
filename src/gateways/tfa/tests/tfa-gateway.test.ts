@@ -21,6 +21,7 @@ function createStoreMock() {
         recoveryCodes: [] as Array<{
             accountId: string;
             codeHash: string;
+            sortOrder: number;
             createdAt: string;
             usedAt: string | null;
         }>,
@@ -148,12 +149,14 @@ test("tfa gateway dispatches low recovery-code notification after recovery login
         {
             accountId: "alice",
             codeHash: "code-1",
+            sortOrder: 0,
             createdAt: new Date().toISOString(),
             usedAt: null,
         },
         {
             accountId: "alice",
             codeHash: "code-2",
+            sortOrder: 1,
             createdAt: new Date().toISOString(),
             usedAt: null,
         },

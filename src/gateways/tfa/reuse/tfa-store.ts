@@ -52,6 +52,7 @@ export interface PendingTfaSetup {
 export interface RecoveryCodeRecord {
     accountId: string;
     codeHash: string;
+    sortOrder: number;
     createdAt: string;
     usedAt: string | null;
 }
@@ -150,6 +151,12 @@ export class DbTfaStore {
             columns: [
                 { name: "account_id", type: "text", notNull: true },
                 { name: "code_hash", type: "text", notNull: true },
+                {
+                    name: "sort_order",
+                    type: "integer",
+                    notNull: true,
+                    default: 0,
+                },
                 {
                     name: "created_at",
                     type: "text",
@@ -437,13 +444,14 @@ export class DbTfaStore {
                 table: "tfa_recovery_codes",
                 where: [{ column: "account_id", value: accountId }],
             });
-            for (const recoveryCode of recoveryCodes) {
+            for (const [index, recoveryCode] of recoveryCodes.entries()) {
                 await executor.executeCommand({
                     option: "INSERT",
                     table: "tfa_recovery_codes",
                     values: {
                         account_id: accountId,
                         code_hash: hashRecoveryCode(recoveryCode),
+                        sort_order: index,
                         created_at: nowIso(),
                         used_at: null,
                     },
@@ -483,16 +491,23 @@ export class DbTfaStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "tfa_recovery_codes",
-            columns: ["account_id", "code_hash", "created_at", "used_at"],
+            columns: [
+                "account_id",
+                "code_hash",
+                "sort_order",
+                "created_at",
+                "used_at",
+            ],
             where: [{ column: "account_id", value: accountId }],
             orderBy: [
+                { column: "sort_order", direction: "ASC" },
                 { column: "created_at", direction: "ASC" },
-                { column: "code_hash", direction: "ASC" },
             ],
         });
         return (result.rows ?? []).map((row) => ({
             accountId: String(row.account_id ?? accountId),
             codeHash: String(row.code_hash ?? ""),
+            sortOrder: Number(row.sort_order ?? 0),
             createdAt: String(row.created_at ?? nowIso()),
             usedAt: row.used_at ? String(row.used_at) : null,
         }));

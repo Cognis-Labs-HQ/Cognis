@@ -346,6 +346,22 @@ export async function mount(root) {
         tfaCodeInput.setAttribute("aria-label", placeholderText);
     }
 
+    function persistRecoveryCodeUsageNotice(loginData) {
+        if (!loginData || loginData.usedRecoveryCode !== true) {
+            return;
+        }
+        const remainingCount = Number.isFinite(loginData.recoveryCodesRemaining)
+            ? Number(loginData.recoveryCodesRemaining)
+            : null;
+        sessionStorage.setItem(
+            "cognis_recovery_code_notice",
+            JSON.stringify({
+                usedRecoveryCode: true,
+                recoveryCodesRemaining: remainingCount,
+            }),
+        );
+    }
+
     function renderTfaMethodTabs(methods) {
         const tabsEl = document.querySelector("#login-tfa-method-nav");
         const methodInput = document.querySelector("#login-tfa-method");
@@ -544,6 +560,9 @@ export async function mount(root) {
                                     .catch(() => null);
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     persistSession(tfaBody.data);
+                                    persistRecoveryCodeUsageNotice(
+                                        tfaBody.data,
+                                    );
                                     const requiresUserValidation =
                                         tfaBody.data.requiredUserValidation ===
                                             true &&

@@ -35,6 +35,7 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Wiederherstellungscodes konnten nicht erneuert werden.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready">Für dieses Konto sind Wiederherstellungscodes verfügbar.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_missing">Für dieses Konto sind keine Wiederherstellungscodes aktiv.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_none">Keine Wiederherstellungscodes verfügbar.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_remaining_label">{count} Code(s) verbleiben.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_generated">Wiederherstellungscodes wurden erstellt. Blenden Sie sie ein und speichern Sie sie sicher.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_reveal">Codes Einblenden</string>

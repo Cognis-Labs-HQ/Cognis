@@ -140,6 +140,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         return row;
     }
 
+    function makeEmptyRecoveryCodeRow() {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.setAttribute("colspan", "2");
+        cell.className = "language-table-empty-cell";
+        cell.textContent = i18n.t("gateway.auth.security.tfa_recovery_codes_none");
+        row.append(cell);
+        return row;
+    }
+
     function renderTfaRows(methods, isPreferred) {
         if (!Array.isArray(methods) || methods.length === 0) {
             return makeEmptyMethodRow().outerHTML;
@@ -183,10 +193,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
 
     function renderRecoveryCodesRows() {
         if (!Array.isArray(recoveryCodesStatus.codes)) {
-            return renderEmptyTfaPlaceholder();
+            return makeEmptyRecoveryCodeRow().outerHTML;
         }
         if (recoveryCodesStatus.codes.length === 0) {
-            return renderEmptyTfaPlaceholder();
+            return makeEmptyRecoveryCodeRow().outerHTML;
         }
         return recoveryCodesStatus.codes
             .map((entry, index) => {
@@ -708,6 +718,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             i18n.t("ui.reuse.more_information"),
         );
         return `
+      <div class="settings-auth-password-reset">
+        <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
+        ${reason}
+        <button class="btn-animated" type="button" id="settings-reset-password-btn"${disabled}>${i18n.t("gateway.auth.security.reset_action")}</button>
+      </div>
       <div class="settings-auth-tfa">
         <h3>${i18n.t("gateway.auth.security.tfa_section_title")}</h3>
         <div class="sub-composer-inner content-grid--two-column">
@@ -733,11 +748,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
           <button class="btn-animated" type="button" id="settings-recovery-codes-toggle-btn" ${generatedRecoveryCodes.length === 0 ? "disabled" : ""}>${i18n.t(recoveryCodesVisible ? "gateway.auth.security.tfa_recovery_codes_hide" : "gateway.auth.security.tfa_recovery_codes_reveal")}</button>
         </div>
         <table id="settings-recovery-codes-table" class="language-table">${renderRecoveryCodesRows()}</table>
-      </div>
-      <div class="settings-auth-password-reset">
-        <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
-        ${reason}
-        <button class="btn-animated" type="button" id="settings-reset-password-btn"${disabled}>${i18n.t("gateway.auth.security.reset_action")}</button>
       </div>
     `;
     }

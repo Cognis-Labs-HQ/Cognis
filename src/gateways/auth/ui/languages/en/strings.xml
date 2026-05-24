@@ -35,6 +35,7 @@
   <string name="gateway.auth.security.tfa_recovery_codes_failed">Could not rotate recovery codes.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_ready">Recovery codes are available for this account.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_missing">No recovery codes are active for this account.</string>
+  <string name="gateway.auth.security.tfa_recovery_codes_none">No recovery codes available.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_remaining_label">{count} code(s) remaining.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_generated">Recovery codes generated. Reveal them and store them safely.</string>
   <string name="gateway.auth.security.tfa_recovery_codes_reveal">Reveal Codes</string>

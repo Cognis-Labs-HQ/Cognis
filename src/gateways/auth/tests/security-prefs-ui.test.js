@@ -36,3 +36,13 @@ test("security preferences TFA drag and drop uses dirty tracker", () => {
         /nextPreferredMethodIds\.splice\(\s*targetIsAfter \? targetIndex \+ 1 : targetIndex,\s*0,\s*methodId,\s*\)/,
     );
 });
+
+test("security preferences render password reset before tfa and recovery rows use defined empty state helper", () => {
+    const passwordResetIndex = SOURCE.indexOf("settings-auth-password-reset");
+    const tfaSectionIndex = SOURCE.indexOf("settings-auth-tfa");
+    assert.ok(passwordResetIndex >= 0);
+    assert.ok(tfaSectionIndex >= 0);
+    assert.ok(passwordResetIndex < tfaSectionIndex);
+    assert.match(SOURCE, /makeEmptyRecoveryCodeRow/);
+    assert.doesNotMatch(SOURCE, /renderEmptyTfaPlaceholder/);
+});

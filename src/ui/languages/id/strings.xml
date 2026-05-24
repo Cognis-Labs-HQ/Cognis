@@ -544,6 +544,10 @@
   <string name="ui.app.login.tfa.code_label_for_method">Kode {method}</string>
   <string name="ui.app.login.tfa.code_placeholder_totp">Kode TOTP</string>
   <string name="ui.app.login.tfa.code_placeholder_recovery">Kode Pemulihan</string>
+  <string name="ui.app.login.tfa.recovery_code_used">Kode pemulihan diterima untuk masuk.</string>
+  <string name="ui.app.login.tfa.recovery_code_remaining_low">Hanya tersisa {count} kode pemulihan.</string>
+  <string name="ui.app.login.tfa.recovery_code_remaining_critical">Tersisa {count} kode pemulihan. Segera buat set baru.</string>
+  <string name="ui.app.login.tfa.recovery_code_open_security">Buka Pengaturan Keamanan</string>
   <string name="ui.app.login.tfa.required_prompt">Verifikasi dua faktor wajib untuk melanjutkan.</string>
   <string name="ui.app.login.tfa.error_invalid">Kode dua faktor tidak valid.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Wajibkan Autentikasi Dua Faktor Untuk Semua Pengguna</string>

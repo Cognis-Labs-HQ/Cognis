@@ -544,6 +544,10 @@
   <string name="ui.app.login.tfa.code_label_for_method">{method} Code</string>
   <string name="ui.app.login.tfa.code_placeholder_totp">TOTP Code</string>
   <string name="ui.app.login.tfa.code_placeholder_recovery">Recovery Code</string>
+  <string name="ui.app.login.tfa.recovery_code_used">Recovery code accepted for sign-in.</string>
+  <string name="ui.app.login.tfa.recovery_code_remaining_low">Only {count} recovery codes remain.</string>
+  <string name="ui.app.login.tfa.recovery_code_remaining_critical">{count} recovery code(s) remain. Generate a new set now.</string>
+  <string name="ui.app.login.tfa.recovery_code_open_security">Open Security Settings</string>
   <string name="ui.app.login.tfa.required_prompt">Two-factor verification is required to continue.</string>
   <string name="ui.app.login.tfa.error_invalid">Invalid two-factor code.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Require Two-Factor Authentication for All Users</string>
