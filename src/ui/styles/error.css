@@ -2,8 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem;
-    min-height: 60vh;
+    width: 100%;
+    padding: 1.5rem 1rem;
 }
 
 .error-page--fullscreen {
@@ -16,8 +16,13 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    max-width: 640px;
+    width: 100%;
+    max-width: none;
     gap: 1.5rem;
+}
+
+.error-content--fullscreen {
+    max-width: 640px;
 }
 
 .error-code {

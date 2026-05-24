@@ -17,11 +17,12 @@ function buildErrorContent(i18n, errorCode, isAuthenticated) {
         : "ui.app.error.code.default";
     const description = i18n.t(descriptionKey);
     const fullscreenClass = isAuthenticated ? "" : " error-page--fullscreen";
+    const contentClass = isAuthenticated ? "" : " error-content--fullscreen";
     const ariaLabel = `${escapeHtml(i18n.t("ui.app.error.aria_prefix"))} ${escapeHtml(displayCode)}`;
 
     return `
         <div class="error-page${fullscreenClass}">
-            <div class="error-content">
+            <div class="error-content${contentClass}">
                 <div class="error-code" role="img" aria-label="${ariaLabel}">${escapeHtml(displayCode)}</div>
                 <p class="error-description">${escapeHtml(description)}</p>
                 <a href="/dashboard" class="error-dashboard-btn">
