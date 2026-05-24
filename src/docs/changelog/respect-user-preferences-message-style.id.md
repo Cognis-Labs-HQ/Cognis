@@ -79,3 +79,19 @@ Ketika emoji yang disarankan digunakan sebagai reaksi, emoji tersebut diganti da
 ## Opsi `contentScrolling` pada page composer
 
 Opsi `contentScrolling` baru (default `true`) pada `createPageComposer` memungkinkan halaman mengaktifkan mode tinggi penuh dengan meneruskan `contentScrolling: false`.
+
+## Komposer tetap terlihat pada utas panjang
+
+Halaman Pesan kini memakai mode konten tinggi-penuh sehingga daftar utas dibatasi dan komposer tetap terlihat meski riwayat sangat panjang.
+
+## "Reaksi Lainnya" kini menampilkan nama dan waktu sebaris
+
+Popup Reaksi Lainnya sekarang menampilkan tiap baris sebagai: emoji + nama pengguna + waktu reaksi dalam satu baris.
+
+## Header "Dilihat oleh X orang" kini menampilkan avatar
+
+Header popup kini menampilkan strip avatar pembaca selain teks jumlah.
+
+## Jarak IRC ditingkatkan untuk kontrol reaksi
+
+Jarak antar pesan pada gaya IRC ditingkatkan agar pemilih reaksi melayang dan area tooltip tampil bersih di antara pesan.

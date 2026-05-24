@@ -706,8 +706,17 @@ function renderReactionRows(message, i18n, isOwn = false) {
                 emoji: reaction.emoji,
                 count: Number(reaction.count ?? 0),
                 reactedBy: reaction.reactedBy
-                    .map((reactor) => resolveMemberDisplayName(reactor))
-                    .filter(Boolean),
+                    .map((reactor) => ({
+                        accountId: reactor?.accountId ?? null,
+                        handle: reactor?.handle ?? null,
+                        displayName: reactor?.displayName ?? null,
+                        reactedAt: reactor?.reactedAt ?? null,
+                    }))
+                    .filter(
+                        (reactor) =>
+                            resolveMemberDisplayName(reactor) &&
+                            reactor.accountId,
+                    ),
             })),
         ),
     );
@@ -844,6 +853,20 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
     const heading = i18n
         .t("module.social.messages.receipt_seen_by_count")
         .replace("{count}", String(readers.length));
+    const headingAvatars = readers
+        .map((reader) => {
+            const readerLabel =
+                reader.displayName || reader.handle || reader.accountId;
+            return buildProfileAvatarMarkup({
+                avatarKey: reader.avatarKey || null,
+                label: readerLabel,
+                colorSeed: reader.handle || reader.accountId || readerLabel,
+                avatarClass: "messages-receipt-heading-avatar",
+                imageClass: "messages-receipt-heading-avatar-img",
+                fallbackClass: "messages-receipt-heading-avatar-fallback",
+            });
+        })
+        .join("");
     const readerItems = readers
         .map((reader) => {
             const readerLabel =
@@ -870,7 +893,7 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
         .join("");
     readReceiptHoverPopup.show(
         statusElement,
-        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
+        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><div class="messages-receipt-popup-heading-avatars">${headingAvatars}</div><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
     );
 }
 
@@ -910,27 +933,42 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
         "Reactions";
     const closeLabel =
         i18n?.t("ui.reuse.close") ?? i18n?.t("ui.reuse.cancel") ?? "Close";
-    const body = rows
-        .map((row) => {
-            const emoji = String(row?.emoji ?? "").trim();
+    const detailRows = rows.flatMap((row) => {
+        const emoji = String(row?.emoji ?? "").trim();
+        const reactedByRows = Array.isArray(row?.reactedBy)
+            ? row.reactedBy
+            : [];
+        if (reactedByRows.length === 0) {
             const count = Number(row?.count ?? 0);
-            const reactedBy = Array.isArray(row?.reactedBy)
-                ? row.reactedBy
-                      .map((label) => String(label ?? "").trim())
-                      .filter(Boolean)
-                : [];
-            const usersMarkup =
-                reactedBy.length > 0
-                    ? `<ul class="messages-reaction-hover-popup-users">${reactedBy
-                          .map(
-                              (label) =>
-                                  `<li class="messages-reaction-hover-popup-user">${escapeHtml(label)}</li>`,
-                          )
-                          .join("")}</ul>`
+            return [
+                `<li class="messages-reaction-details-reactor">
+                    <span class="messages-reaction-details-reactor-emoji">${escapeHtml(emoji)}</span>
+                    <span class="messages-reaction-details-reactor-name">${escapeHtml(String(count))}</span>
+                </li>`,
+            ];
+        }
+        return reactedByRows
+            .map((reactor) => {
+                const label = resolveMemberDisplayName(reactor);
+                if (!label) return "";
+                const reactedAt = String(reactor?.reactedAt ?? "").trim();
+                const reactedDay = formatDate(reactedAt, "");
+                const reactedTime = formatMessageTime(reactedAt);
+                const reactedAtLabel = [reactedDay, reactedTime]
+                    .filter(Boolean)
+                    .join(" ");
+                const reactedAtMarkup = reactedAtLabel
+                    ? `<span class="messages-reaction-details-reactor-time">${escapeHtml(reactedAtLabel)}</span>`
                     : "";
-            return `<div class="messages-reaction-details-item"><p class="messages-reaction-details-title">${escapeHtml(emoji)} ${escapeHtml(String(count))}</p>${usersMarkup}</div>`;
-        })
-        .join("");
+                return `<li class="messages-reaction-details-reactor">
+                    <span class="messages-reaction-details-reactor-emoji">${escapeHtml(emoji)}</span>
+                    <span class="messages-reaction-details-reactor-name">${escapeHtml(label)}</span>
+                    ${reactedAtMarkup}
+                </li>`;
+            })
+            .filter(Boolean);
+    });
+    const body = `<ul class="messages-reaction-details-reactor-list">${detailRows.join("")}</ul>`;
     await openPopup({
         title: heading,
         maxWidth: "360px",
@@ -2495,6 +2533,7 @@ export async function mount(root, { signal } = {}) {
         elements,
         preferenceKey: "messages-layout",
         i18n,
+        contentScrolling: false,
         toolbar: [
             {
                 id: "messages-sidebar",

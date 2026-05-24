@@ -99,3 +99,19 @@ A new `contentScrolling` option (default `true`) on `createPageComposer` lets a
 page opt in to fill-height mode by passing `contentScrolling: false`. The content
 grid then constrains the content panel to the available viewport and disables its
 own scrolling, allowing the page to manage internal scrolling independently.
+
+## Composer stays visible in long threads
+
+The Messages page now runs in fill-height content mode so the thread list is constrained and the composer remains visible even when history is long.
+
+## More Reactions now shows inline names and times
+
+The More Reactions popup now renders each reaction row as: emoji + user name + reaction timestamp on one line.
+
+## Seen-by header now includes avatars
+
+The "Seen by X people" popup header now includes the reader avatar strip in addition to the count text.
+
+## IRC spacing increased for reaction controls
+
+IRC-style message spacing has been increased so the floating reaction picker and reaction tooltip area render cleanly between messages.

@@ -156,13 +156,13 @@ body:not([data-theme="light"])
 }
 
 .messages-page[data-message-style="irc"] .messages-thread-list {
-    gap: 0.35rem;
+    gap: 0.72rem;
 }
 
 .messages-page[data-message-style="irc"] .messages-message {
     max-width: 100%;
     align-self: stretch;
-    padding: 0.15rem 0;
+    padding: 0.22rem 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
@@ -200,7 +200,8 @@ body:not([data-theme="light"])
 .messages-page[data-message-style="irc"] .messages-message-row {
     display: flex;
     align-items: baseline;
-    gap: 0.35rem;
+    gap: 0.5rem;
+    padding-block: 0.16rem;
 }
 
 .messages-page[data-message-style="irc"] .messages-message-row--own {
@@ -226,7 +227,7 @@ body:not([data-theme="light"])
 }
 
 .messages-page[data-message-style="irc"] .messages-reactions-row {
-    margin-top: 0.12rem;
+    margin-top: 0.32rem;
 }
 
 .messages-page[data-message-style="irc"]
@@ -264,7 +265,7 @@ body:not([data-theme="light"])
 }
 
 .messages-page[data-message-style="irc"] {
-    --messages-reaction-picker-top-offset: -0.04rem;
+    --messages-reaction-picker-top-offset: -0.28rem;
 }
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message {

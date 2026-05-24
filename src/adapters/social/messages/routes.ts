@@ -990,6 +990,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         accountId: reactionRow.accountId,
                         handle: reactorProfile?.handle ?? null,
                         displayName: reactorProfile?.displayName ?? null,
+                        reactedAt: reactionRow.createdAt,
                     });
                 }
                 const enrichedMessages = messages.map((message) => {

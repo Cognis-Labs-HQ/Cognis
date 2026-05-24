@@ -79,3 +79,19 @@ Wenn ein vorgeschlagenes Emoji als Reaktion verwendet wird, wird es durch ein Em
 ## Seiten-Composer `contentScrolling`-Option
 
 Die neue Option `contentScrolling` (Standard `true`) in `createPageComposer` ermöglicht es einer Seite, in den Füllhöhen-Modus zu wechseln, indem `contentScrolling: false` übergeben wird.
+
+## Composer bleibt in langen Threads sichtbar
+
+Die Nachrichten-Seite nutzt jetzt den Fill-Height-Inhaltsmodus, sodass die Thread-Liste begrenzt ist und der Composer auch bei langen Verläufen sichtbar bleibt.
+
+## "Weitere Reaktionen" zeigt Namen und Zeit inline
+
+Das Popup "Weitere Reaktionen" zeigt jede Reaktionszeile jetzt als: Emoji + Benutzername + Reaktionszeit in einer Zeile.
+
+## "Gesehen von X Personen" zeigt jetzt Avatare im Kopfbereich
+
+Der Kopfbereich des Popups enthält nun zusätzlich zur Anzahl einen Avatar-Streifen der Leser.
+
+## IRC-Abstände für Reaktionssteuerung erhöht
+
+Die Abstände im IRC-Stil wurden erhöht, damit schwebender Reaktions-Picker und Tooltip-Bereich sauber zwischen Nachrichten erscheinen.
