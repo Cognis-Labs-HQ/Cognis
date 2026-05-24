@@ -21,10 +21,7 @@ test("login required-email enforcement uses notify gateway helper", () => {
 
 test("notify required-email helper checks verified primary email", () => {
     const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/gateways/notify/ui/login-required-email-flow.js",
-        ),
+        resolve(ROOT, "src/gateways/notify/ui/login-required-email-flow.js"),
         "utf8",
     );
     assert.match(source, /entry\.primary === true && entry\.verified === true/);

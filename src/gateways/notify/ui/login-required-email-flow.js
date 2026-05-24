@@ -36,10 +36,7 @@ async function promptRequiredEmailAddress(i18n) {
             inputElement = overlay.querySelector("#required-email-input");
         },
     });
-    if (
-        action !== "confirm" ||
-        !(inputElement instanceof HTMLInputElement)
-    ) {
+    if (action !== "confirm" || !(inputElement instanceof HTMLInputElement)) {
         return null;
     }
     return inputElement.value.trim().toLowerCase();
@@ -67,10 +64,7 @@ async function promptVerificationCode(i18n, emailAddress) {
             inputElement = overlay.querySelector("#required-email-code-input");
         },
     });
-    if (
-        action !== "confirm" ||
-        !(inputElement instanceof HTMLInputElement)
-    ) {
+    if (action !== "confirm" || !(inputElement instanceof HTMLInputElement)) {
         return null;
     }
     return inputElement.value.trim();
@@ -150,7 +144,8 @@ export function createRequiredEmailEnforcementClient() {
             while (true) {
                 const emails = await loadUserEmails(accountId);
                 const hasVerifiedPrimary = emails.some(
-                    (entry) => entry.primary === true && entry.verified === true,
+                    (entry) =>
+                        entry.primary === true && entry.verified === true,
                 );
                 if (hasVerifiedPrimary) return;
                 const emailAddress = await promptRequiredEmailAddress(i18n);

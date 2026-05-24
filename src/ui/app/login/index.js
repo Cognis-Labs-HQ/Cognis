@@ -76,14 +76,13 @@ export async function mount(root) {
 
     async function loadRequiredEmailEnforcementClient() {
         if (!requiredEmailEnforcementClientPromise) {
-            requiredEmailEnforcementClientPromise = import(
-                "/static/gateways/notify/login-required-email-flow.js"
-            )
-                .then((mod) => mod.createRequiredEmailEnforcementClient())
-                .catch((error) => {
-                    console.error(error);
-                    return null;
-                });
+            requiredEmailEnforcementClientPromise =
+                import("/static/gateways/notify/login-required-email-flow.js")
+                    .then((mod) => mod.createRequiredEmailEnforcementClient())
+                    .catch((error) => {
+                        console.error(error);
+                        return null;
+                    });
         }
         return requiredEmailEnforcementClientPromise;
     }
