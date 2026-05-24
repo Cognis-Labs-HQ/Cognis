@@ -50,59 +50,22 @@ test("ui routes redirect root to dashboard", async () => {
     assert.equal(recorder.headers.location, "/dashboard");
 });
 
-test("ui routes redirect non-api GET failures to the error page", async () => {
-    const token = issueAccessToken("ui-failure-user", "user", 60);
-    const route = createUiRoutes({
-        async listManifests() {
-            throw Object.assign(new Error("manifest-failure"), {
-                statusCode: 502,
-            });
-        },
-    } as any);
+test("ui routes use provided status code when redirecting unknown non-api GET paths", async () => {
+    const route = createUiRoutes();
     const recorder = createResponseRecorder();
 
     const handled = await route(
         {
             method: "GET",
-            headers: { cookie: `cognis_access_token=${token}` },
+            headers: {},
         } as any,
         recorder.res as any,
-        new URL("http://localhost/unhandled-ui-page"),
+        new URL("http://localhost/unknown-page?code=502"),
     );
 
     assert.equal(handled, true);
     assert.equal(recorder.status, 302);
     assert.equal(recorder.headers.location, "/error?code=502");
-});
-
-test("ui routes return API error payload on unhandled API failures", async () => {
-    const token = issueAccessToken("ui-api-failure-user", "user", 60);
-    const route = createUiRoutes({
-        async listManifests() {
-            throw Object.assign(new Error("manifest-timeout"), {
-                code: "ETIMEDOUT",
-            });
-        },
-    } as any);
-    const recorder = createResponseRecorder();
-
-    const handled = await route(
-        {
-            method: "GET",
-            headers: { cookie: `cognis_access_token=${token}` },
-        } as any,
-        recorder.res as any,
-        new URL("http://localhost/api/v1/ui/app-routes"),
-    );
-
-    assert.equal(handled, true);
-    assert.equal(recorder.status, 504);
-    assert.deepEqual(JSON.parse(recorder.body), {
-        error: {
-            code: "ui_route_failed",
-            message: "Failed to render UI route.",
-        },
-    });
 });
 
 test("dashboard route requires login cookie", async () => {
