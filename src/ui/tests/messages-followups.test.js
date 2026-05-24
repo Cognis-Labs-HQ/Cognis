@@ -153,7 +153,11 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
     assert.match(
         appSource,
-        /function statusBadgeSvgMarkup\([\s\S]*<circle cx="8" cy="8"/,
+        /function statusBadgeSvgMarkup\(extraMarkup = ""\)/,
+    );
+    assert.match(
+        appSource,
+        /<circle[\s\S]*cx="8"[\s\S]*cy="8"[\s\S]*r="5\.25"/,
     );
     assert.match(
         appSource,
