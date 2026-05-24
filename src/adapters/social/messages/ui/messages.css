@@ -280,11 +280,13 @@
     font-size: 0.75rem;
     color: var(--color-accent);
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .messages-message-sender {
     font-size: 0.75rem;
     color: var(--color-text-muted);
+    white-space: nowrap;
 }
 
 .messages-message-time {

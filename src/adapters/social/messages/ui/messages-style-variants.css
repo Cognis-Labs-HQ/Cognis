@@ -107,7 +107,7 @@ body:not([data-theme="light"])
 .messages-page[data-message-style="speech_bubbles"]
     .messages-reaction-picker-row,
 .messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {
-    width: 100%;
+    max-width: 100%;
 }
 
 .messages-page[data-message-style="speech_bubbles"]
@@ -210,6 +210,10 @@ body:not([data-theme="light"])
 
 .messages-page[data-message-style="irc"] .messages-reactions-row {
     margin-top: 0.12rem;
+}
+
+.messages-page[data-message-style="irc"] .messages-reaction-picker-row {
+    top: -0.04rem;
 }
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message {
