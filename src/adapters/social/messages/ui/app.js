@@ -706,17 +706,24 @@ function renderReactionRows(message, i18n, isOwn = false) {
                 emoji: reaction.emoji,
                 count: Number(reaction.count ?? 0),
                 reactedBy: reaction.reactedBy
-                    .map((reactor) => ({
-                        accountId: reactor?.accountId ?? null,
-                        handle: reactor?.handle ?? null,
-                        displayName: reactor?.displayName ?? null,
-                        reactedAt: reactor?.reactedAt ?? null,
-                    }))
+                    .map((reactor) => {
+                        const normalizedReactor = {
+                            accountId: reactor?.accountId ?? null,
+                            handle: reactor?.handle ?? null,
+                            displayName: reactor?.displayName ?? null,
+                            reactedAt: reactor?.reactedAt ?? null,
+                        };
+                        const resolvedLabel =
+                            resolveMemberDisplayName(normalizedReactor);
+                        return {
+                            ...normalizedReactor,
+                            resolvedLabel,
+                        };
+                    })
                     .filter(
-                        (reactor) =>
-                            resolveMemberDisplayName(reactor) &&
-                            reactor.accountId,
-                    ),
+                        (reactor) => reactor.resolvedLabel && reactor.accountId,
+                    )
+                    .map(({ resolvedLabel, ...reactor }) => reactor),
             })),
         ),
     );
@@ -952,8 +959,10 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
                 const label = resolveMemberDisplayName(reactor);
                 if (!label) return "";
                 const reactedAt = String(reactor?.reactedAt ?? "").trim();
-                const reactedDay = formatDate(reactedAt, "");
-                const reactedTime = formatMessageTime(reactedAt);
+                const reactedDay = reactedAt ? formatDate(reactedAt, "") : "";
+                const reactedTime = reactedAt
+                    ? formatMessageTime(reactedAt)
+                    : "";
                 const reactedAtLabel = [reactedDay, reactedTime]
                     .filter(Boolean)
                     .join(" ");

@@ -201,7 +201,8 @@ body:not([data-theme="light"])
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
-    padding-block: 0.16rem;
+    padding-top: 0.16rem;
+    padding-bottom: 0.16rem;
 }
 
 .messages-page[data-message-style="irc"] .messages-message-row--own {
