@@ -10,6 +10,11 @@ import {
 } from "../../../api/reuse/url-parts.js";
 import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
 import { isModeratorRole, normalizeMeetingPrefix } from "./meeting-values.js";
+import {
+    registerJitsiUiResourcesRoute,
+    resolveMessagesUiResources,
+    resolveSharedMessagesStylesheetUrls,
+} from "./ui-resources.js";
 
 const MODULE_ID = "jitsi-meet";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
@@ -227,6 +232,9 @@ async function registerStoredJitsiOrigin({
 }
 
 export function registerUi(ctx) {
+    const messagesUiResources = resolveMessagesUiResources(ctx);
+    const sharedStylesheetUrls =
+        resolveSharedMessagesStylesheetUrls(messagesUiResources);
     const moduleUiRoot = path.join(ctx.moduleRoot, "ui");
     ctx.registerStaticDir("", moduleUiRoot);
     ctx.registerNavbarPlugin({
@@ -240,6 +248,7 @@ export function registerUi(ctx) {
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
+            ...sharedStylesheetUrls,
             "/static/modules/jitsi-meet/jitsi-meet.css",
         ],
         access: { minRole: "user" },
@@ -256,6 +265,7 @@ export function registerUi(ctx) {
 export function registerApiRoutes(router, ctx) {
     const dbExecutor = ctx.getCapability("db:executor");
     const profileStore = ctx.getCapability("social:profileStore");
+    const messagesUiResources = resolveMessagesUiResources(ctx);
     const resolveGroupChat = ctx.getCapability(
         "social:messages:resolveGroupChatUrl",
     );
@@ -309,6 +319,12 @@ export function registerApiRoutes(router, ctx) {
                 },
             });
         });
+        registerJitsiUiResourcesRoute({
+            requireAuth,
+            router,
+            sendJson,
+            unavailable: true,
+        });
         for (const routePath of [
             "/api/v1/modules/jitsi-meet/config",
             "/api/v1/modules/jitsi-meet/meetings/create",
@@ -336,6 +352,13 @@ export function registerApiRoutes(router, ctx) {
     );
     const store = resolveStore(dbExecutor, log);
     void registerStoredJitsiOrigin({ store, registerScriptOrigins, log });
+
+    registerJitsiUiResourcesRoute({
+        requireAuth,
+        router,
+        sendJson,
+        messagesUiResources,
+    });
 
     async function dispatchMeetingNotifications(
         recipientUsernames,

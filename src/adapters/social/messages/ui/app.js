@@ -22,6 +22,8 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
+import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { formatDate, getEffectiveTimezone } from "/static/reuse/timestamp.js";
 import { normalizeMessageStyle } from "/static/reuse/message-style-options.js";
@@ -40,11 +42,16 @@ import {
 const TEXT_ENCODER = new TextEncoder();
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const MAX_EMOJI_GRID_SIZE = 80;
+const MESSAGE_WRAP_THRESHOLD = 80;
+const MAX_VISIBLE_REACTION_CHIPS = 5;
 
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
 const reactionHoverPopup = createAnchoredPopup({
     className: "messages-reaction-hover-popup",
+});
+const readReceiptHoverPopup = createAnchoredPopup({
+    className: "messages-read-receipt-popup",
 });
 
 const TYPING_TTL_SECONDS = 8;
@@ -125,18 +132,18 @@ function recordEmojiUsage(emoji) {
  *
  * @returns {string[]}
  */
-function getQuickReactionEmojis() {
+function getQuickReactionEmojis(count = 5) {
     const sortedByUsage = cachedEmojiUsage
         .map((entry) => normalizeReactionEmoji(entry.emoji))
         .filter(Boolean);
 
     const result = [];
     for (const emoji of sortedByUsage) {
-        if (result.length >= 5) break;
+        if (result.length >= count) break;
         if (!result.includes(emoji)) result.push(emoji);
     }
     for (const entry of cachedEmojiList ?? []) {
-        if (result.length >= 5) break;
+        if (result.length >= count) break;
         const normalized = normalizeReactionEmoji(entry.emoji);
         if (normalized && !result.includes(normalized)) result.push(normalized);
     }
@@ -154,6 +161,10 @@ function resolveMessageStyle() {
     } catch {
         return normalizeMessageStyle(null);
     }
+}
+
+function formatHandleNotation(handle) {
+    return `@${handle}`;
 }
 
 /**
@@ -318,15 +329,6 @@ async function getRoomKey(roomId) {
     return key;
 }
 
-function memberDisplayName(member) {
-    return (
-        member.displayName ||
-        member.username ||
-        member.handle ||
-        member.accountId
-    );
-}
-
 function profileHref(handle) {
     if (!handle) return "";
     return `/profile/${encodeURIComponent(String(handle).replace(/^@/, ""))}`;
@@ -339,13 +341,15 @@ function selectedRoomTitle(room, currentAccountId) {
     );
     if (room.kind === "dm") {
         return (
-            otherMembers.map(memberDisplayName).join(", ") ||
+            otherMembers.map(resolveMemberDisplayName).join(", ") ||
             room.title ||
             room.id
         );
     }
     return (
-        room.title || otherMembers.map(memberDisplayName).join(", ") || room.id
+        room.title ||
+        otherMembers.map(resolveMemberDisplayName).join(", ") ||
+        room.id
     );
 }
 
@@ -366,7 +370,7 @@ function randomSample(values, count) {
 }
 
 function renderMemberInitials(member) {
-    const label = memberDisplayName(member);
+    const label = resolveMemberDisplayName(member);
     const color = pickInitialsColor(member.handle || member.accountId || label);
     return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
 }
@@ -393,7 +397,9 @@ function renderRoomAvatar(room, currentAccountId) {
     const other =
         members.find((member) => member.accountId !== currentAccountId) ??
         members[0];
-    const label = other ? memberDisplayName(other) : room.title || room.id;
+    const label = other
+        ? resolveMemberDisplayName(other)
+        : room.title || room.id;
     return buildProfileAvatarMarkup({
         avatarKey: room.avatarKey || other?.avatarKey || null,
         label,
@@ -524,43 +530,29 @@ function buildLastReadMap(decodedMessages) {
     return readersAtMessage;
 }
 
-function formatReadReceiptEntry(reader) {
-    const readerLabel = reader.displayName || reader.handle || reader.accountId;
-    const readDay = formatDate(reader.readAt, "");
-    const readTime = formatMessageTime(reader.readAt);
-    return `${readerLabel} ${readDay} ${readTime}`.trim();
-}
-
-function buildReadReceiptHoverText(i18n, isDelivered, readersHere) {
-    if (!isDelivered) return i18n.t("module.social.messages.receipt_sent");
-    if (!readersHere.length)
-        return i18n.t("module.social.messages.receipt_delivered");
-    if (readersHere.length === 1) {
-        const readDay = formatDate(readersHere[0].readAt, "");
-        const readTime = formatMessageTime(readersHere[0].readAt);
-        return i18n
-            .t("module.social.messages.receipt_read_single")
-            .replace("{day}", readDay)
-            .replace("{time}", readTime);
-    }
-    const heading = i18n
-        .t("module.social.messages.receipt_read_by_count")
-        .replace("{count}", String(readersHere.length));
-    const lines = readersHere.map((reader) => formatReadReceiptEntry(reader));
-    return `${heading}\n${lines.join("\n")}`;
-}
-
 function renderMessageStatus(
     message,
     currentAccountId,
     isDelivered,
     readersHere,
+    hadPriorReaders,
     i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
-    const hoverText = buildReadReceiptHoverText(i18n, isDelivered, readersHere);
-    const titleAttr = escapeHtml(hoverText);
     if (readersHere.length > 0) {
+        const readerPayload = escapeHtml(
+            encodeURIComponent(
+                stableJson(
+                    readersHere.map((reader) => ({
+                        accountId: reader.accountId,
+                        handle: reader.handle || null,
+                        displayName: reader.displayName || null,
+                        avatarKey: reader.avatarKey || null,
+                        readAt: reader.readAt || null,
+                    })),
+                ),
+            ),
+        );
         const avatarMarkup = readersHere
             .map((reader) => {
                 const label =
@@ -572,15 +564,25 @@ function renderMessageStatus(
                     avatarClass: "messages-status-avatar",
                     imageClass: "messages-status-avatar-img",
                     fallbackClass: "messages-status-avatar-fallback",
-                    profileHandle: reader.handle || null,
-                    linkClass: "messages-avatar-link",
                 });
             })
             .join("");
-        return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${avatarMarkup}</div>`;
+        return `<span class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</span>`;
     }
-    const circleClass = isDelivered ? " messages-status-circle--delivered" : "";
-    return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-circle${circleClass}" aria-hidden="true"></span></div>`;
+    if (hadPriorReaders) {
+        // Clear stale status badges after readers advance to newer messages.
+        return "";
+    }
+    if (!isDelivered) {
+        const titleAttr = escapeHtml(
+            i18n.t("module.social.messages.receipt_sent"),
+        );
+        return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--sent">${statusUnknownSvgMarkup()}</span></span>`;
+    }
+    const titleAttr = escapeHtml(
+        i18n.t("module.social.messages.receipt_delivered"),
+    );
+    return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--delivered">${statusSentSvgMarkup()}</span></span>`;
 }
 
 function formatRoomEventText(message, i18n) {
@@ -621,8 +623,13 @@ function formatRoomEventText(message, i18n) {
     return null;
 }
 
-function renderReactionRow(message, i18n) {
-    if (!message?.id) return "";
+function renderReactionRows(message, i18n, isOwn = false) {
+    if (!message?.id) {
+        return {
+            pickerRow: "",
+            activeRow: "",
+        };
+    }
     const reactionRows = Array.isArray(message.reactions)
         ? message.reactions
         : [];
@@ -659,36 +666,143 @@ function renderReactionRow(message, i18n) {
         });
     }
     const hasChips = mergedByEmoji.size > 0;
-    const chips = Array.from(mergedByEmoji.values())
+    const allReactions = Array.from(mergedByEmoji.values());
+    const visibleReactions =
+        allReactions.length > 0
+            ? allReactions.slice(0, MAX_VISIBLE_REACTION_CHIPS)
+            : [];
+    const hiddenReactionCount = Math.max(
+        0,
+        allReactions.length - visibleReactions.length,
+    );
+    const chips = visibleReactions
         .map((reaction) => {
             const ownClass = reaction.reactedByMe
                 ? " messages-reaction-chip--active"
                 : "";
             const emojiName = emojiDisplayName(reaction.emoji, i18n);
             const reactedByLabels = reaction.reactedBy
-                .map((reactor) => memberDisplayName(reactor))
+                .map((reactor) => resolveMemberDisplayName(reactor))
                 .filter(Boolean);
             const reactedByPayload = stableJson(reactedByLabels);
             return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
-    const quickEmojis = getQuickReactionEmojis();
+    const quickEmojis = getQuickReactionEmojis(5 + mergedByEmoji.size);
     const quick = Array.from(new Set(quickEmojis))
         .filter(
             (emoji) =>
                 emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
         )
+        .slice(0, 5)
         .map(
             (emoji) =>
                 `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
         )
         .join("");
+    const reactionDetailsPayload = encodeURIComponent(
+        stableJson(
+            allReactions.map((reaction) => ({
+                emoji: reaction.emoji,
+                count: Number(reaction.count ?? 0),
+                reactedBy: reaction.reactedBy
+                    .map((reactor) => {
+                        const accountId = reactor?.accountId ?? null;
+                        if (!accountId) return null;
+                        const normalizedReactor = {
+                            accountId,
+                            handle: reactor?.handle ?? null,
+                            displayName: reactor?.displayName ?? null,
+                            reactedAt: reactor?.reactedAt ?? null,
+                        };
+                        const resolvedLabel =
+                            resolveMemberDisplayName(normalizedReactor);
+                        if (!resolvedLabel) return null;
+                        return {
+                            ...normalizedReactor,
+                            label: resolvedLabel,
+                        };
+                    })
+                    .filter(Boolean),
+            })),
+        ),
+    );
+    const detailsButtonLabel =
+        i18n?.t("module.social.messages.emoji_more") ?? "···";
+    const detailsButton =
+        hiddenReactionCount > 0
+            ? `<button type="button" class="messages-reaction-chip messages-reaction-more-btn messages-reaction-more-btn--details" data-reaction-details="1" data-reaction-details-payload="${escapeHtml(reactionDetailsPayload)}" data-message-id="${escapeHtml(message.id)}" title="${escapeHtml(detailsButtonLabel)}">+${escapeHtml(String(hiddenReactionCount))}</button>`
+            : "";
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
     const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
-    const rowClass = hasChips
-        ? "messages-reactions-row messages-reactions-row--has-chips"
+    const activeRowClass = hasChips
+        ? "messages-reactions-row messages-reactions-row--has-active"
         : "messages-reactions-row";
-    return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
+    const activeClass = hasChips
+        ? "messages-reactions-active messages-reactions-active--has-chips"
+        : "messages-reactions-active";
+    const ownClass = isOwn ? " messages-reactions-row--own" : "";
+    const pickerRow = `<div class="messages-reaction-picker-row${ownClass}"><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
+    const activeRow = `<div class="${activeRowClass}${ownClass}"><span class="${activeClass}">${chips}${detailsButton}</span></div>`;
+    return {
+        pickerRow,
+        activeRow,
+    };
+}
+
+function shouldAllowTextWrapping(messageText) {
+    if (typeof messageText !== "string") return false;
+    if (messageText.includes("\n")) return true;
+    let characterCount = 0;
+    for (const unicodeCharacter of messageText) {
+        characterCount += 1;
+        if (characterCount > MESSAGE_WRAP_THRESHOLD) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function renderMessageBodyMarkup(messageText) {
+    const normalizedText = String(
+        messageText ?? MESSAGE_UNAVAILABLE_PLACEHOLDER,
+    );
+    const wrapClass = shouldAllowTextWrapping(normalizedText)
+        ? ""
+        : " messages-message-body--no-wrap";
+    return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText)}</div>`;
+}
+
+function statusUnknownSvgMarkup() {
+    return statusBadgeSvgMarkup();
+}
+
+function statusSentSvgMarkup() {
+    return statusBadgeSvgMarkup(true);
+}
+
+function statusBadgeSvgMarkup(includeDeliveredTick = false) {
+    const deliveredTickMarkup = includeDeliveredTick
+        ? '<path d="M5.25 8.1L7.15 10L10.75 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>'
+        : "";
+    return `<svg
+        class="messages-status-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <circle
+            cx="8"
+            cy="8"
+            r="5.25"
+            stroke="currentColor"
+            stroke-width="1.5"
+        ></circle>
+        ${deliveredTickMarkup}
+    </svg>`;
 }
 
 function hideReactionHoverPopup() {
@@ -733,9 +847,145 @@ function showReactionHoverPopup(reactionChipButton) {
     );
 }
 
+function hideReadReceiptHoverPopup() {
+    readReceiptHoverPopup.hide();
+}
+
+function showReadReceiptHoverPopup(statusElement, readers, i18n) {
+    if (!(statusElement instanceof HTMLElement)) return;
+    if (!readers.length) {
+        hideReadReceiptHoverPopup();
+        return;
+    }
+    const heading = i18n
+        .t("module.social.messages.receipt_seen_by_count")
+        .replace("{count}", String(readers.length));
+    const readerItems = readers
+        .map((reader) => {
+            const readerLabel =
+                reader.displayName || reader.handle || reader.accountId;
+            const readDay = formatDate(reader.readAt, "");
+            const readTime = formatMessageTime(reader.readAt);
+            const timeLabel = [readDay, readTime].filter(Boolean).join(" ");
+            const avatarMarkup = buildProfileAvatarMarkup({
+                avatarKey: reader.avatarKey || null,
+                label: readerLabel,
+                colorSeed: reader.handle || reader.accountId || readerLabel,
+                avatarClass: "messages-receipt-popup-avatar",
+                imageClass: "messages-receipt-popup-avatar-img",
+                fallbackClass: "messages-receipt-popup-avatar-fallback",
+            });
+            return `<li class="messages-receipt-popup-reader">
+                ${avatarMarkup}
+                <span class="messages-receipt-popup-reader-meta">
+                    <span class="messages-receipt-popup-reader-name">${escapeHtml(readerLabel)}</span>
+                    ${timeLabel ? `<span class="messages-receipt-popup-reader-time">${escapeHtml(timeLabel)}</span>` : ""}
+                </span>
+            </li>`;
+        })
+        .join("");
+    readReceiptHoverPopup.show(
+        statusElement,
+        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
+    );
+    void hydrateProfileAvatars(document.body);
+}
+
+/**
+ * Parses a payload that may be URI-encoded JSON or raw JSON and returns an
+ * array shape for safe downstream rendering.
+ *
+ * @param {unknown} rawPayload
+ * @returns {Array<unknown>}
+ */
+function parseEncodedPayload(rawPayload) {
+    const normalizedRawPayload = String(rawPayload ?? "[]");
+    const parseCandidates = [normalizedRawPayload];
+    try {
+        // Try URI-decoded JSON first, then fall back to the raw payload.
+        parseCandidates.unshift(decodeURIComponent(normalizedRawPayload));
+    } catch {
+        // continue with raw payload candidate below
+    }
+    for (const candidate of parseCandidates) {
+        try {
+            const parsed = JSON.parse(candidate);
+            if (Array.isArray(parsed)) return parsed;
+        } catch {
+            // continue to next candidate
+        }
+    }
+    return [];
+}
+
+async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
+    const rows = Array.isArray(reactionDetailsRows) ? reactionDetailsRows : [];
+    if (rows.length === 0) return;
+    const heading =
+        i18n?.t("module.social.messages.emoji_more") ??
+        i18n?.t("module.social.messages.reactions") ??
+        "Reactions";
+    const closeLabel =
+        i18n?.t("ui.reuse.close") ?? i18n?.t("ui.reuse.cancel") ?? "Close";
+    const detailRows = rows.flatMap((row) => {
+        const emoji = String(row?.emoji ?? "").trim();
+        const emojiLabel = emojiDisplayName(emoji, i18n);
+        const reactedByRows = Array.isArray(row?.reactedBy)
+            ? row.reactedBy
+            : [];
+        if (reactedByRows.length === 0) {
+            const count = Number(row?.count ?? 0);
+            return [
+                `<li class="messages-reaction-details-reactor">
+                    <span class="messages-reaction-details-reactor-emoji" title="${escapeHtml(emojiLabel)}" aria-label="${escapeHtml(emojiLabel)}">${escapeHtml(emoji)}</span>
+                    <span class="messages-reaction-details-reactor-name">${escapeHtml(String(count))}</span>
+                </li>`,
+            ];
+        }
+        return reactedByRows
+            .map((reactor) => {
+                const label =
+                    String(reactor?.label ?? "").trim() ||
+                    resolveMemberDisplayName(reactor);
+                if (!label) return "";
+                const reactedAt = String(reactor?.reactedAt ?? "").trim();
+                let reactedAtLabel = "";
+                if (reactedAt) {
+                    const reactedDay = formatDate(reactedAt, "");
+                    const reactedTime = formatMessageTime(reactedAt);
+                    reactedAtLabel = [reactedDay, reactedTime]
+                        .filter(Boolean)
+                        .join(" ");
+                }
+                const reactedAtMarkup = reactedAtLabel
+                    ? `<span class="messages-reaction-details-reactor-time">${escapeHtml(reactedAtLabel)}</span>`
+                    : "";
+                return `<li class="messages-reaction-details-reactor">
+                    <span class="messages-reaction-details-reactor-emoji" title="${escapeHtml(emojiLabel)}" aria-label="${escapeHtml(emojiLabel)}">${escapeHtml(emoji)}</span>
+                    <span class="messages-reaction-details-reactor-name">${escapeHtml(label)}</span>
+                    ${reactedAtMarkup}
+                </li>`;
+            })
+            .filter(Boolean);
+    });
+    const body = `<ul class="messages-reaction-details-reactor-list">${detailRows.join("")}</ul>`;
+    await openPopup({
+        title: heading,
+        maxWidth: "360px",
+        body: `<div class="messages-reaction-details-popup">${body}</div>`,
+        actions: [
+            {
+                id: "close",
+                label: closeLabel,
+                variant: "cancel",
+            },
+        ],
+    });
+}
+
 function formatRoomListAvatar(room, displayedMember, titleSource) {
     const label = displayedMember
-        ? memberDisplayName(displayedMember)
+        ? resolveMemberDisplayName(displayedMember)
         : titleSource;
     return buildProfileAvatarMarkup({
         avatarKey: room?.avatarKey || displayedMember?.avatarKey || null,
@@ -756,7 +1006,7 @@ function renderMemberSummaryItem(
     member,
     { avatarClass, imageClass, fallbackClass, statusText = "" },
 ) {
-    const label = memberDisplayName(member);
+    const label = resolveMemberDisplayName(member);
     return `
         <li class="messages-member-summary-item">
             ${buildProfileAvatarMarkup({
@@ -812,6 +1062,21 @@ function formatMessageAvatar(message) {
         avatarClass: "messages-message-avatar",
         imageClass: "messages-message-avatar-img",
         fallbackClass: "messages-message-avatar-fallback",
+        profileHandle: message.senderHandle || null,
+        linkClass: "messages-avatar-link",
+    });
+}
+
+function formatMessageBubbleAvatar(message) {
+    const senderLabel =
+        message.senderDisplayName || message.senderHandle || message.senderId;
+    return buildProfileAvatarMarkup({
+        avatarKey: message.senderAvatarKey || null,
+        label: senderLabel,
+        colorSeed: message.senderHandle || message.senderId || senderLabel,
+        avatarClass: "messages-message-bubble-avatar",
+        imageClass: "messages-message-bubble-avatar-img",
+        fallbackClass: "messages-message-bubble-avatar-fallback",
         profileHandle: message.senderHandle || null,
         linkClass: "messages-avatar-link",
     });
@@ -875,6 +1140,7 @@ async function renderThread(
     );
     let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
+    const isSpeechBubbles = resolveMessageStyle() === "speech_bubbles";
     const html = decoded
         .map((msg) => {
             const dateLabel = formatDate(msg.createdAt, "");
@@ -891,15 +1157,13 @@ async function renderThread(
             }
             const isOwn = msg.senderId === currentAccountId;
             const ownClass = isOwn ? " messages-message--own" : "";
-            const senderLabel = isOwn
-                ? ""
-                : `<span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>`;
             const timeLabel = msg.createdAt
                 ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatMessageTime(msg.createdAt))}</time>`
                 : "";
             const readers = Array.isArray(msg.readBy) ? msg.readBy : [];
             const deliveredCount = Number(msg.deliveredToCount ?? 0);
             const isDelivered = deliveredCount > 0 || readers.length > 0;
+            const hadPriorReaders = readers.length > 0;
             const readersHere = isOwn
                 ? (readersAtMessage.get(msg.id) ?? []).filter(
                       (reader) => reader.accountId !== currentAccountId,
@@ -910,23 +1174,43 @@ async function renderThread(
                 currentAccountId,
                 isDelivered,
                 readersHere,
+                hadPriorReaders,
                 i18n,
             );
-            const metadataRow = timeLabel
-                ? `<span class="messages-message-meta">${timeLabel}</span>`
-                : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
+            const displayName =
+                msg.senderDisplayName || msg.senderHandle || msg.senderId;
+            const handle = msg.senderHandle || "";
+            const senderDisplaySpan = `<span class="messages-message-sender">${escapeHtml(displayName)}</span>`;
+            const senderHandleSpan = handle
+                ? `<span class="messages-message-handle">${escapeHtml(formatHandleNotation(handle))}</span>`
+                : "";
+            const senderLabel = isOwn
+                ? senderHandleSpan
+                : `${senderDisplaySpan}${senderHandleSpan}`;
+            const bubbleAvatarMarkup = formatMessageBubbleAvatar(msg);
+            const reactionRows = renderReactionRows(msg, i18n, isOwn);
+            const metadataRow =
+                timeLabel || statusBlock
+                    ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
+                    : "";
+            const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
+            const outerMetaRow = isSpeechBubbles ? metadataRow : "";
             return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
             ${isOwn ? "" : formatMessageAvatar(msg)}
-            <div class="messages-message${ownClass}">
-                ${senderLabel}
-                <span class="messages-message-content">
-                    <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
-                    ${metadataRow}
-                </span>
-                ${renderReactionRow(msg, i18n)}
+            <div class="messages-message-wrap">
+                ${bubbleAvatarMarkup}
+                ${reactionRows.pickerRow}
+                <div class="messages-message${ownClass}">
+                    ${senderLabel}
+                    <div class="messages-message-content">
+                        ${renderMessageBodyMarkup(msg.text)}
+                        ${innerMetaRow}
+                    </div>
+                </div>
+                ${outerMetaRow}
+                ${reactionRows.activeRow}
             </div>
-            ${statusBlock}
         </div>`;
         })
         .join("");
@@ -934,6 +1218,7 @@ async function renderThread(
     const hasMore = messageList.length === 50;
     const oldestCreatedAt = ordered[0]?.createdAt ?? null;
     hideReactionHoverPopup();
+    hideReadReceiptHoverPopup();
 
     if (before) {
         const savedHeight = container.scrollHeight;
@@ -1754,8 +2039,8 @@ export async function mount(root, { signal } = {}) {
                 `<section class="messages-thread">
                     <div id="messages-thread-header-slot"></div>
                     <div id="messages-request-banner-slot"></div>
-                    <div class="messages-typing-status" id="messages-typing-status"></div>
                     <div class="messages-thread-list" id="messages-thread-list"></div>
+                    <div class="messages-typing-status" id="messages-typing-status"></div>
                     <form class="messages-composer" id="messages-composer">
                         <textarea
                             id="messages-composer-input"
@@ -1774,14 +2059,13 @@ export async function mount(root, { signal } = {}) {
                     "messages-thread-list",
                 );
                 const form = document.getElementById("messages-composer");
-                const reactionHoverEventOptions = signal
-                    ? { signal }
-                    : undefined;
+                const passiveEventOptions = signal ? { signal } : undefined;
 
                 threadList?.addEventListener(
                     "click",
                     async (clickEvent) => {
                         hideReactionHoverPopup();
+                        hideReadReceiptHoverPopup();
                         const moreButton = clickEvent.target.closest(
                             "[data-reaction-more]",
                         );
@@ -1790,6 +2074,19 @@ export async function mount(root, { signal } = {}) {
                                 moreButton.getAttribute("data-message-id");
                             if (messageId)
                                 await openEmojiPickerPopup(messageId);
+                            return;
+                        }
+                        const reactionDetailsButton = clickEvent.target.closest(
+                            "[data-reaction-details]",
+                        );
+                        if (reactionDetailsButton instanceof HTMLElement) {
+                            const rawDetailsPayload =
+                                reactionDetailsButton.getAttribute(
+                                    "data-reaction-details-payload",
+                                ) ?? "[]";
+                            const parsedDetails =
+                                parseEncodedPayload(rawDetailsPayload);
+                            await openReactionDetailsPopup(parsedDetails, i18n);
                             return;
                         }
                         const reactionButton = clickEvent.target.closest(
@@ -1839,7 +2136,7 @@ export async function mount(root, { signal } = {}) {
                             beforeTime,
                         );
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1864,7 +2161,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         showReactionHoverPopup(reactionChipButton);
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1889,7 +2186,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         hideReactionHoverPopup();
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1907,7 +2204,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         showReactionHoverPopup(reactionChipButton);
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
@@ -1932,13 +2229,13 @@ export async function mount(root, { signal } = {}) {
                         }
                         hideReactionHoverPopup();
                     },
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
 
                 threadList?.addEventListener(
                     "scroll",
                     hideReactionHoverPopup,
-                    reactionHoverEventOptions,
+                    passiveEventOptions,
                 );
                 window.addEventListener(
                     "resize",
@@ -1948,6 +2245,95 @@ export async function mount(root, { signal } = {}) {
                     {
                         signal,
                     },
+                );
+
+                threadList?.addEventListener(
+                    "mouseover",
+                    (mouseEvent) => {
+                        const hoveredElement = mouseEvent.target;
+                        if (!(hoveredElement instanceof Element)) return;
+                        const statusElement = hoveredElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            statusElement.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        const rawReaders =
+                            statusElement.getAttribute("data-readers") ?? "[]";
+                        const readers = parseEncodedPayload(rawReaders);
+                        showReadReceiptHoverPopup(statusElement, readers, i18n);
+                    },
+                    passiveEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "mouseout",
+                    (mouseEvent) => {
+                        const originElement = mouseEvent.target;
+                        if (!(originElement instanceof Element)) return;
+                        const statusElement = originElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            statusElement.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        hideReadReceiptHoverPopup();
+                    },
+                    passiveEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "focusin",
+                    (focusEvent) => {
+                        const focusedElement = focusEvent.target;
+                        if (!(focusedElement instanceof Element)) return;
+                        const statusElement = focusedElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const rawReaders =
+                            statusElement.getAttribute("data-readers") ?? "[]";
+                        const readers = parseEncodedPayload(rawReaders);
+                        showReadReceiptHoverPopup(statusElement, readers, i18n);
+                    },
+                    passiveEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "focusout",
+                    (focusEvent) => {
+                        const blurredElement = focusEvent.target;
+                        if (!(blurredElement instanceof Element)) return;
+                        const statusElement = blurredElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const nextFocusedElement = focusEvent.relatedTarget;
+                        if (
+                            nextFocusedElement instanceof Element &&
+                            statusElement.contains(nextFocusedElement)
+                        ) {
+                            return;
+                        }
+                        hideReadReceiptHoverPopup();
+                    },
+                    passiveEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "scroll",
+                    hideReadReceiptHoverPopup,
+                    passiveEventOptions,
                 );
 
                 form?.addEventListener("submit", async (event) => {
@@ -2095,7 +2481,9 @@ export async function mount(root, { signal } = {}) {
         "abort",
         () => {
             hideReactionHoverPopup();
+            hideReadReceiptHoverPopup();
             reactionHoverPopup.destroy();
+            readReceiptHoverPopup.destroy();
             if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
             if (typingPollIntervalId) clearInterval(typingPollIntervalId);
             if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);

@@ -47,6 +47,114 @@ import {
     buildStageMarkup,
 } from "./markup.js";
 
+const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
+    languageBaseUrls: ["/static/modules/jitsi-meet/languages"],
+    stylesheetUrls: [],
+    reactionHelpersModuleUrl: null,
+});
+
+const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
+    destroy: () => undefined,
+    hideReactionHoverPopup: () => undefined,
+    openEmojiPickerPopup: async () => undefined,
+    recordEmojiUsage: () => undefined,
+    renderReactionRow: () => "",
+    repositionReactionHoverPopup: () => undefined,
+    showReactionHoverPopup: () => undefined,
+    toggleReaction: async () => undefined,
+});
+
+async function loadMessageUiResources() {
+    try {
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/ui-resources",
+        );
+        if (!response.ok) {
+            console.warn(
+                "[jitsi-meet] message UI resources unavailable; using fallback resources",
+                {
+                    operation: "load_message_ui_resources",
+                    status: response.status,
+                },
+            );
+            return FALLBACK_MESSAGE_UI_RESOURCES;
+        }
+        const payload = await response.json().catch(() => ({ data: null }));
+        const responseData = payload?.data ?? {};
+        const languageBaseUrls = Array.isArray(responseData.languageBaseUrls)
+            ? responseData.languageBaseUrls.filter(
+                  (entry) => typeof entry === "string" && entry.length > 0,
+              )
+            : FALLBACK_MESSAGE_UI_RESOURCES.languageBaseUrls;
+        const stylesheetUrls = Array.isArray(responseData.stylesheetUrls)
+            ? responseData.stylesheetUrls.filter(
+                  (entry) => typeof entry === "string" && entry.length > 0,
+              )
+            : [];
+        const reactionHelpersModuleUrl =
+            typeof responseData.reactionHelpersModuleUrl === "string" &&
+            responseData.reactionHelpersModuleUrl.length > 0
+                ? responseData.reactionHelpersModuleUrl
+                : null;
+        return {
+            languageBaseUrls:
+                languageBaseUrls.length > 0
+                    ? languageBaseUrls
+                    : FALLBACK_MESSAGE_UI_RESOURCES.languageBaseUrls,
+            stylesheetUrls,
+            reactionHelpersModuleUrl,
+        };
+    } catch {
+        console.warn(
+            "[jitsi-meet] failed to load message UI resources; using fallback resources",
+            { operation: "load_message_ui_resources" },
+        );
+        return FALLBACK_MESSAGE_UI_RESOURCES;
+    }
+}
+
+function ensureStylesheetLoaded(stylesheetUrl) {
+    if (!stylesheetUrl) return;
+    if (
+        document.querySelector(
+            `link[rel="stylesheet"][href="${CSS.escape(stylesheetUrl)}"]`,
+        )
+    ) {
+        return;
+    }
+    const stylesheetLink = document.createElement("link");
+    stylesheetLink.rel = "stylesheet";
+    stylesheetLink.href = stylesheetUrl;
+    document.head.append(stylesheetLink);
+}
+
+async function loadMessageReactionsController(
+    messageUiResources,
+    i18n,
+    onReactionUpdated,
+) {
+    const moduleUrl = messageUiResources?.reactionHelpersModuleUrl;
+    if (!moduleUrl) return null;
+    try {
+        const moduleExports = await import(moduleUrl);
+        if (
+            typeof moduleExports?.createMessageReactionsController !==
+            "function"
+        ) {
+            return null;
+        }
+        const reactionsController =
+            moduleExports.createMessageReactionsController({
+                i18n,
+                onReactionUpdated,
+            });
+        await reactionsController.loadEmojiUsage?.();
+        return reactionsController;
+    } catch {
+        return null;
+    }
+}
+
 function normalizeChatRoomId(value) {
     const asString = String(value ?? "").trim();
     if (!asString) return "";
@@ -173,10 +281,30 @@ async function fetchParticipants(query) {
  * @returns {Promise<void>}
  */
 export async function mount(root, { signal } = {}) {
+    const messageUiResources = await loadMessageUiResources();
+    for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
+        ensureStylesheetLoaded(stylesheetUrl);
+    }
     const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/modules/jitsi-meet/languages"],
+        componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
+    const messageReactions =
+        (await loadMessageReactionsController(
+            messageUiResources,
+            i18n,
+            async () => {
+                await refreshNativeChat();
+            },
+        )) ?? NULL_MESSAGE_REACTIONS_CONTROLLER;
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
+    signal?.addEventListener(
+        "abort",
+        () => {
+            messageReactions.hideReactionHoverPopup();
+            messageReactions.destroy();
+        },
+        { once: true },
+    );
 
     const state = {
         allParticipants: [],
@@ -432,6 +560,7 @@ export async function mount(root, { signal } = {}) {
     function renderChatMessages(messages) {
         const chatThread = root.querySelector("#jitsi-chat-thread");
         if (!(chatThread instanceof HTMLElement)) return;
+        messageReactions.hideReactionHoverPopup();
         if (!Array.isArray(messages) || messages.length === 0) {
             chatThread.innerHTML = `<p class="jitsi-chat-empty">${escapeHtml(i18n.t("module.jitsi_meet.chat.empty"))}</p>`;
             return;
@@ -462,9 +591,18 @@ export async function mount(root, { signal } = {}) {
                 <time>${escapeHtml(safeTime)}</time>
               </header>
               <p class="jitsi-chat-message-body">${body}</p>
+              ${messageReactions.renderReactionRow(message)}
             </article>`;
             })
             .join("");
+    }
+
+    async function toggleReaction(roomId, messageId, emoji) {
+        await messageReactions.toggleReaction(roomId, messageId, emoji);
+    }
+
+    async function openEmojiPickerPopup(roomId, messageId) {
+        await messageReactions.openEmojiPickerPopup(roomId, messageId);
     }
 
     function clearNativeChatThread() {
@@ -1742,6 +1880,7 @@ export async function mount(root, { signal } = {}) {
         const reclaimButton = container.querySelector("#jitsi-reclaim-btn");
         const chatForm = container.querySelector("#jitsi-chat-form");
         const chatInput = container.querySelector("#jitsi-chat-input");
+        const chatThread = container.querySelector("#jitsi-chat-thread");
         const chatParticipantStrip = container.querySelector(
             "#jitsi-chat-participant-strip",
         );
@@ -1943,6 +2082,131 @@ export async function mount(root, { signal } = {}) {
                 () => {
                     if (!state.lastMeetingChatRoomId) return;
                     void activateMeetingChat();
+                },
+                { signal: bindSignal },
+            );
+        }
+
+        if (chatThread instanceof HTMLElement) {
+            chatThread.addEventListener(
+                "click",
+                async (clickEvent) => {
+                    messageReactions.hideReactionHoverPopup();
+                    const moreButton = clickEvent.target.closest(
+                        "[data-reaction-more]",
+                    );
+                    if (moreButton instanceof HTMLButtonElement) {
+                        const messageId =
+                            moreButton.getAttribute("data-message-id");
+                        const roomId = state.chatRoomId;
+                        if (messageId && roomId) {
+                            await openEmojiPickerPopup(roomId, messageId);
+                        }
+                        return;
+                    }
+                    const reactionButton = clickEvent.target.closest(
+                        "[data-message-id][data-emoji]",
+                    );
+                    if (!(reactionButton instanceof HTMLButtonElement)) {
+                        return;
+                    }
+                    const roomId = state.chatRoomId;
+                    const messageId =
+                        reactionButton.getAttribute("data-message-id");
+                    const emoji = reactionButton.getAttribute("data-emoji");
+                    if (!roomId || !messageId || !emoji) return;
+                    if (
+                        reactionButton.classList.contains(
+                            "messages-reaction-add-btn",
+                        )
+                    ) {
+                        messageReactions.recordEmojiUsage(emoji);
+                    }
+                    await toggleReaction(roomId, messageId, emoji);
+                },
+                { signal: bindSignal },
+            );
+            chatThread.addEventListener(
+                "mouseover",
+                (mouseEvent) => {
+                    const hoveredElement = mouseEvent.target;
+                    if (!(hoveredElement instanceof Element)) return;
+                    const reactionChipButton = hoveredElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
+                    const relatedElement = mouseEvent.relatedTarget;
+                    if (
+                        relatedElement instanceof Element &&
+                        reactionChipButton.contains(relatedElement)
+                    ) {
+                        return;
+                    }
+                    messageReactions.showReactionHoverPopup(reactionChipButton);
+                },
+                { signal: bindSignal },
+            );
+            chatThread.addEventListener(
+                "mouseout",
+                (mouseEvent) => {
+                    const originElement = mouseEvent.target;
+                    if (!(originElement instanceof Element)) return;
+                    const reactionChipButton = originElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
+                    const relatedElement = mouseEvent.relatedTarget;
+                    if (
+                        relatedElement instanceof Element &&
+                        reactionChipButton.contains(relatedElement)
+                    ) {
+                        return;
+                    }
+                    messageReactions.hideReactionHoverPopup();
+                },
+                { signal: bindSignal },
+            );
+            chatThread.addEventListener(
+                "focusin",
+                (focusEvent) => {
+                    const focusedElement = focusEvent.target;
+                    if (!(focusedElement instanceof Element)) return;
+                    const reactionChipButton = focusedElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
+                    messageReactions.showReactionHoverPopup(reactionChipButton);
+                },
+                { signal: bindSignal },
+            );
+            chatThread.addEventListener(
+                "focusout",
+                (focusEvent) => {
+                    const blurredElement = focusEvent.target;
+                    if (!(blurredElement instanceof Element)) return;
+                    const reactionChipButton = blurredElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement))
+                        return;
+                    const nextFocusedElement = focusEvent.relatedTarget;
+                    if (
+                        nextFocusedElement instanceof Element &&
+                        reactionChipButton.contains(nextFocusedElement)
+                    ) {
+                        return;
+                    }
+                    messageReactions.hideReactionHoverPopup();
+                },
+                { signal: bindSignal },
+            );
+            window.addEventListener(
+                "resize",
+                () => {
+                    messageReactions.repositionReactionHoverPopup();
                 },
                 { signal: bindSignal },
             );
@@ -2248,10 +2512,15 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
-    const [allParticipants, currentProfile] = await Promise.all([
-        fetchParticipants(""),
-        fetchCurrentProfile(),
-    ]);
+    const [allParticipants, currentProfile, loadedEmojis, loadedUsage] =
+        await Promise.all([
+            fetchParticipants(""),
+            fetchCurrentProfile(),
+            loadAllEmojis(),
+            fetchEmojiUsage(),
+        ]);
+    cachedEmojiList = loadedEmojis;
+    cachedEmojiUsage = loadedUsage;
     state.currentProfile = currentProfile;
     state.allParticipants = allParticipants
         .map((entry) => ({

@@ -22,7 +22,7 @@
   <string name="module.social.messages.receipt_sent">Terkirim</string>
   <string name="module.social.messages.receipt_delivered">Tersampaikan</string>
   <string name="module.social.messages.receipt_read_single">Dibaca: {day} {time}</string>
-  <string name="module.social.messages.receipt_read_by_count">Dibaca oleh: {count} pengguna</string>
+  <string name="module.social.messages.receipt_seen_by_count">Dilihat oleh {count} orang</string>
   <string name="module.social.messages.typing">sedang mengetik…</string>
   <string name="module.social.messages.typing_users">{names} sedang mengetik…</string>
   <string name="module.social.messages.requests">Permintaan pesan</string>

@@ -1,4 +1,4 @@
-# Orbitron-Schrift Wiederhergestellt
+# Orbitron-Schrift Behoben
 
 ## Orbitron-Schrift Wird Jetzt Korrekt Angezeigt
 

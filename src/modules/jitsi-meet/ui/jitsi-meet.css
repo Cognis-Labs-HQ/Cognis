@@ -253,13 +253,17 @@
 }
 
 .jitsi-chat-message {
-    padding: 0.65rem 0.75rem;
-    border-radius: 0.75rem;
-    background: rgba(30, 41, 59, 0.8);
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.65rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
 }
 
 .jitsi-chat-message-own {
-    background: rgba(37, 99, 235, 0.35);
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+    border-color: var(--color-accent);
 }
 
 .jitsi-chat-message-head {
@@ -268,6 +272,21 @@
     gap: 0.75rem;
     margin-bottom: 0.35rem;
     font-size: 0.8rem;
+}
+
+.jitsi-chat-message-head strong {
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.jitsi-chat-message-head time {
+    color: var(--color-text-muted);
+    opacity: 0.85;
+}
+
+.jitsi-chat-message-own .jitsi-chat-message-head strong,
+.jitsi-chat-message-own .jitsi-chat-message-head time {
+    color: var(--color-accent-contrast);
 }
 
 .jitsi-chat-message-body {
@@ -523,14 +542,6 @@ body[data-theme="light"] .jitsi-spinner {
 body[data-theme="light"] .jitsi-chat-thread,
 body[data-theme="light"] .jitsi-chat-input {
     background: rgba(248, 250, 252, 0.96);
-}
-
-body[data-theme="light"] .jitsi-chat-message {
-    background: rgba(226, 232, 240, 0.95);
-}
-
-body[data-theme="light"] .jitsi-chat-message-own {
-    background: rgba(191, 219, 254, 0.95);
 }
 
 body[data-theme="light"] .jitsi-chat-participant-item {

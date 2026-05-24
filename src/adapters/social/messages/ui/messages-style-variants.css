@@ -1,0 +1,365 @@
+.messages-page[data-message-style="speech_bubbles"] {
+    --messages-bubble-avatar-corner-offset: -0.62rem;
+    --messages-own-bubble-avatar-offset-right: var(
+        --messages-bubble-avatar-corner-offset
+    );
+    --messages-incoming-bubble-avatar-offset-left: var(
+        --messages-bubble-avatar-corner-offset
+    );
+    --messages-own-bubble-avatar-space: 0.78rem;
+    --messages-incoming-bubble-avatar-space: 0.43rem;
+    --messages-bubble-avatar-clearance: 1.1rem;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message {
+    position: relative;
+    border-radius: 1.1rem;
+    padding: 0.6rem 0.85rem;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.34);
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message:not(.messages-message--own) {
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-bottom-left-radius: 0.35rem;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message--own {
+    border-bottom-right-radius: 0.35rem;
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent-contrast);
+}
+
+body:not([data-theme="light"])
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-message--own {
+    background: #1d2f4a;
+    border-color: #1d2f4a;
+    color: #e2e8f0;
+}
+
+body:not([data-theme="light"])
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-message--own
+    .messages-message-time {
+    color: #94a3b8;
+}
+
+body:not([data-theme="light"])
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-message:not(.messages-message--own) {
+    background: #1a3336;
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message-wrap {
+    padding-top: var(--messages-bubble-avatar-clearance);
+    width: fit-content;
+    max-width: min(70%, calc(100% - 3rem));
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message {
+    max-width: 100%;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-bubble-avatar {
+    display: block;
+    top: calc(var(--messages-bubble-avatar-clearance) - 0.62rem);
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message-avatar {
+    display: none;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-message-bubble-avatar {
+    --messages-bubble-avatar-offset-right: var(
+        --messages-own-bubble-avatar-offset-right
+    );
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-message-wrap {
+    margin-right: 0.62rem;
+    padding-right: var(--messages-own-bubble-avatar-space);
+    padding-left: 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row:not(.messages-message-row--own)
+    .messages-message-bubble-avatar {
+    right: auto;
+    left: var(--messages-incoming-bubble-avatar-offset-left);
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row:not(.messages-message-row--own)
+    .messages-message-wrap {
+    margin-left: 0.62rem;
+    padding-left: var(--messages-incoming-bubble-avatar-space);
+    padding-right: 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-reaction-picker-row,
+.messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {
+    max-width: 100%;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-reactions-row {
+    justify-content: flex-end;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {
+    margin-top: 0.22rem;
+    gap: 0.35rem;
+    padding: 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-reactions-active--has-chips {
+    background: transparent;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-reactions-available {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.25rem 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-message-wrap
+    > .messages-message-meta {
+    justify-content: flex-end;
+}
+
+.messages-page[data-message-style="irc"] .messages-thread-list {
+    gap: 1.8rem;
+}
+
+.messages-page[data-message-style="irc"] .messages-message {
+    max-width: 100%;
+    align-self: stretch;
+    padding: 0.22rem 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-text);
+}
+
+.messages-page[data-message-style="irc"] .messages-message-sender {
+    display: none;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-handle {
+    display: inline;
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message--own
+    .messages-message-handle {
+    display: inline;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-meta {
+    align-self: auto;
+    margin-left: 0.2rem;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-time {
+    color: var(--color-text-muted);
+    opacity: 1;
+    font-style: normal;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding-top: 0.16rem;
+    padding-bottom: 0.16rem;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-row--own {
+    justify-content: flex-start;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-avatar {
+    display: none;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-content {
+    display: inline;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-body {
+    display: inline;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-status {
+    align-self: center;
+    margin-left: 0.15rem;
+    padding-bottom: 0;
+}
+
+.messages-page[data-message-style="irc"] .messages-reactions-row {
+    margin-top: 0.32rem;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-message-wrap {
+    align-items: flex-start;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-reaction-picker-row {
+    left: 0;
+    right: auto;
+    justify-content: flex-start;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-reactions-available {
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message-row--own
+    .messages-reactions-active {
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+.messages-page[data-message-style="irc"]
+    .messages-message--own
+    .messages-message-meta {
+    justify-content: flex-start;
+}
+
+.messages-page[data-message-style="irc"] {
+    --messages-reaction-picker-top-offset: -0.28rem;
+}
+
+html[data-message-style="speech_bubbles"] .jitsi-chat-message {
+    position: relative;
+    border-radius: 1.1rem;
+    padding: 0.6rem 0.85rem;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.34);
+}
+
+html[data-message-style="speech_bubbles"]
+    .jitsi-chat-message:not(.jitsi-chat-message-own) {
+    background: var(--color-surface-elevated);
+    border-color: var(--color-border);
+    color: var(--color-text);
+    border-bottom-left-radius: 0.35rem;
+}
+
+html[data-message-style="speech_bubbles"] .jitsi-chat-message::after {
+    display: none;
+}
+
+html[data-message-style="speech_bubbles"] .jitsi-chat-message-own {
+    border-bottom-right-radius: 0.35rem;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-contrast);
+}
+
+body:not([data-theme="light"])
+    html[data-message-style="speech_bubbles"]
+    .jitsi-chat-message-own {
+    background: #1d2f4a;
+    border-color: #1d2f4a;
+    color: #e2e8f0;
+}
+
+body:not([data-theme="light"])
+    html[data-message-style="speech_bubbles"]
+    .jitsi-chat-message:not(.jitsi-chat-message-own) {
+    background: #1a3336;
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+}
+
+html[data-message-style="irc"] .jitsi-chat-thread {
+    gap: 0.12rem;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message {
+    padding: 0.15rem 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message::after {
+    display: none;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message-head {
+    display: inline;
+    margin-bottom: 0;
+    font-size: 0.82rem;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message-head strong {
+    color: var(--color-accent-2);
+    font-weight: 600;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message-head time {
+    color: var(--color-text-muted);
+    margin-right: 0.2rem;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message-body {
+    display: inline;
+}
+
+html[data-message-style="irc"] .jitsi-chat-message .messages-reactions-row {
+    margin-top: 0.12rem;
+}
+
+html[data-message-style="irc"]
+    body[data-theme="light"]
+    .jitsi-chat-message-head
+    strong {
+    color: #1d4ed8;
+}
+
+html[data-message-style="irc"]
+    body[data-theme="light"]
+    .jitsi-chat-message-head
+    time {
+    color: #64748b;
+}

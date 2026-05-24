@@ -1,26 +1,59 @@
 function escapeHtml(value) {
     return value
         .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
 }
 
+function escapeHtmlAttribute(value) {
+    return escapeHtml(value).replaceAll("`", "&#96;");
+}
+
+function canLinkToHref(href) {
+    return (
+        href.startsWith("http://") ||
+        href.startsWith("https://") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("/") ||
+        href.startsWith("./") ||
+        href.startsWith("../") ||
+        href.startsWith("#")
+    );
+}
+
+function renderLinkMarkup(label, href) {
+    const safeLabel = escapeHtml(label);
+    if (!canLinkToHref(href)) return safeLabel;
+    const safeHref = escapeHtmlAttribute(href);
+    const isExternal =
+        href.startsWith("http://") || href.startsWith("https://");
+    if (isExternal) {
+        return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
+    }
+    return `<a href="${safeHref}">${safeLabel}</a>`;
+}
+
 function renderInline(markdown) {
-    let rendered = escapeHtml(markdown);
+    const linkTokens = [];
+    let rendered = markdown.replace(
+        /\[((?:\\.|[^\]])+)\]\(([^)\s]+)\)/g,
+        (match, label, href) => {
+            const token = `@@LINK_${linkTokens.length}@@`;
+            linkTokens.push(renderLinkMarkup(label, href));
+            return token;
+        },
+    );
+    rendered = escapeHtml(rendered);
 
     rendered = rendered.replace(/`([^`]+)`/g, "<code>$1</code>");
     rendered = rendered.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     rendered = rendered.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-    rendered = rendered.replace(
-        /\[([^\]]+)\]\(([^)\s]+)\)/g,
-        (match, label, href) => {
-            const isExternal =
-                href.startsWith("http://") || href.startsWith("https://");
-            if (isExternal)
-                return `<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-            return `<a href="${href}">${label}</a>`;
-        },
-    );
+    rendered = rendered.replace(/@@LINK_(\d+)@@/g, (match, index) => {
+        const token = linkTokens[Number(index)];
+        return token ?? match;
+    });
 
     return rendered;
 }

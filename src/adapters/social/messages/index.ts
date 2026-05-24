@@ -278,6 +278,19 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    ctx.capabilities.contribute("social:messages:uiResources", {
+        languageBaseUrls: [
+            "/static/adapters/social/messages/languages",
+            "/static/gateways/social/languages",
+        ],
+        stylesheetUrls: [
+            "/static/adapters/social/messages/messages-chat-shared.css",
+            "/static/adapters/social/messages/messages-style-variants.css",
+        ],
+        reactionHelpersModuleUrl:
+            "/static/adapters/social/messages/reactions.js",
+    });
+
     ctx.registerRoute(
         createMessagesRoutes({
             messagesStore,
