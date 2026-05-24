@@ -54,11 +54,6 @@ const readReceiptHoverPopup = createAnchoredPopup({
     className: "messages-read-receipt-popup",
 });
 
-const STATUS_ICON_UNKNOWN_URL =
-    "/static/assets/reuse/delivery-status-unknown.svg#icon";
-const STATUS_ICON_SENT_URL =
-    "/static/assets/reuse/delivery-status-sent.svg#icon";
-
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
@@ -762,11 +757,11 @@ function renderMessageBodyMarkup(messageText) {
 }
 
 function statusUnknownSvgMarkup() {
-    return `<svg class="messages-status-icon" width="12" height="12" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="${STATUS_ICON_UNKNOWN_URL}"></use></svg>`;
+    return `<svg class="messages-status-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.5"></circle></svg>`;
 }
 
 function statusSentSvgMarkup() {
-    return `<svg class="messages-status-icon" width="12" height="12" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="${STATUS_ICON_SENT_URL}"></use></svg>`;
+    return `<svg class="messages-status-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.5"></circle><path d="M5.25 8.1L7.15 10L10.75 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 }
 
 function hideReactionHoverPopup() {

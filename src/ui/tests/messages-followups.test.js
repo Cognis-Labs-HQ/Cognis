@@ -103,6 +103,10 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
+    const baseCssSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
+        "utf8",
+    );
     const sharedCssSource = readFileSync(
         resolve(
             ROOT,
@@ -129,7 +133,28 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
     assert.match(
         sharedCssSource,
+        /\.messages-reactions-available[\s\S]*flex-wrap:\s*nowrap;/,
+    );
+    assert.match(
+        sharedCssSource,
         /\.messages-read-receipt-popup[\s\S]*pointer-events:\s*none;/,
+    );
+    assert.match(
+        baseCssSource,
+        /\.messages-message--own \.messages-message-meta[\s\S]*width:\s*100%;/,
+    );
+    assert.match(
+        baseCssSource,
+        /\.messages-message-status--read[\s\S]*flex-direction:\s*row;/,
+    );
+    assert.match(
+        baseCssSource,
+        /\.messages-page \.main-window--with-toolbar[\s\S]*max-height:\s*calc\(100dvh - 176px\);[\s\S]*overflow:\s*hidden;/,
+    );
+    assert.match(appSource, /statusUnknownSvgMarkup[\s\S]*<circle cx="8" cy="8"/);
+    assert.match(
+        appSource,
+        /statusSentSvgMarkup[\s\S]*<path d="M5\.25 8\.1L7\.15 10L10\.75 6\.5"/,
     );
     assert.match(
         variantsCssSource,

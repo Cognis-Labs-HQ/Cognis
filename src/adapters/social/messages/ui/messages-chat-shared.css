@@ -1,3 +1,20 @@
+.messages-page {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.messages-page .main-window--with-toolbar {
+    max-height: calc(100dvh - 176px);
+    overflow: hidden;
+}
+
+@media (max-width: 900px) {
+    .messages-page .main-window--with-toolbar {
+        max-height: calc(100dvh - 130px);
+    }
+}
+
 .messages-message-wrap .messages-reactions-row,
 .jitsi-chat-message .messages-reactions-row {
     display: flex;
@@ -32,7 +49,6 @@
     left: 0;
     right: auto;
     width: max-content;
-    max-width: 100%;
     transform: translateY(-100%);
     z-index: 3;
     opacity: 0;
@@ -89,8 +105,7 @@
 .messages-message-wrap .messages-reactions-available,
 .jitsi-chat-message .messages-reactions-available {
     display: inline-flex;
-    flex-wrap: wrap;
-    max-width: 100%;
+    flex-wrap: nowrap;
     gap: 0.2rem;
     justify-content: flex-start;
 }
@@ -99,6 +114,14 @@
     left: auto;
     right: 0;
     justify-content: flex-end;
+}
+
+.messages-message-row--own .messages-message-wrap {
+    align-items: flex-end;
+}
+
+.messages-message--own .messages-message-meta {
+    width: 100%;
 }
 
 .messages-message-row--own .messages-reactions-available {
@@ -152,11 +175,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1rem;
+    height: 1rem;
     border-radius: 999px;
-    border: 1px solid currentColor;
-    opacity: 0.75;
+    border: none;
+    opacity: 1;
+    line-height: 1;
 }
 
 .messages-status-badge--sent {
@@ -164,8 +188,16 @@
 }
 
 .messages-status-badge--delivered {
-    background: currentColor;
-    opacity: 0.55;
+    background: transparent;
+}
+
+.messages-status-badge .messages-status-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.messages-status-badge--sent .messages-status-icon {
+    opacity: 0.72;
 }
 
 .messages-reaction-details-popup {
