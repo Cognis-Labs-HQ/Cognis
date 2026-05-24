@@ -1,4 +1,4 @@
-# Schließschutz für Formular-Popups
+# Schließschutz für Formulare
 
 ## Bestätigungsdialog vor dem Verwerfen ungespeicherter Formularänderungen
 

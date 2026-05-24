@@ -243,6 +243,13 @@ export function createAnchoredPopup({
     };
 }
 
+/**
+ * Returns true if any input, textarea, or select within the element has been
+ * changed from its initial (default) value.
+ *
+ * @param {HTMLElement} overlayElement - The popup overlay to inspect.
+ * @returns {boolean} Whether any form field has an unsaved change.
+ */
 function hasUnsavedFormChanges(overlayElement) {
     const fields = overlayElement.querySelectorAll("input, textarea, select");
     for (const field of fields) {
@@ -291,7 +298,6 @@ export async function openPopup({
 
         let dismissed = false;
         async function dismiss(actionId) {
-            if (dismissed) return;
             if (
                 actionId === null &&
                 closeConfirm != null &&
@@ -397,7 +403,9 @@ export async function openPopup({
             const overlays = document.querySelectorAll(".popup-overlay");
             if (overlays[overlays.length - 1] !== overlay) return;
             if (event.key === "Escape") {
-                void dismiss(null);
+                dismiss(null).catch((error) =>
+                    console.error("[popup] dismiss failed:", error),
+                );
                 return;
             }
             if (event.key === "Enter") {
