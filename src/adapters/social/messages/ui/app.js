@@ -2531,7 +2531,6 @@ export async function mount(root, { signal } = {}) {
         elements,
         preferenceKey: "messages-layout",
         i18n,
-        contentScrolling: false,
         toolbar: [
             {
                 id: "messages-sidebar",
