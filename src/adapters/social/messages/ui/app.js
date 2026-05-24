@@ -22,6 +22,7 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { formatDate, getEffectiveTimezone } from "/static/reuse/timestamp.js";
@@ -41,6 +42,7 @@ import {
 const TEXT_ENCODER = new TextEncoder();
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const MAX_EMOJI_GRID_SIZE = 80;
+const MESSAGE_WRAP_THRESHOLD = 80;
 
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
@@ -683,9 +685,28 @@ function renderReactionRow(message, i18n) {
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
     const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
     const rowClass = hasChips
-        ? "messages-reactions-row messages-reactions-row--has-chips"
+        ? "messages-reactions-row messages-reactions-row--has-active"
         : "messages-reactions-row";
-    return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
+    const activeClass = hasChips
+        ? "messages-reactions-active messages-reactions-active--has-chips"
+        : "messages-reactions-active";
+    return `<div class="${rowClass}"><span class="${activeClass}">${chips}</span><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
+}
+
+function shouldWrapMessageText(messageText) {
+    if (typeof messageText !== "string") return false;
+    if (messageText.includes("\n")) return true;
+    return Array.from(messageText).length > MESSAGE_WRAP_THRESHOLD;
+}
+
+function renderMessageBodyMarkup(messageText) {
+    const normalizedText = String(
+        messageText ?? MESSAGE_UNAVAILABLE_PLACEHOLDER,
+    );
+    const wrapClass = shouldWrapMessageText(normalizedText)
+        ? ""
+        : " messages-message-body--no-wrap";
+    return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText)}</div>`;
 }
 
 function statusUnknownSvgMarkup() {
@@ -995,14 +1016,14 @@ async function renderThread(
                 ${bubbleAvatarMarkup}
                 <div class="messages-message${ownClass}">
                     ${senderLabel}
-                    <span class="messages-message-content">
-                        <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
+                    <div class="messages-message-content">
+                        ${renderMessageBodyMarkup(msg.text)}
                         ${metadataRow}
-                    </span>
+                    </div>
                 </div>
                 ${renderReactionRow(msg, i18n)}
+                ${statusBlock}
             </div>
-            ${statusBlock}
         </div>`;
         })
         .join("");

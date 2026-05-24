@@ -236,13 +236,13 @@
 
 .messages-message-bubble-avatar {
     display: none;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 2.1rem;
+    height: 2.1rem;
     border-radius: 999px;
     overflow: hidden;
     position: absolute;
-    top: -0.6rem;
-    right: -0.6rem;
+    bottom: -0.35rem;
+    right: -1.45rem;
     z-index: 1;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
@@ -306,15 +306,66 @@
 
 .messages-message-content {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    flex-direction: column;
+    align-items: flex-start;
     justify-content: flex-start;
-    gap: 0.1rem;
+    gap: 0.2rem;
+}
+
+.messages-message--own .messages-message-content {
+    align-items: flex-end;
 }
 
 .messages-message-body {
+    display: block;
+    max-width: 100%;
     white-space: pre-wrap;
     word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.messages-message-body--no-wrap {
+    white-space: nowrap;
+}
+
+.messages-message-body > :first-child {
+    margin-top: 0;
+}
+
+.messages-message-body > :last-child {
+    margin-bottom: 0;
+}
+
+.messages-message-body p {
+    margin: 0;
+}
+
+.messages-message-body ul,
+.messages-message-body ol {
+    margin: 0.25rem 0 0.25rem 1rem;
+}
+
+.messages-message-body li + li {
+    margin-top: 0.15rem;
+}
+
+.messages-message-body pre {
+    margin: 0.25rem 0;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.4rem;
+    background: rgba(15, 23, 42, 0.22);
+    overflow-x: auto;
+}
+
+.messages-message-body code {
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+}
+
+.messages-message--own .messages-message-body a {
+    color: inherit;
+    text-decoration-color: currentColor;
 }
 
 .messages-composer {
@@ -782,7 +833,9 @@
     gap: 0.15rem;
     flex-shrink: 0;
     align-self: flex-end;
-    padding-bottom: 0.35rem;
+    justify-content: flex-end;
+    margin-top: 0.12rem;
+    padding-bottom: 0;
 }
 
 .messages-message-status .messages-avatar-link {
@@ -939,9 +992,5 @@
     .messages-message-row--own .messages-message {
         margin-left: auto;
         max-width: calc(100% - 2.8rem);
-    }
-
-    .messages-message-status {
-        margin-left: 0.25rem;
     }
 }

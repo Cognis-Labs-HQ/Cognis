@@ -1,8 +1,22 @@
 function escapeHtml(value) {
     return value
         .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
+}
+
+function canLinkToHref(href) {
+    return (
+        href.startsWith("http://") ||
+        href.startsWith("https://") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("/") ||
+        href.startsWith("./") ||
+        href.startsWith("../") ||
+        href.startsWith("#")
+    );
 }
 
 function renderInline(markdown) {
@@ -14,6 +28,7 @@ function renderInline(markdown) {
     rendered = rendered.replace(
         /\[([^\]]+)\]\(([^)\s]+)\)/g,
         (match, label, href) => {
+            if (!canLinkToHref(href)) return label;
             const isExternal =
                 href.startsWith("http://") || href.startsWith("https://");
             if (isExternal)
