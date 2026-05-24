@@ -215,6 +215,7 @@
   <string name="ui.page.title.register">Cognis - 登録招待</string>
   <string name="ui.page.title.users">Cognis - ユーザー</string>
   <string name="ui.page.title.invite">Cognis - 招待</string>
+  <string name="ui.page.title.error">Cognis - エラー</string>
   <string name="ui.app.verify_email.verifying">認証中…</string>
   <string name="ui.app.verify_email.success_title">メール認証完了</string>
   <string name="ui.app.verify_email.success_body">メールアドレスが正常に認証されました。</string>
@@ -301,6 +302,16 @@
   <string name="ui.app.invite.email_domain_not_allowed">このメールドメインは許可されていません。許可されているドメインのアドレスを使用してください。</string>
   <string name="ui.app.invite.revoke_success">招待を取り消しました。</string>
   <string name="ui.app.invite.revoke_failed">招待の取り消しに失敗しました。</string>
+  <string name="ui.app.error.page_subtitle">問題が発生しました。</string>
+  <string name="ui.app.error.return_to_dashboard">ダッシュボードに戻る</string>
+  <string name="ui.app.error.aria_prefix">エラーコード</string>
+  <string name="ui.app.error.code.400">リクエストが正しくありませんでした。</string>
+  <string name="ui.app.error.code.401">このページを表示するにはログインが必要です。</string>
+  <string name="ui.app.error.code.403">このページを表示する権限がありません。</string>
+  <string name="ui.app.error.code.404">このページは存在しないか、移動されました。</string>
+  <string name="ui.app.error.code.500">サーバー側でエラーが発生しました。</string>
+  <string name="ui.app.error.code.503">このサービスは一時的に利用できません。</string>
+  <string name="ui.app.error.code.default">予期しないエラーが発生しました。</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>

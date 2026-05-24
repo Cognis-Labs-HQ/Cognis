@@ -593,6 +593,17 @@ export function createUiRoutes(
             return true;
         }
 
+        if (url.pathname === "/error") {
+            await serveHtmlPage(
+                res,
+                path.join(PUBLIC_ROOT, "pages", "error.html"),
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
+            );
+            return true;
+        }
+
         const session = ctx.getCookieSession(req);
         if (runtime && session) {
             const manifests = await runtime.listManifests();
@@ -935,7 +946,14 @@ export function createUiRoutes(
             relative = url.pathname.replace("/static/", "");
         }
 
-        if (relative === null) return false;
+        if (relative === null) {
+            if (!url.pathname.startsWith("/api/") && req.method === "GET") {
+                res.writeHead(302, { location: "/error?code=404" });
+                res.end();
+                return true;
+            }
+            return false;
+        }
 
         if (!/^[a-zA-Z0-9_./-]+$/.test(relative) || relative.includes("..")) {
             res.writeHead(400, { "content-type": "application/json" });
