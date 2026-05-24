@@ -713,17 +713,13 @@ function renderReactionRows(message, i18n, isOwn = false) {
                             displayName: reactor?.displayName ?? null,
                             reactedAt: reactor?.reactedAt ?? null,
                         };
+                        if (!normalizedReactor.accountId) return null;
                         const resolvedLabel =
                             resolveMemberDisplayName(normalizedReactor);
-                        return {
-                            ...normalizedReactor,
-                            resolvedLabel,
-                        };
+                        if (!resolvedLabel) return null;
+                        return normalizedReactor;
                     })
-                    .filter(
-                        (reactor) => reactor.resolvedLabel && reactor.accountId,
-                    )
-                    .map(({ resolvedLabel, ...reactor }) => reactor),
+                    .filter(Boolean),
             })),
         ),
     );
@@ -959,13 +955,14 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
                 const label = resolveMemberDisplayName(reactor);
                 if (!label) return "";
                 const reactedAt = String(reactor?.reactedAt ?? "").trim();
-                const reactedDay = reactedAt ? formatDate(reactedAt, "") : "";
-                const reactedTime = reactedAt
-                    ? formatMessageTime(reactedAt)
-                    : "";
-                const reactedAtLabel = [reactedDay, reactedTime]
-                    .filter(Boolean)
-                    .join(" ");
+                let reactedAtLabel = "";
+                if (reactedAt) {
+                    const reactedDay = formatDate(reactedAt, "");
+                    const reactedTime = formatMessageTime(reactedAt);
+                    reactedAtLabel = [reactedDay, reactedTime]
+                        .filter(Boolean)
+                        .join(" ");
+                }
                 const reactedAtMarkup = reactedAtLabel
                     ? `<span class="messages-reaction-details-reactor-time">${escapeHtml(reactedAtLabel)}</span>`
                     : "";
