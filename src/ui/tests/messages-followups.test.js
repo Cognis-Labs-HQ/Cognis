@@ -97,3 +97,27 @@ test("messages speech bubbles remove tails and overlay avatars", () => {
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message--own[\s\S]*background:\s*var\(--color-accent\);[\s\S]*color:\s*var\(--color-accent-contrast\);/,
     );
 });
+
+test("messages reactions and receipts include advanced interaction safeguards", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+    const sharedCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-chat-shared.css",
+        ),
+        "utf8",
+    );
+    assert.match(appSource, /if \(hasHistoricalReaders\)\s*\{\s*return "";/);
+    assert.match(appSource, /data-reaction-details="1"/);
+    assert.match(
+        appSource,
+        /threadList\?\.addEventListener\(\s*"focusin",[\s\S]*messages-message-status--read/,
+    );
+    assert.match(
+        sharedCssSource,
+        /\.messages-message-wrap \.messages-reaction-picker-row[\s\S]*position:\s*absolute;/,
+    );
+});

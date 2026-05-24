@@ -27,7 +27,12 @@
 .messages-message-wrap .messages-reaction-picker-row,
 .jitsi-chat-message .messages-reaction-picker-row {
     display: flex;
-    margin-bottom: 0.28rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(calc(-100% - 0.22rem));
+    z-index: 3;
     opacity: 0;
     pointer-events: none;
     transition: opacity 120ms ease-in-out;
@@ -88,6 +93,12 @@
 
 .messages-message-row--own .messages-reactions-available {
     justify-content: flex-end;
+    flex-direction: row-reverse;
+}
+
+.messages-message-row--own .messages-reactions-active {
+    justify-content: flex-end;
+    flex-direction: row-reverse;
 }
 
 .messages-reaction-hover-popup {
@@ -121,6 +132,44 @@
 .messages-reaction-hover-popup-user {
     font-size: 0.75rem;
     color: var(--color-text-muted);
+}
+
+.messages-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    opacity: 0.75;
+}
+
+.messages-status-badge--sent {
+    background: transparent;
+}
+
+.messages-status-badge--delivered {
+    background: currentColor;
+    opacity: 0.55;
+}
+
+.messages-reaction-details-popup {
+    display: grid;
+    gap: 0.55rem;
+    max-height: min(320px, 65vh);
+    overflow-y: auto;
+}
+
+.messages-reaction-details-item {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.messages-reaction-details-title {
+    margin: 0;
+    font-size: 0.86rem;
+    font-weight: 700;
 }
 
 .messages-emoji-picker {

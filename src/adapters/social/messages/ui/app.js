@@ -43,6 +43,7 @@ const TEXT_ENCODER = new TextEncoder();
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const MAX_EMOJI_GRID_SIZE = 80;
 const MESSAGE_WRAP_THRESHOLD = 80;
+const MAX_VISIBLE_REACTION_CHIPS = 5;
 
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
@@ -539,6 +540,7 @@ function renderMessageStatus(
     currentAccountId,
     isDelivered,
     readersHere,
+    hasHistoricalReaders,
     i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
@@ -572,16 +574,19 @@ function renderMessageStatus(
             .join("");
         return `<span class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</span>`;
     }
+    if (hasHistoricalReaders) {
+        return "";
+    }
     if (!isDelivered) {
         const titleAttr = escapeHtml(
             i18n.t("module.social.messages.receipt_sent"),
         );
-        return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusUnknownSvgMarkup()}</span>`;
+        return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--sent">${statusUnknownSvgMarkup()}</span></span>`;
     }
     const titleAttr = escapeHtml(
         i18n.t("module.social.messages.receipt_delivered"),
     );
-    return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusSentSvgMarkup()}</span>`;
+    return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--delivered">${statusSentSvgMarkup()}</span></span>`;
 }
 
 function formatRoomEventText(message, i18n) {
@@ -622,7 +627,7 @@ function formatRoomEventText(message, i18n) {
     return null;
 }
 
-function renderReactionRows(message, i18n) {
+function renderReactionRows(message, i18n, { isOwn = false } = {}) {
     if (!message?.id) {
         return {
             pickerRow: "",
@@ -665,7 +670,13 @@ function renderReactionRows(message, i18n) {
         });
     }
     const hasChips = mergedByEmoji.size > 0;
-    const chips = Array.from(mergedByEmoji.values())
+    const allReactions = Array.from(mergedByEmoji.values());
+    const visibleReactions = allReactions.slice(0, MAX_VISIBLE_REACTION_CHIPS);
+    const hiddenReactionCount = Math.max(
+        0,
+        allReactions.length - visibleReactions.length,
+    );
+    const chips = visibleReactions
         .map((reaction) => {
             const ownClass = reaction.reactedByMe
                 ? " messages-reaction-chip--active"
@@ -689,6 +700,22 @@ function renderReactionRows(message, i18n) {
                 `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
         )
         .join("");
+    const reactionDetailsPayload = encodeURIComponent(
+        stableJson(
+            allReactions.map((reaction) => ({
+                emoji: reaction.emoji,
+                count: Number(reaction.count ?? 0),
+                reactedBy: reaction.reactedBy
+                    .map((reactor) => resolveMemberDisplayName(reactor))
+                    .filter(Boolean),
+            })),
+        ),
+    );
+    const detailsLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
+    const detailsButton =
+        hiddenReactionCount > 0
+            ? `<button type="button" class="messages-reaction-chip messages-reaction-more-btn messages-reaction-more-btn--details" data-reaction-details="1" data-reaction-details-payload="${escapeHtml(reactionDetailsPayload)}" data-message-id="${escapeHtml(message.id)}" title="${escapeHtml(detailsLabel)}">+${escapeHtml(String(hiddenReactionCount))}</button>`
+            : "";
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
     const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
     const activeRowClass = hasChips
@@ -697,8 +724,9 @@ function renderReactionRows(message, i18n) {
     const activeClass = hasChips
         ? "messages-reactions-active messages-reactions-active--has-chips"
         : "messages-reactions-active";
-    const pickerRow = `<div class="messages-reaction-picker-row"><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
-    const activeRow = `<div class="${activeRowClass}"><span class="${activeClass}">${chips}</span></div>`;
+    const ownClass = isOwn ? " messages-reactions-row--own" : "";
+    const pickerRow = `<div class="messages-reaction-picker-row${ownClass}"><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
+    const activeRow = `<div class="${activeRowClass}${ownClass}"><span class="${activeClass}">${chips}${detailsButton}</span></div>`;
     return {
         pickerRow,
         activeRow,
@@ -729,11 +757,11 @@ function renderMessageBodyMarkup(messageText) {
 }
 
 function statusUnknownSvgMarkup() {
-    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="${STATUS_ICON_UNKNOWN_URL}"></use></svg>`;
+    return `<svg class="messages-status-icon" width="12" height="12" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="${STATUS_ICON_UNKNOWN_URL}"></use></svg>`;
 }
 
 function statusSentSvgMarkup() {
-    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="${STATUS_ICON_SENT_URL}"></use></svg>`;
+    return `<svg class="messages-status-icon" width="12" height="12" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="${STATUS_ICON_SENT_URL}"></use></svg>`;
 }
 
 function hideReactionHoverPopup() {
@@ -819,6 +847,67 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
         statusElement,
         `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
     );
+}
+
+function parseEncodedReaders(rawReaders) {
+    const normalizedRawReaders = String(rawReaders ?? "[]");
+    const parseCandidates = [normalizedRawReaders];
+    try {
+        parseCandidates.unshift(decodeURIComponent(normalizedRawReaders));
+    } catch {
+        // continue with raw payload candidate below
+    }
+    for (const candidate of parseCandidates) {
+        try {
+            const parsed = JSON.parse(candidate);
+            if (Array.isArray(parsed)) return parsed;
+        } catch {
+            // continue to next candidate
+        }
+    }
+    return [];
+}
+
+async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
+    const rows = Array.isArray(reactionDetailsRows) ? reactionDetailsRows : [];
+    if (rows.length === 0) return;
+    const heading =
+        i18n?.t("module.social.messages.emoji_more") ??
+        i18n?.t("module.social.messages.reactions") ??
+        "Reactions";
+    const body = rows
+        .map((row) => {
+            const emoji = String(row?.emoji ?? "").trim();
+            const count = Number(row?.count ?? 0);
+            const reactedBy = Array.isArray(row?.reactedBy)
+                ? row.reactedBy
+                      .map((label) => String(label ?? "").trim())
+                      .filter(Boolean)
+                : [];
+            const usersMarkup =
+                reactedBy.length > 0
+                    ? `<ul class="messages-reaction-hover-popup-users">${reactedBy
+                          .map(
+                              (label) =>
+                                  `<li class="messages-reaction-hover-popup-user">${escapeHtml(label)}</li>`,
+                          )
+                          .join("")}</ul>`
+                    : "";
+            return `<div class="messages-reaction-details-item"><p class="messages-reaction-details-title">${escapeHtml(emoji)} ${escapeHtml(String(count))}</p>${usersMarkup}</div>`;
+        })
+        .join("");
+    await openPopup({
+        title: heading,
+        maxWidth: "360px",
+        body: `<div class="messages-reaction-details-popup">${body}</div>`,
+        actions: [
+            {
+                id: "close",
+                label: i18n.t("ui.reuse.close"),
+                variant: "cancel",
+            },
+        ],
+    });
 }
 
 function formatRoomListAvatar(room, displayedMember, titleSource) {
@@ -1010,6 +1099,7 @@ async function renderThread(
                 currentAccountId,
                 isDelivered,
                 readersHere,
+                readers.length > 0,
                 i18n,
             );
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
@@ -1024,7 +1114,7 @@ async function renderThread(
                 ? senderHandleSpan
                 : `${senderDisplaySpan}${senderHandleSpan}`;
             const bubbleAvatarMarkup = formatMessageBubbleAvatar(msg);
-            const reactionRows = renderReactionRows(msg, i18n);
+            const reactionRows = renderReactionRows(msg, i18n, { isOwn });
             const metadataRow =
                 timeLabel || statusBlock
                     ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
@@ -1908,6 +1998,19 @@ export async function mount(root, { signal } = {}) {
                                 await openEmojiPickerPopup(messageId);
                             return;
                         }
+                        const reactionDetailsButton = clickEvent.target.closest(
+                            "[data-reaction-details]",
+                        );
+                        if (reactionDetailsButton instanceof HTMLElement) {
+                            const rawDetailsPayload =
+                                reactionDetailsButton.getAttribute(
+                                    "data-reaction-details-payload",
+                                ) ?? "[]";
+                            const parsedDetails =
+                                parseEncodedReaders(rawDetailsPayload);
+                            await openReactionDetailsPopup(parsedDetails, i18n);
+                            return;
+                        }
                         const reactionButton = clickEvent.target.closest(
                             "[data-message-id][data-emoji]",
                         );
@@ -2084,14 +2187,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         const rawReaders =
                             statusElement.getAttribute("data-readers") ?? "[]";
-                        let readers = [];
-                        try {
-                            readers = JSON.parse(
-                                decodeURIComponent(rawReaders),
-                            );
-                        } catch {
-                            readers = [];
-                        }
+                        const readers = parseEncodedReaders(rawReaders);
                         showReadReceiptHoverPopup(statusElement, readers, i18n);
                     },
                     passiveEventOptions,
@@ -2110,6 +2206,44 @@ export async function mount(root, { signal } = {}) {
                         if (
                             relatedElement instanceof Element &&
                             statusElement.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        hideReadReceiptHoverPopup();
+                    },
+                    passiveEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "focusin",
+                    (focusEvent) => {
+                        const focusedElement = focusEvent.target;
+                        if (!(focusedElement instanceof Element)) return;
+                        const statusElement = focusedElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const rawReaders =
+                            statusElement.getAttribute("data-readers") ?? "[]";
+                        const readers = parseEncodedReaders(rawReaders);
+                        showReadReceiptHoverPopup(statusElement, readers, i18n);
+                    },
+                    passiveEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "focusout",
+                    (focusEvent) => {
+                        const blurredElement = focusEvent.target;
+                        if (!(blurredElement instanceof Element)) return;
+                        const statusElement = blurredElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const nextFocusedElement = focusEvent.relatedTarget;
+                        if (
+                            nextFocusedElement instanceof Element &&
+                            statusElement.contains(nextFocusedElement)
                         ) {
                             return;
                         }
