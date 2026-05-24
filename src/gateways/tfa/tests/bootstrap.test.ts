@@ -67,6 +67,23 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
+
+    const registeredSecuritySections: Array<{
+        id: string;
+        scriptUrl: string;
+        stringsBaseUrl?: string | string[];
+    }> = [];
+    capabilities.contribute(
+        "auth:registerSecuritySection",
+        (section: {
+            id: string;
+            scriptUrl: string;
+            stringsBaseUrl?: string | string[];
+        }) => {
+            registeredSecuritySections.push(section);
+        },
+    );
+
     await bootstrap({
         dbExecutor: db,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -95,9 +112,8 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
         path.resolve(process.cwd(), "src", "gateways", "tfa", "ui"),
     );
     assert.deepEqual(
-        uiRegistry
-            .listSettingsSections()
-            .find((section) => section.id === "tfa")?.stringsBaseUrl,
+        registeredSecuritySections.find((section) => section.id === "tfa")
+            ?.stringsBaseUrl,
         [
             "/static/gateways/tfa/languages",
             "/static/adapters/tfa/totp/languages",

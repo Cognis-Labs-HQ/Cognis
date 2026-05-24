@@ -43,3 +43,11 @@ Set SHA256 as the default TOTP algorithm, shortened the user-facing TOTP adapter
 ## Enforcement and Ownership Fixes
 
 TFA adapter disable state now survives restart, recovery-code consumption is atomic, accounts gated by mandatory TFA setup receive setup-pending tokens that cannot call protected non-TFA APIs, and TFA-owned browser strings, helpers, and styles were moved into the TFA gateway and TOTP adapter static assets.
+
+## TFA Settings Injected into Security Section
+
+Two-Factor Authentication settings now appear within User Settings → Security, contributed by the TFA gateway via the `auth:registerSecuritySection` capability rather than as a separate navigation item.
+
+## Administration Page Fix
+
+Fixed a missing `extendI18n` import that caused the Administration page to fail on navigation.

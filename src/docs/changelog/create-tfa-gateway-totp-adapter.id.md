@@ -43,3 +43,11 @@ SHA256 kini menjadi algoritma default TOTP, nama adaptor TOTP untuk pengguna dip
 ## Perbaikan Penegakan dan Kepemilikan
 
 Status nonaktif adaptor TFA kini tetap bertahan setelah restart, konsumsi kode pemulihan berlangsung atomik, akun yang wajib menyiapkan TFA hanya menerima token dengan status setup tertunda yang tidak dapat memanggil API terlindungi di luar TFA, dan string browser, helper, serta style milik TFA dipindahkan ke aset statis gateway TFA dan adaptor TOTP.
+
+## Pengaturan TFA Diintegrasikan ke Bagian Keamanan
+
+Pengaturan Autentikasi Dua Faktor kini muncul di Pengaturan Pengguna → Keamanan, disumbangkan oleh gateway TFA melalui kemampuan `auth:registerSecuritySection` dan bukan sebagai item navigasi terpisah.
+
+## Perbaikan Halaman Administrasi
+
+Memperbaiki import `extendI18n` yang hilang sehingga menyebabkan halaman Administrasi gagal saat navigasi.

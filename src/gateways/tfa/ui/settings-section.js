@@ -19,7 +19,7 @@ import {
     loadRecoveryCodesStatus,
 } from "/static/gateways/tfa/security-api.js";
 
-export function createSettingsSection({ i18n, rootElement, markDirty }) {
+export function createSettingsSection({ i18n, root, markDirty }) {
     let tfaStatus = null;
     let recoveryCodesStatus = {
         codes: [],
@@ -35,7 +35,7 @@ export function createSettingsSection({ i18n, rootElement, markDirty }) {
     let tfaDragAndDropBound = false;
     let pendingPreferredIds = [];
     let savedPreferredIds = [];
-    const settingsRoot = rootElement ?? document;
+    const settingsRoot = root ?? document;
 
     const fetchTfaStatus = () => loadTfaStatus(apiFetch);
     const fetchRecoveryCodesStatus = () => loadRecoveryCodesStatus(apiFetch);

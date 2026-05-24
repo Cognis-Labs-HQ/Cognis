@@ -43,3 +43,11 @@ SHA256 wurde als Standardalgorithmus für TOTP gesetzt, der benutzerseitige Anze
 ## Erzwingung und Besitzordnung Korrigiert
 
 Der Deaktivierungsstatus von TFA-Adaptern bleibt jetzt über Neustarts erhalten, Recovery-Codes werden atomar verbraucht, Konten mit verpflichtender TFA-Einrichtung erhalten nur noch Setup-ausstehende Tokens ohne Zugriff auf geschützte Nicht-TFA-APIs, und TFA-bezogene Browser-Strings, Helfer und Styles wurden in die statischen Assets des TFA-Gateways bzw. TOTP-Adapters verschoben.
+
+## TFA-Einstellungen im Sicherheitsbereich Integriert
+
+Zwei-Faktor-Authentifizierungs-Einstellungen erscheinen jetzt unter Benutzereinstellungen → Sicherheit, bereitgestellt durch das TFA-Gateway über die Fähigkeit `auth:registerSecuritySection` anstatt als eigener Navigationspunkt.
+
+## Administrations-Seite Korrigiert
+
+Ein fehlender `extendI18n`-Import, der dazu führte, dass die Administrations-Seite bei der Navigation fehlschlug, wurde behoben.

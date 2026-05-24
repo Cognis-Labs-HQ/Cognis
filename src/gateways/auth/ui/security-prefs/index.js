@@ -2,12 +2,15 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { extendI18n } from "/static/reuse/i18n.js";
+import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
 import { openPasswordResetPopup } from "/static/gateways/auth/security-prefs/password-reset.js";
 
-export function createSettingsSection({ i18n, root }) {
+export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
     let lastUnsupportedToastKey = null;
     const settingsRoot = root ?? document;
+    let subsectionInstances = null;
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -74,13 +77,64 @@ export function createSettingsSection({ i18n, root }) {
         bindPasswordResetButton();
     }
 
+    async function loadSubsections() {
+        if (subsectionInstances !== null) {
+            return subsectionInstances;
+        }
+        try {
+            const response = await apiFetch("/api/v1/auth/security-sections");
+            if (!response.ok) {
+                subsectionInstances = [];
+                return subsectionInstances;
+            }
+            const payload = await response.json();
+            const descriptors = payload.data ?? [];
+            subsectionInstances = await loadDynamicContributions(descriptors, {
+                exportName: "createSettingsSection",
+                buildArgs: async (descriptor) => ({
+                    i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
+                    root,
+                    markDirty,
+                }),
+                onError: (error, descriptor) => {
+                    console.warn(
+                        `[security] Failed loading sub-section '${descriptor?.id}' from ${descriptor?.scriptUrl}:`,
+                        error,
+                    );
+                },
+            });
+        } catch {
+            subsectionInstances = [];
+        }
+        return subsectionInstances;
+    }
+
+    async function renderSubsections() {
+        const subs = await loadSubsections();
+        const container = settingsRoot.querySelector(
+            "#auth-security-subsections",
+        );
+        if (!container) {
+            return;
+        }
+        container.innerHTML = subs
+            .map(
+                (section) =>
+                    `<div data-security-subsection="${escapeHtml(section.id)}">${section.renderContent()}</div>`,
+            )
+            .join("");
+        for (const section of subs) {
+            await section.onRender?.();
+        }
+    }
+
     return {
         id: "security",
         label: i18n.t("gateway.auth.security.section_title"),
         heading: i18n.t("gateway.auth.security.section_title"),
         preferenceKey: "settings-security-layout",
         renderContent() {
-            return `<div id="auth-security-reset-panel">${renderBody()}</div>`;
+            return `<div id="auth-security-reset-panel">${renderBody()}</div><div id="auth-security-subsections"></div>`;
         },
         async onRender() {
             await loadCapability();
@@ -103,9 +157,26 @@ export function createSettingsSection({ i18n, root }) {
                     },
                 );
             }
+            await renderSubsections();
         },
-        isDirty: () => false,
-        async save() {},
-        discard() {},
+        isDirty: () =>
+            (subsectionInstances ?? []).some((section) => section.isDirty?.()),
+        async save() {
+            for (const section of subsectionInstances ?? []) {
+                if (section.isDirty?.()) {
+                    await section.save?.();
+                }
+            }
+        },
+        commit() {
+            for (const section of subsectionInstances ?? []) {
+                section.commit?.();
+            }
+        },
+        discard() {
+            for (const section of subsectionInstances ?? []) {
+                section.discard?.();
+            }
+        },
     };
 }

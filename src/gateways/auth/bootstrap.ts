@@ -208,12 +208,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         capabilities: ctx.capabilities,
         runtime: authRouteBootstrapRuntime,
     });
+
+    const securitySubsections: SecuritySubsection[] = [];
+    ctx.capabilities.contribute(
+        "auth:registerSecuritySection",
+        (section: SecuritySubsection) => {
+            securitySubsections.push(section);
+        },
+    );
+
     ctx.routeRegistry.register(
         createAuthGatewayRoutes(
             authGateway,
             accountStore,
             ctx.capabilities,
             authRouteBootstrapRuntime,
+            securitySubsections,
             ctx.log,
         ),
         "auth",
@@ -268,11 +278,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 }
 
+interface SecuritySubsection {
+    id: string;
+    scriptUrl: string;
+    stringsBaseUrl?: string | string[];
+}
+
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
     authRouteBootstrapRuntime: AuthRouteBootstrapRuntime,
+    securitySubsections: SecuritySubsection[],
     log?: GatewayBootstrapContext["log"],
 ) {
     async function readSecuritySettings(): Promise<{
@@ -343,6 +360,20 @@ function createAuthGatewayRoutes(
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: methods }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/security-sections" &&
+            req.method === "GET"
+        ) {
+            if (!requireAuth(req, res, "user")) return true;
+            log?.("debug", "Listed auth security sections.", {
+                ...logMeta,
+                count: securitySubsections.length,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: securitySubsections }));
             return true;
         }
 

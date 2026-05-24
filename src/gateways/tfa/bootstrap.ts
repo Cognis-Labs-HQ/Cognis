@@ -73,9 +73,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "ui",
     );
     ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
-    ctx.uiRegistry?.registerSettingsSection({
+    const registerSecuritySection = ctx.capabilities.get<
+        (section: {
+            id: string;
+            scriptUrl: string;
+            stringsBaseUrl?: string | string[];
+        }) => void
+    >("auth:registerSecuritySection");
+    registerSecuritySection?.({
         id: "tfa",
-        label: "Two-Factor Authentication",
         scriptUrl: "/static/gateways/tfa/settings-section.js",
         stringsBaseUrl: [
             "/static/gateways/tfa/languages",
