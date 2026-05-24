@@ -693,7 +693,7 @@ function renderReactionRow(message, i18n) {
     return `<div class="${rowClass}"><span class="${activeClass}">${chips}</span><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
 }
 
-function shouldWrapMessageText(messageText) {
+function shouldAllowTextWrapping(messageText) {
     if (typeof messageText !== "string") return false;
     if (messageText.includes("\n")) return true;
     return Array.from(messageText).length > MESSAGE_WRAP_THRESHOLD;
@@ -703,7 +703,7 @@ function renderMessageBodyMarkup(messageText) {
     const normalizedText = String(
         messageText ?? MESSAGE_UNAVAILABLE_PLACEHOLDER,
     );
-    const wrapClass = shouldWrapMessageText(normalizedText)
+    const wrapClass = shouldAllowTextWrapping(normalizedText)
         ? ""
         : " messages-message-body--no-wrap";
     return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText)}</div>`;
