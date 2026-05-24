@@ -243,7 +243,6 @@
     overflow: hidden;
     position: absolute;
     top: var(--messages-bubble-avatar-corner-offset, -0.62rem);
-    left: auto;
     right: var(--messages-bubble-avatar-offset-right);
     z-index: 1;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);

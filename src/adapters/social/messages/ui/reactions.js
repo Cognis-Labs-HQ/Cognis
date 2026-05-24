@@ -361,6 +361,7 @@ export function createMessageReactionsController({
         loadEmojiUsage,
         openEmojiPickerPopup,
         recordEmojiUsage,
+        renderReactionRows,
         renderReactionRow: renderReactionRows,
         repositionReactionHoverPopup,
         showReactionHoverPopup,
