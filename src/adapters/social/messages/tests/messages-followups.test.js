@@ -171,11 +171,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         appSource,
         /messages-reaction-details-reactor-emoji" title="\$\{escapeHtml\(emojiLabel\)\}" aria-label="\$\{escapeHtml\(emojiLabel\)\}"/,
     );
-    assert.match(
-        appSource,
-        /querySelector\(\s*"\.messages-read-receipt-popup:not\(\[hidden\]\)"/,
-    );
-    assert.match(appSource, /hydrateProfileAvatars\(popupElement\)/);
+    assert.match(appSource, /hydrateProfileAvatars\(document\.body\)/);
     assert.match(
         variantsCssSource,
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-reactions-row[\s\S]*max-width:\s*100%;/,

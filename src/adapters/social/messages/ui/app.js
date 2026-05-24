@@ -888,12 +888,7 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
         statusElement,
         `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
     );
-    const popupElement = document.querySelector(
-        ".messages-read-receipt-popup:not([hidden])",
-    );
-    if (popupElement instanceof HTMLElement) {
-        void hydrateProfileAvatars(popupElement);
-    }
+    void hydrateProfileAvatars(document.body);
 }
 
 /**
