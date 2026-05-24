@@ -258,13 +258,13 @@ export function createMessageReactionsController({
             .join("");
         const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
         const moreButton = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
-        const rowClass = hasChips
+        const activeRowClass = hasChips
             ? "messages-reactions-row messages-reactions-row--has-active"
             : "messages-reactions-row";
         const activeClass = hasChips
             ? "messages-reactions-active messages-reactions-active--has-chips"
             : "messages-reactions-active";
-        return `<div class="${rowClass}"><span class="${activeClass}">${chips}</span><span class="messages-reactions-available">${quick}${moreButton}</span></div>`;
+        return `<div class="messages-reaction-picker-row"><span class="messages-reactions-available">${quick}${moreButton}</span></div><div class="${activeRowClass}"><span class="${activeClass}">${chips}</span></div>`;
     }
 
     async function toggleReaction(roomId, messageId, emoji) {

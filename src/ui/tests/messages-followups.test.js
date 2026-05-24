@@ -64,7 +64,7 @@ test("messages IRC layout keeps read receipts inline and centered", () => {
     );
 });
 
-test("messages speech bubbles render with clear tails", () => {
+test("messages speech bubbles remove tails and overlay avatars", () => {
     const variantsCssSource = readFileSync(
         resolve(
             ROOT,
@@ -72,7 +72,7 @@ test("messages speech bubbles render with clear tails", () => {
         ),
         "utf8",
     );
-    assert.match(
+    assert.doesNotMatch(
         variantsCssSource,
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message::after/,
     );
@@ -82,7 +82,11 @@ test("messages speech bubbles render with clear tails", () => {
     );
     assert.match(
         variantsCssSource,
-        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message--own::after/,
+        /\.messages-page\[data-message-style="speech_bubbles"\] \.messages-message-avatar[\s\S]*display:\s*none;/,
+    );
+    assert.match(
+        variantsCssSource,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-message-bubble-avatar[\s\S]*display:\s*block;/,
     );
     assert.match(
         variantsCssSource,

@@ -570,18 +570,18 @@ function renderMessageStatus(
                 });
             })
             .join("");
-        return `<div class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</div>`;
+        return `<span class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</span>`;
     }
     if (!isDelivered) {
         const titleAttr = escapeHtml(
             i18n.t("module.social.messages.receipt_sent"),
         );
-        return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusUnknownSvgMarkup()}</div>`;
+        return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusUnknownSvgMarkup()}</span>`;
     }
     const titleAttr = escapeHtml(
         i18n.t("module.social.messages.receipt_delivered"),
     );
-    return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusSentSvgMarkup()}</div>`;
+    return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusSentSvgMarkup()}</span>`;
 }
 
 function formatRoomEventText(message, i18n) {
@@ -622,8 +622,13 @@ function formatRoomEventText(message, i18n) {
     return null;
 }
 
-function renderReactionRow(message, i18n) {
-    if (!message?.id) return "";
+function renderReactionRows(message, i18n) {
+    if (!message?.id) {
+        return {
+            pickerRow: "",
+            activeRow: "",
+        };
+    }
     const reactionRows = Array.isArray(message.reactions)
         ? message.reactions
         : [];
@@ -686,13 +691,18 @@ function renderReactionRow(message, i18n) {
         .join("");
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
     const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
-    const rowClass = hasChips
+    const activeRowClass = hasChips
         ? "messages-reactions-row messages-reactions-row--has-active"
         : "messages-reactions-row";
     const activeClass = hasChips
         ? "messages-reactions-active messages-reactions-active--has-chips"
         : "messages-reactions-active";
-    return `<div class="${rowClass}"><span class="${activeClass}">${chips}</span><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
+    const pickerRow = `<div class="messages-reaction-picker-row"><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
+    const activeRow = `<div class="${activeRowClass}"><span class="${activeClass}">${chips}</span></div>`;
+    return {
+        pickerRow,
+        activeRow,
+    };
 }
 
 function shouldAllowTextWrapping(messageText) {
@@ -1002,9 +1012,6 @@ async function renderThread(
                 readersHere,
                 i18n,
             );
-            const metadataRow = timeLabel
-                ? `<span class="messages-message-meta">${timeLabel}</span>`
-                : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
             const displayName =
                 msg.senderDisplayName || msg.senderHandle || msg.senderId;
@@ -1016,13 +1023,17 @@ async function renderThread(
             const senderLabel = isOwn
                 ? senderHandleSpan
                 : `${senderDisplaySpan}${senderHandleSpan}`;
-            const bubbleAvatarMarkup = isOwn
-                ? formatMessageBubbleAvatar(msg)
-                : "";
+            const bubbleAvatarMarkup = formatMessageBubbleAvatar(msg);
+            const reactionRows = renderReactionRows(msg, i18n);
+            const metadataRow =
+                timeLabel || statusBlock
+                    ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
+                    : "";
             return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
             ${isOwn ? "" : formatMessageAvatar(msg)}
             <div class="messages-message-wrap">
                 ${bubbleAvatarMarkup}
+                ${reactionRows.pickerRow}
                 <div class="messages-message${ownClass}">
                     ${senderLabel}
                     <div class="messages-message-content">
@@ -1030,8 +1041,7 @@ async function renderThread(
                         ${metadataRow}
                     </div>
                 </div>
-                ${renderReactionRow(msg, i18n)}
-                ${statusBlock}
+                ${reactionRows.activeRow}
             </div>
         </div>`;
         })

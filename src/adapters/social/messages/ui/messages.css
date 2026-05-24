@@ -242,7 +242,8 @@
     border-radius: 999px;
     overflow: hidden;
     position: absolute;
-    bottom: -0.35rem;
+    top: -0.62rem;
+    left: auto;
     right: var(--messages-bubble-avatar-offset-right);
     z-index: 1;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
@@ -300,9 +301,14 @@
 }
 
 .messages-message-meta {
-    display: inline;
-    margin-left: 0.45rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     white-space: nowrap;
+}
+
+.messages-message--own .messages-message-meta {
+    justify-content: flex-end;
 }
 
 .messages-message-content {
@@ -823,14 +829,15 @@
 }
 
 .messages-message-status {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.15rem;
     flex-shrink: 0;
-    align-self: flex-end;
-    justify-content: flex-end;
-    margin-top: 0.12rem;
+    align-self: auto;
+    justify-content: center;
+    margin-top: 0;
     padding-bottom: 0;
+    vertical-align: middle;
 }
 
 .messages-message-status .messages-avatar-link {

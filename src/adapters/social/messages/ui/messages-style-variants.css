@@ -1,6 +1,8 @@
 .messages-page[data-message-style="speech_bubbles"] {
-    --messages-own-bubble-avatar-offset-right: -1.45rem;
-    --messages-own-bubble-avatar-space: 2.35rem;
+    --messages-own-bubble-avatar-offset-right: -0.62rem;
+    --messages-incoming-bubble-avatar-offset-left: -0.62rem;
+    --messages-own-bubble-avatar-space: 1.85rem;
+    --messages-incoming-bubble-avatar-space: 1.85rem;
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message {
@@ -18,31 +20,11 @@
     border-bottom-left-radius: 0.35rem;
 }
 
-.messages-page[data-message-style="speech_bubbles"] .messages-message::after {
-    content: "";
-    position: absolute;
-    bottom: 0.45rem;
-    width: 0.55rem;
-    height: 0.55rem;
-    transform: rotate(45deg);
-    background: inherit;
-}
-
 .messages-page[data-message-style="speech_bubbles"] .messages-message--own {
     border-bottom-right-radius: 0.35rem;
     background: var(--color-accent);
     border: 1px solid var(--color-accent);
     color: var(--color-accent-contrast);
-}
-
-.messages-page[data-message-style="speech_bubbles"]
-    .messages-message--own::after {
-    right: -0.17rem;
-}
-
-.messages-page[data-message-style="speech_bubbles"]
-    .messages-message:not(.messages-message--own)::after {
-    left: -0.17rem;
 }
 
 body:not([data-theme="light"])
@@ -69,13 +51,27 @@ body:not([data-theme="light"])
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-message-wrap {
-    padding-top: 0.35rem;
+    padding-top: 1.1rem;
+    width: fit-content;
+    max-width: min(70%, calc(100% - 3rem));
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message {
+    max-width: 100%;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-bubble-avatar {
+    display: block;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message-avatar {
+    display: none;
 }
 
 .messages-page[data-message-style="speech_bubbles"]
     .messages-message-row--own
     .messages-message-bubble-avatar {
-    display: block;
     --messages-bubble-avatar-offset-right: var(
         --messages-own-bubble-avatar-offset-right
     );
@@ -85,6 +81,33 @@ body:not([data-theme="light"])
     .messages-message-row--own
     .messages-message-wrap {
     padding-right: var(--messages-own-bubble-avatar-space);
+    padding-left: 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row:not(.messages-message-row--own)
+    .messages-message-bubble-avatar {
+    right: auto;
+    left: var(--messages-incoming-bubble-avatar-offset-left);
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row:not(.messages-message-row--own)
+    .messages-message-wrap {
+    padding-left: var(--messages-incoming-bubble-avatar-space);
+    padding-right: 0;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-reaction-picker-row,
+.messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {
+    width: 100%;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-reactions-row {
+    justify-content: flex-end;
 }
 
 .messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {
@@ -95,24 +118,18 @@ body:not([data-theme="light"])
 
 .messages-page[data-message-style="speech_bubbles"]
     .messages-reactions-active--has-chips {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--color-border, rgba(148, 163, 184, 0.2));
-    padding: 0.3rem 0.45rem;
-    border-radius: 0.75rem;
-}
-
-body[data-theme="light"]
-    .messages-page[data-message-style="speech_bubbles"]
-    .messages-reactions-active--has-chips {
-    background: rgba(0, 0, 0, 0.04);
+    background: transparent;
+    border: none;
+    padding: 0;
+    border-radius: 0;
 }
 
 .messages-page[data-message-style="speech_bubbles"]
     .messages-reactions-available {
-    border: 1px solid var(--color-border, rgba(148, 163, 184, 0.2));
-    border-radius: 999px;
-    padding: 0.15rem 0.3rem;
-    background: var(--color-surface, rgba(15, 23, 42, 0.45));
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
 }
 
 .messages-page[data-message-style="irc"] .messages-thread-list {
@@ -205,13 +222,7 @@ html[data-message-style="speech_bubbles"]
 }
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message::after {
-    content: "";
-    position: absolute;
-    bottom: 0.45rem;
-    width: 0.55rem;
-    height: 0.55rem;
-    transform: rotate(45deg);
-    background: inherit;
+    display: none;
 }
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message-own {
@@ -219,15 +230,6 @@ html[data-message-style="speech_bubbles"] .jitsi-chat-message-own {
     background: var(--color-accent);
     border-color: var(--color-accent);
     color: var(--color-accent-contrast);
-}
-
-html[data-message-style="speech_bubbles"] .jitsi-chat-message-own::after {
-    right: -0.17rem;
-}
-
-html[data-message-style="speech_bubbles"]
-    .jitsi-chat-message:not(.jitsi-chat-message-own)::after {
-    left: -0.17rem;
 }
 
 body:not([data-theme="light"])

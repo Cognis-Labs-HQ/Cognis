@@ -4,7 +4,7 @@
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 0.25rem;
-    margin-top: 0.35rem;
+    margin-top: 0.28rem;
     opacity: 0;
     pointer-events: none;
     transition: opacity 120ms ease-in-out;
@@ -20,6 +20,23 @@
 .messages-message-wrap:focus-within .messages-reactions-row,
 .jitsi-chat-message:hover .messages-reactions-row,
 .jitsi-chat-message:focus-within .messages-reactions-row {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.messages-message-wrap .messages-reaction-picker-row,
+.jitsi-chat-message .messages-reaction-picker-row {
+    display: flex;
+    margin-bottom: 0.28rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease-in-out;
+}
+
+.messages-message-wrap:hover .messages-reaction-picker-row,
+.messages-message-wrap:focus-within .messages-reaction-picker-row,
+.jitsi-chat-message:hover .messages-reaction-picker-row,
+.jitsi-chat-message:focus-within .messages-reaction-picker-row {
     opacity: 1;
     pointer-events: auto;
 }
@@ -60,18 +77,17 @@
 .messages-message-wrap .messages-reactions-available,
 .jitsi-chat-message .messages-reactions-available {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 0.2rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease-in-out;
+    justify-content: flex-start;
 }
 
-.messages-message-wrap:hover .messages-reactions-available,
-.messages-message-wrap:focus-within .messages-reactions-available,
-.jitsi-chat-message:hover .messages-reactions-available,
-.jitsi-chat-message:focus-within .messages-reactions-available {
-    opacity: 1;
-    pointer-events: auto;
+.messages-message-row--own .messages-reaction-picker-row {
+    justify-content: flex-end;
+}
+
+.messages-message-row--own .messages-reactions-available {
+    justify-content: flex-end;
 }
 
 .messages-reaction-hover-popup {
