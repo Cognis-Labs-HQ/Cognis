@@ -477,11 +477,6 @@
     padding-bottom: 0;
 }
 
-.messages-page .content-section,
-.messages-page .widget-card {
-    padding: 0;
-}
-
 .messages-page .workspace {
     flex: 1;
     width: 100%;
