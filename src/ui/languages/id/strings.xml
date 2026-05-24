@@ -303,7 +303,6 @@
   <string name="ui.app.invite.revoke_success">Undangan berhasil dibatalkan.</string>
   <string name="ui.app.invite.revoke_failed">Gagal membatalkan undangan.</string>
   <string name="ui.app.error.page_subtitle">Terjadi kesalahan.</string>
-  <string name="ui.app.error.return_to_dashboard">Kembali ke Dasbor</string>
   <string name="ui.app.error.aria_prefix">Kode kesalahan</string>
   <string name="ui.app.error.code.400">Permintaan tersebut tidak tepat.</string>
   <string name="ui.app.error.code.401">Anda harus masuk untuk melihat ini.</string>
@@ -323,6 +322,7 @@
   <string name="ui.reuse.reset_layout">Setel ulang tata letak</string>
   <string name="ui.reuse.close">Tutup</string>
   <string name="ui.reuse.cancel">Batal</string>
+  <string name="ui.reuse.return_to_dashboard">Kembali ke Dasbor</string>
 
   <string name="ui.app.profile.page_subtitle">Profil dan aktivitas sosial Anda.</string>
   <string name="ui.app.profile.section.profile">Profil Saya</string>

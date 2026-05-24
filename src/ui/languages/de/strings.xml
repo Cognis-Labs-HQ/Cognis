@@ -303,7 +303,6 @@
   <string name="ui.app.invite.revoke_success">Einladung widerrufen.</string>
   <string name="ui.app.invite.revoke_failed">Einladung konnte nicht widerrufen werden.</string>
   <string name="ui.app.error.page_subtitle">Etwas ist schiefgelaufen.</string>
-  <string name="ui.app.error.return_to_dashboard">Zum Dashboard zurückkehren</string>
   <string name="ui.app.error.aria_prefix">Fehlercode</string>
   <string name="ui.app.error.code.400">Diese Anfrage war nicht ganz richtig.</string>
   <string name="ui.app.error.code.401">Du musst dich anmelden, um dies zu sehen.</string>
@@ -323,6 +322,7 @@
   <string name="ui.reuse.reset_layout">Layout zurücksetzen</string>
   <string name="ui.reuse.close">Schließen</string>
   <string name="ui.reuse.cancel">Abbrechen</string>
+  <string name="ui.reuse.return_to_dashboard">Zum Dashboard zurückkehren</string>
 
   <string name="ui.app.profile.page_subtitle">Dein Profil und soziale Aktivitäten.</string>
   <string name="ui.app.profile.section.profile">Mein Profil</string>

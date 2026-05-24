@@ -25,11 +25,25 @@ function buildErrorContent(i18n, errorCode, isAuthenticated) {
                 <div class="error-code" role="img" aria-label="${ariaLabel}">${escapeHtml(displayCode)}</div>
                 <p class="error-description">${escapeHtml(description)}</p>
                 <a href="/dashboard" class="error-dashboard-btn">
-                    ${escapeHtml(i18n.t("ui.app.error.return_to_dashboard"))}
+                    ${escapeHtml(i18n.t("ui.reuse.return_to_dashboard"))}
                 </a>
             </div>
         </div>
     `;
+}
+
+function buildErrorElement(i18n, errorCode, isAuthenticated) {
+    return {
+        id: "error-view",
+        label: errorCode || "error",
+        pinned: true,
+        gridSize: {
+            default: [12, 6],
+            min: [6, 4],
+            max: ["full", "fill"],
+        },
+        render: () => buildErrorContent(i18n, errorCode, isAuthenticated),
+    };
 }
 
 export async function mount(root, { signal } = {}) {
@@ -56,20 +70,7 @@ export async function mount(root, { signal } = {}) {
         showThemeToggle: true,
         frameless: true,
         persistLayoutPreferences: false,
-        elements: [
-            {
-                id: "error-view",
-                label: errorCode || "error",
-                pinned: true,
-                gridSize: {
-                    default: [12, 6],
-                    min: [6, 4],
-                    max: ["full", "fill"],
-                },
-                render: () =>
-                    buildErrorContent(i18n, errorCode, isAuthenticated),
-            },
-        ],
+        elements: [buildErrorElement(i18n, errorCode, isAuthenticated)],
     });
 
     window.addEventListener(
@@ -77,18 +78,7 @@ export async function mount(root, { signal } = {}) {
         () => {
             const updatedCode = resolveErrorCode(window.location.search);
             composer.refresh([
-                {
-                    id: "error-view",
-                    label: updatedCode || "error",
-                    pinned: true,
-                    gridSize: {
-                        default: [12, 6],
-                        min: [6, 4],
-                        max: ["full", "fill"],
-                    },
-                    render: () =>
-                        buildErrorContent(i18n, updatedCode, isAuthenticated),
-                },
+                buildErrorElement(i18n, updatedCode, isAuthenticated),
             ]);
         },
         { signal },

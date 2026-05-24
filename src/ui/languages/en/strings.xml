@@ -303,7 +303,6 @@
   <string name="ui.app.invite.revoke_success">Invitation revoked.</string>
   <string name="ui.app.invite.revoke_failed">Failed to revoke invitation.</string>
   <string name="ui.app.error.page_subtitle">Something went wrong.</string>
-  <string name="ui.app.error.return_to_dashboard">Return to Dashboard</string>
   <string name="ui.app.error.aria_prefix">Error code</string>
   <string name="ui.app.error.code.400">That request wasn't quite right.</string>
   <string name="ui.app.error.code.401">You need to sign in to see this.</string>
@@ -323,6 +322,7 @@
   <string name="ui.reuse.reset_layout">Reset Layout</string>
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
+  <string name="ui.reuse.return_to_dashboard">Return to Dashboard</string>
 
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
   <string name="ui.app.profile.section.profile">My Profile</string>

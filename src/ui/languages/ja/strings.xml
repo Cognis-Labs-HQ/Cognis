@@ -303,7 +303,6 @@
   <string name="ui.app.invite.revoke_success">招待を取り消しました。</string>
   <string name="ui.app.invite.revoke_failed">招待の取り消しに失敗しました。</string>
   <string name="ui.app.error.page_subtitle">問題が発生しました。</string>
-  <string name="ui.app.error.return_to_dashboard">ダッシュボードに戻る</string>
   <string name="ui.app.error.aria_prefix">エラーコード</string>
   <string name="ui.app.error.code.400">リクエストが正しくありませんでした。</string>
   <string name="ui.app.error.code.401">このページを表示するにはログインが必要です。</string>
@@ -323,6 +322,7 @@
   <string name="ui.reuse.reset_layout">レイアウトをリセット</string>
   <string name="ui.reuse.close">閉じる</string>
   <string name="ui.reuse.cancel">キャンセル</string>
+  <string name="ui.reuse.return_to_dashboard">ダッシュボードに戻る</string>
 
   <string name="ui.app.profile.page_subtitle">あなたのプロフィールとソーシャル活動。</string>
   <string name="ui.app.profile.section.profile">マイプロフィール</string>
