@@ -1,4 +1,4 @@
-.messages-message .messages-reactions-row,
+.messages-message-wrap .messages-reactions-row,
 .jitsi-chat-message .messages-reactions-row {
     display: flex;
     flex-wrap: wrap;
@@ -9,23 +9,23 @@
     transition: opacity 120ms ease-in-out;
 }
 
-.messages-message .messages-reactions-row--has-chips,
+.messages-message-wrap .messages-reactions-row--has-chips,
 .jitsi-chat-message .messages-reactions-row--has-chips {
     opacity: 1;
     pointer-events: auto;
 }
 
-.messages-message:hover .messages-reactions-row,
-.messages-message:focus-within .messages-reactions-row,
+.messages-message-wrap:hover .messages-reactions-row,
+.messages-message-wrap:focus-within .messages-reactions-row,
 .jitsi-chat-message:hover .messages-reactions-row,
 .jitsi-chat-message:focus-within .messages-reactions-row {
     opacity: 1;
     pointer-events: auto;
 }
 
-.messages-message .messages-reaction-chip,
-.messages-message .messages-reaction-add-btn,
-.messages-message .messages-reaction-more-btn,
+.messages-message-wrap .messages-reaction-chip,
+.messages-message-wrap .messages-reaction-add-btn,
+.messages-message-wrap .messages-reaction-more-btn,
 .jitsi-chat-message .messages-reaction-chip,
 .jitsi-chat-message .messages-reaction-add-btn,
 .jitsi-chat-message .messages-reaction-more-btn {
@@ -38,13 +38,13 @@
     padding: 0.15rem 0.5rem;
 }
 
-.messages-message .messages-reaction-chip--active,
+.messages-message-wrap .messages-reaction-chip--active,
 .jitsi-chat-message .messages-reaction-chip--active {
     border-color: var(--color-accent);
     background: var(--color-surface-elevated);
 }
 
-.messages-message .messages-reaction-add-wrap,
+.messages-message-wrap .messages-reaction-add-wrap,
 .jitsi-chat-message .messages-reaction-add-wrap {
     display: inline-flex;
     gap: 0.2rem;
@@ -53,8 +53,8 @@
     transition: opacity 120ms ease-in-out;
 }
 
-.messages-message:hover .messages-reaction-add-wrap,
-.messages-message:focus-within .messages-reaction-add-wrap,
+.messages-message-wrap:hover .messages-reaction-add-wrap,
+.messages-message-wrap:focus-within .messages-reaction-add-wrap,
 .jitsi-chat-message:hover .messages-reaction-add-wrap,
 .jitsi-chat-message:focus-within .messages-reaction-add-wrap {
     opacity: 1;

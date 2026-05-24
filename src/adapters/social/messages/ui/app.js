@@ -47,6 +47,9 @@ let cachedEmojiUsage = [];
 const reactionHoverPopup = createAnchoredPopup({
     className: "messages-reaction-hover-popup",
 });
+const readReceiptHoverPopup = createAnchoredPopup({
+    className: "messages-read-receipt-popup",
+});
 
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
@@ -520,32 +523,6 @@ function buildLastReadMap(decodedMessages) {
     return readersAtMessage;
 }
 
-function formatReadReceiptEntry(reader) {
-    const readerLabel = reader.displayName || reader.handle || reader.accountId;
-    const readDay = formatDate(reader.readAt, "");
-    const readTime = formatMessageTime(reader.readAt);
-    return `${readerLabel} ${readDay} ${readTime}`.trim();
-}
-
-function buildReadReceiptHoverText(i18n, isDelivered, readersHere) {
-    if (!isDelivered) return i18n.t("module.social.messages.receipt_sent");
-    if (!readersHere.length)
-        return i18n.t("module.social.messages.receipt_delivered");
-    if (readersHere.length === 1) {
-        const readDay = formatDate(readersHere[0].readAt, "");
-        const readTime = formatMessageTime(readersHere[0].readAt);
-        return i18n
-            .t("module.social.messages.receipt_read_single")
-            .replace("{day}", readDay)
-            .replace("{time}", readTime);
-    }
-    const heading = i18n
-        .t("module.social.messages.receipt_read_by_count")
-        .replace("{count}", String(readersHere.length));
-    const lines = readersHere.map((reader) => formatReadReceiptEntry(reader));
-    return `${heading}\n${lines.join("\n")}`;
-}
-
 function renderMessageStatus(
     message,
     currentAccountId,
@@ -554,9 +531,18 @@ function renderMessageStatus(
     i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
-    const hoverText = buildReadReceiptHoverText(i18n, isDelivered, readersHere);
-    const titleAttr = escapeHtml(hoverText);
     if (readersHere.length > 0) {
+        const readerPayload = escapeHtml(
+            stableJson(
+                readersHere.map((reader) => ({
+                    accountId: reader.accountId,
+                    handle: reader.handle || null,
+                    displayName: reader.displayName || null,
+                    avatarKey: reader.avatarKey || null,
+                    readAt: reader.readAt || null,
+                })),
+            ),
+        );
         const avatarMarkup = readersHere
             .map((reader) => {
                 const label =
@@ -568,15 +554,21 @@ function renderMessageStatus(
                     avatarClass: "messages-status-avatar",
                     imageClass: "messages-status-avatar-img",
                     fallbackClass: "messages-status-avatar-fallback",
-                    profileHandle: reader.handle || null,
-                    linkClass: "messages-avatar-link",
                 });
             })
             .join("");
-        return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${avatarMarkup}</div>`;
+        return `<div class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</div>`;
     }
-    const circleClass = isDelivered ? " messages-status-circle--delivered" : "";
-    return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-circle${circleClass}" aria-hidden="true"></span></div>`;
+    if (!isDelivered) {
+        const titleAttr = escapeHtml(
+            i18n.t("module.social.messages.receipt_sent"),
+        );
+        return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusUnknownSvgMarkup()}</div>`;
+    }
+    const titleAttr = escapeHtml(
+        i18n.t("module.social.messages.receipt_delivered"),
+    );
+    return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${statusSentSvgMarkup()}</div>`;
 }
 
 function formatRoomEventText(message, i18n) {
@@ -687,6 +679,14 @@ function renderReactionRow(message, i18n) {
     return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
 }
 
+function statusUnknownSvgMarkup() {
+    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M829.44 911.36c45.245 0 81.92-36.675 81.92-81.92V194.56c0-45.245-36.675-81.92-81.92-81.92H194.56c-45.245 0-81.92 36.675-81.92 81.92v634.88c0 45.245 36.675 81.92 81.92 81.92h634.88zm0 40.96H194.56c-67.866 0-122.88-55.014-122.88-122.88V194.56c0-67.866 55.014-122.88 122.88-122.88h634.88c67.866 0 122.88 55.014 122.88 122.88v634.88c0 67.866-55.014 122.88-122.88 122.88z"/><path d="M378.88 375.014c0-73.517 59.603-133.12 133.12-133.12s133.12 59.603 133.12 133.12-59.603 133.12-133.12 133.12c-11.311 0-20.48 9.169-20.48 20.48s9.169 20.48 20.48 20.48c96.139 0 174.08-77.941 174.08-174.08S608.139 200.934 512 200.934c-96.139 0-174.08 77.941-174.08 174.08 0 11.311 9.169 20.48 20.48 20.48s20.48-9.169 20.48-20.48z"/><path d="M491.276 532.509v122.88c0 11.311 9.169 20.48 20.48 20.48s20.48-9.169 20.48-20.48v-122.88c0-11.311-9.169-20.48-20.48-20.48s-20.48 9.169-20.48 20.48zm64.79 249.597c0 22.62-18.34 40.96-40.96 40.96s-40.96-18.34-40.96-40.96 18.34-40.96 40.96-40.96 40.96 18.34 40.96 40.96z"/></svg>`;
+}
+
+function statusSentSvgMarkup() {
+    return `<svg class="messages-status-icon" width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M829.44 911.36c45.245 0 81.92-36.675 81.92-81.92V194.56c0-45.245-36.675-81.92-81.92-81.92H194.56c-45.245 0-81.92 36.675-81.92 81.92v634.88c0 45.245 36.675 81.92 81.92 81.92h634.88zm0 40.96H194.56c-67.866 0-122.88-55.014-122.88-122.88V194.56c0-67.866 55.014-122.88 122.88-122.88h634.88c67.866 0 122.88 55.014 122.88 122.88v634.88c0 67.866-55.014 122.88-122.88 122.88z"/><path d="M302.806 517.313l139.151 142.131c7.913 8.082 20.879 8.22 28.961.307s8.22-20.879.307-28.961L332.074 488.659c-7.913-8.082-20.879-8.22-28.961-.307s-8.22 20.879-.307 28.961z"/><path d="M471.222 659.447l280.689-286.72c7.912-8.082 7.775-21.049-.308-28.961s-21.049-7.775-28.961.308l-280.689 286.72c-7.912 8.082-7.775 21.049.308 28.961s21.049 7.775 28.961-.308z"/></svg>`;
+}
+
 function hideReactionHoverPopup() {
     reactionHoverPopup.hide();
 }
@@ -726,6 +726,49 @@ function showReactionHoverPopup(reactionChipButton) {
     reactionHoverPopup.show(
         reactionChipButton,
         `<h3 class="messages-reaction-hover-popup-title">${escapeHtml(emojiName)}</h3>${participantsMarkup}`,
+    );
+}
+
+function hideReadReceiptHoverPopup() {
+    readReceiptHoverPopup.hide();
+}
+
+function showReadReceiptHoverPopup(statusElement, readers, i18n) {
+    if (!(statusElement instanceof HTMLElement)) return;
+    if (!readers.length) {
+        hideReadReceiptHoverPopup();
+        return;
+    }
+    const heading = i18n
+        .t("module.social.messages.receipt_seen_by_count")
+        .replace("{count}", String(readers.length));
+    const readerItems = readers
+        .map((reader) => {
+            const readerLabel =
+                reader.displayName || reader.handle || reader.accountId;
+            const readDay = formatDate(reader.readAt, "");
+            const readTime = formatMessageTime(reader.readAt);
+            const timeLabel = [readDay, readTime].filter(Boolean).join(" ");
+            const avatarMarkup = buildProfileAvatarMarkup({
+                avatarKey: reader.avatarKey || null,
+                label: readerLabel,
+                colorSeed: reader.handle || reader.accountId || readerLabel,
+                avatarClass: "messages-receipt-popup-avatar",
+                imageClass: "messages-receipt-popup-avatar-img",
+                fallbackClass: "messages-receipt-popup-avatar-fallback",
+            });
+            return `<li class="messages-receipt-popup-reader">
+                ${avatarMarkup}
+                <span class="messages-receipt-popup-reader-meta">
+                    <span class="messages-receipt-popup-reader-name">${escapeHtml(readerLabel)}</span>
+                    ${timeLabel ? `<span class="messages-receipt-popup-reader-time">${escapeHtml(timeLabel)}</span>` : ""}
+                </span>
+            </li>`;
+        })
+        .join("");
+    readReceiptHoverPopup.show(
+        statusElement,
+        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
     );
 }
 
@@ -808,6 +851,21 @@ function formatMessageAvatar(message) {
         avatarClass: "messages-message-avatar",
         imageClass: "messages-message-avatar-img",
         fallbackClass: "messages-message-avatar-fallback",
+        profileHandle: message.senderHandle || null,
+        linkClass: "messages-avatar-link",
+    });
+}
+
+function formatMessageBubbleAvatar(message) {
+    const senderLabel =
+        message.senderDisplayName || message.senderHandle || message.senderId;
+    return buildProfileAvatarMarkup({
+        avatarKey: message.senderAvatarKey || null,
+        label: senderLabel,
+        colorSeed: message.senderHandle || message.senderId || senderLabel,
+        avatarClass: "messages-message-bubble-avatar",
+        imageClass: "messages-message-bubble-avatar-img",
+        fallbackClass: "messages-message-bubble-avatar-fallback",
         profileHandle: message.senderHandle || null,
         linkClass: "messages-avatar-link",
     });
@@ -912,14 +970,30 @@ async function renderThread(
                 ? `<span class="messages-message-meta">${timeLabel}</span>`
                 : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
+            const displayName =
+                msg.senderDisplayName || msg.senderHandle || msg.senderId;
+            const handle = msg.senderHandle || "";
+            const senderDisplaySpan = `<span class="messages-message-sender">${escapeHtml(displayName)}</span>`;
+            const senderHandleSpan = handle
+                ? `<span class="messages-message-handle">${escapeHtml(`{{${handle}}}`)}</span>`
+                : "";
+            const senderLabel = isOwn
+                ? senderHandleSpan
+                : `${senderDisplaySpan}${senderHandleSpan}`;
+            const bubbleAvatarMarkup = isOwn
+                ? formatMessageBubbleAvatar(msg)
+                : "";
             return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
             ${isOwn ? "" : formatMessageAvatar(msg)}
-            <div class="messages-message${ownClass}">
-                ${senderLabel}
-                <span class="messages-message-content">
-                    <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
-                    ${metadataRow}
-                </span>
+            <div class="messages-message-wrap">
+                ${bubbleAvatarMarkup}
+                <div class="messages-message${ownClass}">
+                    ${senderLabel}
+                    <span class="messages-message-content">
+                        <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
+                        ${metadataRow}
+                    </span>
+                </div>
                 ${renderReactionRow(msg, i18n)}
             </div>
             ${statusBlock}
@@ -930,6 +1004,7 @@ async function renderThread(
     const hasMore = messageList.length === 50;
     const oldestCreatedAt = ordered[0]?.createdAt ?? null;
     hideReactionHoverPopup();
+    hideReadReceiptHoverPopup();
 
     if (before) {
         const savedHeight = container.scrollHeight;
@@ -1778,6 +1853,7 @@ export async function mount(root, { signal } = {}) {
                     "click",
                     async (clickEvent) => {
                         hideReactionHoverPopup();
+                        hideReadReceiptHoverPopup();
                         const moreButton = clickEvent.target.closest(
                             "[data-reaction-more]",
                         );
@@ -1946,6 +2022,62 @@ export async function mount(root, { signal } = {}) {
                     },
                 );
 
+                threadList?.addEventListener(
+                    "mouseover",
+                    (mouseEvent) => {
+                        const hoveredElement = mouseEvent.target;
+                        if (!(hoveredElement instanceof Element)) return;
+                        const statusElement = hoveredElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            statusElement.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        const rawReaders =
+                            statusElement.getAttribute("data-readers") ?? "[]";
+                        let readers = [];
+                        try {
+                            readers = JSON.parse(rawReaders);
+                        } catch {
+                            readers = [];
+                        }
+                        showReadReceiptHoverPopup(statusElement, readers, i18n);
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "mouseout",
+                    (mouseEvent) => {
+                        const originElement = mouseEvent.target;
+                        if (!(originElement instanceof Element)) return;
+                        const statusElement = originElement.closest(
+                            ".messages-message-status--read",
+                        );
+                        if (!(statusElement instanceof HTMLElement)) return;
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            statusElement.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        hideReadReceiptHoverPopup();
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "scroll",
+                    hideReadReceiptHoverPopup,
+                    reactionHoverEventOptions,
+                );
+
                 form?.addEventListener("submit", async (event) => {
                     event.preventDefault();
                     if (!selectedRoomId) return;
@@ -2091,7 +2223,9 @@ export async function mount(root, { signal } = {}) {
         "abort",
         () => {
             hideReactionHoverPopup();
+            hideReadReceiptHoverPopup();
             reactionHoverPopup.destroy();
+            readReceiptHoverPopup.destroy();
             if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
             if (typingPollIntervalId) clearInterval(typingPollIntervalId);
             if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);

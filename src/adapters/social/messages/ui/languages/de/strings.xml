@@ -23,6 +23,7 @@
   <string name="module.social.messages.receipt_delivered">Zugestellt</string>
   <string name="module.social.messages.receipt_read_single">Gelesen: {day} {time}</string>
   <string name="module.social.messages.receipt_read_by_count">Gelesen von: {count} Nutzern</string>
+  <string name="module.social.messages.receipt_seen_by_count">Gesehen von {count} Personen</string>
   <string name="module.social.messages.typing">schreibt…</string>
   <string name="module.social.messages.typing_users">{names} schreibt…</string>
   <string name="module.social.messages.requests">Nachrichtenanfragen</string>

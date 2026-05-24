@@ -40,6 +40,61 @@
     left: -0.17rem;
 }
 
+body:not([data-theme="light"])
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-message--own {
+    background: #1d2f4a;
+    border-color: #1d2f4a;
+    color: #e2e8f0;
+}
+
+body:not([data-theme="light"])
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-message--own
+    .messages-message-time {
+    color: #94a3b8;
+}
+
+body:not([data-theme="light"])
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-message:not(.messages-message--own) {
+    background: #1a3336;
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-message-wrap {
+    padding-top: 0.75rem;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-message-row--own
+    .messages-message-bubble-avatar {
+    display: block;
+}
+
+.messages-page[data-message-style="speech_bubbles"] .messages-reactions-row {
+    padding: 0.25rem 0.1rem 0;
+    border-radius: 0 0 0.65rem 0.65rem;
+}
+
+.messages-page[data-message-style="speech_bubbles"]
+    .messages-reactions-row--has-chips {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--color-border, rgba(148, 163, 184, 0.2));
+    border-top: none;
+    padding: 0.3rem 0.45rem;
+    border-radius: 0 0 0.85rem 0.85rem;
+    margin-top: -0.35rem;
+    padding-top: 0.5rem;
+}
+
+body[data-theme="light"]
+    .messages-page[data-message-style="speech_bubbles"]
+    .messages-reactions-row--has-chips {
+    background: rgba(0, 0, 0, 0.04);
+}
+
 .messages-page[data-message-style="irc"] .messages-thread-list {
     gap: 0.15rem;
 }
@@ -55,6 +110,11 @@
 }
 
 .messages-page[data-message-style="irc"] .messages-message-sender {
+    display: none;
+}
+
+.messages-page[data-message-style="irc"] .messages-message-handle {
+    display: inline;
     color: var(--color-accent);
     font-size: 0.82rem;
     font-weight: 600;
@@ -62,7 +122,7 @@
 
 .messages-page[data-message-style="irc"]
     .messages-message--own
-    .messages-message-sender {
+    .messages-message-handle {
     display: inline;
 }
 
@@ -148,6 +208,22 @@ html[data-message-style="speech_bubbles"] .jitsi-chat-message-own::after {
 html[data-message-style="speech_bubbles"]
     .jitsi-chat-message:not(.jitsi-chat-message-own)::after {
     left: -0.17rem;
+}
+
+body:not([data-theme="light"])
+    html[data-message-style="speech_bubbles"]
+    .jitsi-chat-message-own {
+    background: #1d2f4a;
+    border-color: #1d2f4a;
+    color: #e2e8f0;
+}
+
+body:not([data-theme="light"])
+    html[data-message-style="speech_bubbles"]
+    .jitsi-chat-message:not(.jitsi-chat-message-own) {
+    background: #1a3336;
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
 }
 
 html[data-message-style="irc"] .jitsi-chat-thread {

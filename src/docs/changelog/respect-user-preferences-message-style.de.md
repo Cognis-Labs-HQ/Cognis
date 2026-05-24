@@ -15,3 +15,27 @@ Das IRC-Layout auf der Nachrichten-Seite hält Lesebestätigungen jetzt in der g
 ## Sprechblasen jetzt deutlicher
 
 Nachrichten im Sprechblasenstil nutzen jetzt einen stärker abgehobenen Oberflächen-Token und einen kräftigeren Schatten, damit sie auf dunklen Hintergründen klar sichtbar bleiben.
+
+## Dunkelmodus-Farben für Sprechblasen
+
+Eigene Nachrichten verwenden im Dunkelmodus jetzt ein tiefes Marineblau (#1d2f4a), fremde Nachrichten ein dunkles Blaugrün (#1a3336).
+
+## SVG-Zustellungssymbole
+
+Kreis-Indikatoren wurden durch SVG-Symbole ersetzt: ein Fragezeichen-im-Kasten direkt nach dem Senden und ein Häkchen-im-Kasten nach Zustellungsbestätigung.
+
+## Gestapelte Lesebestätigungs-Avatare
+
+Mehrere Leser-Avatare werden jetzt von rechts nach links überlappend angezeigt. Der leere Kreis vor dem ersten Lesevorgang entfällt. Ein Hover-Popup zeigt Name und Lesezeitpunkt jedes Lesers.
+
+## Reaktionen außerhalb der Sprechblase
+
+Reaktionen erscheinen jetzt unterhalb der Blase mit dezenter Hintergrundtönung.
+
+## IRC-Handle-Format
+
+Im IRC-Layout wird die Absenderkennung als `{{Handle}}` in doppelten geschweiften Klammern angezeigt.
+
+## Sender-Avatar in Sprechblasen
+
+Im Sprechblasen-Modus zeigen eigene Nachrichten einen halbgroßen Avatar, der die obere rechte Ecke der Blase überlappt.
