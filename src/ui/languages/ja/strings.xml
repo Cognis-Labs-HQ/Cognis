@@ -541,6 +541,7 @@
   <string name="ui.app.dashboard.element.student_classes.cta">参加しているクラスを確認・管理できます。</string>
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>
   <string name="ui.app.login.tfa.code_label">二要素コード</string>
+  <string name="ui.app.login.tfa.code_label_for_method">{method} コード</string>
   <string name="ui.app.login.tfa.required_prompt">続行するには二要素認証が必要です。</string>
   <string name="ui.app.login.tfa.error_invalid">二要素コードが無効です。</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">すべてのユーザーに二要素認証を必須化</string>

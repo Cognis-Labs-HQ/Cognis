@@ -147,6 +147,21 @@ p.auth-intro {
     color: #f1f7ff;
 }
 
+#login-tfa-method-tabs a {
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.92;
+    padding: 6px 2px;
+    white-space: nowrap;
+}
+
+#login-tfa-method-tabs a:hover,
+#login-tfa-method-tabs a.active {
+    color: var(--text);
+    opacity: 1;
+    border-bottom: 2px solid var(--accent-2);
+}
+
 .sso-buttons {
     display: flex;
     flex-direction: column;

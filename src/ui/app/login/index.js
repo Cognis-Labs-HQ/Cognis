@@ -329,6 +329,21 @@ export async function mount(root) {
         );
     }
 
+    function setActiveTfaMethodHeading(activeMethodName) {
+        const headingEl = document.querySelector("#login-tfa-code-label");
+        if (!(headingEl instanceof HTMLElement)) {
+            return;
+        }
+        const defaultLabel = i18n.t("ui.app.login.tfa.code_label");
+        if (typeof activeMethodName !== "string" || !activeMethodName.trim()) {
+            headingEl.textContent = defaultLabel;
+            return;
+        }
+        headingEl.textContent = i18n
+            .t("ui.app.login.tfa.code_label_for_method")
+            .replace("{method}", activeMethodName);
+    }
+
     function renderTfaMethodTabs(methods) {
         const tabsEl = document.querySelector("#login-tfa-method-tabs");
         const methodInput = document.querySelector("#login-tfa-method");
@@ -341,26 +356,23 @@ export async function mount(root) {
         tabsEl.replaceChildren();
         const normalizedMethods = Array.isArray(methods) ? methods : [];
         normalizedMethods.forEach((method, index) => {
-            const tabButton = document.createElement("button");
-            tabButton.type = "button";
-            tabButton.className = "auth-provider-btn";
-            tabButton.textContent = method.name;
-            tabButton.addEventListener("click", () => {
+            const tabLink = document.createElement("a");
+            tabLink.href = "#";
+            tabLink.textContent = method.name;
+            tabLink.addEventListener("click", (event) => {
+                event.preventDefault();
                 methodInput.value = method.id;
-                tabsEl
-                    .querySelectorAll(".auth-provider-btn")
-                    .forEach((entry) => {
-                        entry.classList.toggle(
-                            "auth-provider-btn--active",
-                            entry === tabButton,
-                        );
-                    });
+                tabsEl.querySelectorAll("a").forEach((entry) => {
+                    entry.classList.toggle("active", entry === tabLink);
+                });
+                setActiveTfaMethodHeading(method.name);
             });
             if (index === 0) {
-                tabButton.classList.add("auth-provider-btn--active");
+                tabLink.classList.add("active");
                 methodInput.value = method.id;
+                setActiveTfaMethodHeading(method.name);
             }
-            tabsEl.appendChild(tabButton);
+            tabsEl.appendChild(tabLink);
         });
         tabsEl.hidden = normalizedMethods.length <= 1;
     }
@@ -396,9 +408,6 @@ export async function mount(root) {
             tfaCodeInput.focus();
         }
         renderTfaMethodTabs(payload.methods ?? []);
-        showToast(i18n.t("ui.app.login.tfa.required_prompt"), {
-            variant: "info",
-        });
     }
 
     function renderLoginShell() {
@@ -447,8 +456,8 @@ export async function mount(root) {
           <div id="login-tfa-method-tabs" class="auth-provider-toggle"></div>
           <input type="hidden" id="login-tfa-method" value="" />
           <label>
-            <span>${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}</span>
-            <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}" />
+           <span id="login-tfa-code-label">${escapeHtml(i18n.t("ui.app.login.tfa.code_label"))}</span>
+           <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" />
           </label>
         </div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>

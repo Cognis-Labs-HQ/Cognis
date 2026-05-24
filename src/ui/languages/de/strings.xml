@@ -541,6 +541,7 @@
   <string name="ui.app.dashboard.element.student_classes.cta">Sehen und verwalten Sie die Klassen, in denen Sie eingeschrieben sind.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Zu meinen Klassen</string>
   <string name="ui.app.login.tfa.code_label">Zwei-Faktor-Code</string>
+  <string name="ui.app.login.tfa.code_label_for_method">Code für {method}</string>
   <string name="ui.app.login.tfa.required_prompt">Für die Fortsetzung ist eine Zwei-Faktor-Prüfung erforderlich.</string>
   <string name="ui.app.login.tfa.error_invalid">Ungültiger Zwei-Faktor-Code.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Zwei-Faktor-Authentifizierung Für Alle Benutzer Erzwingen</string>
