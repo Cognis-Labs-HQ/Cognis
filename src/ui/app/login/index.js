@@ -300,19 +300,10 @@ export async function mount(root) {
                                             ? tfaCodeEl.value.trim()
                                             : "",
                                 };
-                                const tfaResponse = await fetch(
-                                    "/api/v1/tfa/login/verify",
-                                    {
-                                        method: "POST",
-                                        headers: {
-                                            "content-type": "application/json",
-                                        },
-                                        body: JSON.stringify(payload),
-                                    },
-                                );
-                                const tfaBody = await tfaResponse
-                                    .json()
-                                    .catch(() => null);
+                                const tfaLoginClient =
+                                    await loadTfaLoginClient();
+                                const { response: tfaResponse, body: tfaBody } =
+                                    await tfaLoginClient.verifyCode(payload);
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     persistSession(tfaBody.data);
                                     const requiresUserValidation =
@@ -342,8 +333,6 @@ export async function mount(root) {
                                     window.location.href = "/dashboard";
                                     return;
                                 }
-                                const tfaLoginClient =
-                                    await loadTfaLoginClient();
                                 showToast(
                                     tfaLoginClient?.resolveErrorMessage(
                                         tfaBody?.error?.message,
@@ -379,6 +368,15 @@ export async function mount(root) {
                                         tfaLoginClient?.switchToTfaPrompt(
                                             body.data,
                                         ) ?? null;
+                                    return;
+                                }
+                                if (body.data.tfaSetupRequired === true) {
+                                    const tfaLoginClient =
+                                        await loadTfaLoginClient();
+                                    tfaLoginClient?.handleSetupRequired(
+                                        persistSession,
+                                        body.data,
+                                    );
                                     return;
                                 }
                                 persistSession(body.data);

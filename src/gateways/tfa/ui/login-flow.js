@@ -141,6 +141,19 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             }
             return switchToTfaPrompt(i18n, payload, root);
         },
+        async verifyCode(payload) {
+            const response = await fetch("/api/v1/tfa/login/verify", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const body = await response.json().catch(() => null);
+            return { response, body };
+        },
+        handleSetupRequired(persistSession, data) {
+            persistSession(data);
+            window.location.href = "/settings";
+        },
         resolveErrorMessage(message) {
             return resolveTranslatedTfaErrorMessage(i18n, message);
         },
