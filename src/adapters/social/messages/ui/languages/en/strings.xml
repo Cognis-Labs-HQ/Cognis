@@ -22,7 +22,6 @@
   <string name="module.social.messages.receipt_sent">Sent</string>
   <string name="module.social.messages.receipt_delivered">Delivered</string>
   <string name="module.social.messages.receipt_read_single">Read: {day} {time}</string>
-  <string name="module.social.messages.receipt_read_by_count">Read by: {count} users</string>
   <string name="module.social.messages.receipt_seen_by_count">Seen by {count} people</string>
   <string name="module.social.messages.typing">is typing…</string>
   <string name="module.social.messages.typing_users">Typing: {names}</string>
