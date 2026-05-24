@@ -58,4 +58,4 @@ Menambahkan kunci `ui.app.users.reset_tfa` dan `ui.app.users.tfa_reset_done` yan
 
 ## Regresi Prompt Email Login Diperbaiki
 
-Pemeriksaan email wajib saat login kini menggunakan `isPrimary` dari respons API email, sehingga pengguna yang sudah memiliki email utama terverifikasi tidak lagi diminta menambahkan email lagi setelah reset TFA.
+Pemeriksaan email wajib saat login kini menggunakan kolom `primary` dari respons API email (sebelumnya menggunakan kolom `isPrimary` yang tidak ada), sehingga pengguna yang sudah memiliki email utama terverifikasi tidak lagi diminta menambahkan email saat masuk.

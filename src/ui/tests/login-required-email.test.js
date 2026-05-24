@@ -6,10 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-test("login required-email setup checks verified primary email using isPrimary", () => {
+test("login required-email setup checks verified primary email using primary field from API", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/login/index.js"),
         "utf8",
     );
-    assert.match(source, /entry\.isPrimary && entry\.verified/);
+    assert.match(source, /entry\.primary && entry\.verified/);
 });

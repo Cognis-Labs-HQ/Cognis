@@ -58,4 +58,4 @@ Added missing `ui.app.users.reset_tfa` and `ui.app.users.tfa_reset_done` keys to
 
 ## Login Email Prompt Regression Fixed
 
-Corrected the login required-email check to use `isPrimary` from the emails API response, preventing users with an already verified primary email from being incorrectly prompted to add an email again after TFA reset.
+Corrected the login required-email check to use the `primary` field returned by the emails API (previously used the non-existent `isPrimary` field), preventing users with an already verified primary email from being incorrectly prompted to add one after login.

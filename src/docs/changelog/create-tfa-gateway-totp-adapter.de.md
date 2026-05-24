@@ -58,4 +58,4 @@ Die fehlenden Schlüssel `ui.app.users.reset_tfa` und `ui.app.users.tfa_reset_do
 
 ## Login-E-Mail-Prompt Regression Korrigiert
 
-Die Prüfung für verpflichtende E-Mail-Eingabe beim Login verwendet jetzt `isPrimary` aus der E-Mail-API-Antwort, sodass Nutzer mit bereits verifizierter primärer Adresse nach einem TFA-Reset nicht fälschlich erneut zur E-Mail-Eingabe aufgefordert werden.
+Die verpflichtende E-Mail-Prüfung beim Login verwendet nun das Feld `primary` aus der E-Mail-API-Antwort (zuvor wurde das nicht vorhandene Feld `isPrimary` geprüft), sodass Nutzer mit bereits verifizierter primärer Adresse nicht mehr fälschlich zur erneuten Eingabe aufgefordert werden.

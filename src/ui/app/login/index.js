@@ -239,7 +239,7 @@ export async function mount(root) {
         while (true) {
             const emails = await loadUserEmails(accountId);
             const hasVerifiedPrimary = emails.some(
-                (entry) => entry.isPrimary && entry.verified,
+                (entry) => entry.primary && entry.verified,
             );
             if (hasVerifiedPrimary) return;
 
