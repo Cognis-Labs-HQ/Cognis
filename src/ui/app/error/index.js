@@ -19,10 +19,19 @@ function buildErrorContent(i18n, errorCode, isAuthenticated) {
     const fullscreenClass = isAuthenticated ? "" : " error-page--fullscreen";
     const contentClass = isAuthenticated ? "" : " error-content--fullscreen";
     const ariaLabel = `${escapeHtml(i18n.t("ui.app.error.aria_prefix"))} ${escapeHtml(displayCode)}`;
+    const brandMarkup = isAuthenticated
+        ? ""
+        : `
+                <div class="error-brand">
+                    <img src="/static/assets/icons/cognis-icon.png" alt="" class="error-brand-icon" />
+                    <span class="error-brand-name">${escapeHtml(i18n.t("ui.shared.brand.name"))}</span>
+                </div>
+          `;
 
     return `
         <div class="error-page${fullscreenClass}">
             <div class="error-content${contentClass}">
+                ${brandMarkup}
                 <div class="error-code" role="img" aria-label="${ariaLabel}">${escapeHtml(displayCode)}</div>
                 <p class="error-description">${escapeHtml(description)}</p>
                 <a href="/dashboard" class="error-dashboard-btn">

@@ -25,6 +25,25 @@
     max-width: 640px;
 }
 
+.error-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+.error-brand-icon {
+    width: 56px;
+    height: 56px;
+}
+
+.error-brand-name {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+}
+
 .error-code {
     font-size: clamp(5rem, 22vw, 14rem);
     font-weight: 900;
