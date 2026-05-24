@@ -334,10 +334,13 @@ export async function mount(root) {
         if (!(tfaCodeInput instanceof HTMLInputElement)) {
             return;
         }
+        const placeholderKeyByMethod = {
+            recovery_code: "ui.app.login.tfa.code_placeholder_recovery",
+            totp: "ui.app.login.tfa.code_placeholder_totp",
+        };
         const placeholderKey =
-            activeMethodId === "recovery_code"
-                ? "ui.app.login.tfa.code_placeholder_recovery"
-                : "ui.app.login.tfa.code_placeholder_totp";
+            placeholderKeyByMethod[activeMethodId] ??
+            "ui.app.login.tfa.code_placeholder_totp";
         const placeholderText = i18n.t(placeholderKey);
         tfaCodeInput.placeholder = placeholderText;
         tfaCodeInput.setAttribute("aria-label", placeholderText);
