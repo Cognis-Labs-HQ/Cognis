@@ -707,17 +707,21 @@ function renderReactionRows(message, i18n, isOwn = false) {
                 count: Number(reaction.count ?? 0),
                 reactedBy: reaction.reactedBy
                     .map((reactor) => {
+                        const accountId = reactor?.accountId ?? null;
+                        if (!accountId) return null;
                         const normalizedReactor = {
-                            accountId: reactor?.accountId ?? null,
+                            accountId,
                             handle: reactor?.handle ?? null,
                             displayName: reactor?.displayName ?? null,
                             reactedAt: reactor?.reactedAt ?? null,
                         };
-                        if (!normalizedReactor.accountId) return null;
                         const resolvedLabel =
                             resolveMemberDisplayName(normalizedReactor);
                         if (!resolvedLabel) return null;
-                        return normalizedReactor;
+                        return {
+                            ...normalizedReactor,
+                            label: resolvedLabel,
+                        };
                     })
                     .filter(Boolean),
             })),
@@ -952,7 +956,9 @@ async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
         }
         return reactedByRows
             .map((reactor) => {
-                const label = resolveMemberDisplayName(reactor);
+                const label =
+                    String(reactor?.label ?? "").trim() ||
+                    resolveMemberDisplayName(reactor);
                 if (!label) return "";
                 const reactedAt = String(reactor?.reactedAt ?? "").trim();
                 let reactedAtLabel = "";
