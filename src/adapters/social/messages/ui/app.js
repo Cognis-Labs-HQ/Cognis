@@ -671,7 +671,10 @@ function renderReactionRows(message, i18n, { isOwn = false } = {}) {
     }
     const hasChips = mergedByEmoji.size > 0;
     const allReactions = Array.from(mergedByEmoji.values());
-    const visibleReactions = allReactions.slice(0, MAX_VISIBLE_REACTION_CHIPS);
+    const visibleReactions =
+        allReactions.length > 0
+            ? allReactions.slice(0, MAX_VISIBLE_REACTION_CHIPS)
+            : [];
     const hiddenReactionCount = Math.max(
         0,
         allReactions.length - visibleReactions.length,
@@ -711,10 +714,11 @@ function renderReactionRows(message, i18n, { isOwn = false } = {}) {
             })),
         ),
     );
-    const detailsLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
+    const detailsButtonLabel =
+        i18n?.t("module.social.messages.emoji_more") ?? "···";
     const detailsButton =
         hiddenReactionCount > 0
-            ? `<button type="button" class="messages-reaction-chip messages-reaction-more-btn messages-reaction-more-btn--details" data-reaction-details="1" data-reaction-details-payload="${escapeHtml(reactionDetailsPayload)}" data-message-id="${escapeHtml(message.id)}" title="${escapeHtml(detailsLabel)}">+${escapeHtml(String(hiddenReactionCount))}</button>`
+            ? `<button type="button" class="messages-reaction-chip messages-reaction-more-btn messages-reaction-more-btn--details" data-reaction-details="1" data-reaction-details-payload="${escapeHtml(reactionDetailsPayload)}" data-message-id="${escapeHtml(message.id)}" title="${escapeHtml(detailsButtonLabel)}">+${escapeHtml(String(hiddenReactionCount))}</button>`
             : "";
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
     const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
@@ -849,11 +853,11 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
     );
 }
 
-function parseEncodedReaders(rawReaders) {
-    const normalizedRawReaders = String(rawReaders ?? "[]");
-    const parseCandidates = [normalizedRawReaders];
+function parseEncodedPayload(rawPayload) {
+    const normalizedRawPayload = String(rawPayload ?? "[]");
+    const parseCandidates = [normalizedRawPayload];
     try {
-        parseCandidates.unshift(decodeURIComponent(normalizedRawReaders));
+        parseCandidates.unshift(decodeURIComponent(normalizedRawPayload));
     } catch {
         // continue with raw payload candidate below
     }
@@ -2007,7 +2011,7 @@ export async function mount(root, { signal } = {}) {
                                     "data-reaction-details-payload",
                                 ) ?? "[]";
                             const parsedDetails =
-                                parseEncodedReaders(rawDetailsPayload);
+                                parseEncodedPayload(rawDetailsPayload);
                             await openReactionDetailsPopup(parsedDetails, i18n);
                             return;
                         }
@@ -2187,7 +2191,7 @@ export async function mount(root, { signal } = {}) {
                         }
                         const rawReaders =
                             statusElement.getAttribute("data-readers") ?? "[]";
-                        const readers = parseEncodedReaders(rawReaders);
+                        const readers = parseEncodedPayload(rawReaders);
                         showReadReceiptHoverPopup(statusElement, readers, i18n);
                     },
                     passiveEventOptions,
@@ -2225,7 +2229,7 @@ export async function mount(root, { signal } = {}) {
                         if (!(statusElement instanceof HTMLElement)) return;
                         const rawReaders =
                             statusElement.getAttribute("data-readers") ?? "[]";
-                        const readers = parseEncodedReaders(rawReaders);
+                        const readers = parseEncodedPayload(rawReaders);
                         showReadReceiptHoverPopup(statusElement, readers, i18n);
                     },
                     passiveEventOptions,
