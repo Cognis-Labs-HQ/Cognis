@@ -58,4 +58,4 @@ Added missing `ui.app.users.reset_tfa` and `ui.app.users.tfa_reset_done` keys to
 
 ## Login Regression Corrected
 
-Removed the post-login required-email enforcement step from the login UI flow so successful sign-ins no longer depend on immediate `/api/v1/users/:id/emails` calls, which was causing new-user login regressions.
+Restored post-login required-email enforcement and moved the implementation into a Notify gateway-owned login helper so the Login page no longer owns direct email-route wiring while preserving required email validation behavior.

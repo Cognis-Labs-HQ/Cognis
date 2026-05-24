@@ -24,6 +24,7 @@ export async function mount(root) {
     applyDocumentTitle(i18n, "ui.page.title.login");
     let currentTfaLoginAttemptId = null;
     let tfaLoginClientPromise = null;
+    let requiredEmailEnforcementClientPromise = null;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -71,6 +72,20 @@ export async function mount(root) {
                 });
         }
         return tfaLoginClientPromise;
+    }
+
+    async function loadRequiredEmailEnforcementClient() {
+        if (!requiredEmailEnforcementClientPromise) {
+            requiredEmailEnforcementClientPromise = import(
+                "/static/gateways/notify/login-required-email-flow.js"
+            )
+                .then((mod) => mod.createRequiredEmailEnforcementClient())
+                .catch((error) => {
+                    console.error(error);
+                    return null;
+                });
+        }
+        return requiredEmailEnforcementClientPromise;
     }
 
     async function loadLoginMethods() {
@@ -291,6 +306,22 @@ export async function mount(root) {
                                     .catch(() => null);
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     persistSession(tfaBody.data);
+                                    const requiresUserValidation =
+                                        tfaBody.data.requiredUserValidation ===
+                                            true &&
+                                        tfaBody.data.userValidationMode ===
+                                            "smtp";
+                                    if (requiresUserValidation) {
+                                        const requiredEmailClient =
+                                            await loadRequiredEmailEnforcementClient();
+                                        await requiredEmailClient?.enforceRequiredEmailSetup(
+                                            {
+                                                accountId:
+                                                    tfaBody.data.accountId,
+                                                i18n,
+                                            },
+                                        );
+                                    }
                                     await syncTimezoneOnLogin(
                                         tfaBody.data.accountId,
                                     );
@@ -337,6 +368,19 @@ export async function mount(root) {
                                     return;
                                 }
                                 persistSession(body.data);
+                                const requiresUserValidation =
+                                    body.data.requiredUserValidation === true &&
+                                    body.data.userValidationMode === "smtp";
+                                if (requiresUserValidation) {
+                                    const requiredEmailClient =
+                                        await loadRequiredEmailEnforcementClient();
+                                    await requiredEmailClient?.enforceRequiredEmailSetup(
+                                        {
+                                            accountId: body.data.accountId,
+                                            i18n,
+                                        },
+                                    );
+                                }
                                 await syncTimezoneOnLogin(body.data.accountId);
                                 window.location.href = "/dashboard";
                                 return;

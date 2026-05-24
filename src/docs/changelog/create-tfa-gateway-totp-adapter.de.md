@@ -58,4 +58,4 @@ Die fehlenden Schlüssel `ui.app.users.reset_tfa` und `ui.app.users.tfa_reset_do
 
 ## Login-Regression Korrigiert
 
-Der Schritt zur erzwungenen E-Mail-Eingabe nach dem Login wurde aus dem Login-UI-Ablauf entfernt, damit erfolgreiche Anmeldungen nicht mehr unmittelbar von Aufrufen auf `/api/v1/users/:id/emails` abhängen, was bei neuen Konten zu Login-Regressionen führte.
+Die verpflichtende E-Mail-Prüfung nach dem Login wurde wiederhergestellt und in einen Notify-Gateway-eigenen Login-Helper verlagert, sodass die Login-Seite keine direkte E-Mail-Routenverdrahtung mehr enthält und das erforderliche Validierungsverhalten erhalten bleibt.

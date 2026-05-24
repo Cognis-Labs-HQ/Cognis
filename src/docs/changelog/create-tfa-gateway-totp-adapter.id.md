@@ -58,4 +58,4 @@ Menambahkan kunci `ui.app.users.reset_tfa` dan `ui.app.users.tfa_reset_done` yan
 
 ## Regresi Login Diperbaiki
 
-Langkah pemaksaan email setelah login dihapus dari alur UI login agar login yang berhasil tidak lagi bergantung pada pemanggilan langsung ke `/api/v1/users/:id/emails`, yang sebelumnya memicu regresi login pada akun baru.
+Langkah validasi email wajib setelah login dipulihkan dan implementasinya dipindahkan ke helper login milik gateway Notify, sehingga halaman Login tidak lagi memegang wiring langsung ke rute email sambil tetap mempertahankan perilaku validasi yang diwajibkan.
