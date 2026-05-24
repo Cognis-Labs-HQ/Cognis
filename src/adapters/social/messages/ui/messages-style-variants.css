@@ -212,8 +212,8 @@ body:not([data-theme="light"])
     margin-top: 0.12rem;
 }
 
-.messages-page[data-message-style="irc"] .messages-reaction-picker-row {
-    top: -0.04rem;
+.messages-page[data-message-style="irc"] {
+    --messages-reaction-picker-top-offset: -0.04rem;
 }
 
 html[data-message-style="speech_bubbles"] .jitsi-chat-message {
