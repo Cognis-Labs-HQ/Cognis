@@ -956,9 +956,6 @@ async function renderThread(
             }
             const isOwn = msg.senderId === currentAccountId;
             const ownClass = isOwn ? " messages-message--own" : "";
-            const senderLabel = isOwn
-                ? ""
-                : `<span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>`;
             const timeLabel = msg.createdAt
                 ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatMessageTime(msg.createdAt))}</time>`
                 : "";
