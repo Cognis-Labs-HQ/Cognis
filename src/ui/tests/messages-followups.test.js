@@ -110,6 +110,13 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         ),
         "utf8",
     );
+    const variantsCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-style-variants.css",
+        ),
+        "utf8",
+    );
     assert.match(appSource, /if \(hadPriorReaders\)\s*\{[\s\S]*?return "";/);
     assert.match(appSource, /data-reaction-details="1"/);
     assert.match(
@@ -119,5 +126,13 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     assert.match(
         sharedCssSource,
         /\.messages-message-wrap \.messages-reaction-picker-row[\s\S]*position:\s*absolute;/,
+    );
+    assert.match(
+        sharedCssSource,
+        /\.messages-read-receipt-popup[\s\S]*pointer-events:\s*none;/,
+    );
+    assert.match(
+        variantsCssSource,
+        /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-reactions-row[\s\S]*max-width:\s*100%;/,
     );
 });
