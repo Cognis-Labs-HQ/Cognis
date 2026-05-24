@@ -129,6 +129,46 @@ test("auth gateway contributes auth:accountStore capability", async () => {
     );
 });
 
+test("auth bootstrap hook directory contributes route-level TFA login capabilities", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    assert.equal(
+        typeof capabilities.get("auth:getAccessTokenTtlSeconds"),
+        "function",
+    );
+    assert.equal(
+        typeof capabilities.get("auth:buildAccessTokenCookie"),
+        "function",
+    );
+    assert.equal(
+        typeof capabilities.get("tfa:createPendingLoginAttempt"),
+        "function",
+    );
+    assert.equal(
+        typeof capabilities.get("tfa:getPendingLoginAttempt"),
+        "function",
+    );
+    assert.equal(
+        typeof capabilities.get("tfa:clearPendingLoginAttempt"),
+        "function",
+    );
+});
+
 test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
