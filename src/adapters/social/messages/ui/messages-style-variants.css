@@ -156,7 +156,7 @@ body:not([data-theme="light"])
 }
 
 .messages-page[data-message-style="irc"] .messages-thread-list {
-    gap: 0.72rem;
+    gap: 1.8rem;
 }
 
 .messages-page[data-message-style="irc"] .messages-message {

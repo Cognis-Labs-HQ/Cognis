@@ -147,45 +147,6 @@
     color: var(--color-text, #e2e8f0);
 }
 
-.messages-receipt-popup-heading-avatars {
-    display: inline-flex;
-    align-items: center;
-    gap: 0;
-    margin: -0.12rem 0 0.5rem;
-}
-
-.messages-receipt-heading-avatar {
-    width: 1.1rem;
-    height: 1.1rem;
-    border-radius: 999px;
-    overflow: hidden;
-    border: 1.5px solid var(--color-surface, rgba(15, 23, 42, 0.84));
-    margin-right: -0.22rem;
-    flex: 0 0 auto;
-}
-
-.messages-receipt-popup-heading-avatars
-    .messages-receipt-heading-avatar:last-child {
-    margin-right: 0;
-}
-
-.messages-receipt-heading-avatar-img,
-.messages-receipt-heading-avatar-fallback {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.messages-receipt-heading-avatar-fallback {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 0.46rem;
-    font-weight: 700;
-    background: var(--initials-bg, var(--color-accent));
-}
-
 .messages-receipt-popup-list {
     list-style: none;
     margin: 0;

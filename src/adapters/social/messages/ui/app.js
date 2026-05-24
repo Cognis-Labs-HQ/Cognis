@@ -860,20 +860,6 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
     const heading = i18n
         .t("module.social.messages.receipt_seen_by_count")
         .replace("{count}", String(readers.length));
-    const headingAvatars = readers
-        .map((reader) => {
-            const readerLabel =
-                reader.displayName || reader.handle || reader.accountId;
-            return buildProfileAvatarMarkup({
-                avatarKey: reader.avatarKey || null,
-                label: readerLabel,
-                colorSeed: reader.handle || reader.accountId || readerLabel,
-                avatarClass: "messages-receipt-heading-avatar",
-                imageClass: "messages-receipt-heading-avatar-img",
-                fallbackClass: "messages-receipt-heading-avatar-fallback",
-            });
-        })
-        .join("");
     const readerItems = readers
         .map((reader) => {
             const readerLabel =
@@ -900,7 +886,7 @@ function showReadReceiptHoverPopup(statusElement, readers, i18n) {
         .join("");
     readReceiptHoverPopup.show(
         statusElement,
-        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><div class="messages-receipt-popup-heading-avatars">${headingAvatars}</div><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
+        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
     );
 }
 
