@@ -100,29 +100,29 @@ function ensureTray() {
         tray.setAttribute("aria-relevant", "additions removals");
         document.body.appendChild(tray);
     }
-
-    function resolveToastLinkHref(linkHref) {
-        if (typeof linkHref !== "string") {
-            return "";
-        }
-        const normalizedLinkHref = linkHref.trim();
-        if (!normalizedLinkHref) {
-            return "";
-        }
-        if (normalizedLinkHref.startsWith("/")) {
-            return normalizedLinkHref;
-        }
-        try {
-            const parsed = new URL(normalizedLinkHref, window.location.origin);
-            if (!["http:", "https:"].includes(parsed.protocol)) {
-                return "";
-            }
-            return parsed.href;
-        } catch {
-            return "";
-        }
-    }
     return tray;
+}
+
+function resolveToastLinkHref(linkHref) {
+    if (typeof linkHref !== "string") {
+        return "";
+    }
+    const normalizedLinkHref = linkHref.trim();
+    if (!normalizedLinkHref) {
+        return "";
+    }
+    if (normalizedLinkHref.startsWith("/")) {
+        return normalizedLinkHref;
+    }
+    try {
+        const parsed = new URL(normalizedLinkHref, window.location.origin);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+            return "";
+        }
+        return parsed.href;
+    } catch {
+        return "";
+    }
 }
 
 export function showToast(
