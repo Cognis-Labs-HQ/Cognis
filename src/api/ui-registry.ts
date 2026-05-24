@@ -20,7 +20,7 @@ export interface AdminSection {
      * The admin page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
      * and merge those strings into the i18n instance passed to this section.
      */
-    stringsBaseUrl?: string;
+    stringsBaseUrl?: string | string[];
 }
 
 /**
@@ -102,7 +102,7 @@ export interface SettingsSection {
      * The settings page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
      * and merge those strings into the i18n instance passed to this section.
      */
-    stringsBaseUrl?: string;
+    stringsBaseUrl?: string | string[];
     /** Optional runtime predicate used to hide sections while their owner is disabled. */
     isEnabled?: () => boolean;
 }

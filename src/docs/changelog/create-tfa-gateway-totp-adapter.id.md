@@ -39,3 +39,7 @@ Jarak antara teks petunjuk dan dropdown metode pada popup setup TFA wajib telah 
 ## Penyempurnaan Lanjutan Review
 
 SHA256 kini menjadi algoritma default TOTP, nama adaptor TOTP untuk pengguna dipersingkat, dokumentasi komponen TFA/TOTP diperluas, pembuatan object URL QR SVG dipindahkan ke `src/ui/reuse/qr-image-source.js`, dan registrasi skrip pengaturan Security diperbarui ke `/static/gateways/auth/security-prefs/index.js`.
+
+## Perbaikan Penegakan dan Kepemilikan
+
+Status nonaktif adaptor TFA kini tetap bertahan setelah restart, konsumsi kode pemulihan berlangsung atomik, akun yang wajib menyiapkan TFA hanya menerima token dengan status setup tertunda yang tidak dapat memanggil API terlindungi di luar TFA, dan string browser, helper, serta style milik TFA dipindahkan ke aset statis gateway TFA dan adaptor TOTP.

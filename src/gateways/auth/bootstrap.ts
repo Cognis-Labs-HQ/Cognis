@@ -180,7 +180,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.4.5",
+        version: "1.4.6",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -193,7 +193,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "security",
         label: "Security",
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
-        stringsBaseUrl: "/static/gateways/auth/languages",
+        stringsBaseUrl: [
+            "/static/gateways/auth/languages",
+            "/static/gateways/tfa/languages",
+            "/static/adapters/tfa/totp/languages",
+        ],
     });
 
     /**
@@ -694,14 +698,6 @@ function createAuthGatewayRoutes(
                 Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
                     ? parsedTtlSeconds
                     : 43200;
-            const apiToken = issueAccessToken(
-                session.accountId,
-                role,
-                accessTokenTtlSeconds,
-                {
-                    providerId: adapter.id,
-                },
-            );
             const localAdapter = authGateway.getLocalAdapter();
             if (localAdapter) {
                 await localAdapter
@@ -738,19 +734,22 @@ function createAuthGatewayRoutes(
             const requiresUserValidation = shouldRequireSmtpValidation
                 ? Boolean(canSendVerificationEmail?.())
                 : false;
-            const isSecondFactorEnabled = capabilities.get<
-                (accountId: string) => Promise<boolean>
-            >("tfa:isSecondFactorEnabled");
+            const getTfaUserStatus = capabilities.get<
+                (accountId: string) => Promise<{
+                    requiresSetup: boolean;
+                    hasConfiguredMethod: boolean;
+                }>
+            >("tfa:getUserStatus");
             const getTfaLoginMethods = capabilities.get<
                 (
                     accountId: string,
                 ) => Promise<Array<{ id: string; name: string }>>
             >("tfa:getLoginMethods");
-            const requiresTfa = isSecondFactorEnabled
-                ? await isSecondFactorEnabled(session.accountId).catch(
-                      () => false,
-                  )
-                : false;
+            const tfaStatus = getTfaUserStatus
+                ? await getTfaUserStatus(session.accountId).catch(() => null)
+                : null;
+            const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
+            const requiresTfaSetup = tfaStatus?.requiresSetup === true;
             if (requiresTfa && getTfaLoginMethods) {
                 const methods = await getTfaLoginMethods(session.accountId)
                     .catch(() => [])
@@ -804,6 +803,49 @@ function createAuthGatewayRoutes(
                     return true;
                 }
             }
+            if (requiresTfaSetup) {
+                const pendingSetupToken = issueAccessToken(
+                    session.accountId,
+                    role,
+                    accessTokenTtlSeconds,
+                    {
+                        providerId: adapter.id,
+                        tfaSetupPending: true,
+                    },
+                );
+                log?.("info", "Login succeeded with pending TFA setup gate.", {
+                    ...logMeta,
+                    accountId: session.accountId,
+                    provider: session.provider,
+                    role,
+                });
+                res.writeHead(200, {
+                    "content-type": "application/json",
+                    "set-cookie": buildAccessTokenCookie(
+                        pendingSetupToken,
+                        accessTokenTtlSeconds,
+                        shouldSetSecureCookie(req),
+                    ),
+                });
+                res.end(
+                    JSON.stringify({
+                        data: {
+                            accountId: session.accountId,
+                            displayName: accountDisplayName ?? session.accountId,
+                            provider: session.provider,
+                            providerId: adapter.id,
+                            role,
+                            isFounder,
+                            token: pendingSetupToken,
+                            userValidationMode:
+                                securitySettings.userValidationMode,
+                            requiredUserValidation: requiresUserValidation,
+                            tfaSetupRequired: true,
+                        },
+                    }),
+                );
+                return true;
+            }
             log?.("info", "Login succeeded.", {
                 ...logMeta,
                 accountId: session.accountId,
@@ -811,6 +853,14 @@ function createAuthGatewayRoutes(
                 role,
                 requiresUserValidation,
             });
+            const apiToken = issueAccessToken(
+                session.accountId,
+                role,
+                accessTokenTtlSeconds,
+                {
+                    providerId: adapter.id,
+                },
+            );
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": buildAccessTokenCookie(

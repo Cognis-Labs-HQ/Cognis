@@ -519,30 +519,17 @@ export class DbTfaStore {
     ): Promise<boolean> {
         const codeHash = hashRecoveryCode(recoveryCode);
         const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "tfa_recovery_codes",
-            columns: ["code_hash"],
-            where: [
-                { column: "account_id", value: accountId },
-                { column: "code_hash", value: codeHash },
-                { column: "used_at", operator: "IS NULL" },
-            ],
-            limit: 1,
-        });
-
-        if ((result.rows?.length ?? 0) === 0) return false;
-
-        await this.db.executeCommand({
             option: "UPDATE",
             table: "tfa_recovery_codes",
             set: { used_at: nowIso() },
             where: [
                 { column: "account_id", value: accountId },
                 { column: "code_hash", value: codeHash },
+                { column: "used_at", operator: "IS NULL" },
             ],
         });
 
-        return true;
+        return Number(result.rowCount ?? 0) > 0;
     }
 
     async clearUserState(accountId: string): Promise<void> {

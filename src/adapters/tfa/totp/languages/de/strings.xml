@@ -1,0 +1,5 @@
+<resources>
+  <string name="gateway.auth.security.tfa_qr_code_alt">QR-Code Für Die TOTP-Einrichtung</string>
+  <string name="gateway.auth.security.tfa_totp_prompt">Scannen Sie den QR-Code in Ihrer Authenticator-App und geben Sie danach einen 6-stelligen Code ein, um die Einrichtung zu bestätigen.</string>
+  <string name="ui.app.login.tfa.code_placeholder_totp">TOTP-Code</string>
+</resources>

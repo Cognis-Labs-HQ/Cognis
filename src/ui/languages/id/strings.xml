@@ -540,18 +540,4 @@
   <string name="ui.app.dashboard.element.student_classes.label">Kelas Saya</string>
   <string name="ui.app.dashboard.element.student_classes.cta">Lihat dan kelola kelas yang Anda ikuti.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Ke Kelas Saya</string>
-  <string name="ui.app.login.tfa.code_label">Kode Dua Faktor</string>
-  <string name="ui.app.login.tfa.code_label_for_method">Kode {method}</string>
-  <string name="ui.app.login.tfa.code_placeholder_totp">Kode TOTP</string>
-  <string name="ui.app.login.tfa.code_placeholder_recovery">Kode Pemulihan</string>
-  <string name="ui.app.login.tfa.recovery_code_used">Kode pemulihan diterima untuk masuk.</string>
-  <string name="ui.app.login.tfa.recovery_code_remaining_low">Hanya tersisa {count} kode pemulihan.</string>
-  <string name="ui.app.login.tfa.recovery_code_remaining_critical">Tersisa {count} kode pemulihan. Segera buat set baru.</string>
-  <string name="ui.app.login.tfa.recovery_code_open_security">Buka Pengaturan Keamanan</string>
-  <string name="ui.app.login.tfa.required_prompt">Verifikasi dua faktor wajib untuk melanjutkan.</string>
-  <string name="ui.app.login.tfa.error_invalid">Kode dua faktor tidak valid.</string>
-  <string name="ui.app.admin.security.tfa_enforce_all_users_label">Wajibkan Autentikasi Dua Faktor Untuk Semua Pengguna</string>
-  <string name="ui.app.admin.security.tfa_enforce_all_users_hint">Jika diaktifkan, pengguna tanpa metode dua faktor yang dikonfigurasi akan diarahkan ke pengaturan sampai penyiapan selesai.</string>
-  <string name="ui.app.users.reset_tfa">Reset Autentikasi Dua Faktor</string>
-  <string name="ui.app.users.tfa_reset_done">Autentikasi dua faktor untuk pengguna ini telah direset.</string>
 </resources>

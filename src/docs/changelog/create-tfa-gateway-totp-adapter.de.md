@@ -39,3 +39,7 @@ Der Abstand zwischen Anweisungstext und Methoden-Dropdown im Pflicht-TFA-Setup-D
 ## Nacharbeit aus dem Review
 
 SHA256 wurde als Standardalgorithmus für TOTP gesetzt, der benutzerseitige Anzeigename des TOTP-Adapters wurde verkürzt, die TFA/TOTP-Dokumentation wurde erweitert, die QR-SVG-Objekt-URL-Erzeugung wurde nach `src/ui/reuse/qr-image-source.js` verschoben und die Security-Skriptregistrierung auf `/static/gateways/auth/security-prefs/index.js` umgestellt.
+
+## Erzwingung und Besitzordnung Korrigiert
+
+Der Deaktivierungsstatus von TFA-Adaptern bleibt jetzt über Neustarts erhalten, Recovery-Codes werden atomar verbraucht, Konten mit verpflichtender TFA-Einrichtung erhalten nur noch Setup-ausstehende Tokens ohne Zugriff auf geschützte Nicht-TFA-APIs, und TFA-bezogene Browser-Strings, Helfer und Styles wurden in die statischen Assets des TFA-Gateways bzw. TOTP-Adapters verschoben.

@@ -1,3 +1,4 @@
+import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
@@ -41,12 +42,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
 
-    for (const adapter of gateway.listAdapters()) {
-        if (!gateway.isAdapterEnabled(adapter.id)) {
-            await gateway.enableAdapter(adapter.id);
-        }
-    }
-
     ctx.routeRegistry.register(createTfaRoutes(gateway, ctx.log), "tfa");
     ctx.routeRegistry.register(
         createTfaAdapterAdminRoutes(gateway, ctx.log),
@@ -59,13 +54,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.0.3",
+        version: "1.0.4",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs",
         required: false,
         hasAdapters: true,
     });
+    const gatewayUiDir = path.resolve(process.cwd(), "src", "gateways", "tfa", "ui");
+    ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
+    const adapterDirs = await readdir(tfaAdaptersRoot, {
+        withFileTypes: true,
+    }).catch(() => []);
+    for (const adapterDir of adapterDirs) {
+        if (!adapterDir.isDirectory()) continue;
+        ctx.uiRegistry?.registerAdapterStaticDir(
+            "tfa",
+            adapterDir.name,
+            path.join(tfaAdaptersRoot, adapterDir.name),
+        );
+    }
 
     ctx.capabilities.contribute(
         "tfa:getUserStatus",

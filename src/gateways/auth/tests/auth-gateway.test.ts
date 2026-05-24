@@ -1050,6 +1050,66 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     assert.equal(payload.data.requiredUserValidation, false);
 });
 
+test("login issues setup-pending token when global TFA setup is required", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute(
+        "tfa:getUserStatus",
+        async (_accountId: string) => ({
+            requiresSetup: true,
+            hasConfiguredMethod: false,
+        }),
+    );
+    const db = new InMemoryTestExecutor();
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const createLocalAdmin = capabilities.get<
+        (username: string, password: string) => Promise<void>
+    >("auth:createLocalAdmin");
+    assert.ok(createLocalAdmin);
+    await createLocalAdmin?.("alice", "pass123");
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: {
+            token: string;
+            tfaSetupRequired: boolean;
+        };
+    };
+    assert.equal(payload.data.tfaSetupRequired, true);
+    assert.equal(typeof payload.data.token, "string");
+
+    const verifyResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {},
+            { authorization: `Bearer ${payload.data.token}` },
+        ),
+        "/api/v1/auth/verify",
+    );
+    assert.ok(verifyResult.handled);
+    assert.equal(verifyResult.res.status, 403);
+    assert.match(verifyResult.res.payload, /tfa_setup_required/);
+});
+
 test("auth bootstrap contributes page script origin registration capability", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

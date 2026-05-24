@@ -1,5 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n, extendI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
@@ -11,6 +11,7 @@ import {
 } from "../../reuse/clock-display.js";
 import { getRoleLabel } from "../../reuse/access-role.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
+import { renderRecoveryCodeUsageToasts } from "../../../gateways/tfa/ui/reuse/recovery-code-notice.js";
 
 async function loadAccountInfo(account) {
     if (!account) return null;
@@ -45,62 +46,13 @@ async function loadDashboardExtensions({ i18n, account, role }) {
     }
 }
 
-function renderRecoveryCodeUsageToasts(i18n) {
-    const rawNotice = sessionStorage.getItem("cognis_recovery_code_notice");
-    if (!rawNotice) {
-        return;
-    }
-    sessionStorage.removeItem("cognis_recovery_code_notice");
-    let notice = null;
-    try {
-        notice = JSON.parse(rawNotice);
-    } catch {
-        notice = null;
-    }
-    if (notice?.usedRecoveryCode !== true) {
-        return;
-    }
-    const remainingCount = Number.isFinite(notice.recoveryCodesRemaining)
-        ? Number(notice.recoveryCodesRemaining)
-        : null;
-    showToast(i18n.t("ui.app.login.tfa.recovery_code_used"), {
-        variant: "info",
-    });
-    if (remainingCount === null) {
-        return;
-    }
-    if (remainingCount <= 1) {
-        showToast(
-            i18n
-                .t("ui.app.login.tfa.recovery_code_remaining_critical")
-                .replace("{count}", String(remainingCount)),
-            {
-                variant: "error",
-                permanent: true,
-                linkHref: "/settings#security",
-                linkLabel: i18n.t(
-                    "ui.app.login.tfa.recovery_code_open_security",
-                ),
-            },
-        );
-        return;
-    }
-    if (remainingCount === 2) {
-        showToast(
-            i18n
-                .t("ui.app.login.tfa.recovery_code_remaining_low")
-                .replace("{count}", String(remainingCount)),
-            {
-                variant: "warning",
-            },
-        );
-    }
-}
-
 export async function mount(root) {
-    const i18n = await createI18n();
+    const i18n = await extendI18n(
+        await createI18n(),
+        "/static/gateways/tfa/languages",
+    );
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
-    renderRecoveryCodeUsageToasts(i18n);
+    renderRecoveryCodeUsageToasts({ i18n, showToast });
 
     const account = localStorage.getItem("cognis_account") ?? "";
     const displayName = localStorage.getItem("cognis_display_name") ?? account;

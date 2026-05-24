@@ -17,6 +17,7 @@ interface AccessTokenRecord {
     providerId: string;
     expiresAt: number | null;
     issuedAt?: number;
+    tfaSetupPending?: boolean;
 }
 
 const tokenStore = new Map<string, AccessTokenRecord>();
@@ -105,6 +106,8 @@ function loadTokenStore(now = Date.now()) {
                     .providerId;
                 const expiresAt = (record as { expiresAt?: unknown }).expiresAt;
                 const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
+                const tfaSetupPending = (record as { tfaSetupPending?: unknown })
+                    .tfaSetupPending;
 
                 if (typeof subject !== "string" || !isAccessRole(role))
                     continue;
@@ -115,6 +118,12 @@ function loadTokenStore(now = Date.now()) {
                 if (expiresAt !== null && expiresAt < now) continue;
                 if (issuedAt !== undefined && typeof issuedAt !== "number")
                     continue;
+                if (
+                    tfaSetupPending !== undefined &&
+                    typeof tfaSetupPending !== "boolean"
+                ) {
+                    continue;
+                }
 
                 store.set(tokenHash, {
                     subject,
@@ -122,6 +131,7 @@ function loadTokenStore(now = Date.now()) {
                     providerId,
                     expiresAt,
                     issuedAt,
+                    tfaSetupPending,
                 });
                 if (store.size >= MAX_TOKEN_STORE_SIZE) break;
             }
@@ -195,6 +205,7 @@ export function lookupAccessToken(token: string): {
     role: AccessRole;
     providerId: string;
     revoked: boolean;
+    tfaSetupPending: boolean;
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
@@ -203,18 +214,25 @@ export function lookupAccessToken(token: string): {
         role: stored.record.role,
         providerId: stored.record.providerId,
         revoked: stored.revoked,
+        tfaSetupPending: stored.record.tfaSetupPending === true,
     };
 }
 
 export function verifyAccessToken(
     token: string,
-): { sub: string; role: AccessRole; providerId: string } | null {
+): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    tfaSetupPending: boolean;
+} | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored || stored.revoked) return null;
     return {
         sub: stored.record.subject,
         role: stored.record.role,
         providerId: stored.record.providerId,
+        tfaSetupPending: stored.record.tfaSetupPending === true,
     };
 }
 
@@ -257,7 +275,11 @@ export function issueAccessToken(
     subject: string,
     role: AccessRole,
     ttlSeconds: number | null,
-    options?: { issuedAt?: number; providerId?: string },
+    options?: {
+        issuedAt?: number;
+        providerId?: string;
+        tfaSetupPending?: boolean;
+    },
 ): string {
     pruneExpiredTokens();
     if (tokenStore.size >= MAX_TOKEN_STORE_SIZE) {
@@ -277,6 +299,7 @@ export function issueAccessToken(
         providerId,
         expiresAt,
         issuedAt,
+        tfaSetupPending: options?.tfaSetupPending === true,
     });
     persistTokenStore();
     return token;

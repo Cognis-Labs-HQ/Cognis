@@ -1,5 +1,5 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n, extendI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -14,6 +14,10 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
+import {
+    persistRecoveryCodeUsageNotice,
+} from "../../../gateways/tfa/ui/reuse/recovery-code-notice.js";
+import { switchToTfaPrompt } from "../../../gateways/tfa/ui/login-flow.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -22,7 +26,10 @@ import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
 export async function mount(root) {
-    const i18n = await createI18n();
+    const i18n = await extendI18n(await createI18n(), [
+        "/static/gateways/tfa/languages",
+        "/static/adapters/tfa/totp/languages",
+    ]);
     applyDocumentTitle(i18n, "ui.page.title.login");
     let currentTfaLoginAttemptId = null;
 
@@ -329,105 +336,6 @@ export async function mount(root) {
         );
     }
 
-    function setActiveTfaInputPlaceholder(activeMethodId) {
-        const tfaCodeInput = document.querySelector("#login-tfa-code");
-        if (!(tfaCodeInput instanceof HTMLInputElement)) {
-            return;
-        }
-        const placeholderKeyByMethod = {
-            recovery_code: "ui.app.login.tfa.code_placeholder_recovery",
-            totp: "ui.app.login.tfa.code_placeholder_totp",
-        };
-        const placeholderKey =
-            placeholderKeyByMethod[activeMethodId] ??
-            "ui.app.login.tfa.code_placeholder_totp";
-        const placeholderText = i18n.t(placeholderKey);
-        tfaCodeInput.placeholder = placeholderText;
-        tfaCodeInput.setAttribute("aria-label", placeholderText);
-    }
-
-    function persistRecoveryCodeUsageNotice(loginData) {
-        if (!loginData || loginData.usedRecoveryCode !== true) {
-            return;
-        }
-        const remainingCount = Number.isFinite(loginData.recoveryCodesRemaining)
-            ? Number(loginData.recoveryCodesRemaining)
-            : null;
-        sessionStorage.setItem(
-            "cognis_recovery_code_notice",
-            JSON.stringify({
-                usedRecoveryCode: true,
-                recoveryCodesRemaining: remainingCount,
-            }),
-        );
-    }
-
-    function renderTfaMethodTabs(methods) {
-        const tabsEl = document.querySelector("#login-tfa-method-nav");
-        const methodInput = document.querySelector("#login-tfa-method");
-        if (
-            !(tabsEl instanceof HTMLElement) ||
-            !(methodInput instanceof HTMLInputElement)
-        ) {
-            return;
-        }
-        tabsEl.replaceChildren();
-        const normalizedMethods = Array.isArray(methods) ? methods : [];
-        normalizedMethods.forEach((method, index) => {
-            const tabLink = document.createElement("a");
-            tabLink.href = "#";
-            tabLink.textContent = method.name;
-            tabLink.addEventListener("click", (event) => {
-                event.preventDefault();
-                methodInput.value = method.id;
-                tabsEl.querySelectorAll("a").forEach((entry) => {
-                    entry.classList.toggle("active", entry === tabLink);
-                });
-                setActiveTfaInputPlaceholder(method.id);
-            });
-            if (index === 0) {
-                tabLink.classList.add("active");
-                methodInput.value = method.id;
-                setActiveTfaInputPlaceholder(method.id);
-            }
-            tabsEl.appendChild(tabLink);
-        });
-        tabsEl.hidden = normalizedMethods.length <= 1;
-    }
-
-    function switchToTfaPrompt(payload) {
-        const credentialFields = document.querySelector(
-            "#login-credential-fields",
-        );
-        const tfaFields = document.querySelector("#login-tfa-fields");
-        const usernameInput = document.querySelector("#login-username");
-        const passwordInput = document.querySelector("#login-password");
-        const tfaCodeInput = document.querySelector("#login-tfa-code");
-        if (
-            !(credentialFields instanceof HTMLElement) ||
-            !(tfaFields instanceof HTMLElement)
-        ) {
-            return;
-        }
-        currentTfaLoginAttemptId = payload.loginAttemptId;
-        credentialFields.hidden = true;
-        tfaFields.hidden = false;
-        if (usernameInput instanceof HTMLInputElement) {
-            usernameInput.required = false;
-            usernameInput.disabled = true;
-        }
-        if (passwordInput instanceof HTMLInputElement) {
-            passwordInput.required = false;
-            passwordInput.disabled = true;
-        }
-        if (tfaCodeInput instanceof HTMLInputElement) {
-            tfaCodeInput.required = true;
-            tfaCodeInput.value = "";
-            tfaCodeInput.focus();
-        }
-        renderTfaMethodTabs(payload.methods ?? []);
-    }
-
     function renderLoginShell() {
         const brandlineHtml = renderAuthBrandline(
             i18n.t("ui.shared.brand.name"),
@@ -608,9 +516,11 @@ export async function mount(root) {
                                 .catch(() => null);
                             if (response.ok && body?.data) {
                                 if (body.data.tfaRequired === true) {
-                                    switchToTfaPrompt(body.data);
-                                    return;
-                                }
+                                currentTfaLoginAttemptId =
+                                    switchToTfaPrompt(i18n, body.data) ??
+                                    null;
+                                return;
+                            }
                                 persistSession(body.data);
                                 const requiresUserValidation =
                                     body.data.requiredUserValidation === true &&

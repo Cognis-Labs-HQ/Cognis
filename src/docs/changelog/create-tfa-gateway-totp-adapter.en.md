@@ -39,3 +39,7 @@ Corrected spacing between the instruction text and the method dropdown in the ma
 ## Review Follow-Up Refinements
 
 Set SHA256 as the default TOTP algorithm, shortened the user-facing TOTP adapter name, expanded TFA and TOTP component documentation, moved QR SVG object-URL creation into `src/ui/reuse/qr-image-source.js`, and updated Security settings script registration to `/static/gateways/auth/security-prefs/index.js`.
+
+## Enforcement and Ownership Fixes
+
+TFA adapter disable state now survives restart, recovery-code consumption is atomic, accounts gated by mandatory TFA setup receive setup-pending tokens that cannot call protected non-TFA APIs, and TFA-owned browser strings, helpers, and styles were moved into the TFA gateway and TOTP adapter static assets.

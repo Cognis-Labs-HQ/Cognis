@@ -540,18 +540,4 @@
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>
   <string name="ui.app.dashboard.element.student_classes.cta">参加しているクラスを確認・管理できます。</string>
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>
-  <string name="ui.app.login.tfa.code_label">二要素コード</string>
-  <string name="ui.app.login.tfa.code_label_for_method">{method} コード</string>
-  <string name="ui.app.login.tfa.code_placeholder_totp">TOTP コード</string>
-  <string name="ui.app.login.tfa.code_placeholder_recovery">リカバリーコード</string>
-  <string name="ui.app.login.tfa.recovery_code_used">サインインで復旧コードを受け付けました。</string>
-  <string name="ui.app.login.tfa.recovery_code_remaining_low">復旧コードは残り {count} 件です。</string>
-  <string name="ui.app.login.tfa.recovery_code_remaining_critical">復旧コードは残り {count} 件です。今すぐ新しいセットを生成してください。</string>
-  <string name="ui.app.login.tfa.recovery_code_open_security">セキュリティ設定を開く</string>
-  <string name="ui.app.login.tfa.required_prompt">続行するには二要素認証が必要です。</string>
-  <string name="ui.app.login.tfa.error_invalid">二要素コードが無効です。</string>
-  <string name="ui.app.admin.security.tfa_enforce_all_users_label">すべてのユーザーに二要素認証を必須化</string>
-  <string name="ui.app.admin.security.tfa_enforce_all_users_hint">有効化すると、二要素方式が未設定のユーザーは設定完了まで設定ページへリダイレクトされます。</string>
-  <string name="ui.app.users.reset_tfa">二要素認証をリセット</string>
-  <string name="ui.app.users.tfa_reset_done">このユーザーの二要素認証をリセットしました。</string>
 </resources>

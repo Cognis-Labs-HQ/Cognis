@@ -1,0 +1,37 @@
+.settings-recovery-code-cell {
+  font-family: monospace;
+  letter-spacing: 0.08em;
+}
+
+.settings-recovery-code-status-cell {
+  white-space: nowrap;
+}
+
+.settings-recovery-code-used-marker {
+  color: var(--danger, #dc2626);
+  font-weight: 700;
+}
+
+.settings-recovery-code-ready-marker {
+  color: var(--success, #16a34a);
+  font-weight: 700;
+}
+
+.settings-tfa-setup-prompt {
+  margin-bottom: 12px;
+}
+
+.settings-tfa-setup-qr {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  margin: 12px auto;
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px;
+}
+
+.settings-tfa-setup-code {
+  width: 100%;
+}

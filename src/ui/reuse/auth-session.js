@@ -1,3 +1,8 @@
+import {
+    enforceTfaSetupIfRequired,
+    invalidateTfaSetupRequirementCache,
+} from "../../gateways/tfa/ui/reuse/enforcement.js";
+
 /**
  * Auth-session helpers for public auth pages.
  *
@@ -18,33 +23,6 @@
  *
  * @returns {Promise<boolean>}
  */
-async function enforceTfaSetupIfRequired() {
-    const token = localStorage.getItem("cognis_access_token");
-    if (!token) return false;
-    try {
-        const response = await fetch("/api/v1/tfa/status", {
-            headers: { authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) return false;
-        const payload = await response.json().catch(() => null);
-        if (payload?.data?.requiresSetup !== true) return false;
-        const normalizedHash =
-            typeof window.location.hash === "string"
-                ? window.location.hash.toLowerCase()
-                : "";
-        const isSecuritySettingsRoute =
-            window.location.pathname === "/settings" &&
-            normalizedHash === "#security";
-        if (!isSecuritySettingsRoute) {
-            window.location.replace("/settings#security");
-            return true;
-        }
-    } catch {
-        return false;
-    }
-    return false;
-}
-
 async function validateStoredAccountSession() {
     const token = localStorage.getItem("cognis_access_token");
     const account = localStorage.getItem("cognis_account");
@@ -101,6 +79,7 @@ export async function checkIsAuthenticated() {
 export async function ensureFullAccountSession() {
     const session = await validateStoredAccountSession();
     if (session.authenticated) {
+        invalidateTfaSetupRequirementCache();
         const redirectedForTfa = await enforceTfaSetupIfRequired();
         return !redirectedForTfa;
     }

@@ -37,6 +37,7 @@
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
+import { readTfaSetupRequirement } from "../../gateways/tfa/ui/reuse/enforcement.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -52,6 +53,7 @@ const ROUTE_STYLE_BUNDLES = {
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",
         "/static/styles/settings.css",
+        "/static/gateways/tfa/settings.css",
     ],
     docs: [
         "/static/styles/page-builder.css",
@@ -68,14 +70,9 @@ const ROUTE_STYLE_BUNDLES = {
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
-// Keep TFA enforcement checks fresh while avoiding a status API call per route.
-const TFA_ENFORCEMENT_CACHE_TTL_MS = 5_000;
-
 let _studyChildComponentsPromise = null;
 let _studyChildComponentsCache = null;
 let _studyChildComponentsCacheExpiresAt = 0;
-let _tfaEnforcementCacheExpiresAt = 0;
-let _tfaEnforcementRequiresSetup = false;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
@@ -85,38 +82,6 @@ function normalizeHash(path) {
     const hashIndex = String(path).indexOf("#");
     if (hashIndex < 0) return "";
     return String(path).slice(hashIndex).toLowerCase();
-}
-
-async function readTfaSetupRequirement() {
-    if (Date.now() < _tfaEnforcementCacheExpiresAt) {
-        return _tfaEnforcementRequiresSetup;
-    }
-    const token = localStorage.getItem("cognis_access_token");
-    if (!token) {
-        _tfaEnforcementRequiresSetup = false;
-        _tfaEnforcementCacheExpiresAt =
-            Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
-        return false;
-    }
-    try {
-        const response = await apiFetch("/api/v1/tfa/status");
-        if (!response.ok) {
-            _tfaEnforcementRequiresSetup = false;
-            _tfaEnforcementCacheExpiresAt =
-                Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
-            return false;
-        }
-        const payload = await response.json().catch(() => null);
-        _tfaEnforcementRequiresSetup = payload?.data?.requiresSetup === true;
-        _tfaEnforcementCacheExpiresAt =
-            Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
-        return _tfaEnforcementRequiresSetup;
-    } catch {
-        _tfaEnforcementRequiresSetup = false;
-        _tfaEnforcementCacheExpiresAt =
-            Date.now() + TFA_ENFORCEMENT_CACHE_TTL_MS;
-        return false;
-    }
 }
 
 function isPotentialStudyChildPath(path) {
