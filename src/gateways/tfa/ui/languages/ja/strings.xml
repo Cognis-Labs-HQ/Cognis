@@ -1,4 +1,5 @@
-<resources>  <string name="ui.app.login.tfa.code_label">二要素コード</string>
+<resources>
+  <string name="ui.app.login.tfa.code_label">二要素コード</string>
   <string name="ui.app.login.tfa.code_label_for_method">{method} コード</string>
   <string name="ui.app.login.tfa.code_placeholder_recovery">リカバリーコード</string>
   <string name="ui.app.login.tfa.recovery_code_used">サインインで復旧コードを受け付けました。</string>

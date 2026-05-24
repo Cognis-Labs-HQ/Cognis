@@ -88,7 +88,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/tfa/admin-section.js",
         stringsBaseUrl: "/static/gateways/tfa/languages",
     });
-    registerLimitedAuthPathAllowance("tfa", (path) =>
+    registerLimitedAuthPathAllowance("tfa", (path, _accountId) =>
         path.startsWith("/api/v1/tfa/"),
     );
     const adapterDirs = await readdir(tfaAdaptersRoot, {

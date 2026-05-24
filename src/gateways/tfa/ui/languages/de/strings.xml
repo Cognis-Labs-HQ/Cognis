@@ -1,4 +1,5 @@
-<resources>  <string name="ui.app.login.tfa.code_label">Zwei-Faktor-Code</string>
+<resources>
+  <string name="ui.app.login.tfa.code_label">Zwei-Faktor-Code</string>
   <string name="ui.app.login.tfa.code_label_for_method">Code für {method}</string>
   <string name="ui.app.login.tfa.code_placeholder_recovery">Wiederherstellungscode</string>
   <string name="ui.app.login.tfa.recovery_code_used">Wiederherstellungscode für die Anmeldung akzeptiert.</string>

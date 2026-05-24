@@ -130,10 +130,13 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 fields instanceof HTMLElement &&
                 fields.childElementCount === 0
             ) {
+                const placeholderText = i18n.t(
+                    "ui.app.login.tfa.code_placeholder_totp",
+                );
                 fields.innerHTML = `
                   <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
                   <input type="hidden" id="login-tfa-method" value="" />
-                  <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" />
+                  <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${placeholderText}" aria-label="${placeholderText}" />
                 `;
             }
             return switchToTfaPrompt(i18n, payload, root);

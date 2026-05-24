@@ -1,4 +1,5 @@
-<resources>  <string name="ui.app.login.tfa.code_label">Kode Dua Faktor</string>
+<resources>
+  <string name="ui.app.login.tfa.code_label">Kode Dua Faktor</string>
   <string name="ui.app.login.tfa.code_label_for_method">Kode {method}</string>
   <string name="ui.app.login.tfa.code_placeholder_recovery">Kode Pemulihan</string>
   <string name="ui.app.login.tfa.recovery_code_used">Kode pemulihan diterima untuk masuk.</string>
