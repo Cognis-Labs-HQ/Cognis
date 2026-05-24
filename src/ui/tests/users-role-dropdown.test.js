@@ -77,5 +77,8 @@ test("users tfa reset action has standalone branch", () => {
     );
 
     assert.match(source, /if \(action === "tfa-reset"\)/);
-    assert.match(source, /\/api\/v1\/tfa\/admin\/users\/\$\{encodeURIComponent\(username\)\}\/reset/);
+    assert.match(
+        source,
+        /\/api\/v1\/tfa\/admin\/users\/\$\{encodeURIComponent\(username\)\}\/reset/,
+    );
 });

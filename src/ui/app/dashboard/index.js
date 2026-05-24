@@ -77,7 +77,9 @@ async function loadDashboardExtensions({ i18n, account, role }) {
                     variant: "error",
                     permanent: true,
                     linkHref: "/settings",
-                    linkLabel: i18n.t("ui.app.login.tfa.recovery_code_open_security"),
+                    linkLabel: i18n.t(
+                        "ui.app.login.tfa.recovery_code_open_security",
+                    ),
                 },
             );
             return;

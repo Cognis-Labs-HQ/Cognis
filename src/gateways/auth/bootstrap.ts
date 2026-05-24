@@ -869,19 +869,18 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const verifyTfaLogin =
-                capabilities.get<
-                    (
-                        accountId: string,
-                        tfaMethodId: string,
-                        payload: Record<string, unknown>,
-                    ) => Promise<{
-                        verified: boolean;
-                        message?: string;
-                        usedRecoveryCode?: boolean;
-                        recoveryCodesRemaining?: number;
-                    }>
-                >("tfa:verifyLogin");
+            const verifyTfaLogin = capabilities.get<
+                (
+                    accountId: string,
+                    tfaMethodId: string,
+                    payload: Record<string, unknown>,
+                ) => Promise<{
+                    verified: boolean;
+                    message?: string;
+                    usedRecoveryCode?: boolean;
+                    recoveryCodesRemaining?: number;
+                }>
+            >("tfa:verifyLogin");
             if (!verifyTfaLogin) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(

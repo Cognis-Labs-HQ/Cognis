@@ -72,7 +72,10 @@ export function createUserRoutes(
             const users = await Promise.all(
                 (await accountStore.list()).map(async (user) => ({
                     ...user,
-                    role: resolveEffectiveRole(user.role, Boolean(user.isFounder)),
+                    role: resolveEffectiveRole(
+                        user.role,
+                        Boolean(user.isFounder),
+                    ),
                     hasTfaConfigured: isSecondFactorEnabled
                         ? await isSecondFactorEnabled(user.username).catch(
                               () => false,

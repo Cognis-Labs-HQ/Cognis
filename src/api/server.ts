@@ -162,7 +162,7 @@ export function buildServer(deps: ApiDependencies) {
               deps.getProfileVisibility,
               deps.setProfileVisibility,
               routeContext,
-               deps.getModuleCapability,
+              deps.getModuleCapability,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry

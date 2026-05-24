@@ -145,7 +145,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const cell = document.createElement("td");
         cell.setAttribute("colspan", "2");
         cell.className = "language-table-empty-cell";
-        cell.textContent = i18n.t("gateway.auth.security.tfa_recovery_codes_none");
+        cell.textContent = i18n.t(
+            "gateway.auth.security.tfa_recovery_codes_none",
+        );
         row.append(cell);
         return row;
     }
