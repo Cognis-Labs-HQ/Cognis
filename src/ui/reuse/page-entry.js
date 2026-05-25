@@ -15,7 +15,7 @@
  *   await mountWhenDirect(mount);
  */
 
-import { createI18n, readPreferredLanguages } from './i18n.js';
+import { createI18n, readPreferredLanguages } from "./i18n.js";
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;
@@ -28,32 +28,32 @@ let loadingI18nPromise = null;
 let loadingMessages = null;
 let pageUnloadListenersRegistered = false;
 
-const LOADING_MESSAGE_INTERVAL_MS = 1800;
+const LOADING_MESSAGE_INTERVAL_MILLISECONDS = 1800;
 const LOADING_MESSAGE_KEYS = [
-    'ui.reuse.loading_joke_1',
-    'ui.reuse.loading_joke_2',
-    'ui.reuse.loading_joke_3',
-    'ui.reuse.loading_joke_4',
+    "ui.reuse.loading_joke_1",
+    "ui.reuse.loading_joke_2",
+    "ui.reuse.loading_joke_3",
+    "ui.reuse.loading_joke_4",
 ];
 const FALLBACK_LOADING_MESSAGES = [
     "Cognis shouldn't be this slow, isn't it 2026?",
-    'Polishing pixels... apparently one by one.',
-    'Loading... at a speed historians can appreciate.',
-    'We promise this spinner is judging us too.',
+    "Polishing pixels... apparently one by one.",
+    "Loading... at a speed historians can appreciate.",
+    "We promise this spinner is judging us too.",
 ];
 
 function createLoadingOverlayElement() {
-    if (typeof document.createElement !== 'function') return null;
-    const overlay = document.createElement('div');
-    overlay.className = 'page-loading-overlay';
-    overlay.setAttribute('aria-live', 'polite');
-    overlay.setAttribute('aria-hidden', 'true');
+    if (typeof document.createElement !== "function") return null;
+    const overlay = document.createElement("div");
+    overlay.className = "page-loading-overlay";
+    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("aria-hidden", "true");
 
-    const spinner = document.createElement('div');
-    spinner.className = 'page-loading-overlay__spinner';
+    const spinner = document.createElement("div");
+    spinner.className = "page-loading-overlay__spinner";
 
-    const message = document.createElement('p');
-    message.className = 'page-loading-overlay__message';
+    const message = document.createElement("p");
+    message.className = "page-loading-overlay__message";
     message.textContent = FALLBACK_LOADING_MESSAGES[0];
 
     overlay.append(spinner, message);
@@ -63,20 +63,20 @@ function createLoadingOverlayElement() {
 function ensureLoadingOverlay() {
     if (loadingOverlayMounted) return;
     const body = document.body;
-    if (!body || typeof body.append !== 'function') return;
+    if (!body || typeof body.append !== "function") return;
     const created = createLoadingOverlayElement();
     if (!created) return;
 
     loadingOverlayElement = created.overlay;
     loadingWheelMessageElement = created.message;
     body.append(loadingOverlayElement);
-    body.dataset.pageLoadingOverlayMounted = 'true';
+    body.dataset.pageLoadingOverlayMounted = "true";
     loadingOverlayMounted = true;
 }
 
 function loadLoadingMessagesI18n() {
     if (loadingI18nPromise) return loadingI18nPromise;
-    let preferredLanguages = ['en'];
+    let preferredLanguages = ["en"];
     try {
         preferredLanguages = readPreferredLanguages();
     } catch {}
@@ -84,9 +84,9 @@ function loadLoadingMessagesI18n() {
         preferredLanguages,
     })
         .then((i18n) => {
-            const translated = LOADING_MESSAGE_KEYS.map((key) => i18n.t(key)).filter(
-                (value) => typeof value === 'string' && value.trim(),
-            );
+            const translated = LOADING_MESSAGE_KEYS.map((key) =>
+                i18n.t(key),
+            ).filter((value) => typeof value === "string" && value.trim());
             loadingMessages = translated.length
                 ? translated
                 : FALLBACK_LOADING_MESSAGES;
@@ -100,14 +100,17 @@ function loadLoadingMessagesI18n() {
 }
 
 function getActiveLoadingMessages() {
-    return loadingMessages?.length ? loadingMessages : FALLBACK_LOADING_MESSAGES;
+    return loadingMessages?.length
+        ? loadingMessages
+        : FALLBACK_LOADING_MESSAGES;
 }
 
 function renderLoadingMessage(index) {
     if (!loadingWheelMessageElement) return;
     const messages = getActiveLoadingMessages();
     if (!messages.length) return;
-    const safeIndex = ((index % messages.length) + messages.length) % messages.length;
+    const safeIndex =
+        ((index % messages.length) + messages.length) % messages.length;
     loadingMessageIndex = safeIndex;
     loadingWheelMessageElement.textContent = messages[safeIndex];
 }
@@ -117,7 +120,7 @@ function startLoadingMessageRotation() {
     renderLoadingMessage(loadingMessageIndex);
     loadingMessageTimer = setInterval(() => {
         renderLoadingMessage(loadingMessageIndex + 1);
-    }, LOADING_MESSAGE_INTERVAL_MS);
+    }, LOADING_MESSAGE_INTERVAL_MILLISECONDS);
 }
 
 function stopLoadingMessageRotation() {
@@ -131,19 +134,19 @@ function registerPageUnloadListeners() {
     if (pageUnloadListenersRegistered) return;
     pageUnloadListenersRegistered = true;
     if (
-        typeof window === 'undefined' ||
-        typeof window.addEventListener !== 'function'
+        typeof window === "undefined" ||
+        typeof window.addEventListener !== "function"
     ) {
         return;
     }
     const markPageAsLoading = () => {
         const body = document.body;
         if (!body) return;
-        body.dataset.pageReady = 'false';
-        body.setAttribute('aria-busy', 'true');
+        body.dataset.pageReady = "false";
+        body.setAttribute("aria-busy", "true");
     };
-    window.addEventListener('beforeunload', markPageAsLoading);
-    window.addEventListener('pagehide', markPageAsLoading);
+    window.addEventListener("beforeunload", markPageAsLoading);
+    window.addEventListener("pagehide", markPageAsLoading);
 }
 
 function updatePageLoadingState() {
@@ -152,18 +155,18 @@ function updatePageLoadingState() {
     ensureLoadingOverlay();
     const pendingLoadCount = activePageLoadingTokens.size;
     if (pendingLoadCount > 0) {
-        body.dataset.pageReady = 'false';
-        body.setAttribute('aria-busy', 'true');
-        loadingOverlayElement?.setAttribute('aria-hidden', 'false');
+        body.dataset.pageReady = "false";
+        body.setAttribute("aria-busy", "true");
+        loadingOverlayElement?.setAttribute("aria-hidden", "false");
         startLoadingMessageRotation();
         void loadLoadingMessagesI18n().then(() => {
             renderLoadingMessage(loadingMessageIndex);
-        });
+        }).catch(() => {});
         return;
     }
-    body.dataset.pageReady = 'true';
-    body.setAttribute('aria-busy', 'false');
-    loadingOverlayElement?.setAttribute('aria-hidden', 'true');
+    body.dataset.pageReady = "true";
+    body.setAttribute("aria-busy", "false");
+    loadingOverlayElement?.setAttribute("aria-hidden", "true");
     stopLoadingMessageRotation();
 }
 
@@ -204,8 +207,8 @@ function endPageLoading(token) {
  * @returns {Promise<void>}
  */
 export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
-    registerPageUnloadListeners();
     if (globalThis.__spaRouter) return;
+    registerPageUnloadListeners();
     const finishPageLoading = beginPageLoading();
     try {
         await mount(document.querySelector(rootSelector));
@@ -213,5 +216,3 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
         finishPageLoading();
     }
 }
-
-registerPageUnloadListeners();

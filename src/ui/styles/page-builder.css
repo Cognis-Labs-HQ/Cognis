@@ -33,8 +33,12 @@ body:not([data-page-ready="true"])::after {
     pointer-events: none;
 }
 
-body[data-page-loading-overlay-mounted="true"]:not([data-page-ready="true"])::before,
-body[data-page-loading-overlay-mounted="true"]:not([data-page-ready="true"])::after {
+body[data-page-loading-overlay-mounted="true"]:not(
+        [data-page-ready="true"]
+    )::before,
+body[data-page-loading-overlay-mounted="true"]:not(
+        [data-page-ready="true"]
+    )::after {
     content: none;
 }
 
@@ -81,6 +85,23 @@ body[data-page-ready="false"] .page-loading-overlay {
     line-height: 1.35;
     color: var(--text);
     text-wrap: balance;
+}
+
+body[data-theme="light"] .page-loading-overlay {
+    background: rgba(255, 255, 255, 0.72);
+}
+
+body[data-theme="light"] .page-loading-overlay__spinner {
+    border-color: rgba(15, 23, 42, 0.2);
+    border-top-color: #0f766e;
+    border-right-color: #2563eb;
+    box-shadow:
+        0 0 0 10px rgba(255, 255, 255, 0.6),
+        0 14px 34px rgba(15, 23, 42, 0.16);
+}
+
+body[data-theme="light"] .page-loading-overlay__message {
+    color: #0f172a;
 }
 
 @keyframes page-loading-wheel {
