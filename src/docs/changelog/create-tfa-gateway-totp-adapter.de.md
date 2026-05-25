@@ -63,3 +63,7 @@ Die verpflichtende E-Mail-Prüfung nach dem Login wurde wiederhergestellt und in
 ## TFA-Setup-Weiterleitung und Sicherheitszugriff
 
 Benutzer mit Tokens für ausstehendes TFA-Setup werden direkt zu `/settings#security` geleitet. Das vollständige Chrome der Einstellungsseite (Navigationsleiste, Kopfzeile, Fußzeile) bleibt während des erzwungenen Setup-Ablaufs sichtbar, damit der Benutzer eine korrekt gerenderte Seite zur Konfiguration seines zweiten Faktors vorfindet. Die Auth-Sicherheitsunterbereiche sowie alle TFA-API-Pfade sind für Setup-ausstehende Tokens freigegeben. Außerdem wird der Sub-Composer-ResizeObserver mit dem initialen Spaltenwert initialisiert, sodass eine Layout-Messung bei der ersten Beobachtung kein redundantes Re-Render auslöst, das das Setup-Popup erneut öffnen könnte.
+
+## TFA in Admin zurück unter Sicherheit
+
+Die TFA-Einstellungen der Administration werden jetzt wieder innerhalb von Administration → Sicherheit angezeigt, statt als eigener oberster Administrationsbereich.

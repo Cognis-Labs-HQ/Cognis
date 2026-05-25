@@ -1399,6 +1399,15 @@ export async function mount(rootEl, { signal } = {}) {
             ),
         )
     ).filter(Boolean);
+    const securityOwnedGatewaySections = gatewaySections.filter(
+        (section) => section.parentSectionId === "security",
+    );
+    const topLevelGatewaySections = gatewaySections.filter(
+        (section) => section.parentSectionId !== "security",
+    );
+    const securityOwnedElements = securityOwnedGatewaySections.flatMap(
+        (section) => section.subComposerOptions?.elements ?? [],
+    );
 
     const baseElements = [
         {
@@ -1480,9 +1489,13 @@ export async function mount(rootEl, { signal } = {}) {
                         pinned: true,
                         render: () => securitySection.renderContent(),
                     },
+                    ...securityOwnedElements,
                 ],
                 onRender: () => {
                     securitySection.init();
+                    securityOwnedGatewaySections.forEach((section) => {
+                        section.subComposerOptions?.onRender?.(root);
+                    });
                 },
             },
         },
@@ -1516,7 +1529,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     elements = [
         ...baseElements,
-        ...gatewaySections.map((sec) => ({
+        ...topLevelGatewaySections.map((sec) => ({
             id: sec.id,
             label: sec.label,
             subComposerOptions: {
@@ -1531,7 +1544,7 @@ export async function mount(rootEl, { signal } = {}) {
         `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         `<li><button data-composer-scroll="jitsi-meet">${i18n.t("ui.app.admin.jitsi.title")}</button></li>`,
-        ...gatewaySections.map(
+        ...topLevelGatewaySections.map(
             (sec) =>
                 `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
         ),

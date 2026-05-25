@@ -67,6 +67,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     return {
         id: "tfa-administration",
         label: i18n.t("gateway.tfa.admin.section_title"),
+        parentSectionId: "security",
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
