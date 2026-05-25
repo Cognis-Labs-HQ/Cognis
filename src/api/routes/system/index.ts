@@ -274,7 +274,21 @@ export function createSystemRoutes(
                   )
                 : undefined;
             const previousEnforceTfaForAllUsers = getEnforceTfaForAllUsers
-                ? await getEnforceTfaForAllUsers().catch(() => undefined)
+                ? await getEnforceTfaForAllUsers().catch((error) => {
+                      log?.(
+                          "warn",
+                          "Failed to read previous mandatory TFA state before security update.",
+                          {
+                              ...logMeta,
+                              accountId: claims.sub,
+                              error:
+                                  error instanceof Error
+                                      ? error.message
+                                      : String(error),
+                          },
+                      );
+                      return undefined;
+                  })
                 : undefined;
             if (setEnforceTfaForAllUsers) {
                 await setEnforceTfaForAllUsers(enforceTfaForAllUsers);

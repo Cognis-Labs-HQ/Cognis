@@ -267,11 +267,13 @@ export function revokeAccessTokensForSubject(subject: string): number {
 export function revokeSetupPendingAccessTokens(
     excludedSubject?: string,
 ): number {
-    const hasExcludedSubject = typeof excludedSubject === "string";
     let removed = 0;
     for (const [tokenHash, record] of tokenStore.entries()) {
         if (record.tfaSetupPending !== true) continue;
-        if (hasExcludedSubject && record.subject === excludedSubject) {
+        if (
+            typeof excludedSubject === "string" &&
+            record.subject === excludedSubject
+        ) {
             continue;
         }
         tokenStore.delete(tokenHash);
