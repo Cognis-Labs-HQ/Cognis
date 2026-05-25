@@ -42,7 +42,7 @@ test("page loading helpers keep the page busy until all pending loads finish", (
     const originalSetTimeout = global.setTimeout;
     const originalClearTimeout = global.clearTimeout;
     const body = createMockBody();
-    const timeoutCallbacks = new Map();
+    const timeoutEntries = new Map();
     let nextTimeoutId = 0;
     global.document = {
         body,
@@ -50,13 +50,13 @@ test("page loading helpers keep the page busy until all pending loads finish", (
             return createMockElement(tagName);
         },
     };
-    global.setTimeout = (callback) => {
+    global.setTimeout = (callback, delay) => {
         const timerId = ++nextTimeoutId;
-        timeoutCallbacks.set(timerId, callback);
+        timeoutEntries.set(timerId, { callback, delay });
         return timerId;
     };
     global.clearTimeout = (timerId) => {
-        timeoutCallbacks.delete(timerId);
+        timeoutEntries.delete(timerId);
     };
 
     try {
@@ -68,10 +68,24 @@ test("page loading helpers keep the page busy until all pending loads finish", (
         assert.ok(body.children.length >= 1);
         const loadingOverlay = body.children[0];
         assert.equal(
+            loadingOverlay.getAttribute("data-overlay-visible"),
+            "false",
+        );
+        assert.equal(
             loadingOverlay.getAttribute("data-message-visible"),
             "false",
         );
-        const showMessageCallback = [...timeoutCallbacks.values()][0];
+        const showOverlayCallback = [...timeoutEntries.values()].find(
+            ({ delay }) => delay === 120,
+        )?.callback;
+        showOverlayCallback?.();
+        assert.equal(
+            loadingOverlay.getAttribute("data-overlay-visible"),
+            "true",
+        );
+        const showMessageCallback = [...timeoutEntries.values()].find(
+            ({ delay }) => delay === 500,
+        )?.callback;
         showMessageCallback?.();
         assert.equal(
             loadingOverlay.getAttribute("data-message-visible"),
@@ -85,6 +99,10 @@ test("page loading helpers keep the page busy until all pending loads finish", (
         finishSecondLoad();
         assert.equal(body.dataset.pageReady, "true");
         assert.equal(body.attributes["aria-busy"], "false");
+        assert.equal(
+            loadingOverlay.getAttribute("data-overlay-visible"),
+            "false",
+        );
         assert.equal(
             loadingOverlay.getAttribute("data-message-visible"),
             "false",

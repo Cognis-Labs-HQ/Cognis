@@ -58,7 +58,7 @@ body[data-page-loading-overlay-mounted="true"]:not(
     transition: opacity 0.14s ease;
 }
 
-body[data-page-ready="false"] .page-loading-overlay {
+.page-loading-overlay[data-overlay-visible="true"] {
     opacity: 1;
     pointer-events: auto;
 }
@@ -89,7 +89,8 @@ body[data-page-ready="false"] .page-loading-overlay {
     transition: opacity 0.18s ease;
 }
 
-.page-loading-overlay[data-message-visible="true"] .page-loading-overlay__message {
+.page-loading-overlay[data-message-visible="true"]
+    .page-loading-overlay__message {
     opacity: 1;
 }
 

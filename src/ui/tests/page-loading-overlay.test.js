@@ -15,11 +15,15 @@ test("page builder stylesheet defines the shared loading shade and wheel", () =>
     assert.match(source, /body:not\(\[data-page-ready="true"\]\)::before/);
     assert.match(source, /body:not\(\[data-page-ready="true"\]\)::after/);
     assert.match(source, /\.page-loading-overlay\s*\{/);
+    assert.match(
+        source,
+        /\.page-loading-overlay\[data-overlay-visible="true"\]\s*\{/,
+    );
     assert.match(source, /\.page-loading-overlay__spinner\s*\{/);
     assert.match(source, /\.page-loading-overlay__message\s*\{/);
     assert.match(
         source,
-        /\.page-loading-overlay\[data-message-visible="true"\] \.page-loading-overlay__message\s*\{/,
+        /data-message-visible="true"\][\s\S]*\.page-loading-overlay__message\s*\{/,
     );
     assert.match(
         source,

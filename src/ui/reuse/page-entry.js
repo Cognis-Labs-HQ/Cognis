@@ -22,6 +22,7 @@ let nextPageLoadingToken = 0;
 let loadingOverlayMounted = false;
 let loadingOverlayElement = null;
 let loadingWheelMessageElement = null;
+let loadingOverlayVisibilityTimer = null;
 let loadingMessageTimer = null;
 let loadingMessageVisibilityTimer = null;
 let loadingMessageIndex = 0;
@@ -30,6 +31,7 @@ let loadingMessages = null;
 let pageUnloadListenersRegistered = false;
 
 const LOADING_MESSAGE_INTERVAL_MILLISECONDS = 1800;
+const LOADING_OVERLAY_DELAY_MILLISECONDS = 120;
 const LOADING_MESSAGE_DELAY_MILLISECONDS = 500;
 const LOADING_MESSAGE_KEYS = [
     "ui.reuse.loading_joke_1",
@@ -51,6 +53,7 @@ function createLoadingOverlayElement() {
     overlay.className = "page-loading-overlay";
     overlay.setAttribute("aria-live", "polite");
     overlay.setAttribute("aria-hidden", "true");
+    overlay.setAttribute("data-overlay-visible", "false");
     overlay.setAttribute("data-message-visible", "false");
 
     const spinner = document.createElement("div");
@@ -142,6 +145,37 @@ function stopLoadingMessageRotation() {
     }
 }
 
+function showLoadingOverlay() {
+    loadingOverlayElement?.setAttribute("aria-hidden", "false");
+    loadingOverlayElement?.setAttribute("data-overlay-visible", "true");
+}
+
+function hideLoadingOverlay() {
+    loadingOverlayElement?.setAttribute("aria-hidden", "true");
+    loadingOverlayElement?.setAttribute("data-overlay-visible", "false");
+}
+
+function scheduleLoadingOverlayVisibility() {
+    if (loadingOverlayVisibilityTimer) return;
+    if (
+        loadingOverlayElement?.getAttribute("data-overlay-visible") === "true"
+    ) {
+        return;
+    }
+    loadingOverlayVisibilityTimer = setTimeout(() => {
+        loadingOverlayVisibilityTimer = null;
+        if (!activePageLoadingTokens.size) return;
+        showLoadingOverlay();
+    }, LOADING_OVERLAY_DELAY_MILLISECONDS);
+}
+
+function stopLoadingOverlayVisibilitySchedule() {
+    if (loadingOverlayVisibilityTimer) {
+        clearTimeout(loadingOverlayVisibilityTimer);
+        loadingOverlayVisibilityTimer = null;
+    }
+}
+
 function showLoadingMessage() {
     loadingOverlayElement?.setAttribute("data-message-visible", "true");
 }
@@ -152,7 +186,9 @@ function hideLoadingMessage() {
 
 function scheduleLoadingMessageVisibility() {
     if (loadingMessageVisibilityTimer) return;
-    if (loadingOverlayElement?.getAttribute("data-message-visible") === "true") {
+    if (
+        loadingOverlayElement?.getAttribute("data-message-visible") === "true"
+    ) {
         return;
     }
     loadingMessageVisibilityTimer = setTimeout(() => {
@@ -196,7 +232,7 @@ function updatePageLoadingState() {
     if (pendingLoadCount > 0) {
         body.dataset.pageReady = "false";
         body.setAttribute("aria-busy", "true");
-        loadingOverlayElement?.setAttribute("aria-hidden", "false");
+        scheduleLoadingOverlayVisibility();
         scheduleLoadingMessageVisibility();
         startLoadingMessageRotation();
         loadLoadingMessagesI18n()
@@ -210,7 +246,8 @@ function updatePageLoadingState() {
     }
     body.dataset.pageReady = "true";
     body.setAttribute("aria-busy", "false");
-    loadingOverlayElement?.setAttribute("aria-hidden", "true");
+    stopLoadingOverlayVisibilitySchedule();
+    hideLoadingOverlay();
     stopLoadingMessageVisibilitySchedule();
     hideLoadingMessage();
     stopLoadingMessageRotation();
