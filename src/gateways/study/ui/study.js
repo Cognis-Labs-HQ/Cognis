@@ -14,6 +14,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
@@ -601,13 +602,6 @@ async function mountHub(
     }
 }
 
-if (!globalThis.__spaRouter) {
-    const appRoot = document.querySelector("#app");
-    if (appRoot) {
-        try {
-            await mount(appRoot);
-        } catch (error) {
-            console.error("[study] mount failed", error);
-        }
-    }
-}
+await mountWhenDirect(mount).catch((error) => {
+    console.error("[study] mount failed", error);
+});

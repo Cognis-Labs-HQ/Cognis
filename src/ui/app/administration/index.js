@@ -5,6 +5,7 @@ import {
     extendI18n,
 } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { resolveModuleConfigScriptUrl } from "./module-config.js";
@@ -1539,4 +1540,4 @@ export async function mount(rootEl, { signal } = {}) {
     );
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);
