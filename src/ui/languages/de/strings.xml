@@ -29,6 +29,7 @@
   <string name="ui.reuse.leave_page_warning">Sie haben ungespeicherte Änderungen. Wenn Sie diese Seite verlassen, gehen die Änderungen verloren.</string>
   <string name="ui.reuse.discard_and_leave">Verwerfen und fortfahren</string>
   <string name="ui.reuse.stay">Bleiben</string>
+  <string name="ui.reuse.close_form_warning">Sie haben ungespeicherte Änderungen. Beim Schließen dieses Formulars gehen die Änderungen verloren.</string>
 
   <string name="ui.reuse.enable">Aktivieren</string>
   <string name="ui.reuse.disable">Deaktivieren</string>
