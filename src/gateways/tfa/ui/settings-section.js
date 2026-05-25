@@ -19,6 +19,8 @@ import {
     loadRecoveryCodesStatus,
 } from "/static/gateways/tfa/security-api.js";
 
+let requiredSetupPromptActive = false;
+
 export function createSettingsSection({ i18n, root, markDirty }) {
     let tfaStatus = null;
     let recoveryCodesStatus = {
@@ -496,10 +498,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     }
 
     async function enforceTfaSetupFlow() {
-        if (enforcingTfaSetup) return;
+        if (enforcingTfaSetup || requiredSetupPromptActive) return;
         if (tfaStatus?.requiresSetup !== true) return;
         if ((tfaStatus?.enabledMethods?.length ?? 0) > 0) return;
         enforcingTfaSetup = true;
+        requiredSetupPromptActive = true;
         try {
             while ((tfaStatus?.enabledMethods?.length ?? 0) === 0) {
                 const available = resolveTfaLists().available;
@@ -556,6 +559,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 recoveryCodesVisible = false;
             }
             enforcingTfaSetup = false;
+            requiredSetupPromptActive = false;
         }
     }
 

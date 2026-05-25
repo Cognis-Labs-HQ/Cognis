@@ -36,3 +36,13 @@ test("tfa settings drag and drop uses dirty tracker", () => {
         /nextPreferredMethodIds\.splice\(\s*targetIsAfter \? targetIndex \+ 1 : targetIndex,\s*0,\s*methodId,\s*\)/,
     );
 });
+
+test("tfa required setup popup is guarded against duplicate concurrent flows", () => {
+    assert.match(SOURCE, /let requiredSetupPromptActive = false;/);
+    assert.match(
+        SOURCE,
+        /if \(enforcingTfaSetup \|\| requiredSetupPromptActive\) return;/,
+    );
+    assert.match(SOURCE, /requiredSetupPromptActive = true;/);
+    assert.match(SOURCE, /requiredSetupPromptActive = false;/);
+});
