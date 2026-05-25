@@ -60,10 +60,7 @@ export function endPageLoading() {
  * @param {{ rootSelector?: string }} [options] - Direct-mount options.
  * @returns {Promise<void>}
  */
-export async function mountWhenDirect(
-    mount,
-    { rootSelector = "#app" } = {},
-) {
+export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     if (globalThis.__spaRouter) return;
     beginPageLoading();
     try {
