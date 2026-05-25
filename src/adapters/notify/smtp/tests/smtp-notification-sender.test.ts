@@ -173,7 +173,7 @@ test("createNotificationSender reads COGNIS_SMTP_ALLOW_SELF_SIGNED and COGNIS_SM
     assert.equal(config.authDisabled, true);
 });
 
-test("createNotificationSender uses HOST env var as ehloHostname", () => {
+test("createNotificationSender does not derive SMTP identity from HOST env var", () => {
     const sender = createNotificationSender({
         COGNIS_SMTP_HOST: "smtp.example.com",
         HOST: "my-server.example.com",
@@ -312,7 +312,7 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
             }
         });
 
-        test("SmtpNotificationSender uses from-domain EHLO fallback when HOST is unset", async () => {
+        test("SmtpNotificationSender uses SMTP host for EHLO when HOST is unset", async () => {
             let ehloCommand = "";
             const server = await createMockSmtpServer((conn) => {
                 let buf = "";
@@ -365,7 +365,7 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
                     noopSleep,
                 );
                 await sender.sendTestEmail("admin@example.com");
-                assert.equal(ehloCommand, "EHLO cognis.study");
+                assert.equal(ehloCommand, `EHLO ${server.host}`);
             } finally {
                 await server.close();
             }

@@ -15,7 +15,6 @@ export interface SmtpConfig {
     secure: "none" | "tls" | "starttls";
     allowSelfSigned?: boolean;
     authDisabled?: boolean;
-    ehloHostname?: string;
     greylistRetries?: number;
     greylistRetryDelayMs?: number;
     externalHost?: string;
@@ -150,10 +149,6 @@ function sanitizeMessageIdDomain(value: string | undefined): string | null {
 }
 
 function resolveEhloHostname(config: SmtpConfig): string {
-    const explicitHostname = sanitizeHeader(config.ehloHostname ?? "");
-    if (explicitHostname) return explicitHostname;
-    const fromDomain = getAddressDomain(config.from);
-    if (fromDomain) return fromDomain;
     const smtpHost = sanitizeHeader(config.host);
     if (smtpHost) return smtpHost;
     return "localhost";
@@ -600,7 +595,7 @@ async function sendMail(
                 verifyUrl,
                 verifyButtonLabel,
                 senderName: config.senderName,
-                messageIdDomain: config.ehloHostname ?? config.host,
+                messageIdDomain: config.host,
             }),
         );
         const sent = await session.read();
@@ -897,7 +892,6 @@ export function createNotificationSender(
               : "starttls";
     const allowSelfSigned = env["COGNIS_SMTP_ALLOW_SELF_SIGNED"] === "true";
     const authDisabled = env["COGNIS_SMTP_AUTH_DISABLED"] === "true";
-    const ehloHostname = env["HOST"];
     const externalHost =
         env["EXTERNAL_HOST"] ?? (env["HOST"] ? `http://${env["HOST"]}` : "");
 
@@ -923,7 +917,6 @@ export function createNotificationSender(
             secure,
             allowSelfSigned,
             authDisabled,
-            ehloHostname,
             externalHost,
         },
         envSnapshot,
