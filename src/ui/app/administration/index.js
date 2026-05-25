@@ -1292,6 +1292,7 @@ async function guardSubPageSwitch() {
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
     i18n = await createI18n();
+    i18n = await extendI18n(i18n, "/static/gateways/tfa/languages");
     applyDocumentTitle(i18n, "ui.page.title.administration");
 
     setModules([]);

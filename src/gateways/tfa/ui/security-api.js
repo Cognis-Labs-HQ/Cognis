@@ -47,8 +47,25 @@ export async function verifyTfaSetup(
             body: JSON.stringify({ setupId, verification }),
         },
     );
-    if (response.ok) return { ok: true };
     const payload = await response.json().catch(() => null);
+    if (response.ok) {
+        const responseData = payload?.data;
+        const refreshedToken =
+            typeof responseData?.token === "string" ? responseData.token : "";
+        if (refreshedToken) {
+            localStorage.setItem("cognis_access_token", refreshedToken);
+        }
+        if (typeof responseData?.accountId === "string") {
+            localStorage.setItem("cognis_account", responseData.accountId);
+        }
+        if (typeof responseData?.role === "string") {
+            localStorage.setItem("cognis_role", responseData.role);
+        }
+        if (typeof responseData?.providerId === "string") {
+            localStorage.setItem("cognis_provider_id", responseData.providerId);
+        }
+        return { ok: true };
+    }
     return {
         ok: false,
         message: payload?.error?.message ?? null,

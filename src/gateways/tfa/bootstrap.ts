@@ -88,12 +88,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "/static/adapters/tfa/totp/languages",
         ],
     });
-    ctx.uiRegistry?.registerAdminSection({
-        id: "tfa",
-        label: "Two-Factor Authentication",
-        scriptUrl: "/static/gateways/tfa/admin-section.js",
-        stringsBaseUrl: "/static/gateways/tfa/languages",
-    });
     registerLimitedAuthPathAllowance("tfa", (path, _accountId) => {
         if (path === "/api/v1/tfa/status" || path === "/api/v1/tfa/methods") {
             return true;
@@ -408,6 +402,28 @@ function createTfaRoutes(
         if (setupVerifyMatch && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
+            const issueToken = capabilities.get<
+                (
+                    subject: string,
+                    role: "user" | "teacher" | "moderator" | "admin" | "owner",
+                    ttlSeconds: number | null,
+                    options?: {
+                        issuedAt?: number;
+                        providerId?: string;
+                        tfaSetupPending?: boolean;
+                    },
+                ) => string
+            >("auth:issueAccessToken");
+            const getAccessTokenTtlSeconds = capabilities.get<() => number>(
+                "auth:getAccessTokenTtlSeconds",
+            );
+            const buildCookie = capabilities.get<
+                (
+                    req: IncomingMessage,
+                    rawToken: string,
+                    ttlSeconds: number | null,
+                ) => string
+            >("auth:buildAccessTokenCookie");
             const body = await readJson(req);
             const setupId = String(body.setupId ?? "").trim();
             if (!setupId) {
@@ -444,8 +460,33 @@ function createTfaRoutes(
                 );
                 return true;
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { verified: true } }));
+            const responseData: Record<string, unknown> = { verified: true };
+            const responseHeaders: Record<string, string> = {
+                "content-type": "application/json",
+            };
+            if (issueToken && getAccessTokenTtlSeconds && buildCookie) {
+                const accessTokenTtlSeconds = getAccessTokenTtlSeconds();
+                const refreshedToken = issueToken(
+                    claims.sub,
+                    claims.role,
+                    accessTokenTtlSeconds,
+                    {
+                        providerId: claims.providerId,
+                        tfaSetupPending: false,
+                    },
+                );
+                responseHeaders["set-cookie"] = buildCookie(
+                    req,
+                    refreshedToken,
+                    accessTokenTtlSeconds,
+                );
+                responseData.token = refreshedToken;
+                responseData.accountId = claims.sub;
+                responseData.role = claims.role;
+                responseData.providerId = claims.providerId;
+            }
+            res.writeHead(200, responseHeaders);
+            res.end(JSON.stringify({ data: responseData }));
             return true;
         }
 
