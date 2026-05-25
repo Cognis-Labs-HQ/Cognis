@@ -6,4 +6,4 @@ Popups that contain form inputs now intercept close attempts — via the backdro
 
 ## Affected popups
 
-Profile edit, password change, adapter configuration, invite email, user input prompts, teacher application, and student invite popups all gain this protection. The `openPopup` API accepts a new `closeConfirm` option that enables the guard on any form popup with pre-resolved i18n strings.
+Profile edit, password change, adapter configuration, invite email, user input prompts, teacher application, and student invite popups all gain this protection. The `openPopup` API accepts a new `closeProtection` option that enables the guard on any form popup with pre-resolved i18n strings.

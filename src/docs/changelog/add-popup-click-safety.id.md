@@ -6,4 +6,4 @@ Popup yang berisi input formulir kini meminta konfirmasi sebelum ditutup — mel
 
 ## Popup yang terpengaruh
 
-Edit profil, ubah kata sandi, konfigurasi adaptor, undangan email, input pengguna, permohonan guru, dan undangan siswa semuanya mendapatkan perlindungan ini. API `openPopup` menerima opsi baru `closeConfirm` yang mengaktifkan penjaga pada popup formulir apa pun dengan string i18n yang sudah diselesaikan.
+Edit profil, ubah kata sandi, konfigurasi adaptor, undangan email, input pengguna, permohonan guru, dan undangan siswa semuanya mendapatkan perlindungan ini. API `openPopup` menerima opsi baru `closeProtection` yang mengaktifkan penjaga pada popup formulir apa pun dengan string i18n yang sudah diselesaikan.
