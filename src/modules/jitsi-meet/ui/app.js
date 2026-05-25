@@ -234,31 +234,31 @@ function createChatParticipantAvatarButton({
     avatarKey,
     selected,
 }) {
-    const participantLink = document.createElement("a");
-    participantLink.href = `/profile/${encodeURIComponent(username)}`;
-    participantLink.className = "jitsi-chat-participant-item";
+    const participantButton = document.createElement("button");
+    participantButton.type = "button";
+    participantButton.className = "jitsi-chat-participant-item";
     if (selected) {
-        participantLink.classList.add("jitsi-chat-participant-item-selected");
+        participantButton.classList.add("jitsi-chat-participant-item-selected");
     }
-    participantLink.setAttribute("role", "listitem");
-    participantLink.dataset.username = username;
-    participantLink.setAttribute(
+    participantButton.setAttribute("role", "listitem");
+    participantButton.dataset.username = username;
+    participantButton.setAttribute(
         "aria-label",
         displayName ? `${displayName} (@${username})` : `@${username}`,
     );
-    participantLink.title = displayName
+    participantButton.title = displayName
         ? `${displayName} (@${username})`
         : `@${username}`;
-    participantLink.innerHTML = buildProfileAvatarMarkup({
+    participantButton.setAttribute("aria-pressed", selected ? "true" : "false");
+    participantButton.innerHTML = buildProfileAvatarMarkup({
         avatarKey,
         label: displayName || username,
         colorSeed: username,
         avatarClass: "jitsi-chat-participant-avatar",
         imageClass: "jitsi-chat-participant-avatar-img",
         fallbackClass: "jitsi-chat-participant-avatar-bubble",
-        profileHandle: username,
     });
-    return participantLink;
+    return participantButton;
 }
 
 async function fetchParticipants(query) {
@@ -2084,8 +2084,7 @@ export async function mount(root, { signal } = {}) {
                     const button = event.target.closest(
                         ".jitsi-chat-participant-item[data-username]",
                     );
-                    if (!(button instanceof HTMLAnchorElement)) return;
-                    event.preventDefault();
+                    if (!(button instanceof HTMLElement)) return;
                     const username = normalizeUsername(button.dataset.username);
                     if (!username) return;
                     void activatePrivateChatForParticipant(username);
