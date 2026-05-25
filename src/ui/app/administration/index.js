@@ -152,6 +152,12 @@ function resolveAdapterControlUrl(
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
 }
 
+/**
+ * Extracts a readable error message from a failed API response payload.
+ *
+ * @param {Response} response API response object from apiFetch.
+ * @returns {Promise<string | null>} Error message text, or null when unavailable.
+ */
 async function getApiErrorMessage(response) {
     try {
         const payload = await response.json();

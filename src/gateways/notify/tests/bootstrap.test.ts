@@ -153,8 +153,7 @@ test("gateway adapter route requires admin auth", async () => {
     assert.equal(res.status, 401);
 });
 
-import { access } from "node:fs/promises";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { UIRegistry } from "../../../api/ui-registry.js";

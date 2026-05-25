@@ -4,6 +4,12 @@ interface NotifySmtpTestError {
     details?: Record<string, unknown>;
 }
 
+/**
+ * Maps an internal SMTP failure stage token to a user-facing SMTP command label.
+ *
+ * @param {string} smtpStage Internal SMTP stage identifier from adapter errors.
+ * @returns {string} Human-readable SMTP command label for UI/API error messages.
+ */
 function normalizeSmtpCommand(smtpStage: string): string {
     const stageToCommand: Record<string, string> = {
         ehlo: "EHLO",
@@ -20,6 +26,16 @@ function normalizeSmtpCommand(smtpStage: string): string {
     return smtpStage.replace(/_/g, " ").toUpperCase();
 }
 
+/**
+ * Normalizes raw SMTP adapter test-email errors into a structured API error.
+ *
+ * @example
+ * const apiError = buildSmtpTestError(new Error('smtp_rcpt_to_failed:550'));
+ * // => { code: 'smtp_test_failed', message: 'SMTP test failed at RCPT TO (550).', ... }
+ *
+ * @param {unknown} error Original thrown value from SMTP test email execution.
+ * @returns {NotifySmtpTestError} Safe, structured error payload for API responses.
+ */
 export function buildSmtpTestError(error: unknown): NotifySmtpTestError {
     const rawError =
         error instanceof Error
