@@ -1214,6 +1214,8 @@ async function openAdapterConfig(
                             if (field.type === "checkbox") {
                                 config[field.name] = field.checked;
                             } else if (
+                                // Omit blank password fields so test overrides do not
+                                // erase a configured SMTP password on the server.
                                 field.type === "password" &&
                                 field.value === ""
                             ) {
