@@ -31,7 +31,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | ------------------------ | ---------------------------- | ------- |
 | Database (db)            | `src/gateways/db/`           | `1.1.2` |
 | Autentikasi (auth)       | `src/gateways/auth/`         | `1.3.6` |
-| Notifikasi (notify)      | `src/gateways/notify/`       | `1.1.1` |
+| Notifikasi (notify)      | `src/gateways/notify/`       | `1.4.6` |
 | Sosial                   | `src/gateways/social/`       | `1.2.0` |
 | Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |
 | Registrasi               | `src/gateways/registration/` | `1.1.2` |

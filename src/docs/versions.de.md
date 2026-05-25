@@ -31,7 +31,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | ------------------------- | ---------------------------- | ------- |
 | Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
 | Authentifizierung (auth)  | `src/gateways/auth/`         | `1.3.6` |
-| Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
+| Benachrichtigung (notify) | `src/gateways/notify/`       | `1.4.6` |
 | Social                    | `src/gateways/social/`       | `1.2.0` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
 | Registrierung             | `src/gateways/registration/` | `1.1.2` |

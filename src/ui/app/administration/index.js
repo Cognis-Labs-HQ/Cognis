@@ -152,6 +152,22 @@ function resolveAdapterControlUrl(
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
 }
 
+async function getApiErrorMessage(response) {
+    try {
+        const payload = await response.json();
+        const apiError = payload?.error;
+        if (typeof apiError?.message === "string" && apiError.message.trim()) {
+            return apiError.message.trim();
+        }
+        if (typeof apiError?.code === "string" && apiError.code.trim()) {
+            return apiError.code.trim();
+        }
+    } catch {
+        return null;
+    }
+    return null;
+}
+
 /**
  * Synchronizes module, gateway, and adapter toggle controls after UI refresh so checkbox state reflects the latest loaded runtime status. This
  * function queries the current DOM toggle nodes and should run after
@@ -1238,11 +1254,17 @@ async function openAdapterConfig(
                         headers: { "content-type": "application/json" },
                         body: JSON.stringify({ to: recipient, config }),
                     });
+                    if (testRes.ok) {
+                        showToast(i18n.t("ui.app.admin.notif.test_sent"), {
+                            variant: "success",
+                        });
+                        return;
+                    }
+                    const apiErrorMessage = await getApiErrorMessage(testRes);
                     showToast(
-                        testRes.ok
-                            ? i18n.t("ui.app.admin.notif.test_sent")
-                            : i18n.t("ui.app.admin.notif.test_failed"),
-                        { variant: testRes.ok ? "success" : "error" },
+                        apiErrorMessage ??
+                            i18n.t("ui.app.admin.notif.test_failed"),
+                        { variant: "error" },
                     );
                 });
             }

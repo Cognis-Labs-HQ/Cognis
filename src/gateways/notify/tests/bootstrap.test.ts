@@ -34,6 +34,21 @@ function makeResponse() {
     } as any;
 }
 
+function makeRequest(
+    method: string,
+    body: Record<string, unknown>,
+    token: string,
+) {
+    const chunks = [Buffer.from(JSON.stringify(body))];
+    return {
+        method,
+        headers: { authorization: `Bearer ${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            for (const chunk of chunks) yield chunk;
+        },
+    } as any;
+}
+
 const adminToken = issueAccessToken("test-session", "admin", 60);
 
 async function makeCtx() {
@@ -139,6 +154,8 @@ test("gateway adapter route requires admin auth", async () => {
 });
 
 import { access } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { UIRegistry } from "../../../api/ui-registry.js";
 
@@ -250,4 +267,81 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
         access(resolvedPath),
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
     );
+});
+
+test("POST /api/v1/gateways/notify/adapters/:id/test returns SMTP failure details", async () => {
+    const temporaryAdaptersRoot = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-notify-adapters-"),
+    );
+    const notifyRoot = path.join(temporaryAdaptersRoot, "notify", "smtp");
+    await mkdir(notifyRoot, { recursive: true });
+    await writeFile(
+        path.join(notifyRoot, "package.json"),
+        JSON.stringify(
+            {
+                name: "@cognis/test-smtp-adapter",
+                version: "0.0.1",
+                type: "module",
+                main: "index.ts",
+            },
+            null,
+            2,
+        ),
+    );
+    await writeFile(
+        path.join(notifyRoot, "index.ts"),
+        `
+export function createNotificationSender() {
+  return {
+    senderId: 'smtp',
+    senderName: 'SMTP Email',
+    async send() {},
+    async sendTestEmail() {
+      throw new Error('smtp_rcpt_to_failed:550');
+    },
+    getConfig() {
+      return { host: 'smtp.example.com', from: 'no-reply@example.com', secure: 'none' };
+    },
+    isConfigured() {
+      return true;
+    },
+  };
+}
+`,
+    );
+
+    try {
+        const { gatewayRegistry, routeRegistry, capabilities, db } =
+            await makeCtx();
+
+        await bootstrap({
+            dbExecutor: db as any,
+            adaptersRoot: temporaryAdaptersRoot,
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+        });
+
+        const handlers = routeRegistry.getHandlers();
+        const adapterHandler = handlers[handlers.length - 1];
+        const res = makeResponse();
+
+        await adapterHandler(
+            makeRequest("POST", { to: "admin@example.com" }, adminToken),
+            res,
+            new URL(
+                "/api/v1/gateways/notify/adapters/smtp/test",
+                "http://localhost",
+            ),
+        );
+
+        assert.equal(res.status, 400);
+        const payload = JSON.parse(res.payload);
+        assert.equal(payload.error.code, "smtp_test_failed");
+        assert.equal(payload.error.details.smtpCode, 550);
+        assert.equal(payload.error.details.smtpCommand, "RCPT TO");
+        assert.match(payload.error.message, /RCPT TO/);
+    } finally {
+        await rm(temporaryAdaptersRoot, { recursive: true, force: true });
+    }
 });

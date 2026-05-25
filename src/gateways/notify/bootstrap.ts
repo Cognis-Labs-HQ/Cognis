@@ -21,6 +21,7 @@ import {
     type RouteContext,
 } from "../../api/reuse/route-context.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
+import { buildSmtpTestError } from "./reuse/smtp-test-error.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
@@ -260,7 +261,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.5",
+        version: "1.4.6",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,
@@ -1075,9 +1076,20 @@ function createGatewayAdapterRoutes(
                 );
                 return true;
             }
-            await sender.sendTestEmail(to, overrideConfig);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { sent: true } }));
+            try {
+                await sender.sendTestEmail(to, overrideConfig);
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { sent: true } }));
+            } catch (error) {
+                res.writeHead(400, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: buildSmtpTestError(error),
+                    }),
+                );
+            }
             return true;
         }
 

@@ -31,7 +31,7 @@
 | -------------------------- | ---------------------------- | ---------- |
 | データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.3.6`    |
-| 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
+| 通知 (notify)              | `src/gateways/notify/`       | `1.4.6`    |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.0`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
 | 登録                       | `src/gateways/registration/` | `1.1.2`    |

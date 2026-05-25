@@ -7,6 +7,7 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import type { CoreNotificationGateway } from "../gateway.js";
+import { buildSmtpTestError } from "../reuse/smtp-test-error.js";
 import type {
     NotificationBroadcastDisplayMode,
     NotificationBroadcastRole,
@@ -598,9 +599,18 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            await sender.sendTestEmail(to, overrideConfig);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { sent: true } }));
+            try {
+                await sender.sendTestEmail(to, overrideConfig);
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { sent: true } }));
+            } catch (error) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: buildSmtpTestError(error),
+                    }),
+                );
+            }
             return true;
         }
 
