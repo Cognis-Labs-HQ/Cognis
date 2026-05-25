@@ -250,7 +250,7 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
     assert.match(
         src,
-        /endPageLoading\(\)/,
+        /finishPageLoading\(\)/,
         "app-router.js must hide the shared loading overlay after navigation",
     );
 });

@@ -36,7 +36,7 @@
 
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
-import { beginPageLoading, endPageLoading } from "./page-entry.js";
+import { beginPageLoading } from "./page-entry.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 
 const STUDY_BASE_STYLESHEETS = [
@@ -335,7 +335,7 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
-    beginPageLoading();
+    const finishPageLoading = beginPageLoading();
 
     if (_mountController) {
         _mountController.abort();
@@ -374,7 +374,7 @@ async function loadRoute(path) {
             }
         }
     } finally {
-        endPageLoading();
+        finishPageLoading();
     }
     return true;
 }
