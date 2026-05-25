@@ -1219,7 +1219,7 @@ async function openAdapterConfig(
                                 field.type === "password" &&
                                 field.value === ""
                             ) {
-                                return;
+                                // Intentionally omit this field from the payload.
                             } else {
                                 config[field.name] =
                                     field.name === "port"
