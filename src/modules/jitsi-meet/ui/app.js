@@ -2530,15 +2530,10 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
-    const [allParticipants, currentProfile, loadedEmojis, loadedUsage] =
-        await Promise.all([
-            fetchParticipants(""),
-            fetchCurrentProfile(),
-            loadAllEmojis(),
-            fetchEmojiUsage(),
-        ]);
-    cachedEmojiList = loadedEmojis;
-    cachedEmojiUsage = loadedUsage;
+    const [allParticipants, currentProfile] = await Promise.all([
+        fetchParticipants(""),
+        fetchCurrentProfile(),
+    ]);
     state.currentProfile = currentProfile;
     state.allParticipants = allParticipants
         .map((entry) => ({
