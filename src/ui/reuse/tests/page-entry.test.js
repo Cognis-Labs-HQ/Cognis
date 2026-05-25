@@ -28,6 +28,9 @@ function createMockElement(tagName) {
         setAttribute(name, value) {
             this.attributes[name] = value;
         },
+        getAttribute(name) {
+            return this.attributes[name];
+        },
         append(...nodes) {
             this.children.push(...nodes);
         },
@@ -36,12 +39,24 @@ function createMockElement(tagName) {
 
 test("page loading helpers keep the page busy until all pending loads finish", () => {
     const originalDocument = global.document;
+    const originalSetTimeout = global.setTimeout;
+    const originalClearTimeout = global.clearTimeout;
     const body = createMockBody();
+    const timeoutCallbacks = new Map();
+    let nextTimeoutId = 0;
     global.document = {
         body,
         createElement(tagName) {
             return createMockElement(tagName);
         },
+    };
+    global.setTimeout = (callback) => {
+        const timerId = ++nextTimeoutId;
+        timeoutCallbacks.set(timerId, callback);
+        return timerId;
+    };
+    global.clearTimeout = (timerId) => {
+        timeoutCallbacks.delete(timerId);
     };
 
     try {
@@ -51,6 +66,17 @@ test("page loading helpers keep the page busy until all pending loads finish", (
         assert.equal(body.attributes["aria-busy"], "true");
         assert.equal(body.dataset.pageLoadingOverlayMounted, "true");
         assert.ok(body.children.length >= 1);
+        const loadingOverlay = body.children[0];
+        assert.equal(
+            loadingOverlay.getAttribute("data-message-visible"),
+            "false",
+        );
+        const showMessageCallback = [...timeoutCallbacks.values()][0];
+        showMessageCallback?.();
+        assert.equal(
+            loadingOverlay.getAttribute("data-message-visible"),
+            "true",
+        );
 
         finishFirstLoad();
         assert.equal(body.dataset.pageReady, "false");
@@ -59,8 +85,14 @@ test("page loading helpers keep the page busy until all pending loads finish", (
         finishSecondLoad();
         assert.equal(body.dataset.pageReady, "true");
         assert.equal(body.attributes["aria-busy"], "false");
+        assert.equal(
+            loadingOverlay.getAttribute("data-message-visible"),
+            "false",
+        );
     } finally {
         global.document = originalDocument;
+        global.setTimeout = originalSetTimeout;
+        global.clearTimeout = originalClearTimeout;
     }
 });
 

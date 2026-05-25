@@ -23,12 +23,14 @@ let loadingOverlayMounted = false;
 let loadingOverlayElement = null;
 let loadingWheelMessageElement = null;
 let loadingMessageTimer = null;
+let loadingMessageVisibilityTimer = null;
 let loadingMessageIndex = 0;
 let loadingI18nPromise = null;
 let loadingMessages = null;
 let pageUnloadListenersRegistered = false;
 
 const LOADING_MESSAGE_INTERVAL_MILLISECONDS = 1800;
+const LOADING_MESSAGE_DELAY_MILLISECONDS = 500;
 const LOADING_MESSAGE_KEYS = [
     "ui.reuse.loading_joke_1",
     "ui.reuse.loading_joke_2",
@@ -49,6 +51,7 @@ function createLoadingOverlayElement() {
     overlay.className = "page-loading-overlay";
     overlay.setAttribute("aria-live", "polite");
     overlay.setAttribute("aria-hidden", "true");
+    overlay.setAttribute("data-message-visible", "false");
 
     const spinner = document.createElement("div");
     spinner.className = "page-loading-overlay__spinner";
@@ -139,6 +142,33 @@ function stopLoadingMessageRotation() {
     }
 }
 
+function showLoadingMessage() {
+    loadingOverlayElement?.setAttribute("data-message-visible", "true");
+}
+
+function hideLoadingMessage() {
+    loadingOverlayElement?.setAttribute("data-message-visible", "false");
+}
+
+function scheduleLoadingMessageVisibility() {
+    if (loadingMessageVisibilityTimer) return;
+    if (loadingOverlayElement?.getAttribute("data-message-visible") === "true") {
+        return;
+    }
+    loadingMessageVisibilityTimer = setTimeout(() => {
+        loadingMessageVisibilityTimer = null;
+        if (!activePageLoadingTokens.size) return;
+        showLoadingMessage();
+    }, LOADING_MESSAGE_DELAY_MILLISECONDS);
+}
+
+function stopLoadingMessageVisibilitySchedule() {
+    if (loadingMessageVisibilityTimer) {
+        clearTimeout(loadingMessageVisibilityTimer);
+        loadingMessageVisibilityTimer = null;
+    }
+}
+
 function registerPageUnloadListeners() {
     if (pageUnloadListenersRegistered) return;
     if (
@@ -167,6 +197,7 @@ function updatePageLoadingState() {
         body.dataset.pageReady = "false";
         body.setAttribute("aria-busy", "true");
         loadingOverlayElement?.setAttribute("aria-hidden", "false");
+        scheduleLoadingMessageVisibility();
         startLoadingMessageRotation();
         loadLoadingMessagesI18n()
             .then(() => {
@@ -180,6 +211,8 @@ function updatePageLoadingState() {
     body.dataset.pageReady = "true";
     body.setAttribute("aria-busy", "false");
     loadingOverlayElement?.setAttribute("aria-hidden", "true");
+    stopLoadingMessageVisibilitySchedule();
+    hideLoadingMessage();
     stopLoadingMessageRotation();
 }
 
