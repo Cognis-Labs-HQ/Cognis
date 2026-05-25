@@ -44,6 +44,10 @@
   <string name="ui.reuse.refresh">Refresh</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Connection Interrupted. Please Refresh the Page.</string>
   <string name="ui.reuse.loading">Loading…</string>
+  <string name="ui.reuse.loading_joke_1">Cognis shouldn't be this slow, isn't it 2026?</string>
+  <string name="ui.reuse.loading_joke_2">Polishing pixels... apparently one by one.</string>
+  <string name="ui.reuse.loading_joke_3">Loading... at a speed historians can appreciate.</string>
+  <string name="ui.reuse.loading_joke_4">We promise this spinner is judging us too.</string>
   <string name="ui.reuse.followers">followers</string>
   <string name="ui.reuse.following">following</string>
   <string name="ui.reuse.posts">posts</string>

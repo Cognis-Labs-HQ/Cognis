@@ -4,11 +4,32 @@ import assert from "node:assert/strict";
 import { beginPageLoading, mountWhenDirect } from "../page-entry.js";
 
 function createMockBody() {
+    const children = [];
     return {
         dataset: {},
         attributes: {},
+        children,
         setAttribute(name, value) {
             this.attributes[name] = value;
+        },
+        append(...nodes) {
+            this.children.push(...nodes);
+        },
+    };
+}
+
+function createMockElement(tagName) {
+    return {
+        tagName,
+        className: "",
+        textContent: "",
+        attributes: {},
+        children: [],
+        setAttribute(name, value) {
+            this.attributes[name] = value;
+        },
+        append(...nodes) {
+            this.children.push(...nodes);
         },
     };
 }
@@ -16,13 +37,20 @@ function createMockBody() {
 test("page loading helpers keep the page busy until all pending loads finish", () => {
     const originalDocument = global.document;
     const body = createMockBody();
-    global.document = { body };
+    global.document = {
+        body,
+        createElement(tagName) {
+            return createMockElement(tagName);
+        },
+    };
 
     try {
         const finishFirstLoad = beginPageLoading();
         const finishSecondLoad = beginPageLoading();
         assert.equal(body.dataset.pageReady, "false");
         assert.equal(body.attributes["aria-busy"], "true");
+        assert.equal(body.dataset.pageLoadingOverlayMounted, "true");
+        assert.ok(body.children.length >= 1);
 
         finishFirstLoad();
         assert.equal(body.dataset.pageReady, "false");
@@ -44,6 +72,9 @@ test("mountWhenDirect wraps direct mounts with the shared loading state", async 
     let receivedRoot = null;
     global.document = {
         body,
+        createElement(tagName) {
+            return createMockElement(tagName);
+        },
         querySelector(selector) {
             assert.equal(selector, "#app");
             return root;
