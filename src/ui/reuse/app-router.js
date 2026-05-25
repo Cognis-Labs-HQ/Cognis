@@ -366,12 +366,10 @@ async function loadRoute(path) {
     // If another navigation started while loading, bail out.
     if (signal.aborted) return false;
     try {
-        try {
-            await mod.mount(_root, { signal });
-        } catch (err) {
-            if (!signal.aborted) {
-                console.error("[router] mount() error for", path, err);
-            }
+        await mod.mount(_root, { signal });
+    } catch (err) {
+        if (!signal.aborted) {
+            console.error("[router] mount() error for", path, err);
         }
     } finally {
         finishPageLoading();
