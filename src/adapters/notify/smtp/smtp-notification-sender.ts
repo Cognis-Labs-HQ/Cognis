@@ -156,7 +156,7 @@ function sanitizeMessageIdDomain(value: string | undefined): string | null {
  */
 function resolveEhloHostname(config: SmtpConfig): string {
     const smtpHost = sanitizeHeader(config.host);
-    if (smtpHost !== null && smtpHost !== "") return smtpHost;
+    if (smtpHost !== null) return smtpHost;
     return "localhost";
 }
 
