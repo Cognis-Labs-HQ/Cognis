@@ -10,7 +10,7 @@
         "cli": "./cli/index.js",
         "db": "./db/001_analytics.sql"
     },
-    "publisher": "Cognis Labs",
+    "publisher": "Cognis Labs HQ",
     "files": [
         {
             "path": "api/index.js",

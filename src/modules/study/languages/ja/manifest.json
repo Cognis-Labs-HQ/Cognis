@@ -8,5 +8,5 @@
     "capabilities": ["study:language", "ui:page"],
     "requires": ["study"],
     "entrypoints": {},
-    "publisher": "Cognis Labs"
+    "publisher": "Cognis Labs HQ"
 }

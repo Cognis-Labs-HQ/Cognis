@@ -63,7 +63,7 @@ src/adapters/<id>/<adapter-id>/
     "name": "Notification Gateway",
     "version": "1.3.0",
     "description": "Pluggable notification dispatch.",
-    "publisher": "Cognis Labs",
+    "publisher": "Cognis Labs HQ",
     "required": false,
     "requires": ["db"],
     "hasAdapters": true

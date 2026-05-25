@@ -385,7 +385,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         version: "1.5.6",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
 

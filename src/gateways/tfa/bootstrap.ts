@@ -64,7 +64,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         version: "1.0.4",
         description:
             "Manages two-factor authentication methods and login checks.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
         required: false,
         hasAdapters: true,
     });

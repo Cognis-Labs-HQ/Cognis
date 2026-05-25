@@ -118,6 +118,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         required: true,
         description:
             "Provides local file storage for uploads and application logging.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
 }
