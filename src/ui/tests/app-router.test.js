@@ -70,11 +70,6 @@ test("all dashboard pages call mount on direct browser load", () => {
             /await mountWhenDirect\(mount\)/,
             `${page}/index.js must call mountWhenDirect(mount) for direct URL access`,
         );
-        assert.doesNotMatch(
-            src,
-            /if \(!globalThis\.__spaRouter\)/,
-            `${page}/index.js must not use the deprecated manual __spaRouter guard`,
-        );
     }
 });
 

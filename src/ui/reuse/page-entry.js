@@ -105,12 +105,15 @@ function getActiveLoadingMessages() {
         : FALLBACK_LOADING_MESSAGES;
 }
 
+function normalizeCircularIndex(index, arrayLength) {
+    return ((index % arrayLength) + arrayLength) % arrayLength;
+}
+
 function renderLoadingMessage(index) {
     if (!loadingWheelMessageElement) return;
     const messages = getActiveLoadingMessages();
     if (!messages.length) return;
-    const safeIndex =
-        ((index % messages.length) + messages.length) % messages.length;
+    const safeIndex = normalizeCircularIndex(index, messages.length);
     loadingMessageIndex = safeIndex;
     loadingWheelMessageElement.textContent = messages[safeIndex];
 }
@@ -159,7 +162,7 @@ function updatePageLoadingState() {
         body.setAttribute("aria-busy", "true");
         loadingOverlayElement?.setAttribute("aria-hidden", "false");
         startLoadingMessageRotation();
-        void loadLoadingMessagesI18n()
+        loadLoadingMessagesI18n()
             .then(() => {
                 renderLoadingMessage(loadingMessageIndex);
             })
@@ -175,7 +178,8 @@ function updatePageLoadingState() {
 /**
  * Shows the shared page-loading overlay for a new client-side load task.
  *
- * @returns {() => void}
+ * @returns {() => void} Idempotent cleanup function that ends this task and
+ *   hides the overlay when all pending tasks are complete.
  */
 export function beginPageLoading() {
     const token = nextPageLoadingToken++;
