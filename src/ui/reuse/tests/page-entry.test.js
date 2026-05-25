@@ -111,3 +111,39 @@ test("mountWhenDirect skips direct mounting during SPA router loads", async () =
 
     globalThis.__spaRouter = originalRouterFlag;
 });
+
+test("mountWhenDirect refresh listeners mark the page as loading", async () => {
+    const originalDocument = global.document;
+    const originalWindow = global.window;
+    const originalRouterFlag = globalThis.__spaRouter;
+    const body = createMockBody();
+    const root = { id: "app-root" };
+    const listeners = new Map();
+    global.document = {
+        body,
+        createElement(tagName) {
+            return createMockElement(tagName);
+        },
+        querySelector() {
+            return root;
+        },
+    };
+    global.window = {
+        addEventListener(eventName, listener) {
+            listeners.set(eventName, listener);
+        },
+    };
+    globalThis.__spaRouter = false;
+
+    try {
+        await mountWhenDirect(async () => {});
+        body.dataset.pageReady = "true";
+        listeners.get("beforeunload")?.();
+        assert.equal(body.dataset.pageReady, "false");
+        assert.equal(body.attributes["aria-busy"], "true");
+    } finally {
+        global.document = originalDocument;
+        global.window = originalWindow;
+        globalThis.__spaRouter = originalRouterFlag;
+    }
+});

@@ -41,6 +41,7 @@ const FALLBACK_LOADING_MESSAGES = [
     "Loading... at a speed historians can appreciate.",
     "We promise this spinner is judging us too.",
 ];
+const log = (...messageParts) => console.warn("[page-entry]", ...messageParts);
 
 function createLoadingOverlayElement() {
     if (typeof document.createElement !== "function") return null;
@@ -79,7 +80,9 @@ function loadLoadingMessagesI18n() {
     let preferredLanguages = ["en"];
     try {
         preferredLanguages = readPreferredLanguages();
-    } catch {}
+    } catch (error) {
+        log("Failed to read preferred languages, using fallback.", error);
+    }
     loadingI18nPromise = createI18n({
         preferredLanguages,
     })
@@ -94,6 +97,9 @@ function loadLoadingMessagesI18n() {
         })
         .catch(() => {
             loadingMessages = FALLBACK_LOADING_MESSAGES;
+            log(
+                "Failed to load localized loading messages; using fallback copy.",
+            );
             return loadingMessages;
         });
     return loadingI18nPromise;
@@ -135,7 +141,6 @@ function stopLoadingMessageRotation() {
 
 function registerPageUnloadListeners() {
     if (pageUnloadListenersRegistered) return;
-    pageUnloadListenersRegistered = true;
     if (
         typeof window === "undefined" ||
         typeof window.addEventListener !== "function"
@@ -150,6 +155,7 @@ function registerPageUnloadListeners() {
     };
     window.addEventListener("beforeunload", markPageAsLoading);
     window.addEventListener("pagehide", markPageAsLoading);
+    pageUnloadListenersRegistered = true;
 }
 
 function updatePageLoadingState() {
@@ -166,7 +172,9 @@ function updatePageLoadingState() {
             .then(() => {
                 renderLoadingMessage(loadingMessageIndex);
             })
-            .catch(() => {});
+            .catch((error) => {
+                log("Failed to refresh loading overlay message.", error);
+            });
         return;
     }
     body.dataset.pageReady = "true";
