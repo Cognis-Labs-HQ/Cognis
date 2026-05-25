@@ -4,5 +4,5 @@
     "version": "1.0.5",
     "gateway": "tfa",
     "description": "Time-based one-time password adapter for authenticator-app verification.",
-    "publisher": "Cognis Labs"
+    "publisher": "Cognis Labs HQ"
 }

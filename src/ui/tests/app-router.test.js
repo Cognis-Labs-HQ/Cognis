@@ -62,8 +62,13 @@ test("all dashboard pages call mount on direct browser load", () => {
         );
         assert.match(
             src,
-            /await mount\(document\.querySelector\(["']#app["']\)\)/,
-            `${page}/index.js must call mount(document.querySelector('#app')) for direct URL access`,
+            /import\s+\{\s*mountWhenDirect\s*\}\s+from\s+["']\.\.\/\.\.\/reuse\/page-entry\.js["'];/,
+            `${page}/index.js must import mountWhenDirect for direct URL access`,
+        );
+        assert.match(
+            src,
+            /await mountWhenDirect\(mount\)/,
+            `${page}/index.js must call mountWhenDirect(mount) for direct URL access`,
         );
     }
 });
@@ -237,6 +242,33 @@ test("router aborts the previous mount's signal on navigation", () => {
         src,
         /new AbortController\(\)/,
         "app-router.js must create a new AbortController for each mount",
+    );
+    assert.match(
+        src,
+        /beginPageLoading\(\)/,
+        "app-router.js must show the shared loading overlay during navigation",
+    );
+    assert.match(
+        src,
+        /finishPageLoading\(\)/,
+        "app-router.js must hide the shared loading overlay after navigation",
+    );
+});
+
+test("router enforces TFA setup route when required", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        src,
+        /readAuthSetupRequirement/,
+        "app-router.js must check TFA setup status before route loads",
+    );
+    assert.match(
+        src,
+        /\/settings#security/,
+        "app-router.js must redirect required TFA users to /settings#security",
     );
 });
 

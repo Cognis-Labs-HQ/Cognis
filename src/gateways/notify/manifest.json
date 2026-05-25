@@ -6,5 +6,5 @@
     "requires": ["db"],
     "hasAdapters": true,
     "description": "Dispatches notifications via pluggable adapter senders.",
-    "publisher": "Cognis Labs"
+    "publisher": "Cognis Labs HQ"
 }

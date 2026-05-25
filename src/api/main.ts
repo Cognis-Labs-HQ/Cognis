@@ -49,7 +49,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                     "ui:shell",
                 ],
                 entrypoints: {},
-                publisher: "Cognis Labs",
+                publisher: "Cognis Labs HQ",
             },
         ];
         const modulesRoot =

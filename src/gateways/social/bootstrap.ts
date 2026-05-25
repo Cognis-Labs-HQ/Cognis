@@ -230,7 +230,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         name: "Social Gateway",
         version: "1.2.4",
         description: "Profiles, social graph, posts, and messaging.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
 

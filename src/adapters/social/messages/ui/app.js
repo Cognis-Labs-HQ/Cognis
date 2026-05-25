@@ -15,6 +15,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
@@ -2552,4 +2553,4 @@ export async function mount(root, { signal } = {}) {
     startLiveRefreshPolling();
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

@@ -241,7 +241,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         name: "Authentication Gateway",
         version: "1.4.6",
         description: "Manages authentication providers and user login.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
         required: true,
         hasAdapters: true,
     });

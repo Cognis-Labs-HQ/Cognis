@@ -78,7 +78,7 @@ Every gateway directory must contain a `manifest.json`:
     "name": "Notification Gateway",
     "version": "1.3.0",
     "description": "Pluggable notification dispatch.",
-    "publisher": "Cognis Labs",
+    "publisher": "Cognis Labs HQ",
     "required": false,
     "requires": ["db"],
     "hasAdapters": true
@@ -139,7 +139,7 @@ ctx.gatewayRegistry.register({
     name: "Notification Gateway",
     version: "1.3.0",
     description: "Pluggable notification dispatch.",
-    publisher: "Cognis Labs",
+    publisher: "Cognis Labs HQ",
     hasAdapters: true,
 });
 ```

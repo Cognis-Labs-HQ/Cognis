@@ -404,7 +404,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
 
     log?.("info", "Logging gateway initialized.", {
