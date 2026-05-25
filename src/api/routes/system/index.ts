@@ -268,9 +268,9 @@ export function createSystemRoutes(
             }
             if (!enforceTfaForAllUsers) {
                 const revokeSetupPendingAccessTokens = getCapability
-                    ? getCapability<
-                          (excludedSubject?: string) => number
-                      >("auth:revokeSetupPendingAccessTokens")
+                    ? getCapability<(excludedSubject?: string) => number>(
+                          "auth:revokeSetupPendingAccessTokens",
+                      )
                     : undefined;
                 const revokedSetupPendingCount =
                     revokeSetupPendingAccessTokens?.(claims.sub) ?? 0;

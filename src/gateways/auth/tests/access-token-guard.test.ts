@@ -117,9 +117,14 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         const pendingUserToken = issueAccessToken("pending-user", "user", 60, {
             tfaSetupPending: true,
         });
-        const pendingAdminToken = issueAccessToken("pending-admin", "admin", 60, {
-            tfaSetupPending: true,
-        });
+        const pendingAdminToken = issueAccessToken(
+            "pending-admin",
+            "admin",
+            60,
+            {
+                tfaSetupPending: true,
+            },
+        );
         const normalToken = issueAccessToken("normal-user", "user", 60);
 
         const revokedCount = revokeSetupPendingAccessTokens("pending-admin");
