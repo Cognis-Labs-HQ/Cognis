@@ -592,13 +592,4 @@
   <string name="module.jitsiMeet.chat_title">Obrolan Rapat</string>
   <string name="module.jitsiMeet.chat_placeholder">Placeholder ini adalah elemen page composer terpisah untuk obrolan rapat Cognis mendatang. Obrolan Jitsi dinonaktifkan di bingkai rapat.</string>
   <string name="module.jitsiMeet.chat_sample">Placeholder obrolan</string>
-  <string name="ui.app.admin.jitsi.title">Jitsi Meet</string>
-  <string name="ui.app.admin.jitsi.domain">Domain Jitsi</string>
-  <string name="ui.app.admin.jitsi.tenant">Prefiks Tenant</string>
-  <string name="ui.app.admin.jitsi.auth_required">Wajibkan Autentikasi Rapat</string>
-  <string name="ui.app.admin.jitsi.auth_mode">Mode Autentikasi</string>
-  <string name="ui.app.admin.jitsi.auth_none">Tidak ada</string>
-  <string name="ui.app.admin.jitsi.auth_jwt">Token JWT</string>
-  <string name="ui.app.admin.jitsi.saved">Pengaturan Jitsi Meet disimpan.</string>
-  <string name="ui.app.admin.jitsi.save_failed">Tidak dapat menyimpan pengaturan Jitsi Meet.</string>
 </resources>

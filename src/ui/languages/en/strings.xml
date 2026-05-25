@@ -592,13 +592,4 @@
   <string name="module.jitsiMeet.chat_title">Meeting Chat</string>
   <string name="module.jitsiMeet.chat_placeholder">This placeholder is a separate page-composer element for the future Cognis meeting chat. Jitsi chat is disabled in the meeting frame.</string>
   <string name="module.jitsiMeet.chat_sample">Chat placeholder</string>
-  <string name="ui.app.admin.jitsi.title">Jitsi Meet</string>
-  <string name="ui.app.admin.jitsi.domain">Jitsi Domain</string>
-  <string name="ui.app.admin.jitsi.tenant">Tenant Prefix</string>
-  <string name="ui.app.admin.jitsi.auth_required">Require Meeting Authentication</string>
-  <string name="ui.app.admin.jitsi.auth_mode">Authentication Mode</string>
-  <string name="ui.app.admin.jitsi.auth_none">None</string>
-  <string name="ui.app.admin.jitsi.auth_jwt">JWT Token</string>
-  <string name="ui.app.admin.jitsi.saved">Jitsi Meet settings saved.</string>
-  <string name="ui.app.admin.jitsi.save_failed">Unable to save Jitsi Meet settings.</string>
 </resources>

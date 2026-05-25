@@ -592,13 +592,4 @@
   <string name="module.jitsiMeet.chat_title">ミーティングチャット</string>
   <string name="module.jitsiMeet.chat_placeholder">このプレースホルダーは、将来の Cognis ミーティングチャット用の独立したページコンポーザー要素です。Jitsi チャットはミーティングフレームで無効化されています。</string>
   <string name="module.jitsiMeet.chat_sample">チャットのプレースホルダー</string>
-  <string name="ui.app.admin.jitsi.title">Jitsi Meet</string>
-  <string name="ui.app.admin.jitsi.domain">Jitsi ドメイン</string>
-  <string name="ui.app.admin.jitsi.tenant">テナント接頭辞</string>
-  <string name="ui.app.admin.jitsi.auth_required">ミーティング認証を必須にする</string>
-  <string name="ui.app.admin.jitsi.auth_mode">認証モード</string>
-  <string name="ui.app.admin.jitsi.auth_none">なし</string>
-  <string name="ui.app.admin.jitsi.auth_jwt">JWT トークン</string>
-  <string name="ui.app.admin.jitsi.saved">Jitsi Meet 設定を保存しました。</string>
-  <string name="ui.app.admin.jitsi.save_failed">Jitsi Meet 設定を保存できません。</string>
 </resources>
