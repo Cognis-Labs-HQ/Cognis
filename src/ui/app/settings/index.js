@@ -37,6 +37,10 @@ import {
     normalizeMessageStyle,
 } from "../../reuse/message-style-options.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
+import {
+    getSettingsShellOptions,
+    resolveSettingsSetupRedirect,
+} from "./setup-requirement.js";
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -71,6 +75,19 @@ async function loadSettingsSections() {
         return payload.data ?? [];
     } catch {
         return [];
+    }
+}
+
+async function loadAuthSetupRequirement() {
+    try {
+        const response = await apiFetch("/api/v1/auth/setup-status");
+        if (!response.ok) {
+            return false;
+        }
+        const payload = await response.json().catch(() => null);
+        return payload?.data?.requiresSetup === true;
+    } catch {
+        return false;
     }
 }
 
@@ -132,6 +149,16 @@ export async function mount(root, { signal } = {}) {
         ? loadedPrefs.languagePriority
         : readPreferredLanguages();
     const i18n = await createI18n({ preferredLanguages: languagePriority });
+    const authSetupRequired = await loadAuthSetupRequirement();
+    const setupRedirect = resolveSettingsSetupRedirect(
+        window.location.pathname,
+        window.location.hash,
+        authSetupRequired,
+    );
+    if (setupRedirect) {
+        window.location.replace(setupRedirect);
+        return;
+    }
     applyDocumentTitle(i18n, "ui.page.title.settings");
 
     applyTimezoneToLocalStorage(
@@ -518,6 +545,8 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
+    const shellOptions = getSettingsShellOptions();
+
     const composer = createPageComposer(root, {
         allowCustomization: false,
         subPageNavigation: true,
@@ -531,6 +560,7 @@ export async function mount(root, { signal } = {}) {
         pageOverrides: {
             appearance: { showThemeToggle: false },
         },
+        ...shellOptions,
         toolbar: [
             {
                 id: "settings-nav",

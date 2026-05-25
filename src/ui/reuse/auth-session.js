@@ -1,3 +1,49 @@
+const AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS = 5_000;
+let authSetupRequirementExpiresAt = 0;
+let authSetupRequired = false;
+
+function invalidateAuthSetupRequirementCache() {
+    authSetupRequirementExpiresAt = 0;
+    authSetupRequired = false;
+}
+
+async function enforceAuthSetupIfRequired() {
+    const token = localStorage.getItem("cognis_access_token");
+    if (!token) return false;
+    if (Date.now() >= authSetupRequirementExpiresAt) {
+        try {
+            const response = await fetch("/api/v1/auth/setup-status", {
+                headers: { authorization: `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const payload = await response.json().catch(() => null);
+                authSetupRequired = payload?.data?.requiresSetup === true;
+            } else {
+                authSetupRequired = false;
+            }
+        } catch {
+            authSetupRequired = false;
+        }
+        authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+    }
+    if (!authSetupRequired) {
+        return false;
+    }
+    const normalizedHash =
+        typeof window.location.hash === "string"
+            ? window.location.hash.toLowerCase()
+            : "";
+    const isSecuritySettingsRoute =
+        window.location.pathname === "/settings" &&
+        normalizedHash === "#security";
+    if (isSecuritySettingsRoute) {
+        return false;
+    }
+    window.location.replace("/settings#security");
+    return true;
+}
+
 /**
  * Auth-session helpers for public auth pages.
  *
@@ -9,6 +55,8 @@
  *   when still valid, without performing any redirect.
  * - ensureFullAccountSession() — redirects dashboard-shell pages to login unless
  *   local storage contains a token/account pair that resolves to an enabled user.
+ *   Also redirects to /settings#security when TFA setup is required before
+ *   proceeding.
  *
  * Usage:
  *   const redirected = await redirectToDashboardIfAuthenticated();
@@ -71,7 +119,11 @@ export async function checkIsAuthenticated() {
 
 export async function ensureFullAccountSession() {
     const session = await validateStoredAccountSession();
-    if (session.authenticated) return true;
+    if (session.authenticated) {
+        invalidateAuthSetupRequirementCache();
+        const redirectedForTfa = await enforceAuthSetupIfRequired();
+        return !redirectedForTfa;
+    }
     const reason = session.reason
         ? `?reason=${encodeURIComponent(session.reason)}`
         : "";

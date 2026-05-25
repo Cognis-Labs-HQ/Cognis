@@ -6,4 +6,4 @@ Popups mit Formulareingaben fragen jetzt nach einer Bestätigung, bevor sie durc
 
 ## Betroffene Popups
 
-Profil bearbeiten, Passwort ändern, Adapter-Konfiguration, E-Mail-Einladung, Nutzereingaben, Lehrerantrag und Schülereinladung erhalten diesen Schutz. Die `openPopup`-API unterstützt die neue Option `closeConfirm` für beliebige Formular-Popups mit i18n-aufgelösten Zeichenketten.
+Profil bearbeiten, Passwort ändern, Adapter-Konfiguration, E-Mail-Einladung, Nutzereingaben, Lehrerantrag und Schülereinladung erhalten diesen Schutz. Die `openPopup`-API unterstützt die neue Option `closeProtection` für beliebige Formular-Popups mit i18n-aufgelösten Zeichenketten.

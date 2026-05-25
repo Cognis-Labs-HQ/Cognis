@@ -69,13 +69,53 @@ const ROUTE_STYLE_BUNDLES = {
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
-
+const AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS = 5_000;
 let _studyChildComponentsPromise = null;
 let _studyChildComponentsCache = null;
 let _studyChildComponentsCacheExpiresAt = 0;
+let _authSetupRequirementExpiresAt = 0;
+let _authSetupRequired = false;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
+}
+
+function normalizeHash(path) {
+    const hashIndex = String(path).indexOf("#");
+    if (hashIndex < 0) return "";
+    return String(path).slice(hashIndex).toLowerCase();
+}
+
+async function readAuthSetupRequirement() {
+    if (Date.now() < _authSetupRequirementExpiresAt) {
+        return _authSetupRequired;
+    }
+    const token = localStorage.getItem("cognis_access_token");
+    if (!token) {
+        _authSetupRequired = false;
+        _authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+        return false;
+    }
+    try {
+        const response = await apiFetch("/api/v1/auth/setup-status");
+        if (!response.ok) {
+            _authSetupRequired = false;
+            _authSetupRequirementExpiresAt =
+                Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+            return false;
+        }
+        const payload = await response.json().catch(() => null);
+        _authSetupRequired = payload?.data?.requiresSetup === true;
+        _authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+        return _authSetupRequired;
+    } catch {
+        _authSetupRequired = false;
+        _authSetupRequirementExpiresAt =
+            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
+        return false;
+    }
 }
 
 function isPotentialStudyChildPath(path) {
@@ -335,6 +375,24 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
+    const requiresTfaSetup = await readAuthSetupRequirement();
+    const isSecuritySettingsRoute =
+        normalizePath(path) === "/settings" &&
+        normalizeHash(path) === "#security";
+    if (requiresTfaSetup && !isSecuritySettingsRoute) {
+        const enforcedPath = "/settings#security";
+        if (
+            `${window.location.pathname}${window.location.hash}` !==
+            enforcedPath
+        ) {
+            history.replaceState(
+                { routerPage: enforcedPath },
+                "",
+                enforcedPath,
+            );
+        }
+        return loadRoute(enforcedPath);
+    }
     const finishPageLoading = beginPageLoading();
 
     if (_mountController) {
@@ -454,6 +512,7 @@ export function initRouter(root) {
 
     window.addEventListener("popstate", async (event) => {
         const path = window.location.pathname;
+        const pathWithHash = `${window.location.pathname}${window.location.hash}`;
         const route = await resolveRoute(path);
         if (!route) return;
         if (isPotentialStudyChildPath(path)) {
@@ -467,6 +526,6 @@ export function initRouter(root) {
         // so its presence means the router itself triggered this history entry and
         // must handle the transition even if the base path hasn't changed.
         if (route.base === _currentBase && !event.state?.routerPage) return;
-        await loadRoute(path);
+        await loadRoute(pathWithHash);
     });
 }

@@ -30,7 +30,7 @@
  *               removes it). Overrides duration.
  *
  * @param {string} message - Plain-text message to display.
- * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean }} [options]
+ * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, linkHref?: string, linkLabel?: string }} [options]
  * @returns {() => void} dismiss — call to immediately dismiss the toast.
  */
 
@@ -103,9 +103,37 @@ function ensureTray() {
     return tray;
 }
 
+function resolveToastLinkHref(linkHref) {
+    if (typeof linkHref !== "string") {
+        return "";
+    }
+    const normalizedLinkHref = linkHref.trim();
+    if (!normalizedLinkHref) {
+        return "";
+    }
+    if (normalizedLinkHref.startsWith("/")) {
+        return normalizedLinkHref;
+    }
+    try {
+        const parsed = new URL(normalizedLinkHref, window.location.origin);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+            return "";
+        }
+        return parsed.href;
+    } catch {
+        return "";
+    }
+}
+
 export function showToast(
     message,
-    { variant = "info", duration, permanent = false } = {},
+    {
+        variant = "info",
+        duration,
+        permanent = false,
+        linkHref = "",
+        linkLabel = "",
+    } = {},
 ) {
     const variantClass = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.info;
     const icon = VARIANT_ICONS[variant] ?? VARIANT_ICONS.info;
@@ -128,11 +156,18 @@ export function showToast(
         variant === "warning" || variant === "error" ? "alert" : "status",
     );
 
+    const resolvedLinkHref = resolveToastLinkHref(linkHref);
+    const messageHtml = `${escapeHtml(message)}${
+        resolvedLinkHref && linkLabel
+            ? ` <a href="${escapeHtml(resolvedLinkHref)}">${escapeHtml(linkLabel)}</a>`
+            : ""
+    }`;
+
     toast.innerHTML = `${
         effectiveDuration !== null
             ? '<span class="toast-timebar" aria-hidden="true"></span>'
             : ""
-    }<span class="toast-icon" aria-hidden="true">${icon}</span><span class="toast-message">${escapeHtml(message)}</span>${
+    }<span class="toast-icon" aria-hidden="true">${icon}</span><span class="toast-message">${messageHtml}</span>${
         permanent
             ? `<button class="toast-dismiss" type="button" aria-label="${escapeHtml(dismissLabel)}">&#x2715;</button>`
             : ""

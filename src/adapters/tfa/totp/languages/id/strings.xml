@@ -1,0 +1,5 @@
+<resources>
+  <string name="adapter.tfa.totp.qr_code_alt">Kode QR Penyiapan TOTP</string>
+  <string name="adapter.tfa.totp.setup_prompt">Pindai kode QR di aplikasi autentikator Anda, lalu masukkan kode 6 digit untuk memverifikasi penyiapan.</string>
+  <string name="ui.app.login.tfa.code_placeholder_totp">Kode TOTP</string>
+</resources>

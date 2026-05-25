@@ -2685,6 +2685,7 @@ export function createPageComposer(
         initializeSubPlacements(state);
         computeSubGridDimensions(state);
         renderSubGrid(state);
+        state.lastObservedCols = state.gridCols;
 
         if (state.resizeObserver) {
             state.resizeObserver.disconnect();

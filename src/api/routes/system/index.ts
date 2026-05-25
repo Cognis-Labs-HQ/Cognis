@@ -60,12 +60,14 @@ function serializeSecuritySettings(input: {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
+    enforceTfaForAllUsers: boolean;
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
         registrationsEnabled: input.registrationsEnabled,
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
+        enforceTfaForAllUsers: input.enforceTfaForAllUsers,
     });
 }
 
@@ -74,8 +76,26 @@ export function createSystemRoutes(
     preferenceStore?: UserPreferenceStore,
     log?: BootstrapLog,
     routeContext?: RouteContext,
-    canSendVerificationEmail?: () => boolean,
+    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
+    const canSendVerificationEmail = getCapability
+        ? getCapability<() => boolean>("notify:canSendVerificationEmail")
+        : undefined;
+    const getEnforceTfaForAllUsers = getCapability
+        ? getCapability<() => Promise<boolean>>("tfa:getEnforceAllUsers")
+        : undefined;
+    const applyTfaEnforcementPolicy = getCapability
+        ? getCapability<
+              (input: {
+                  required: boolean;
+                  excludedSubject?: string;
+              }) => Promise<{
+                  required: boolean;
+                  previousRequired: boolean;
+                  revokedSetupPendingCount: number;
+              }>
+          >("tfa:applyEnforcementPolicy")
+        : undefined;
     const ctx = resolveRouteContext(routeContext);
     const licenseMarkdownFile = resolve(
         process.cwd(),
@@ -168,6 +188,9 @@ export function createSystemRoutes(
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
             const data = parseSecuritySettings(raw);
+            const enforceTfaForAllUsers = getEnforceTfaForAllUsers
+                ? await getEnforceTfaForAllUsers().catch(() => false)
+                : data?.enforceTfaForAllUsers === true;
             if (!data && raw) {
                 log?.("warn", "Failed to parse persisted security settings.", {
                     ...logMeta,
@@ -181,7 +204,10 @@ export function createSystemRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: data ?? defaultSecuritySettings(),
+                    data: {
+                        ...(data ?? defaultSecuritySettings()),
+                        enforceTfaForAllUsers,
+                    },
                 }),
             );
             return true;
@@ -203,6 +229,7 @@ export function createSystemRoutes(
                 body.userValidationMode === "smtp" ? "smtp" : "none";
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
+            const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
             if (
                 userValidationMode === "smtp" &&
                 canSendVerificationEmail &&
@@ -237,8 +264,45 @@ export function createSystemRoutes(
                         registrationsEnabled,
                         userValidationMode,
                         requireTeacherManualApproval,
+                        enforceTfaForAllUsers,
                     }),
                 );
+            }
+            if (applyTfaEnforcementPolicy) {
+                const enforcementResult = await applyTfaEnforcementPolicy({
+                    required: enforceTfaForAllUsers,
+                    excludedSubject: claims.sub,
+                }).catch((error) => {
+                    log?.(
+                        "warn",
+                        "Failed to apply mandatory TFA enforcement policy.",
+                        {
+                            ...logMeta,
+                            accountId: claims.sub,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    return null;
+                });
+                if (
+                    enforcementResult?.previousRequired === true &&
+                    !enforcementResult.required &&
+                    enforcementResult.revokedSetupPendingCount > 0
+                ) {
+                    log?.(
+                        "info",
+                        "Revoked setup-pending access tokens after disabling mandatory TFA.",
+                        {
+                            ...logMeta,
+                            accountId: claims.sub,
+                            revokedSetupPendingCount:
+                                enforcementResult.revokedSetupPendingCount,
+                        },
+                    );
+                }
             }
             log?.("info", "Updated security settings.", {
                 ...logMeta,
@@ -247,6 +311,7 @@ export function createSystemRoutes(
                 registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
+                enforceTfaForAllUsers,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));

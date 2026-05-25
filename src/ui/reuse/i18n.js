@@ -404,13 +404,21 @@ export function applyStaticTranslations(i18n, root = document) {
  * locale-specific component file is missing.
  *
  * @param {{ locale: string, t: Function }} baseI18n
- * @param {string|null|undefined} stringsBaseUrl - Base URL for component strings
+ * @param {string|string[]|null|undefined} stringsBaseUrl - Base URL or URLs for component strings
  * @returns {Promise<{ locale: string, t: Function }>}
  */
 export async function extendI18n(baseI18n, stringsBaseUrl) {
     if (!stringsBaseUrl) return baseI18n;
 
-    const extra = await loadComponentStrings(baseI18n.locale, [stringsBaseUrl]);
+    const baseUrls = Array.isArray(stringsBaseUrl)
+        ? stringsBaseUrl.filter(
+              (entry) => typeof entry === "string" && entry.length > 0,
+          )
+        : typeof stringsBaseUrl === "string" && stringsBaseUrl.length > 0
+          ? [stringsBaseUrl]
+          : [];
+    if (baseUrls.length === 0) return baseI18n;
+    const extra = await loadComponentStrings(baseI18n.locale, baseUrls);
     const merged = new Map();
 
     extra.forEach((value, key) => merged.set(key, value));

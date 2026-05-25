@@ -33,6 +33,9 @@
             "path": "./src/adapters/notify/smtp"
         },
         {
+            "path": "./src/adapters/tfa/totp"
+        },
+        {
             "path": "./src/api"
         },
         {

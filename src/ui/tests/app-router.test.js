@@ -254,3 +254,20 @@ test("router aborts the previous mount's signal on navigation", () => {
         "app-router.js must hide the shared loading overlay after navigation",
     );
 });
+
+test("router enforces TFA setup route when required", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        src,
+        /readAuthSetupRequirement/,
+        "app-router.js must check TFA setup status before route loads",
+    );
+    assert.match(
+        src,
+        /\/settings#security/,
+        "app-router.js must redirect required TFA users to /settings#security",
+    );
+});

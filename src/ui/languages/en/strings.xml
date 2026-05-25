@@ -283,6 +283,8 @@
   <string name="ui.app.users.reset_password">Reset password</string>
   <string name="ui.app.users.new_password">New password</string>
   <string name="ui.app.users.password_reset_done">Password updated.</string>
+  <string name="ui.app.users.reset_tfa">Reset Two-Factor Authentication</string>
+  <string name="ui.app.users.tfa_reset_done">Two-factor authentication was reset for this user.</string>
   <string name="ui.app.users.resend_verification">Resend verification email</string>
   <string name="ui.app.users.verification_resent">Verification email request sent.</string>
   <string name="ui.app.users.delete_user">Delete user</string>
@@ -474,6 +476,7 @@
   <string name="ui.app.admin.notif.test_email_to">Recipient email address</string>
   <string name="ui.app.admin.notif.test_sent">Test email sent successfully.</string>
   <string name="ui.app.admin.notif.test_failed">Failed to send test email.</string>
+  <string name="ui.app.admin.notif.test_email_required">Recipient email address is required.</string>
   <string name="ui.app.admin.notif.field_env_conflict">This field is set by an environment variable but differs from the saved value.</string>
   <string name="ui.app.admin.notif.required_field">Required Value</string>
   <string name="ui.app.admin.notif.enable_provider">Enable Adapter</string>

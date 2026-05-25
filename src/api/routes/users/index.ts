@@ -50,6 +50,7 @@ export function createUserRoutes(
         visibility: "friends",
     ) => Promise<void>,
     routeContext?: RouteContext,
+    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -65,10 +66,23 @@ export function createUserRoutes(
         if (url.pathname === "/api/v1/users" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const users = (await accountStore.list()).map((user) => ({
-                ...user,
-                role: resolveEffectiveRole(user.role, Boolean(user.isFounder)),
-            }));
+            const isSecondFactorEnabled = getCapability?.<
+                (accountId: string) => Promise<boolean>
+            >("tfa:isSecondFactorEnabled");
+            const users = await Promise.all(
+                (await accountStore.list()).map(async (user) => ({
+                    ...user,
+                    role: resolveEffectiveRole(
+                        user.role,
+                        Boolean(user.isFounder),
+                    ),
+                    hasTfaConfigured: isSecondFactorEnabled
+                        ? await isSecondFactorEnabled(user.username).catch(
+                              () => false,
+                          )
+                        : false,
+                })),
+            );
             log?.("debug", "Listed users.", {
                 ...logMeta,
                 accountId: claims.sub,

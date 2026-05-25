@@ -1,0 +1,11 @@
+{
+    "name": "@cognis/adapter-tfa-totp",
+    "version": "1.0.3",
+    "private": true,
+    "type": "module",
+    "main": "index.ts",
+    "dependencies": {
+        "@cognis/core": "0.1.1",
+        "qrcode": "^1.5.4"
+    }
+}

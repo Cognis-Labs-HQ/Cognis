@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
     issueAccessToken,
+    revokeSetupPendingAccessTokens,
     revokeAccessTokensForSubject,
     verifyAccessToken,
 } from "../access-tokens.js";
@@ -38,6 +39,33 @@ test("guard enforces role scopes", () => {
     assert.equal(status, 403);
 });
 
+test("guard allows auth security sections during TFA setup pending flow", () => {
+    const token = issueAccessToken("u1", "user", 60, {
+        setupPending: true,
+    });
+    let status = 0;
+    const claims = requireAuth(
+        {
+            headers: { authorization: `Bearer ${token}` },
+            url: "/api/v1/auth/security-sections",
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        "user",
+    );
+    assert.equal(status, 0);
+    assert.deepEqual(claims, {
+        sub: "u1",
+        role: "user",
+        providerId: "local",
+        setupPending: true,
+    });
+});
+
 test("token store persists tokens to disk across module reload", async () => {
     const tempDir = mkdtempSync(path.join(tmpdir(), "cognis-token-store-"));
     const tokenStorePath = path.join(tempDir, "access-tokens.json");
@@ -61,6 +89,7 @@ test("token store persists tokens to disk across module reload", async () => {
             sub: "persisted-user",
             role: "user",
             providerId: "local",
+            setupPending: false,
         });
     } finally {
         delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
@@ -81,6 +110,38 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         sub: "subject-b",
         role: "user",
         providerId: "local",
+        setupPending: false,
+    });
+
+    test("revoking setup-pending tokens excludes provided subject", () => {
+        const pendingUserToken = issueAccessToken("pending-user", "user", 60, {
+            setupPending: true,
+        });
+        const pendingAdminToken = issueAccessToken(
+            "pending-admin",
+            "admin",
+            60,
+            {
+                setupPending: true,
+            },
+        );
+        const normalToken = issueAccessToken("normal-user", "user", 60);
+
+        const revokedCount = revokeSetupPendingAccessTokens("pending-admin");
+        assert.ok(revokedCount >= 1);
+        assert.equal(verifyAccessToken(pendingUserToken), null);
+        assert.deepEqual(verifyAccessToken(pendingAdminToken), {
+            sub: "pending-admin",
+            role: "admin",
+            providerId: "local",
+            setupPending: true,
+        });
+        assert.deepEqual(verifyAccessToken(normalToken), {
+            sub: "normal-user",
+            role: "user",
+            providerId: "local",
+            setupPending: false,
+        });
     });
 });
 

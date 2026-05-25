@@ -37,14 +37,15 @@ export class CoreAuthGateway {
 
 `getEnabledAdapter(id)` mengembalikan adapter tertentu berdasarkan ID hanya jika saat ini diaktifkan. `getAdapter()` (tanpa argumen) mengembalikan adapter pertama yang diaktifkan. Keduanya mengembalikan `null` jika tidak ada adapter yang sesuai.
 
-Bootstrap di `src/gateways/auth/bootstrap.ts`:
+Bootstrap di `src/gateways/auth/bootstrap.ts` dan `src/gateways/auth/bootstrap/`:
 
 1. Menginstansiasi `DbLocalAccountStore` dari `src/adapters/auth/local/store.ts`.
 2. Menginstansiasi `CoreAuthGateway` dengan DB executor dan tipe.
 3. Memuat adapter lokal melalui `setLocalAdapter()`.
 4. Memanggil `discoverAdapters(authAdaptersRoot)` untuk memuat semua adapter lainnya.
 5. Memanggil `loadPersistedConfigs()` untuk memulihkan status aktif/nonaktif dari database.
-6. Mendaftarkan route dan capability.
+6. Menjalankan hook capability/bootstrap dari `src/gateways/auth/bootstrap/`.
+7. Mendaftarkan route dan capability.
 
 Capability yang disediakan:
 

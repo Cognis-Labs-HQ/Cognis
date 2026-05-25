@@ -17,6 +17,7 @@ interface AccessTokenRecord {
     providerId: string;
     expiresAt: number | null;
     issuedAt?: number;
+    setupPending?: boolean;
 }
 
 const tokenStore = new Map<string, AccessTokenRecord>();
@@ -105,6 +106,8 @@ function loadTokenStore(now = Date.now()) {
                     .providerId;
                 const expiresAt = (record as { expiresAt?: unknown }).expiresAt;
                 const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
+                const setupPending = (record as { setupPending?: unknown })
+                    .setupPending;
 
                 if (typeof subject !== "string" || !isAccessRole(role))
                     continue;
@@ -115,6 +118,12 @@ function loadTokenStore(now = Date.now()) {
                 if (expiresAt !== null && expiresAt < now) continue;
                 if (issuedAt !== undefined && typeof issuedAt !== "number")
                     continue;
+                if (
+                    setupPending !== undefined &&
+                    typeof setupPending !== "boolean"
+                ) {
+                    continue;
+                }
 
                 store.set(tokenHash, {
                     subject,
@@ -122,6 +131,7 @@ function loadTokenStore(now = Date.now()) {
                     providerId,
                     expiresAt,
                     issuedAt,
+                    setupPending,
                 });
                 if (store.size >= MAX_TOKEN_STORE_SIZE) break;
             }
@@ -195,6 +205,7 @@ export function lookupAccessToken(token: string): {
     role: AccessRole;
     providerId: string;
     revoked: boolean;
+    setupPending: boolean;
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
@@ -203,18 +214,23 @@ export function lookupAccessToken(token: string): {
         role: stored.record.role,
         providerId: stored.record.providerId,
         revoked: stored.revoked,
+        setupPending: stored.record.setupPending === true,
     };
 }
 
-export function verifyAccessToken(
-    token: string,
-): { sub: string; role: AccessRole; providerId: string } | null {
+export function verifyAccessToken(token: string): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    setupPending: boolean;
+} | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored || stored.revoked) return null;
     return {
         sub: stored.record.subject,
         role: stored.record.role,
         providerId: stored.record.providerId,
+        setupPending: stored.record.setupPending === true,
     };
 }
 
@@ -247,6 +263,29 @@ export function revokeAccessTokensForSubject(subject: string): number {
     return removed;
 }
 
+export function revokeSetupPendingAccessTokens(
+    excludedSubject?: string,
+): number {
+    let removed = 0;
+    for (const [tokenHash, record] of tokenStore.entries()) {
+        if (record.setupPending !== true) continue;
+        if (
+            typeof excludedSubject === "string" &&
+            record.subject === excludedSubject
+        ) {
+            continue;
+        }
+        tokenStore.delete(tokenHash);
+        revokedTokenStore.set(tokenHash, record);
+        verifiedAtByToken.delete(tokenHash);
+        removed++;
+    }
+    if (removed > 0) {
+        persistTokenStore();
+    }
+    return removed;
+}
+
 function hashToken(token: string) {
     return createHash("sha256").update(token).digest("hex");
 }
@@ -257,7 +296,11 @@ export function issueAccessToken(
     subject: string,
     role: AccessRole,
     ttlSeconds: number | null,
-    options?: { issuedAt?: number; providerId?: string },
+    options?: {
+        issuedAt?: number;
+        providerId?: string;
+        setupPending?: boolean;
+    },
 ): string {
     pruneExpiredTokens();
     if (tokenStore.size >= MAX_TOKEN_STORE_SIZE) {
@@ -277,6 +320,7 @@ export function issueAccessToken(
         providerId,
         expiresAt,
         issuedAt,
+        setupPending: options?.setupPending === true,
     });
     persistTokenStore();
     return token;

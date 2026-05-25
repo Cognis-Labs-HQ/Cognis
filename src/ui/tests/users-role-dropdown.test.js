@@ -59,3 +59,26 @@ test("users table uses effective roles for owner and admin management state", ()
     assert.doesNotMatch(source, /user\.isFounder/);
     assert.doesNotMatch(source, /const viewerIsAdmin/);
 });
+
+test("users action menu only includes tfa reset when target has configured tfa", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /user\?\.hasTfaConfigured === true/);
+    assert.match(source, /id: "tfa-reset"/);
+});
+
+test("users tfa reset action has standalone branch", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /if \(action === "tfa-reset"\)/);
+    assert.match(
+        source,
+        /\/api\/v1\/tfa\/admin\/users\/\$\{encodeURIComponent\(username\)\}\/reset/,
+    );
+});

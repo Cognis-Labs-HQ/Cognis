@@ -847,9 +847,14 @@ function renderGenericAdapterForm(
 
     const authFieldNames = new Set(["user", "password"]);
 
+    const selectFieldKeys = fieldKeys.filter(
+        (name) => descriptors[name]?.schemaType === "select",
+    );
+
     const textFieldKeys = fieldKeys.filter((name) => {
         if (name === "secure") return false;
         if (name === "authDisabled") return false;
+        if (descriptors[name]?.schemaType === "select") return false;
         const rawValue = descriptors[name]?.effectiveValue;
         return !(
             rawValue === true ||
@@ -862,6 +867,7 @@ function renderGenericAdapterForm(
     const boolFieldKeys = fieldKeys.filter((name) => {
         if (name === "secure") return false;
         if (authFieldNames.has(name)) return false;
+        if (descriptors[name]?.schemaType === "select") return false;
         const rawValue = descriptors[name]?.effectiveValue;
         return (
             rawValue === true ||
@@ -878,6 +884,28 @@ function renderGenericAdapterForm(
     const nonAuthTextFieldKeys = textFieldKeys.filter(
         (name) => !authFieldNames.has(name),
     );
+
+    const selectFieldsHtml = selectFieldKeys
+        .map((name) => {
+            const descriptor = descriptors[name];
+            const val = descriptor?.effectiveValue ?? "";
+            const options = Array.isArray(descriptor?.schemaOptions)
+                ? descriptor.schemaOptions
+                : [];
+            const label = descriptor?.schemaLabel ?? fieldNameToLabel(name);
+            const optionsHtml = options
+                .map(
+                    (option) =>
+                        `<option value="${escapeHtml(String(option))}"${val === String(option) ? " selected" : ""}>${escapeHtml(String(option))}</option>`,
+                )
+                .join("");
+            return fieldLabel(
+                name,
+                label,
+                `<select name="${escapeHtml(name)}" class="theme-select">${optionsHtml}</select>`,
+            );
+        })
+        .join("");
 
     const secureFieldHtml = hasSecure
         ? (() => {
@@ -964,6 +992,7 @@ function renderGenericAdapterForm(
         </label>
       </div>
       <div class="provider-fields">
+        ${selectFieldsHtml}
         ${secureFieldHtml}
         ${nonAuthFieldsHtml}
       </div>
@@ -1009,11 +1038,13 @@ async function openAdapterConfig(
         ? payload.requiredFields
         : [];
     const supportsTest = payload.supportsTest === true;
+    const schemaFields = Array.isArray(payload.schema) ? payload.schema : [];
 
     const fieldNames = new Set([
         ...Object.keys(dbData),
         ...Object.keys(envData),
         ...requiredFields,
+        ...schemaFields.map((field) => field.key),
     ]);
     const descriptors = {};
     for (const field of fieldNames) {
@@ -1035,6 +1066,7 @@ async function openAdapterConfig(
             effectiveValue = undefined;
             source = "none";
         }
+        const schemaEntry = schemaFields.find((entry) => entry.key === field);
         descriptors[field] = {
             dbValue,
             envValue,
@@ -1045,6 +1077,9 @@ async function openAdapterConfig(
                 envValue !== undefined &&
                 dbValue !== envValue,
             required: requiredFields.includes(field),
+            schemaType: schemaEntry?.type ?? null,
+            schemaLabel: schemaEntry?.label ?? null,
+            schemaOptions: schemaEntry?.options ?? null,
         };
     }
 
@@ -1168,11 +1203,27 @@ async function openAdapterConfig(
                         testInput instanceof HTMLInputElement
                             ? testInput.value.trim()
                             : "";
+                    if (!recipient) {
+                        showToast(
+                            i18n.t("ui.app.admin.notif.test_email_required"),
+                            {
+                                variant: "error",
+                            },
+                        );
+                        return;
+                    }
                     const config = {};
                     popupFormEl.querySelectorAll("[name]").forEach((field) => {
                         if (field instanceof HTMLInputElement) {
                             if (field.type === "checkbox") {
                                 config[field.name] = field.checked;
+                            } else if (
+                                // Omit blank password fields so test overrides do not
+                                // erase a configured SMTP password on the server.
+                                field.type === "password" &&
+                                field.value === ""
+                            ) {
+                                // Intentionally omit this field from the payload.
                             } else {
                                 config[field.name] =
                                     field.name === "port"
@@ -1258,6 +1309,7 @@ async function guardSubPageSwitch() {
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
     i18n = await createI18n();
+    i18n = await extendI18n(i18n, "/static/gateways/tfa/languages");
     applyDocumentTitle(i18n, "ui.page.title.administration");
 
     setModules([]);
@@ -1292,6 +1344,15 @@ export async function mount(rootEl, { signal } = {}) {
             ),
         )
     ).filter(Boolean);
+    const securityOwnedGatewaySections = gatewaySections.filter(
+        (section) => section.parentSectionId === "security",
+    );
+    const topLevelGatewaySections = gatewaySections.filter(
+        (section) => section.parentSectionId !== "security",
+    );
+    const securityOwnedElements = securityOwnedGatewaySections.flatMap(
+        (section) => section.subComposerOptions?.elements ?? [],
+    );
 
     const baseElements = [
         {
@@ -1373,9 +1434,13 @@ export async function mount(rootEl, { signal } = {}) {
                         pinned: true,
                         render: () => securitySection.renderContent(),
                     },
+                    ...securityOwnedElements,
                 ],
                 onRender: () => {
                     securitySection.init();
+                    securityOwnedGatewaySections.forEach((section) => {
+                        section.subComposerOptions?.onRender?.(root);
+                    });
                 },
             },
         },
@@ -1383,7 +1448,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     elements = [
         ...baseElements,
-        ...gatewaySections.map((sec) => ({
+        ...topLevelGatewaySections.map((sec) => ({
             id: sec.id,
             label: sec.label,
             subComposerOptions: {
@@ -1397,7 +1462,7 @@ export async function mount(rootEl, { signal } = {}) {
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
         `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
-        ...gatewaySections.map(
+        ...topLevelGatewaySections.map(
             (sec) =>
                 `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
         ),
@@ -1449,17 +1514,18 @@ export async function mount(rootEl, { signal } = {}) {
                 changesBar.markDirty("security", false);
                 await reloadGatewaysAndAdapters();
                 composer.refresh(elements);
-                showToast(i18n.t("ui.app.admin.security.saved"), {
+                showToast(i18n.t("ui.app.admin.settings_saved"), {
                     variant: "success",
                 });
             } catch {
-                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                showToast(i18n.t("ui.reuse.save_failed"), {
                     variant: "error",
                 });
             }
         },
-        onDiscard: () => {
+        onDiscard: async () => {
             securitySection?.discard();
+            composer.refresh(elements);
         },
     });
 
