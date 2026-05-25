@@ -1,6 +1,6 @@
+import { redirectToRequiredTfaSetup } from "/static/reuse/auth-setup-route.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
-import { redirectToRequiredTfaSetup } from "./setup-redirect.js";
 
 function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {

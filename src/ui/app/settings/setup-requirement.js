@@ -1,4 +1,4 @@
-export const SECURITY_SETTINGS_HASH_PATH = "/settings#security";
+import { SECURITY_SETTINGS_HASH_PATH } from "../../reuse/auth-setup-route.js";
 
 export function resolveSettingsSetupRedirect(
     pathname,

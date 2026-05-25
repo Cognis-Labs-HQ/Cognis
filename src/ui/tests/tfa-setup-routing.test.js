@@ -2,14 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-    SECURITY_SETTINGS_HASH_PATH as SETTINGS_SECURITY_HASH_PATH,
+    redirectToRequiredTfaSetup,
+    SECURITY_SETTINGS_HASH_PATH,
+} from "../reuse/auth-setup-route.js";
+import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,
 } from "../app/settings/setup-requirement.js";
-import {
-    SECURITY_SETTINGS_HASH_PATH as LOGIN_SECURITY_HASH_PATH,
-    redirectToRequiredTfaSetup,
-} from "../../gateways/tfa/ui/setup-redirect.js";
 
 test("login TFA setup redirect persists the session and targets /settings#security", () => {
     let persistedSession = null;
@@ -25,14 +24,14 @@ test("login TFA setup redirect persists the session and targets /settings#securi
     );
 
     assert.deepEqual(persistedSession, sessionData);
-    assert.equal(location.href, LOGIN_SECURITY_HASH_PATH);
-    assert.equal(LOGIN_SECURITY_HASH_PATH, "/settings#security");
+    assert.equal(location.href, SECURITY_SETTINGS_HASH_PATH);
+    assert.equal(SECURITY_SETTINGS_HASH_PATH, "/settings#security");
 });
 
 test("settings setup redirect is enforced only when setup is pending and the route is not already /settings#security", () => {
     assert.equal(
         resolveSettingsSetupRedirect("/settings", "", true),
-        SETTINGS_SECURITY_HASH_PATH,
+        SECURITY_SETTINGS_HASH_PATH,
     );
     assert.equal(
         resolveSettingsSetupRedirect("/settings", "#security", true),
