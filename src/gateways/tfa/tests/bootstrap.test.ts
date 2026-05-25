@@ -133,6 +133,6 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
 
 test("setup verification route rotates setup-pending tokens", () => {
     assert.match(bootstrapSource, /auth:issueAccessToken/);
-    assert.match(bootstrapSource, /tfaSetupPending:\s*false/);
+    assert.match(bootstrapSource, /setupPending:\s*false/);
     assert.match(bootstrapSource, /responseData\.token\s*=\s*refreshedToken/);
 });

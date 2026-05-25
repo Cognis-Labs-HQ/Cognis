@@ -41,7 +41,7 @@ test("guard enforces role scopes", () => {
 
 test("guard allows auth security sections during TFA setup pending flow", () => {
     const token = issueAccessToken("u1", "user", 60, {
-        tfaSetupPending: true,
+        setupPending: true,
     });
     let status = 0;
     const claims = requireAuth(
@@ -62,7 +62,7 @@ test("guard allows auth security sections during TFA setup pending flow", () => 
         sub: "u1",
         role: "user",
         providerId: "local",
-        tfaSetupPending: true,
+        setupPending: true,
     });
 });
 
@@ -89,7 +89,7 @@ test("token store persists tokens to disk across module reload", async () => {
             sub: "persisted-user",
             role: "user",
             providerId: "local",
-            tfaSetupPending: false,
+            setupPending: false,
         });
     } finally {
         delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
@@ -110,19 +110,19 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         sub: "subject-b",
         role: "user",
         providerId: "local",
-        tfaSetupPending: false,
+        setupPending: false,
     });
 
     test("revoking setup-pending tokens excludes provided subject", () => {
         const pendingUserToken = issueAccessToken("pending-user", "user", 60, {
-            tfaSetupPending: true,
+            setupPending: true,
         });
         const pendingAdminToken = issueAccessToken(
             "pending-admin",
             "admin",
             60,
             {
-                tfaSetupPending: true,
+                setupPending: true,
             },
         );
         const normalToken = issueAccessToken("normal-user", "user", 60);
@@ -134,13 +134,13 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
             sub: "pending-admin",
             role: "admin",
             providerId: "local",
-            tfaSetupPending: true,
+            setupPending: true,
         });
         assert.deepEqual(verifyAccessToken(normalToken), {
             sub: "normal-user",
             role: "user",
             providerId: "local",
-            tfaSetupPending: false,
+            setupPending: false,
         });
     });
 });

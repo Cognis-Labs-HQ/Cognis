@@ -39,6 +39,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         dispatchNotification,
         log: ctx.log,
     });
+    const revokeSetupPendingAccessTokens = ctx.capabilities.get<
+        (excludedSubject?: string) => number
+    >("auth:revokeSetupPendingAccessTokens");
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -148,6 +151,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "tfa:setEnforceAllUsers",
         async (required: boolean) => gateway.setEnforceAllUsers(required),
+    );
+    ctx.capabilities.contribute(
+        "tfa:applyEnforcementPolicy",
+        async (input: { required: boolean; excludedSubject?: string }) => {
+            const previousRequired = await gateway.getEnforceAllUsers();
+            await gateway.setEnforceAllUsers(input.required);
+            let revokedSetupPendingCount = 0;
+            if (previousRequired && !input.required) {
+                revokedSetupPendingCount =
+                    revokeSetupPendingAccessTokens?.(input.excludedSubject) ??
+                    0;
+            }
+            return {
+                required: input.required,
+                previousRequired,
+                revokedSetupPendingCount,
+            };
+        },
     );
 
     ctx.log?.("info", "TFA gateway initialized.", {
@@ -410,7 +431,7 @@ function createTfaRoutes(
                     options?: {
                         issuedAt?: number;
                         providerId?: string;
-                        tfaSetupPending?: boolean;
+                        setupPending?: boolean;
                     },
                 ) => string
             >("auth:issueAccessToken");
@@ -472,7 +493,7 @@ function createTfaRoutes(
                     accessTokenTtlSeconds,
                     {
                         providerId: claims.providerId,
-                        tfaSetupPending: false,
+                        setupPending: false,
                     },
                 );
                 responseHeaders["set-cookie"] = buildCookie(

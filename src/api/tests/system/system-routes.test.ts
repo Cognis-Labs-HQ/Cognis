@@ -384,18 +384,21 @@ test("security PUT revokes setup-pending tokens when mandatory TFA is disabled",
         undefined,
         undefined,
         (capabilityName) => {
-            if (capabilityName === "tfa:setEnforceAllUsers") {
-                return async (required: boolean) => {
+            if (capabilityName === "tfa:applyEnforcementPolicy") {
+                return async ({
+                    required,
+                    excludedSubject,
+                }: {
+                    required: boolean;
+                    excludedSubject?: string;
+                }) => {
                     setEnforceValue = required;
-                };
-            }
-            if (capabilityName === "tfa:getEnforceAllUsers") {
-                return async () => true;
-            }
-            if (capabilityName === "auth:revokeSetupPendingAccessTokens") {
-                return (excludedSubject?: string) => {
                     revokeExcludedSubject = String(excludedSubject ?? "");
-                    return 2;
+                    return {
+                        required,
+                        previousRequired: true,
+                        revokedSetupPendingCount: 2,
+                    };
                 };
             }
             return undefined;
@@ -445,16 +448,14 @@ test("security PUT does not revoke setup-pending tokens when mandatory TFA was a
         undefined,
         undefined,
         (capabilityName) => {
-            if (capabilityName === "tfa:setEnforceAllUsers") {
-                return async () => {};
-            }
-            if (capabilityName === "tfa:getEnforceAllUsers") {
-                return async () => false;
-            }
-            if (capabilityName === "auth:revokeSetupPendingAccessTokens") {
-                return () => {
-                    revokeCalled = true;
-                    return 1;
+            if (capabilityName === "tfa:applyEnforcementPolicy") {
+                return async () => {
+                    revokeCalled = false;
+                    return {
+                        required: false,
+                        previousRequired: false,
+                        revokedSetupPendingCount: 0,
+                    };
                 };
             }
             return undefined;

@@ -81,6 +81,21 @@ export function createSystemRoutes(
     const canSendVerificationEmail = getCapability
         ? getCapability<() => boolean>("notify:canSendVerificationEmail")
         : undefined;
+    const getEnforceTfaForAllUsers = getCapability
+        ? getCapability<() => Promise<boolean>>("tfa:getEnforceAllUsers")
+        : undefined;
+    const applyTfaEnforcementPolicy = getCapability
+        ? getCapability<
+              (input: {
+                  required: boolean;
+                  excludedSubject?: string;
+              }) => Promise<{
+                  required: boolean;
+                  previousRequired: boolean;
+                  revokedSetupPendingCount: number;
+              }>
+          >("tfa:applyEnforcementPolicy")
+        : undefined;
     const ctx = resolveRouteContext(routeContext);
     const licenseMarkdownFile = resolve(
         process.cwd(),
@@ -173,11 +188,6 @@ export function createSystemRoutes(
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
             const data = parseSecuritySettings(raw);
-            const getEnforceTfaForAllUsers = getCapability
-                ? getCapability<() => Promise<boolean>>(
-                      "tfa:getEnforceAllUsers",
-                  )
-                : undefined;
             const enforceTfaForAllUsers = getEnforceTfaForAllUsers
                 ? await getEnforceTfaForAllUsers().catch(() => false)
                 : data?.enforceTfaForAllUsers === true;
@@ -258,55 +268,38 @@ export function createSystemRoutes(
                     }),
                 );
             }
-            const setEnforceTfaForAllUsers = getCapability
-                ? getCapability<(required: boolean) => Promise<void>>(
-                      "tfa:setEnforceAllUsers",
-                  )
-                : undefined;
-            const getEnforceTfaForAllUsers = getCapability
-                ? getCapability<() => Promise<boolean>>(
-                      "tfa:getEnforceAllUsers",
-                  )
-                : undefined;
-            const revokeSetupPendingAccessTokens = getCapability
-                ? getCapability<(excludedSubject?: string) => number>(
-                      "auth:revokeSetupPendingAccessTokens",
-                  )
-                : undefined;
-            const previousEnforceTfaForAllUsers = getEnforceTfaForAllUsers
-                ? await getEnforceTfaForAllUsers().catch((error) => {
-                      log?.(
-                          "warn",
-                          "Failed to read previous mandatory TFA state before security update.",
-                          {
-                              ...logMeta,
-                              accountId: claims.sub,
-                              error:
-                                  error instanceof Error
-                                      ? error.message
-                                      : String(error),
-                          },
-                      );
-                      return undefined;
-                  })
-                : undefined;
-            if (setEnforceTfaForAllUsers) {
-                await setEnforceTfaForAllUsers(enforceTfaForAllUsers);
-            }
-            if (
-                previousEnforceTfaForAllUsers === true &&
-                !enforceTfaForAllUsers
-            ) {
-                const revokedSetupPendingCount =
-                    revokeSetupPendingAccessTokens?.(claims.sub) ?? 0;
-                if (revokedSetupPendingCount > 0) {
+            if (applyTfaEnforcementPolicy) {
+                const enforcementResult = await applyTfaEnforcementPolicy({
+                    required: enforceTfaForAllUsers,
+                    excludedSubject: claims.sub,
+                }).catch((error) => {
+                    log?.(
+                        "warn",
+                        "Failed to apply mandatory TFA enforcement policy.",
+                        {
+                            ...logMeta,
+                            accountId: claims.sub,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    return null;
+                });
+                if (
+                    enforcementResult?.previousRequired === true &&
+                    !enforcementResult.required &&
+                    enforcementResult.revokedSetupPendingCount > 0
+                ) {
                     log?.(
                         "info",
                         "Revoked setup-pending access tokens after disabling mandatory TFA.",
                         {
                             ...logMeta,
                             accountId: claims.sub,
-                            revokedSetupPendingCount,
+                            revokedSetupPendingCount:
+                                enforcementResult.revokedSetupPendingCount,
                         },
                     );
                 }

@@ -87,7 +87,7 @@ interface AuthClaims {
     sub: string;
     role: AccessRole;
     providerId: string;
-    tfaSetupPending: boolean;
+    setupPending: boolean;
 }
 
 function isTfaSetupPendingPathAllowed(
@@ -141,7 +141,7 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     if (!access) return null;
     const requestPath = String(req.url ?? "").split("?")[0] || "/";
     if (
-        access.tfaSetupPending &&
+        access.setupPending &&
         !isTfaSetupPendingPathAllowed(requestPath, access.sub) &&
         !isRegisteredLimitedPathAllowed(requestPath, access.sub)
     ) {
@@ -151,7 +151,7 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
         sub: access.sub,
         role: access.role,
         providerId: access.providerId,
-        tfaSetupPending: access.tfaSetupPending,
+        setupPending: access.setupPending,
     };
 }
 
@@ -167,7 +167,7 @@ export function requireAuth(
             ? raw.slice("Bearer ".length)
             : "";
         const access = token ? verifyAccessToken(token) : null;
-        if (access?.tfaSetupPending) {
+        if (access?.setupPending) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -241,7 +241,7 @@ export function getCookieSession(req: IncomingMessage): AuthClaims | null {
         sub: access.sub,
         role: access.role,
         providerId: access.providerId,
-        tfaSetupPending: access.tfaSetupPending,
+        setupPending: access.setupPending,
     };
 }
 

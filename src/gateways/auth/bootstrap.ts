@@ -797,7 +797,7 @@ function createAuthGatewayRoutes(
                     accessTokenTtlSeconds,
                     {
                         providerId: adapter.id,
-                        tfaSetupPending: true,
+                        setupPending: true,
                     },
                 );
                 log?.("info", "Login succeeded with pending TFA setup gate.", {

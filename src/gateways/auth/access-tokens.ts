@@ -17,7 +17,7 @@ interface AccessTokenRecord {
     providerId: string;
     expiresAt: number | null;
     issuedAt?: number;
-    tfaSetupPending?: boolean;
+    setupPending?: boolean;
 }
 
 const tokenStore = new Map<string, AccessTokenRecord>();
@@ -106,9 +106,8 @@ function loadTokenStore(now = Date.now()) {
                     .providerId;
                 const expiresAt = (record as { expiresAt?: unknown }).expiresAt;
                 const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
-                const tfaSetupPending = (
-                    record as { tfaSetupPending?: unknown }
-                ).tfaSetupPending;
+                const setupPending = (record as { setupPending?: unknown })
+                    .setupPending;
 
                 if (typeof subject !== "string" || !isAccessRole(role))
                     continue;
@@ -120,8 +119,8 @@ function loadTokenStore(now = Date.now()) {
                 if (issuedAt !== undefined && typeof issuedAt !== "number")
                     continue;
                 if (
-                    tfaSetupPending !== undefined &&
-                    typeof tfaSetupPending !== "boolean"
+                    setupPending !== undefined &&
+                    typeof setupPending !== "boolean"
                 ) {
                     continue;
                 }
@@ -132,7 +131,7 @@ function loadTokenStore(now = Date.now()) {
                     providerId,
                     expiresAt,
                     issuedAt,
-                    tfaSetupPending,
+                    setupPending,
                 });
                 if (store.size >= MAX_TOKEN_STORE_SIZE) break;
             }
@@ -206,7 +205,7 @@ export function lookupAccessToken(token: string): {
     role: AccessRole;
     providerId: string;
     revoked: boolean;
-    tfaSetupPending: boolean;
+    setupPending: boolean;
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
@@ -215,7 +214,7 @@ export function lookupAccessToken(token: string): {
         role: stored.record.role,
         providerId: stored.record.providerId,
         revoked: stored.revoked,
-        tfaSetupPending: stored.record.tfaSetupPending === true,
+        setupPending: stored.record.setupPending === true,
     };
 }
 
@@ -223,7 +222,7 @@ export function verifyAccessToken(token: string): {
     sub: string;
     role: AccessRole;
     providerId: string;
-    tfaSetupPending: boolean;
+    setupPending: boolean;
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored || stored.revoked) return null;
@@ -231,7 +230,7 @@ export function verifyAccessToken(token: string): {
         sub: stored.record.subject,
         role: stored.record.role,
         providerId: stored.record.providerId,
-        tfaSetupPending: stored.record.tfaSetupPending === true,
+        setupPending: stored.record.setupPending === true,
     };
 }
 
@@ -269,7 +268,7 @@ export function revokeSetupPendingAccessTokens(
 ): number {
     let removed = 0;
     for (const [tokenHash, record] of tokenStore.entries()) {
-        if (record.tfaSetupPending !== true) continue;
+        if (record.setupPending !== true) continue;
         if (
             typeof excludedSubject === "string" &&
             record.subject === excludedSubject
@@ -300,7 +299,7 @@ export function issueAccessToken(
     options?: {
         issuedAt?: number;
         providerId?: string;
-        tfaSetupPending?: boolean;
+        setupPending?: boolean;
     },
 ): string {
     pruneExpiredTokens();
@@ -321,7 +320,7 @@ export function issueAccessToken(
         providerId,
         expiresAt,
         issuedAt,
-        tfaSetupPending: options?.tfaSetupPending === true,
+        setupPending: options?.setupPending === true,
     });
     persistTokenStore();
     return token;
