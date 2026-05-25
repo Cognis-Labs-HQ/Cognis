@@ -5,7 +5,6 @@
  *   beginPageLoading() — starts a tracked client-side page-loading task and
  *     returns an idempotent cleanup function that hides the overlay when the
  *     task is released.
- *   endPageLoading(token) — ends a tracked client-side page-loading task.
  *   mountWhenDirect(mount, options) — runs a page mount on direct URL loads
  *     while skipping SPA-router navigations and automatically updates the
  *     loading overlay state around the mount.
@@ -55,7 +54,7 @@ export function beginPageLoading() {
  * @param {number} token - Loading token returned by beginPageLoading().
  * @returns {void}
  */
-export function endPageLoading(token) {
+function endPageLoading(token) {
     activePageLoadingTokens.delete(token);
     updatePageLoadingState();
 }
