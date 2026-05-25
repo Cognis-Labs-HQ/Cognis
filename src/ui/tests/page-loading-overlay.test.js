@@ -17,7 +17,10 @@ test("page builder stylesheet defines the shared loading shade and wheel", () =>
     assert.match(source, /\.page-loading-overlay\s*\{/);
     assert.match(source, /\.page-loading-overlay__spinner\s*\{/);
     assert.match(source, /\.page-loading-overlay__message\s*\{/);
-    assert.match(source, /body\[data-theme="light"\] \.page-loading-overlay\s*\{/);
+    assert.match(
+        source,
+        /body\[data-theme="light"\] \.page-loading-overlay\s*\{/,
+    );
     assert.match(
         source,
         /body\[data-theme="light"\] \.page-loading-overlay__spinner\s*\{/,

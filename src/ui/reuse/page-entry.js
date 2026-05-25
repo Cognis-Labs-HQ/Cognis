@@ -159,9 +159,11 @@ function updatePageLoadingState() {
         body.setAttribute("aria-busy", "true");
         loadingOverlayElement?.setAttribute("aria-hidden", "false");
         startLoadingMessageRotation();
-        void loadLoadingMessagesI18n().then(() => {
-            renderLoadingMessage(loadingMessageIndex);
-        }).catch(() => {});
+        void loadLoadingMessagesI18n()
+            .then(() => {
+                renderLoadingMessage(loadingMessageIndex);
+            })
+            .catch(() => {});
         return;
     }
     body.dataset.pageReady = "true";
