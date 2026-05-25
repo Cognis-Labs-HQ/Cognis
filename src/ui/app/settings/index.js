@@ -73,6 +73,19 @@ async function loadSettingsSections() {
     }
 }
 
+async function loadAuthSetupRequirement() {
+    try {
+        const response = await apiFetch("/api/v1/auth/setup-status");
+        if (!response.ok) {
+            return false;
+        }
+        const payload = await response.json().catch(() => null);
+        return payload?.data?.requiresSetup === true;
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Returns true when the language priority order has changed between
  * two saves, indicating a page reload is required to apply new strings.
@@ -131,6 +144,15 @@ export async function mount(root, { signal } = {}) {
         ? loadedPrefs.languagePriority
         : readPreferredLanguages();
     const i18n = await createI18n({ preferredLanguages: languagePriority });
+    const authSetupRequired = await loadAuthSetupRequirement();
+    if (
+        authSetupRequired &&
+        `${window.location.pathname}${window.location.hash}` !==
+            "/settings#security"
+    ) {
+        window.location.replace("/settings#security");
+        return;
+    }
     applyDocumentTitle(i18n, "ui.page.title.settings");
 
     applyTimezoneToLocalStorage(
@@ -522,6 +544,7 @@ export async function mount(root, { signal } = {}) {
         subPageNavigation: true,
         elements,
         preferenceKey: "settings-layout",
+        frameless: authSetupRequired,
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.settings"),
@@ -530,6 +553,10 @@ export async function mount(root, { signal } = {}) {
         pageOverrides: {
             appearance: { showThemeToggle: false },
         },
+        showFooter: !authSetupRequired,
+        showNavbar: !authSetupRequired,
+        showThemeToggle: !authSetupRequired,
+        showTopbar: !authSetupRequired,
         toolbar: [
             {
                 id: "settings-nav",

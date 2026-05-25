@@ -59,3 +59,7 @@ Die fehlenden Schlüssel `ui.app.users.reset_tfa` und `ui.app.users.tfa_reset_do
 ## Login-Regression Korrigiert
 
 Die verpflichtende E-Mail-Prüfung nach dem Login wurde wiederhergestellt und in einen Notify-Gateway-eigenen Login-Helper verlagert, sodass die Login-Seite keine direkte E-Mail-Routenverdrahtung mehr enthält und das erforderliche Validierungsverhalten erhalten bleibt.
+
+## TFA-Setup-Weiterleitung und Sicherheitszugriff
+
+Benutzer mit Tokens für ausstehendes TFA-Setup werden jetzt direkt zu `/settings#security` geleitet, die Einstellungsseite blendet Dashboard-Chrome während des ausstehenden Setups aus, und die Registry der Auth-Sicherheitsunterbereiche ist während des erzwungenen Setup-Ablaufs erreichbar, damit das TOTP-Setup-Popup ohne blockierende, nicht relevante 401/403-Dashboard-Anfragen geladen werden kann.

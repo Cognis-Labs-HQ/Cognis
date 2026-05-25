@@ -162,7 +162,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
          */
         handleSetupRequired(persistSession, data) {
             persistSession(data);
-            window.location.href = "/settings";
+            window.location.href = "/settings#security";
         },
         resolveErrorMessage(message) {
             return resolveTranslatedTfaErrorMessage(i18n, message);

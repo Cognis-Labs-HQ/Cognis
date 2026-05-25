@@ -59,3 +59,7 @@ Menambahkan kunci `ui.app.users.reset_tfa` dan `ui.app.users.tfa_reset_done` yan
 ## Regresi Login Diperbaiki
 
 Langkah validasi email wajib setelah login dipulihkan dan implementasinya dipindahkan ke helper login milik gateway Notify, sehingga halaman Login tidak lagi memegang wiring langsung ke rute email sambil tetap mempertahankan perilaku validasi yang diwajibkan.
+
+## Pengalihan Setup TFA dan Akses Keamanan
+
+Pengguna dengan token TFA yang masih menunggu penyiapan kini diarahkan langsung ke `/settings#security`, halaman Pengaturan menyembunyikan chrome dashboard selama penyiapan masih tertunda, dan registri subbagian keamanan auth tersedia selama alur setup wajib agar popup penyiapan TOTP dapat dimuat tanpa terganggu permintaan dashboard 401/403 lain yang tidak relevan.

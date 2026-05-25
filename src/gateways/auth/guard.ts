@@ -97,6 +97,7 @@ function isTfaSetupPendingPathAllowed(
     if (
         path.startsWith("/api/v1/ui/") ||
         path === "/api/v1/auth/password-change-capability" ||
+        path === "/api/v1/auth/security-sections" ||
         path === "/api/v1/auth/setup-status"
     ) {
         return true;

@@ -38,6 +38,33 @@ test("guard enforces role scopes", () => {
     assert.equal(status, 403);
 });
 
+test("guard allows auth security sections during TFA setup pending flow", () => {
+    const token = issueAccessToken("u1", "user", 60, {
+        tfaSetupPending: true,
+    });
+    let status = 0;
+    const claims = requireAuth(
+        {
+            headers: { authorization: `Bearer ${token}` },
+            url: "/api/v1/auth/security-sections",
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        "user",
+    );
+    assert.equal(status, 0);
+    assert.deepEqual(claims, {
+        sub: "u1",
+        role: "user",
+        providerId: "local",
+        tfaSetupPending: true,
+    });
+});
+
 test("token store persists tokens to disk across module reload", async () => {
     const tempDir = mkdtempSync(path.join(tmpdir(), "cognis-token-store-"));
     const tokenStorePath = path.join(tempDir, "access-tokens.json");
