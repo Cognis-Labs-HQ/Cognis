@@ -148,6 +148,12 @@ function sanitizeMessageIdDomain(value: string | undefined): string | null {
     return null;
 }
 
+/**
+ * Resolves the SMTP session EHLO hostname from relay configuration.
+ *
+ * @param {SmtpConfig} config SMTP adapter runtime configuration.
+ * @returns {string} Relay hostname when configured, otherwise localhost.
+ */
 function resolveEhloHostname(config: SmtpConfig): string {
     const smtpHost = sanitizeHeader(config.host);
     if (smtpHost) return smtpHost;
