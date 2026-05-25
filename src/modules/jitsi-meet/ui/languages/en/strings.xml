@@ -34,6 +34,7 @@
   <string name="module.jitsi_meet.overlay.leave_blocked">Leave the meeting before navigating away from this page.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pre-Flight Check Passed.</string>
   <string name="module.jitsi_meet.chat.heading">Meeting Chat</string>
+  <string name="module.jitsi_meet.chat.heading_private">Chat with {{displayName}}</string>
   <string name="module.jitsi_meet.chat.pending">Waiting for meeting to start.</string>
   <string name="module.jitsi_meet.chat.ready">Chat room is ready.</string>
   <string name="module.jitsi_meet.chat.unavailable">Meeting chat is not available right now.</string>

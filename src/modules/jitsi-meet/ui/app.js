@@ -234,15 +234,14 @@ function createChatParticipantAvatarButton({
     avatarKey,
     selected,
 }) {
-    const button = document.createElement("button");
-    button.type = "button";
+    const button = document.createElement("a");
+    button.href = `/profile/${encodeURIComponent(username)}`;
     button.className = "jitsi-chat-participant-item";
     if (selected) {
         button.classList.add("jitsi-chat-participant-item-selected");
     }
     button.setAttribute("role", "listitem");
     button.dataset.username = username;
-    button.setAttribute("aria-pressed", String(selected));
     button.setAttribute(
         "aria-label",
         displayName ? `${displayName} (@${username})` : `@${username}`,
@@ -257,7 +256,7 @@ function createChatParticipantAvatarButton({
         avatarClass: "jitsi-chat-participant-avatar",
         imageClass: "jitsi-chat-participant-avatar-img",
         fallbackClass: "jitsi-chat-participant-avatar-bubble",
-        profileHandle: null,
+        profileHandle: username,
     });
     return button;
 }
@@ -669,10 +668,27 @@ export async function mount(root, { signal } = {}) {
     function renderChatParticipantStrip() {
         const strip = root.querySelector("#jitsi-chat-participant-strip");
         const returnButton = root.querySelector("#jitsi-chat-return-btn");
+        const heading = root.querySelector(".jitsi-chat-header h3");
         if (!(strip instanceof HTMLElement)) {
             return;
         }
         const entries = resolveParticipantChatEntries();
+        const privateParticipant = entries.find(
+            (entry) => entry.username === state.privateChatUsername,
+        );
+        if (heading instanceof HTMLElement) {
+            if (state.chatMode === "private" && privateParticipant) {
+                const privateHeadingTemplate = i18n.t(
+                    "module.jitsi_meet.chat.heading_private",
+                );
+                heading.textContent = privateHeadingTemplate.replace(
+                    "{{displayName}}",
+                    privateParticipant.displayName,
+                );
+            } else {
+                heading.textContent = i18n.t("module.jitsi_meet.chat.heading");
+            }
+        }
         strip.hidden = entries.length === 0;
         strip.replaceChildren(
             ...entries.map((entry) =>
@@ -2068,7 +2084,8 @@ export async function mount(root, { signal } = {}) {
                     const button = event.target.closest(
                         ".jitsi-chat-participant-item[data-username]",
                     );
-                    if (!(button instanceof HTMLButtonElement)) return;
+                    if (!(button instanceof HTMLAnchorElement)) return;
+                    event.preventDefault();
                     const username = normalizeUsername(button.dataset.username);
                     if (!username) return;
                     void activatePrivateChatForParticipant(username);
