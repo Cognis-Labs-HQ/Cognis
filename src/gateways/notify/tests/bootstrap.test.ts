@@ -4,6 +4,7 @@ import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
+import { makeResponse, requestWithBody } from "./reuse/http-test-helpers.js";
 
 function makeInMemoryDb() {
     return {
@@ -13,40 +14,6 @@ function makeInMemoryDb() {
             cb: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
         ) => cb(makeInMemoryDb()),
     };
-}
-
-function makeResponse() {
-    let status = 0;
-    let payload = "";
-    return {
-        writeHead(code: number) {
-            status = code;
-        },
-        end(p: string) {
-            payload = p;
-        },
-        get status() {
-            return status;
-        },
-        get payload() {
-            return payload;
-        },
-    } as any;
-}
-
-function makeRequest(
-    method: string,
-    body: Record<string, unknown>,
-    token: string,
-) {
-    const chunks = [Buffer.from(JSON.stringify(body))];
-    return {
-        method,
-        headers: { authorization: `Bearer ${token}` },
-        [Symbol.asyncIterator]: async function* () {
-            for (const chunk of chunks) yield chunk;
-        },
-    } as any;
 }
 
 const adminToken = issueAccessToken("test-session", "admin", 60);
@@ -326,7 +293,7 @@ export function createNotificationSender() {
         const res = makeResponse();
 
         await adapterHandler(
-            makeRequest("POST", { to: "admin@example.com" }, adminToken),
+            requestWithBody("POST", { to: "admin@example.com" }, adminToken),
             res,
             new URL(
                 "/api/v1/gateways/notify/adapters/smtp/test",

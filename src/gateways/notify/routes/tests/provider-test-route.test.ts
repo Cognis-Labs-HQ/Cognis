@@ -6,41 +6,11 @@ import {
     VolatileNotificationPreferenceStore,
 } from "../../gateway.js";
 import { issueAccessToken } from "../../../auth/access-tokens.js";
+import {
+    makeResponse,
+    requestWithBody,
+} from "../../tests/reuse/http-test-helpers.js";
 import type { NotificationSender } from "@cognis/core";
-
-function requestWithBody(
-    method: string,
-    body: Record<string, unknown>,
-    token: string,
-) {
-    const chunks = [Buffer.from(JSON.stringify(body))];
-    return {
-        method,
-        headers: { authorization: `Bearer ${token}` },
-        [Symbol.asyncIterator]: async function* () {
-            for (const chunk of chunks) yield chunk;
-        },
-    } as any;
-}
-
-function makeResponse() {
-    let status = 0;
-    let payload = "";
-    return {
-        writeHead(code: number) {
-            status = code;
-        },
-        end(responseBody: string) {
-            payload = responseBody;
-        },
-        get status() {
-            return status;
-        },
-        get payload() {
-            return payload;
-        },
-    } as any;
-}
 
 test("POST /api/v1/notifications/providers/:id/test returns SMTP failure details", async () => {
     class FailingTestSender implements NotificationSender {

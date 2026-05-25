@@ -12,6 +12,7 @@ import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 import { showToast } from "../../reuse/toast.js";
+import { getApiErrorMessage } from "../../reuse/api-error.js";
 import {
     loadAdminSections,
     loadAllAdapters,
@@ -150,28 +151,6 @@ function resolveAdapterControlUrl(
     const encodedGatewayId = encodeURIComponent(gatewayId);
     const encodedAdapterId = encodeURIComponent(adapterId);
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
-}
-
-/**
- * Extracts a readable error message from a failed API response payload.
- *
- * @param {Response} response API response object from apiFetch.
- * @returns {Promise<string | null>} Error message text, or null when unavailable.
- */
-async function getApiErrorMessage(response) {
-    try {
-        const payload = await response.json();
-        const apiError = payload?.error;
-        if (typeof apiError?.message === "string" && apiError.message.trim()) {
-            return apiError.message.trim();
-        }
-        if (typeof apiError?.code === "string" && apiError.code.trim()) {
-            return apiError.code.trim();
-        }
-    } catch {
-        return null;
-    }
-    return null;
 }
 
 /**

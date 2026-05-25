@@ -6,41 +6,11 @@ import {
     VolatileNotificationPreferenceStore,
 } from "../../gateway.js";
 import { issueAccessToken } from "../../../auth/access-tokens.js";
+import {
+    makeResponse,
+    requestWithBody,
+} from "../../tests/reuse/http-test-helpers.js";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
-
-function requestWithBody(
-    method: string,
-    body: Record<string, unknown>,
-    token: string,
-) {
-    const chunks = [Buffer.from(JSON.stringify(body))];
-    return {
-        method,
-        headers: { authorization: `Bearer ${token}` },
-        [Symbol.asyncIterator]: async function* () {
-            for (const c of chunks) yield c;
-        },
-    } as any;
-}
-
-function makeResponse() {
-    let status = 0;
-    let payload = "";
-    return {
-        writeHead(code: number) {
-            status = code;
-        },
-        end(p: string) {
-            payload = p;
-        },
-        get status() {
-            return status;
-        },
-        get payload() {
-            return payload;
-        },
-    } as any;
-}
 
 class CapturingSender implements NotificationSender {
     readonly senderId: string;
