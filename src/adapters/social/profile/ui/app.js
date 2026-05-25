@@ -721,6 +721,7 @@ async function openEditPopup() {
                 variant: "confirm",
             },
         ],
+        closeProtection: true,
     });
 
     const bioEl = document.getElementById("popup-edit-bio");

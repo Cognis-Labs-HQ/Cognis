@@ -51,6 +51,12 @@
  *   onAction — Optional async/sync callback invoked before dismissal when an
  *              action button is clicked. Return `false` to keep the popup open.
  *
+ *   closeProtection — When true, intercepts cancel-path dismissals (backdrop
+ *              click, × button, Escape key). If any input/textarea/select has
+ *              been changed from its initial value, a confirmation popup is shown
+ *              before the original popup is dismissed. Strings are resolved
+ *              internally from the user's active locale.
+ *
  * @param {{
  *   title: string,
  *   body: string | (() => string),
@@ -59,11 +65,22 @@
  *   maxWidth?: string,
  *   onOpen?: (overlay: HTMLElement) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
+ *   closeProtection?: boolean,
  * }} options
  * @returns {Promise<string|null>}
  */
 
+import { createI18n } from "./i18n.js";
+
 let stylesheetReady = null;
+let i18nReady = null;
+
+function getI18n() {
+    // Store the Promise, not the resolved value, so concurrent calls
+    // before resolution share the same deferred.
+    if (!i18nReady) i18nReady = createI18n();
+    return i18nReady;
+}
 
 const scrollLockState = {
     count: 0,
@@ -234,6 +251,32 @@ export function createAnchoredPopup({
     };
 }
 
+/**
+ * Returns true if any input, textarea, or select within the element has been
+ * changed from its initial (default) value.
+ *
+ * @param {HTMLElement} overlayElement - The popup overlay to inspect.
+ * @returns {boolean} Whether any form field has an unsaved change.
+ */
+function hasUnsavedFormChanges(overlayElement) {
+    const fields = overlayElement.querySelectorAll("input, textarea, select");
+    for (const field of fields) {
+        if (field instanceof HTMLInputElement) {
+            if (field.type === "checkbox" || field.type === "radio") {
+                if (field.checked !== field.defaultChecked) return true;
+            } else if (field.value !== field.defaultValue) {
+                return true;
+            }
+        } else if (
+            field instanceof HTMLTextAreaElement ||
+            field instanceof HTMLSelectElement
+        ) {
+            if (field.value !== field.defaultValue) return true;
+        }
+    }
+    return false;
+}
+
 export async function openPopup({
     title,
     body,
@@ -242,6 +285,7 @@ export async function openPopup({
     maxWidth,
     onOpen,
     onAction,
+    closeProtection = false,
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -261,7 +305,32 @@ export async function openPopup({
         }
 
         let dismissed = false;
-        function dismiss(actionId) {
+        async function dismiss(actionId) {
+            if (
+                actionId === null &&
+                closeProtection &&
+                hasUnsavedFormChanges(overlay)
+            ) {
+                const i18n = await getI18n();
+                const confirmed = await openPopup({
+                    title: i18n.t("ui.reuse.unsaved_changes"),
+                    body: `<p>${escapeHtml(i18n.t("ui.reuse.close_form_warning"))}</p>`,
+                    variant: "warning",
+                    actions: [
+                        {
+                            id: "discard",
+                            label: i18n.t("ui.reuse.discard"),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "keep",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                });
+                if (confirmed !== "discard") return;
+            }
             if (dismissed) return;
             dismissed = true;
             document.removeEventListener("keydown", onKeyDown);
@@ -316,8 +385,8 @@ export async function openPopup({
             overlay.querySelector(".popup-dialog").style.maxWidth = maxWidth;
         }
 
-        overlay.addEventListener("click", (e) => {
-            if (e.target === overlay) dismiss(null);
+        overlay.addEventListener("click", async (event) => {
+            if (event.target === overlay) await dismiss(null);
         });
 
         overlay.querySelectorAll("[data-popup-action]").forEach((btn) => {
@@ -335,23 +404,25 @@ export async function openPopup({
                         return;
                     }
                 }
-                dismiss(resolvedActionId);
+                await dismiss(resolvedActionId);
             });
         });
 
-        function onKeyDown(e) {
+        function onKeyDown(event) {
             const overlays = document.querySelectorAll(".popup-overlay");
             if (overlays[overlays.length - 1] !== overlay) return;
-            if (e.key === "Escape") {
-                dismiss(null);
+            if (event.key === "Escape") {
+                dismiss(null).catch((error) =>
+                    console.error("[popup] dismiss failed:", error),
+                );
                 return;
             }
-            if (e.key === "Enter") {
+            if (event.key === "Enter") {
                 const confirmBtn = overlay.querySelector(
                     "[data-popup-action].btn-confirm",
                 );
                 if (confirmBtn instanceof HTMLButtonElement) {
-                    e.preventDefault();
+                    event.preventDefault();
                     confirmBtn.click();
                 }
             }
@@ -448,6 +519,7 @@ export async function openConfigFormPopup({
                 variant: "cancel",
             },
         ],
+        closeProtection: true,
         onOpen: (overlay) => {
             popupOverlay = overlay;
         },

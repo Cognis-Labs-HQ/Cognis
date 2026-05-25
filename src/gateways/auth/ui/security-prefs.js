@@ -163,6 +163,7 @@ export function createSettingsSection({ i18n, root }) {
                     variant: "cancel",
                 },
             ],
+            closeProtection: true,
             onOpen: (overlay) => {
                 formElement = overlay.querySelector(
                     ".auth-password-reset-form",
