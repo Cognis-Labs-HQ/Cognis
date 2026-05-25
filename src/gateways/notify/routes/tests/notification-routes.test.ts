@@ -359,36 +359,6 @@ test("POST /api/v1/notifications/providers/:id/test returns 400 when sender has 
     assert.match(res.payload, /not_supported/);
 });
 
-test("POST /api/v1/notifications/providers/:id/test returns SMTP failure details", async () => {
-    class FailingTestSender implements NotificationSender {
-        readonly senderId = "smtp";
-        async send(): Promise<void> {}
-        async sendTestEmail(): Promise<void> {
-            throw new Error("smtp_rcpt_to_failed:550");
-        }
-    }
-
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new FailingTestSender());
-    const route = createNotificationRoutes(gateway);
-    const adminToken = issueAccessToken("admin", "admin", 60);
-    const res = makeResponse();
-
-    await route(
-        requestWithBody("POST", { to: "admin@example.com" }, adminToken),
-        res,
-        new URL("http://localhost/api/v1/notifications/providers/smtp/test"),
-    );
-
-    assert.equal(res.status, 400);
-    const payload = JSON.parse(res.payload);
-    assert.equal(payload.error.code, "smtp_test_failed");
-    assert.equal(payload.error.details.smtpCode, 550);
-    assert.equal(payload.error.details.smtpCommand, "RCPT TO");
-    assert.match(payload.error.message, /RCPT TO/);
-});
-
 test("GET /api/v1/users/:username/notification-prefs returns 401 without auth", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);

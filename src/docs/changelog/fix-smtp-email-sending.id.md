@@ -9,3 +9,9 @@ Perubahan ini mengurangi penolakan SMTP pada server yang tidak menerima `EHLO lo
 ## Cakupan Regresi SMTP
 
 Ditambahkan tes adapter SMTP yang terfokus untuk memastikan pengiriman email uji memakai fallback EHLO berbasis domain pengirim ketika nilai lingkungan `HOST` tidak tersedia.
+
+## Error Tes SMTP Lebih Jelas
+
+Endpoint tes SMTP sekarang mengembalikan detail kegagalan terstruktur yang aman untuk pengguna, alih-alih jatuh ke respons bad request yang generik. Untuk kegagalan perintah SMTP tertentu (misalnya penolakan `RCPT TO`), API kini menyertakan perintah SMTP yang gagal serta kode respons server.
+
+Alur email uji di Administration kini membaca payload error API tersebut dan menampilkan pesan kegagalan spesifik langsung di toast, sehingga operator bisa segera melihat alasan penolakan pengiriman.
