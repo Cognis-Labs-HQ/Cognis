@@ -5,5 +5,5 @@
     "required": false,
     "requires": ["db", "auth", "notify"],
     "description": "Registration workflows via pluggable invite/public adapters.",
-    "publisher": "Cognis Labs"
+    "publisher": "Cognis Labs HQ"
 }

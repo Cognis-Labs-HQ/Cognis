@@ -223,7 +223,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         version: "1.1.8",
         description:
             "Registration workflows via pluggable invite/public adapters.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
     ctx.log?.("info", "Registration gateway initialized.", {

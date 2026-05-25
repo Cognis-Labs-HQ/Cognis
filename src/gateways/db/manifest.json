@@ -4,5 +4,5 @@
     "version": "1.3.0",
     "required": true,
     "description": "Core relational database layer for persistent application data.",
-    "publisher": "Cognis Labs"
+    "publisher": "Cognis Labs HQ"
 }

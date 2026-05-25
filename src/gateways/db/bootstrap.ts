@@ -97,6 +97,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         required: true,
         description:
             "Core relational database layer for persistent application data.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
 }
