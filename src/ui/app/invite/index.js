@@ -49,6 +49,7 @@ async function promptEmail(i18n) {
                 variant: "cancel",
             },
         ],
+        closeProtection: true,
         onOpen: (overlay) => {
             inputEl = overlay.querySelector("#invite-email");
         },

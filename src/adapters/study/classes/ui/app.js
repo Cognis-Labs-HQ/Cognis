@@ -322,6 +322,7 @@ export async function mount(root, { signal } = {}) {
                     variant: "confirm",
                 },
             ],
+            closeProtection: true,
             onAction: (actionId, overlay) => {
                 if (actionId !== "submit") return true;
                 const input = overlay.querySelector("#classes-teacher-reason");
@@ -486,6 +487,7 @@ export async function mount(root, { signal } = {}) {
                                     variant: "confirm",
                                 },
                             ],
+                            closeProtection: true,
                             onAction: (actionId, overlay) => {
                                 if (actionId !== "invite") return true;
                                 const input = overlay.querySelector(

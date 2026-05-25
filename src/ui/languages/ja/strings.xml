@@ -29,6 +29,7 @@
   <string name="ui.reuse.leave_page_warning">未保存の変更があります。このページを離れると、変更が失われます。</string>
   <string name="ui.reuse.discard_and_leave">破棄して移動</string>
   <string name="ui.reuse.stay">このページに留まる</string>
+  <string name="ui.reuse.close_form_warning">未保存の変更があります。このフォームを閉じると、変更が失われます。</string>
 
   <string name="ui.reuse.enable">有効化</string>
   <string name="ui.reuse.disable">無効化</string>
@@ -215,6 +216,7 @@
   <string name="ui.page.title.register">Cognis - 登録招待</string>
   <string name="ui.page.title.users">Cognis - ユーザー</string>
   <string name="ui.page.title.invite">Cognis - 招待</string>
+  <string name="ui.page.title.error">Cognis - エラー</string>
   <string name="ui.app.verify_email.verifying">認証中…</string>
   <string name="ui.app.verify_email.success_title">メール認証完了</string>
   <string name="ui.app.verify_email.success_body">メールアドレスが正常に認証されました。</string>
@@ -303,6 +305,25 @@
   <string name="ui.app.invite.email_domain_not_allowed">このメールドメインは許可されていません。許可されているドメインのアドレスを使用してください。</string>
   <string name="ui.app.invite.revoke_success">招待を取り消しました。</string>
   <string name="ui.app.invite.revoke_failed">招待の取り消しに失敗しました。</string>
+  <string name="ui.app.error.page_subtitle">問題が発生しました。</string>
+  <string name="ui.app.error.aria_prefix">エラーコード</string>
+  <string name="ui.app.error.code.400">リクエストが正しくありませんでした。</string>
+  <string name="ui.app.error.code.401">このページを表示するにはログインが必要です。</string>
+  <string name="ui.app.error.code.403">このページを表示する権限がありません。</string>
+  <string name="ui.app.error.code.404">このページは存在しないか、移動されました。</string>
+  <string name="ui.app.error.code.405">このルートではこの操作は許可されていません。</string>
+  <string name="ui.app.error.code.408">リクエストがタイムアウトしました。もう一度お試しください。</string>
+  <string name="ui.app.error.code.409">このリクエストは現在の状態と競合しています。</string>
+  <string name="ui.app.error.code.410">このリソースは現在利用できません。</string>
+  <string name="ui.app.error.code.413">送信されたデータが大きすぎます。</string>
+  <string name="ui.app.error.code.415">このメディアタイプはサポートされていません。</string>
+  <string name="ui.app.error.code.422">送信された一部の項目が無効です。</string>
+  <string name="ui.app.error.code.429">短時間にリクエストが多すぎます。</string>
+  <string name="ui.app.error.code.500">サーバー側でエラーが発生しました。</string>
+  <string name="ui.app.error.code.502">上流サービスから無効な応答が返されました。</string>
+  <string name="ui.app.error.code.503">このサービスは一時的に利用できません。</string>
+  <string name="ui.app.error.code.504">上流サービスの応答に時間がかかりすぎました。</string>
+  <string name="ui.app.error.code.default">予期しないエラーが発生しました。</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>
@@ -314,6 +335,7 @@
   <string name="ui.reuse.reset_layout">レイアウトをリセット</string>
   <string name="ui.reuse.close">閉じる</string>
   <string name="ui.reuse.cancel">キャンセル</string>
+  <string name="ui.reuse.return_to_dashboard">ダッシュボードに戻る</string>
 
   <string name="ui.app.profile.page_subtitle">あなたのプロフィールとソーシャル活動。</string>
   <string name="ui.app.profile.section.profile">マイプロフィール</string>
@@ -468,6 +490,7 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP（利用不可 — 先にSMTPアダプターを有効にしてください）</string>
   <string name="ui.app.admin.security.password_policy_heading">パスワードポリシー</string>
   <string name="ui.app.admin.security.policy_min_length">最小文字数</string>
   <string name="ui.app.admin.security.policy_require_uppercase">大文字の最小数（0 = 無効）</string>

@@ -132,6 +132,7 @@ async function promptInput({ title, label, type = "text", placeholder = "" }) {
                 variant: "cancel",
             },
         ],
+        closeProtection: true,
         onOpen: (overlay) => {
             inputEl = overlay.querySelector("#users-input");
         },

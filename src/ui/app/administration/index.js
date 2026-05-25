@@ -1175,6 +1175,7 @@ async function openAdapterConfig(
                 variant: "cancel",
             },
         ],
+        closeProtection: true,
         onOpen: (overlay) => {
             popupFormEl = overlay.querySelector(".provider-popup-form");
             if (!popupFormEl) return;

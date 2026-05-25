@@ -78,6 +78,9 @@ export function createSystemRoutes(
     routeContext?: RouteContext,
     getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
+    const canSendVerificationEmail = getCapability
+        ? getCapability<() => boolean>("notify:canSendVerificationEmail")
+        : undefined;
     const ctx = resolveRouteContext(routeContext);
     const licenseMarkdownFile = resolve(
         process.cwd(),
@@ -217,6 +220,31 @@ export function createSystemRoutes(
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
             const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
+            if (
+                userValidationMode === "smtp" &&
+                canSendVerificationEmail &&
+                !canSendVerificationEmail()
+            ) {
+                log?.(
+                    "warn",
+                    "Rejected smtp validation mode: SMTP adapter unavailable.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                    },
+                );
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "smtp_unavailable",
+                            message:
+                                "SMTP adapter is not enabled in the notification gateway.",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",

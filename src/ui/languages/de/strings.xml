@@ -29,6 +29,7 @@
   <string name="ui.reuse.leave_page_warning">Sie haben ungespeicherte Änderungen. Wenn Sie diese Seite verlassen, gehen die Änderungen verloren.</string>
   <string name="ui.reuse.discard_and_leave">Verwerfen und fortfahren</string>
   <string name="ui.reuse.stay">Bleiben</string>
+  <string name="ui.reuse.close_form_warning">Sie haben ungespeicherte Änderungen. Beim Schließen dieses Formulars gehen die Änderungen verloren.</string>
 
   <string name="ui.reuse.enable">Aktivieren</string>
   <string name="ui.reuse.disable">Deaktivieren</string>
@@ -215,6 +216,7 @@
   <string name="ui.page.title.register">Cognis - Registrierungseinladung</string>
   <string name="ui.page.title.users">Cognis - Benutzer</string>
   <string name="ui.page.title.invite">Cognis - Einladungen</string>
+  <string name="ui.page.title.error">Cognis - Fehler</string>
   <string name="ui.app.verify_email.verifying">Wird verifiziert…</string>
   <string name="ui.app.verify_email.success_title">E-Mail verifiziert</string>
   <string name="ui.app.verify_email.success_body">Ihre E-Mail-Adresse wurde erfolgreich verifiziert.</string>
@@ -303,6 +305,25 @@
   <string name="ui.app.invite.email_domain_not_allowed">Diese E-Mail-Domain ist nicht erlaubt. Bitte verwende eine Adresse einer erlaubten Domain.</string>
   <string name="ui.app.invite.revoke_success">Einladung widerrufen.</string>
   <string name="ui.app.invite.revoke_failed">Einladung konnte nicht widerrufen werden.</string>
+  <string name="ui.app.error.page_subtitle">Etwas ist schiefgelaufen.</string>
+  <string name="ui.app.error.aria_prefix">Fehlercode</string>
+  <string name="ui.app.error.code.400">Diese Anfrage war nicht ganz richtig.</string>
+  <string name="ui.app.error.code.401">Du musst dich anmelden, um dies zu sehen.</string>
+  <string name="ui.app.error.code.403">Du hast keine Berechtigung, dies anzusehen.</string>
+  <string name="ui.app.error.code.404">Diese Seite existiert nicht oder wurde verschoben.</string>
+  <string name="ui.app.error.code.405">Diese Aktion ist für diese Route nicht erlaubt.</string>
+  <string name="ui.app.error.code.408">Diese Anfrage hat zu lange gedauert. Bitte versuche es erneut.</string>
+  <string name="ui.app.error.code.409">Diese Anfrage steht im Konflikt mit dem aktuellen Zustand.</string>
+  <string name="ui.app.error.code.410">Diese Ressource ist nicht mehr verfügbar.</string>
+  <string name="ui.app.error.code.413">Die gesendeten Daten sind zu groß.</string>
+  <string name="ui.app.error.code.415">Dieser Medientyp wird nicht unterstützt.</string>
+  <string name="ui.app.error.code.422">Einige übermittelte Felder sind ungültig.</string>
+  <string name="ui.app.error.code.429">Es wurden zu viele Anfragen in kurzer Zeit gesendet.</string>
+  <string name="ui.app.error.code.500">Bei uns ist etwas schiefgelaufen.</string>
+  <string name="ui.app.error.code.502">Ein nachgelagerter Dienst hat eine ungültige Antwort geliefert.</string>
+  <string name="ui.app.error.code.503">Dieser Dienst ist vorübergehend nicht verfügbar.</string>
+  <string name="ui.app.error.code.504">Ein nachgelagerter Dienst hat zu lange für eine Antwort gebraucht.</string>
+  <string name="ui.app.error.code.default">Ein unerwarteter Fehler ist aufgetreten.</string>
   <string name="ui.app.settings.font_preview">Schriftvorschau</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
@@ -314,6 +335,7 @@
   <string name="ui.reuse.reset_layout">Layout zurücksetzen</string>
   <string name="ui.reuse.close">Schließen</string>
   <string name="ui.reuse.cancel">Abbrechen</string>
+  <string name="ui.reuse.return_to_dashboard">Zum Dashboard zurückkehren</string>
 
   <string name="ui.app.profile.page_subtitle">Dein Profil und soziale Aktivitäten.</string>
   <string name="ui.app.profile.section.profile">Mein Profil</string>
@@ -468,6 +490,7 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (nicht verfügbar — zuerst den SMTP-Adapter aktivieren)</string>
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>

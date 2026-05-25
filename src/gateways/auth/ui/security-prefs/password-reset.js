@@ -110,6 +110,7 @@ export async function openPasswordResetPopup({
                 variant: "cancel",
             },
         ],
+        closeProtection: true,
         onOpen: (overlay) => {
             formElement = overlay.querySelector(".auth-password-reset-form");
             if (!formElement) return;

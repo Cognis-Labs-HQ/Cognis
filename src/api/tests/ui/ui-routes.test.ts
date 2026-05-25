@@ -50,6 +50,24 @@ test("ui routes redirect root to dashboard", async () => {
     assert.equal(recorder.headers.location, "/dashboard");
 });
 
+test("ui routes use provided status code when redirecting unknown non-api GET paths", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {},
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/unknown-page?code=502"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/error?code=502");
+});
+
 test("dashboard route requires login cookie", async () => {
     const route = createUiRoutes();
     const anonymous = createResponseRecorder();
