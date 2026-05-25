@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -2554,15 +2555,9 @@ export async function mount(root, { signal } = {}) {
     await runPreflightCheck();
 }
 
-// When the SPA router imports this module it sets __spaRouter=true to prevent
-// direct-load auto-mount side effects; keep direct URL loads working otherwise.
-if (!globalThis.__spaRouter) {
-    try {
-        const mountController = new AbortController();
-        await mount(document.querySelector("#app"), {
-            signal: mountController.signal,
-        });
-    } catch (error) {
-        console.error(error);
-    }
-}
+await mountWhenDirect(async (root) => {
+    const mountController = new AbortController();
+    await mount(root, { signal: mountController.signal });
+}).catch((error) => {
+    console.error(error);
+});

@@ -6,6 +6,7 @@ import {
 } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
 
 // platform is the fallback group for ungrouped root-level docs.
@@ -271,4 +272,4 @@ export async function mount(root, { signal } = {}) {
     if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

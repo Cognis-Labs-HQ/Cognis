@@ -3,6 +3,52 @@
 @import url("/static/styles/reuse/in-page-callout.css");
 @import url("/static/styles/reuse/info-tooltip.css");
 
+body:not([data-page-ready="true"])::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--popup-shade-bg);
+    backdrop-filter: var(--popup-shade-filter);
+    z-index: 9998;
+}
+
+body:not([data-page-ready="true"])::after {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 56px;
+    height: 56px;
+    margin-top: -28px;
+    margin-left: -28px;
+    border: 4px solid color-mix(in srgb, var(--text-muted) 28%, transparent);
+    border-top-color: var(--accent-2);
+    border-right-color: var(--accent);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 10px color-mix(in srgb, var(--surface) 45%, transparent),
+        var(--shadow);
+    animation: page-loading-wheel 0.7s linear infinite;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+@keyframes page-loading-wheel {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body:not([data-page-ready="true"])::after {
+        animation: none;
+    }
+}
+
 .tabs {
     display: flex;
     gap: 8px;

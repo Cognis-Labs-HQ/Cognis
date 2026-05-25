@@ -6,6 +6,7 @@ import {
 } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
 
 const CHANGELOG_GROUP_KEY = "changelog";
@@ -274,4 +275,4 @@ export async function mount(root, { signal } = {}) {
     if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

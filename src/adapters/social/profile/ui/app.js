@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
 import {
     getInitialsText,
@@ -1353,4 +1354,4 @@ export async function mount(rootEl, { signal } = {}) {
     await composer.init();
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

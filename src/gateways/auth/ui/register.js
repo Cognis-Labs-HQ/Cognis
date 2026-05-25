@@ -1,4 +1,5 @@
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import {
     DEFAULT_LOCALE,
     createI18n,
@@ -815,4 +816,4 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

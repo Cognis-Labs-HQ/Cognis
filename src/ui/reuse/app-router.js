@@ -36,6 +36,7 @@
 
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
+import { beginPageLoading, endPageLoading } from "./page-entry.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 
 const STUDY_BASE_STYLESHEETS = [
@@ -334,6 +335,8 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
+    beginPageLoading();
+
     if (_mountController) {
         _mountController.abort();
     }
@@ -363,11 +366,15 @@ async function loadRoute(path) {
     // If another navigation started while loading, bail out.
     if (signal.aborted) return false;
     try {
-        await mod.mount(_root, { signal });
-    } catch (err) {
-        if (!signal.aborted) {
-            console.error("[router] mount() error for", path, err);
+        try {
+            await mod.mount(_root, { signal });
+        } catch (err) {
+            if (!signal.aborted) {
+                console.error("[router] mount() error for", path, err);
+            }
         }
+    } finally {
+        endPageLoading();
     }
     return true;
 }
