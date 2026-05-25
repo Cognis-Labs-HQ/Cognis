@@ -10,7 +10,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 | Komponen               | Path                                | Versi   |
 | ---------------------- | ----------------------------------- | ------- |
-| Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0` |
+| Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.2.1` |
 | Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.2` |
 | Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
 | Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.3` |
