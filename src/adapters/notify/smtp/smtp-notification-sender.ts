@@ -819,7 +819,10 @@ export class SmtpNotificationSender implements NotificationSender {
                 merged.senderName = overrideConfig.senderName;
             if (typeof overrideConfig.user === "string")
                 merged.user = overrideConfig.user;
-            if (typeof overrideConfig.password === "string")
+            if (
+                typeof overrideConfig.password === "string" &&
+                overrideConfig.password !== ""
+            )
                 merged.password = overrideConfig.password;
             if (
                 overrideConfig.secure === "none" ||

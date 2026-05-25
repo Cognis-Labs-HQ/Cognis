@@ -37,6 +37,10 @@ test("tfa settings drag and drop uses dirty tracker", () => {
     );
 });
 
+test("tfa settings method rows render without checkmark prefixes", () => {
+    assert.doesNotMatch(SOURCE, /\\u2713\\u00A0/);
+});
+
 test("tfa required setup popup is guarded against duplicate concurrent flows", () => {
     assert.match(SOURCE, /let requiredSetupPromptActive = false;/);
     assert.match(

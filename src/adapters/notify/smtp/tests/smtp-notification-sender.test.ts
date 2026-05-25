@@ -116,6 +116,74 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
     );
 });
 
+test("SmtpNotificationSender.sendTestEmail keeps configured password when override password is empty", async () => {
+    let authPayload = "";
+    const server = await createMockSmtpServer((conn) => {
+        let buf = "";
+        let dataMode = false;
+        conn.setEncoding("utf8");
+        conn.write("220 mock.example.com SMTP\r\n");
+
+        conn.on("data", (chunk: string) => {
+            buf += chunk;
+            const lines = buf.split("\r\n");
+            buf = lines.pop() ?? "";
+
+            for (const line of lines) {
+                if (dataMode) {
+                    if (line === ".") {
+                        dataMode = false;
+                        conn.write("250 OK\r\n");
+                    }
+                    continue;
+                }
+                if (!line) continue;
+                const upper = line.toUpperCase();
+                if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
+                    conn.write("250 OK\r\n");
+                } else if (upper.startsWith("AUTH PLAIN ")) {
+                    authPayload = line.slice("AUTH PLAIN ".length).trim();
+                    conn.write("235 Authenticated\r\n");
+                } else if (upper.startsWith("MAIL FROM")) {
+                    conn.write("250 OK\r\n");
+                } else if (upper.startsWith("RCPT TO")) {
+                    conn.write("250 OK\r\n");
+                } else if (upper === "DATA") {
+                    dataMode = true;
+                    conn.write("354 Start mail input\r\n");
+                } else if (upper.startsWith("QUIT")) {
+                    conn.write("221 Bye\r\n");
+                    conn.end();
+                }
+            }
+        });
+    });
+
+    try {
+        const sender = new SmtpNotificationSender(
+            {
+                host: server.host,
+                port: server.port,
+                from: "no-reply@example.com",
+                secure: "none",
+                user: "mailer@example.com",
+                password: "secret-password",
+            },
+            undefined,
+            noopSleep,
+        );
+        await sender.sendTestEmail("recipient@example.com", {
+            password: "",
+        });
+        const decodedAuth = Buffer.from(authPayload, "base64").toString(
+            "utf8",
+        );
+        assert.equal(decodedAuth, "\0mailer@example.com\0secret-password");
+    } finally {
+        await server.close();
+    }
+});
+
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",

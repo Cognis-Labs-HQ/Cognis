@@ -118,7 +118,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             .map(
                 (method) =>
                     `<tr draggable="true" data-tfa-method-row="${escapeHtml(method.id)}">
-                      <td>${isPreferred ? "\u2713\u00A0" : ""}${escapeHtml(method.name)}</td>
+                      <td>${escapeHtml(method.name)}</td>
                       <td class="drag-handle">\u2B0D</td>
                     </tr>`,
             )

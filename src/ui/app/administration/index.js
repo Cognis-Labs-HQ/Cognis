@@ -1202,11 +1202,22 @@ async function openAdapterConfig(
                         testInput instanceof HTMLInputElement
                             ? testInput.value.trim()
                             : "";
+                    if (!recipient) {
+                        showToast(i18n.t("ui.app.admin.notif.test_failed"), {
+                            variant: "error",
+                        });
+                        return;
+                    }
                     const config = {};
                     popupFormEl.querySelectorAll("[name]").forEach((field) => {
                         if (field instanceof HTMLInputElement) {
                             if (field.type === "checkbox") {
                                 config[field.name] = field.checked;
+                            } else if (
+                                field.type === "password" &&
+                                field.value === ""
+                            ) {
+                                return;
                             } else {
                                 config[field.name] =
                                     field.name === "port"
