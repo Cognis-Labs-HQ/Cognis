@@ -1,10 +1,10 @@
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 import {
     canAccessUserData,
     getAuthClaims,
     getCookieSession,
     hasMinRole,
-    registerPageScriptOrigins,
     requireAuth,
     requireRoleAccess,
     readJson,
@@ -35,19 +35,22 @@ import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import { validateUsername } from "../../api/reuse/account-store.js";
 import {
+    runAuthBootstrapHooks,
+    runAuthRouteBootstrapHooks,
+    type AuthAccountStore,
+    type AuthRouteBootstrapRuntime,
+    type PendingTfaLoginAttempt,
+} from "./bootstrap/index.js";
+import {
     AUTH_PASSWORD_POLICY_KEY,
     defaultPasswordPolicy,
     parsePasswordPolicy,
 } from "./password-policy.js";
 
-interface AuthAccountStore {
-    ensureSchema(): Promise<void>;
-    has(username: string): Promise<boolean>;
-    delete(username: string): Promise<void>;
-    isFounder(username: string): Promise<boolean>;
-    verify(username: string, password: string): Promise<boolean>;
-    getDisplayName(username: string): Promise<string | null>;
-}
+// 18 random bytes provide ample entropy for short-lived login-attempt IDs.
+const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
+// Pending TFA login attempts expire after 5 minutes to limit replay windows.
+const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
@@ -72,6 +75,65 @@ async function loadLocalAccountStore(
         throw new Error("local_account_store_missing");
     }
     return new LocalAccountStoreClass(dbExecutor, log);
+}
+
+function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
+    const pendingTfaLoginAttempts = new Map<string, PendingTfaLoginAttempt>();
+
+    function pruneExpiredTfaLoginAttempts(now = Date.now()): void {
+        for (const [
+            loginAttemptId,
+            entry,
+        ] of pendingTfaLoginAttempts.entries()) {
+            if (entry.expiresAt < now) {
+                pendingTfaLoginAttempts.delete(loginAttemptId);
+            }
+        }
+    }
+
+    return {
+        buildAccessTokenCookie(
+            req: IncomingMessage,
+            rawToken: string,
+            ttlSeconds: number | null,
+        ): string {
+            return buildAccessTokenCookie(
+                rawToken,
+                ttlSeconds,
+                shouldSetSecureCookie(req),
+            );
+        },
+        clearPendingTfaLoginAttempt(loginAttemptId: string): void {
+            pendingTfaLoginAttempts.delete(loginAttemptId);
+        },
+        createPendingTfaLoginAttempt(
+            input: Omit<PendingTfaLoginAttempt, "id" | "expiresAt">,
+        ): PendingTfaLoginAttempt {
+            pruneExpiredTfaLoginAttempts();
+            const pendingAttempt: PendingTfaLoginAttempt = {
+                ...input,
+                id: `tfa_login_${randomBytes(TFA_LOGIN_ATTEMPT_ID_BYTES).toString("base64url")}`,
+                expiresAt: Date.now() + TFA_LOGIN_ATTEMPT_TTL_MS,
+            };
+            pendingTfaLoginAttempts.set(pendingAttempt.id, pendingAttempt);
+            return pendingAttempt;
+        },
+        getAccessTokenTtlSeconds(): number {
+            const parsedTtlSeconds = Number.parseInt(
+                process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
+                10,
+            );
+            return Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
+                ? parsedTtlSeconds
+                : 43200;
+        },
+        getPendingTfaLoginAttempt(
+            loginAttemptId: string,
+        ): PendingTfaLoginAttempt | null {
+            pruneExpiredTfaLoginAttempts();
+            return pendingTfaLoginAttempts.get(loginAttemptId) ?? null;
+        },
+    };
 }
 
 function resolveRole(sessionRole: string | undefined): AccessRole {
@@ -141,11 +203,27 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: authGateway.listAdapters().length,
     });
 
+    const authRouteBootstrapRuntime = createAuthRouteBootstrapRuntime();
+    await runAuthRouteBootstrapHooks({
+        capabilities: ctx.capabilities,
+        runtime: authRouteBootstrapRuntime,
+    });
+
+    const securitySubsections: SecuritySubsection[] = [];
+    ctx.capabilities.contribute(
+        "auth:registerSecuritySection",
+        (section: SecuritySubsection) => {
+            securitySubsections.push(section);
+        },
+    );
+
     ctx.routeRegistry.register(
         createAuthGatewayRoutes(
             authGateway,
             accountStore,
             ctx.capabilities,
+            authRouteBootstrapRuntime,
+            securitySubsections,
             ctx.log,
         ),
         "auth",
@@ -161,7 +239,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.7",
+        version: "1.4.6",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -173,61 +251,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
         label: "Security",
-        scriptUrl: "/static/gateways/auth/security-prefs.js",
+        scriptUrl: "/static/gateways/auth/security-prefs/index.js",
         stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
-    /**
-     * auth:accountStore — account persistence surface consumed by
-     * registration, notify, and admin flows.
-     */
-    ctx.capabilities.contribute("auth:accountStore", accountStore);
-    /**
-     * auth:registerPageScriptOrigins — CSP script-origin registration hook
-     * for module/gateway pages.
-     */
-    ctx.capabilities.contribute(
-        "auth:registerPageScriptOrigins",
-        registerPageScriptOrigins,
-    );
-    /**
-     * auth:createLocalAdmin — bootstrap helper that ensures the initial local
-     * founder admin exists.
-     */
-    ctx.capabilities.contribute(
-        "auth:createLocalAdmin",
-        async (username: string, password: string) => {
-            const localAdapter = authGateway.getLocalAdapter();
-            if (!localAdapter) throw new Error("local_adapter_unavailable");
-            const has = await accountStore.has(username);
-            if (!has) {
-                await localAdapter.register(username, password, "admin");
-            }
-            await accountStore.setFounder(username, true);
-        },
-    );
-    /**
-     * auth:getLoginMethods — lists enabled authentication adapters for login
-     * UI/API consumers.
-     */
-    ctx.capabilities.contribute("auth:getLoginMethods", () =>
-        authGateway
-            .getEnabledAdapters()
-            .map((a) => ({ id: a.id, name: a.name })),
-    );
-    /**
-     * auth:issueAccessToken — issues an access token using the auth gateway's
-     * token policy.
-     */
-    ctx.capabilities.contribute(
-        "auth:issueAccessToken",
-        (
-            subject: string,
-            role: AccessRole,
-            ttlSeconds: number | null,
-            options?: { issuedAt?: number },
-        ) => issueAccessToken(subject, role, ttlSeconds, options),
-    );
     const routeContext: RouteContext = {
         getAuthClaims,
         requireAuth,
@@ -239,21 +266,30 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         lookupAccessToken,
         revokeAccessTokensForSubject,
     };
-    /**
-     * auth:routeContext — request auth/session/token helpers injected into
-     * route factories and modules.
-     */
-    ctx.capabilities.contribute("auth:routeContext", routeContext);
+    await runAuthBootstrapHooks({
+        accountStore,
+        authGateway,
+        ctx,
+        routeContext,
+    });
     ctx.log?.("info", "Auth gateway initialized.", {
         component: "auth-gateway",
         adapterCount: authGateway.listAdapters().length,
     });
 }
 
+interface SecuritySubsection {
+    id: string;
+    scriptUrl: string;
+    stringsBaseUrl?: string | string[];
+}
+
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
+    authRouteBootstrapRuntime: AuthRouteBootstrapRuntime,
+    securitySubsections: SecuritySubsection[],
     log?: GatewayBootstrapContext["log"],
 ) {
     async function readSecuritySettings(): Promise<{
@@ -324,6 +360,20 @@ function createAuthGatewayRoutes(
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: methods }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/security-sections" &&
+            req.method === "GET"
+        ) {
+            if (!requireAuth(req, res, "user")) return true;
+            log?.("debug", "Listed auth security sections.", {
+                ...logMeta,
+                count: securitySubsections.length,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: securitySubsections }));
             return true;
         }
 
@@ -630,22 +680,8 @@ function createAuthGatewayRoutes(
             if (isFounder && (role === "admin" || role === "owner")) {
                 role = "owner";
             }
-            const parsedTtlSeconds = Number.parseInt(
-                process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
-                10,
-            );
             const accessTokenTtlSeconds =
-                Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
-                    ? parsedTtlSeconds
-                    : 43200;
-            const apiToken = issueAccessToken(
-                session.accountId,
-                role,
-                accessTokenTtlSeconds,
-                {
-                    providerId: adapter.id,
-                },
-            );
+                authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
             const localAdapter = authGateway.getLocalAdapter();
             if (localAdapter) {
                 await localAdapter
@@ -682,6 +718,123 @@ function createAuthGatewayRoutes(
             const requiresUserValidation = shouldRequireSmtpValidation
                 ? Boolean(canSendVerificationEmail?.())
                 : false;
+            const getTfaUserStatus = capabilities.get<
+                (accountId: string) => Promise<{
+                    requiresSetup: boolean;
+                    hasConfiguredMethod: boolean;
+                }>
+            >("tfa:getUserStatus");
+            const getTfaLoginMethods = capabilities.get<
+                (
+                    accountId: string,
+                ) => Promise<Array<{ id: string; name: string }>>
+            >("tfa:getLoginMethods");
+            const tfaStatus = getTfaUserStatus
+                ? await getTfaUserStatus(session.accountId).catch(() => null)
+                : null;
+            const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
+            const requiresTfaSetup = tfaStatus?.requiresSetup === true;
+            if (requiresTfa && getTfaLoginMethods) {
+                const methods = await getTfaLoginMethods(session.accountId)
+                    .catch(() => [])
+                    .then((items) =>
+                        items.filter(
+                            (item) =>
+                                typeof item.id === "string" &&
+                                typeof item.name === "string",
+                        ),
+                    );
+                if (methods.length > 0) {
+                    const pendingAttempt =
+                        authRouteBootstrapRuntime.createPendingTfaLoginAttempt({
+                            accountId: session.accountId,
+                            role,
+                            isFounder,
+                            provider: session.provider,
+                            providerId: adapter.id,
+                            displayName:
+                                accountDisplayName ?? session.accountId,
+                            userValidationMode:
+                                securitySettings.userValidationMode,
+                            requiredUserValidation: requiresUserValidation,
+                        });
+                    log?.("info", "Login entered TFA challenge flow.", {
+                        ...logMeta,
+                        accountId: session.accountId,
+                        provider: session.provider,
+                        role,
+                        methodCount: methods.length,
+                    });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            data: {
+                                tfaRequired: true,
+                                loginAttemptId: pendingAttempt.id,
+                                methods,
+                                accountId: session.accountId,
+                                displayName:
+                                    accountDisplayName ?? session.accountId,
+                                provider: session.provider,
+                                providerId: adapter.id,
+                                role,
+                                isFounder,
+                                userValidationMode:
+                                    securitySettings.userValidationMode,
+                                requiredUserValidation: requiresUserValidation,
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
+            if (requiresTfaSetup) {
+                const pendingSetupToken = issueAccessToken(
+                    session.accountId,
+                    role,
+                    accessTokenTtlSeconds,
+                    {
+                        providerId: adapter.id,
+                        setupPending: true,
+                    },
+                );
+                log?.("info", "Login succeeded with pending TFA setup gate.", {
+                    ...logMeta,
+                    accountId: session.accountId,
+                    provider: session.provider,
+                    role,
+                });
+                res.writeHead(200, {
+                    "content-type": "application/json",
+                    "set-cookie":
+                        authRouteBootstrapRuntime.buildAccessTokenCookie(
+                            req,
+                            pendingSetupToken,
+                            accessTokenTtlSeconds,
+                        ),
+                });
+                res.end(
+                    JSON.stringify({
+                        data: {
+                            accountId: session.accountId,
+                            displayName:
+                                accountDisplayName ?? session.accountId,
+                            provider: session.provider,
+                            providerId: adapter.id,
+                            role,
+                            isFounder,
+                            token: pendingSetupToken,
+                            userValidationMode:
+                                securitySettings.userValidationMode,
+                            requiredUserValidation: requiresUserValidation,
+                            tfaSetupRequired: true,
+                        },
+                    }),
+                );
+                return true;
+            }
             log?.("info", "Login succeeded.", {
                 ...logMeta,
                 accountId: session.accountId,
@@ -689,12 +842,20 @@ function createAuthGatewayRoutes(
                 role,
                 requiresUserValidation,
             });
+            const apiToken = issueAccessToken(
+                session.accountId,
+                role,
+                accessTokenTtlSeconds,
+                {
+                    providerId: adapter.id,
+                },
+            );
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": buildAccessTokenCookie(
+                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
+                    req,
                     apiToken,
                     accessTokenTtlSeconds,
-                    shouldSetSecureCookie(req),
                 ),
             });
             res.end(
@@ -709,6 +870,30 @@ function createAuthGatewayRoutes(
                         token: apiToken,
                         userValidationMode: securitySettings.userValidationMode,
                         requiredUserValidation: requiresUserValidation,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/setup-status" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const getTfaUserStatus =
+                capabilities.get<
+                    (accountId: string) => Promise<{ requiresSetup: boolean }>
+                >("tfa:getUserStatus");
+            const status = getTfaUserStatus
+                ? await getTfaUserStatus(claims.sub).catch(() => null)
+                : null;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        requiresSetup: status?.requiresSetup === true,
                     },
                 }),
             );

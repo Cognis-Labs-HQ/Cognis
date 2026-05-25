@@ -190,6 +190,10 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 
 Prefer scanning the filesystem to discover gateways, adapters, and modules over maintaining hardcoded import lists. The core should load gateways by discovering directories under `src/api/gateways/`; gateways should load adapters by discovering directories under `src/adapters/<gateway-id>/`. Static imports in `src/core/index.ts` or `src/api/server.ts` that enumerate individual components by name work against this goal and create coupling.
 
+### Bootstrap registries for unavoidable references
+
+When a gateway, adapter, or module truly must add entries to a central bootstrap/import surface, do not append the reference directly inside the main bootstrap file. Instead, place the contribution in a dedicated sibling file under a bootstrap directory (for example `src/gateways/auth/bootstrap/*.ts`) and have `bootstrap/index.ts` blindly ingest every file in that directory. This keeps separate contributor PRs from colliding on one shared registry file and preserves an additive extension pattern.
+
 ### Study language modules
 
 Study language modules are **not** gateways or adapters. They are content modules that live under `src/modules/study/languages/<bcp47-code>/` and register themselves with the Study gateway at bootstrap time via `createLanguageModule()` and `bootstrapLanguageModule(ctx)`. The Study gateway discovers them automatically by scanning that directory.

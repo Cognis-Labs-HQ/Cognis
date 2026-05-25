@@ -3,6 +3,7 @@ export interface SecuritySettings {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
+    enforceTfaForAllUsers: boolean;
 }
 
 export const SECURITY_SETTINGS_KEY = "security-settings";
@@ -13,6 +14,7 @@ export function defaultSecuritySettings(): SecuritySettings {
         registrationsEnabled: false,
         userValidationMode: "none",
         requireTeacherManualApproval: true,
+        enforceTfaForAllUsers: false,
     };
 }
 
@@ -49,6 +51,8 @@ export function parseSecuritySettings(
                 parsed.userValidationMode === "smtp" ? "smtp" : "none",
             requireTeacherManualApproval:
                 parsed.requireTeacherManualApproval === false ? false : true,
+            enforceTfaForAllUsers:
+                parsed.enforceTfaForAllUsers === true ? true : false,
         };
     } catch {
         return null;

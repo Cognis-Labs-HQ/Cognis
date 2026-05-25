@@ -15,6 +15,7 @@
  *   - getCookieSession         Reads the access token from the request cookie.
  *   - setPageSecurityHeaders   Writes security headers on HTML page responses.
  *   - registerPageScriptOrigins Allows trusted page script origins in the HTML CSP.
+ *   - registerLimitedAuthPathAllowance Allows optional gateways to permit setup-pending tokens on their own routes.
  *   - hasMinRole               Returns true when a role meets or exceeds the minimum required rank.
  *   - isRoleAllowed            Returns true when a role satisfies a role access policy.
  *   - isAccessRole             Runtime check for AccessRole values.
@@ -39,6 +40,7 @@ export {
     requireRoleAccess,
     getAuthClaims,
     getCookieSession,
+    registerLimitedAuthPathAllowance,
     registerPageScriptOrigins,
     setPageSecurityHeaders,
     hasMinRole,

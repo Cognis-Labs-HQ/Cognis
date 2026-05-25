@@ -1,0 +1,146 @@
+.meet-panel,
+.meet-chat-placeholder {
+    height: 100%;
+}
+
+.meet-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.meet-selector,
+.meet-auth-row {
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.meet-selector label,
+.meet-auth-panel label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: var(--muted, #94a3b8);
+    font-size: 0.9rem;
+}
+
+.meet-selector select,
+.meet-auth-row input {
+    min-width: 14rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.78);
+    color: var(--text, #e5e7eb);
+    padding: 0.7rem 0.9rem;
+}
+
+.meet-stage-wrap {
+    position: relative;
+    min-height: 24rem;
+    flex: 1;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    border: 1px solid rgba(96, 165, 250, 0.28);
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(59, 130, 246, 0.25),
+            transparent 24rem
+        ),
+        #020617;
+}
+
+.meet-stage {
+    width: 100%;
+    height: 100%;
+    min-height: 24rem;
+}
+
+.meet-stage iframe {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 24rem;
+}
+
+.meet-empty {
+    min-height: 24rem;
+    display: grid;
+    place-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    color: #dbeafe;
+}
+
+.meet-empty strong {
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+}
+
+.meet-overlay-actions {
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.45rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.88);
+    box-shadow: 0 1.25rem 3rem rgba(37, 99, 235, 0.35);
+    backdrop-filter: blur(14px);
+    z-index: 2;
+}
+
+.meet-overlay-actions button {
+    border: 0;
+    border-radius: 999px;
+    padding: 0.65rem 0.9rem;
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.meet-overlay-actions button:hover,
+.meet-overlay-actions button:focus-visible {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.meet-chat-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+    border: 1px dashed rgba(148, 163, 184, 0.35);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.44);
+}
+
+.meet-chat-bubble {
+    align-self: flex-start;
+    max-width: 80%;
+    border-radius: 1rem 1rem 1rem 0.25rem;
+    padding: 0.85rem 1rem;
+    background: rgba(59, 130, 246, 0.2);
+    color: #dbeafe;
+}
+
+@media (max-width: 720px) {
+    .meet-selector,
+    .meet-auth-row,
+    .meet-overlay-actions {
+        align-items: stretch;
+        flex-direction: column;
+        border-radius: 1rem;
+    }
+
+    .meet-selector select,
+    .meet-auth-row input {
+        min-width: 0;
+        width: 100%;
+    }
+}

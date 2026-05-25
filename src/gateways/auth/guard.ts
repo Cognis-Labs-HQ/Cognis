@@ -11,6 +11,10 @@ export { hasMinRole, isRoleAllowed, isAccessRole };
 export type { RoleAccessPolicy };
 
 const pageScriptOriginsByOwner = new Map<string, Set<string>>();
+const limitedAuthPathAllowances = new Map<
+    string,
+    (path: string, accountId: string) => boolean
+>();
 
 function normalizePageResourceOrigin(
     rawOrigin: string | null | undefined,
@@ -70,10 +74,51 @@ export function registerPageScriptOrigin(
     return registeredOrigins[0] ?? null;
 }
 
+export function registerLimitedAuthPathAllowance(
+    ownerId: string,
+    predicate: (path: string, accountId: string) => boolean,
+): void {
+    const normalizedOwnerId = String(ownerId ?? "").trim();
+    if (!normalizedOwnerId) return;
+    limitedAuthPathAllowances.set(normalizedOwnerId, predicate);
+}
+
 interface AuthClaims {
     sub: string;
     role: AccessRole;
     providerId: string;
+    setupPending: boolean;
+}
+
+function isTfaSetupPendingPathAllowed(
+    path: string,
+    accountId: string,
+): boolean {
+    if (
+        path.startsWith("/api/v1/ui/") ||
+        path === "/api/v1/auth/password-change-capability" ||
+        path === "/api/v1/auth/security-sections" ||
+        path === "/api/v1/auth/setup-status"
+    ) {
+        return true;
+    }
+    const encodedAccountId = encodeURIComponent(accountId);
+    return (
+        path === `/api/v1/users/${encodedAccountId}/info` ||
+        path.startsWith(`/api/v1/users/${encodedAccountId}/preferences/`)
+    );
+}
+
+function isRegisteredLimitedPathAllowed(
+    path: string,
+    accountId: string,
+): boolean {
+    for (const predicate of limitedAuthPathAllowances.values()) {
+        if (predicate(path, accountId)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -94,10 +139,19 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     const token = raw.slice("Bearer ".length);
     const access = verifyAccessToken(token);
     if (!access) return null;
+    const requestPath = String(req.url ?? "").split("?")[0] || "/";
+    if (
+        access.setupPending &&
+        !isTfaSetupPendingPathAllowed(requestPath, access.sub) &&
+        !isRegisteredLimitedPathAllowed(requestPath, access.sub)
+    ) {
+        return null;
+    }
     return {
         sub: access.sub,
         role: access.role,
         providerId: access.providerId,
+        setupPending: access.setupPending,
     };
 }
 
@@ -108,6 +162,24 @@ export function requireAuth(
 ) {
     const claims = getAuthClaims(req);
     if (!claims) {
+        const raw = req.headers.authorization;
+        const token = raw?.startsWith("Bearer ")
+            ? raw.slice("Bearer ".length)
+            : "";
+        const access = token ? verifyAccessToken(token) : null;
+        if (access?.setupPending) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "tfa_setup_required",
+                        message:
+                            "Two-factor setup must be completed before accessing this resource",
+                    },
+                }),
+            );
+            return null;
+        }
         res.writeHead(401, { "content-type": "application/json" });
         res.end(
             JSON.stringify({
@@ -169,6 +241,7 @@ export function getCookieSession(req: IncomingMessage): AuthClaims | null {
         sub: access.sub,
         role: access.role,
         providerId: access.providerId,
+        setupPending: access.setupPending,
     };
 }
 

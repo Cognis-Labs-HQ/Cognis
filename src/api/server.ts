@@ -141,9 +141,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
         log,
         routeContext,
-        deps.getModuleCapability?.("notify:canSendVerificationEmail") as
-            | (() => boolean)
-            | undefined,
+        deps.getModuleCapability,
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(
@@ -164,6 +162,7 @@ export function buildServer(deps: ApiDependencies) {
               deps.getProfileVisibility,
               deps.setProfileVisibility,
               routeContext,
+              deps.getModuleCapability,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry

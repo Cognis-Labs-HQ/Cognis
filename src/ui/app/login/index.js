@@ -1,8 +1,6 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
-import { apiFetch } from "../../reuse/api-client.js";
-import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 import {
@@ -24,6 +22,9 @@ import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
+    let currentTfaLoginAttemptId = null;
+    let tfaLoginClientPromise = null;
+    let requiredEmailEnforcementClientPromise = null;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -57,6 +58,33 @@ export async function mount(root) {
             variant: "error",
             permanent: true,
         });
+    }
+
+    async function loadTfaLoginClient() {
+        if (!tfaLoginClientPromise) {
+            tfaLoginClientPromise = import("/static/gateways/tfa/login-flow.js")
+                .then((mod) =>
+                    mod.createTfaLoginClient({ baseI18n: i18n, root }),
+                )
+                .catch((error) => {
+                    console.error(error);
+                    return null;
+                });
+        }
+        return tfaLoginClientPromise;
+    }
+
+    async function loadRequiredEmailEnforcementClient() {
+        if (!requiredEmailEnforcementClientPromise) {
+            requiredEmailEnforcementClientPromise =
+                import("/static/gateways/notify/login-required-email-flow.js")
+                    .then((mod) => mod.createRequiredEmailEnforcementClient())
+                    .catch((error) => {
+                        console.error(error);
+                        return null;
+                    });
+        }
+        return requiredEmailEnforcementClientPromise;
     }
 
     async function loadLoginMethods() {
@@ -130,150 +158,33 @@ export async function mount(root) {
         }
     }
 
-    async function loadUserEmails(accountId) {
-        const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+    function persistSession(data) {
+        localStorage.setItem("cognis_access_token", data.token);
+        localStorage.setItem("cognis_account", data.accountId);
+        localStorage.setItem(
+            "cognis_display_name",
+            data.displayName || data.accountId,
         );
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
+        localStorage.setItem("cognis_role", data.role || "user");
+        localStorage.setItem(
+            "cognis_is_founder",
+            data.isFounder ? "true" : "false",
+        );
+        localStorage.setItem("cognis_login_time", new Date().toISOString());
+        localStorage.setItem(
+            "cognis_user_validation_mode",
+            data.userValidationMode || "none",
+        );
     }
 
-    async function promptRequiredEmailAddress() {
-        let inputEl = null;
-        const action = await openPopup({
-            title: i18n.t("ui.app.settings.emails_add"),
-            body: () => `
-      <label class="stack">
-        <span>${i18n.t("ui.reuse.invite_email")}</span>
-        <input id="required-email-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
-      </label>
-    `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.reuse.confirm"),
-                    variant: "confirm",
-                },
-            ],
-            onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#required-email-input");
-            },
-        });
-        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
-            return null;
-        }
-        return inputEl.value.trim().toLowerCase();
-    }
-
-    async function promptVerificationCode(emailAddress) {
-        let inputEl = null;
-        const action = await openPopup({
-            title: i18n.t("ui.app.settings.emails_verify_title"),
-            body: `
-      <p>${escapeHtml(i18n.t("ui.app.settings.emails_verify_prompt").replace("{email}", emailAddress))}</p>
-      <label class="stack">
-        <span>${i18n.t("ui.app.settings.emails_verify_submit")}</span>
-        <input id="required-email-code-input" type="text" inputmode="numeric" maxlength="6" />
-      </label>
-    `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.settings.emails_verify_submit"),
-                    variant: "confirm",
-                },
-            ],
-            onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#required-email-code-input");
-            },
-        });
-        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
-            return null;
-        }
-        return inputEl.value.trim();
-    }
-
-    async function verifyRequiredEmailLoop(accountId, emailAddress) {
-        while (true) {
-            const code = await promptVerificationCode(emailAddress);
-            if (!code) continue;
-            const verifyResponse = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ code }),
-                },
-            );
-            if (verifyResponse.ok) return;
-            if (verifyResponse.status === 422) {
-                showToast(i18n.t("ui.app.settings.emails_verify_invalid"), {
-                    variant: "error",
-                });
-                continue;
-            }
-            showToast(i18n.t("ui.app.settings.emails_verify_failed"), {
-                variant: "error",
-            });
-        }
-    }
-
-    async function enforceRequiredEmailSetup(accountId) {
-        while (true) {
-            const emails = await loadUserEmails(accountId);
-            const hasVerifiedPrimary = emails.some(
-                (entry) => entry.primary && entry.verified,
-            );
-            if (hasVerifiedPrimary) return;
-
-            const emailAddress = await promptRequiredEmailAddress();
-            if (!emailAddress) continue;
-
-            const addResponse = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ email: emailAddress }),
-                },
-            );
-            if (!addResponse.ok) {
-                let code = "add_failed";
-                try {
-                    const payload = await addResponse.json();
-                    code = String(payload?.error?.code ?? code);
-                } catch {
-                    // parse/network error while reading error JSON; keep default add_failed code
-                }
-                if (code === "email_taken") {
-                    showToast(i18n.t("ui.app.settings.emails_email_taken"), {
-                        variant: "error",
-                    });
-                } else if (code === "rate_limited") {
-                    showToast(
-                        i18n.t("ui.app.settings.emails_verify_rate_limited"),
-                        {
-                            variant: "error",
-                        },
-                    );
-                } else if (code === "smtp_unavailable") {
-                    showToast(
-                        i18n.t("ui.app.settings.emails_verify_unavailable"),
-                        {
-                            variant: "error",
-                        },
-                    );
-                } else {
-                    showToast(i18n.t("ui.app.settings.emails_add_failed"), {
-                        variant: "error",
-                    });
-                }
-                continue;
-            }
-
-            await verifyRequiredEmailLoop(accountId, emailAddress);
-        }
+    function clearPersistedSession() {
+        localStorage.removeItem("cognis_access_token");
+        localStorage.removeItem("cognis_account");
+        localStorage.removeItem("cognis_display_name");
+        localStorage.removeItem("cognis_role");
+        localStorage.removeItem("cognis_is_founder");
+        localStorage.removeItem("cognis_login_time");
+        localStorage.removeItem("cognis_user_validation_mode");
     }
 
     function renderLoginShell() {
@@ -308,14 +219,17 @@ export async function mount(root) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-          <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
-        </label>
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-          <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
-        </label>
+        <div id="login-credential-fields">
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+            <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+          </label>
+        </div>
+        <div id="login-tfa-fields" hidden></div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
@@ -365,6 +279,68 @@ export async function mount(root) {
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
                             const form = event.target;
+                            const tfaFields =
+                                form.querySelector("#login-tfa-fields");
+                            const isTfaMode =
+                                tfaFields instanceof HTMLElement &&
+                                !tfaFields.hidden;
+                            if (isTfaMode) {
+                                const tfaMethodEl =
+                                    form.querySelector("#login-tfa-method");
+                                const tfaCodeEl =
+                                    form.querySelector("#login-tfa-code");
+                                const payload = {
+                                    loginAttemptId: currentTfaLoginAttemptId,
+                                    methodId:
+                                        tfaMethodEl instanceof HTMLInputElement
+                                            ? tfaMethodEl.value
+                                            : "",
+                                    code:
+                                        tfaCodeEl instanceof HTMLInputElement
+                                            ? tfaCodeEl.value.trim()
+                                            : "",
+                                };
+                                const tfaLoginClient =
+                                    await loadTfaLoginClient();
+                                const { response: tfaResponse, body: tfaBody } =
+                                    await tfaLoginClient.verifyCode(payload);
+                                if (tfaResponse.ok && tfaBody?.data) {
+                                    persistSession(tfaBody.data);
+                                    const requiresUserValidation =
+                                        tfaBody.data.requiredUserValidation ===
+                                            true &&
+                                        tfaBody.data.userValidationMode ===
+                                            "smtp";
+                                    if (requiresUserValidation) {
+                                        const requiredEmailClient =
+                                            await loadRequiredEmailEnforcementClient();
+                                        try {
+                                            await requiredEmailClient?.enforceRequiredEmailSetup(
+                                                {
+                                                    accountId:
+                                                        tfaBody.data.accountId,
+                                                    i18n,
+                                                },
+                                            );
+                                        } catch {
+                                            clearPersistedSession();
+                                            return;
+                                        }
+                                    }
+                                    await syncTimezoneOnLogin(
+                                        tfaBody.data.accountId,
+                                    );
+                                    window.location.href = "/dashboard";
+                                    return;
+                                }
+                                showToast(
+                                    tfaLoginClient?.resolveErrorMessage(
+                                        tfaBody?.error?.message,
+                                    ) ?? i18n.t("ui.app.login.error.generic"),
+                                    { variant: "error" },
+                                );
+                                return;
+                            }
                             const usernameEl =
                                 form.querySelector("#login-username");
                             const passwordEl =
@@ -385,42 +361,43 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                localStorage.setItem(
-                                    "cognis_access_token",
-                                    body.data.token,
-                                );
-                                localStorage.setItem(
-                                    "cognis_account",
-                                    body.data.accountId,
-                                );
-                                localStorage.setItem(
-                                    "cognis_display_name",
-                                    body.data.displayName ||
-                                        body.data.accountId,
-                                );
-                                localStorage.setItem(
-                                    "cognis_role",
-                                    body.data.role || "user",
-                                );
-                                localStorage.setItem(
-                                    "cognis_is_founder",
-                                    body.data.isFounder ? "true" : "false",
-                                );
-                                localStorage.setItem(
-                                    "cognis_login_time",
-                                    new Date().toISOString(),
-                                );
-                                localStorage.setItem(
-                                    "cognis_user_validation_mode",
-                                    body.data.userValidationMode || "none",
-                                );
+                                if (
+                                    body.data.tfaRequired === true ||
+                                    body.data.tfaSetupRequired === true
+                                ) {
+                                    const tfaLoginClient =
+                                        await loadTfaLoginClient();
+                                    if (body.data.tfaRequired === true) {
+                                        currentTfaLoginAttemptId =
+                                            tfaLoginClient?.switchToTfaPrompt(
+                                                body.data,
+                                            ) ?? null;
+                                    } else {
+                                        tfaLoginClient?.handleSetupRequired(
+                                            persistSession,
+                                            body.data,
+                                        );
+                                    }
+                                    return;
+                                }
+                                persistSession(body.data);
                                 const requiresUserValidation =
                                     body.data.requiredUserValidation === true &&
                                     body.data.userValidationMode === "smtp";
                                 if (requiresUserValidation) {
-                                    await enforceRequiredEmailSetup(
-                                        body.data.accountId,
-                                    );
+                                    const requiredEmailClient =
+                                        await loadRequiredEmailEnforcementClient();
+                                    try {
+                                        await requiredEmailClient?.enforceRequiredEmailSetup(
+                                            {
+                                                accountId: body.data.accountId,
+                                                i18n,
+                                            },
+                                        );
+                                    } catch {
+                                        clearPersistedSession();
+                                        return;
+                                    }
                                 }
                                 await syncTimezoneOnLogin(body.data.accountId);
                                 window.location.href = "/dashboard";

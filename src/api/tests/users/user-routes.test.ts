@@ -707,3 +707,52 @@ test("teacher role change sets profile visibility to friends", async () => {
     assert.equal(status, 200);
     assert.deepEqual(appliedVisibilityUpdates, ["friends"]);
 });
+
+test("users list includes hasTfaConfigured when tfa capability is present", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("alice", "pw", "user");
+    await accounts.register("bob", "pw", "user");
+    const prefs = new VolatileUserPreferenceStore();
+    let status = 0;
+    let body = "";
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        <T>(capabilityId: string): T | undefined => {
+            if (capabilityId !== "tfa:isSecondFactorEnabled") {
+                return undefined;
+            }
+            return (async (accountId: string) => accountId === "alice") as T;
+        },
+    );
+
+    await route(
+        { method: "GET", headers } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users"),
+    );
+
+    assert.equal(status, 200);
+    const payload = JSON.parse(body);
+    const alice = payload.data.find(
+        (entry: { username: string }) => entry.username === "alice",
+    );
+    const bob = payload.data.find(
+        (entry: { username: string }) => entry.username === "bob",
+    );
+    assert.equal(alice.hasTfaConfigured, true);
+    assert.equal(bob.hasTfaConfigured, false);
+});

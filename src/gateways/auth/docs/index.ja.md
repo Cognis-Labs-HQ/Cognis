@@ -37,14 +37,15 @@ export class CoreAuthGateway {
 
 `getEnabledAdapter(id)` は特定のアダプターが現在有効な場合のみIDで返します。`getAdapter()` （引数なし）は最初の有効なアダプターを返します。適切なアダプターが見つからない場合は両方とも `null` を返します。
 
-`src/gateways/auth/bootstrap.ts` でのブートストラップ:
+`src/gateways/auth/bootstrap.ts` と `src/gateways/auth/bootstrap/` でのブートストラップ:
 
 1. `src/adapters/auth/local/store.ts` から `DbLocalAccountStore` をインスタンス化。
 2. DBエグゼキューターとタイプで `CoreAuthGateway` をインスタンス化。
 3. `setLocalAdapter()` でローカルアダプターを読み込む。
 4. `discoverAdapters(authAdaptersRoot)` を呼び出して他のすべてのアダプターを読み込む。
 5. `loadPersistedConfigs()` を呼び出してデータベースから有効・無効状態を復元。
-6. ルートとケイパビリティを登録。
+6. `src/gateways/auth/bootstrap/` の capability / bootstrap hook を実行。
+7. ルートとケイパビリティを登録。
 
 提供されるケイパビリティ:
 
