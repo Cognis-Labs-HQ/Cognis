@@ -62,4 +62,4 @@ Restored post-login required-email enforcement and moved the implementation into
 
 ## TFA Setup Redirect and Security Access
 
-Users with setup-pending TFA tokens are now sent directly to `/settings#security`, the Settings page hides dashboard chrome while setup is pending, and the auth security subsection registry is available during the enforced setup flow so the TOTP setup popup can load without unrelated 401/403 dashboard requests blocking it.
+Users with setup-pending TFA tokens are now sent directly to `/settings#security`. The full settings page chrome (navbar, topbar, footer) remains visible during the enforced setup flow so the user has a properly rendered page from which to configure their second factor. The auth security subsection registry and all TFA API paths are permitted for setup-pending tokens, and the sub-composer ResizeObserver is seeded with the initial column count so a layout measurement on first observation no longer triggers a redundant render that could re-open the setup popup.

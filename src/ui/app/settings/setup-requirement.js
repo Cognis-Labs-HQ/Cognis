@@ -14,12 +14,6 @@ export function resolveSettingsSetupRedirect(
     return SECURITY_SETTINGS_HASH_PATH;
 }
 
-export function getSettingsShellOptions(authSetupRequired) {
-    return {
-        frameless: authSetupRequired,
-        showFooter: !authSetupRequired,
-        showNavbar: !authSetupRequired,
-        showThemeToggle: !authSetupRequired,
-        showTopbar: !authSetupRequired,
-    };
+export function getSettingsShellOptions() {
+    return {};
 }

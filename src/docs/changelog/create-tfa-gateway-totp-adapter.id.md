@@ -62,4 +62,4 @@ Langkah validasi email wajib setelah login dipulihkan dan implementasinya dipind
 
 ## Pengalihan Setup TFA dan Akses Keamanan
 
-Pengguna dengan token TFA yang masih menunggu penyiapan kini diarahkan langsung ke `/settings#security`, halaman Pengaturan menyembunyikan chrome dashboard selama penyiapan masih tertunda, dan registri subbagian keamanan auth tersedia selama alur setup wajib agar popup penyiapan TOTP dapat dimuat tanpa terganggu permintaan dashboard 401/403 lain yang tidak relevan.
+Pengguna dengan token TFA yang masih menunggu penyiapan kini diarahkan langsung ke `/settings#security`. Tampilan penuh halaman Pengaturan (bilah navigasi, bilah atas, footer) tetap terlihat selama alur setup wajib agar pengguna mendapatkan halaman yang dirender dengan benar untuk mengonfigurasi faktor kedua mereka. Registri subbagian keamanan auth dan semua jalur API TFA diizinkan untuk token yang menunggu setup. Selain itu, ResizeObserver sub-composer diinisialisasi dengan jumlah kolom awal sehingga pengukuran tata letak pada observasi pertama tidak memicu render ulang yang dapat membuka kembali popup setup.

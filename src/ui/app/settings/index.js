@@ -544,7 +544,7 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
-    const shellOptions = getSettingsShellOptions(authSetupRequired);
+    const shellOptions = getSettingsShellOptions();
 
     const composer = createPageComposer(root, {
         allowCustomization: false,

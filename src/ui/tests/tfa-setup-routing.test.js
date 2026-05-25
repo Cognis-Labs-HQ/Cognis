@@ -40,19 +40,6 @@ test("settings setup redirect is enforced only when setup is pending and the rou
     assert.equal(resolveSettingsSetupRedirect("/dashboard", "", false), null);
 });
 
-test("settings shell options hide dashboard chrome while auth setup is pending", () => {
-    assert.deepEqual(getSettingsShellOptions(true), {
-        frameless: true,
-        showFooter: false,
-        showNavbar: false,
-        showThemeToggle: false,
-        showTopbar: false,
-    });
-    assert.deepEqual(getSettingsShellOptions(false), {
-        frameless: false,
-        showFooter: true,
-        showNavbar: true,
-        showThemeToggle: true,
-        showTopbar: true,
-    });
+test("settings shell options do not suppress dashboard chrome regardless of auth setup state", () => {
+    assert.deepEqual(getSettingsShellOptions(), {});
 });
