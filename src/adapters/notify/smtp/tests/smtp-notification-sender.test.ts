@@ -175,9 +175,7 @@ test("SmtpNotificationSender.sendTestEmail keeps configured password when overri
         await sender.sendTestEmail("recipient@example.com", {
             password: "",
         });
-        const decodedAuth = Buffer.from(authPayload, "base64").toString(
-            "utf8",
-        );
+        const decodedAuth = Buffer.from(authPayload, "base64").toString("utf8");
         assert.equal(decodedAuth, "\0mailer@example.com\0secret-password");
     } finally {
         await server.close();
