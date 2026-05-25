@@ -53,7 +53,8 @@ export function buildSmtpTestError(error: unknown): NotifySmtpTestError {
     }
 
     // Expected stage tokens include ehlo, ehlo_after_tls, starttls, auth,
-    // mail_from, rcpt_to, data_cmd, and message_rejected.
+    // mail_from, rcpt_to, data_cmd, and message_rejected. Underscore-delimited
+    // compound stages are intentionally supported by [a-z_]+.
     const failedStageMatch = rawError.match(/^smtp_([a-z_]+)_failed:(\d{3})$/);
     if (failedStageMatch) {
         const smtpStage = failedStageMatch[1];

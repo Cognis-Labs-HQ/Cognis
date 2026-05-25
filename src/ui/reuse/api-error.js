@@ -5,13 +5,13 @@
  * - getApiErrorMessage(response): returns the API error message text (or code fallback) from a failed fetch response.
  *
  * Usage:
- *   const response = await apiFetch('/api/v1/example');
+ *   const response = await fetch('/api/v1/example');
  *   if (!response.ok) {
  *     const message = await getApiErrorMessage(response);
  *     showToast(message ?? i18n.t('ui.reuse.save_failed'), { variant: 'error' });
  *   }
  *
- * @param {Response} response API response object from fetch/apiFetch with an optional JSON error payload.
+ * @param {Response} response API response object with an optional JSON error payload.
  * @returns {Promise<string | null>} Error message text, or null when unavailable.
  */
 export async function getApiErrorMessage(response) {
