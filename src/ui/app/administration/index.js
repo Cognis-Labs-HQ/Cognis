@@ -197,6 +197,7 @@ function renderJitsiSettingsContent(settings) {
 }
 
 /**
+ * Resolves the URL for an adapter control endpoint using announced metadata
  * when present, with a standard gateway/adapter fallback path.
  *
  * @param {string} gatewayId
@@ -1588,7 +1589,7 @@ export async function mount(rootEl, { signal } = {}) {
                     variant: "success",
                 });
             } catch {
-                showToast(i18n.t("ui.app.admin.jitsi.save_failed"), {
+                showToast(i18n.t("ui.reuse.save_failed"), {
                     variant: "error",
                 });
             }
