@@ -234,22 +234,22 @@ function createChatParticipantAvatarButton({
     avatarKey,
     selected,
 }) {
-    const button = document.createElement("a");
-    button.href = `/profile/${encodeURIComponent(username)}`;
-    button.className = "jitsi-chat-participant-item";
+    const participantLink = document.createElement("a");
+    participantLink.href = `/profile/${encodeURIComponent(username)}`;
+    participantLink.className = "jitsi-chat-participant-item";
     if (selected) {
-        button.classList.add("jitsi-chat-participant-item-selected");
+        participantLink.classList.add("jitsi-chat-participant-item-selected");
     }
-    button.setAttribute("role", "listitem");
-    button.dataset.username = username;
-    button.setAttribute(
+    participantLink.setAttribute("role", "listitem");
+    participantLink.dataset.username = username;
+    participantLink.setAttribute(
         "aria-label",
         displayName ? `${displayName} (@${username})` : `@${username}`,
     );
-    button.title = displayName
+    participantLink.title = displayName
         ? `${displayName} (@${username})`
         : `@${username}`;
-    button.innerHTML = buildProfileAvatarMarkup({
+    participantLink.innerHTML = buildProfileAvatarMarkup({
         avatarKey,
         label: displayName || username,
         colorSeed: username,
@@ -258,7 +258,7 @@ function createChatParticipantAvatarButton({
         fallbackClass: "jitsi-chat-participant-avatar-bubble",
         profileHandle: username,
     });
-    return button;
+    return participantLink;
 }
 
 async function fetchParticipants(query) {
@@ -668,7 +668,7 @@ export async function mount(root, { signal } = {}) {
     function renderChatParticipantStrip() {
         const strip = root.querySelector("#jitsi-chat-participant-strip");
         const returnButton = root.querySelector("#jitsi-chat-return-btn");
-        const heading = root.querySelector(".jitsi-chat-header h3");
+        const heading = root.querySelector("#jitsi-chat-heading");
         if (!(strip instanceof HTMLElement)) {
             return;
         }
