@@ -1,29 +1,59 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 
-const ROOT = process.cwd();
+import {
+    SECURITY_SETTINGS_HASH_PATH as SETTINGS_SECURITY_HASH_PATH,
+    getSettingsShellOptions,
+    resolveSettingsSetupRedirect,
+} from "../app/settings/setup-requirement.js";
+import {
+    SECURITY_SETTINGS_HASH_PATH as LOGIN_SECURITY_HASH_PATH,
+    redirectToRequiredTfaSetup,
+} from "../../gateways/tfa/ui/setup-redirect.js";
 
-test("login TFA setup flow redirects directly to the security settings hash", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/gateways/tfa/ui/login-flow.js"),
-        "utf8",
+test("login TFA setup redirect persists the session and targets /settings#security", () => {
+    let persistedSession = null;
+    const location = { href: "" };
+    const sessionData = { token: "pending-token", accountId: "alice" };
+
+    redirectToRequiredTfaSetup(
+        (data) => {
+            persistedSession = data;
+        },
+        sessionData,
+        location,
     );
 
-    assert.match(source, /window\.location\.href = "\/settings#security"/);
+    assert.deepEqual(persistedSession, sessionData);
+    assert.equal(location.href, LOGIN_SECURITY_HASH_PATH);
+    assert.equal(LOGIN_SECURITY_HASH_PATH, "/settings#security");
 });
 
-test("settings page disables dashboard chrome while auth setup is pending", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/settings/index.js"),
-        "utf8",
+test("settings setup redirect is enforced only when setup is pending and the route is not already /settings#security", () => {
+    assert.equal(
+        resolveSettingsSetupRedirect("/settings", "", true),
+        SETTINGS_SECURITY_HASH_PATH,
     );
+    assert.equal(
+        resolveSettingsSetupRedirect("/settings", "#security", true),
+        null,
+    );
+    assert.equal(resolveSettingsSetupRedirect("/dashboard", "", false), null);
+});
 
-    assert.match(source, /\/api\/v1\/auth\/setup-status/);
-    assert.match(source, /window\.location\.replace\("\/settings#security"\)/);
-    assert.match(source, /frameless: authSetupRequired/);
-    assert.match(source, /showTopbar: !authSetupRequired/);
-    assert.match(source, /showNavbar: !authSetupRequired/);
-    assert.match(source, /showFooter: !authSetupRequired/);
+test("settings shell options hide dashboard chrome while auth setup is pending", () => {
+    assert.deepEqual(getSettingsShellOptions(true), {
+        frameless: true,
+        showFooter: false,
+        showNavbar: false,
+        showThemeToggle: false,
+        showTopbar: false,
+    });
+    assert.deepEqual(getSettingsShellOptions(false), {
+        frameless: false,
+        showFooter: true,
+        showNavbar: true,
+        showThemeToggle: true,
+        showTopbar: true,
+    });
 });

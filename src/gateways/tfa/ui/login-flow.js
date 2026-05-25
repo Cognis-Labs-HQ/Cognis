@@ -1,5 +1,6 @@
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { redirectToRequiredTfaSetup } from "./setup-redirect.js";
 
 function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
@@ -161,8 +162,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
          *   token and account metadata returned when tfaSetupRequired is true.
          */
         handleSetupRequired(persistSession, data) {
-            persistSession(data);
-            window.location.href = "/settings#security";
+            redirectToRequiredTfaSetup(persistSession, data);
         },
         resolveErrorMessage(message) {
             return resolveTranslatedTfaErrorMessage(i18n, message);

@@ -36,6 +36,10 @@ import {
     normalizeMessageStyle,
 } from "../../reuse/message-style-options.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
+import {
+    getSettingsShellOptions,
+    resolveSettingsSetupRedirect,
+} from "./setup-requirement.js";
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -145,12 +149,13 @@ export async function mount(root, { signal } = {}) {
         : readPreferredLanguages();
     const i18n = await createI18n({ preferredLanguages: languagePriority });
     const authSetupRequired = await loadAuthSetupRequirement();
-    if (
-        authSetupRequired &&
-        `${window.location.pathname}${window.location.hash}` !==
-            "/settings#security"
-    ) {
-        window.location.replace("/settings#security");
+    const setupRedirect = resolveSettingsSetupRedirect(
+        window.location.pathname,
+        window.location.hash,
+        authSetupRequired,
+    );
+    if (setupRedirect) {
+        window.location.replace(setupRedirect);
         return;
     }
     applyDocumentTitle(i18n, "ui.page.title.settings");
@@ -539,12 +544,13 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
+    const shellOptions = getSettingsShellOptions(authSetupRequired);
+
     const composer = createPageComposer(root, {
         allowCustomization: false,
         subPageNavigation: true,
         elements,
         preferenceKey: "settings-layout",
-        frameless: authSetupRequired,
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.settings"),
@@ -553,10 +559,7 @@ export async function mount(root, { signal } = {}) {
         pageOverrides: {
             appearance: { showThemeToggle: false },
         },
-        showFooter: !authSetupRequired,
-        showNavbar: !authSetupRequired,
-        showThemeToggle: !authSetupRequired,
-        showTopbar: !authSetupRequired,
+        ...shellOptions,
         toolbar: [
             {
                 id: "settings-nav",
