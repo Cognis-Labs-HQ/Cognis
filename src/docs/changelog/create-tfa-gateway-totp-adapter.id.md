@@ -67,3 +67,7 @@ Pengguna dengan token TFA yang masih menunggu penyiapan kini diarahkan langsung 
 ## TFA Admin Kembali ke Keamanan
 
 Pengaturan TFA di halaman Administrasi kini kembali dirender di dalam Administration → Security, bukan sebagai bagian Administrasi tingkat atas yang terpisah.
+
+## String TFA Admin Diperbaiki
+
+Kartu TFA di dalam Administration → Security kini memakai kunci string gateway/admin terlokalisasi yang memang sudah ada, sehingga judul bagian, label penegakan, dan teks petunjuk kembali tampil dengan benar.

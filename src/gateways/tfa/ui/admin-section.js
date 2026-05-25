@@ -19,9 +19,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
       <div class="security-settings-form">
         <div class="components-section">
           <h3 class="components-section-heading">
-            ${escapeHtml(i18n.t("gateway.tfa.admin.enforce_all_users_label"))}
+          ${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_label"))}
           </h3>
-          <p>${escapeHtml(i18n.t("gateway.tfa.admin.enforce_all_users_hint"))}</p>
+        <p>${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_hint"))}</p>
           <div class="security-field-row">
             <label class="switch">
               <input id="tfa-admin-enforce-all-users" type="checkbox" ${enforceAllUsers ? "checked" : ""} />
@@ -66,17 +66,17 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     return {
         id: "tfa-administration",
-        label: i18n.t("gateway.tfa.admin.section_title"),
+        label: i18n.t("gateway.tfa.settings.section_title"),
         parentSectionId: "security",
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-tfa-layout",
-            heading: i18n.t("gateway.tfa.admin.section_title"),
+            heading: i18n.t("gateway.tfa.settings.section_title"),
             elements: [
                 {
                     id: "tfa-administration-enforcement",
-                    label: i18n.t("gateway.tfa.admin.section_title"),
+                    label: i18n.t("gateway.tfa.settings.section_title"),
                     pinned: true,
                     render: () => renderContent(),
                 },

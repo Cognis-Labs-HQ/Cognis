@@ -67,3 +67,7 @@ Users with setup-pending TFA tokens are now sent directly to `/settings#security
 ## Administration TFA Moved
 
 The Administration TFA settings are now rendered inside Administration → Security again instead of as a separate top-level Administration section.
+
+## Administration TFA Strings Fixed
+
+The TFA card inside Administration → Security now uses existing localized gateway/admin string keys, so its section title, enforcement label, and hint render correctly again.

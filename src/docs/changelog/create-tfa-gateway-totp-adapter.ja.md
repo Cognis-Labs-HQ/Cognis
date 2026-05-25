@@ -67,3 +67,7 @@ TFA 設定待ちトークンのユーザーは `/settings#security` へ直接遷
 ## 管理TFAをセキュリティへ移動
 
 Administration の TFA 設定は、独立した最上位セクションではなく、再び Administration → Security の中で表示されるようになりました。
+
+## 管理TFA文言を修正
+
+Administration → Security 内の TFA カードは、既存のローカライズ済み gateway/admin 文字列キーを使うようになり、セクション見出し、強制ラベル、説明文が再び正しく表示されます。

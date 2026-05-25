@@ -67,3 +67,7 @@ Benutzer mit Tokens für ausstehendes TFA-Setup werden direkt zu `/settings#secu
 ## TFA in Admin zurück unter Sicherheit
 
 Die TFA-Einstellungen der Administration werden jetzt wieder innerhalb von Administration → Sicherheit angezeigt, statt als eigener oberster Administrationsbereich.
+
+## Admin-TFA-Strings Korrigiert
+
+Die TFA-Karte innerhalb von Administration → Sicherheit verwendet jetzt vorhandene lokalisierte Gateway-/Admin-String-Schlüssel, sodass Abschnittstitel, Erzwingungsbeschriftung und Hinweistext wieder korrekt angezeigt werden.
