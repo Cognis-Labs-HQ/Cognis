@@ -49,12 +49,7 @@ async function promptEmail(i18n) {
                 variant: "cancel",
             },
         ],
-        closeConfirm: {
-            title: i18n.t("ui.reuse.unsaved_changes"),
-            message: i18n.t("ui.reuse.close_form_warning"),
-            discardLabel: i18n.t("ui.reuse.discard"),
-            keepLabel: i18n.t("ui.reuse.cancel"),
-        },
+        closeProtection: true,
         onOpen: (overlay) => {
             inputEl = overlay.querySelector("#invite-email");
         },

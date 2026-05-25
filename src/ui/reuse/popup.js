@@ -51,13 +51,11 @@
  *   onAction — Optional async/sync callback invoked before dismissal when an
  *              action button is clicked. Return `false` to keep the popup open.
  *
- *   closeConfirm — When provided, enables close-safety for popups that contain
- *              form inputs. If the user attempts to close the popup (via backdrop
- *              click, × button, or Escape key) and any input/textarea/select has
+ *   closeProtection — When true, intercepts cancel-path dismissals (backdrop
+ *              click, × button, Escape key). If any input/textarea/select has
  *              been changed from its initial value, a confirmation popup is shown
- *              before the original popup is dismissed.
- *              Fields: title, message, discardLabel, keepLabel (all pre-resolved
- *              strings, e.g. from i18n.t()).
+ *              before the original popup is dismissed. Strings are resolved
+ *              internally from the user's active locale.
  *
  * @param {{
  *   title: string,
@@ -67,12 +65,22 @@
  *   maxWidth?: string,
  *   onOpen?: (overlay: HTMLElement) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
- *   closeConfirm?: { title: string, message: string, discardLabel: string, keepLabel: string },
+ *   closeProtection?: boolean,
  * }} options
  * @returns {Promise<string|null>}
  */
 
+import { createI18n } from "./i18n.js";
+
 let stylesheetReady = null;
+let i18nReady = null;
+
+function getI18n() {
+    // Store the Promise, not the resolved value, so concurrent calls
+    // before resolution share the same deferred.
+    if (!i18nReady) i18nReady = createI18n();
+    return i18nReady;
+}
 
 const scrollLockState = {
     count: 0,
@@ -277,7 +285,7 @@ export async function openPopup({
     maxWidth,
     onOpen,
     onAction,
-    closeConfirm,
+    closeProtection = false,
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -300,22 +308,23 @@ export async function openPopup({
         async function dismiss(actionId) {
             if (
                 actionId === null &&
-                closeConfirm != null &&
+                closeProtection &&
                 hasUnsavedFormChanges(overlay)
             ) {
+                const i18n = await getI18n();
                 const confirmed = await openPopup({
-                    title: closeConfirm.title,
-                    body: `<p>${escapeHtml(closeConfirm.message)}</p>`,
+                    title: i18n.t("ui.reuse.unsaved_changes"),
+                    body: `<p>${escapeHtml(i18n.t("ui.reuse.close_form_warning"))}</p>`,
                     variant: "warning",
                     actions: [
                         {
                             id: "discard",
-                            label: closeConfirm.discardLabel,
+                            label: i18n.t("ui.reuse.discard"),
                             variant: "confirm",
                         },
                         {
                             id: "keep",
-                            label: closeConfirm.keepLabel,
+                            label: i18n.t("ui.reuse.cancel"),
                             variant: "cancel",
                         },
                     ],
@@ -510,12 +519,7 @@ export async function openConfigFormPopup({
                 variant: "cancel",
             },
         ],
-        closeConfirm: {
-            title: i18n.t("ui.reuse.unsaved_changes"),
-            message: i18n.t("ui.reuse.close_form_warning"),
-            discardLabel: i18n.t("ui.reuse.discard"),
-            keepLabel: i18n.t("ui.reuse.cancel"),
-        },
+        closeProtection: true,
         onOpen: (overlay) => {
             popupOverlay = overlay;
         },
