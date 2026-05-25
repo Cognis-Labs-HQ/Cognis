@@ -364,3 +364,62 @@ test("security PUT accepts smtp validation mode when SMTP adapter is available",
     assert.equal(status, 200);
     assert.match(savedValue, /"userValidationMode":"smtp"/);
 });
+
+test("security PUT revokes setup-pending tokens when mandatory TFA is disabled", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const headers = {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+    };
+    let status = 0;
+    let setEnforceValue: boolean | null = null;
+    let revokeExcludedSubject = "";
+    const preferenceStore = {
+        get: async () => null,
+        set: async () => {},
+    };
+    const route = createSystemRoutes(
+        healthService as any,
+        preferenceStore as any,
+        undefined,
+        undefined,
+        (capabilityName) => {
+            if (capabilityName === "tfa:setEnforceAllUsers") {
+                return async (required: boolean) => {
+                    setEnforceValue = required;
+                };
+            }
+            if (capabilityName === "auth:revokeSetupPendingAccessTokens") {
+                return (excludedSubject?: string) => {
+                    revokeExcludedSubject = String(excludedSubject ?? "");
+                    return 2;
+                };
+            }
+            return undefined;
+        },
+    );
+
+    const handled = await route(
+        {
+            method: "PUT",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from(
+                    JSON.stringify({ enforceTfaForAllUsers: false }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/system/security"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    assert.equal(setEnforceValue, false);
+    assert.equal(revokeExcludedSubject, "admin-user");
+});

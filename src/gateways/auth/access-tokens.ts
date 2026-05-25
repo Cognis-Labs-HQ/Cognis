@@ -264,6 +264,31 @@ export function revokeAccessTokensForSubject(subject: string): number {
     return removed;
 }
 
+export function revokeSetupPendingAccessTokens(
+    excludedSubject?: string,
+): number {
+    const normalizedExcludedSubject =
+        typeof excludedSubject === "string" ? excludedSubject.trim() : "";
+    let removed = 0;
+    for (const [tokenHash, record] of tokenStore.entries()) {
+        if (record.tfaSetupPending !== true) continue;
+        if (
+            normalizedExcludedSubject &&
+            record.subject === normalizedExcludedSubject
+        ) {
+            continue;
+        }
+        tokenStore.delete(tokenHash);
+        revokedTokenStore.set(tokenHash, record);
+        verifiedAtByToken.delete(tokenHash);
+        removed++;
+    }
+    if (removed > 0) {
+        persistTokenStore();
+    }
+    return removed;
+}
+
 function hashToken(token: string) {
     return createHash("sha256").update(token).digest("hex");
 }

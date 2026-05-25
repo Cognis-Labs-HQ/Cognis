@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
     issueAccessToken,
+    revokeSetupPendingAccessTokens,
     revokeAccessTokensForSubject,
     verifyAccessToken,
 } from "../access-tokens.js";
@@ -110,6 +111,32 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         role: "user",
         providerId: "local",
         tfaSetupPending: false,
+    });
+
+    test("revoking setup-pending tokens excludes provided subject", () => {
+        const pendingUserToken = issueAccessToken("pending-user", "user", 60, {
+            tfaSetupPending: true,
+        });
+        const pendingAdminToken = issueAccessToken("pending-admin", "admin", 60, {
+            tfaSetupPending: true,
+        });
+        const normalToken = issueAccessToken("normal-user", "user", 60);
+
+        const revokedCount = revokeSetupPendingAccessTokens("pending-admin");
+        assert.equal(revokedCount >= 1, true);
+        assert.equal(verifyAccessToken(pendingUserToken), null);
+        assert.deepEqual(verifyAccessToken(pendingAdminToken), {
+            sub: "pending-admin",
+            role: "admin",
+            providerId: "local",
+            tfaSetupPending: true,
+        });
+        assert.deepEqual(verifyAccessToken(normalToken), {
+            sub: "normal-user",
+            role: "user",
+            providerId: "local",
+            tfaSetupPending: false,
+        });
     });
 });
 

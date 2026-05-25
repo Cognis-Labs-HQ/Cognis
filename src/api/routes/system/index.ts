@@ -266,6 +266,26 @@ export function createSystemRoutes(
             if (setEnforceTfaForAllUsers) {
                 await setEnforceTfaForAllUsers(enforceTfaForAllUsers);
             }
+            if (!enforceTfaForAllUsers) {
+                const revokeSetupPendingAccessTokens = getCapability
+                    ? getCapability<
+                          (excludedSubject?: string) => number
+                      >("auth:revokeSetupPendingAccessTokens")
+                    : undefined;
+                const revokedSetupPendingCount =
+                    revokeSetupPendingAccessTokens?.(claims.sub) ?? 0;
+                if (revokedSetupPendingCount > 0) {
+                    log?.(
+                        "info",
+                        "Revoked setup-pending access tokens after disabling mandatory TFA.",
+                        {
+                            ...logMeta,
+                            accountId: claims.sub,
+                            revokedSetupPendingCount,
+                        },
+                    );
+                }
+            }
             log?.("info", "Updated security settings.", {
                 ...logMeta,
                 accountId: claims.sub,

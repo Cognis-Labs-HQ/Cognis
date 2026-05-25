@@ -1,5 +1,8 @@
 import { registerPageScriptOrigins } from "../../shared.js";
-import { issueAccessToken } from "../access-tokens.js";
+import {
+    issueAccessToken,
+    revokeSetupPendingAccessTokens,
+} from "../access-tokens.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
 export async function registerAuthBootstrapHook({
@@ -32,5 +35,9 @@ export async function registerAuthBootstrapHook({
         })),
     );
     ctx.capabilities.contribute("auth:issueAccessToken", issueAccessToken);
+    ctx.capabilities.contribute(
+        "auth:revokeSetupPendingAccessTokens",
+        revokeSetupPendingAccessTokens,
+    );
     ctx.capabilities.contribute("auth:routeContext", routeContext);
 }
