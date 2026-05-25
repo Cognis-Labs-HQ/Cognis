@@ -752,11 +752,3 @@ button.dropdown-item {
 .profile-mini-preview__stats {
     margin: 10px 0 0;
 }
-
-body[data-theme="light"] .workspace {
-    background: rgba(255, 255, 255, 0.52);
-}
-
-body[data-theme="light"] .global-footer {
-    background: rgba(255, 255, 255, 0.52);
-}
