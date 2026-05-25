@@ -472,6 +472,7 @@
   <string name="ui.app.admin.notif.test_email_to">Recipient email address</string>
   <string name="ui.app.admin.notif.test_sent">Test email sent successfully.</string>
   <string name="ui.app.admin.notif.test_failed">Failed to send test email.</string>
+  <string name="ui.app.admin.notif.test_email_required">Recipient email address is required.</string>
   <string name="ui.app.admin.notif.field_env_conflict">This field is set by an environment variable but differs from the saved value.</string>
   <string name="ui.app.admin.notif.required_field">Required Value</string>
   <string name="ui.app.admin.notif.enable_provider">Enable Adapter</string>

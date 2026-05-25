@@ -1203,9 +1203,12 @@ async function openAdapterConfig(
                             ? testInput.value.trim()
                             : "";
                     if (!recipient) {
-                        showToast(i18n.t("ui.app.admin.notif.test_failed"), {
-                            variant: "error",
-                        });
+                        showToast(
+                            i18n.t("ui.app.admin.notif.test_email_required"),
+                            {
+                                variant: "error",
+                            },
+                        );
                         return;
                     }
                     const config = {};

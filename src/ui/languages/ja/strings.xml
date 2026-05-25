@@ -472,6 +472,7 @@
   <string name="ui.app.admin.notif.test_email_to">受信者のメールアドレス</string>
   <string name="ui.app.admin.notif.test_sent">テストメールが正常に送信されました。</string>
   <string name="ui.app.admin.notif.test_failed">テストメールの送信に失敗しました。</string>
+  <string name="ui.app.admin.notif.test_email_required">受信者のメールアドレスは必須です。</string>
   <string name="ui.app.admin.notif.field_env_conflict">このフィールドは環境変数で設定されていますが、保存された値と異なります。</string>
   <string name="ui.app.admin.notif.required_field">必須の値</string>
   <string name="ui.app.admin.notif.enable_provider">アダプターを有効にする</string>
