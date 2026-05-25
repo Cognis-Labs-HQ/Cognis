@@ -311,6 +311,65 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
                 }
             }
         });
+
+        test("SmtpNotificationSender uses from-domain EHLO fallback when HOST is unset", async () => {
+            let ehloCommand = "";
+            const server = await createMockSmtpServer((conn) => {
+                let buf = "";
+                let dataMode = false;
+                conn.setEncoding("utf8");
+                conn.write("220 mock.example.com SMTP\r\n");
+
+                conn.on("data", (chunk: string) => {
+                    buf += chunk;
+                    const lines = buf.split("\r\n");
+                    buf = lines.pop() ?? "";
+
+                    for (const line of lines) {
+                        if (dataMode) {
+                            if (line === ".") {
+                                dataMode = false;
+                                conn.write("250 OK\r\n");
+                            }
+                            continue;
+                        }
+                        if (!line) continue;
+                        const upper = line.toUpperCase();
+                        if (upper.startsWith("EHLO")) {
+                            ehloCommand = line;
+                            conn.write("250 OK\r\n");
+                        } else if (upper.startsWith("MAIL FROM")) {
+                            conn.write("250 OK\r\n");
+                        } else if (upper.startsWith("RCPT TO")) {
+                            conn.write("250 OK\r\n");
+                        } else if (upper === "DATA") {
+                            dataMode = true;
+                            conn.write("354 Start mail input\r\n");
+                        } else if (upper.startsWith("QUIT")) {
+                            conn.write("221 Bye\r\n");
+                            conn.end();
+                        }
+                    }
+                });
+            });
+
+            try {
+                const sender = new SmtpNotificationSender(
+                    {
+                        host: server.host,
+                        port: server.port,
+                        from: "no-reply@cognis.study",
+                        secure: "none",
+                    },
+                    undefined,
+                    noopSleep,
+                );
+                await sender.sendTestEmail("admin@example.com");
+                assert.equal(ehloCommand, "EHLO cognis.study");
+            } finally {
+                await server.close();
+            }
+        });
     });
 
     try {

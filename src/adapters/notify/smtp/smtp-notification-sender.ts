@@ -149,6 +149,16 @@ function sanitizeMessageIdDomain(value: string | undefined): string | null {
     return null;
 }
 
+function resolveEhloHostname(config: SmtpConfig): string {
+    const explicitHostname = sanitizeHeader(config.ehloHostname ?? "");
+    if (explicitHostname) return explicitHostname;
+    const fromDomain = getAddressDomain(config.from);
+    if (fromDomain) return fromDomain;
+    const smtpHost = sanitizeHeader(config.host);
+    if (smtpHost) return smtpHost;
+    return "localhost";
+}
+
 function makeMessageId(from: string, domainHint?: string): string {
     const domain =
         getAddressDomain(from) ??
@@ -528,8 +538,8 @@ async function sendMail(
                 : new Error(msg);
         }
 
-        const ehloHostname = sanitizeHeader(config.ehloHostname ?? "localhost");
-        let ehlo = await session.cmd(`EHLO ${ehloHostname || "localhost"}`);
+        const ehloHostname = resolveEhloHostname(config);
+        let ehlo = await session.cmd(`EHLO ${ehloHostname}`);
         if (ehlo.code !== 250) {
             throw new Error(`smtp_ehlo_failed:${ehlo.code}`);
         }
@@ -540,7 +550,7 @@ async function sendMail(
                 throw new Error(`smtp_starttls_failed:${starttls.code}`);
             }
             session = await upgradeToTls(session, config.allowSelfSigned);
-            ehlo = await session.cmd(`EHLO ${ehloHostname || "localhost"}`);
+            ehlo = await session.cmd(`EHLO ${ehloHostname}`);
             if (ehlo.code !== 250) {
                 throw new Error(`smtp_ehlo_after_tls_failed:${ehlo.code}`);
             }
