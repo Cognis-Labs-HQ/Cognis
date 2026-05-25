@@ -11,7 +11,7 @@
  *     showToast(message ?? i18n.t('ui.reuse.save_failed'), { variant: 'error' });
  *   }
  *
- * @param {Response} response API response object from fetch/apiFetch.
+ * @param {Response} response API response object from fetch/apiFetch with an optional JSON error payload.
  * @returns {Promise<string | null>} Error message text, or null when unavailable.
  */
 export async function getApiErrorMessage(response) {

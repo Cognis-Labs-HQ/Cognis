@@ -13,13 +13,26 @@
  * @param {string} method
  * @param {Record<string, unknown>} body
  * @param {string} token
- * @returns {any}
+ * @returns {MockRequest}
  */
+interface MockRequest {
+    method: string;
+    headers: { authorization: string };
+    [Symbol.asyncIterator]: () => AsyncGenerator<Buffer, void, unknown>;
+}
+
+interface MockResponse {
+    writeHead(code: number): void;
+    end(responseBody: string): void;
+    readonly status: number;
+    readonly payload: string;
+}
+
 export function requestWithBody(
     method: string,
     body: Record<string, unknown>,
     token: string,
-) {
+): MockRequest {
     const chunks = [Buffer.from(JSON.stringify(body))];
     return {
         method,
@@ -27,13 +40,13 @@ export function requestWithBody(
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of chunks) yield chunk;
         },
-    } as any;
+    };
 }
 
 /**
- * @returns {any}
+ * @returns {MockResponse}
  */
-export function makeResponse() {
+export function makeResponse(): MockResponse {
     let status = 0;
     let payload = "";
     return {
@@ -49,5 +62,5 @@ export function makeResponse() {
         get payload() {
             return payload;
         },
-    } as any;
+    };
 }
