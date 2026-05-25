@@ -128,7 +128,7 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         const normalToken = issueAccessToken("normal-user", "user", 60);
 
         const revokedCount = revokeSetupPendingAccessTokens("pending-admin");
-        assert.equal(revokedCount >= 1, true);
+        assert.ok(revokedCount >= 1);
         assert.equal(verifyAccessToken(pendingUserToken), null);
         assert.deepEqual(verifyAccessToken(pendingAdminToken), {
             sub: "pending-admin",

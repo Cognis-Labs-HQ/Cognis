@@ -263,15 +263,15 @@ export function createSystemRoutes(
                       "tfa:setEnforceAllUsers",
                   )
                 : undefined;
+            const revokeSetupPendingAccessTokens = getCapability
+                ? getCapability<(excludedSubject?: string) => number>(
+                      "auth:revokeSetupPendingAccessTokens",
+                  )
+                : undefined;
             if (setEnforceTfaForAllUsers) {
                 await setEnforceTfaForAllUsers(enforceTfaForAllUsers);
             }
             if (!enforceTfaForAllUsers) {
-                const revokeSetupPendingAccessTokens = getCapability
-                    ? getCapability<(excludedSubject?: string) => number>(
-                          "auth:revokeSetupPendingAccessTokens",
-                      )
-                    : undefined;
                 const revokedSetupPendingCount =
                     revokeSetupPendingAccessTokens?.(claims.sub) ?? 0;
                 if (revokedSetupPendingCount > 0) {
