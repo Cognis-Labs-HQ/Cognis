@@ -181,16 +181,6 @@
     box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.55);
 }
 
-.jitsi-chat-participant-item-selected {
-    border-color: rgba(59, 130, 246, 0.85);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
-}
-
-.jitsi-chat-participant-item-selected.active {
-    border-color: rgba(34, 197, 94, 0.9);
-    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.55);
-}
-
 .jitsi-chat-participant-avatar,
 .jitsi-chat-participant-avatar-img,
 .jitsi-chat-participant-avatar-bubble {

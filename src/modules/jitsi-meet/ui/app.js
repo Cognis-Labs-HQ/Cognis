@@ -238,7 +238,6 @@ function createChatParticipantAvatarButton({
     participantButton.type = "button";
     participantButton.className = "jitsi-chat-participant-item";
     if (selected) {
-        participantButton.classList.add("jitsi-chat-participant-item-selected");
         participantButton.classList.add("active");
     }
     participantButton.setAttribute("role", "listitem");
