@@ -551,7 +551,8 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".floating-toolbar")?.remove();
         }
 
-        const existingThemeToggle = existingShell.querySelector("#theme-toggle");
+        const existingThemeToggle =
+            existingShell.querySelector("#theme-toggle");
         if (!showThemeToggle) {
             existingThemeToggle?.remove();
         } else if (existingThemeToggle instanceof HTMLElement) {

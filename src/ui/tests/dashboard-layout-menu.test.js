@@ -141,8 +141,8 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
         "utf8",
     );
     assert.ok(
-        layoutSource.includes(
-            'const existingThemeToggle = existingShell.querySelector("#theme-toggle");',
+        /const existingThemeToggle\s*=\s*existingShell\.querySelector\("#theme-toggle"\);/m.test(
+            layoutSource,
         ),
         "dashboard layout should resolve the existing theme toggle when reusing the shell",
     );

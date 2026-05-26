@@ -29,19 +29,6 @@ interface ModuleUiRouteRule {
     invalidAccessPolicy?: boolean;
 }
 
-function normalizeModuleUiPath(pathname: string): string {
-    const normalized = String(pathname ?? "").trim();
-    if (!normalized) return "";
-    if (normalized.length > 1 && normalized.endsWith("/")) {
-        return normalized.slice(0, -1);
-    }
-    return normalized;
-}
-
-function isMatchingModuleUiPath(routePath: string, requestPath: string): boolean {
-    return normalizeModuleUiPath(routePath) === normalizeModuleUiPath(requestPath);
-}
-
 function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -632,13 +619,10 @@ export function createUiRoutes(
                     const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
-
-                    const matchingRoute = routes.find((routeRule) =>
-                        isMatchingModuleUiPath(routeRule.path, url.pathname),
+                    const matchingRoute = routes.find(
+                        (routeRule) => routeRule.path === url.pathname,
                     );
-                    if (!matchingRoute || url.pathname.startsWith("/api/")) {
-                        continue;
-                    }
+                    if (!matchingRoute) continue;
                     const loginRedirect = await resolveLoginRedirectLocation(
                         req,
                         ctx,
@@ -651,13 +635,6 @@ export function createUiRoutes(
                         return true;
                     }
                     const session = ctx.getCookieSession(req);
-                    if (!session) {
-                        res.writeHead(302, {
-                            location: "/login?reason=session_expired",
-                        });
-                        res.end();
-                        return true;
-                    }
                     if (matchingRoute.invalidAccessPolicy) {
                         log?.(
                             "warn",
@@ -680,25 +657,23 @@ export function createUiRoutes(
                         res.end();
                         return true;
                     }
-                    if (matchingRoute) {
-                        const uiFile = path.resolve(
-                            MODULES_ROOT,
-                            manifest.id,
-                            manifest.entrypoints.ui,
-                        );
-                        await serveHtmlPage(
-                            res,
-                            uiFile,
-                            log,
-                            {
-                                path: url.pathname,
-                                method: req.method ?? "GET",
-                                moduleId: manifest.id,
-                            },
-                            ctx,
-                        );
-                        return true;
-                    }
+                    const uiFile = path.resolve(
+                        MODULES_ROOT,
+                        manifest.id,
+                        manifest.entrypoints.ui,
+                    );
+                    await serveHtmlPage(
+                        res,
+                        uiFile,
+                        log,
+                        {
+                            path: url.pathname,
+                            method: req.method ?? "GET",
+                            moduleId: manifest.id,
+                        },
+                        ctx,
+                    );
+                    return true;
                 } catch (error) {
                     log?.(
                         "error",
