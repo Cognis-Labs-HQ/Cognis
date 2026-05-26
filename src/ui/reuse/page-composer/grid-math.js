@@ -54,7 +54,11 @@ export function snapGridRound(raw, dim) {
  * @returns {Set<string>}
  */
 export function registerOccupiedPlacement(cells, placement) {
-    for (let rowIndex = placement.row * 2; rowIndex < (placement.row + placement.h) * 2; rowIndex++) {
+    for (
+        let rowIndex = placement.row * 2;
+        rowIndex < (placement.row + placement.h) * 2;
+        rowIndex++
+    ) {
         for (
             let columnIndex = placement.col * 2;
             columnIndex < (placement.col + placement.w) * 2;

@@ -113,7 +113,10 @@ test("page composer expands compact single-pane rows to full width", () => {
     );
     assert.match(source, /canExpandPlacementWithoutConflicts\(/);
     assert.match(source, /const occupiedCells = new Set\(occupiedOutsideRow\)/);
-    assert.match(source, /registerOccupiedPlacement\(occupiedCells, nextPlacement\)/);
+    assert.match(
+        source,
+        /registerOccupiedPlacement\(occupiedCells, nextPlacement\)/,
+    );
     assert.match(source, /normalizedPlacement = shouldExpandToFullWidth/);
     assert.match(source, /col: 0,/);
     assert.match(source, /w: bounds\.max,/);
