@@ -26,9 +26,12 @@
     box-shadow: var(--shadow);
     width: 100%;
     max-width: 480px;
+    max-height: calc(100vh - 48px);
+    max-height: calc(100dvh - 48px);
     display: flex;
     flex-direction: column;
     gap: 0;
+    overflow-y: auto;
     transform: translateY(8px);
     transition: transform 0.18s ease;
 }
@@ -124,6 +127,29 @@
     transform: translateY(-1px);
 }
 
+.popup-overlay,
+.popup-overlay * {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.popup-overlay ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.popup-overlay ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+.popup-overlay ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+}
+
+.popup-overlay ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
 @media (max-width: 640px) {
     .popup-overlay {
         align-items: flex-start;
@@ -133,6 +159,8 @@
     .popup-dialog {
         width: 100%;
         max-width: none;
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
         margin: auto 0;
     }
 }
@@ -189,4 +217,56 @@
     gap: 8px;
     margin-top: 6px;
     font-size: 0.88rem;
+}
+
+.popup-error-report {
+    display: grid;
+    gap: 12px;
+}
+
+.popup-error-report-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+}
+
+.popup-error-report-brand-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.popup-error-report-brand-name {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.popup-error-report section {
+    display: grid;
+    gap: 6px;
+}
+
+.popup-error-report h3 {
+    margin: 0;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+}
+
+.popup-error-report-trace {
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    max-height: 180px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
