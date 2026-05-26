@@ -247,9 +247,13 @@
 
 .form-builder-validation-notice {
     display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 8;
     width: fit-content;
     max-width: 100%;
-    margin: 2px 0 0;
+    margin: 0;
     padding: 6px 10px;
     border-radius: 8px;
     border: 1px solid var(--color-danger-outline-text);
