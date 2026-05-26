@@ -145,7 +145,7 @@ export function createFormBuilder(ctx, options) {
         if (disabled) {
             attributes.push(renderAttribute("disabled", true));
         }
-        if (hasMaxCharacters) {
+        if (hasMaxCharacters && type !== "select") {
             attributes.push(renderAttribute("maxlength", maxCharacters));
         }
 

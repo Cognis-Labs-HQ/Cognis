@@ -33,12 +33,98 @@ let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
-let postFormBuilder = null;
 let postFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
+
+function createPostFormBuilder(canFollowers, canFriends, canEveryone) {
+    return createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "new-post-form",
+            formClassName: "new-post-form",
+            submitButtonClassName: "btn-confirm btn-animated",
+            submitLabelKey: "ui.app.profile.post_submit",
+            fields: [
+                {
+                    name: "title",
+                    labelKey: "ui.app.profile.post_title",
+                    maxCharacters: POST_TITLE_MAX_CHARACTERS,
+                    attributes: {
+                        id: "post-title",
+                        placeholder: i18n.t("ui.app.profile.post_title"),
+                    },
+                },
+                {
+                    name: "content",
+                    labelKey: "ui.app.profile.post_content",
+                    type: "textarea",
+                    required: true,
+                    maxCharacters: POST_CONTENT_MAX_CHARACTERS,
+                    attributes: {
+                        id: "post-content",
+                        rows: 3,
+                        placeholder: i18n.t("ui.app.profile.post_content"),
+                    },
+                },
+                {
+                    name: "visibility",
+                    labelKey: "ui.app.profile.visibility",
+                    type: "select",
+                    attributes: {
+                        id: "post-visibility",
+                    },
+                    options: [
+                        {
+                            value: "only_me",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.only_me",
+                            ),
+                        },
+                        {
+                            value: "private",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.private",
+                            ),
+                            disabled: !canFollowers,
+                            title: !canFollowers
+                                ? i18n.t(
+                                      "ui.app.profile.post_visibility.locked.followers",
+                                  )
+                                : "",
+                        },
+                        {
+                            value: "friends",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.friends",
+                            ),
+                            disabled: !canFriends,
+                            title: !canFriends
+                                ? i18n.t(
+                                      "ui.app.profile.post_visibility.locked.followers",
+                                  )
+                                : "",
+                        },
+                        {
+                            value: "community",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.community",
+                            ),
+                            disabled: !canEveryone,
+                            title: !canEveryone
+                                ? i18n.t(
+                                      "ui.app.profile.post_visibility.locked.everyone",
+                                  )
+                                : "",
+                        },
+                    ],
+                },
+            ],
+        },
+    );
+}
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -586,89 +672,10 @@ function renderNewPost() {
         !canFollowers || !canEveryone
             ? `<span class="profile-visibility-tooltip">${renderInfoTooltip(i18n.t("ui.app.profile.post_visibility_hint"), i18n.t("ui.reuse.more_information"))}</span>`
             : "";
-    postFormBuilder = createFormBuilder(
-        { i18n, escapeHtml },
-        {
-            formId: "new-post-form",
-            formClassName: "new-post-form",
-            submitButtonClassName: "btn-confirm btn-animated",
-            submitLabelKey: "ui.app.profile.post_submit",
-            fields: [
-                {
-                    name: "title",
-                    labelKey: "ui.app.profile.post_title",
-                    maxCharacters: POST_TITLE_MAX_CHARACTERS,
-                    attributes: {
-                        id: "post-title",
-                        placeholder: i18n.t("ui.app.profile.post_title"),
-                    },
-                },
-                {
-                    name: "content",
-                    labelKey: "ui.app.profile.post_content",
-                    type: "textarea",
-                    required: true,
-                    maxCharacters: POST_CONTENT_MAX_CHARACTERS,
-                    attributes: {
-                        id: "post-content",
-                        rows: 3,
-                        placeholder: i18n.t("ui.app.profile.post_content"),
-                    },
-                },
-                {
-                    name: "visibility",
-                    labelKey: "ui.app.profile.visibility",
-                    type: "select",
-                    attributes: {
-                        id: "post-visibility",
-                    },
-                    options: [
-                        {
-                            value: "only_me",
-                            label: i18n.t(
-                                "ui.app.profile.post_visibility.only_me",
-                            ),
-                        },
-                        {
-                            value: "private",
-                            label: i18n.t(
-                                "ui.app.profile.post_visibility.private",
-                            ),
-                            disabled: !canFollowers,
-                            title: !canFollowers
-                                ? i18n.t(
-                                      "ui.app.profile.post_visibility.locked.followers",
-                                  )
-                                : "",
-                        },
-                        {
-                            value: "friends",
-                            label: i18n.t(
-                                "ui.app.profile.post_visibility.friends",
-                            ),
-                            disabled: !canFriends,
-                            title: !canFriends
-                                ? i18n.t(
-                                      "ui.app.profile.post_visibility.locked.followers",
-                                  )
-                                : "",
-                        },
-                        {
-                            value: "community",
-                            label: i18n.t(
-                                "ui.app.profile.post_visibility.community",
-                            ),
-                            disabled: !canEveryone,
-                            title: !canEveryone
-                                ? i18n.t(
-                                      "ui.app.profile.post_visibility.locked.everyone",
-                                  )
-                                : "",
-                        },
-                    ],
-                },
-            ],
-        },
+    const postFormBuilder = createPostFormBuilder(
+        canFollowers,
+        canFriends,
+        canEveryone,
     );
 
     return `
@@ -939,6 +946,12 @@ async function doCreatePost() {
 
         if (res.ok) {
             posts = await loadOwnPosts();
+            const postFormElement = root.querySelector("#new-post-form");
+            if (postFormElement instanceof HTMLFormElement) {
+                postFormElement.reset();
+                postFormController?.validateField("title");
+                postFormController?.validateField("content");
+            }
             composer.refresh(elements);
         } else {
             showToast(i18n.t("ui.app.profile.post_failed"), {
@@ -1171,7 +1184,13 @@ function bindPageEvents() {
         doRemoveAvatar,
     );
     const postFormElement = root.querySelector("#new-post-form");
-    if (postFormElement instanceof HTMLFormElement && postFormBuilder) {
+    if (postFormElement instanceof HTMLFormElement) {
+        const profileVis = profile?.visibility ?? "hidden";
+        const postFormBuilder = createPostFormBuilder(
+            profileVis !== "hidden",
+            profileVis !== "hidden",
+            profileVis === "community",
+        );
         postFormController = postFormBuilder.attach(postFormElement);
         postFormElement.addEventListener("submit", (event) => {
             event.preventDefault();
