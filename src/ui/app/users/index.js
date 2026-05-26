@@ -341,7 +341,10 @@ function bindUsersInteractions() {
     root.querySelectorAll(".users-row").forEach((row) => {
         row.addEventListener("click", async (event) => {
             const target = event.target;
-            if (target instanceof HTMLElement && target.closest("button"))
+            if (
+                target instanceof HTMLElement &&
+                target.closest("button,select")
+            )
                 return;
             const username = row.dataset.username;
             if (!username) return;
