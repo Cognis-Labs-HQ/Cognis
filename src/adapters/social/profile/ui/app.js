@@ -872,6 +872,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
     const cropInteractionController = new AbortController();
     const cropAspectRatio = Math.max(0.5, Number(aspectRatio) || 1);
     const minimumSelectionSize = 64;
+    const initialSelectionFillRatio = 0.96;
     const AUTO_ZOOM_MIN_DRAG_DISTANCE = 2;
     const MAX_AUTO_ZOOM_DEPTH = 12;
     const state = {
@@ -882,6 +883,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         dragMode: "move",
         dragStartSelection: null,
         dragStartSourceRect: null,
+        dragAnchorX: 0,
+        dragAnchorY: 0,
         displayBounds: null,
         selection: null,
         sourceRect: null,
@@ -893,6 +896,67 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
     let selectionElement = null;
     let saveCropState = null;
     let renderQueued = false;
+
+    function clampValue(value, minimum, maximum) {
+        return Math.min(maximum, Math.max(minimum, value));
+    }
+
+    function resolvePointerPositionInFrame(event) {
+        if (!(frameElement instanceof HTMLElement)) {
+            return null;
+        }
+        const frameRect = frameElement.getBoundingClientRect();
+        return {
+            left: event.clientX - frameRect.left,
+            top: event.clientY - frameRect.top,
+        };
+    }
+
+    function isPointInsideBounds(point, bounds) {
+        return (
+            point.left >= bounds.left &&
+            point.left <= bounds.left + bounds.width &&
+            point.top >= bounds.top &&
+            point.top <= bounds.top + bounds.height
+        );
+    }
+
+    function createSelectionFromAnchorDrag({
+        anchorLeft,
+        anchorTop,
+        pointerLeft,
+        pointerTop,
+        bounds,
+    }) {
+        const maxWidth = Math.min(
+            bounds.width,
+            bounds.height * cropAspectRatio,
+        );
+        const minWidth = Math.min(maxWidth, minimumSelectionSize);
+        const pointerDeltaLeft = pointerLeft - anchorLeft;
+        const pointerDeltaTop = pointerTop - anchorTop;
+        const widthByLeft = Math.abs(pointerDeltaLeft);
+        const widthByTop = Math.abs(pointerDeltaTop) * cropAspectRatio;
+        const width = clampValue(
+            Math.min(widthByLeft, widthByTop),
+            minWidth,
+            maxWidth,
+        );
+        const height = width / cropAspectRatio;
+        const left = pointerDeltaLeft >= 0 ? anchorLeft : anchorLeft - width;
+        const top = pointerDeltaTop >= 0 ? anchorTop : anchorTop - height;
+        return clampCropSelection({
+            selection: {
+                left,
+                top,
+                width,
+                height,
+            },
+            bounds,
+            aspectRatio: cropAspectRatio,
+            minSize: minimumSelectionSize,
+        });
+    }
 
     function renderCrop() {
         if (!(frameElement instanceof HTMLElement)) return;
@@ -944,6 +1008,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                 bounds: displayBounds,
                 aspectRatio: cropAspectRatio,
                 minSize: minimumSelectionSize,
+                fillRatio: initialSelectionFillRatio,
             });
         } else {
             state.selection = clampCropSelection({
@@ -1001,11 +1066,27 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (!(event.target instanceof HTMLElement)) return;
         if (!(selectionElement instanceof HTMLElement)) return;
         if (!state.selection || !state.displayBounds) return;
+        const pointerPosition = resolvePointerPositionInFrame(event);
+        if (!pointerPosition) return;
+        const clampedPointerLeft = clampValue(
+            pointerPosition.left,
+            state.displayBounds.left,
+            state.displayBounds.left + state.displayBounds.width,
+        );
+        const clampedPointerTop = clampValue(
+            pointerPosition.top,
+            state.displayBounds.top,
+            state.displayBounds.top + state.displayBounds.height,
+        );
         const pointerTarget = event.target.closest("[data-crop-handle]");
         if (pointerTarget instanceof HTMLElement) {
             state.dragMode = pointerTarget.dataset.cropHandle || "move";
         } else if (selectionElement.contains(event.target)) {
             state.dragMode = "move";
+        } else if (isPointInsideBounds(pointerPosition, state.displayBounds)) {
+            state.dragMode = "draw";
+            state.dragAnchorX = clampedPointerLeft;
+            state.dragAnchorY = clampedPointerTop;
         } else {
             return;
         }
@@ -1085,6 +1166,26 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                     bounds: state.displayBounds,
                 });
             }
+        } else if (state.dragMode === "draw") {
+            const pointerPosition = resolvePointerPositionInFrame(event);
+            if (!pointerPosition) return;
+            const clampedPointerLeft = clampValue(
+                pointerPosition.left,
+                state.displayBounds.left,
+                state.displayBounds.left + state.displayBounds.width,
+            );
+            const clampedPointerTop = clampValue(
+                pointerPosition.top,
+                state.displayBounds.top,
+                state.displayBounds.top + state.displayBounds.height,
+            );
+            state.selection = createSelectionFromAnchorDrag({
+                anchorLeft: state.dragAnchorX,
+                anchorTop: state.dragAnchorY,
+                pointerLeft: clampedPointerLeft,
+                pointerTop: clampedPointerTop,
+                bounds: state.displayBounds,
+            });
         } else {
             state.selection = computeResizedCropSelection({
                 startSelection: state.dragStartSelection,
@@ -1131,6 +1232,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                         },
                         aspectRatio: cropAspectRatio,
                         minSize: minimumSelectionSize,
+                        fillRatio: initialSelectionFillRatio,
                     });
                 } else {
                     state.selection = null;
