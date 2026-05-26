@@ -937,6 +937,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (!(frameElement instanceof HTMLElement)) return;
         if (!(event.target instanceof HTMLElement)) return;
         if (!(selectionElement instanceof HTMLElement)) return;
+        if (!state.selection || !state.imageBounds) return;
         const pointerTarget = event.target.closest("[data-crop-handle]");
         if (pointerTarget instanceof HTMLElement) {
             state.dragMode = pointerTarget.dataset.cropHandle || "move";
@@ -945,7 +946,6 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         } else {
             return;
         }
-        if (!state.selection || !state.imageBounds) return;
         event.preventDefault();
         state.dragging = true;
         state.dragPointerId = event.pointerId;

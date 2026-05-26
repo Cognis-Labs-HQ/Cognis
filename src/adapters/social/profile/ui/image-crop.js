@@ -292,19 +292,19 @@ export function computeMovedCropSelection({
     };
 }
 
-function getResizeModes(handle) {
+function getFixedAnchorModes(handle) {
     const safeHandle = String(handle || "").toLowerCase();
-    const horizontalMode = safeHandle.includes("e")
+    const fixedHorizontalAnchor = safeHandle.includes("e")
         ? "left"
         : safeHandle.includes("w")
           ? "right"
           : "center";
-    const verticalMode = safeHandle.includes("s")
+    const fixedVerticalAnchor = safeHandle.includes("s")
         ? "top"
         : safeHandle.includes("n")
           ? "bottom"
           : "center";
-    return { horizontalMode, verticalMode };
+    return { fixedHorizontalAnchor, fixedVerticalAnchor };
 }
 
 /**
@@ -332,42 +332,46 @@ export function computeResizedCropSelection({
 }) {
     const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
     const safeMinSize = Math.max(16, Number(minSize) || 64);
-    const { horizontalMode, verticalMode } = getResizeModes(handle);
+    const { fixedHorizontalAnchor, fixedVerticalAnchor } =
+        getFixedAnchorModes(handle);
     const selectionCenterX = startSelection.left + startSelection.width / 2;
     const selectionCenterY = startSelection.top + startSelection.height / 2;
     const anchorX =
-        horizontalMode === "left"
+        fixedHorizontalAnchor === "left"
             ? startSelection.left
-            : horizontalMode === "right"
+            : fixedHorizontalAnchor === "right"
               ? startSelection.left + startSelection.width
               : selectionCenterX;
     const anchorY =
-        verticalMode === "top"
+        fixedVerticalAnchor === "top"
             ? startSelection.top
-            : verticalMode === "bottom"
+            : fixedVerticalAnchor === "bottom"
               ? startSelection.top + startSelection.height
               : selectionCenterY;
 
     let desiredWidth = startSelection.width;
-    if (horizontalMode === "left") {
+    if (fixedHorizontalAnchor === "left") {
         desiredWidth = startSelection.width + (Number(deltaX) || 0);
-    } else if (horizontalMode === "right") {
+    } else if (fixedHorizontalAnchor === "right") {
         desiredWidth = startSelection.width - (Number(deltaX) || 0);
-    } else if (verticalMode === "top") {
+    } else if (fixedVerticalAnchor === "top") {
         desiredWidth =
             (startSelection.height + (Number(deltaY) || 0)) * safeAspectRatio;
-    } else if (verticalMode === "bottom") {
+    } else if (fixedVerticalAnchor === "bottom") {
         desiredWidth =
             (startSelection.height - (Number(deltaY) || 0)) * safeAspectRatio;
     }
 
-    if (horizontalMode !== "center" && verticalMode !== "center") {
+    if (
+        fixedHorizontalAnchor !== "center" &&
+        fixedVerticalAnchor !== "center"
+    ) {
         const widthFromHorizontal =
-            horizontalMode === "left"
+            fixedHorizontalAnchor === "left"
                 ? startSelection.width + (Number(deltaX) || 0)
                 : startSelection.width - (Number(deltaX) || 0);
         const widthFromVertical =
-            verticalMode === "top"
+            fixedVerticalAnchor === "top"
                 ? (startSelection.height + (Number(deltaY) || 0)) *
                   safeAspectRatio
                 : (startSelection.height - (Number(deltaY) || 0)) *
@@ -380,18 +384,18 @@ export function computeResizedCropSelection({
     }
 
     const maxWidthHorizontal =
-        horizontalMode === "left"
+        fixedHorizontalAnchor === "left"
             ? bounds.left + bounds.width - anchorX
-            : horizontalMode === "right"
+            : fixedHorizontalAnchor === "right"
               ? anchorX - bounds.left
               : Math.min(
                     anchorX - bounds.left,
                     bounds.left + bounds.width - anchorX,
                 ) * 2;
     const maxHeightVertical =
-        verticalMode === "top"
+        fixedVerticalAnchor === "top"
             ? bounds.top + bounds.height - anchorY
-            : verticalMode === "bottom"
+            : fixedVerticalAnchor === "bottom"
               ? anchorY - bounds.top
               : Math.min(
                     anchorY - bounds.top,
@@ -404,15 +408,15 @@ export function computeResizedCropSelection({
     const width = Math.min(maxWidth, Math.max(safeMinSize, desiredWidth));
     const height = width / safeAspectRatio;
     const left =
-        horizontalMode === "left"
+        fixedHorizontalAnchor === "left"
             ? anchorX
-            : horizontalMode === "right"
+            : fixedHorizontalAnchor === "right"
               ? anchorX - width
               : anchorX - width / 2;
     const top =
-        verticalMode === "top"
+        fixedVerticalAnchor === "top"
             ? anchorY
-            : verticalMode === "bottom"
+            : fixedVerticalAnchor === "bottom"
               ? anchorY - height
               : anchorY - height / 2;
     return clampCropSelection({

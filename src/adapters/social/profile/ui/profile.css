@@ -191,6 +191,7 @@
 }
 
 .profile-image-crop-popup {
+    --crop-frame-vertical-offset: 280px;
     display: grid;
     gap: 12px;
     justify-items: center;
@@ -201,10 +202,19 @@
     width: min(
         100%,
         640px,
-        calc((100vh - 280px) * var(--crop-aspect-ratio, 1)),
-        calc((100dvh - 280px) * var(--crop-aspect-ratio, 1))
+        calc(
+            (100vh - var(--crop-frame-vertical-offset)) *
+                var(--crop-aspect-ratio, 1)
+        ),
+        calc(
+            (100dvh - var(--crop-frame-vertical-offset)) *
+                var(--crop-aspect-ratio, 1)
+        )
     );
-    max-height: min(calc(100vh - 280px), calc(100dvh - 280px));
+    max-height: min(
+        calc(100vh - var(--crop-frame-vertical-offset)),
+        calc(100dvh - var(--crop-frame-vertical-offset))
+    );
     justify-self: center;
     border-radius: 12px;
     overflow: hidden;
