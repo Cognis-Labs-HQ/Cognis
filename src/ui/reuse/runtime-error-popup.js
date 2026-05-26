@@ -288,7 +288,7 @@ export async function openRuntimeErrorPopup({
                 },
             ],
         });
-        if (popupAction === null) {
+        if (popupAction === null || popupAction === "close") {
             navigateToPreviousRouteIfDifferent(
                 currentRoutePath,
                 previousRoutePath,

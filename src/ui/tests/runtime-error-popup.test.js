@@ -16,6 +16,10 @@ test("runtime error popup renders branded header and supports previous-route fal
     assert.match(source, /\/static\/assets\/icons\/cognis-icon\.png/);
     assert.match(source, /navigateToPreviousRouteIfDifferent/);
     assert.match(source, /window\.history\.state\?\.previousRouterPage/);
+    assert.match(
+        source,
+        /popupAction === null \|\| popupAction === (["'])close\1/,
+    );
 });
 
 test("popup styles constrain dialog height and apply themed scrollbars", () => {
