@@ -25,6 +25,6 @@ test("auth security preferences only render password reset controls", () => {
 test("password change popup revalidates confirm password reactively", () => {
     assert.match(
         PASSWORD_CHANGE_SOURCE,
-        /bindConfirmPasswordRevalidation\(\{[\s\S]*passwordFieldName: "nextPassword"[\s\S]*confirmFieldName: "confirmPassword"/m,
+        /bindConfirmPasswordRevalidation\(\{\s*form:\s*formElement,\s*formController,\s*passwordFieldName:\s*"nextPassword",\s*confirmFieldName:\s*"confirmPassword",/m,
     );
 });

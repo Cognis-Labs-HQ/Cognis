@@ -298,6 +298,6 @@ test("register confirm password revalidates reactively when password changes", (
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(
         source,
-        /bindConfirmPasswordRevalidation\(\{[\s\S]*passwordFieldName: "password"[\s\S]*confirmFieldName: "confirmPassword"/m,
+        /bindConfirmPasswordRevalidation\(\{\s*form,\s*formController,\s*passwordFieldName:\s*"password",\s*confirmFieldName:\s*"confirmPassword",/m,
     );
 });
