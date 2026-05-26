@@ -845,7 +845,8 @@ async function openEditPopup() {
     const result = await popupPromise;
 
     if (result === "save") {
-        const fieldValues = profileEditFormController.current?.getValues() ?? {};
+        const fieldValues =
+            profileEditFormController.current?.getValues() ?? {};
         const displayName = fieldValues.displayName ?? currentDisplayName;
         const bio = fieldValues.bio ?? currentBio;
         const location = fieldValues.location ?? currentLocation;
