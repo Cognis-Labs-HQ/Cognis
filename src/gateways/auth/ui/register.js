@@ -406,10 +406,10 @@ export async function mount(root, { signal } = {}) {
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,
                 emailLocked,
-                emailRequired: userValidationMode !== "none",
+                emailRequired: userValidationMode === "smtp",
             });
             const emailVerifyNoticeHtml =
-                !isInviteFlow && userValidationMode !== "none"
+                !isInviteFlow && userValidationMode === "smtp"
                     ? renderInPageCallout({
                           variant: "info",
                           body: i18n.t("ui.app.register.email_verify_notice"),
@@ -614,7 +614,7 @@ export async function mount(root, { signal } = {}) {
                     const registerFormBuilder = createRegisterFormBuilder({
                         emailValue: lockedEmail || "",
                         emailLocked: Boolean(lockedEmail),
-                        emailRequired: userValidationMode !== "none",
+                        emailRequired: userValidationMode === "smtp",
                     });
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,
