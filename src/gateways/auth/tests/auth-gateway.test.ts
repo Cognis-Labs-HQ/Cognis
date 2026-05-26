@@ -851,7 +851,9 @@ test("POST /api/v1/auth/reset-password rejects previously used password", async 
                 currentPassword: "after-reset",
                 password: "before-reset",
             },
-            { authorization: `Bearer ${issueAccessToken("password-history-user", "user", 60)}` },
+            {
+                authorization: `Bearer ${issueAccessToken("password-history-user", "user", 60)}`,
+            },
         ),
         "/api/v1/auth/reset-password",
     );
