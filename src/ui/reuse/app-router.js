@@ -398,7 +398,6 @@ async function loadRoute(path) {
         return loadRoute(enforcedPath);
     }
     const finishPageLoading = beginPageLoading();
-    let navigationSignal = null;
     try {
         if (_mountController) {
             _mountController.abort();
@@ -406,7 +405,6 @@ async function loadRoute(path) {
         _mountController = new AbortController();
         _currentBase = route.base;
         const { signal } = _mountController;
-        navigationSignal = signal;
 
         // Start stylesheet injection and module loading in parallel — both are
         // network operations and can race. We await both before calling mount()
@@ -436,19 +434,21 @@ async function loadRoute(path) {
                 console.error("[router] mount() error for", path, error);
                 await openRuntimeErrorPopup({
                     error,
-                    context: `Route mount failed for ${path}`,
+                    contextKey: "ui.reuse.runtime_error_context_route_mount",
+                    contextDetail: path,
                 });
             }
         }
         return true;
     } catch (error) {
-        if (navigationSignal?.aborted) {
+        if (_mountController?.signal?.aborted) {
             return false;
         }
         console.error("[router] route load error for", path, error);
         await openRuntimeErrorPopup({
             error,
-            context: `Route load failed for ${path}`,
+            contextKey: "ui.reuse.runtime_error_context_route_load",
+            contextDetail: path,
         });
         return false;
     } finally {

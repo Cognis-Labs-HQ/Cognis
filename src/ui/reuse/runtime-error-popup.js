@@ -19,9 +19,17 @@
  *     context: 'Route load failed for /profile/demo',
  *   });
  *
+ * Notes:
+ *   installRuntimeErrorHandlers() wraps console methods to record recent log
+ *   lines for report popups. The original console methods are still invoked for
+ *   normal devtools output, but the wrapped methods have a different function
+ *   identity than the native console methods.
+ *
  * @param {{
  *   error?: unknown,
  *   context?: string,
+ *   contextKey?: string,
+ *   contextDetail?: string,
  *   consoleEntries?: Array<{ timestamp: string, level: string, message: string }>,
  * }} options
  * @returns {Promise<void>}
@@ -101,8 +109,8 @@ function stringifyConsoleArgument(value) {
     }
 }
 
-function pushConsoleEntry(level, argumentsList) {
-    const message = argumentsList.map(stringifyConsoleArgument).join(" ");
+function pushConsoleEntry(level, consoleArguments) {
+    const message = consoleArguments.map(stringifyConsoleArgument).join(" ");
     consoleEntryBuffer.push({
         timestamp: new Date().toISOString(),
         level,
@@ -123,9 +131,9 @@ function installConsoleCapture() {
         if (typeof originalConsoleMethod !== "function") continue;
         if (originalConsoleMethods.has(consoleMethodName)) continue;
         originalConsoleMethods.set(consoleMethodName, originalConsoleMethod);
-        console[consoleMethodName] = (...argumentsList) => {
-            pushConsoleEntry(consoleMethodName, argumentsList);
-            originalConsoleMethod.apply(console, argumentsList);
+        console[consoleMethodName] = (...consoleArguments) => {
+            pushConsoleEntry(consoleMethodName, consoleArguments);
+            originalConsoleMethod.apply(console, consoleArguments);
         };
     }
 }
@@ -159,14 +167,14 @@ function shouldSuppressPopup(signature) {
     return isDuplicate;
 }
 
-function getConsoleEntriesMarkup(
-    i18n,
-    consoleEntries = consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT),
-) {
-    if (!consoleEntries.length) {
+function getConsoleEntriesMarkup(i18n, consoleEntries = null) {
+    const effectiveConsoleEntries = Array.isArray(consoleEntries)
+        ? consoleEntries
+        : consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT);
+    if (!effectiveConsoleEntries.length) {
         return `<p>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_console_empty"))}</p>`;
     }
-    const renderedEntries = consoleEntries
+    const renderedEntries = effectiveConsoleEntries
         .map(
             (entry) =>
                 `${escapeHtml(entry.timestamp)} [${escapeHtml(String(entry.level).toUpperCase())}] ${escapeHtml(entry.message || "")}`,
@@ -178,6 +186,8 @@ function getConsoleEntriesMarkup(
 export async function openRuntimeErrorPopup({
     error,
     context = "",
+    contextKey = "",
+    contextDetail = "",
     consoleEntries,
 } = {}) {
     const normalizedErrorMessage = normalizeErrorMessage(error);
@@ -205,10 +215,26 @@ export async function openRuntimeErrorPopup({
                     "ui.reuse.runtime_error_popup_console": "Console Trace",
                     "ui.reuse.runtime_error_popup_console_empty":
                         "No recent console entries were captured.",
+                    "ui.reuse.runtime_error_context_window_resource":
+                        "Window Resource Load Error",
+                    "ui.reuse.runtime_error_context_window_runtime":
+                        "Window Runtime Error",
+                    "ui.reuse.runtime_error_context_unhandled_rejection":
+                        "Unhandled Promise Rejection",
+                    "ui.reuse.runtime_error_context_route_mount":
+                        "Route Mount Failed",
+                    "ui.reuse.runtime_error_context_route_load":
+                        "Route Load Failed",
                 };
                 return fallbackLabels[key] ?? key;
             },
         }));
+        const contextParts = [];
+        const localizedContext = contextKey ? i18n.t(contextKey) : "";
+        if (localizedContext) contextParts.push(localizedContext);
+        else if (context) contextParts.push(context);
+        if (contextDetail) contextParts.push(contextDetail);
+        const resolvedContext = contextParts.join(": ") || "unknown";
 
         const popupBody = () => `
             <div class="popup-error-report">
@@ -218,7 +244,7 @@ export async function openRuntimeErrorPopup({
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_context"))}</h3>
-                    <pre class="popup-error-report-trace">${escapeHtml(context || "unknown")}</pre>
+                    <pre class="popup-error-report-trace">${escapeHtml(resolvedContext)}</pre>
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_page_url"))}</h3>
@@ -264,12 +290,11 @@ export function installRuntimeErrorHandlers() {
         (event) => {
             const resourceLoadError = buildResourceLoadError(event);
             const runtimeError = resourceLoadError ?? event.error;
-            const eventContext = resourceLoadError
-                ? "Window resource load error"
-                : "Window runtime error";
             openRuntimeErrorPopup({
                 error: runtimeError ?? event.message,
-                context: eventContext,
+                contextKey: resourceLoadError
+                    ? "ui.reuse.runtime_error_context_window_resource"
+                    : "ui.reuse.runtime_error_context_window_runtime",
             }).catch(() => {});
         },
         true,
@@ -278,7 +303,7 @@ export function installRuntimeErrorHandlers() {
     window.addEventListener("unhandledrejection", (event) => {
         openRuntimeErrorPopup({
             error: event.reason,
-            context: "Unhandled Promise Rejection",
+            contextKey: "ui.reuse.runtime_error_context_unhandled_rejection",
         }).catch(() => {});
     });
 }

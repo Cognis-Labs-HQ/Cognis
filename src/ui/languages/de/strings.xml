@@ -76,6 +76,11 @@
   <string name="ui.reuse.runtime_error_popup_stack">Stack-Trace</string>
   <string name="ui.reuse.runtime_error_popup_console">Konsolenprotokoll</string>
   <string name="ui.reuse.runtime_error_popup_console_empty">Es wurden keine aktuellen Konsoleneinträge erfasst.</string>
+  <string name="ui.reuse.runtime_error_context_window_resource">Fenster-Ressourcenladefehler</string>
+  <string name="ui.reuse.runtime_error_context_window_runtime">Fenster-Laufzeitfehler</string>
+  <string name="ui.reuse.runtime_error_context_unhandled_rejection">Unbehandelte Promise-Ablehnung</string>
+  <string name="ui.reuse.runtime_error_context_route_mount">Routen-Mount Fehlgeschlagen</string>
+  <string name="ui.reuse.runtime_error_context_route_load">Routenladen Fehlgeschlagen</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">Benutzer</string>

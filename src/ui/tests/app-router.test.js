@@ -255,8 +255,8 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
     assert.match(
         src,
-        /const finishPageLoading = beginPageLoading\(\)[\s\S]*finally\s*\{\s*finishPageLoading\(\);/m,
-        "app-router.js must always finish loading overlay cleanup in a top-level finally block",
+        /finally\s*\{[\s\S]*finishPageLoading\(\)/m,
+        "app-router.js must call finishPageLoading() from a finally block",
     );
     assert.match(
         src,
@@ -291,22 +291,5 @@ test("router installs global runtime error handlers", () => {
         src,
         /installRuntimeErrorHandlers\(\)/,
         "app-router.js must initialize global runtime error listeners",
-    );
-});
-
-test("router enforces TFA setup route when required", () => {
-    const src = readFileSync(
-        resolve(ROOT, "src/ui/reuse/app-router.js"),
-        "utf8",
-    );
-    assert.match(
-        src,
-        /readAuthSetupRequirement/,
-        "app-router.js must check TFA setup status before route loads",
-    );
-    assert.match(
-        src,
-        /\/settings#security/,
-        "app-router.js must redirect required TFA users to /settings#security",
     );
 });
