@@ -34,6 +34,7 @@
   <string name="module.jitsi_meet.overlay.leave_blocked">Keluar dari rapat dulu sebelum berpindah dari halaman ini.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pemeriksaan Pra-Penerbangan Berhasil.</string>
   <string name="module.jitsi_meet.chat.heading">Chat Rapat</string>
+  <string name="module.jitsi_meet.chat.heading_private">Chat dengan {{displayName}}</string>
   <string name="module.jitsi_meet.chat.pending">Menunggu rapat dimulai.</string>
   <string name="module.jitsi_meet.chat.ready">Ruang chat siap.</string>
   <string name="module.jitsi_meet.chat.unavailable">Chat rapat sedang tidak tersedia.</string>

@@ -162,6 +162,7 @@
 .jitsi-chat-participant-item {
     border: 1px solid rgba(148, 163, 184, 0.4);
     background: rgba(15, 23, 42, 0.45);
+    color: inherit;
     border-radius: 999px;
     width: 2.35rem;
     height: 2.35rem;
@@ -171,11 +172,13 @@
     justify-content: center;
     cursor: pointer;
     flex: 0 0 auto;
+    text-decoration: none;
 }
 
-.jitsi-chat-participant-item-selected {
-    border-color: rgba(59, 130, 246, 0.85);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+.jitsi-chat-participant-item:hover,
+.jitsi-chat-participant-item.active {
+    border-color: rgba(34, 197, 94, 0.9);
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.55);
 }
 
 .jitsi-chat-participant-avatar,

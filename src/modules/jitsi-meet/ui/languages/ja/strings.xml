@@ -34,6 +34,7 @@
   <string name="module.jitsi_meet.overlay.leave_blocked">このページから移動する前にミーティングを退出してください。</string>
   <string name="module.jitsi_meet.overlay.probe_done">事前チェック完了。</string>
   <string name="module.jitsi_meet.chat.heading">ミーティング チャット</string>
+  <string name="module.jitsi_meet.chat.heading_private">{{displayName}} とチャット</string>
   <string name="module.jitsi_meet.chat.pending">ミーティングの開始を待っています。</string>
   <string name="module.jitsi_meet.chat.ready">チャットルームの準備ができました。</string>
   <string name="module.jitsi_meet.chat.unavailable">ミーティング チャットは現在利用できません。</string>
