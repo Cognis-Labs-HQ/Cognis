@@ -409,10 +409,17 @@ export async function mount(root, { signal } = {}) {
                 emailLocked,
                 emailRequired: userValidationMode === "smtp",
             });
+            const emailVerifyNoticeHtml =
+                !isInviteFlow && userValidationMode === "smtp"
+                    ? renderInPageCallout({
+                          variant: "info",
+                          body: i18n.t("ui.app.register.email_verify_notice"),
+                      })
+                    : "";
             formHtml = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
-      ${!isInviteFlow && userValidationMode === "smtp" ? renderInPageCallout({ variant: "info", body: i18n.t("ui.app.register.email_verify_notice") }) : ""}
+      ${emailVerifyNoticeHtml}
       <div class="auth-form-shell">
         ${registerFormBuilder.render()}
       </div>
