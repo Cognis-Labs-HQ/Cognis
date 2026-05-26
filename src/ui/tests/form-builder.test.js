@@ -103,7 +103,7 @@ test("form builder supports textarea fields and max character counters", () => {
     assert.match(source, /char-counter--at-limit/);
 });
 
-test("form builder can hide its submit button when embedding inside external popup actions", () => {
+test("form builder can omit its submit button when includeSubmitButton is false", () => {
     const source = read("src/ui/reuse/form-builder.js");
     assert.match(source, /includeSubmitButton/);
     assert.match(source, /options\?\.includeSubmitButton !== false/);
