@@ -1,4 +1,5 @@
-import { attachCriteriaCheck } from "/static/reuse/criteria-check.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
@@ -16,55 +17,65 @@ async function loadPasswordPolicy(apiFetch) {
     return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
 }
 
-function buildPasswordCriteria(i18n, passwordPolicy) {
+function buildFormPasswordCriteria(policy) {
     const criteria = [];
-    if (passwordPolicy.minLength > 0) {
-        const minLength = passwordPolicy.minLength;
+    if (policy.minLength > 0) {
+        const minLength = policy.minLength;
         criteria.push({
+            id: "password-min-length",
+            type: "custom",
             test: (value) => value.length >= minLength,
-            message: i18n
-                .t("gateway.auth.security.password_too_short")
-                .replace("{min}", String(minLength)),
+            messageKey: "gateway.auth.security.password_too_short",
+            messageParams: { min: minLength },
+            mode: "live",
         });
     }
-    if (passwordPolicy.requireUppercase > 0) {
+    if (policy.requireUppercase > 0) {
+        const minUppercaseCount = policy.requireUppercase;
         criteria.push({
+            id: "password-uppercase-count",
+            type: "custom",
             test: (value) =>
-                countPatternMatches(value, /[A-Z]/g) >=
-                passwordPolicy.requireUppercase,
-            message: i18n
-                .t("gateway.auth.security.password_requires_uppercase")
-                .replace("{count}", String(passwordPolicy.requireUppercase)),
+                countPatternMatches(value, /[A-Z]/g) >= minUppercaseCount,
+            messageKey: "gateway.auth.security.password_requires_uppercase",
+            messageParams: { count: minUppercaseCount },
+            mode: "live",
         });
     }
-    if (passwordPolicy.requireLowercase > 0) {
-        const minLowercaseCount = passwordPolicy.requireLowercase;
+    if (policy.requireLowercase > 0) {
+        const minLowercaseCount = policy.requireLowercase;
         criteria.push({
+            id: "password-lowercase-count",
+            type: "custom",
             test: (value) =>
                 countPatternMatches(value, /[a-z]/g) >= minLowercaseCount,
-            message: i18n
-                .t("gateway.auth.security.password_requires_lowercase")
-                .replace("{count}", String(minLowercaseCount)),
+            messageKey: "gateway.auth.security.password_requires_lowercase",
+            messageParams: { count: minLowercaseCount },
+            mode: "live",
         });
     }
-    if (passwordPolicy.requireDigit > 0) {
+    if (policy.requireDigit > 0) {
+        const minDigitCount = policy.requireDigit;
         criteria.push({
+            id: "password-digit-count",
+            type: "custom",
             test: (value) =>
-                countPatternMatches(value, /[0-9]/g) >=
-                passwordPolicy.requireDigit,
-            message: i18n
-                .t("gateway.auth.security.password_requires_digit")
-                .replace("{count}", String(passwordPolicy.requireDigit)),
+                countPatternMatches(value, /[0-9]/g) >= minDigitCount,
+            messageKey: "gateway.auth.security.password_requires_digit",
+            messageParams: { count: minDigitCount },
+            mode: "live",
         });
     }
-    if (passwordPolicy.requireSpecial > 0) {
+    if (policy.requireSpecial > 0) {
+        const minSpecialCount = policy.requireSpecial;
         criteria.push({
+            id: "password-special-count",
+            type: "custom",
             test: (value) =>
-                countPatternMatches(value, /[^A-Za-z0-9]/g) >=
-                passwordPolicy.requireSpecial,
-            message: i18n
-                .t("gateway.auth.security.password_requires_special")
-                .replace("{count}", String(passwordPolicy.requireSpecial)),
+                countPatternMatches(value, /[^A-Za-z0-9]/g) >= minSpecialCount,
+            messageKey: "gateway.auth.security.password_requires_special",
+            messageParams: { count: minSpecialCount },
+            mode: "live",
         });
     }
     return criteria;
@@ -77,27 +88,62 @@ export async function openPasswordResetPopup({
     showToast,
 }) {
     const policy = await loadPasswordPolicy(apiFetch);
-    const passwordCriteria = buildPasswordCriteria(i18n, policy);
+    const passwordCriteria = buildFormPasswordCriteria(policy);
 
-    let formElement = null;
-    let criteriaCheckController = null;
-    let mismatchController = null;
+    const formBuilder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "auth-password-reset-form",
+            formClassName: "auth-password-reset-form",
+            includeSubmitButton: false,
+            submitLabelKey: "ui.reuse.save",
+            fields: [
+                {
+                    name: "nextPassword",
+                    labelKey: "gateway.auth.security.new_password",
+                    type: "password",
+                    required: true,
+                    criteria: passwordCriteria,
+                    criteriaDisplay:
+                        passwordCriteria.length > 0
+                            ? "floating-alert"
+                            : "inline",
+                    floatingTitleKey:
+                        "gateway.auth.security.password_requirements",
+                    attributes: { autocomplete: "new-password" },
+                },
+                {
+                    name: "confirmPassword",
+                    labelKey: "gateway.auth.security.confirm_password",
+                    type: "password",
+                    required: true,
+                    criteria: [
+                        {
+                            id: "confirm-password-match",
+                            type: "custom",
+                            test: (value, values) => {
+                                const passwordValue = String(
+                                    values?.nextPassword ?? "",
+                                );
+                                if (passwordValue.length === 0) return null;
+                                return value === passwordValue;
+                            },
+                            messageKey: "gateway.auth.security.passwords_match",
+                            mode: "live",
+                        },
+                    ],
+                    attributes: { autocomplete: "new-password" },
+                },
+            ],
+        },
+    );
+
+    let formController = null;
 
     const popupResult = await openPopup({
         title: i18n.t("gateway.auth.security.popup_title"),
         maxWidth: "420px",
-        body: () => `
-        <form class="auth-password-reset-form">
-          <label>
-            ${i18n.t("gateway.auth.security.new_password")}
-            <input type="password" name="nextPassword" autocomplete="new-password" required />
-          </label>
-          <label>
-            ${i18n.t("gateway.auth.security.confirm_password")}
-            <input type="password" name="confirmPassword" autocomplete="new-password" required />
-          </label>
-        </form>
-      `,
+        body: () => formBuilder.render(),
         actions: [
             {
                 id: "save",
@@ -112,63 +158,29 @@ export async function openPasswordResetPopup({
         ],
         closeProtection: true,
         onOpen: (overlay) => {
-            formElement = overlay.querySelector(".auth-password-reset-form");
-            if (!formElement) return;
-            const nextPasswordInput =
-                formElement.elements.namedItem("nextPassword");
-            const confirmPasswordInput =
-                formElement.elements.namedItem("confirmPassword");
-            if (
-                !(nextPasswordInput instanceof HTMLInputElement) ||
-                !(confirmPasswordInput instanceof HTMLInputElement) ||
-                passwordCriteria.length === 0
-            ) {
-                return;
+            const formElement = overlay.querySelector(
+                "#auth-password-reset-form",
+            );
+            if (formElement instanceof HTMLFormElement) {
+                formController = formBuilder.attach(formElement);
             }
-            criteriaCheckController = attachCriteriaCheck(
-                nextPasswordInput,
-                passwordCriteria,
-                {
-                    genericMessage: i18n.t(
-                        "gateway.auth.security.password_policy",
-                    ),
-                },
-            );
-            mismatchController = attachCriteriaCheck(
-                confirmPasswordInput,
-                [
-                    {
-                        test: (value) => value === nextPasswordInput.value,
-                        message: i18n.t(
-                            "ui.app.register.error.password_mismatch",
-                        ),
-                    },
-                ],
-                {},
-            );
+        },
+        onAction: (actionId) => {
+            if (actionId !== "save") return true;
+            if (!formController) return false;
+            return formController.validateAll(true);
         },
     });
 
-    criteriaCheckController?.detach();
-    mismatchController?.detach();
-
-    if (popupResult !== "save" || !formElement) {
+    if (popupResult !== "save" || !formController) {
         return;
     }
 
-    const formData = new FormData(formElement);
-    const nextPassword = String(formData.get("nextPassword") ?? "").trim();
-    const confirmPassword = String(
-        formData.get("confirmPassword") ?? "",
-    ).trim();
+    const values = formController.getValues();
+    const nextPassword = (values.nextPassword ?? "").trim();
+    const confirmPassword = (values.confirmPassword ?? "").trim();
     if (!nextPassword || !confirmPassword) {
         showToast(i18n.t("gateway.auth.security.required"), {
-            variant: "warning",
-        });
-        return;
-    }
-    if (nextPassword !== confirmPassword) {
-        showToast(i18n.t("ui.app.register.error.password_mismatch"), {
             variant: "warning",
         });
         return;

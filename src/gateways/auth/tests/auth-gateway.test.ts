@@ -733,6 +733,66 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     assert.equal(newCredentials?.accountId, "password-user");
 });
 
+test("POST /api/v1/auth/reset-password dispatches security notification when notify:dispatch is available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    const dispatched: Array<{
+        category: string;
+        recipientUsername: string;
+        subject: string;
+        body: string;
+    }> = [];
+    capabilities.contribute(
+        "notify:dispatch",
+        async (envelope: {
+            category: string;
+            recipientUsername: string;
+            subject: string;
+            body: string;
+        }) => {
+            dispatched.push(envelope);
+        },
+    );
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("notify-reset-user", "old-pass");
+
+    const resetToken = issueAccessToken("notify-reset-user", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            { password: "new-pass-12" },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.ok(
+        dispatched.length > 0,
+        "security notification should have been dispatched",
+    );
+    assert.equal(dispatched[0].category, "security");
+    assert.equal(dispatched[0].recipientUsername, "notify-reset-user");
+});
+
 test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
