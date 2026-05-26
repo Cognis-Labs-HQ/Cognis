@@ -439,6 +439,10 @@ function createAuthGatewayRoutes(
         return record;
     }
 
+    function revokeOneTimeLoginToken(token: string): void {
+        oneTimeLoginLinks.delete(token);
+    }
+
     function resolveRequestAddress(req: IncomingMessage): string {
         const forwardedFor = req.headers["x-forwarded-for"];
         if (typeof forwardedFor === "string") {
@@ -1046,6 +1050,7 @@ function createAuthGatewayRoutes(
             try {
                 await sendOneTimeLoginEmail(primaryEmail, loginUrl);
             } catch (error) {
+                revokeOneTimeLoginToken(loginToken);
                 const message =
                     error instanceof Error ? error.message : String(error);
                 if (message === "smtp_rate_limited") {
