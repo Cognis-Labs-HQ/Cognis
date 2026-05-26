@@ -283,7 +283,10 @@ export async function openRuntimeErrorPopup({
             ],
         });
         if (popupAction === null) {
-            navigateToPreviousRouteIfDifferent(currentRoutePath, previousRoutePath);
+            navigateToPreviousRouteIfDifferent(
+                currentRoutePath,
+                previousRoutePath,
+            );
         }
     } finally {
         popupOpen = false;
@@ -336,7 +339,10 @@ function resolvePreviousRoutePath(explicitPreviousRoute) {
     return getPreviousRoutePathFromReferrer();
 }
 
-function navigateToPreviousRouteIfDifferent(currentRoutePath, previousRoutePath) {
+function navigateToPreviousRouteIfDifferent(
+    currentRoutePath,
+    previousRoutePath,
+) {
     if (typeof window === "undefined") return;
     const normalizedCurrentRoutePath = normalizeRoutePath(currentRoutePath);
     const normalizedPreviousRoutePath = normalizeRoutePath(previousRoutePath);

@@ -19,7 +19,10 @@ test("runtime error popup renders branded header and supports previous-route fal
 });
 
 test("popup styles constrain dialog height and apply themed scrollbars", () => {
-    const source = readFileSync(resolve(ROOT, "src/ui/styles/popup.css"), "utf8");
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/styles/popup.css"),
+        "utf8",
+    );
 
     assert.match(source, /max-height:\s*calc\(100dvh - 48px\);/);
     assert.match(
