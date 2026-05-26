@@ -19,7 +19,7 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /form-builder-required-flag/);
     assert.match(source, /form-builder-label-text/);
     assert.match(source, /data-form-builder-validation-notice=/);
-    assert.match(source, /role="alert"/);
+    assert.match(source, /aria-live="assertive"/);
     assert.match(source, /aria-hidden="true"/);
 });
 
@@ -114,7 +114,14 @@ test("form builder prevents native invalid popups and renders themed required no
         source,
         /resolveMessage\("ui\.reuse\.field_required_notice"\)/,
     );
-    assert.match(source, /CSS\.escape\(fieldName\)/);
+    assert.match(
+        source,
+        /querySelectorAll\(\s*"\[data-form-builder-validation-notice\]"/,
+    );
+    assert.match(
+        source,
+        /dataset\.formBuilderValidationNotice\s*===\s*fieldName/,
+    );
     assert.match(source, /form-builder-validation-notice--visible/);
 });
 
