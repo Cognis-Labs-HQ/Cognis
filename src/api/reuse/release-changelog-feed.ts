@@ -175,14 +175,17 @@ export async function loadReleaseChangelogEntries(
                     selectedVariant.filePath,
                     "utf8",
                 );
+                const latestMtimeMs = variants.reduce(
+                    (maxMtimeMs, variant) =>
+                        Math.max(maxMtimeMs, variant.mtimeMs),
+                    0,
+                );
                 return {
                     slug,
                     title: extractChangelogTitle(markdown, slug),
                     changes: extractChangeHeadings(markdown),
                     path: `/changelogs/${slug}`,
-                    mtimeMs: Math.max(
-                        ...variants.map((variant) => variant.mtimeMs),
-                    ),
+                    mtimeMs: latestMtimeMs,
                 };
             } catch {
                 return null;
