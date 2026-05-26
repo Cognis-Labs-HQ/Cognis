@@ -163,7 +163,7 @@ test("form builder updates textarea counters and captures edited values after at
 
         toggle(className, shouldEnable) {
             const shouldAdd =
-                shouldEnable == null
+                shouldEnable === null || shouldEnable === undefined
                     ? !this.#classes.has(className)
                     : Boolean(shouldEnable);
             if (shouldAdd) {
