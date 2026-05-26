@@ -70,6 +70,33 @@ test("users action menu only includes tfa reset when target has configured tfa",
     assert.match(source, /id: "tfa-reset"/);
 });
 
+test("users hamburger menu includes resend only when unverified emails exist", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /const hasUnverifiedEmails = emails\.some\(\(e\) => !e\.verified\)/,
+    );
+    assert.match(source, /\.\.\.\(hasUnverifiedEmails/);
+});
+
+test("users delete action is rendered as inline trash button in actions column", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /class="users-delete-btn btn-animated"/);
+    assert.match(source, /await runUserMenuAction\("delete", username\)/);
+    assert.match(
+        source,
+        /<button class="users-delete-btn btn-animated"[\s\S]*<button class="users-menu-btn btn-animated"/,
+    );
+});
+
 test("users tfa reset action has standalone branch", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
