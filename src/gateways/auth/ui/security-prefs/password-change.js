@@ -5,6 +5,7 @@ import {
     countPatternMatches,
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
+import { bindConfirmPasswordRevalidation } from "/static/gateways/auth/reuse/bind-confirm-password-revalidation.js";
 import { resolveLocalizedMessage } from "/static/gateways/auth/reuse/resolve-localized-message.js";
 
 async function loadPasswordPolicy(apiFetch) {
@@ -175,6 +176,12 @@ export async function openPasswordChangePopup({
             );
             if (formElement instanceof HTMLFormElement) {
                 formController = formBuilder.attach(formElement);
+                bindConfirmPasswordRevalidation({
+                    form: formElement,
+                    formController,
+                    passwordFieldName: "nextPassword",
+                    confirmFieldName: "confirmPassword",
+                });
             }
         },
         onAction: (actionId) => {

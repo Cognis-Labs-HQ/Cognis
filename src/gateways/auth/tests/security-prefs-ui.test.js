@@ -9,6 +9,10 @@ const SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/index.js"),
     "utf8",
 );
+const PASSWORD_CHANGE_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/security-prefs/password-change.js"),
+    "utf8",
+);
 
 test("auth security preferences only render password reset controls", () => {
     assert.match(SOURCE, /settings-auth-password-reset/);
@@ -16,4 +20,11 @@ test("auth security preferences only render password reset controls", () => {
     assert.doesNotMatch(SOURCE, /settings-auth-recovery-codes/);
     assert.doesNotMatch(SOURCE, /available-tfa-methods/);
     assert.doesNotMatch(SOURCE, /preferred-tfa-methods/);
+});
+
+test("password change popup revalidates confirm password reactively", () => {
+    assert.match(
+        PASSWORD_CHANGE_SOURCE,
+        /bindConfirmPasswordRevalidation\(\{[\s\S]*passwordFieldName: "nextPassword"[\s\S]*confirmFieldName: "confirmPassword"/m,
+    );
 });

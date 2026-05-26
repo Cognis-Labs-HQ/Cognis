@@ -296,6 +296,8 @@ test("form builder updates textarea counters and captures edited values after at
 
 test("register confirm password revalidates reactively when password changes", () => {
     const source = read("src/gateways/auth/ui/register.js");
-    assert.match(source, /formController\.validateField\("confirmPassword"\)/);
-    assert.match(source, /passwordInput\.addEventListener\(\s*"input"/m);
+    assert.match(
+        source,
+        /bindConfirmPasswordRevalidation\(\{[\s\S]*passwordFieldName: "password"[\s\S]*confirmFieldName: "confirmPassword"/m,
+    );
 });
