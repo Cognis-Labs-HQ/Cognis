@@ -36,7 +36,7 @@ test("computeCropSourceRect moves source window opposite drag direction", () => 
         imageHeight: 500,
         frameWidth: 500,
         frameHeight: 250,
-        zoom: 1,
+        zoom: 1.4,
         offsetX: 0,
         offsetY: 0,
     });
@@ -45,7 +45,7 @@ test("computeCropSourceRect moves source window opposite drag direction", () => 
         imageHeight: 500,
         frameWidth: 500,
         frameHeight: 250,
-        zoom: 1,
+        zoom: 1.4,
         offsetX: 80,
         offsetY: 30,
     });

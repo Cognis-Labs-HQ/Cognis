@@ -38,8 +38,10 @@ let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
-let pendingAvatarCropAspect = 1;
-let pendingBannerCropAspect = 3;
+const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
+const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
+let pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
+let pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -671,6 +673,24 @@ async function doRemoveBanner() {
     composer.refresh(elements);
 }
 
+function revokeProfileBlobUrls() {
+    if (avatarBlobUrl) {
+        URL.revokeObjectURL(avatarBlobUrl);
+        avatarBlobUrl = null;
+    }
+    if (bannerBlobUrl) {
+        URL.revokeObjectURL(bannerBlobUrl);
+        bannerBlobUrl = null;
+    }
+}
+
+/**
+ * Derives a crop aspect ratio from the visible element dimensions.
+ *
+ * @param {EventTarget | null} element
+ * @param {number} fallbackAspectRatio
+ * @returns {number}
+ */
 function resolveCropAspectFromElement(element, fallbackAspectRatio) {
     const fallback = Math.max(0.5, Number(fallbackAspectRatio) || 1);
     if (!(element instanceof HTMLElement)) return fallback;
@@ -679,6 +699,18 @@ function resolveCropAspectFromElement(element, fallbackAspectRatio) {
     return Math.max(0.5, bounds.width / bounds.height);
 }
 
+/**
+ * Renders crop popup markup with the interactive crop frame and controls.
+ *
+ * @param {{
+ *   imageUrl: string,
+ *   imageType: string,
+ *   zoomValue: number,
+ *   aspectRatio: number,
+ *   gridExpanded: boolean,
+ * }} params
+ * @returns {string}
+ */
 function buildCropPopupBody({
     imageUrl,
     imageType,
@@ -717,6 +749,12 @@ function buildCropPopupBody({
     `;
 }
 
+/**
+ * Loads an image file into an object URL and resolves validated dimensions.
+ *
+ * @param {File} file
+ * @returns {Promise<{ imageUrl: string, imageWidth: number, imageHeight: number }>}
+ */
 async function loadCropImage(file) {
     const imageUrl = URL.createObjectURL(file);
     const imageElement = new Image();
@@ -746,6 +784,13 @@ async function loadCropImage(file) {
     };
 }
 
+/**
+ * Opens the crop popup, lets the user reposition and zoom, and returns
+ * a cropped PNG blob when saved.
+ *
+ * @param {{ file: File, kind: "avatar" | "banner", aspectRatio: number }} params
+ * @returns {Promise<Blob | null>}
+ */
 async function openImageCropPopup({ file, kind, aspectRatio }) {
     const cropImage = await loadCropImage(file);
     const cropInteractionController = new AbortController();
@@ -808,8 +853,10 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
 
     function handlePointerMove(event) {
         if (!state.dragging || state.dragPointerId !== event.pointerId) return;
-        state.offsetX = state.dragStartOffsetX + (event.clientX - state.dragStartX);
-        state.offsetY = state.dragStartOffsetY + (event.clientY - state.dragStartY);
+        state.offsetX =
+            state.dragStartOffsetX + (event.clientX - state.dragStartX);
+        state.offsetY =
+            state.dragStartOffsetY + (event.clientY - state.dragStartY);
         queueRender();
     }
 
@@ -841,7 +888,11 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             }),
         maxWidth: "760px",
         actions: [
-            { id: "cancel", label: i18n.t("ui.reuse.cancel"), variant: "cancel" },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
             { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
         ],
         onOpen: (overlay) => {
@@ -923,7 +974,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
     const canvas = document.createElement("canvas");
     canvas.width = outputDimensions.width;
     canvas.height = outputDimensions.height;
-    const context = canvas.getContext("2d", { alpha: false });
+    const context = canvas.getContext("2d");
     if (!context) {
         URL.revokeObjectURL(cropImage.imageUrl);
         throw new Error("canvas_context_unavailable");
@@ -940,12 +991,18 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         outputDimensions.height,
     );
     const blob = await new Promise((resolve) => {
-        canvas.toBlob(resolve, "image/png", 0.92);
+        canvas.toBlob(resolve, "image/png");
     });
     URL.revokeObjectURL(cropImage.imageUrl);
     return blob;
 }
 
+/**
+ * Runs crop + upload for avatar or banner images and refreshes profile state.
+ *
+ * @param {{ kind: "avatar" | "banner", file: File, aspectRatio: number }} params
+ * @returns {Promise<boolean>}
+ */
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     const croppedBlob = await openImageCropPopup({ file, kind, aspectRatio });
     if (!(croppedBlob instanceof Blob)) return false;
@@ -1389,7 +1446,7 @@ function bindPageEvents() {
         (event) => {
             pendingAvatarCropAspect = resolveCropAspectFromElement(
                 event.currentTarget,
-                1,
+                AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
             );
             avatarFileInput.click();
         },
@@ -1505,13 +1562,12 @@ export async function mount(rootEl, { signal } = {}) {
     followers = [];
     following = [];
     posts = [];
-    avatarBlobUrl = null;
-    bannerBlobUrl = null;
+    revokeProfileBlobUrls();
     bannerHeight = null;
     composer = null;
     elements = [];
-    pendingAvatarCropAspect = 1;
-    pendingBannerCropAspect = 3;
+    pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
+    pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 
     if (isOwnProfile) {
         profile = await loadOwnProfile();

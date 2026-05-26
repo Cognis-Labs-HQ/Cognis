@@ -1,9 +1,46 @@
+/**
+ * Clamps an image drag offset so the crop frame remains fully covered.
+ *
+ * @param {number} offset
+ * @param {number} maxOffset
+ * @returns {number}
+ */
 export function clampCropOffset(offset, maxOffset) {
     const safeOffset = Number.isFinite(offset) ? offset : 0;
-    const safeMaxOffset = Math.max(0, Number.isFinite(maxOffset) ? maxOffset : 0);
+    const safeMaxOffset = Math.max(
+        0,
+        Number.isFinite(maxOffset) ? maxOffset : 0,
+    );
     return Math.min(safeMaxOffset, Math.max(-safeMaxOffset, safeOffset));
 }
 
+/**
+ * Computes the scaled image geometry and clamped drag offsets for a crop frame.
+ *
+ * @param {{
+ *   imageWidth: number,
+ *   imageHeight: number,
+ *   frameWidth: number,
+ *   frameHeight: number,
+ *   zoom?: number,
+ *   offsetX?: number,
+ *   offsetY?: number,
+ * }} params
+ * @returns {{
+ *   frameWidth: number,
+ *   frameHeight: number,
+ *   imageWidth: number,
+ *   imageHeight: number,
+ *   fitScale: number,
+ *   zoom: number,
+ *   renderedWidth: number,
+ *   renderedHeight: number,
+ *   maxOffsetX: number,
+ *   maxOffsetY: number,
+ *   offsetX: number,
+ *   offsetY: number,
+ * }}
+ */
 export function computeCropViewport({
     imageWidth,
     imageHeight,
@@ -46,13 +83,34 @@ export function computeCropViewport({
     };
 }
 
+/**
+ * Converts a rendered crop viewport into a source rectangle in image pixels.
+ *
+ * @param {{
+ *   frameWidth: number,
+ *   frameHeight: number,
+ *   renderedWidth: number,
+ *   renderedHeight: number,
+ *   imageWidth: number,
+ *   imageHeight: number,
+ *   offsetX: number,
+ *   offsetY: number,
+ * }} viewport
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ */
 export function computeCropSourceRect(viewport) {
     const baseLeft = (viewport.frameWidth - viewport.renderedWidth) / 2;
     const baseTop = (viewport.frameHeight - viewport.renderedHeight) / 2;
     const renderedLeft = baseLeft + viewport.offsetX;
     const renderedTop = baseTop + viewport.offsetY;
 
-    const sourceX = ((0 - renderedLeft) / viewport.renderedWidth) * viewport.imageWidth;
+    const sourceX =
+        ((0 - renderedLeft) / viewport.renderedWidth) * viewport.imageWidth;
     const sourceY =
         ((0 - renderedTop) / viewport.renderedHeight) * viewport.imageHeight;
     const sourceWidth =
@@ -68,6 +126,13 @@ export function computeCropSourceRect(viewport) {
     };
 }
 
+/**
+ * Returns output image dimensions derived from the target crop aspect ratio.
+ *
+ * @param {number} aspectRatio Width-to-height ratio (width / height)
+ * @param {number} [targetWidth=1600]
+ * @returns {{ width: number, height: number }}
+ */
 export function getCropOutputDimensions(aspectRatio, targetWidth = 1600) {
     const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
     const safeTargetWidth = Math.max(256, Number(targetWidth) || 1600);
