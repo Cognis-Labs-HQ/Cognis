@@ -159,7 +159,7 @@ export async function mount(root, { signal } = {}) {
     let tokenInvalid = false;
     let inviteAdapterDisabled = false;
     let openRegistrationsEnabled = false;
-    let userValidationMode = "smtp";
+    let userValidationMode = "none";
     let invalidTokenToastToken = null;
     let availableLanguages = [];
     let selectedLanguage = DEFAULT_LOCALE;
@@ -200,10 +200,9 @@ export async function mount(root, { signal } = {}) {
                 openRegistrationsEnabled =
                     regConfigPayload?.data?.registrationsEnabled === true;
             }
-            userValidationMode =
-                regConfigPayload?.data?.userValidationMode === "none"
-                    ? "none"
-                    : "smtp";
+            userValidationMode = String(
+                regConfigPayload?.data?.userValidationMode ?? "none",
+            );
         }
     } catch {
         if (!token && !hasTokenParam) openRegistrationsEnabled = false;
@@ -407,10 +406,10 @@ export async function mount(root, { signal } = {}) {
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,
                 emailLocked,
-                emailRequired: userValidationMode === "smtp",
+                emailRequired: userValidationMode !== "none",
             });
             const emailVerifyNoticeHtml =
-                !isInviteFlow && userValidationMode === "smtp"
+                !isInviteFlow && userValidationMode !== "none"
                     ? renderInPageCallout({
                           variant: "info",
                           body: i18n.t("ui.app.register.email_verify_notice"),
@@ -615,7 +614,7 @@ export async function mount(root, { signal } = {}) {
                     const registerFormBuilder = createRegisterFormBuilder({
                         emailValue: lockedEmail || "",
                         emailLocked: Boolean(lockedEmail),
-                        emailRequired: userValidationMode === "smtp",
+                        emailRequired: userValidationMode !== "none",
                     });
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,
