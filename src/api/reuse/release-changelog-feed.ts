@@ -11,6 +11,8 @@ const API_PACKAGE_JSON_FILE = resolve(
 );
 const RELEASE_NOTES_SUMMARY_MAX_LENGTH = 260;
 const MAX_RELEASE_CHANGE_BULLETS = 8;
+const SAFE_LANG_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
+const LOCALIZED_DOC_SUFFIX_PATTERN = /\.([a-z]{2}(?:-[a-z]{2})?)\.md$/i;
 
 export type ChangelogEntrySummary = {
     slug: string;
@@ -20,6 +22,12 @@ export type ChangelogEntrySummary = {
 };
 
 let cachedReleaseVersion: string | null = null;
+
+type ChangelogFileVariant = {
+    filePath: string;
+    language: string | null;
+    mtimeMs: number;
+};
 
 function collapseWhitespace(value: string): string {
     return value.replace(/\s+/g, " ").trim();
@@ -51,6 +59,62 @@ function extractChangelogTitle(markdown: string, fallbackSlug: string): string {
         .join(" ");
 }
 
+function normalizePreferredLanguages(preferredLanguages: string[]): string[] {
+    const seen = new Set<string>();
+    const normalized: string[] = [];
+    for (const language of preferredLanguages) {
+        const normalizedLanguage = String(language ?? "").trim().toLowerCase();
+        if (!SAFE_LANG_PATTERN.test(normalizedLanguage)) continue;
+        if (seen.has(normalizedLanguage)) continue;
+        seen.add(normalizedLanguage);
+        normalized.push(normalizedLanguage);
+    }
+    if (!seen.has(DEFAULT_DOC_LANGUAGE)) normalized.push(DEFAULT_DOC_LANGUAGE);
+    return normalized;
+}
+
+function parseChangelogFileName(fileName: string): {
+    slug: string;
+    language: string | null;
+} | null {
+    if (!fileName.endsWith(".md")) return null;
+
+    const localizedSuffixMatch = fileName.match(LOCALIZED_DOC_SUFFIX_PATTERN);
+    if (localizedSuffixMatch) {
+        const slug = fileName.slice(0, -localizedSuffixMatch[0].length).trim();
+        if (!slug || slug === "index") return null;
+        return { slug, language: localizedSuffixMatch[1].toLowerCase() };
+    }
+
+    const slug = fileName.replace(/\.md$/i, "").trim();
+    if (!slug || slug === "index") return null;
+    return { slug, language: null };
+}
+
+function selectPreferredVariant(
+    variants: ChangelogFileVariant[],
+    preferredLanguages: string[],
+): ChangelogFileVariant | null {
+    for (const language of preferredLanguages) {
+        const localizedVariant = variants.find(
+            (variant) => variant.language === language,
+        );
+        if (localizedVariant) return localizedVariant;
+    }
+    const fallbackPlainVariant = variants.find(
+        (variant) => variant.language === null,
+    );
+    if (fallbackPlainVariant) return fallbackPlainVariant;
+    return (
+        [...variants].sort(
+            (variantA, variantB) =>
+                (variantA.language ?? "").localeCompare(
+                    variantB.language ?? "",
+                ) || variantA.filePath.localeCompare(variantB.filePath),
+        )[0] ?? null
+    );
+}
+
 export async function readReleaseVersion(): Promise<string> {
     if (cachedReleaseVersion) return cachedReleaseVersion;
     try {
@@ -64,7 +128,9 @@ export async function readReleaseVersion(): Promise<string> {
     return cachedReleaseVersion;
 }
 
-export async function loadReleaseChangelogEntries(): Promise<
+export async function loadReleaseChangelogEntries(
+    preferredLanguagesInput: string[] = [],
+): Promise<
     ChangelogEntrySummary[]
 > {
     let changelogFiles;
@@ -75,27 +141,45 @@ export async function loadReleaseChangelogEntries(): Promise<
     } catch {
         return [];
     }
-    const entryFiles = changelogFiles.filter(
-        (entry) =>
-            entry.isFile() &&
-            entry.name.endsWith(`.${DEFAULT_DOC_LANGUAGE}.md`) &&
-            entry.name !== `index.${DEFAULT_DOC_LANGUAGE}.md`,
+    const preferredLanguages = normalizePreferredLanguages(
+        preferredLanguagesInput,
     );
+    const variantsBySlug = new Map<string, ChangelogFileVariant[]>();
+    for (const entry of changelogFiles) {
+        if (!entry.isFile()) continue;
+        const parsed = parseChangelogFileName(entry.name);
+        if (!parsed) continue;
+        const filePath = join(CHANGELOG_DOCS_DIR, entry.name);
+        let metadata;
+        try {
+            metadata = await stat(filePath);
+        } catch {
+            continue;
+        }
+        const variants = variantsBySlug.get(parsed.slug) ?? [];
+        variants.push({
+            filePath,
+            language: parsed.language,
+            mtimeMs: metadata.mtimeMs,
+        });
+        variantsBySlug.set(parsed.slug, variants);
+    }
+
     const entries = await Promise.all(
-        entryFiles.map(async (entry) => {
-            const filePath = join(CHANGELOG_DOCS_DIR, entry.name);
-            const slug = entry.name.replace(`.${DEFAULT_DOC_LANGUAGE}.md`, "");
+        [...variantsBySlug.entries()].map(async ([slug, variants]) => {
+            const selectedVariant = selectPreferredVariant(
+                variants,
+                preferredLanguages,
+            );
+            if (!selectedVariant) return null;
             try {
-                const [markdown, metadata] = await Promise.all([
-                    readFile(filePath, "utf8"),
-                    stat(filePath),
-                ]);
+                const markdown = await readFile(selectedVariant.filePath, "utf8");
                 return {
                     slug,
                     title: extractChangelogTitle(markdown, slug),
                     changes: extractChangeHeadings(markdown),
                     path: `/changelogs/${slug}`,
-                    mtimeMs: metadata.mtimeMs,
+                    mtimeMs: Math.max(...variants.map((variant) => variant.mtimeMs)),
                 };
             } catch {
                 return null;

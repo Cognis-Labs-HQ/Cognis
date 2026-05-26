@@ -115,6 +115,39 @@ test("system release changelog feed returns release version and entries", async 
     assert.ok(firstEntry.path.startsWith("/changelogs/"));
 });
 
+test("system release changelog feed resolves localized entries from preferred languages", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const route = createSystemRoutes(healthService as any);
+    let status = 0;
+    let body = "";
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: { authorization: "Bearer " + token },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/system/release-changelog?langs=de"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    const localizedEntry = parsed.data.entries.find(
+        (entry: { slug?: string }) =>
+            entry?.slug === "create-changelog-ingestion-system",
+    );
+    assert.ok(localizedEntry);
+    assert.equal(localizedEntry.title, "Changelog-Struktur Update");
+});
+
 test("system route serves license markdown payload", async () => {
     const route = createSystemRoutes(healthService as any);
     let status = 0;
