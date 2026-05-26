@@ -93,9 +93,30 @@ test("page composer expands compact single-pane rows to full width", () => {
         "utf8",
     );
 
+    assert.match(source, /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\s*=/);
     assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
+    assert.match(source, /function shouldUseMobileWidthReclaim\(\)/);
+    assert.match(source, /window\.matchMedia\(/);
+    assert.match(
+        source,
+        /\(max-width: \$\{MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\}px\)/,
+    );
+    assert.match(source, /allowSingleRowFullWidthReclaim =/);
+    assert.match(source, /shouldUseMobileWidthReclaim\(\) &&/);
     assert.match(source, /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/);
     assert.match(source, /boundedWidth < bounds\.max/);
+    assert.match(source, /function canExpandPlacementWithoutConflicts\(/);
+    assert.match(source, /const occupiedOutsideRow = buildOccupiedSet\(/);
+    assert.match(
+        source,
+        /checkPlacement\(\s*occupiedOutsideRow,\s*normalizedPlacement\.col,\s*normalizedPlacement\.row,/m,
+    );
+    assert.match(source, /canExpandPlacementWithoutConflicts\(/);
+    assert.match(source, /const occupiedCells = new Set\(occupiedOutsideRow\)/);
+    assert.match(
+        source,
+        /registerOccupiedPlacement\(occupiedCells, nextPlacement\)/,
+    );
     assert.match(source, /normalizedPlacement = shouldExpandToFullWidth/);
     assert.match(source, /col: 0,/);
     assert.match(source, /w: bounds\.max,/);

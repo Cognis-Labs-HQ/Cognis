@@ -111,6 +111,7 @@ import {
     checkPlacement,
     gridStep,
     halfGrid,
+    registerOccupiedPlacement,
     snapGridFloor,
     snapGridRound,
 } from "./grid-math.js";
@@ -171,6 +172,7 @@ export function createPageComposer(
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
+    const MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT = 640;
     // Treat narrow grids as compact so single-pane rows expand and avoid
     // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
@@ -2935,6 +2937,9 @@ export function createPageComposer(
         maxCols,
         elems = elements,
     ) {
+        const allowSingleRowFullWidthReclaim =
+            shouldUseMobileWidthReclaim() &&
+            maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS;
         const step = gridStep(maxCols);
         const epsilon = 0.001;
         const rowGroups = [];
@@ -2956,6 +2961,16 @@ export function createPageComposer(
             if (!rowGroup.placements.length) {
                 continue;
             }
+            const rowPlacementIds = new Set(
+                rowGroup.placements.map((placement) => placement.id),
+            );
+            const occupiedOutsideRow = buildOccupiedSet(
+                sortedVisible.filter(
+                    (placement) => !rowPlacementIds.has(placement.id),
+                ),
+                [],
+                null,
+            );
             if (rowGroup.placements.length === 1) {
                 const placement = rowGroup.placements[0];
                 const bounds = resolvePlacementWidthBounds(
@@ -2968,8 +2983,13 @@ export function createPageComposer(
                     Math.max(bounds.min, placement.w),
                 );
                 const shouldExpandToFullWidth =
-                    maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS &&
-                    boundedWidth < bounds.max;
+                    allowSingleRowFullWidthReclaim &&
+                    boundedWidth < bounds.max &&
+                    canExpandPlacementWithoutConflicts(
+                        placement,
+                        occupiedOutsideRow,
+                        bounds.max,
+                    );
                 const normalizedPlacement = shouldExpandToFullWidth
                     ? {
                           ...placement,
@@ -2985,6 +3005,17 @@ export function createPageComposer(
                     normalizedPlacement.w !== placement.w
                 ) {
                     changed = true;
+                }
+                if (
+                    !checkPlacement(
+                        occupiedOutsideRow,
+                        normalizedPlacement.col,
+                        normalizedPlacement.row,
+                        normalizedPlacement.w,
+                        normalizedPlacement.h,
+                    )
+                ) {
+                    return null;
                 }
                 normalized.push(normalizedPlacement);
                 continue;
@@ -3109,6 +3140,7 @@ export function createPageComposer(
             }
 
             let column = 0;
+            const occupiedCells = new Set(occupiedOutsideRow);
             for (const descriptor of descriptors) {
                 if (column + descriptor.assignedWidth > maxCols + epsilon) {
                     return null;
@@ -3119,17 +3151,72 @@ export function createPageComposer(
                     w: descriptor.assignedWidth,
                 };
                 if (
+                    !checkPlacement(
+                        occupiedCells,
+                        nextPlacement.col,
+                        nextPlacement.row,
+                        nextPlacement.w,
+                        nextPlacement.h,
+                    )
+                ) {
+                    return null;
+                }
+                if (
                     nextPlacement.col !== descriptor.placement.col ||
                     nextPlacement.w !== descriptor.placement.w
                 ) {
                     changed = true;
                 }
                 normalized.push(nextPlacement);
+                registerOccupiedPlacement(occupiedCells, nextPlacement);
                 column += descriptor.assignedWidth;
             }
         }
-
         return changed ? normalized : sortedVisible;
+    }
+
+    /**
+     * Determines whether compact single-row width reclaim should run for the
+     * current viewport.
+     *
+     * @returns {boolean}
+     */
+    function shouldUseMobileWidthReclaim() {
+        if (typeof window === "undefined") {
+            return false;
+        }
+        if (typeof window.matchMedia === "function") {
+            return window.matchMedia(
+                `(max-width: ${MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT}px)`,
+            ).matches;
+        }
+        return (
+            Number.isFinite(window.innerWidth) &&
+            window.innerWidth <= MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT
+        );
+    }
+
+    /**
+     * Checks whether expanding a placement to a target width would collide with
+     * any other visible placement.
+     *
+     * @param {{ id: string, row: number, h: number }} placement
+     * @param {Set<string>} occupiedCells
+     * @param {number} targetWidth
+     * @returns {boolean}
+     */
+    function canExpandPlacementWithoutConflicts(
+        placement,
+        occupiedCells,
+        targetWidth,
+    ) {
+        return checkPlacement(
+            occupiedCells,
+            0,
+            placement.row,
+            targetWidth,
+            placement.h,
+        );
     }
 
     function syncLayoutToCurrentGridColumns() {

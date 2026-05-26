@@ -5,6 +5,7 @@ import {
     checkPlacement,
     gridStep,
     halfGrid,
+    registerOccupiedPlacement,
     snapGridFloor,
     snapGridRound,
 } from "../reuse/page-composer/grid-math.js";
@@ -44,5 +45,17 @@ test("placement checks detect collisions and free slots", () => {
         null,
     );
     assert.equal(checkPlacement(occupied, 1, 1, 1, 1), false);
+    assert.equal(checkPlacement(occupied, 0, 0, 1, 1), true);
+});
+
+test("occupied placement registration blocks any overlapping target region", () => {
+    const occupied = registerOccupiedPlacement(new Set(), {
+        col: 1,
+        row: 1,
+        w: 2,
+        h: 2,
+    });
+
+    assert.equal(checkPlacement(occupied, 0, 0, 3, 3), false);
     assert.equal(checkPlacement(occupied, 0, 0, 1, 1), true);
 });
