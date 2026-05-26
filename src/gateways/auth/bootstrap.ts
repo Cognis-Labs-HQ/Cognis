@@ -1083,6 +1083,10 @@ function createAuthGatewayRoutes(
                 providerId: claims.providerId,
             });
             if (typeof dispatchNotification === "function") {
+                // Server-side notification strings are plain English following the
+                // same pattern as TFA security notifications (see gateway.ts). There
+                // is no server-side i18n infrastructure; the notification adapter
+                // renders these strings directly into outgoing messages (e.g. emails).
                 dispatchNotification({
                     category: "security",
                     recipientUsername: claims.sub,

@@ -125,6 +125,10 @@ export async function openPasswordResetPopup({
                                 const passwordValue = String(
                                     values?.nextPassword ?? "",
                                 );
+                                // Return null (indeterminate) until the password field
+                                // has content, matching the registration form pattern.
+                                // This avoids showing a red error before the user has
+                                // started filling in the new password field.
                                 if (passwordValue.length === 0) return null;
                                 return value === passwordValue;
                             },
