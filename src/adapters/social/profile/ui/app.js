@@ -16,8 +16,8 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import {
     clampCropSelection,
+    composeCropSourceRect,
     computeContainImageBounds,
-    computeCropSourceRectFromSelection,
     computeMovedCropSelection,
     computeResizedCropSelection,
     createInitialCropSelection,
@@ -879,8 +879,11 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         dragStartY: 0,
         dragMode: "move",
         dragStartSelection: null,
-        imageBounds: null,
+        displayBounds: null,
         selection: null,
+        sourceRect: null,
+        zoomDepth: 0,
+        shouldAutoZoomOnRelease: false,
     };
     let frameElement = null;
     let imageElement = null;
@@ -893,23 +896,50 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (!(imageElement instanceof HTMLImageElement)) return;
         if (!(selectionElement instanceof HTMLElement)) return;
         const frameRect = frameElement.getBoundingClientRect();
-        const imageBounds = computeContainImageBounds({
+        const containBounds = computeContainImageBounds({
             imageWidth: cropImage.imageWidth,
             imageHeight: cropImage.imageHeight,
             frameWidth: frameRect.width,
             frameHeight: frameRect.height,
         });
-        state.imageBounds = imageBounds;
+        const displayBounds =
+            state.zoomDepth > 0
+                ? {
+                      left: 0,
+                      top: 0,
+                      width: frameRect.width,
+                      height: frameRect.height,
+                  }
+                : containBounds;
+        state.displayBounds = displayBounds;
+        if (!state.sourceRect) {
+            state.sourceRect = {
+                sourceX: 0,
+                sourceY: 0,
+                sourceWidth: cropImage.imageWidth,
+                sourceHeight: cropImage.imageHeight,
+            };
+        }
+        const sourceScale = displayBounds.width / state.sourceRect.sourceWidth;
+        const imageWidth = cropImage.imageWidth * sourceScale;
+        const imageHeight = cropImage.imageHeight * sourceScale;
+        const imageTranslateX =
+            displayBounds.left - state.sourceRect.sourceX * sourceScale;
+        const imageTranslateY =
+            displayBounds.top - state.sourceRect.sourceY * sourceScale;
+        imageElement.style.width = `${imageWidth}px`;
+        imageElement.style.height = `${imageHeight}px`;
+        imageElement.style.transform = `translate(${imageTranslateX}px, ${imageTranslateY}px)`;
         if (!state.selection) {
             state.selection = createInitialCropSelection({
-                bounds: imageBounds,
+                bounds: displayBounds,
                 aspectRatio: cropAspectRatio,
                 minSize: minimumSelectionSize,
             });
         } else {
             state.selection = clampCropSelection({
                 selection: state.selection,
-                bounds: imageBounds,
+                bounds: displayBounds,
                 aspectRatio: cropAspectRatio,
                 minSize: minimumSelectionSize,
             });
@@ -920,7 +950,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         selectionElement.style.height = `${state.selection.height}px`;
         saveCropState = {
             selection: state.selection,
-            imageBounds,
+            imageBounds: displayBounds,
+            sourceRect: state.sourceRect,
         };
     }
 
@@ -933,11 +964,34 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         });
     }
 
+    function resetCrop() {
+        state.zoomDepth = 0;
+        state.sourceRect = {
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: cropImage.imageWidth,
+            sourceHeight: cropImage.imageHeight,
+        };
+        state.selection = null;
+        state.shouldAutoZoomOnRelease = false;
+    }
+
+    function getSelectedSourceRect() {
+        if (!state.selection || !state.displayBounds || !state.sourceRect) {
+            return null;
+        }
+        return composeCropSourceRect({
+            baseSourceRect: state.sourceRect,
+            selection: state.selection,
+            imageBounds: state.displayBounds,
+        });
+    }
+
     function handlePointerDown(event) {
         if (!(frameElement instanceof HTMLElement)) return;
         if (!(event.target instanceof HTMLElement)) return;
         if (!(selectionElement instanceof HTMLElement)) return;
-        if (!state.selection || !state.imageBounds) return;
+        if (!state.selection || !state.displayBounds) return;
         const pointerTarget = event.target.closest("[data-crop-handle]");
         if (pointerTarget instanceof HTMLElement) {
             state.dragMode = pointerTarget.dataset.cropHandle || "move";
@@ -952,21 +1006,25 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         state.dragStartX = event.clientX;
         state.dragStartY = event.clientY;
         state.dragStartSelection = { ...state.selection };
+        state.shouldAutoZoomOnRelease = false;
         frameElement.setPointerCapture(event.pointerId);
         frameElement.classList.add("profile-image-crop-frame--dragging");
     }
 
     function handlePointerMove(event) {
         if (!state.dragging || state.dragPointerId !== event.pointerId) return;
-        if (!state.dragStartSelection || !state.imageBounds) return;
+        if (!state.dragStartSelection || !state.displayBounds) return;
         const deltaX = event.clientX - state.dragStartX;
         const deltaY = event.clientY - state.dragStartY;
+        if (deltaX !== 0 || deltaY !== 0) {
+            state.shouldAutoZoomOnRelease = true;
+        }
         if (state.dragMode === "move") {
             state.selection = computeMovedCropSelection({
                 startSelection: state.dragStartSelection,
                 deltaX,
                 deltaY,
-                bounds: state.imageBounds,
+                bounds: state.displayBounds,
             });
         } else {
             state.selection = computeResizedCropSelection({
@@ -974,7 +1032,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                 handle: state.dragMode,
                 deltaX,
                 deltaY,
-                bounds: state.imageBounds,
+                bounds: state.displayBounds,
                 aspectRatio: cropAspectRatio,
                 minSize: minimumSelectionSize,
             });
@@ -994,6 +1052,16 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         state.dragPointerId = null;
         state.dragStartSelection = null;
         state.dragMode = "move";
+        if (state.shouldAutoZoomOnRelease) {
+            const selectedSourceRect = getSelectedSourceRect();
+            if (selectedSourceRect) {
+                state.sourceRect = selectedSourceRect;
+                state.zoomDepth += 1;
+                state.selection = null;
+            }
+        }
+        state.shouldAutoZoomOnRelease = false;
+        queueRender();
     }
 
     const popupResult = await openPopup({
@@ -1010,6 +1078,11 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             }),
         maxWidth: "760px",
         actions: [
+            {
+                id: "reset",
+                label: i18n.t("ui.reuse.reset"),
+                variant: "neutral",
+            },
             {
                 id: "cancel",
                 label: i18n.t("ui.reuse.cancel"),
@@ -1052,6 +1125,12 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             });
             queueRender();
         },
+        onAction: (actionId) => {
+            if (actionId !== "reset") return;
+            resetCrop();
+            queueRender();
+            return false;
+        },
     });
 
     cropInteractionController.abort();
@@ -1060,11 +1139,15 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         return null;
     }
 
-    const sourceRect = computeCropSourceRectFromSelection({
+    const sourceRect = composeCropSourceRect({
+        baseSourceRect: saveCropState.sourceRect ?? {
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: cropImage.imageWidth,
+            sourceHeight: cropImage.imageHeight,
+        },
         selection: saveCropState.selection,
         imageBounds: saveCropState.imageBounds,
-        imageWidth: cropImage.imageWidth,
-        imageHeight: cropImage.imageHeight,
     });
     const outputDimensions =
         kind === "avatar"

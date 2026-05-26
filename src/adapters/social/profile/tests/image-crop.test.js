@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
     clampCropSelection,
     clampCropOffset,
+    composeCropSourceRect,
     computeContainImageBounds,
     computeCropSourceRectFromSelection,
     computeCropSourceRect,
@@ -152,4 +153,22 @@ test("computeCropSourceRectFromSelection maps selection to source image pixels",
     assert.equal(sourceRect.sourceY, 200);
     assert.equal(sourceRect.sourceWidth, 800);
     assert.equal(sourceRect.sourceHeight, 400);
+});
+
+test("composeCropSourceRect maps nested crop selection into original image", () => {
+    const sourceRect = composeCropSourceRect({
+        baseSourceRect: {
+            sourceX: 200,
+            sourceY: 100,
+            sourceWidth: 1200,
+            sourceHeight: 600,
+        },
+        selection: { left: 100, top: 50, width: 200, height: 100 },
+        imageBounds: { left: 0, top: 0, width: 400, height: 200 },
+    });
+
+    assert.equal(sourceRect.sourceX, 500);
+    assert.equal(sourceRect.sourceY, 250);
+    assert.equal(sourceRect.sourceWidth, 600);
+    assert.equal(sourceRect.sourceHeight, 300);
 });

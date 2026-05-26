@@ -468,3 +468,49 @@ export function computeCropSourceRectFromSelection({
         ),
     };
 }
+
+/**
+ * Composes a crop selection into an absolute source rectangle when the
+ * currently displayed image region is already cropped from the original image.
+ *
+ * @param {{
+ *   baseSourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   selection: { left: number, top: number, width: number, height: number },
+ *   imageBounds: { left: number, top: number, width: number, height: number },
+ * }} params
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ */
+export function composeCropSourceRect({
+    baseSourceRect,
+    selection,
+    imageBounds,
+}) {
+    const safeBaseSourceRect = {
+        sourceX: Math.max(0, Number(baseSourceRect?.sourceX) || 0),
+        sourceY: Math.max(0, Number(baseSourceRect?.sourceY) || 0),
+        sourceWidth: Math.max(1, Number(baseSourceRect?.sourceWidth) || 1),
+        sourceHeight: Math.max(1, Number(baseSourceRect?.sourceHeight) || 1),
+    };
+    const nestedSourceRect = computeCropSourceRectFromSelection({
+        selection,
+        imageBounds,
+        imageWidth: safeBaseSourceRect.sourceWidth,
+        imageHeight: safeBaseSourceRect.sourceHeight,
+    });
+    return {
+        sourceX: safeBaseSourceRect.sourceX + nestedSourceRect.sourceX,
+        sourceY: safeBaseSourceRect.sourceY + nestedSourceRect.sourceY,
+        sourceWidth: nestedSourceRect.sourceWidth,
+        sourceHeight: nestedSourceRect.sourceHeight,
+    };
+}

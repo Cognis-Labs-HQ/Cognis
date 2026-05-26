@@ -231,10 +231,11 @@
 
 .profile-image-crop-image {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    top: 0;
+    left: 0;
+    max-width: none;
+    max-height: none;
+    transform-origin: top left;
     pointer-events: none;
 }
 
