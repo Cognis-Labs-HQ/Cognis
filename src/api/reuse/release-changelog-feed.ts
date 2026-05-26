@@ -63,7 +63,9 @@ function normalizePreferredLanguages(preferredLanguages: string[]): string[] {
     const seen = new Set<string>();
     const normalized: string[] = [];
     for (const language of preferredLanguages) {
-        const normalizedLanguage = String(language ?? "").trim().toLowerCase();
+        const normalizedLanguage = String(language ?? "")
+            .trim()
+            .toLowerCase();
         if (!SAFE_LANG_PATTERN.test(normalizedLanguage)) continue;
         if (seen.has(normalizedLanguage)) continue;
         seen.add(normalizedLanguage);
@@ -130,9 +132,7 @@ export async function readReleaseVersion(): Promise<string> {
 
 export async function loadReleaseChangelogEntries(
     preferredLanguagesInput: string[] = [],
-): Promise<
-    ChangelogEntrySummary[]
-> {
+): Promise<ChangelogEntrySummary[]> {
     let changelogFiles;
     try {
         changelogFiles = await readdir(CHANGELOG_DOCS_DIR, {
@@ -173,13 +173,18 @@ export async function loadReleaseChangelogEntries(
             );
             if (!selectedVariant) return null;
             try {
-                const markdown = await readFile(selectedVariant.filePath, "utf8");
+                const markdown = await readFile(
+                    selectedVariant.filePath,
+                    "utf8",
+                );
                 return {
                     slug,
                     title: extractChangelogTitle(markdown, slug),
                     changes: extractChangeHeadings(markdown),
                     path: `/changelogs/${slug}`,
-                    mtimeMs: Math.max(...variants.map((variant) => variant.mtimeMs)),
+                    mtimeMs: Math.max(
+                        ...variants.map((variant) => variant.mtimeMs),
+                    ),
                 };
             } catch {
                 return null;
