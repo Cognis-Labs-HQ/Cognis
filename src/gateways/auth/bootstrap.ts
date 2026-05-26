@@ -272,6 +272,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx,
         routeContext,
     });
+
+    const registerNotificationCategory = ctx.capabilities.get<
+        (id: string, label: string) => void
+    >("notify:registerCategory");
+    if (typeof registerNotificationCategory === "function") {
+        registerNotificationCategory("security", "Security");
+    }
+
     ctx.log?.("info", "Auth gateway initialized.", {
         component: "auth-gateway",
         adapterCount: authGateway.listAdapters().length,
@@ -292,6 +300,15 @@ function createAuthGatewayRoutes(
     securitySubsections: SecuritySubsection[],
     log?: GatewayBootstrapContext["log"],
 ) {
+    const dispatchNotification =
+        capabilities.get<
+            (envelope: {
+                category: string;
+                recipientUsername: string;
+                subject: string;
+                body: string;
+            }) => Promise<unknown>
+        >("notify:dispatch");
     async function readSecuritySettings(): Promise<{
         registrationsEnabled: boolean;
         userValidationMode: "none" | "smtp";
@@ -981,7 +998,20 @@ function createAuthGatewayRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const body = await readJson(req);
+            const currentPassword = String(body.currentPassword ?? "");
             const nextPassword = String(body.password ?? "").trim();
+            if (currentPassword.length === 0) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Current password is required",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (!nextPassword) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -1037,6 +1067,7 @@ function createAuthGatewayRoutes(
                 await authGateway.resetPasswordForAccount(
                     claims.providerId,
                     claims.sub,
+                    currentPassword,
                     nextPassword,
                 );
             } catch (error) {
@@ -1065,6 +1096,31 @@ function createAuthGatewayRoutes(
                 accountId: claims.sub,
                 providerId: claims.providerId,
             });
+            if (typeof dispatchNotification === "function") {
+                // Server-side notification strings are plain English following the
+                // same pattern as TFA security notifications (see gateway.ts). There
+                // is no server-side i18n infrastructure; the notification adapter
+                // renders these strings directly into outgoing messages (e.g. emails).
+                dispatchNotification({
+                    category: "security",
+                    recipientUsername: claims.sub,
+                    subject: "Password Changed",
+                    body: "Your account password was changed. If you did not make this change, contact your administrator immediately.",
+                }).catch((error) => {
+                    log?.(
+                        "error",
+                        "Failed to dispatch password change notification.",
+                        {
+                            ...logMeta,
+                            accountId: claims.sub,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                });
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             return true;

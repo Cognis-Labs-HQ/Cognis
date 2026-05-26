@@ -77,6 +77,7 @@ export interface LocalAccountStore {
 
 interface StoredAccount {
     passwordHash: string;
+    passwordHistoryHashes: string[];
     isFounder: boolean;
     enabled: boolean;
     lastLogin: string | null;
@@ -89,6 +90,8 @@ function hashPassword(input: string): string {
         "hex",
     );
 }
+
+const VOLATILE_PASSWORD_HISTORY_LIMIT = 10;
 
 /** Lowercases a username to enable case-insensitive lookups. */
 export function normalizeUsername(username: string): string {
@@ -127,8 +130,10 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         const validationError = validateUsername(username);
         if (validationError) throw new Error(validationError);
         if (this.accounts.has(username)) throw new Error("username_taken");
+        const passwordHash = hashPassword(password);
         this.accounts.set(username, {
-            passwordHash: hashPassword(password),
+            passwordHash,
+            passwordHistoryHashes: [passwordHash],
             isFounder: false,
             enabled: true,
             lastLogin: null,
@@ -188,7 +193,22 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     async setPassword(username: string, password: string) {
         const account = this.accounts.get(normalizeUsername(username));
         if (!account) throw new Error("not_found");
-        account.passwordHash = hashPassword(password);
+        const nextPasswordHash = hashPassword(password);
+        if (account.passwordHistoryHashes.includes(nextPasswordHash)) {
+            throw new Error("Password was used previously.");
+        }
+        account.passwordHash = nextPasswordHash;
+        account.passwordHistoryHashes.push(nextPasswordHash);
+        if (
+            account.passwordHistoryHashes.length >
+            VOLATILE_PASSWORD_HISTORY_LIMIT
+        ) {
+            account.passwordHistoryHashes.splice(
+                0,
+                account.passwordHistoryHashes.length -
+                    VOLATILE_PASSWORD_HISTORY_LIMIT,
+            );
+        }
     }
 
     async setFounder(username: string, isFounder: boolean) {

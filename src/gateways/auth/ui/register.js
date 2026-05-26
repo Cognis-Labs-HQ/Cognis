@@ -28,6 +28,7 @@ import {
     countPatternMatches,
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
+import { bindConfirmPasswordRevalidation } from "/static/gateways/auth/reuse/bind-confirm-password-revalidation.js";
 
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
@@ -632,38 +633,13 @@ export async function mount(root, { signal } = {}) {
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,
                     });
-                    const passwordInput = form.elements.namedItem("password");
-                    const confirmPasswordInput =
-                        form.elements.namedItem("confirmPassword");
-                    if (
-                        passwordInput instanceof HTMLInputElement &&
-                        confirmPasswordInput instanceof HTMLInputElement
-                    ) {
-                        const listenerOptions = signal ? { signal } : undefined;
-                        const revalidateConfirmPassword = () => {
-                            formController.validateField("confirmPassword");
-                        };
-                        passwordInput.addEventListener(
-                            "input",
-                            revalidateConfirmPassword,
-                            listenerOptions,
-                        );
-                        passwordInput.addEventListener(
-                            "change",
-                            revalidateConfirmPassword,
-                            listenerOptions,
-                        );
-                        confirmPasswordInput.addEventListener(
-                            "input",
-                            revalidateConfirmPassword,
-                            listenerOptions,
-                        );
-                        confirmPasswordInput.addEventListener(
-                            "change",
-                            revalidateConfirmPassword,
-                            listenerOptions,
-                        );
-                    }
+                    bindConfirmPasswordRevalidation({
+                        form,
+                        formController,
+                        passwordFieldName: "password",
+                        confirmFieldName: "confirmPassword",
+                        signal,
+                    });
                     const languageSelect = form.elements.namedItem("language");
                     if (languageSelect instanceof HTMLSelectElement) {
                         languageSelect.addEventListener(
