@@ -281,6 +281,22 @@
     margin-top: 2px;
 }
 
+.form-builder-char-counter {
+    display: block;
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-align: right;
+}
+
+.form-builder-char-counter.char-counter--near-limit {
+    color: var(--warning, #f59e0b);
+}
+
+.form-builder-char-counter.char-counter--at-limit {
+    color: var(--danger, #ef4444);
+}
+
 .form-builder-criterion-item {
     padding: 4px 8px;
     border-radius: 5px;

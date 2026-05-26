@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createFormBuilder } from "../reuse/form-builder.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -29,7 +30,19 @@ test("register page uses form builder instead of hardcoded maxlength for usernam
     assert.doesNotMatch(source, /maxlength="25"/);
     assert.match(
         source,
-        /id: "username-max-length",[\s\S]*type: "maxLength",[\s\S]*value: 25,/m,
+        /id: "username-max-length",[\s\S]*type: "maxLength",[\s\S]*value: REGISTER_USERNAME_MAX_CHARACTERS,/m,
+    );
+    assert.match(
+        source,
+        /name: "username",[\s\S]*maxCharacters: REGISTER_USERNAME_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "email",[\s\S]*maxCharacters: REGISTER_EMAIL_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "displayName",[\s\S]*maxCharacters: REGISTER_DISPLAY_NAME_MAX_CHARACTERS/m,
     );
 });
 
@@ -89,6 +102,196 @@ test("form builder supports neutral custom criterion state via null", () => {
         source,
         /"form-builder-criterion-item--unmet",[\s\S]*criterionValid === false/m,
     );
+});
+
+test("form builder supports textarea fields and max character counters", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+    assert.match(
+        source,
+        /type\?: 'text'\|'email'\|'password'\|'number'\|'url'\|'select'\|'textarea'/,
+    );
+    assert.match(source, /fieldConfig\.maxCharacters/);
+    assert.match(source, /data-form-builder-char-counter=/);
+    assert.match(source, /char-counter--near-limit/);
+    assert.match(source, /char-counter--at-limit/);
+});
+
+test("form builder can omit its submit button when includeSubmitButton is false", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+    assert.match(source, /includeSubmitButton/);
+    assert.match(source, /options\?\.includeSubmitButton !== false/);
+});
+
+test("profile bio and post editors use form builder max-character fields", () => {
+    const source = read("src/adapters/social/profile/ui/app.js");
+    assert.match(
+        source,
+        /import \{ createFormBuilder \} from "\/static\/reuse\/form-builder\.js";/,
+    );
+    assert.match(source, /PROFILE_BIO_MAX_CHARACTERS = 200/);
+    assert.match(source, /POST_CONTENT_MAX_CHARACTERS = 1000/);
+    assert.match(source, /PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80/);
+    assert.match(source, /PROFILE_LOCATION_MAX_CHARACTERS = 120/);
+    assert.match(source, /PROFILE_WEBSITE_MAX_CHARACTERS = 2048/);
+    assert.match(
+        source,
+        /name: "displayName",[\s\S]*maxCharacters: PROFILE_DISPLAY_NAME_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "bio",[\s\S]*maxCharacters: PROFILE_BIO_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "location",[\s\S]*maxCharacters: PROFILE_LOCATION_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "website",[\s\S]*maxCharacters: PROFILE_WEBSITE_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "content",[\s\S]*type: "textarea",[\s\S]*maxCharacters: POST_CONTENT_MAX_CHARACTERS/m,
+    );
+    assert.match(source, /onOpen: \(overlay\) => \{/);
+    assert.match(source, /profileEditFormBuilder\.attach\(popupFormElement\)/);
+});
+
+test("form builder updates textarea counters and captures edited values after attach", () => {
+    class FakeClassList {
+        #classes = new Set();
+
+        toggle(className, shouldEnable) {
+            const shouldAdd =
+                shouldEnable === null || shouldEnable === undefined
+                    ? !this.#classes.has(className)
+                    : Boolean(shouldEnable);
+            if (shouldAdd) {
+                this.#classes.add(className);
+            } else {
+                this.#classes.delete(className);
+            }
+        }
+
+        contains(className) {
+            return this.#classes.has(className);
+        }
+    }
+
+    class FakeHTMLElement {
+        constructor() {
+            this.classList = new FakeClassList();
+            this.textContent = "";
+        }
+    }
+
+    class FakeFieldElement extends FakeHTMLElement {
+        constructor(value = "") {
+            super();
+            this.value = value;
+            this.listeners = new Map();
+        }
+
+        addEventListener(eventType, listener) {
+            const listeners = this.listeners.get(eventType) ?? [];
+            listeners.push(listener);
+            this.listeners.set(eventType, listeners);
+        }
+
+        emit(eventType) {
+            const listeners = this.listeners.get(eventType) ?? [];
+            for (const listener of listeners) {
+                listener();
+            }
+        }
+    }
+
+    class FakeHTMLInputElement extends FakeFieldElement {}
+    class FakeHTMLTextAreaElement extends FakeFieldElement {}
+    class FakeHTMLSelectElement extends FakeFieldElement {}
+
+    const originalHTMLElement = globalThis.HTMLElement;
+    const originalHTMLInputElement = globalThis.HTMLInputElement;
+    const originalHTMLTextAreaElement = globalThis.HTMLTextAreaElement;
+    const originalHTMLSelectElement = globalThis.HTMLSelectElement;
+
+    globalThis.HTMLElement = FakeHTMLElement;
+    globalThis.HTMLInputElement = FakeHTMLInputElement;
+    globalThis.HTMLTextAreaElement = FakeHTMLTextAreaElement;
+    globalThis.HTMLSelectElement = FakeHTMLSelectElement;
+
+    try {
+        const formBuilder = createFormBuilder(
+            {
+                i18n: { t: (value) => value },
+                escapeHtml: (value) => String(value),
+            },
+            {
+                formId: "test-form",
+                submitLabelKey: "ui.reuse.save",
+                includeSubmitButton: false,
+                fields: [
+                    {
+                        name: "bio",
+                        labelKey: "ui.app.profile.bio",
+                        type: "textarea",
+                        value: "a",
+                        maxCharacters: 5,
+                    },
+                ],
+            },
+        );
+        const bioField = new FakeHTMLTextAreaElement("a");
+        const bioCounter = new FakeHTMLElement();
+        const bioFieldWrapper = new FakeHTMLElement();
+        const fakeFormElement = {
+            elements: {
+                namedItem(fieldName) {
+                    return fieldName === "bio" ? bioField : null;
+                },
+            },
+            querySelector(selector) {
+                if (selector === '[data-form-builder-char-counter="bio"]') {
+                    return bioCounter;
+                }
+                if (selector === '[data-form-builder-field="bio"]') {
+                    return bioFieldWrapper;
+                }
+                return null;
+            },
+        };
+
+        const formController = formBuilder.attach(fakeFormElement);
+        assert.equal(bioCounter.textContent, "1 / 5");
+
+        bioField.value = "abcd";
+        bioField.emit("input");
+        assert.equal(bioCounter.textContent, "4 / 5");
+        assert.equal(bioField.value, "abcd");
+        assert.equal(
+            bioCounter.classList.contains("char-counter--near-limit"),
+            true,
+        );
+        assert.equal(
+            bioCounter.classList.contains("char-counter--at-limit"),
+            false,
+        );
+
+        bioField.value = "abcdef";
+        bioField.emit("input");
+        assert.equal(bioField.value, "abcde");
+        assert.equal(bioCounter.textContent, "5 / 5");
+        assert.equal(
+            bioCounter.classList.contains("char-counter--at-limit"),
+            true,
+        );
+        assert.equal(formController.getValues().bio, "abcde");
+    } finally {
+        globalThis.HTMLElement = originalHTMLElement;
+        globalThis.HTMLInputElement = originalHTMLInputElement;
+        globalThis.HTMLTextAreaElement = originalHTMLTextAreaElement;
+        globalThis.HTMLSelectElement = originalHTMLSelectElement;
+    }
 });
 
 test("register confirm password revalidates reactively when password changes", () => {
