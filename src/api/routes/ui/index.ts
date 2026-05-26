@@ -608,6 +608,7 @@ export function createUiRoutes(
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
+                if (isModuleEnabled && !isModuleEnabled(manifest.id)) continue;
                 if (!manifest.entrypoints?.ui) continue;
 
                 try {

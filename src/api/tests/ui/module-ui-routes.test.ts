@@ -75,3 +75,27 @@ test("module ui routes redirect revoked sessions with session_expired reason", a
     assert.equal(recorder.status, 302);
     assert.equal(recorder.headers.location, "/login?reason=session_expired");
 });
+
+test("module ui routes skip disabled modules when isModuleEnabled returns false", async () => {
+    const route = createUiRoutes(
+        createModuleRuntime() as any,
+        undefined,
+        undefined,
+        undefined,
+        (moduleId) => moduleId !== "jitsi-meet",
+    );
+    const token = issueAccessToken("u-disabled-module", "user", 60);
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            method: "GET",
+            headers: { cookie: `cognis_access_token=${token}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/meetings"),
+    );
+
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/error?code=404");
+});
