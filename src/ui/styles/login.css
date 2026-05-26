@@ -245,7 +245,6 @@ p.auth-intro {
 
     .auth-form input,
     .auth-form button,
-    .auth-secondary-action,
     .sso-login-btn {
         padding: 10px 12px;
         font-size: 1rem;
