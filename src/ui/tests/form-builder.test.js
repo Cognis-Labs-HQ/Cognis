@@ -91,6 +91,42 @@ test("form builder supports neutral custom criterion state via null", () => {
     );
 });
 
+test("form builder supports textarea fields and max character counters", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+    assert.match(
+        source,
+        /type\?: 'text'\|'email'\|'password'\|'number'\|'select'\|'textarea'/,
+    );
+    assert.match(source, /fieldConfig\.maxCharacters/);
+    assert.match(source, /data-form-builder-char-counter=/);
+    assert.match(source, /char-counter--near-limit/);
+    assert.match(source, /char-counter--at-limit/);
+});
+
+test("form builder can hide its submit button when embedding inside external popup actions", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+    assert.match(source, /includeSubmitButton/);
+    assert.match(source, /options\?\.includeSubmitButton !== false/);
+});
+
+test("profile bio and post editors use form builder max-character fields", () => {
+    const source = read("src/adapters/social/profile/ui/app.js");
+    assert.match(
+        source,
+        /import \{ createFormBuilder \} from "\/static\/reuse\/form-builder\.js";/,
+    );
+    assert.match(source, /PROFILE_BIO_MAX_CHARACTERS = 200/);
+    assert.match(source, /POST_CONTENT_MAX_CHARACTERS = 1000/);
+    assert.match(
+        source,
+        /name: "bio",[\s\S]*maxCharacters: PROFILE_BIO_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "content",[\s\S]*type: "textarea",[\s\S]*maxCharacters: POST_CONTENT_MAX_CHARACTERS/m,
+    );
+});
+
 test("register confirm password revalidates reactively when password changes", () => {
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /formController\.validateField\("confirmPassword"\)/);

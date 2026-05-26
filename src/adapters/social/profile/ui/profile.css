@@ -741,7 +741,9 @@
     color: var(--text-muted);
 }
 
-.profile-field-input {
+.profile-field-input,
+.profile-edit-form .form-builder-input,
+.new-post-form .form-builder-input {
     box-sizing: border-box;
     width: 100%;
     background: var(--input-bg);
@@ -755,7 +757,9 @@
     transition: border-color 0.15s ease;
 }
 
-.profile-field-input:focus {
+.profile-field-input:focus,
+.profile-edit-form .form-builder-input:focus,
+.new-post-form .form-builder-input:focus {
     outline: none;
     border-color: var(--accent-2);
 }

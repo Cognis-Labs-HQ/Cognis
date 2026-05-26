@@ -41,15 +41,17 @@
  *   formClassName?: string,
  *   submitButtonClassName?: string,
  *   submitLabelKey: string,
+ *   includeSubmitButton?: boolean,
  *   fields: Array<{
  *     name: string,
  *     labelKey: string,
- *     type?: 'text'|'email'|'password'|'number'|'select',
+ *     type?: 'text'|'email'|'password'|'number'|'select'|'textarea',
  *     required?: boolean,
  *     disabled?: boolean,
  *     value?: string,
+ *     maxCharacters?: number,
  *     className?: string,
- *     options?: Array<{ value: string, label: string, selected?: boolean }>,
+ *     options?: Array<{ value: string, label: string, selected?: boolean, disabled?: boolean, title?: string, attributes?: Record<string, string|number|boolean> }>,
  *     floatingTitleKey?: string,
  *     attributes?: Record<string, string|number|boolean>,
  *     criteria?: Array<{
@@ -75,9 +77,11 @@ export function createFormBuilder(ctx, options) {
     const submitButtonClassName = String(
         options?.submitButtonClassName ?? "btn-confirm btn-animated",
     ).trim();
+    const includeSubmitButton = options?.includeSubmitButton !== false;
     const submitLabelKey = String(
         options?.submitLabelKey ?? "ui.reuse.save",
     ).trim();
+    const nearLimitThreshold = 0.1;
 
     function renderAttribute(name, value) {
         if (value === true) {
@@ -112,6 +116,9 @@ export function createFormBuilder(ctx, options) {
         const label = i18n.t(fieldConfig.labelKey);
         const required = fieldConfig.required === true;
         const disabled = fieldConfig.disabled === true;
+        const maxCharacters = Number(fieldConfig.maxCharacters ?? 0);
+        const hasMaxCharacters =
+            Number.isFinite(maxCharacters) && maxCharacters > 0;
         const value =
             fieldConfig.value == null ? "" : String(fieldConfig.value);
         const className = String(fieldConfig.className ?? "").trim();
@@ -137,6 +144,9 @@ export function createFormBuilder(ctx, options) {
         }
         if (disabled) {
             attributes.push(renderAttribute("disabled", true));
+        }
+        if (hasMaxCharacters) {
+            attributes.push(renderAttribute("maxlength", maxCharacters));
         }
 
         const requiredFlagInline = required
@@ -175,22 +185,51 @@ export function createFormBuilder(ctx, options) {
                     const isSelected =
                         optionConfig?.selected === true ||
                         optionValue === value;
-                    return `<option value="${escapeHtml(optionValue)}"${isSelected ? " selected" : ""}>${escapeHtml(optionLabel)}</option>`;
+                    const optionAttributes = [];
+                    if (optionConfig?.disabled === true) {
+                        optionAttributes.push(
+                            renderAttribute("disabled", true),
+                        );
+                    }
+                    if (optionConfig?.title) {
+                        optionAttributes.push(
+                            renderAttribute("title", optionConfig.title),
+                        );
+                    }
+                    for (const [
+                        attributeName,
+                        attributeValue,
+                    ] of Object.entries(optionConfig?.attributes ?? {})) {
+                        optionAttributes.push(
+                            renderAttribute(attributeName, attributeValue),
+                        );
+                    }
+                    return `<option value="${escapeHtml(optionValue)}"${isSelected ? " selected" : ""}${optionAttributes.join("")}>${escapeHtml(optionLabel)}</option>`;
                 })
                 .join("")}
           </select>`
-                : `<input
+                : type === "textarea"
+                  ? `<textarea
+          id="${escapeHtml(inputId)}"
+          name="${escapeHtml(fieldName)}"
+          class="form-builder-input"${attributes.join("")}
+        >${escapeHtml(value)}</textarea>`
+                  : `<input
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
           type="${escapeHtml(type)}"
           class="form-builder-input"
           value="${escapeHtml(value)}"${attributes.join("")}
         />`;
+        const counterMarkup = hasMaxCharacters
+            ? `<span class="form-builder-char-counter" data-form-builder-char-counter="${escapeHtml(fieldName)}">${escapeHtml(String(value.length))} / ${escapeHtml(String(maxCharacters))}</span>`
+            : "";
 
         return `
       <label class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
         <span class="form-builder-label-text">${escapeHtml(label)}${requiredFlagInline}</span>
         ${inputMarkup}
+        ${counterMarkup}
         ${inlineCriteria}
         ${floatingAlert}
       </label>
@@ -202,10 +241,13 @@ export function createFormBuilder(ctx, options) {
             .map((fieldConfig) => renderField(fieldConfig))
             .join("");
         const formClassAttribute = formClassName ? ` ${formClassName}` : "";
+        const submitButtonMarkup = includeSubmitButton
+            ? `<button type="submit" class="${escapeHtml(submitButtonClassName)}">${escapeHtml(i18n.t(submitLabelKey))}</button>`
+            : "";
         return `
       <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}">
         ${renderedFields}
-        <button type="submit" class="${escapeHtml(submitButtonClassName)}">${escapeHtml(i18n.t(submitLabelKey))}</button>
+        ${submitButtonMarkup}
       </form>
     `;
     }
@@ -220,11 +262,45 @@ export function createFormBuilder(ctx, options) {
             const fieldInput = formElement.elements.namedItem(fieldName);
             fieldValues[fieldName] =
                 fieldInput instanceof HTMLInputElement ||
-                fieldInput instanceof HTMLSelectElement
+                fieldInput instanceof HTMLSelectElement ||
+                fieldInput instanceof HTMLTextAreaElement
                     ? String(fieldInput.value ?? "")
                     : "";
         }
         return fieldValues;
+    }
+
+    function updateFieldCharacterCounter(
+        formElement,
+        fieldName,
+        fieldConfig,
+        fieldInput,
+    ) {
+        const maxCharacters = Number(fieldConfig?.maxCharacters ?? 0);
+        if (!Number.isFinite(maxCharacters) || maxCharacters <= 0) {
+            return;
+        }
+        if (fieldInput.value.length > maxCharacters) {
+            fieldInput.value = fieldInput.value.slice(0, maxCharacters);
+        }
+        const counterElement = formElement.querySelector(
+            `[data-form-builder-char-counter="${fieldName}"]`,
+        );
+        if (!(counterElement instanceof HTMLElement)) {
+            return;
+        }
+        const currentLength = fieldInput.value.length;
+        const remainingCharacters = maxCharacters - currentLength;
+        counterElement.textContent = `${currentLength} / ${maxCharacters}`;
+        counterElement.classList.toggle(
+            "char-counter--near-limit",
+            remainingCharacters <=
+                Math.ceil(maxCharacters * nearLimitThreshold),
+        );
+        counterElement.classList.toggle(
+            "char-counter--at-limit",
+            remainingCharacters === 0,
+        );
     }
 
     function evaluateCriterion(criterionConfig, value, fieldValues) {
@@ -321,10 +397,17 @@ export function createFormBuilder(ctx, options) {
             const fieldInput = formElement.elements.namedItem(fieldName);
             if (
                 !(fieldInput instanceof HTMLInputElement) &&
-                !(fieldInput instanceof HTMLSelectElement)
+                !(fieldInput instanceof HTMLSelectElement) &&
+                !(fieldInput instanceof HTMLTextAreaElement)
             ) {
                 return true;
             }
+            updateFieldCharacterCounter(
+                formElement,
+                fieldName,
+                fieldConfig,
+                fieldInput,
+            );
             const fieldValues = createFieldValues(formElement);
             const fieldValue = String(fieldInput.value ?? "");
             const required = fieldConfig.required === true;
@@ -381,7 +464,8 @@ export function createFormBuilder(ctx, options) {
             const fieldInput = formElement.elements.namedItem(fieldName);
             if (
                 !(fieldInput instanceof HTMLInputElement) &&
-                !(fieldInput instanceof HTMLSelectElement)
+                !(fieldInput instanceof HTMLSelectElement) &&
+                !(fieldInput instanceof HTMLTextAreaElement)
             ) {
                 continue;
             }
@@ -412,6 +496,12 @@ export function createFormBuilder(ctx, options) {
                     validateField(fieldName, true);
                 },
                 listenerOptions,
+            );
+            updateFieldCharacterCounter(
+                formElement,
+                fieldName,
+                fieldConfig,
+                fieldInput,
             );
         }
 
