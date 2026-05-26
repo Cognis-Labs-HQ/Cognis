@@ -883,8 +883,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         dragMode: "move",
         dragStartSelection: null,
         dragStartSourceRect: null,
-        dragAnchorLeft: 0,
-        dragAnchorTop: 0,
+        dragAnchorLeft: null,
+        dragAnchorTop: null,
         displayBounds: null,
         selection: null,
         sourceRect: null,
@@ -919,6 +919,21 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             point.top >= bounds.top &&
             point.top <= bounds.top + bounds.height
         );
+    }
+
+    function clampPointerToDisplayBounds(pointerPosition, displayBounds) {
+        return {
+            left: clampValue(
+                pointerPosition.left,
+                displayBounds.left,
+                displayBounds.left + displayBounds.width,
+            ),
+            top: clampValue(
+                pointerPosition.top,
+                displayBounds.top,
+                displayBounds.top + displayBounds.height,
+            ),
+        };
     }
 
     function createSelectionFromAnchorDrag({
@@ -1069,15 +1084,9 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (!state.selection || !state.displayBounds) return;
         const pointerPosition = resolvePointerPositionInFrame(event);
         if (!pointerPosition) return;
-        const clampedPointerLeft = clampValue(
-            pointerPosition.left,
-            state.displayBounds.left,
-            state.displayBounds.left + state.displayBounds.width,
-        );
-        const clampedPointerTop = clampValue(
-            pointerPosition.top,
-            state.displayBounds.top,
-            state.displayBounds.top + state.displayBounds.height,
+        const clampedPointerPosition = clampPointerToDisplayBounds(
+            pointerPosition,
+            state.displayBounds,
         );
         const pointerTarget = event.target.closest("[data-crop-handle]");
         if (pointerTarget instanceof HTMLElement) {
@@ -1086,8 +1095,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             state.dragMode = "move";
         } else if (isPointInsideBounds(pointerPosition, state.displayBounds)) {
             state.dragMode = "draw";
-            state.dragAnchorLeft = clampedPointerLeft;
-            state.dragAnchorTop = clampedPointerTop;
+            state.dragAnchorLeft = clampedPointerPosition.left;
+            state.dragAnchorTop = clampedPointerPosition.top;
         } else {
             return;
         }
@@ -1170,21 +1179,18 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         } else if (state.dragMode === "draw") {
             const pointerPosition = resolvePointerPositionInFrame(event);
             if (!pointerPosition) return;
-            const clampedPointerLeft = clampValue(
-                pointerPosition.left,
-                state.displayBounds.left,
-                state.displayBounds.left + state.displayBounds.width,
+            const clampedPointerPosition = clampPointerToDisplayBounds(
+                pointerPosition,
+                state.displayBounds,
             );
-            const clampedPointerTop = clampValue(
-                pointerPosition.top,
-                state.displayBounds.top,
-                state.displayBounds.top + state.displayBounds.height,
-            );
+            if (state.dragAnchorLeft === null || state.dragAnchorTop === null) {
+                return;
+            }
             state.selection = createSelectionFromAnchorDrag({
                 anchorLeft: state.dragAnchorLeft,
                 anchorTop: state.dragAnchorTop,
-                pointerLeft: clampedPointerLeft,
-                pointerTop: clampedPointerTop,
+                pointerLeft: clampedPointerPosition.left,
+                pointerTop: clampedPointerPosition.top,
                 bounds: state.displayBounds,
             });
         } else {
@@ -1213,6 +1219,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         state.dragPointerId = null;
         state.dragStartSelection = null;
         state.dragStartSourceRect = null;
+        state.dragAnchorLeft = null;
+        state.dragAnchorTop = null;
         state.dragMode = "move";
         if (
             state.shouldAutoZoomOnRelease &&
