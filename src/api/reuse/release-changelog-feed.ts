@@ -59,6 +59,11 @@ function extractChangelogTitle(markdown: string, fallbackSlug: string): string {
         .join(" ");
 }
 
+/**
+ * Normalizes a preferred-language list for changelog lookup by lowercasing,
+ * validating against supported language-code shape, removing duplicates, and
+ * always appending the default fallback language when missing.
+ */
 function normalizePreferredLanguages(preferredLanguages: string[]): string[] {
     const seen = new Set<string>();
     const normalized: string[] = [];
@@ -73,6 +78,16 @@ function normalizePreferredLanguages(preferredLanguages: string[]): string[] {
     return normalized;
 }
 
+/**
+ * Parses a changelog markdown filename into a logical changelog slug and an
+ * optional language code.
+ *
+ * Supported filename formats:
+ * - "<slug>.<lang>.md" (localized variant)
+ * - "<slug>.md" (plain fallback variant)
+ *
+ * Invalid names (including index files) return null.
+ */
 function parseChangelogFileName(fileName: string): {
     slug: string;
     language: string | null;
@@ -91,6 +106,11 @@ function parseChangelogFileName(fileName: string): {
     return { slug, language: null };
 }
 
+/**
+ * Selects the best file variant for a changelog slug by trying preferred
+ * languages in order, then a plain ".md" fallback, then a deterministic
+ * alphabetic fallback if no preferred/plain variant exists.
+ */
 function selectPreferredVariant(
     variants: ChangelogFileVariant[],
     preferredLanguages: string[],

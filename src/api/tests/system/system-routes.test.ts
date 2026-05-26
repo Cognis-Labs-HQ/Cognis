@@ -115,37 +115,67 @@ test("system release changelog feed returns release version and entries", async 
     assert.ok(firstEntry.path.startsWith("/changelogs/"));
 });
 
-test("system release changelog feed resolves localized entries from preferred languages", async () => {
+test("system release changelog feed resolves localized entry summaries across supported languages", async () => {
     const token = issueAccessToken("alice", "user", 60);
     const route = createSystemRoutes(healthService as any);
-    let status = 0;
-    let body = "";
-
-    const handled = await route(
+    const localizedExpectations = [
         {
-            method: "GET",
-            headers: { authorization: "Bearer " + token },
-        } as any,
+            lang: "en",
+            expectedTitle: "Changelog Summary Update",
+            expectedFirstChange: "Parse Changelog Headings",
+        },
         {
-            writeHead(code: number) {
-                status = code;
-            },
-            end(payload: string) {
-                body = payload;
-            },
-        } as any,
-        new URL("http://localhost/api/v1/system/release-changelog?langs=de"),
-    );
+            lang: "de",
+            expectedTitle: "Changelog-Struktur Update",
+            expectedFirstChange: "Changelog-Überschriften Parsen",
+        },
+        {
+            lang: "id",
+            expectedTitle: "Update Ringkasan Changelog",
+            expectedFirstChange: "Parsing Heading Changelog",
+        },
+        {
+            lang: "ja",
+            expectedTitle: "変更履歴要約更新",
+            expectedFirstChange: "見出し解析を統一",
+        },
+    ];
 
-    assert.equal(handled, true);
-    assert.equal(status, 200);
-    const parsed = JSON.parse(body);
-    const localizedEntry = parsed.data.entries.find(
-        (entry: { slug?: string }) =>
-            entry?.slug === "create-changelog-ingestion-system",
-    );
-    assert.ok(localizedEntry);
-    assert.equal(localizedEntry.title, "Changelog-Struktur Update");
+    for (const expectation of localizedExpectations) {
+        let status = 0;
+        let body = "";
+        const handled = await route(
+            {
+                method: "GET",
+                headers: { authorization: "Bearer " + token },
+            } as any,
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end(payload: string) {
+                    body = payload;
+                },
+            } as any,
+            new URL(
+                `http://localhost/api/v1/system/release-changelog?langs=${expectation.lang}`,
+            ),
+        );
+
+        assert.equal(handled, true);
+        assert.equal(status, 200);
+        const parsed = JSON.parse(body);
+        const localizedEntry = parsed.data.entries.find(
+            (entry: { slug?: string }) =>
+                entry?.slug === "create-changelog-ingestion-system",
+        );
+        assert.ok(localizedEntry);
+        assert.equal(localizedEntry.title, expectation.expectedTitle);
+        assert.equal(
+            localizedEntry.changes[0],
+            expectation.expectedFirstChange,
+        );
+    }
 });
 
 test("system route serves license markdown payload", async () => {
