@@ -107,7 +107,10 @@ test("page composer expands compact single-pane rows to full width", () => {
     );
     assert.match(source, /boundedWidth < bounds\.max/);
     assert.match(source, /function canExpandPlacementWithoutConflicts\(/);
-    assert.match(source, /checkPlacement\(\s*occupiedCells,\s*0,\s*placement\.row,/m);
+    assert.match(
+        source,
+        /checkPlacement\(\s*occupiedCells,\s*0,\s*placement\.row,/m,
+    );
     assert.match(source, /canExpandPlacementWithoutConflicts\(/);
     assert.match(source, /normalizedPlacement = shouldExpandToFullWidth/);
     assert.match(source, /col: 0,/);
