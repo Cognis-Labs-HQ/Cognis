@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createFormBuilder } from "../reuse/form-builder.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -127,6 +128,143 @@ test("profile bio and post editors use form builder max-character fields", () =>
     );
     assert.match(source, /onOpen: \(overlay\) => \{/);
     assert.match(source, /profileEditFormBuilder\.attach\(popupFormElement\)/);
+});
+
+test("form builder updates textarea counters and captures edited values after attach", () => {
+    class FakeClassList {
+        #classes = new Set();
+
+        toggle(className, shouldEnable) {
+            const shouldAdd =
+                shouldEnable == null
+                    ? !this.#classes.has(className)
+                    : Boolean(shouldEnable);
+            if (shouldAdd) {
+                this.#classes.add(className);
+            } else {
+                this.#classes.delete(className);
+            }
+        }
+
+        contains(className) {
+            return this.#classes.has(className);
+        }
+    }
+
+    class FakeHTMLElement {
+        constructor() {
+            this.classList = new FakeClassList();
+            this.textContent = "";
+        }
+    }
+
+    class FakeFieldElement extends FakeHTMLElement {
+        constructor(value = "") {
+            super();
+            this.value = value;
+            this.listeners = new Map();
+        }
+
+        addEventListener(eventType, listener) {
+            const listeners = this.listeners.get(eventType) ?? [];
+            listeners.push(listener);
+            this.listeners.set(eventType, listeners);
+        }
+
+        emit(eventType) {
+            const listeners = this.listeners.get(eventType) ?? [];
+            for (const listener of listeners) {
+                listener();
+            }
+        }
+    }
+
+    class FakeHTMLInputElement extends FakeFieldElement {}
+    class FakeHTMLTextAreaElement extends FakeFieldElement {}
+    class FakeHTMLSelectElement extends FakeFieldElement {}
+
+    const originalHTMLElement = globalThis.HTMLElement;
+    const originalHTMLInputElement = globalThis.HTMLInputElement;
+    const originalHTMLTextAreaElement = globalThis.HTMLTextAreaElement;
+    const originalHTMLSelectElement = globalThis.HTMLSelectElement;
+
+    globalThis.HTMLElement = FakeHTMLElement;
+    globalThis.HTMLInputElement = FakeHTMLInputElement;
+    globalThis.HTMLTextAreaElement = FakeHTMLTextAreaElement;
+    globalThis.HTMLSelectElement = FakeHTMLSelectElement;
+
+    try {
+        const formBuilder = createFormBuilder(
+            {
+                i18n: { t: (value) => value },
+                escapeHtml: (value) => String(value),
+            },
+            {
+                formId: "test-form",
+                submitLabelKey: "ui.reuse.save",
+                includeSubmitButton: false,
+                fields: [
+                    {
+                        name: "bio",
+                        labelKey: "ui.app.profile.bio",
+                        type: "textarea",
+                        value: "a",
+                        maxCharacters: 5,
+                    },
+                ],
+            },
+        );
+        const bioField = new FakeHTMLTextAreaElement("a");
+        const bioCounter = new FakeHTMLElement();
+        const bioFieldWrapper = new FakeHTMLElement();
+        const fakeFormElement = {
+            elements: {
+                namedItem(fieldName) {
+                    return fieldName === "bio" ? bioField : null;
+                },
+            },
+            querySelector(selector) {
+                if (selector === '[data-form-builder-char-counter="bio"]') {
+                    return bioCounter;
+                }
+                if (selector === '[data-form-builder-field="bio"]') {
+                    return bioFieldWrapper;
+                }
+                return null;
+            },
+        };
+
+        const formController = formBuilder.attach(fakeFormElement);
+        assert.equal(bioCounter.textContent, "1 / 5");
+
+        bioField.value = "abcd";
+        bioField.emit("input");
+        assert.equal(bioCounter.textContent, "4 / 5");
+        assert.equal(bioField.value, "abcd");
+        assert.equal(
+            bioCounter.classList.contains("char-counter--near-limit"),
+            true,
+        );
+        assert.equal(
+            bioCounter.classList.contains("char-counter--at-limit"),
+            false,
+        );
+
+        bioField.value = "abcdef";
+        bioField.emit("input");
+        assert.equal(bioField.value, "abcde");
+        assert.equal(bioCounter.textContent, "5 / 5");
+        assert.equal(
+            bioCounter.classList.contains("char-counter--at-limit"),
+            true,
+        );
+        assert.equal(formController.getValues().bio, "abcde");
+    } finally {
+        globalThis.HTMLElement = originalHTMLElement;
+        globalThis.HTMLInputElement = originalHTMLInputElement;
+        globalThis.HTMLTextAreaElement = originalHTMLTextAreaElement;
+        globalThis.HTMLSelectElement = originalHTMLSelectElement;
+    }
 });
 
 test("register confirm password revalidates reactively when password changes", () => {

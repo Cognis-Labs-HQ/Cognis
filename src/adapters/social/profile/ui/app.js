@@ -671,9 +671,11 @@ function renderPostsList() {
 
 function renderNewPost() {
     const profileVis = profile?.visibility ?? "hidden";
+    const canFollowers = profileVis !== "hidden";
+    const canEveryone = profileVis === "community";
 
     const visibilityHint =
-        profileVis !== "community"
+        !canFollowers || !canEveryone
             ? `<span class="profile-visibility-tooltip">${renderInfoTooltip(i18n.t("ui.app.profile.post_visibility_hint"), i18n.t("ui.reuse.more_information"))}</span>`
             : "";
     const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
@@ -811,7 +813,7 @@ async function openEditPopup() {
         },
     );
 
-    let profileEditFormController = null;
+    const profileEditFormController = { current: null };
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
         body: () => profileEditFormBuilder.render(),
@@ -820,7 +822,7 @@ async function openEditPopup() {
         onOpen: (overlay) => {
             const popupFormElement =
                 overlay.querySelector("#profile-edit-form");
-            profileEditFormController =
+            profileEditFormController.current =
                 popupFormElement instanceof HTMLFormElement
                     ? profileEditFormBuilder.attach(popupFormElement)
                     : null;
@@ -843,7 +845,7 @@ async function openEditPopup() {
     const result = await popupPromise;
 
     if (result === "save") {
-        const fieldValues = profileEditFormController?.getValues() ?? {};
+        const fieldValues = profileEditFormController.current?.getValues() ?? {};
         const displayName = fieldValues.displayName ?? currentDisplayName;
         const bio = fieldValues.bio ?? currentBio;
         const location = fieldValues.location ?? currentLocation;
