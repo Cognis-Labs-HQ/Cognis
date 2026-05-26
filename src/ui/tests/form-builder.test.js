@@ -30,7 +30,19 @@ test("register page uses form builder instead of hardcoded maxlength for usernam
     assert.doesNotMatch(source, /maxlength="25"/);
     assert.match(
         source,
-        /id: "username-max-length",[\s\S]*type: "maxLength",[\s\S]*value: 25,/m,
+        /id: "username-max-length",[\s\S]*type: "maxLength",[\s\S]*value: REGISTER_USERNAME_MAX_CHARACTERS,/m,
+    );
+    assert.match(
+        source,
+        /name: "username",[\s\S]*maxCharacters: REGISTER_USERNAME_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "email",[\s\S]*maxCharacters: REGISTER_EMAIL_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "displayName",[\s\S]*maxCharacters: REGISTER_DISPLAY_NAME_MAX_CHARACTERS/m,
     );
 });
 
@@ -118,9 +130,24 @@ test("profile bio and post editors use form builder max-character fields", () =>
     );
     assert.match(source, /PROFILE_BIO_MAX_CHARACTERS = 200/);
     assert.match(source, /POST_CONTENT_MAX_CHARACTERS = 1000/);
+    assert.match(source, /PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80/);
+    assert.match(source, /PROFILE_LOCATION_MAX_CHARACTERS = 120/);
+    assert.match(source, /PROFILE_WEBSITE_MAX_CHARACTERS = 2048/);
+    assert.match(
+        source,
+        /name: "displayName",[\s\S]*maxCharacters: PROFILE_DISPLAY_NAME_MAX_CHARACTERS/m,
+    );
     assert.match(
         source,
         /name: "bio",[\s\S]*maxCharacters: PROFILE_BIO_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "location",[\s\S]*maxCharacters: PROFILE_LOCATION_MAX_CHARACTERS/m,
+    );
+    assert.match(
+        source,
+        /name: "website",[\s\S]*maxCharacters: PROFILE_WEBSITE_MAX_CHARACTERS/m,
     );
     assert.match(
         source,

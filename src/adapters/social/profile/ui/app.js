@@ -36,6 +36,9 @@ let relationship = null;
 let newPostFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
+const PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80;
+const PROFILE_LOCATION_MAX_CHARACTERS = 120;
+const PROFILE_WEBSITE_MAX_CHARACTERS = 2048;
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
 
@@ -753,6 +756,7 @@ async function openEditPopup() {
                     name: "displayName",
                     labelKey: "ui.app.profile.display_name",
                     value: currentDisplayName,
+                    maxCharacters: PROFILE_DISPLAY_NAME_MAX_CHARACTERS,
                     attributes: {
                         id: "popup-edit-display-name",
                     },
@@ -772,6 +776,7 @@ async function openEditPopup() {
                     name: "location",
                     labelKey: "ui.app.profile.location",
                     value: currentLocation,
+                    maxCharacters: PROFILE_LOCATION_MAX_CHARACTERS,
                     attributes: {
                         id: "popup-edit-location",
                     },
@@ -781,6 +786,7 @@ async function openEditPopup() {
                     labelKey: "ui.app.profile.website",
                     type: "url",
                     value: currentWebsite,
+                    maxCharacters: PROFILE_WEBSITE_MAX_CHARACTERS,
                     attributes: {
                         id: "popup-edit-website",
                     },
