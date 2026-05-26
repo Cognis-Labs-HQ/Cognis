@@ -266,6 +266,7 @@
   <string name="ui.reuse.sensitive_action_prompt">Mohon konfirmasi tindakan sensitif ini.</string>
   <string name="ui.reuse.enter_password_prompt">Masukkan kata sandi Anda untuk melanjutkan.</string>
   <string name="ui.reuse.incorrect_password">Kata sandi salah. Silakan coba lagi.</string>
+  <string name="ui.reuse.sign_in_instead">Masuk saja</string>
   <string name="ui.app.users.page_subtitle">Kelola akun dan kirim undangan.</string>
   <string name="ui.app.users.username">Nama pengguna</string>
   <string name="ui.app.users.role">Peran</string>

@@ -266,6 +266,7 @@
   <string name="ui.reuse.sensitive_action_prompt">この重要な操作を確認してください。</string>
   <string name="ui.reuse.enter_password_prompt">続行するにはパスワードを入力してください。</string>
   <string name="ui.reuse.incorrect_password">パスワードが正しくありません。もう一度お試しください。</string>
+  <string name="ui.reuse.sign_in_instead">代わりにサインイン</string>
   <string name="ui.app.users.page_subtitle">アカウント管理と招待送信を行います。</string>
   <string name="ui.app.users.username">ユーザー名</string>
   <string name="ui.app.users.role">ロール</string>

@@ -266,6 +266,7 @@
   <string name="ui.reuse.sensitive_action_prompt">Bitte bestätigen Sie diese sensible Aktion.</string>
   <string name="ui.reuse.enter_password_prompt">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
   <string name="ui.reuse.incorrect_password">Falsches Passwort. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.reuse.sign_in_instead">Stattdessen anmelden</string>
   <string name="ui.app.users.page_subtitle">Konten verwalten und Einladungen versenden.</string>
   <string name="ui.app.users.username">Benutzername</string>
   <string name="ui.app.users.role">Rolle</string>
