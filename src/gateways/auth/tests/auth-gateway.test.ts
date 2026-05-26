@@ -249,9 +249,10 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
     assert.ok(handled);
     assert.equal(res.status, 200);
     const body = JSON.parse(res.payload) as {
-        data: { registrationsEnabled: boolean };
+        data: { registrationsEnabled: boolean; userValidationMode: string };
     };
     assert.equal(body.data.registrationsEnabled, true);
+    assert.equal(body.data.userValidationMode, "none");
 });
 
 test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {

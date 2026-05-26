@@ -382,15 +382,18 @@ function createAuthGatewayRoutes(
             req.method === "GET"
         ) {
             const enabled = await registrationsEnabled();
+            const { userValidationMode } = await readSecuritySettings();
             log?.("debug", "Read registration config.", {
                 ...logMeta,
                 registrationsEnabled: enabled,
+                userValidationMode,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
                         registrationsEnabled: enabled,
+                        userValidationMode,
                     },
                 }),
             );
@@ -550,10 +553,12 @@ function createAuthGatewayRoutes(
                 1800,
             );
 
+            const { userValidationMode: registrationValidationMode } =
+                await readSecuritySettings();
             const hasVerifiedEmail = capabilities.get<
                 (accountId: string) => Promise<boolean>
             >("notify:hasVerifiedEmail");
-            if (hasVerifiedEmail) {
+            if (hasVerifiedEmail && registrationValidationMode === "smtp") {
                 const FIVE_MINUTES_MS = 5 * 60 * 1000;
                 const timer = setTimeout(async () => {
                     try {
