@@ -9,6 +9,7 @@ import {
     computeCropSourceRect,
     computeCropViewport,
     computeMovedCropSelection,
+    panCropSourceRect,
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
@@ -205,4 +206,44 @@ test("composeCropSourceRect maps nested crop selection into original image", () 
     assert.equal(sourceRect.sourceY, 250);
     assert.equal(sourceRect.sourceWidth, 600);
     assert.equal(sourceRect.sourceHeight, 300);
+});
+
+test("panCropSourceRect pans without changing zoom dimensions", () => {
+    const pannedRect = panCropSourceRect({
+        startSourceRect: {
+            sourceX: 100,
+            sourceY: 80,
+            sourceWidth: 600,
+            sourceHeight: 300,
+        },
+        sourceDeltaX: 150,
+        sourceDeltaY: -120,
+        imageWidth: 1600,
+        imageHeight: 900,
+    });
+
+    assert.equal(pannedRect.sourceX, 250);
+    assert.equal(pannedRect.sourceY, 0);
+    assert.equal(pannedRect.sourceWidth, 600);
+    assert.equal(pannedRect.sourceHeight, 300);
+});
+
+test("panCropSourceRect clamps pan to image bounds", () => {
+    const pannedRect = panCropSourceRect({
+        startSourceRect: {
+            sourceX: 900,
+            sourceY: 500,
+            sourceWidth: 700,
+            sourceHeight: 400,
+        },
+        sourceDeltaX: 999,
+        sourceDeltaY: 999,
+        imageWidth: 1600,
+        imageHeight: 900,
+    });
+
+    assert.equal(pannedRect.sourceX, 900);
+    assert.equal(pannedRect.sourceY, 500);
+    assert.equal(pannedRect.sourceWidth, 700);
+    assert.equal(pannedRect.sourceHeight, 400);
 });

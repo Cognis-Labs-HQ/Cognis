@@ -569,3 +569,67 @@ export function composeCropSourceRect({
         sourceHeight: nestedSourceRect.sourceHeight,
     };
 }
+
+/**
+ * Pans an existing source rectangle inside image bounds without changing zoom.
+ *
+ * @param {{
+ *   startSourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   sourceDeltaX: number,
+ *   sourceDeltaY: number,
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * }} params
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ */
+export function panCropSourceRect({
+    startSourceRect,
+    sourceDeltaX,
+    sourceDeltaY,
+    imageWidth,
+    imageHeight,
+}) {
+    const normalizedStartSourceRect = clampSourceRectToImage({
+        sourceX: Number(startSourceRect?.sourceX) || 0,
+        sourceY: Number(startSourceRect?.sourceY) || 0,
+        sourceWidth: Number(startSourceRect?.sourceWidth) || 1,
+        sourceHeight: Number(startSourceRect?.sourceHeight) || 1,
+        imageWidth,
+        imageHeight,
+    });
+    const maxSourceX = Math.max(
+        0,
+        (Number(imageWidth) || 1) - normalizedStartSourceRect.sourceWidth,
+    );
+    const maxSourceY = Math.max(
+        0,
+        (Number(imageHeight) || 1) - normalizedStartSourceRect.sourceHeight,
+    );
+    return {
+        ...normalizedStartSourceRect,
+        sourceX: Math.min(
+            maxSourceX,
+            Math.max(
+                0,
+                normalizedStartSourceRect.sourceX + (Number(sourceDeltaX) || 0),
+            ),
+        ),
+        sourceY: Math.min(
+            maxSourceY,
+            Math.max(
+                0,
+                normalizedStartSourceRect.sourceY + (Number(sourceDeltaY) || 0),
+            ),
+        ),
+    };
+}

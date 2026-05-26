@@ -6,6 +6,7 @@ import {
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
+    panCropSourceRect,
 } from "/static/adapters/social/profile/image-crop.js";
 
 function buildCropPopupBody({
@@ -364,34 +365,12 @@ export async function openImageCropPopup({
                 const sourceRegionDeltaY =
                     (deltaY / state.displayBounds.height) *
                     startSourceRect.sourceHeight;
-                const maxSourceX = Math.max(
-                    0,
-                    cropImage.imageWidth - startSourceRect.sourceWidth,
-                );
-                const maxSourceY = Math.max(
-                    0,
-                    cropImage.imageHeight - startSourceRect.sourceHeight,
-                );
-                state.sourceRect = composeCropSourceRect({
-                    baseSourceRect: {
-                        ...startSourceRect,
-                        sourceX: Math.min(
-                            maxSourceX,
-                            Math.max(
-                                0,
-                                startSourceRect.sourceX + sourceRegionDeltaX,
-                            ),
-                        ),
-                        sourceY: Math.min(
-                            maxSourceY,
-                            Math.max(
-                                0,
-                                startSourceRect.sourceY + sourceRegionDeltaY,
-                            ),
-                        ),
-                    },
-                    selection: state.dragStartSelection,
-                    imageBounds: state.displayBounds,
+                state.sourceRect = panCropSourceRect({
+                    startSourceRect,
+                    sourceDeltaX: sourceRegionDeltaX,
+                    sourceDeltaY: sourceRegionDeltaY,
+                    imageWidth: cropImage.imageWidth,
+                    imageHeight: cropImage.imageHeight,
                 });
                 state.selection = { ...state.dragStartSelection };
                 state.shouldAutoZoomOnRelease = false;
