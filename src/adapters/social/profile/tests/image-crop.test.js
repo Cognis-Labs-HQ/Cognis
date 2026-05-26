@@ -86,7 +86,7 @@ test("computeContainImageBounds centers contained image inside frame", () => {
     assert.equal(imageBounds.top, 87.5);
 });
 
-test("createInitialCropSelection creates centered selection with target ratio", () => {
+test("createInitialCropSelection uses centered max-size area for target ratio", () => {
     const selection = createInitialCropSelection({
         bounds: { left: 10, top: 20, width: 500, height: 300 },
         aspectRatio: 2,
