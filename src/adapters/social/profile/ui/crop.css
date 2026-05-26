@@ -1,0 +1,154 @@
+.profile-image-crop-popup {
+    --crop-frame-vertical-offset: 280px;
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+}
+
+.profile-image-crop-frame {
+    position: relative;
+    width: min(
+        100%,
+        640px,
+        calc(
+            (100vh - var(--crop-frame-vertical-offset)) *
+                var(--crop-aspect-ratio, 1)
+        ),
+        calc(
+            (100dvh - var(--crop-frame-vertical-offset)) *
+                var(--crop-aspect-ratio, 1)
+        )
+    );
+    max-height: min(
+        calc(100vh - var(--crop-frame-vertical-offset)),
+        calc(100dvh - var(--crop-frame-vertical-offset))
+    );
+    justify-self: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    cursor: default;
+    touch-action: none;
+    user-select: none;
+}
+
+.profile-image-crop-frame--dragging {
+    cursor: grabbing;
+}
+
+.profile-image-crop-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    max-height: none;
+    transform-origin: top left;
+    pointer-events: none;
+}
+
+.profile-image-crop-selection {
+    position: absolute;
+    box-sizing: border-box;
+    box-shadow:
+        0 0 0 200vmax rgba(0, 0, 0, 0.45),
+        0 0 0 2px rgba(255, 255, 255, 0.95) inset,
+        0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+    cursor: move;
+    touch-action: none;
+}
+
+.profile-image-crop-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(
+            to right,
+            transparent calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% + 0.5px),
+            transparent calc(33.333% + 0.5px),
+            transparent calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% + 0.5px),
+            transparent calc(66.666% + 0.5px)
+        ),
+        linear-gradient(
+            to bottom,
+            transparent calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% + 0.5px),
+            transparent calc(33.333% + 0.5px),
+            transparent calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% + 0.5px),
+            transparent calc(66.666% + 0.5px)
+        );
+}
+
+.profile-image-crop-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    background: rgba(17, 24, 39, 0.72);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.profile-image-crop-handle--n,
+.profile-image-crop-handle--s {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.profile-image-crop-handle--e,
+.profile-image-crop-handle--w {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.profile-image-crop-handle--n {
+    top: -8px;
+    cursor: ns-resize;
+}
+
+.profile-image-crop-handle--s {
+    bottom: -8px;
+    cursor: ns-resize;
+}
+
+.profile-image-crop-handle--e {
+    right: -8px;
+    cursor: ew-resize;
+}
+
+.profile-image-crop-handle--w {
+    left: -8px;
+    cursor: ew-resize;
+}
+
+.profile-image-crop-handle--ne {
+    top: -8px;
+    right: -8px;
+    cursor: nesw-resize;
+}
+
+.profile-image-crop-handle--nw {
+    top: -8px;
+    left: -8px;
+    cursor: nwse-resize;
+}
+
+.profile-image-crop-handle--se {
+    right: -8px;
+    bottom: -8px;
+    cursor: nwse-resize;
+}
+
+.profile-image-crop-handle--sw {
+    left: -8px;
+    bottom: -8px;
+    cursor: nesw-resize;
+}

@@ -1,0 +1,7 @@
+<resources>
+  <string name="ui.app.profile.crop_avatar_title">Potong Foto Profil</string>
+  <string name="ui.app.profile.crop_banner_title">Potong Foto Banner</string>
+  <string name="ui.app.profile.crop_zoom_label">Zoom</string>
+  <string name="ui.app.profile.crop_grid_expand">Perluas Grid Panduan</string>
+  <string name="ui.app.profile.crop_grid_collapse">Perkecil Grid Panduan</string>
+</resources>

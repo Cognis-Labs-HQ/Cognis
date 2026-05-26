@@ -1,0 +1,7 @@
+<resources>
+  <string name="ui.app.profile.crop_avatar_title">Profilfoto zuschneiden</string>
+  <string name="ui.app.profile.crop_banner_title">Bannerfoto zuschneiden</string>
+  <string name="ui.app.profile.crop_zoom_label">Zoom</string>
+  <string name="ui.app.profile.crop_grid_expand">Hilfsraster erweitern</string>
+  <string name="ui.app.profile.crop_grid_collapse">Hilfsraster verkleinern</string>
+</resources>

@@ -386,11 +386,6 @@
   <string name="ui.app.profile.its_you">It&#x2019;s You</string>
   <string name="ui.app.profile.change_banner">Change banner photo</string>
   <string name="ui.app.profile.change_avatar">Change profile photo</string>
-  <string name="ui.app.profile.crop_avatar_title">Crop Profile Photo</string>
-  <string name="ui.app.profile.crop_banner_title">Crop Banner Photo</string>
-  <string name="ui.app.profile.crop_zoom_label">Zoom</string>
-  <string name="ui.app.profile.crop_grid_expand">Expand Guide Grid</string>
-  <string name="ui.app.profile.crop_grid_collapse">Collapse Guide Grid</string>
   <string name="ui.app.profile.achievements">Achievements</string>
   <string name="ui.app.profile.social_links.website">Website</string>
   <string name="ui.app.profile.social_links.empty">No links set. Edit your profile to add a website.</string>
