@@ -14,9 +14,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
-import {
-    openImageCropPopup,
-} from "/static/adapters/social/profile/crop-popup.js";
+import { openImageCropPopup } from "/static/adapters/social/profile/crop-popup.js";
 
 let root = null;
 let i18n = null;
@@ -38,8 +36,6 @@ let canRequestMessageTarget = false;
 let relationship = null;
 const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
 const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
-let pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
-let pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 let newPostFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
@@ -983,7 +979,7 @@ avatarFileInput.addEventListener("change", async () => {
         await handleProfileImageUpload({
             kind: "avatar",
             file,
-            aspectRatio: pendingAvatarCropAspect,
+            aspectRatio: AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
         });
     } catch {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
@@ -1001,7 +997,7 @@ bannerFileInput.addEventListener("change", async () => {
         await handleProfileImageUpload({
             kind: "banner",
             file,
-            aspectRatio: pendingBannerCropAspect,
+            aspectRatio: BANNER_CROP_WIDTH_TO_HEIGHT_RATIO,
         });
     } catch {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
@@ -1260,14 +1256,12 @@ function bindPageEvents() {
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
         () => {
-            pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
             bannerFileInput.click();
         },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
         () => {
-            pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
             avatarFileInput.click();
         },
     );
@@ -1400,8 +1394,6 @@ export async function mount(rootEl, { signal } = {}) {
     bannerHeight = null;
     composer = null;
     elements = [];
-    pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
-    pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 
     if (isOwnProfile) {
         profile = await loadOwnProfile();

@@ -8,21 +8,6 @@ import {
     getCropOutputDimensions,
 } from "/static/adapters/social/profile/image-crop.js";
 
-/**
- * Derives a crop aspect ratio from the visible element dimensions.
- *
- * @param {EventTarget | null} element
- * @param {number} fallbackAspectRatio
- * @returns {number}
- */
-export function resolveCropAspectFromElement(element, fallbackAspectRatio) {
-    const fallback = Math.max(0.5, Number(fallbackAspectRatio) || 1);
-    if (!(element instanceof HTMLElement)) return fallback;
-    const bounds = element.getBoundingClientRect();
-    if (bounds.width <= 0 || bounds.height <= 0) return fallback;
-    return Math.max(0.5, bounds.width / bounds.height);
-}
-
 function buildCropPopupBody({
     imageUrl,
     imageType,

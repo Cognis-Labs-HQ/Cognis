@@ -22,8 +22,16 @@ function clampSourceRectToImage({
     imageWidth,
     imageHeight,
 }) {
-    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
-    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const resolvedImageWidth = Number(imageWidth);
+    const resolvedImageHeight = Number(imageHeight);
+    const safeImageWidth =
+        Number.isFinite(resolvedImageWidth) && resolvedImageWidth > 0
+            ? resolvedImageWidth
+            : 1;
+    const safeImageHeight =
+        Number.isFinite(resolvedImageHeight) && resolvedImageHeight > 0
+            ? resolvedImageHeight
+            : 1;
     const clampedSourceX = Math.min(
         safeImageWidth - 1,
         Math.max(0, Number(sourceX) || 0),
@@ -34,16 +42,26 @@ function clampSourceRectToImage({
     );
     const maxSourceWidth = safeImageWidth - clampedSourceX;
     const maxSourceHeight = safeImageHeight - clampedSourceY;
+    const resolvedSourceWidth = Number(sourceWidth);
+    const resolvedSourceHeight = Number(sourceHeight);
+    const normalizedSourceWidth =
+        Number.isFinite(resolvedSourceWidth) && resolvedSourceWidth > 0
+            ? resolvedSourceWidth
+            : maxSourceWidth;
+    const normalizedSourceHeight =
+        Number.isFinite(resolvedSourceHeight) && resolvedSourceHeight > 0
+            ? resolvedSourceHeight
+            : maxSourceHeight;
     return {
         sourceX: clampedSourceX,
         sourceY: clampedSourceY,
         sourceWidth: Math.min(
             maxSourceWidth,
-            Math.max(1, Number(sourceWidth) || maxSourceWidth),
+            Math.max(1, normalizedSourceWidth),
         ),
         sourceHeight: Math.min(
             maxSourceHeight,
-            Math.max(1, Number(sourceHeight) || maxSourceHeight),
+            Math.max(1, normalizedSourceHeight),
         ),
     };
 }
