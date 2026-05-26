@@ -1,0 +1,7 @@
+<resources>
+  <string name="ui.app.profile.crop_avatar_title">Crop Profile Photo</string>
+  <string name="ui.app.profile.crop_banner_title">Crop Banner Photo</string>
+  <string name="ui.app.profile.crop_zoom_label">Zoom</string>
+  <string name="ui.app.profile.crop_grid_expand">Expand Guide Grid</string>
+  <string name="ui.app.profile.crop_grid_collapse">Collapse Guide Grid</string>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+  <string name="ui.app.profile.crop_avatar_title">プロフィール写真を切り抜き</string>
+  <string name="ui.app.profile.crop_banner_title">バナー写真を切り抜き</string>
+  <string name="ui.app.profile.crop_zoom_label">ズーム</string>
+  <string name="ui.app.profile.crop_grid_expand">ガイドグリッドを拡張</string>
+  <string name="ui.app.profile.crop_grid_collapse">ガイドグリッドを縮小</string>
+</resources>
