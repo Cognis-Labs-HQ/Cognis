@@ -612,12 +612,12 @@ export function createUiRoutes(
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
+                if (url.pathname.startsWith("/api/")) continue;
                 if (
                     !manifest.entrypoints?.ui ||
                     (isModuleEnabled && !isModuleEnabled(manifest.id))
                 )
                     continue;
-                if (url.pathname.startsWith("/api/")) continue;
 
                 try {
                     const routeFile = path.resolve(
