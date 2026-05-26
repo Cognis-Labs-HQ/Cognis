@@ -769,22 +769,34 @@ function revokeProfileBlobUrls() {
  * @param {{ kind: "avatar" | "banner", file: File, aspectRatio: number }} params
  * @returns {Promise<boolean>}
  */
+function isGifFile(file) {
+    if (!(file instanceof File)) return false;
+    if (file.type.toLowerCase() === "image/gif") return true;
+    return /\.gif$/i.test(file.name);
+}
+
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-    const croppedBlob = await openImageCropPopup({
-        file,
-        kind,
-        aspectRatio,
-        openPopupDialog: openPopup,
-        translate: (key) => i18n.t(key),
-        escapeHtmlText: escapeHtml,
-    });
-    if (!(croppedBlob instanceof Blob)) return false;
+    const skipCrop = isGifFile(file);
+    const uploadBlob = skipCrop
+        ? file
+        : await openImageCropPopup({
+              file,
+              kind,
+              aspectRatio,
+              openPopupDialog: openPopup,
+              translate: (key) => i18n.t(key),
+              escapeHtmlText: escapeHtml,
+          });
+    if (!(uploadBlob instanceof Blob)) return false;
     const endpoint =
         kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
+    const contentType = skipCrop
+        ? file.type || "application/octet-stream"
+        : "image/png";
     const response = await apiFetch(endpoint, {
         method: "PUT",
-        headers: { "content-type": "image/png" },
-        body: await croppedBlob.arrayBuffer(),
+        headers: { "content-type": contentType },
+        body: await uploadBlob.arrayBuffer(),
     });
     if (!response.ok) {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
@@ -792,10 +804,10 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     }
     if (kind === "avatar") {
         if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
-        avatarBlobUrl = URL.createObjectURL(croppedBlob);
+        avatarBlobUrl = URL.createObjectURL(uploadBlob);
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
-        bannerBlobUrl = URL.createObjectURL(croppedBlob);
+        bannerBlobUrl = URL.createObjectURL(uploadBlob);
     }
     profile = await loadOwnProfile();
     composer.refresh(elements);
