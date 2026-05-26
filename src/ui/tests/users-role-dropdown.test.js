@@ -78,9 +78,9 @@ test("users action menu includes resend only when unverified emails exist", () =
 
     assert.match(
         source,
-        /const hasUnverifiedEmail = emails\.some\(\(e\) => !e\.verified\)/,
+        /const hasUnverifiedEmails = emails\.some\(\(e\) => !e\.verified\)/,
     );
-    assert.match(source, /\.\.\.\(hasUnverifiedEmail/);
+    assert.match(source, /\.\.\.\(hasUnverifiedEmails/);
 });
 
 test("users delete action is rendered as inline trash button in actions column", () => {
@@ -91,7 +91,10 @@ test("users delete action is rendered as inline trash button in actions column",
 
     assert.match(source, /class="users-delete-btn btn-animated"/);
     assert.match(source, /await runUserMenuAction\("delete", username\)/);
-    assert.match(source, /users-delete-btn[\s\S]*users-menu-btn/);
+    assert.match(
+        source,
+        /<button class="users-delete-btn btn-animated"[\s\S]*<button class="users-menu-btn btn-animated"/,
+    );
 });
 
 test("users tfa reset action has standalone branch", () => {

@@ -386,7 +386,7 @@ function bindUsersInteractions() {
             if (!username || !(btn instanceof HTMLButtonElement)) return;
             const user = users.find((entry) => entry.username === username);
             const emails = await fetchUserEmails(username);
-            const hasUnverifiedEmail = emails.some((e) => !e.verified);
+            const hasUnverifiedEmails = emails.some((e) => !e.verified);
             const menuItems = [
                 {
                     id: user?.isFounder ? "unset-founder" : "set-founder",
@@ -408,7 +408,7 @@ function bindUsersInteractions() {
                           },
                       ]
                     : []),
-                ...(hasUnverifiedEmail
+                ...(hasUnverifiedEmails
                     ? [
                           {
                               id: "resend",
