@@ -1040,10 +1040,10 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (state.dragMode === "move") {
             if (shouldPanZoomedViewport && state.dragStartSourceRect) {
                 const startSourceRect = state.dragStartSourceRect;
-                const sourceDeltaX =
+                const sourceRegionDeltaX =
                     (deltaX / state.displayBounds.width) *
                     startSourceRect.sourceWidth;
-                const sourceDeltaY =
+                const sourceRegionDeltaY =
                     (deltaY / state.displayBounds.height) *
                     startSourceRect.sourceHeight;
                 const maxSourceX = Math.max(
@@ -1059,11 +1059,17 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                         ...startSourceRect,
                         sourceX: Math.min(
                             maxSourceX,
-                            Math.max(0, startSourceRect.sourceX + sourceDeltaX),
+                            Math.max(
+                                0,
+                                startSourceRect.sourceX + sourceRegionDeltaX,
+                            ),
                         ),
                         sourceY: Math.min(
                             maxSourceY,
-                            Math.max(0, startSourceRect.sourceY + sourceDeltaY),
+                            Math.max(
+                                0,
+                                startSourceRect.sourceY + sourceRegionDeltaY,
+                            ),
                         ),
                     },
                     selection: state.dragStartSelection,
