@@ -253,6 +253,16 @@ test("router aborts the previous mount's signal on navigation", () => {
         /finishPageLoading\(\)/,
         "app-router.js must hide the shared loading overlay after navigation",
     );
+    assert.match(
+        src,
+        /const finishPageLoading = beginPageLoading\(\)[\s\S]*finally\s*\{\s*finishPageLoading\(\);/m,
+        "app-router.js must always finish loading overlay cleanup in a top-level finally block",
+    );
+    assert.match(
+        src,
+        /openRuntimeErrorPopup\(/,
+        "app-router.js must surface runtime route failures via the shared error popup",
+    );
 });
 
 test("router enforces TFA setup route when required", () => {
@@ -269,6 +279,18 @@ test("router enforces TFA setup route when required", () => {
         src,
         /\/settings#security/,
         "app-router.js must redirect required TFA users to /settings#security",
+    );
+});
+
+test("router installs global runtime error handlers", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        src,
+        /installRuntimeErrorHandlers\(\)/,
+        "app-router.js must initialize global runtime error listeners",
     );
 });
 

@@ -69,6 +69,13 @@
   <string name="ui.reuse.debug">Debug</string>
   <string name="ui.reuse.subject">Betreff</string>
   <string name="ui.reuse.message">Nachricht</string>
+  <string name="ui.reuse.runtime_error_popup_title">Laufzeitfehler Erkannt</string>
+  <string name="ui.reuse.runtime_error_popup_summary">Fehlerzusammenfassung</string>
+  <string name="ui.reuse.runtime_error_popup_context">Technischer Kontext</string>
+  <string name="ui.reuse.runtime_error_popup_page_url">Seiten-URL</string>
+  <string name="ui.reuse.runtime_error_popup_stack">Stack-Trace</string>
+  <string name="ui.reuse.runtime_error_popup_console">Konsolenprotokoll</string>
+  <string name="ui.reuse.runtime_error_popup_console_empty">Es wurden keine aktuellen Konsoleneinträge erfasst.</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">Benutzer</string>

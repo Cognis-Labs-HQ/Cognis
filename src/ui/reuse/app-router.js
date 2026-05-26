@@ -38,6 +38,10 @@ import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { beginPageLoading } from "./page-entry.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
+import {
+    installRuntimeErrorHandlers,
+    openRuntimeErrorPopup,
+} from "./runtime-error-popup.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -394,45 +398,62 @@ async function loadRoute(path) {
         return loadRoute(enforcedPath);
     }
     const finishPageLoading = beginPageLoading();
-
-    if (_mountController) {
-        _mountController.abort();
-    }
-    _mountController = new AbortController();
-    _currentBase = route.base;
-    const { signal } = _mountController;
-
-    // Start stylesheet injection and module loading in parallel — both are
-    // network operations and can race. We await both before calling mount()
-    // so CSS is guaranteed present before the page touches the DOM.
-    const stylesheetsReady = route.stylesheets?.length
-        ? Promise.all(route.stylesheets.map(ensurePageStylesheet))
-        : Promise.resolve();
-
-    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
-    globalThis.__spaRouter = true;
-    let mod;
+    let navigationSignal = null;
     try {
-        mod = await route.load(path);
-    } finally {
-        globalThis.__spaRouterCount--;
-        if (globalThis.__spaRouterCount === 0) {
-            globalThis.__spaRouter = false;
+        if (_mountController) {
+            _mountController.abort();
         }
-    }
-    await stylesheetsReady;
-    // If another navigation started while loading, bail out.
-    if (signal.aborted) return false;
-    try {
-        await mod.mount(_root, { signal });
-    } catch (err) {
-        if (!signal.aborted) {
-            console.error("[router] mount() error for", path, err);
+        _mountController = new AbortController();
+        _currentBase = route.base;
+        const { signal } = _mountController;
+        navigationSignal = signal;
+
+        // Start stylesheet injection and module loading in parallel — both are
+        // network operations and can race. We await both before calling mount()
+        // so CSS is guaranteed present before the page touches the DOM.
+        const stylesheetsReady = route.stylesheets?.length
+            ? Promise.all(route.stylesheets.map(ensurePageStylesheet))
+            : Promise.resolve();
+
+        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+        globalThis.__spaRouter = true;
+        let mod;
+        try {
+            mod = await route.load(path);
+        } finally {
+            globalThis.__spaRouterCount--;
+            if (globalThis.__spaRouterCount === 0) {
+                globalThis.__spaRouter = false;
+            }
         }
+        await stylesheetsReady;
+        // If another navigation started while loading, bail out.
+        if (signal.aborted) return false;
+        try {
+            await mod.mount(_root, { signal });
+        } catch (error) {
+            if (!signal.aborted) {
+                console.error("[router] mount() error for", path, error);
+                await openRuntimeErrorPopup({
+                    error,
+                    context: `Route mount failed for ${path}`,
+                });
+            }
+        }
+        return true;
+    } catch (error) {
+        if (navigationSignal?.aborted) {
+            return false;
+        }
+        console.error("[router] route load error for", path, error);
+        await openRuntimeErrorPopup({
+            error,
+            context: `Route load failed for ${path}`,
+        });
+        return false;
     } finally {
         finishPageLoading();
     }
-    return true;
 }
 
 export async function navigateTo(path) {
@@ -477,6 +498,7 @@ export function initRouter(root) {
     if (_initialized) return;
     _initialized = true;
     _root = root;
+    installRuntimeErrorHandlers();
 
     void loadAllRoutes();
     const initialRoute = findRoute(window.location.pathname);

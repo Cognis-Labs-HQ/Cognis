@@ -190,3 +190,36 @@
     margin-top: 6px;
     font-size: 0.88rem;
 }
+
+.popup-error-report {
+    display: grid;
+    gap: 12px;
+}
+
+.popup-error-report section {
+    display: grid;
+    gap: 6px;
+}
+
+.popup-error-report h3 {
+    margin: 0;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+}
+
+.popup-error-report-trace {
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    padding: 8px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    max-height: 180px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
