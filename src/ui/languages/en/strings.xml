@@ -248,6 +248,7 @@
   <string name="ui.app.register.error.username_not_lowercase">Username must be all lowercase.</string>
   <string name="ui.app.register.error.validation_failed">Please fix the highlighted fields before continuing.</string>
   <string name="ui.app.register.submit">Create account</string>
+  <string name="ui.app.register.sign_in_instead">Sign in instead</string>
   <string name="ui.app.register.password_requirements">Password requirements</string>
   <string name="ui.app.register.username_requirements">Username requirements</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>

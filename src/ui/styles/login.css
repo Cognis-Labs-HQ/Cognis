@@ -118,6 +118,21 @@ p.auth-intro {
     width: 100%;
 }
 
+.auth-secondary-action {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 14px;
+    font-size: 1.15rem;
+    border: 1px solid rgba(89, 133, 255, 0.45);
+    background: transparent;
+    color: #d6e7ff;
+}
+
+.auth-secondary-action:hover:not(:disabled) {
+    background: rgba(89, 133, 255, 0.12);
+    border-color: rgba(89, 133, 255, 0.75);
+}
+
 .auth-input--locked {
     opacity: 0.55;
     cursor: not-allowed;
@@ -230,6 +245,7 @@ p.auth-intro {
 
     .auth-form input,
     .auth-form button,
+    .auth-secondary-action,
     .sso-login-btn {
         padding: 10px 12px;
         font-size: 1rem;
@@ -284,4 +300,14 @@ body[data-theme="light"] .auth-form button {
     border: 1px solid rgba(37, 99, 235, 0.45);
     background: linear-gradient(145deg, #3b82f6, #2563eb);
     color: #eff6ff;
+}
+
+body[data-theme="light"] .auth-secondary-action {
+    border: 1px solid rgba(37, 99, 235, 0.4);
+    color: #1e3a8a;
+}
+
+body[data-theme="light"] .auth-secondary-action:hover:not(:disabled) {
+    background: rgba(147, 197, 253, 0.3);
+    border-color: rgba(37, 99, 235, 0.6);
 }

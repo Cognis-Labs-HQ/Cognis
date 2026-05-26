@@ -248,6 +248,7 @@
   <string name="ui.app.register.error.username_not_lowercase">Nama pengguna harus seluruhnya huruf kecil.</string>
   <string name="ui.app.register.error.validation_failed">Silakan perbaiki kolom yang disorot sebelum melanjutkan.</string>
   <string name="ui.app.register.submit">Buat akun</string>
+  <string name="ui.app.register.sign_in_instead">Masuk saja</string>
   <string name="ui.app.register.password_requirements">Persyaratan kata sandi</string>
   <string name="ui.app.register.username_requirements">Persyaratan nama pengguna</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
