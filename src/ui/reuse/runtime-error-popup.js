@@ -27,9 +27,9 @@
  * @returns {Promise<void>}
  */
 
-import { openPopup } from './popup.js';
-import { createI18n } from './i18n.js';
-import { escapeHtml } from './escape-html.js';
+import { openPopup } from "./popup.js";
+import { createI18n } from "./i18n.js";
+import { escapeHtml } from "./escape-html.js";
 
 const MAX_CONSOLE_ENTRY_COUNT = 30;
 const POPUP_DEDUPLICATION_WINDOW_MILLISECONDS = 1500;
@@ -39,7 +39,7 @@ const originalConsoleMethods = new Map();
 let i18nPromise = null;
 let handlersInstalled = false;
 let popupOpen = false;
-let recentPopupSignature = '';
+let recentPopupSignature = "";
 let recentPopupTimestamp = 0;
 
 function getI18nPromise() {
@@ -51,14 +51,14 @@ function getI18nPromise() {
 
 function normalizeErrorMessage(value) {
     if (value instanceof Error) {
-        return value.message || value.name || 'Unknown error';
+        return value.message || value.name || "Unknown error";
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
         const normalizedValue = value.trim();
-        return normalizedValue || 'Unknown error';
+        return normalizedValue || "Unknown error";
     }
     if (value == null) {
-        return 'Unknown error';
+        return "Unknown error";
     }
     try {
         return JSON.stringify(value);
@@ -71,11 +71,11 @@ function normalizeErrorStack(value) {
     if (value instanceof Error && value.stack) {
         return value.stack;
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
         return value;
     }
     if (value == null) {
-        return '';
+        return "";
     }
     try {
         return JSON.stringify(value, null, 2);
@@ -88,7 +88,7 @@ function stringifyConsoleArgument(value) {
     if (value instanceof Error) {
         return normalizeErrorStack(value);
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
         return value;
     }
     if (value == null) {
@@ -102,7 +102,7 @@ function stringifyConsoleArgument(value) {
 }
 
 function pushConsoleEntry(level, argumentsList) {
-    const message = argumentsList.map(stringifyConsoleArgument).join(' ');
+    const message = argumentsList.map(stringifyConsoleArgument).join(" ");
     consoleEntryBuffer.push({
         timestamp: new Date().toISOString(),
         level,
@@ -117,10 +117,10 @@ function pushConsoleEntry(level, argumentsList) {
 }
 
 function installConsoleCapture() {
-    const consoleMethodNames = ['error', 'warn', 'info', 'log'];
+    const consoleMethodNames = ["error", "warn", "info", "log"];
     for (const consoleMethodName of consoleMethodNames) {
         const originalConsoleMethod = console[consoleMethodName];
-        if (typeof originalConsoleMethod !== 'function') continue;
+        if (typeof originalConsoleMethod !== "function") continue;
         if (originalConsoleMethods.has(consoleMethodName)) continue;
         originalConsoleMethods.set(consoleMethodName, originalConsoleMethod);
         console[consoleMethodName] = (...argumentsList) => {
@@ -140,13 +140,13 @@ function buildResourceLoadError(event) {
               ? eventTarget.href
               : eventTarget instanceof HTMLImageElement
                 ? eventTarget.src
-                : '';
+                : "";
     if (!resourceUrl) return null;
     return new Error(`Failed to load resource: ${resourceUrl}`);
 }
 
 function buildPopupSignature({ context, errorMessage, errorStack }) {
-    return [context, errorMessage, errorStack].join('|');
+    return [context, errorMessage, errorStack].join("|");
 }
 
 function shouldSuppressPopup(signature) {
@@ -164,20 +164,20 @@ function getConsoleEntriesMarkup(
     consoleEntries = consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT),
 ) {
     if (!consoleEntries.length) {
-        return `<p>${escapeHtml(i18n.t('ui.reuse.runtime_error_popup_console_empty'))}</p>`;
+        return `<p>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_console_empty"))}</p>`;
     }
     const renderedEntries = consoleEntries
         .map(
             (entry) =>
-                `${escapeHtml(entry.timestamp)} [${escapeHtml(String(entry.level).toUpperCase())}] ${escapeHtml(entry.message || '')}`,
+                `${escapeHtml(entry.timestamp)} [${escapeHtml(String(entry.level).toUpperCase())}] ${escapeHtml(entry.message || "")}`,
         )
-        .join('\n');
+        .join("\n");
     return `<pre class="popup-error-report-trace">${renderedEntries}</pre>`;
 }
 
 export async function openRuntimeErrorPopup({
     error,
-    context = '',
+    context = "",
     consoleEntries,
 } = {}) {
     const normalizedErrorMessage = normalizeErrorMessage(error);
@@ -196,14 +196,15 @@ export async function openRuntimeErrorPopup({
         const i18n = await getI18nPromise().catch(() => ({
             t(key) {
                 const fallbackLabels = {
-                    'ui.reuse.runtime_error_popup_title': 'Runtime Error Detected',
-                    'ui.reuse.runtime_error_popup_summary': 'Error Summary',
-                    'ui.reuse.runtime_error_popup_context': 'Technical Context',
-                    'ui.reuse.runtime_error_popup_page_url': 'Page URL',
-                    'ui.reuse.runtime_error_popup_stack': 'Stack Trace',
-                    'ui.reuse.runtime_error_popup_console': 'Console Trace',
-                    'ui.reuse.runtime_error_popup_console_empty':
-                        'No recent console entries were captured.',
+                    "ui.reuse.runtime_error_popup_title":
+                        "Runtime Error Detected",
+                    "ui.reuse.runtime_error_popup_summary": "Error Summary",
+                    "ui.reuse.runtime_error_popup_context": "Technical Context",
+                    "ui.reuse.runtime_error_popup_page_url": "Page URL",
+                    "ui.reuse.runtime_error_popup_stack": "Stack Trace",
+                    "ui.reuse.runtime_error_popup_console": "Console Trace",
+                    "ui.reuse.runtime_error_popup_console_empty":
+                        "No recent console entries were captured.",
                 };
                 return fallbackLabels[key] ?? key;
             },
@@ -212,38 +213,38 @@ export async function openRuntimeErrorPopup({
         const popupBody = () => `
             <div class="popup-error-report">
                 <section>
-                    <h3>${escapeHtml(i18n.t('ui.reuse.runtime_error_popup_summary'))}</h3>
+                    <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_summary"))}</h3>
                     <pre class="popup-error-report-trace">${escapeHtml(normalizedErrorMessage)}</pre>
                 </section>
                 <section>
-                    <h3>${escapeHtml(i18n.t('ui.reuse.runtime_error_popup_context'))}</h3>
-                    <pre class="popup-error-report-trace">${escapeHtml(context || 'unknown')}</pre>
+                    <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_context"))}</h3>
+                    <pre class="popup-error-report-trace">${escapeHtml(context || "unknown")}</pre>
                 </section>
                 <section>
-                    <h3>${escapeHtml(i18n.t('ui.reuse.runtime_error_popup_page_url'))}</h3>
+                    <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_page_url"))}</h3>
                     <pre class="popup-error-report-trace">${escapeHtml(window.location.href)}</pre>
                 </section>
                 <section>
-                    <h3>${escapeHtml(i18n.t('ui.reuse.runtime_error_popup_stack'))}</h3>
+                    <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_stack"))}</h3>
                     <pre class="popup-error-report-trace">${escapeHtml(normalizedErrorStack || normalizedErrorMessage)}</pre>
                 </section>
                 <section>
-                    <h3>${escapeHtml(i18n.t('ui.reuse.runtime_error_popup_console'))}</h3>
+                    <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_console"))}</h3>
                     ${getConsoleEntriesMarkup(i18n, consoleEntries)}
                 </section>
             </div>
         `;
 
         await openPopup({
-            title: i18n.t('ui.reuse.runtime_error_popup_title'),
+            title: i18n.t("ui.reuse.runtime_error_popup_title"),
             body: popupBody,
-            variant: 'danger',
-            maxWidth: '960px',
+            variant: "danger",
+            maxWidth: "960px",
             actions: [
                 {
-                    id: 'close',
-                    label: i18n.t('ui.reuse.dismiss'),
-                    variant: 'confirm',
+                    id: "close",
+                    label: i18n.t("ui.reuse.dismiss"),
+                    variant: "confirm",
                 },
             ],
         });
@@ -259,13 +260,13 @@ export function installRuntimeErrorHandlers() {
     installConsoleCapture();
 
     window.addEventListener(
-        'error',
+        "error",
         (event) => {
             const resourceLoadError = buildResourceLoadError(event);
             const runtimeError = resourceLoadError ?? event.error;
             const eventContext = resourceLoadError
-                ? 'Window resource load error'
-                : 'Window runtime error';
+                ? "Window resource load error"
+                : "Window runtime error";
             openRuntimeErrorPopup({
                 error: runtimeError ?? event.message,
                 context: eventContext,
@@ -274,10 +275,10 @@ export function installRuntimeErrorHandlers() {
         true,
     );
 
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener("unhandledrejection", (event) => {
         openRuntimeErrorPopup({
             error: event.reason,
-            context: 'Unhandled Promise Rejection',
+            context: "Unhandled Promise Rejection",
         }).catch(() => {});
     });
 }
