@@ -19,7 +19,7 @@ test("ldap adapter config schema has required fields", () => {
     assert.ok(keys.includes("writebackBaseDn"));
 });
 
-test("ldap adapter password reset support requires opt-in writeback", async () => {
+test("ldap adapter password reset is blocked when current-password validation is unavailable", async () => {
     const adapter = createAdapter() as {
         configure(config: Record<string, unknown>): void;
         setClient(client: {
@@ -33,6 +33,7 @@ test("ldap adapter password reset support requires opt-in writeback", async () =
         getPasswordResetSupport: () => { supported: boolean; reason?: string };
         resetPassword: (
             accountId: string,
+            currentPassword: string,
             nextPassword: string,
         ) => Promise<{ updated: boolean; message?: string }>;
     };
@@ -51,7 +52,11 @@ test("ldap adapter password reset support requires opt-in writeback", async () =
         },
     });
     const support = adapter.getPasswordResetSupport();
-    assert.equal(support.supported, true);
-    const result = await adapter.resetPassword("alice", "next-pass");
-    assert.equal(result.updated, true);
+    assert.equal(support.supported, false);
+    assert.match(
+        support.reason ?? "",
+        /cannot validate current password/i,
+    );
+    const result = await adapter.resetPassword("alice", "current-pass", "next-pass");
+    assert.equal(result.updated, false);
 });

@@ -3,12 +3,13 @@
   <string name="gateway.auth.security.section_title">Keamanan</string>
   <string name="gateway.auth.security.load_failed">Tidak dapat memuat kemampuan ubah kata sandi.</string>
   <string name="gateway.auth.security.unsupported_default">Ubah kata sandi tidak didukung untuk penyedia ini.</string>
-  <string name="gateway.auth.security.reset_title">Reset Kata Sandi</string>
-  <string name="gateway.auth.security.reset_action">Reset Kata Sandi</string>
-  <string name="gateway.auth.security.popup_title">Reset Kata Sandi</string>
+  <string name="gateway.auth.security.reset_title">Ubah Kata Sandi</string>
+  <string name="gateway.auth.security.reset_action">Ubah Kata Sandi</string>
+  <string name="gateway.auth.security.popup_title">Ubah Kata Sandi</string>
+  <string name="gateway.auth.security.current_password">Kata Sandi Saat Ini</string>
   <string name="gateway.auth.security.new_password">Kata Sandi Baru</string>
   <string name="gateway.auth.security.confirm_password">Konfirmasi Kata Sandi</string>
-  <string name="gateway.auth.security.required">Kedua kolom kata sandi wajib diisi.</string>
+  <string name="gateway.auth.security.required">Semua kolom kata sandi wajib diisi.</string>
   <string name="gateway.auth.security.reset_failed">Reset kata sandi gagal.</string>
   <string name="gateway.auth.security.reset_success">Kata sandi diperbarui. Silakan masuk kembali.</string>
   <string name="gateway.auth.security.password_policy">Kata sandi tidak memenuhi persyaratan.</string>

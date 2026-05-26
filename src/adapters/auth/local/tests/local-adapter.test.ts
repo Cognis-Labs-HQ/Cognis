@@ -47,7 +47,11 @@ test("local adapter supports password reset", async () => {
     assert.deepEqual(adapter.getPasswordResetSupport?.(), {
         supported: true,
     });
-    const result = await adapter.resetPassword?.("delta", "next-pass");
+    const result = await adapter.resetPassword?.(
+        "delta",
+        "start-pass",
+        "next-pass",
+    );
     assert.equal(result?.updated, true);
     const oldLogin = await adapter.authenticate({
         username: "delta",
@@ -59,4 +63,36 @@ test("local adapter supports password reset", async () => {
     });
     assert.equal(oldLogin, null);
     assert.equal(newLogin?.accountId, "delta");
+});
+
+test("local adapter rejects password reset with incorrect current password", async () => {
+    const store = new VolatileLocalAccountStore();
+    await store.register("echo", "start-pass");
+    const adapter = createAdapter(store);
+    const result = await adapter.resetPassword?.(
+        "echo",
+        "wrong-pass",
+        "next-pass",
+    );
+    assert.equal(result?.updated, false);
+    assert.equal(result?.message, "Current password is incorrect.");
+});
+
+test("local adapter rejects previously used passwords", async () => {
+    const store = new VolatileLocalAccountStore();
+    await store.register("foxtrot", "start-pass");
+    const adapter = createAdapter(store);
+    const firstReset = await adapter.resetPassword?.(
+        "foxtrot",
+        "start-pass",
+        "next-pass",
+    );
+    assert.equal(firstReset?.updated, true);
+    const secondReset = await adapter.resetPassword?.(
+        "foxtrot",
+        "next-pass",
+        "start-pass",
+    );
+    assert.equal(secondReset?.updated, false);
+    assert.equal(secondReset?.message, "Password was used previously.");
 });

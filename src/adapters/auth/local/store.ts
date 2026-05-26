@@ -57,7 +57,15 @@ export class DbLocalAccountStore implements LocalAccountStore {
     }
 
     async ensureSchema() {
-        // Schema is created by provider init scripts; this is a no-op safety net.
+        await this.db.ensureTable({
+            name: "local_auth_password_history",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "password_hash", type: "text", notNull: true },
+                { name: "created_at", type: "timestamp", notNull: true },
+            ],
+            indexes: [{ columns: ["account_id"] }],
+        });
     }
 
     async register(
@@ -96,6 +104,15 @@ export class DbLocalAccountStore implements LocalAccountStore {
                         password_algorithm: "scrypt",
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString(),
+                    },
+                });
+                await txDb.executeCommand({
+                    option: "INSERT",
+                    table: "local_auth_password_history",
+                    values: {
+                        account_id: username,
+                        password_hash: passwordHash,
+                        created_at: new Date().toISOString(),
                     },
                 });
             });
@@ -252,16 +269,55 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async setPassword(username: string, password: string) {
         const lowercaseUsername = normalizeUsername(username);
-        const passwordHash = await hashPassword(password);
-        await this.db.executeCommand({
-            option: "UPDATE",
+        const credentialResult = await this.db.executeCommand({
+            option: "SELECT",
             table: "local_auth_credentials",
-            set: {
-                password_hash: passwordHash,
-                password_algorithm: "scrypt",
-                updated_at: new Date().toISOString(),
-            },
+            columns: ["account_id"],
             where: [{ column: "username", value: lowercaseUsername }],
+            limit: 1,
+        });
+        const accountId = credentialResult.rows?.[0]?.account_id;
+        if (!accountId) {
+            throw new Error("not_found");
+        }
+
+        const passwordHistoryResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "local_auth_password_history",
+            columns: ["password_hash"],
+            where: [{ column: "account_id", value: accountId }],
+        });
+        for (const row of passwordHistoryResult.rows ?? []) {
+            const passwordMatch = await verifyPassword(
+                String(row.password_hash ?? ""),
+                password,
+            );
+            if (passwordMatch) {
+                throw new Error("Password was used previously.");
+            }
+        }
+
+        const passwordHash = await hashPassword(password);
+        await this.db.transaction(async (txDb) => {
+            await txDb.executeCommand({
+                option: "UPDATE",
+                table: "local_auth_credentials",
+                set: {
+                    password_hash: passwordHash,
+                    password_algorithm: "scrypt",
+                    updated_at: new Date().toISOString(),
+                },
+                where: [{ column: "username", value: lowercaseUsername }],
+            });
+            await txDb.executeCommand({
+                option: "INSERT",
+                table: "local_auth_password_history",
+                values: {
+                    account_id: accountId,
+                    password_hash: passwordHash,
+                    created_at: new Date().toISOString(),
+                },
+            });
         });
         this.writeLog("info", "Updated local account password.", {
             component: "auth-local-store",
@@ -392,6 +448,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     option: "DELETE",
                     table: "local_auth_credentials",
                     where: [{ column: "username", value: lowercaseUsername }],
+                });
+                await txDb.executeCommand({
+                    option: "DELETE",
+                    table: "local_auth_password_history",
+                    where: [{ column: "account_id", value: accountId }],
                 });
                 await txDb.executeCommand({
                     option: "DELETE",

@@ -3,12 +3,13 @@
   <string name="gateway.auth.security.section_title">Sicherheit</string>
   <string name="gateway.auth.security.load_failed">Die Funktion zur Passwortänderung konnte nicht geladen werden.</string>
   <string name="gateway.auth.security.unsupported_default">Die Passwortänderung wird für diesen Anbieter nicht unterstützt.</string>
-  <string name="gateway.auth.security.reset_title">Passwort Zurücksetzen</string>
-  <string name="gateway.auth.security.reset_action">Passwort Zurücksetzen</string>
-  <string name="gateway.auth.security.popup_title">Passwort Zurücksetzen</string>
+  <string name="gateway.auth.security.reset_title">Passwort Ändern</string>
+  <string name="gateway.auth.security.reset_action">Passwort Ändern</string>
+  <string name="gateway.auth.security.popup_title">Passwort Ändern</string>
+  <string name="gateway.auth.security.current_password">Aktuelles Passwort</string>
   <string name="gateway.auth.security.new_password">Neues Passwort</string>
   <string name="gateway.auth.security.confirm_password">Passwort Bestätigen</string>
-  <string name="gateway.auth.security.required">Beide Passwortfelder sind erforderlich.</string>
+  <string name="gateway.auth.security.required">Alle Passwortfelder sind erforderlich.</string>
   <string name="gateway.auth.security.reset_failed">Zurücksetzen des Passworts fehlgeschlagen.</string>
   <string name="gateway.auth.security.reset_success">Passwort aktualisiert. Bitte melden Sie sich erneut an.</string>
   <string name="gateway.auth.security.password_policy">Das Passwort erfüllt die Anforderungen nicht.</string>

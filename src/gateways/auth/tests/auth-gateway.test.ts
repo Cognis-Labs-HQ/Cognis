@@ -712,7 +712,10 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
         routeRegistry,
         makeJsonRequest(
             "POST",
-            { password: "after-reset" },
+            {
+                currentPassword: "before-reset",
+                password: "after-reset",
+            },
             { authorization: `Bearer ${resetToken}` },
         ),
         "/api/v1/auth/reset-password",
@@ -731,6 +734,130 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     );
     assert.equal(oldCredentials, null);
     assert.equal(newCredentials?.accountId, "password-user");
+});
+
+test("POST /api/v1/auth/reset-password requires current password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("missing-current-pass", "before-reset");
+
+    const resetToken = issueAccessToken("missing-current-pass", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            { password: "after-reset" },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /Current password is required/);
+});
+
+test("POST /api/v1/auth/reset-password rejects incorrect current password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("wrong-current-pass", "before-reset");
+
+    const resetToken = issueAccessToken("wrong-current-pass", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "incorrect",
+                password: "after-reset",
+            },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /Current password is incorrect/);
+});
+
+test("POST /api/v1/auth/reset-password rejects previously used password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("password-history-user", "before-reset");
+
+    const resetToken = issueAccessToken("password-history-user", "user", 60);
+    const firstReset = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "before-reset",
+                password: "after-reset",
+            },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+    assert.equal(firstReset.res.status, 200);
+
+    const secondReset = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "after-reset",
+                password: "before-reset",
+            },
+            { authorization: `Bearer ${issueAccessToken("password-history-user", "user", 60)}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+    assert.equal(secondReset.handled, true);
+    assert.equal(secondReset.res.status, 400);
+    assert.match(secondReset.res.payload, /Password was used previously/);
 });
 
 test("POST /api/v1/auth/reset-password dispatches security notification when notify:dispatch is available", async () => {
@@ -775,7 +902,10 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
         routeRegistry,
         makeJsonRequest(
             "POST",
-            { password: "new-pass-12" },
+            {
+                currentPassword: "old-pass",
+                password: "new-pass-12",
+            },
             { authorization: `Bearer ${resetToken}` },
         ),
         "/api/v1/auth/reset-password",

@@ -99,6 +99,13 @@ export async function openPasswordResetPopup({
             submitLabelKey: "ui.reuse.save",
             fields: [
                 {
+                    name: "currentPassword",
+                    labelKey: "gateway.auth.security.current_password",
+                    type: "password",
+                    required: true,
+                    attributes: { autocomplete: "current-password" },
+                },
+                {
                     name: "nextPassword",
                     labelKey: "gateway.auth.security.new_password",
                     type: "password",
@@ -180,9 +187,10 @@ export async function openPasswordResetPopup({
     }
 
     const values = formController.getValues();
+    const currentPassword = (values.currentPassword ?? "").trim();
     const nextPassword = (values.nextPassword ?? "").trim();
     const confirmPassword = (values.confirmPassword ?? "").trim();
-    if (!nextPassword || !confirmPassword) {
+    if (!currentPassword || !nextPassword || !confirmPassword) {
         showToast(i18n.t("gateway.auth.security.required"), {
             variant: "warning",
         });
@@ -193,6 +201,7 @@ export async function openPasswordResetPopup({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+            currentPassword,
             password: nextPassword,
         }),
     });

@@ -998,7 +998,20 @@ function createAuthGatewayRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const body = await readJson(req);
+            const currentPassword = String(body.currentPassword ?? "").trim();
             const nextPassword = String(body.password ?? "").trim();
+            if (!currentPassword) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Current password is required",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (!nextPassword) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -1054,6 +1067,7 @@ function createAuthGatewayRoutes(
                 await authGateway.resetPasswordForAccount(
                     claims.providerId,
                     claims.sub,
+                    currentPassword,
                     nextPassword,
                 );
             } catch (error) {

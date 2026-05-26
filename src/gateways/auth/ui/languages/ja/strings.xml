@@ -3,12 +3,13 @@
   <string name="gateway.auth.security.section_title">セキュリティ</string>
   <string name="gateway.auth.security.load_failed">パスワード変更機能を読み込めませんでした。</string>
   <string name="gateway.auth.security.unsupported_default">このプロバイダーではパスワード変更はサポートされていません。</string>
-  <string name="gateway.auth.security.reset_title">パスワードリセット</string>
-  <string name="gateway.auth.security.reset_action">パスワードをリセット</string>
-  <string name="gateway.auth.security.popup_title">パスワードをリセット</string>
+  <string name="gateway.auth.security.reset_title">パスワード変更</string>
+  <string name="gateway.auth.security.reset_action">パスワードを変更</string>
+  <string name="gateway.auth.security.popup_title">パスワードを変更</string>
+  <string name="gateway.auth.security.current_password">現在のパスワード</string>
   <string name="gateway.auth.security.new_password">新しいパスワード</string>
   <string name="gateway.auth.security.confirm_password">パスワードを確認</string>
-  <string name="gateway.auth.security.required">両方のパスワード欄が必要です。</string>
+  <string name="gateway.auth.security.required">すべてのパスワード欄が必要です。</string>
   <string name="gateway.auth.security.reset_failed">パスワードリセットに失敗しました。</string>
   <string name="gateway.auth.security.reset_success">パスワードを更新しました。もう一度サインインしてください。</string>
   <string name="gateway.auth.security.password_policy">パスワードが要件を満たしていません。</string>

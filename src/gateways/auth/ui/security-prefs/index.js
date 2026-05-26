@@ -4,7 +4,6 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
-import { createRepromptGuard } from "/static/reuse/reprompt.js";
 import { openPasswordResetPopup } from "/static/gateways/auth/security-prefs/password-reset.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
@@ -12,7 +11,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let lastUnsupportedToastKey = null;
     const settingsRoot = root ?? document;
     let subsectionInstances = null;
-    const repromptGuard = createRepromptGuard({ i18n });
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -61,14 +59,12 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             return;
         }
         button.onclick = () => {
-            repromptGuard.runWithReprompt(() =>
-                openPasswordResetPopup({
-                    i18n,
-                    apiFetch,
-                    openPopup,
-                    showToast,
-                }),
-            );
+            openPasswordResetPopup({
+                i18n,
+                apiFetch,
+                openPopup,
+                showToast,
+            });
         };
     }
 
