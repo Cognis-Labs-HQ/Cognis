@@ -53,7 +53,10 @@ test("ldap adapter password reset is blocked when current-password validation is
     });
     const support = adapter.getPasswordResetSupport();
     assert.equal(support.supported, false);
-    assert.match(support.reason ?? "", /cannot validate current password/i);
+    assert.equal(
+        support.reason,
+        "gateway.auth.security.ldap.current_password_validation_unavailable",
+    );
     const result = await adapter.resetPassword(
         "alice",
         "current-pass",

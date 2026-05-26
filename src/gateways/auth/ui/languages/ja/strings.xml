@@ -12,6 +12,11 @@
   <string name="gateway.auth.security.required">すべてのパスワード欄が必要です。</string>
   <string name="gateway.auth.security.reset_failed">パスワードリセットに失敗しました。</string>
   <string name="gateway.auth.security.reset_success">パスワードを更新しました。もう一度サインインしてください。</string>
+  <string name="gateway.auth.security.error.current_password_incorrect">現在のパスワードが正しくありません。</string>
+  <string name="gateway.auth.security.ldap.writeback_disabled">LDAP書き戻しはアダプター設定で無効になっています。</string>
+  <string name="gateway.auth.security.ldap.writeback_base_dn_missing">LDAP書き戻しのベースDNが設定されていません。</string>
+  <string name="gateway.auth.security.ldap.writeback_client_unavailable">LDAP書き戻しクライアントを利用できません。</string>
+  <string name="gateway.auth.security.ldap.current_password_validation_unavailable">LDAPアダプターはパスワード変更時に現在のパスワードを検証できません。</string>
   <string name="gateway.auth.security.password_policy">パスワードが要件を満たしていません。</string>
   <string name="gateway.auth.security.password_too_short">{min}文字以上にしてください。</string>
   <string name="gateway.auth.security.password_requires_uppercase">大文字を{count}文字以上含める必要があります。</string>

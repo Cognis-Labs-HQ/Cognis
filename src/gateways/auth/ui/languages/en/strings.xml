@@ -12,6 +12,11 @@
   <string name="gateway.auth.security.required">All password fields are required.</string>
   <string name="gateway.auth.security.reset_failed">Password reset failed.</string>
   <string name="gateway.auth.security.reset_success">Password updated. Please sign in again.</string>
+  <string name="gateway.auth.security.error.current_password_incorrect">Current password is incorrect.</string>
+  <string name="gateway.auth.security.ldap.writeback_disabled">LDAP writeback is disabled in adapter settings.</string>
+  <string name="gateway.auth.security.ldap.writeback_base_dn_missing">LDAP writeback base DN is not configured.</string>
+  <string name="gateway.auth.security.ldap.writeback_client_unavailable">LDAP writeback client is unavailable.</string>
+  <string name="gateway.auth.security.ldap.current_password_validation_unavailable">LDAP adapter cannot validate current password for password changes.</string>
   <string name="gateway.auth.security.password_policy">Password does not meet the requirements.</string>
   <string name="gateway.auth.security.password_too_short">Must be at least {min} characters.</string>
   <string name="gateway.auth.security.password_requires_uppercase">Must contain at least {count} uppercase letter(s).</string>

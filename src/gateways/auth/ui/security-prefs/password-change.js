@@ -5,6 +5,7 @@ import {
     countPatternMatches,
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
+import { resolveLocalizedMessage } from "/static/gateways/auth/reuse/resolve-localized-message.js";
 
 async function loadPasswordPolicy(apiFetch) {
     const response = await apiFetch("/api/v1/auth/password-policy").catch(
@@ -209,8 +210,11 @@ export async function openPasswordChangePopup({
     if (!response.ok) {
         const payload = await response.json().catch(() => null);
         showToast(
-            payload?.error?.message ||
-                i18n.t("gateway.auth.security.reset_failed"),
+            resolveLocalizedMessage(
+                i18n,
+                payload?.error?.message,
+                "gateway.auth.security.reset_failed",
+            ),
             {
                 variant: "error",
             },

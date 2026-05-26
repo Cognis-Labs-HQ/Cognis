@@ -846,7 +846,10 @@ test("POST /api/v1/auth/reset-password rejects incorrect current password", asyn
 
     assert.equal(handled, true);
     assert.equal(res.status, 400);
-    assert.match(res.payload, /Current password is incorrect/);
+    assert.match(
+        res.payload,
+        /gateway\.auth\.security\.error\.current_password_incorrect/,
+    );
 });
 
 test("POST /api/v1/auth/reset-password rejects previously used password", async () => {

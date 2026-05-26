@@ -54,7 +54,7 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
         if (!accountId || !currentPassword || !nextPassword) {
             return {
                 updated: false,
-                message: "Missing password reset payload.",
+                message: "gateway.auth.security.required",
             };
         }
         const currentCredentials = await this.store.verify(
@@ -64,7 +64,8 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
         if (!currentCredentials) {
             return {
                 updated: false,
-                message: "Current password is incorrect.",
+                message:
+                    "gateway.auth.security.error.current_password_incorrect",
             };
         }
         try {

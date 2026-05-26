@@ -75,7 +75,10 @@ test("local adapter rejects password reset with incorrect current password", asy
         "next-pass",
     );
     assert.equal(result?.updated, false);
-    assert.equal(result?.message, "Current password is incorrect.");
+    assert.equal(
+        result?.message,
+        "gateway.auth.security.error.current_password_incorrect",
+    );
 });
 
 test("local adapter rejects previously used passwords", async () => {

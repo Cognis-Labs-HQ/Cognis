@@ -115,19 +115,19 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         if (!this.writebackEnabled) {
             return {
                 supported: false,
-                reason: "LDAP writeback is disabled in adapter settings.",
+                reason: "gateway.auth.security.ldap.writeback_disabled",
             };
         }
         if (!this.writebackBaseDn) {
             return {
                 supported: false,
-                reason: "LDAP writeback base DN is not configured.",
+                reason: "gateway.auth.security.ldap.writeback_base_dn_missing",
             };
         }
         if (!this.client || typeof this.client.updatePassword !== "function") {
             return {
                 supported: false,
-                reason: "LDAP writeback client is unavailable.",
+                reason: "gateway.auth.security.ldap.writeback_client_unavailable",
             };
         }
         // Current-password validation would require a user bind/re-bind flow
@@ -138,7 +138,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         // contract is introduced.
         return {
             supported: false,
-            reason: "LDAP adapter cannot validate current password for password changes.",
+            reason: "gateway.auth.security.ldap.current_password_validation_unavailable",
         };
     }
 

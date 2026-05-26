@@ -12,6 +12,11 @@
   <string name="gateway.auth.security.required">Semua kolom kata sandi wajib diisi.</string>
   <string name="gateway.auth.security.reset_failed">Reset kata sandi gagal.</string>
   <string name="gateway.auth.security.reset_success">Kata sandi diperbarui. Silakan masuk kembali.</string>
+  <string name="gateway.auth.security.error.current_password_incorrect">Kata sandi saat ini salah.</string>
+  <string name="gateway.auth.security.ldap.writeback_disabled">Writeback LDAP dinonaktifkan di pengaturan adaptor.</string>
+  <string name="gateway.auth.security.ldap.writeback_base_dn_missing">Base DN writeback LDAP belum dikonfigurasi.</string>
+  <string name="gateway.auth.security.ldap.writeback_client_unavailable">Klien writeback LDAP tidak tersedia.</string>
+  <string name="gateway.auth.security.ldap.current_password_validation_unavailable">Adaptor LDAP tidak dapat memvalidasi kata sandi saat ini untuk perubahan kata sandi.</string>
   <string name="gateway.auth.security.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
   <string name="gateway.auth.security.password_too_short">Harus minimal {min} karakter.</string>
   <string name="gateway.auth.security.password_requires_uppercase">Harus mengandung minimal {count} huruf kapital.</string>
