@@ -59,6 +59,7 @@
   <string name="ui.reuse.dismiss">閉じる</string>
   <string name="ui.reuse.confirm">確認</string>
   <string name="ui.reuse.error">エラー</string>
+  <string name="ui.reuse.field_required_notice">このフィールドを入力してください。</string>
   <string name="ui.reuse.coming_soon">近日公開</string>
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>

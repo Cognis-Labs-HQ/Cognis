@@ -59,6 +59,7 @@
   <string name="ui.reuse.dismiss">Schließen</string>
   <string name="ui.reuse.confirm">Bestätigen</string>
   <string name="ui.reuse.error">Fehler</string>
+  <string name="ui.reuse.field_required_notice">Bitte füllen Sie dieses Feld aus.</string>
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>
   <string name="ui.reuse.save_failed">Speichern fehlgeschlagen</string>
   <string name="ui.reuse.more_information">Weitere Informationen</string>

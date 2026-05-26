@@ -178,6 +178,7 @@ export function createFormBuilder(ctx, options) {
             criteriaDisplay === "inline" && criteriaItems
                 ? `<ul class="form-builder-criteria-list form-builder-criteria-list--inline">${criteriaItems}</ul>`
                 : "";
+        const validationNotice = `<p class="form-builder-validation-notice" data-form-builder-validation-notice="${escapeHtml(fieldName)}" aria-live="polite"></p>`;
 
         const inputMarkup =
             type === "select"
@@ -235,6 +236,7 @@ export function createFormBuilder(ctx, options) {
         ${inputMarkup}
         ${counterMarkup}
         ${inlineCriteria}
+        ${validationNotice}
         ${floatingAlert}
       </label>
     `;
@@ -447,6 +449,24 @@ export function createFormBuilder(ctx, options) {
                 "form-builder-input--invalid",
                 !fieldValid,
             );
+            const validationNoticeElement = formElement.querySelector(
+                `[data-form-builder-validation-notice="${fieldName}"]`,
+            );
+            if (validationNoticeElement instanceof HTMLElement) {
+                const shouldShowRequiredNotice =
+                    required &&
+                    !fieldHasValue &&
+                    (forceTouched || touchedFieldNames.has(fieldName));
+                const requiredNotice = shouldShowRequiredNotice
+                    ? String(fieldInput.validationMessage ?? "").trim() ||
+                      resolveMessage("ui.reuse.field_required_notice")
+                    : "";
+                validationNoticeElement.textContent = requiredNotice;
+                validationNoticeElement.classList.toggle(
+                    "form-builder-validation-notice--visible",
+                    requiredNotice.length > 0,
+                );
+            }
             return fieldValid;
         }
 
@@ -473,6 +493,15 @@ export function createFormBuilder(ctx, options) {
             ) {
                 continue;
             }
+            fieldInput.addEventListener(
+                "invalid",
+                (event) => {
+                    event.preventDefault();
+                    touchedFieldNames.add(fieldName);
+                    validateField(fieldName, true);
+                },
+                listenerOptions,
+            );
             fieldInput.addEventListener(
                 "input",
                 () => {

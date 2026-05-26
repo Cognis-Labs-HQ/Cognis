@@ -18,6 +18,7 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /form-builder-criterion-item--met/);
     assert.match(source, /form-builder-required-flag/);
     assert.match(source, /form-builder-label-text/);
+    assert.match(source, /data-form-builder-validation-notice=/);
     assert.match(source, /aria-hidden="true"/);
 });
 
@@ -101,6 +102,20 @@ test("form builder supports neutral custom criterion state via null", () => {
     assert.match(
         source,
         /"form-builder-criterion-item--unmet",[\s\S]*criterionValid === false/m,
+    );
+});
+
+test("form builder prevents native invalid popups and renders themed required notices", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+    assert.match(source, /fieldInput\.addEventListener\(\s*"invalid"/m);
+    assert.match(source, /event\.preventDefault\(\)/);
+    assert.match(
+        source,
+        /resolveMessage\("ui\.reuse\.field_required_notice"\)/,
+    );
+    assert.match(
+        source,
+        /form-builder-validation-notice--visible/,
     );
 });
 

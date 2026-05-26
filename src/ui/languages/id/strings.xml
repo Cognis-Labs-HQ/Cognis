@@ -59,6 +59,7 @@
   <string name="ui.reuse.dismiss">Tutup</string>
   <string name="ui.reuse.confirm">Konfirmasi</string>
   <string name="ui.reuse.error">Kesalahan</string>
+  <string name="ui.reuse.field_required_notice">Harap isi bidang ini.</string>
   <string name="ui.reuse.coming_soon">Segera Hadir</string>
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
