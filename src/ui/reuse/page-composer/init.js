@@ -3140,6 +3140,12 @@ export function createPageComposer(
         return changed ? normalized : sortedVisible;
     }
 
+    /**
+     * Determines whether compact single-row width reclaim should run for the
+     * current viewport.
+     *
+     * @returns {boolean}
+     */
     function shouldUseMobileWidthReclaim() {
         if (typeof window === "undefined") {
             return false;
@@ -3155,15 +3161,21 @@ export function createPageComposer(
         );
     }
 
+    /**
+     * Checks whether expanding a placement to a target width would collide with
+     * any other visible placement.
+     *
+     * @param {{ id: string, row: number, h: number }} placement
+     * @param {Array<{ id: string, row: number, col: number, w: number, h: number }>} sortedVisible
+     * @param {number} targetWidth
+     * @returns {boolean}
+     */
     function canExpandPlacementWithoutConflicts(
         placement,
         sortedVisible,
         targetWidth,
     ) {
-        const otherPlacements = sortedVisible.filter(
-            (candidatePlacement) => candidatePlacement.id !== placement.id,
-        );
-        const occupiedCells = buildOccupiedSet(otherPlacements, [], null);
+        const occupiedCells = buildOccupiedSet(sortedVisible, [], placement.id);
         return checkPlacement(
             occupiedCells,
             0,

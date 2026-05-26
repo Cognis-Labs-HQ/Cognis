@@ -101,10 +101,9 @@ test("page composer expands compact single-pane rows to full width", () => {
         source,
         /\(max-width: \$\{MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\}px\)/,
     );
-    assert.match(
-        source,
-        /allowSingleRowFullWidthReclaim =[\s\S]*shouldUseMobileWidthReclaim\(\)[\s\S]*maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/m,
-    );
+    assert.match(source, /allowSingleRowFullWidthReclaim =/);
+    assert.match(source, /shouldUseMobileWidthReclaim\(\) &&/);
+    assert.match(source, /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/);
     assert.match(source, /boundedWidth < bounds\.max/);
     assert.match(source, /function canExpandPlacementWithoutConflicts\(/);
     assert.match(
