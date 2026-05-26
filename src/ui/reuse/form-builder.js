@@ -178,7 +178,7 @@ export function createFormBuilder(ctx, options) {
             criteriaDisplay === "inline" && criteriaItems
                 ? `<ul class="form-builder-criteria-list form-builder-criteria-list--inline">${criteriaItems}</ul>`
                 : "";
-        const validationNotice = `<p class="form-builder-validation-notice" data-form-builder-validation-notice="${escapeHtml(fieldName)}" role="alert" aria-live="assertive"></p>`;
+        const validationNotice = `<p class="form-builder-validation-notice" data-form-builder-validation-notice="${escapeHtml(fieldName)}" role="alert"></p>`;
 
         const inputMarkup =
             type === "select"

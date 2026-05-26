@@ -20,7 +20,6 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /form-builder-label-text/);
     assert.match(source, /data-form-builder-validation-notice=/);
     assert.match(source, /role="alert"/);
-    assert.match(source, /aria-live="assertive"/);
     assert.match(source, /aria-hidden="true"/);
 });
 
