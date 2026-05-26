@@ -171,6 +171,7 @@ export function createPageComposer(
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
+    const MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT = 640;
     // Treat narrow grids as compact so single-pane rows expand and avoid
     // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
@@ -2935,6 +2936,9 @@ export function createPageComposer(
         maxCols,
         elems = elements,
     ) {
+        const allowSingleRowFullWidthReclaim =
+            shouldUseMobileWidthReclaim() &&
+            maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS;
         const step = gridStep(maxCols);
         const epsilon = 0.001;
         const rowGroups = [];
@@ -2968,8 +2972,13 @@ export function createPageComposer(
                     Math.max(bounds.min, placement.w),
                 );
                 const shouldExpandToFullWidth =
-                    maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS &&
-                    boundedWidth < bounds.max;
+                    allowSingleRowFullWidthReclaim &&
+                    boundedWidth < bounds.max &&
+                    canExpandPlacementWithoutConflicts(
+                        placement,
+                        sortedVisible,
+                        bounds.max,
+                    );
                 const normalizedPlacement = shouldExpandToFullWidth
                     ? {
                           ...placement,
@@ -3128,8 +3137,40 @@ export function createPageComposer(
                 column += descriptor.assignedWidth;
             }
         }
-
         return changed ? normalized : sortedVisible;
+    }
+
+    function shouldUseMobileWidthReclaim() {
+        if (typeof window === "undefined") {
+            return false;
+        }
+        if (typeof window.matchMedia === "function") {
+            return window.matchMedia(
+                `(max-width: ${MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT}px)`,
+            ).matches;
+        }
+        return (
+            Number.isFinite(window.innerWidth) &&
+            window.innerWidth <= MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT
+        );
+    }
+
+    function canExpandPlacementWithoutConflicts(
+        placement,
+        sortedVisible,
+        targetWidth,
+    ) {
+        const otherPlacements = sortedVisible.filter(
+            (candidatePlacement) => candidatePlacement.id !== placement.id,
+        );
+        const occupiedCells = buildOccupiedSet(otherPlacements, [], null);
+        return checkPlacement(
+            occupiedCells,
+            0,
+            placement.row,
+            targetWidth,
+            placement.h,
+        );
     }
 
     function syncLayoutToCurrentGridColumns() {

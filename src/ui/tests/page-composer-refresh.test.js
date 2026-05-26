@@ -93,9 +93,22 @@ test("page composer expands compact single-pane rows to full width", () => {
         "utf8",
     );
 
+    assert.match(source, /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\s*=/);
     assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
-    assert.match(source, /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/);
+    assert.match(source, /function shouldUseMobileWidthReclaim\(\)/);
+    assert.match(source, /window\.matchMedia\(/);
+    assert.match(
+        source,
+        /\(max-width: \$\{MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\}px\)/,
+    );
+    assert.match(
+        source,
+        /allowSingleRowFullWidthReclaim =[\s\S]*shouldUseMobileWidthReclaim\(\)[\s\S]*maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/m,
+    );
     assert.match(source, /boundedWidth < bounds\.max/);
+    assert.match(source, /function canExpandPlacementWithoutConflicts\(/);
+    assert.match(source, /checkPlacement\(\s*occupiedCells,\s*0,\s*placement\.row,/m);
+    assert.match(source, /canExpandPlacementWithoutConflicts\(/);
     assert.match(source, /normalizedPlacement = shouldExpandToFullWidth/);
     assert.match(source, /col: 0,/);
     assert.match(source, /w: bounds\.max,/);
