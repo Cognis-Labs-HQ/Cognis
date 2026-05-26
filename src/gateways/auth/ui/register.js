@@ -29,6 +29,10 @@ import {
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
 
+const REGISTER_EMAIL_MAX_CHARACTERS = 320;
+const REGISTER_USERNAME_MAX_CHARACTERS = 25;
+const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
+
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
         Boolean(localStorage.getItem("cognis_access_token")) ||
@@ -252,6 +256,7 @@ export async function mount(root, { signal } = {}) {
                 value: emailValue,
                 disabled: emailLocked,
                 required: true,
+                maxCharacters: REGISTER_EMAIL_MAX_CHARACTERS,
                 className: emailLocked ? "auth-input--locked" : "",
             },
             {
@@ -259,6 +264,7 @@ export async function mount(root, { signal } = {}) {
                 labelKey: "ui.app.register.username",
                 type: "text",
                 required: true,
+                maxCharacters: REGISTER_USERNAME_MAX_CHARACTERS,
                 criteria: [
                     {
                         id: "username-printable-ascii",
@@ -280,7 +286,7 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "username-max-length",
                         type: "maxLength",
-                        value: 25,
+                        value: REGISTER_USERNAME_MAX_CHARACTERS,
                         messageKey: "ui.app.register.error.username_too_long",
                         mode: "live",
                     },
@@ -292,6 +298,7 @@ export async function mount(root, { signal } = {}) {
                 name: "displayName",
                 labelKey: "ui.app.register.display_name",
                 type: "text",
+                maxCharacters: REGISTER_DISPLAY_NAME_MAX_CHARACTERS,
             },
             {
                 name: "password",

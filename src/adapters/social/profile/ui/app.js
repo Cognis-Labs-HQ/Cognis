@@ -3,13 +3,13 @@ import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/init.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
     getInitialsText,
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { attachCharCounter } from "/static/reuse/char-counter.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
@@ -42,6 +42,115 @@ const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
 const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
 let pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
 let pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
+let newPostFormController = null;
+
+const PROFILE_BIO_MAX_CHARACTERS = 200;
+const PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80;
+const PROFILE_LOCATION_MAX_CHARACTERS = 120;
+const PROFILE_WEBSITE_MAX_CHARACTERS = 2048;
+const POST_TITLE_MAX_CHARACTERS = 120;
+const POST_CONTENT_MAX_CHARACTERS = 1000;
+
+function createPostFormBuilder(canFollowers, canFriends, canEveryone) {
+    return createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "new-post-form",
+            formClassName: "new-post-form",
+            submitButtonClassName: "btn-confirm btn-animated",
+            submitLabelKey: "ui.app.profile.post_submit",
+            fields: [
+                {
+                    name: "title",
+                    labelKey: "ui.app.profile.post_title",
+                    maxCharacters: POST_TITLE_MAX_CHARACTERS,
+                    attributes: {
+                        id: "post-title",
+                        placeholder: i18n.t("ui.app.profile.post_title"),
+                    },
+                },
+                {
+                    name: "content",
+                    labelKey: "ui.app.profile.post_content",
+                    type: "textarea",
+                    required: true,
+                    maxCharacters: POST_CONTENT_MAX_CHARACTERS,
+                    attributes: {
+                        id: "post-content",
+                        rows: 3,
+                        placeholder: i18n.t("ui.app.profile.post_content"),
+                    },
+                },
+                {
+                    name: "visibility",
+                    labelKey: "ui.app.profile.visibility",
+                    type: "select",
+                    attributes: {
+                        id: "post-visibility",
+                    },
+                    options: [
+                        {
+                            value: "only_me",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.only_me",
+                            ),
+                        },
+                        {
+                            value: "private",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.private",
+                            ),
+                            disabled: !canFollowers,
+                            title: !canFollowers
+                                ? i18n.t(
+                                      "ui.app.profile.post_visibility.locked.followers",
+                                  )
+                                : "",
+                        },
+                        {
+                            value: "friends",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.friends",
+                            ),
+                            disabled: !canFriends,
+                            title: !canFriends
+                                ? i18n.t(
+                                      "ui.app.profile.post_visibility.locked.followers",
+                                  )
+                                : "",
+                        },
+                        {
+                            value: "community",
+                            label: i18n.t(
+                                "ui.app.profile.post_visibility.community",
+                            ),
+                            disabled: !canEveryone,
+                            title: !canEveryone
+                                ? i18n.t(
+                                      "ui.app.profile.post_visibility.locked.everyone",
+                                  )
+                                : "",
+                        },
+                    ],
+                },
+            ],
+        },
+    );
+}
+
+function getPostVisibilityCapabilities(profileVisibility) {
+    return {
+        canFollowers: profileVisibility !== "hidden",
+        canFriends: profileVisibility !== "hidden",
+        canEveryone: profileVisibility === "community",
+    };
+}
+
+function createPostFormBuilderForVisibility(profileVisibility) {
+    const { canFollowers, canFriends, canEveryone } =
+        getPostVisibilityCapabilities(profileVisibility);
+    return createPostFormBuilder(canFollowers, canFriends, canEveryone);
+}
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -581,51 +690,22 @@ function renderPostsList() {
 
 function renderNewPost() {
     const profileVis = profile?.visibility ?? "hidden";
-    const canFollowers = profileVis !== "hidden";
-    const canFriends = profileVis !== "hidden";
-    const canEveryone = profileVis === "community";
-
-    const lockedFollowersTitle = canFollowers
-        ? ""
-        : ` title="${escapeHtml(i18n.t("ui.app.profile.post_visibility.locked.followers"))}"`;
-    const lockedEveryoneTitle = canEveryone
-        ? ""
-        : ` title="${escapeHtml(i18n.t("ui.app.profile.post_visibility.locked.everyone"))}"`;
+    const { canFollowers, canEveryone } =
+        getPostVisibilityCapabilities(profileVis);
 
     const visibilityHint =
         !canFollowers || !canEveryone
             ? `<span class="profile-visibility-tooltip">${renderInfoTooltip(i18n.t("ui.app.profile.post_visibility_hint"), i18n.t("ui.reuse.more_information"))}</span>`
             : "";
+    const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
 
     return `
     <div class="profile-posts-section">
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.new_post")}
       </h3>
-      <div class="new-post-form">
-        <input
-          type="text"
-          id="post-title"
-          class="profile-field-input"
-          placeholder="${i18n.t("ui.app.profile.post_title")}"
-        />
-        <textarea
-          id="post-content"
-          class="profile-field-input"
-          rows="3"
-          placeholder="${i18n.t("ui.app.profile.post_content")}"
-        ></textarea>
-        <div class="post-form-footer">
-          <select id="post-visibility" class="profile-field-input theme-select">
-            <option value="only_me">${escapeHtml(i18n.t("ui.app.profile.post_visibility.only_me"))}</option>
-            <option value="private"${canFollowers ? "" : " disabled"}${lockedFollowersTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.private"))}</option>
-            <option value="friends"${canFriends ? "" : " disabled"}${lockedFollowersTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.friends"))}</option>
-            <option value="community"${canEveryone ? "" : " disabled"}${lockedEveryoneTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.community"))}</option>
-          </select>
-          <button type="button" id="post-submit" class="btn-confirm btn-animated">
-            ${i18n.t("ui.app.profile.post_submit")}
-          </button>
-        </div>
+      <div class="new-post-form-wrap">
+        ${postFormBuilder.render()}
         ${visibilityHint}
       </div>
     </div>
@@ -1039,45 +1119,95 @@ async function openEditPopup() {
     const currentVisibility = profile?.visibility ?? "hidden";
     const currentDisplayName = profile?.displayName ?? "";
     const profileIsTeacher = profile?.role === "teacher";
+    const profileEditFormBuilder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "profile-edit-form",
+            formClassName: "profile-edit-form",
+            submitLabelKey: "ui.reuse.save",
+            includeSubmitButton: false,
+            fields: [
+                {
+                    name: "displayName",
+                    labelKey: "ui.app.profile.display_name",
+                    value: currentDisplayName,
+                    maxCharacters: PROFILE_DISPLAY_NAME_MAX_CHARACTERS,
+                    attributes: {
+                        id: "popup-edit-display-name",
+                    },
+                },
+                {
+                    name: "bio",
+                    labelKey: "ui.app.profile.bio",
+                    type: "textarea",
+                    value: currentBio,
+                    maxCharacters: PROFILE_BIO_MAX_CHARACTERS,
+                    attributes: {
+                        id: "popup-edit-bio",
+                        rows: 3,
+                    },
+                },
+                {
+                    name: "location",
+                    labelKey: "ui.app.profile.location",
+                    value: currentLocation,
+                    maxCharacters: PROFILE_LOCATION_MAX_CHARACTERS,
+                    attributes: {
+                        id: "popup-edit-location",
+                    },
+                },
+                {
+                    name: "website",
+                    labelKey: "ui.app.profile.website",
+                    type: "url",
+                    value: currentWebsite,
+                    maxCharacters: PROFILE_WEBSITE_MAX_CHARACTERS,
+                    attributes: {
+                        id: "popup-edit-website",
+                    },
+                },
+                {
+                    name: "visibility",
+                    labelKey: "ui.app.profile.visibility",
+                    type: "select",
+                    value: currentVisibility,
+                    attributes: {
+                        id: "popup-edit-visibility",
+                    },
+                    options: ["hidden", "private", "friends", "community"].map(
+                        (visibilityOption) => {
+                            const isRestrictedForTeacher =
+                                profileIsTeacher &&
+                                (visibilityOption === "hidden" ||
+                                    visibilityOption === "private");
+                            return {
+                                value: visibilityOption,
+                                label: i18n.t(
+                                    `ui.app.profile.visibility.${visibilityOption}`,
+                                ),
+                                disabled: isRestrictedForTeacher,
+                            };
+                        },
+                    ),
+                },
+            ],
+        },
+    );
 
+    let profileEditFormController = null;
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
-        body: () => `
-      <div class="profile-edit-form">
-        <label class="profile-field-label">
-          ${escapeHtml(i18n.t("ui.app.profile.display_name"))}
-          <input type="text" id="popup-edit-display-name" class="profile-field-input" value="${escapeHtml(currentDisplayName)}" />
-        </label>
-        <label class="profile-field-label">
-          ${escapeHtml(i18n.t("ui.app.profile.bio"))}
-          <textarea id="popup-edit-bio" class="profile-field-input" rows="3">${escapeHtml(currentBio)}</textarea>
-        </label>
-        <label class="profile-field-label">
-          ${escapeHtml(i18n.t("ui.app.profile.location"))}
-          <input type="text" id="popup-edit-location" class="profile-field-input" value="${escapeHtml(currentLocation)}" />
-        </label>
-        <label class="profile-field-label">
-          ${escapeHtml(i18n.t("ui.app.profile.website"))}
-          <input type="url" id="popup-edit-website" class="profile-field-input" value="${escapeHtml(currentWebsite)}" />
-        </label>
-        <label class="profile-field-label">
-          ${escapeHtml(i18n.t("ui.app.profile.visibility"))}
-          <select id="popup-edit-visibility" class="profile-field-input">
-            ${["hidden", "private", "friends", "community"]
-                .map((visibilityOption) => {
-                    const isRestrictedForTeacher =
-                        profileIsTeacher &&
-                        (visibilityOption === "hidden" ||
-                            visibilityOption === "private");
-                    return `<option value="${visibilityOption}"${currentVisibility === visibilityOption ? " selected" : ""}${isRestrictedForTeacher ? " disabled" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${visibilityOption}`))}</option>`;
-                })
-                .join("")}
-          </select>
-        </label>
-      </div>
-    `,
+        body: () => profileEditFormBuilder.render(),
         variant: "info",
         maxWidth: "40%",
+        onOpen: (overlay) => {
+            const popupFormElement =
+                overlay.querySelector("#profile-edit-form");
+            profileEditFormController =
+                popupFormElement instanceof HTMLFormElement
+                    ? profileEditFormBuilder.attach(popupFormElement)
+                    : null;
+        },
         actions: [
             {
                 id: "cancel",
@@ -1093,26 +1223,15 @@ async function openEditPopup() {
         closeProtection: true,
     });
 
-    const bioEl = document.getElementById("popup-edit-bio");
-    if (bioEl) attachCharCounter(bioEl, 200);
-
     const result = await popupPromise;
 
     if (result === "save") {
-        const displayName =
-            document.getElementById("popup-edit-display-name")?.value ??
-            currentDisplayName;
-        const bio =
-            document.getElementById("popup-edit-bio")?.value ?? currentBio;
-        const location =
-            document.getElementById("popup-edit-location")?.value ??
-            currentLocation;
-        const website =
-            document.getElementById("popup-edit-website")?.value ??
-            currentWebsite;
-        const visibility =
-            document.getElementById("popup-edit-visibility")?.value ??
-            currentVisibility;
+        const fieldValues = profileEditFormController?.getValues() ?? {};
+        const displayName = fieldValues.displayName ?? currentDisplayName;
+        const bio = fieldValues.bio ?? currentBio;
+        const location = fieldValues.location ?? currentLocation;
+        const website = fieldValues.website ?? currentWebsite;
+        const visibility = fieldValues.visibility ?? currentVisibility;
         try {
             const res = await apiFetch("/api/v1/profile", {
                 method: "PATCH",
@@ -1187,12 +1306,11 @@ bannerFileInput.addEventListener("change", async () => {
 });
 
 async function doCreatePost() {
-    const titleEl = root.querySelector("#post-title");
-    const contentEl = root.querySelector("#post-content");
-    const visibilityEl = root.querySelector("#post-visibility");
-    const submitBtn = root.querySelector("#post-submit");
-
-    const content = contentEl?.value?.trim() ?? "";
+    const submitBtn = root.querySelector(
+        '#new-post-form button[type="submit"]',
+    );
+    const fieldValues = newPostFormController?.getValues() ?? {};
+    const content = String(fieldValues.content ?? "").trim();
     if (!content) return;
 
     if (submitBtn) submitBtn.disabled = true;
@@ -1202,16 +1320,20 @@ async function doCreatePost() {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-                title: titleEl?.value?.trim() || undefined,
+                title: String(fieldValues.title ?? "").trim() || undefined,
                 content,
-                visibility: visibilityEl?.value ?? "community",
+                visibility: String(fieldValues.visibility ?? "community"),
             }),
         });
 
         if (res.ok) {
             posts = await loadOwnPosts();
-            if (titleEl) titleEl.value = "";
-            if (contentEl) contentEl.value = "";
+            const postFormElement = root.querySelector("#new-post-form");
+            if (postFormElement instanceof HTMLFormElement) {
+                postFormElement.reset();
+                newPostFormController?.validateField("title");
+                newPostFormController?.validateField("content");
+            }
             composer.refresh(elements);
         } else {
             showToast(i18n.t("ui.app.profile.post_failed"), {
@@ -1455,7 +1577,18 @@ function bindPageEvents() {
         "click",
         doRemoveAvatar,
     );
-    root.querySelector("#post-submit")?.addEventListener("click", doCreatePost);
+    const postFormElement = root.querySelector("#new-post-form");
+    if (postFormElement instanceof HTMLFormElement) {
+        const profileVis = profile?.visibility ?? "hidden";
+        const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
+        newPostFormController = postFormBuilder.attach(postFormElement);
+        postFormElement.addEventListener("submit", (event) => {
+            event.preventDefault();
+            doCreatePost();
+        });
+    } else {
+        newPostFormController = null;
+    }
     root.querySelectorAll(".post-delete-btn[data-post-id]").forEach((btn) => {
         btn.addEventListener("click", () => doDeletePost(btn.dataset.postId));
     });
