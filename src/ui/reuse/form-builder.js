@@ -458,8 +458,7 @@ export function createFormBuilder(ctx, options) {
                     !fieldHasValue &&
                     (forceTouched || touchedFieldNames.has(fieldName));
                 const requiredNotice = shouldShowRequiredNotice
-                    ? String(fieldInput.validationMessage ?? "").trim() ||
-                      resolveMessage("ui.reuse.field_required_notice")
+                    ? resolveMessage("ui.reuse.field_required_notice")
                     : "";
                 validationNoticeElement.textContent = requiredNotice;
                 validationNoticeElement.classList.toggle(
