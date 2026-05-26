@@ -198,8 +198,8 @@ export function createInitialCropSelection({
     const safeMinSize = Math.max(16, Number(minSize) || 64);
     const safeFillRatio = Math.min(1, Math.max(0.2, Number(fillRatio) || 1));
     const maxWidth = Math.min(bounds.width, bounds.height * safeAspectRatio);
-    const minWidth = Math.min(maxWidth, safeMinSize);
-    const width = Math.max(minWidth, maxWidth * safeFillRatio);
+    const clampedMinWidth = Math.min(maxWidth, safeMinSize);
+    const width = Math.max(clampedMinWidth, maxWidth * safeFillRatio);
     const height = width / safeAspectRatio;
     return {
         left: bounds.left + (bounds.width - width) / 2,
