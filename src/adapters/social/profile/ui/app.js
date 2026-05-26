@@ -18,7 +18,7 @@ import {
     computeCropSourceRect,
     computeCropViewport,
     getCropOutputDimensions,
-} from "/static/adapters/social/profile/ui/image-crop.js";
+} from "/static/adapters/social/profile/image-crop.js";
 
 let root = null;
 let i18n = null;
