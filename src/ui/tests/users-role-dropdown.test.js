@@ -76,7 +76,10 @@ test("users action menu only includes resend when user has unverified email", ()
         "utf8",
     );
 
-    assert.match(source, /const hasUnverifiedEmail = emails\.some\(\(e\) => !e\.verified\)/);
+    assert.match(
+        source,
+        /const hasUnverifiedEmail = emails\.some\(\(e\) => !e\.verified\)/,
+    );
     assert.match(source, /\.\.\.\(hasUnverifiedEmail/);
 });
 
