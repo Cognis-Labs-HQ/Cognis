@@ -920,7 +920,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                 sourceHeight: cropImage.imageHeight,
             };
         }
-        const sourceScale = displayBounds.width / state.sourceRect.sourceWidth;
+        const safeSourceWidth = Math.max(1, state.sourceRect.sourceWidth);
+        const sourceScale = displayBounds.width / safeSourceWidth;
         const imageWidth = cropImage.imageWidth * sourceScale;
         const imageHeight = cropImage.imageHeight * sourceScale;
         const imageTranslateX =
