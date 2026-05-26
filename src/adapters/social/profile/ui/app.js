@@ -813,7 +813,7 @@ async function openEditPopup() {
         },
     );
 
-    const profileEditFormControllerRef = { current: null };
+    let profileEditFormController = null;
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
         body: () => profileEditFormBuilder.render(),
@@ -822,7 +822,7 @@ async function openEditPopup() {
         onOpen: (overlay) => {
             const popupFormElement =
                 overlay.querySelector("#profile-edit-form");
-            profileEditFormControllerRef.current =
+            profileEditFormController =
                 popupFormElement instanceof HTMLFormElement
                     ? profileEditFormBuilder.attach(popupFormElement)
                     : null;
@@ -845,8 +845,7 @@ async function openEditPopup() {
     const result = await popupPromise;
 
     if (result === "save") {
-        const fieldValues =
-            profileEditFormControllerRef.current?.getValues() ?? {};
+        const fieldValues = profileEditFormController?.getValues() ?? {};
         const displayName = fieldValues.displayName ?? currentDisplayName;
         const bio = fieldValues.bio ?? currentBio;
         const location = fieldValues.location ?? currentLocation;
