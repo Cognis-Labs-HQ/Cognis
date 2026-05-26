@@ -446,7 +446,7 @@ export async function mount(root, { signal } = {}) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
       ${messageHtml}
       ${formHtml}
-      <button id="register-signin-instead" type="button" class="btn-animated auth-secondary-action">${escapeHtml(i18n.t("ui.app.register.sign_in_instead"))}</button>
+      <button id="register-signin-instead" type="button" class="btn-animated auth-secondary-action">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</button>
     `;
         return renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),

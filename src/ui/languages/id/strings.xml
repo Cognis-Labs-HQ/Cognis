@@ -248,7 +248,6 @@
   <string name="ui.app.register.error.username_not_lowercase">Nama pengguna harus seluruhnya huruf kecil.</string>
   <string name="ui.app.register.error.validation_failed">Silakan perbaiki kolom yang disorot sebelum melanjutkan.</string>
   <string name="ui.app.register.submit">Buat akun</string>
-  <string name="ui.app.register.sign_in_instead">Masuk saja</string>
   <string name="ui.app.register.password_requirements">Persyaratan kata sandi</string>
   <string name="ui.app.register.username_requirements">Persyaratan nama pengguna</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
@@ -267,6 +266,7 @@
   <string name="ui.reuse.sensitive_action_prompt">Mohon konfirmasi tindakan sensitif ini.</string>
   <string name="ui.reuse.enter_password_prompt">Masukkan kata sandi Anda untuk melanjutkan.</string>
   <string name="ui.reuse.incorrect_password">Kata sandi salah. Silakan coba lagi.</string>
+  <string name="ui.reuse.sign_in_instead">Masuk saja</string>
   <string name="ui.app.users.page_subtitle">Kelola akun dan kirim undangan.</string>
   <string name="ui.app.users.username">Nama pengguna</string>
   <string name="ui.app.users.role">Peran</string>

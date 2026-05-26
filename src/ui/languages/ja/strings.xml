@@ -248,7 +248,6 @@
   <string name="ui.app.register.error.username_not_lowercase">ユーザー名はすべて小文字にしてください。</string>
   <string name="ui.app.register.error.validation_failed">続行する前に、強調表示された項目を修正してください。</string>
   <string name="ui.app.register.submit">アカウントを作成</string>
-  <string name="ui.app.register.sign_in_instead">代わりにサインイン</string>
   <string name="ui.app.register.password_requirements">パスワード要件</string>
   <string name="ui.app.register.username_requirements">ユーザー名の要件</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>
@@ -267,6 +266,7 @@
   <string name="ui.reuse.sensitive_action_prompt">この重要な操作を確認してください。</string>
   <string name="ui.reuse.enter_password_prompt">続行するにはパスワードを入力してください。</string>
   <string name="ui.reuse.incorrect_password">パスワードが正しくありません。もう一度お試しください。</string>
+  <string name="ui.reuse.sign_in_instead">代わりにサインイン</string>
   <string name="ui.app.users.page_subtitle">アカウント管理と招待送信を行います。</string>
   <string name="ui.app.users.username">ユーザー名</string>
   <string name="ui.app.users.role">ロール</string>

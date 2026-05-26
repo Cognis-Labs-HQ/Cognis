@@ -112,7 +112,7 @@ test("register page provides a sign-in-instead button that routes to login", () 
     );
 
     assert.match(source, /id="register-signin-instead"/);
-    assert.match(source, /ui\.app\.register\.sign_in_instead/);
+    assert.match(source, /ui\.reuse\.sign_in_instead/);
     assert.match(
         source,
         /signInInsteadButton\.addEventListener\(\s*"click",\s*\(\) => \{\s*window\.location\.href = "\/login";/m,
