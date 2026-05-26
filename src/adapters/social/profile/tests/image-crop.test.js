@@ -65,6 +65,24 @@ test("computeCropSourceRect moves source window opposite drag direction", () => 
     assert.equal(centeredSource.sourceHeight, movedSource.sourceHeight);
 });
 
+test("computeCropSourceRect stays within image bounds for landscape offsets", () => {
+    const viewport = computeCropViewport({
+        imageWidth: 2400,
+        imageHeight: 900,
+        frameWidth: 600,
+        frameHeight: 300,
+        zoom: 1.8,
+        offsetX: -9999,
+        offsetY: 9999,
+    });
+    const source = computeCropSourceRect(viewport);
+
+    assert.ok(source.sourceX >= 0);
+    assert.ok(source.sourceY >= 0);
+    assert.ok(source.sourceX + source.sourceWidth <= viewport.imageWidth);
+    assert.ok(source.sourceY + source.sourceHeight <= viewport.imageHeight);
+});
+
 test("getCropOutputDimensions keeps target width and applies ratio", () => {
     const dimensions = getCropOutputDimensions(4, 1600);
 
@@ -153,6 +171,22 @@ test("computeCropSourceRectFromSelection maps selection to source image pixels",
     assert.equal(sourceRect.sourceY, 200);
     assert.equal(sourceRect.sourceWidth, 800);
     assert.equal(sourceRect.sourceHeight, 400);
+});
+
+test("computeCropSourceRectFromSelection clamps overextended selection safely", () => {
+    const sourceRect = computeCropSourceRectFromSelection({
+        selection: { left: -100, top: 50, width: 700, height: 300 },
+        imageBounds: { left: 0, top: 0, width: 600, height: 250 },
+        imageWidth: 1800,
+        imageHeight: 750,
+    });
+
+    assert.equal(sourceRect.sourceX, 0);
+    assert.ok(sourceRect.sourceY >= 0);
+    assert.ok(sourceRect.sourceWidth <= 1800);
+    assert.ok(sourceRect.sourceHeight <= 750);
+    assert.ok(sourceRect.sourceX + sourceRect.sourceWidth <= 1800);
+    assert.ok(sourceRect.sourceY + sourceRect.sourceHeight <= 750);
 });
 
 test("composeCropSourceRect maps nested crop selection into original image", () => {

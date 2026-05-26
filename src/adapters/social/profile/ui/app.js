@@ -16,7 +16,6 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import {
     openImageCropPopup,
-    resolveCropAspectFromElement,
 } from "/static/adapters/social/profile/crop-popup.js";
 
 let root = null;
@@ -1260,21 +1259,15 @@ function bindPageEvents() {
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
-        (event) => {
-            pendingBannerCropAspect = resolveCropAspectFromElement(
-                event.currentTarget,
-                pendingBannerCropAspect,
-            );
+        () => {
+            pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
             bannerFileInput.click();
         },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
-        (event) => {
-            pendingAvatarCropAspect = resolveCropAspectFromElement(
-                event.currentTarget,
-                AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
-            );
+        () => {
+            pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
             avatarFileInput.click();
         },
     );

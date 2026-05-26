@@ -14,6 +14,40 @@ export function clampCropOffset(offset, maxOffset) {
     return Math.min(safeMaxOffset, Math.max(-safeMaxOffset, safeOffset));
 }
 
+function clampSourceRectToImage({
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    imageWidth,
+    imageHeight,
+}) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const clampedSourceX = Math.min(
+        safeImageWidth - 1,
+        Math.max(0, Number(sourceX) || 0),
+    );
+    const clampedSourceY = Math.min(
+        safeImageHeight - 1,
+        Math.max(0, Number(sourceY) || 0),
+    );
+    const maxSourceWidth = safeImageWidth - clampedSourceX;
+    const maxSourceHeight = safeImageHeight - clampedSourceY;
+    return {
+        sourceX: clampedSourceX,
+        sourceY: clampedSourceY,
+        sourceWidth: Math.min(
+            maxSourceWidth,
+            Math.max(1, Number(sourceWidth) || maxSourceWidth),
+        ),
+        sourceHeight: Math.min(
+            maxSourceHeight,
+            Math.max(1, Number(sourceHeight) || maxSourceHeight),
+        ),
+    };
+}
+
 /**
  * Computes the scaled image geometry and clamped drag offsets for a crop frame.
  *
@@ -118,12 +152,14 @@ export function computeCropSourceRect(viewport) {
     const sourceHeight =
         (viewport.frameHeight / viewport.renderedHeight) * viewport.imageHeight;
 
-    return {
-        sourceX: Math.max(0, sourceX),
-        sourceY: Math.max(0, sourceY),
-        sourceWidth: Math.min(viewport.imageWidth, sourceWidth),
-        sourceHeight: Math.min(viewport.imageHeight, sourceHeight),
-    };
+    return clampSourceRectToImage({
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        imageWidth: viewport.imageWidth,
+        imageHeight: viewport.imageHeight,
+    });
 }
 
 /**
@@ -460,15 +496,14 @@ export function computeCropSourceRectFromSelection({
     const normalizedTop = (selection.top - imageBounds.top) / safeBoundsHeight;
     const normalizedWidth = selection.width / safeBoundsWidth;
     const normalizedHeight = selection.height / safeBoundsHeight;
-    return {
-        sourceX: Math.max(0, normalizedLeft * safeImageWidth),
-        sourceY: Math.max(0, normalizedTop * safeImageHeight),
-        sourceWidth: Math.min(safeImageWidth, normalizedWidth * safeImageWidth),
-        sourceHeight: Math.min(
-            safeImageHeight,
-            normalizedHeight * safeImageHeight,
-        ),
-    };
+    return clampSourceRectToImage({
+        sourceX: normalizedLeft * safeImageWidth,
+        sourceY: normalizedTop * safeImageHeight,
+        sourceWidth: normalizedWidth * safeImageWidth,
+        sourceHeight: normalizedHeight * safeImageHeight,
+        imageWidth: safeImageWidth,
+        imageHeight: safeImageHeight,
+    });
 }
 
 /**

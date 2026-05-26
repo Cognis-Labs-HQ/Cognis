@@ -31,6 +31,7 @@
     cursor: default;
     touch-action: none;
     user-select: none;
+    isolation: isolate;
 }
 
 .profile-image-crop-frame--dragging {
@@ -45,6 +46,7 @@
     max-height: none;
     transform-origin: top left;
     pointer-events: none;
+    z-index: 1;
 }
 
 .profile-image-crop-selection {
@@ -56,12 +58,14 @@
         0 0 0 1px rgba(0, 0, 0, 0.35) inset;
     cursor: move;
     touch-action: none;
+    z-index: 2;
 }
 
 .profile-image-crop-grid {
     position: absolute;
     inset: 0;
     pointer-events: none;
+    z-index: 1;
     background-image:
         linear-gradient(
             to right,
@@ -95,6 +99,7 @@
     border: 2px solid rgba(255, 255, 255, 0.95);
     background: rgba(17, 24, 39, 0.72);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    z-index: 2;
 }
 
 .profile-image-crop-handle--n,
