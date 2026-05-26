@@ -270,7 +270,7 @@ test("meetings mini chat supports participant private-chat switching and return-
     );
     assert.match(cssSource, /\.jitsi-chat-header/);
     assert.match(cssSource, /\.jitsi-chat-return-btn/);
-    assert.match(cssSource, /\.jitsi-chat-participant-item-selected/);
+    assert.match(cssSource, /\.jitsi-chat-participant-item\.active/);
     assert.match(stringsSource, /module\.jitsi_meet\.chat\.return_to_meeting/);
     assert.match(
         stringsSource,

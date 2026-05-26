@@ -234,32 +234,31 @@ function createChatParticipantAvatarButton({
     avatarKey,
     selected,
 }) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "jitsi-chat-participant-item";
+    const participantButton = document.createElement("button");
+    participantButton.type = "button";
+    participantButton.className = "jitsi-chat-participant-item";
     if (selected) {
-        button.classList.add("jitsi-chat-participant-item-selected");
+        participantButton.classList.add("active");
     }
-    button.setAttribute("role", "listitem");
-    button.dataset.username = username;
-    button.setAttribute("aria-pressed", String(selected));
-    button.setAttribute(
+    participantButton.setAttribute("role", "listitem");
+    participantButton.dataset.username = username;
+    participantButton.setAttribute(
         "aria-label",
         displayName ? `${displayName} (@${username})` : `@${username}`,
     );
-    button.title = displayName
+    participantButton.title = displayName
         ? `${displayName} (@${username})`
         : `@${username}`;
-    button.innerHTML = buildProfileAvatarMarkup({
+    participantButton.setAttribute("aria-pressed", selected ? "true" : "false");
+    participantButton.innerHTML = buildProfileAvatarMarkup({
         avatarKey,
         label: displayName || username,
         colorSeed: username,
         avatarClass: "jitsi-chat-participant-avatar",
         imageClass: "jitsi-chat-participant-avatar-img",
         fallbackClass: "jitsi-chat-participant-avatar-bubble",
-        profileHandle: null,
     });
-    return button;
+    return participantButton;
 }
 
 async function fetchParticipants(query) {
@@ -669,10 +668,27 @@ export async function mount(root, { signal } = {}) {
     function renderChatParticipantStrip() {
         const strip = root.querySelector("#jitsi-chat-participant-strip");
         const returnButton = root.querySelector("#jitsi-chat-return-btn");
+        const heading = root.querySelector("#jitsi-chat-heading");
         if (!(strip instanceof HTMLElement)) {
             return;
         }
         const entries = resolveParticipantChatEntries();
+        const privateParticipant = entries.find(
+            (entry) => entry.username === state.privateChatUsername,
+        );
+        if (heading instanceof HTMLElement) {
+            if (state.chatMode === "private" && privateParticipant) {
+                const privateHeadingTemplate = i18n.t(
+                    "module.jitsi_meet.chat.heading_private",
+                );
+                heading.textContent = privateHeadingTemplate.replace(
+                    "{{displayName}}",
+                    privateParticipant.displayName,
+                );
+            } else {
+                heading.textContent = i18n.t("module.jitsi_meet.chat.heading");
+            }
+        }
         strip.hidden = entries.length === 0;
         strip.replaceChildren(
             ...entries.map((entry) =>
@@ -2513,15 +2529,10 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
-    const [allParticipants, currentProfile, loadedEmojis, loadedUsage] =
-        await Promise.all([
-            fetchParticipants(""),
-            fetchCurrentProfile(),
-            loadAllEmojis(),
-            fetchEmojiUsage(),
-        ]);
-    cachedEmojiList = loadedEmojis;
-    cachedEmojiUsage = loadedUsage;
+    const [allParticipants, currentProfile] = await Promise.all([
+        fetchParticipants(""),
+        fetchCurrentProfile(),
+    ]);
     state.currentProfile = currentProfile;
     state.allParticipants = allParticipants
         .map((entry) => ({

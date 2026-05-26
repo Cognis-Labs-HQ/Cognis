@@ -30,7 +30,7 @@ export function buildChatMarkup(i18n) {
     return `
     <aside class="jitsi-chat-pane jitsi-chat-disabled card-elevated" aria-disabled="true">
       <header class="jitsi-chat-header">
-        <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
+        <h3 id="jitsi-chat-heading">${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
         <button id="jitsi-chat-return-btn" class="jitsi-chat-return-btn" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.chat.return_to_meeting"))}</button>
       </header>
       <div id="jitsi-chat-participant-strip" class="jitsi-chat-participant-strip" role="list" aria-label="${escapeHtml(i18n.t("module.jitsi_meet.chat.participants"))}"></div>
