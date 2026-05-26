@@ -555,8 +555,8 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector("#theme-toggle");
         if (!showThemeToggle) {
             existingThemeToggle?.remove();
-        } else if (existingThemeToggle instanceof HTMLElement) {
-            existingThemeToggle.hidden = false;
+        } else {
+            existingThemeToggle?.removeAttribute("hidden");
         }
         applyStaticTranslations(
             i18n,

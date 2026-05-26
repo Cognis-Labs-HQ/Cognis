@@ -33,7 +33,7 @@ function createResponseRecorder() {
     };
 }
 
-function createJitsiRuntime() {
+function createModuleRuntime() {
     return {
         listManifests: async () => [
             {
@@ -45,7 +45,7 @@ function createJitsiRuntime() {
 }
 
 test("module ui routes redirect unauthenticated requests to login", async () => {
-    const route = createUiRoutes(createJitsiRuntime() as any);
+    const route = createUiRoutes(createModuleRuntime() as any);
     const recorder = createResponseRecorder();
 
     await route(
@@ -59,7 +59,7 @@ test("module ui routes redirect unauthenticated requests to login", async () => 
 });
 
 test("module ui routes redirect revoked sessions with session_expired reason", async () => {
-    const route = createUiRoutes(createJitsiRuntime() as any);
+    const route = createUiRoutes(createModuleRuntime() as any);
     const token = issueAccessToken("u-meetings-expired", "user", 60);
     revokeAccessTokensForSubject("u-meetings-expired");
     const recorder = createResponseRecorder();

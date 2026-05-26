@@ -147,7 +147,7 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
         "dashboard layout should resolve the existing theme toggle when reusing the shell",
     );
     assert.ok(
-        layoutSource.includes("existingThemeToggle.hidden = false"),
+        layoutSource.includes('existingThemeToggle?.removeAttribute("hidden")'),
         "dashboard layout should unhide the existing theme toggle when the page enables it",
     );
 });

@@ -616,6 +616,7 @@ export function createUiRoutes(
                         manifest.id,
                         "routes.json",
                     );
+                    if (url.pathname.startsWith("/api/")) continue;
                     const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
@@ -634,7 +635,6 @@ export function createUiRoutes(
                         res.end();
                         return true;
                     }
-                    const session = ctx.getCookieSession(req);
                     if (matchingRoute.invalidAccessPolicy) {
                         log?.(
                             "warn",
@@ -649,6 +649,7 @@ export function createUiRoutes(
                         res.end();
                         return true;
                     }
+                    const session = ctx.getCookieSession(req);
                     if (
                         matchingRoute.access &&
                         !isRoleAllowed(session.role, matchingRoute.access)
