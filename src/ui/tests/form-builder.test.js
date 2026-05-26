@@ -125,6 +125,8 @@ test("profile bio and post editors use form builder max-character fields", () =>
         source,
         /name: "content",[\s\S]*type: "textarea",[\s\S]*maxCharacters: POST_CONTENT_MAX_CHARACTERS/m,
     );
+    assert.match(source, /onOpen: \(overlay\) => \{/);
+    assert.match(source, /profileEditFormBuilder\.attach\(popupFormElement\)/);
 });
 
 test("register confirm password revalidates reactively when password changes", () => {

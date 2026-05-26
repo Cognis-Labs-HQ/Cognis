@@ -811,11 +811,20 @@ async function openEditPopup() {
         },
     );
 
+    let profileFormController = null;
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
         body: () => profileEditFormBuilder.render(),
         variant: "info",
         maxWidth: "40%",
+        onOpen: (overlay) => {
+            const popupFormElement =
+                overlay.querySelector("#profile-edit-form");
+            profileFormController =
+                popupFormElement instanceof HTMLFormElement
+                    ? profileEditFormBuilder.attach(popupFormElement)
+                    : null;
+        },
         actions: [
             {
                 id: "cancel",
@@ -830,11 +839,6 @@ async function openEditPopup() {
         ],
         closeProtection: true,
     });
-    const popupFormElement = document.getElementById("profile-edit-form");
-    const profileFormController =
-        popupFormElement instanceof HTMLFormElement
-            ? profileEditFormBuilder.attach(popupFormElement)
-            : null;
 
     const result = await popupPromise;
 
