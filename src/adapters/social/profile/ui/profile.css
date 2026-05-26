@@ -241,6 +241,7 @@
 
 .profile-image-crop-selection {
     position: absolute;
+    box-sizing: border-box;
     border: 2px solid rgba(255, 255, 255, 0.95);
     box-shadow:
         0 0 0 200vmax rgba(0, 0, 0, 0.45),
