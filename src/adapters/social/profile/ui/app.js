@@ -14,6 +14,10 @@ import { showToast } from "/static/reuse/toast.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import {
+    openImageCropPopup,
+    resolveCropAspectFromElement,
+} from "/static/adapters/social/profile/crop-popup.js";
 
 let root = null;
 let i18n = null;
@@ -33,6 +37,10 @@ let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
+const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
+const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
+let pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
+let pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 let newPostFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
@@ -744,6 +752,59 @@ async function doRemoveBanner() {
     composer.refresh(elements);
 }
 
+function revokeProfileBlobUrls() {
+    if (avatarBlobUrl) {
+        URL.revokeObjectURL(avatarBlobUrl);
+        avatarBlobUrl = null;
+    }
+    if (bannerBlobUrl) {
+        URL.revokeObjectURL(bannerBlobUrl);
+        bannerBlobUrl = null;
+    }
+}
+
+/**
+ * Runs crop + upload for avatar or banner images and refreshes profile state.
+ *
+ * @param {{ kind: "avatar" | "banner", file: File, aspectRatio: number }} params
+ * @returns {Promise<boolean>}
+ */
+async function handleProfileImageUpload({ kind, file, aspectRatio }) {
+    const croppedBlob = await openImageCropPopup({
+        file,
+        kind,
+        aspectRatio,
+        openPopupDialog: openPopup,
+        translate: (key) => i18n.t(key),
+        escapeHtmlText: escapeHtml,
+    });
+    if (!(croppedBlob instanceof Blob)) return false;
+    const endpoint =
+        kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
+    const response = await apiFetch(endpoint, {
+        method: "PUT",
+        headers: { "content-type": "image/png" },
+        body: await croppedBlob.arrayBuffer(),
+    });
+    if (!response.ok) {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+        return false;
+    }
+    if (kind === "avatar") {
+        if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
+        avatarBlobUrl = URL.createObjectURL(croppedBlob);
+    } else {
+        if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
+        bannerBlobUrl = URL.createObjectURL(croppedBlob);
+    }
+    profile = await loadOwnProfile();
+    composer.refresh(elements);
+    if (kind === "avatar") {
+        updateNavbarAvatar().catch(() => {});
+    }
+    return true;
+}
+
 async function openEditPopup() {
     const currentBio = profile?.bio ?? "";
     const currentLocation = profile?.location ?? "";
@@ -903,42 +964,37 @@ async function openEditPopup() {
 
 avatarFileInput.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
-    if (!file) return;
-    const buffer = await file.arrayBuffer();
-    const res = await apiFetch("/api/v1/profile/avatar", {
-        method: "PUT",
-        headers: { "content-type": file.type },
-        body: buffer,
-    });
-    if (!res.ok) {
-        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    if (!file) {
+        avatarFileInput.value = "";
         return;
     }
-    if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
-    avatarBlobUrl = URL.createObjectURL(file);
-    profile = await loadOwnProfile();
-    composer.refresh(elements);
-    updateNavbarAvatar().catch(() => {});
+    try {
+        await handleProfileImageUpload({
+            kind: "avatar",
+            file,
+            aspectRatio: pendingAvatarCropAspect,
+        });
+    } catch {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    }
     avatarFileInput.value = "";
 });
 
 bannerFileInput.addEventListener("change", async () => {
     const file = bannerFileInput.files?.[0];
-    if (!file) return;
-    const buffer = await file.arrayBuffer();
-    const res = await apiFetch("/api/v1/profile/banner", {
-        method: "PUT",
-        headers: { "content-type": file.type },
-        body: buffer,
-    });
-    if (!res.ok) {
-        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    if (!file) {
+        bannerFileInput.value = "";
         return;
     }
-    if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
-    bannerBlobUrl = URL.createObjectURL(file);
-    profile = await loadOwnProfile();
-    composer.refresh(elements);
+    try {
+        await handleProfileImageUpload({
+            kind: "banner",
+            file,
+            aspectRatio: pendingBannerCropAspect,
+        });
+    } catch {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    }
     bannerFileInput.value = "";
 });
 
@@ -1192,11 +1248,23 @@ function bindPageEvents() {
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
-        () => bannerFileInput.click(),
+        (event) => {
+            pendingBannerCropAspect = resolveCropAspectFromElement(
+                event.currentTarget,
+                pendingBannerCropAspect,
+            );
+            bannerFileInput.click();
+        },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
-        () => avatarFileInput.click(),
+        (event) => {
+            pendingAvatarCropAspect = resolveCropAspectFromElement(
+                event.currentTarget,
+                AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
+            );
+            avatarFileInput.click();
+        },
     );
     root.querySelector(".profile-avatar-remove-btn")?.addEventListener(
         "click",
@@ -1306,7 +1374,10 @@ export async function mount(rootEl, { signal } = {}) {
 
     root = rootEl;
     i18n = await createI18n({
-        componentStringBaseUrls: ["/static/adapters/social/messages/languages"],
+        componentStringBaseUrls: [
+            "/static/adapters/social/profile/languages",
+            "/static/adapters/social/messages/languages",
+        ],
     });
     applyDocumentTitle(i18n, "ui.page.title.profile");
 
@@ -1320,11 +1391,12 @@ export async function mount(rootEl, { signal } = {}) {
     followers = [];
     following = [];
     posts = [];
-    avatarBlobUrl = null;
-    bannerBlobUrl = null;
+    revokeProfileBlobUrls();
     bannerHeight = null;
     composer = null;
     elements = [];
+    pendingAvatarCropAspect = AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO;
+    pendingBannerCropAspect = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 
     if (isOwnProfile) {
         profile = await loadOwnProfile();
