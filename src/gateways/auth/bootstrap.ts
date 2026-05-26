@@ -169,7 +169,17 @@ class MemoryRateLimiter {
         private readonly now: () => number = () => Date.now(),
     ) {}
 
+    private pruneExpiredEntries(): void {
+        const now = this.now();
+        for (const [key, lastSeenAt] of this.lastSeenAt.entries()) {
+            if (now - lastSeenAt >= this.minIntervalMs) {
+                this.lastSeenAt.delete(key);
+            }
+        }
+    }
+
     isThrottled(key: string): boolean {
+        this.pruneExpiredEntries();
         const normalizedKey = key.trim();
         if (!normalizedKey) return false;
         const lastSeenAt = this.lastSeenAt.get(normalizedKey);
@@ -178,6 +188,7 @@ class MemoryRateLimiter {
     }
 
     record(key: string): void {
+        this.pruneExpiredEntries();
         const normalizedKey = key.trim();
         if (!normalizedKey) return;
         this.lastSeenAt.set(normalizedKey, this.now());
