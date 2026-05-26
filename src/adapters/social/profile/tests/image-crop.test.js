@@ -93,10 +93,10 @@ test("createInitialCropSelection creates centered selection with target ratio", 
     });
 
     assert.equal(selection.width / selection.height, 2);
-    assert.ok(selection.left >= 10);
-    assert.ok(selection.top >= 20);
-    assert.ok(selection.left + selection.width <= 510);
-    assert.ok(selection.top + selection.height <= 320);
+    assert.equal(selection.width, 500);
+    assert.equal(selection.height, 250);
+    assert.equal(selection.left, 10);
+    assert.equal(selection.top, 45);
 });
 
 test("clampCropSelection keeps selection inside bounds", () => {
