@@ -141,3 +141,326 @@ export function getCropOutputDimensions(aspectRatio, targetWidth = 1600) {
         height: Math.max(256, Math.round(safeTargetWidth / safeAspectRatio)),
     };
 }
+
+/**
+ * Computes the bounds of an image rendered with object-fit: contain.
+ *
+ * @param {{
+ *   imageWidth: number,
+ *   imageHeight: number,
+ *   frameWidth: number,
+ *   frameHeight: number,
+ * }} params
+ * @returns {{ left: number, top: number, width: number, height: number }}
+ */
+export function computeContainImageBounds({
+    imageWidth,
+    imageHeight,
+    frameWidth,
+    frameHeight,
+}) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const safeFrameWidth = Math.max(1, Number(frameWidth) || 1);
+    const safeFrameHeight = Math.max(1, Number(frameHeight) || 1);
+    const scale = Math.min(
+        safeFrameWidth / safeImageWidth,
+        safeFrameHeight / safeImageHeight,
+    );
+    const width = safeImageWidth * scale;
+    const height = safeImageHeight * scale;
+    return {
+        left: (safeFrameWidth - width) / 2,
+        top: (safeFrameHeight - height) / 2,
+        width,
+        height,
+    };
+}
+
+/**
+ * Creates a centered initial crop selection inside image bounds.
+ *
+ * @param {{
+ *   bounds: { left: number, top: number, width: number, height: number },
+ *   aspectRatio: number,
+ *   minSize?: number,
+ *   fillRatio?: number,
+ * }} params
+ * @returns {{ left: number, top: number, width: number, height: number }}
+ */
+export function createInitialCropSelection({
+    bounds,
+    aspectRatio,
+    minSize = 64,
+    fillRatio = 0.88,
+}) {
+    const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
+    const safeMinSize = Math.max(16, Number(minSize) || 64);
+    const safeFillRatio = Math.min(1, Math.max(0.2, Number(fillRatio) || 0.88));
+    const maxWidth = Math.min(bounds.width, bounds.height * safeAspectRatio);
+    const width = Math.max(safeMinSize, maxWidth * safeFillRatio);
+    const height = width / safeAspectRatio;
+    return {
+        left: bounds.left + (bounds.width - width) / 2,
+        top: bounds.top + (bounds.height - height) / 2,
+        width,
+        height,
+    };
+}
+
+/**
+ * Clamps a crop selection to image bounds while preserving aspect ratio.
+ *
+ * @param {{
+ *   selection: { left: number, top: number, width: number, height: number },
+ *   bounds: { left: number, top: number, width: number, height: number },
+ *   aspectRatio: number,
+ *   minSize?: number,
+ * }} params
+ * @returns {{ left: number, top: number, width: number, height: number }}
+ */
+export function clampCropSelection({
+    selection,
+    bounds,
+    aspectRatio,
+    minSize = 64,
+}) {
+    const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
+    const safeMinSize = Math.max(16, Number(minSize) || 64);
+    const maxWidth = Math.max(
+        1,
+        Math.min(bounds.width, bounds.height * safeAspectRatio),
+    );
+    const minWidth = Math.min(maxWidth, safeMinSize);
+    const width = Math.min(
+        maxWidth,
+        Math.max(minWidth, Number(selection.width) || minWidth),
+    );
+    const height = width / safeAspectRatio;
+    const minLeft = bounds.left;
+    const maxLeft = bounds.left + bounds.width - width;
+    const minTop = bounds.top;
+    const maxTop = bounds.top + bounds.height - height;
+    return {
+        left: Math.min(
+            maxLeft,
+            Math.max(minLeft, Number(selection.left) || minLeft),
+        ),
+        top: Math.min(
+            maxTop,
+            Math.max(minTop, Number(selection.top) || minTop),
+        ),
+        width,
+        height,
+    };
+}
+
+/**
+ * Moves a crop selection while keeping it inside bounds.
+ *
+ * @param {{
+ *   startSelection: { left: number, top: number, width: number, height: number },
+ *   deltaX: number,
+ *   deltaY: number,
+ *   bounds: { left: number, top: number, width: number, height: number },
+ * }} params
+ * @returns {{ left: number, top: number, width: number, height: number }}
+ */
+export function computeMovedCropSelection({
+    startSelection,
+    deltaX,
+    deltaY,
+    bounds,
+}) {
+    const width = Math.max(1, Number(startSelection.width) || 1);
+    const height = Math.max(1, Number(startSelection.height) || 1);
+    const minLeft = bounds.left;
+    const maxLeft = bounds.left + bounds.width - width;
+    const minTop = bounds.top;
+    const maxTop = bounds.top + bounds.height - height;
+    return {
+        left: Math.min(
+            maxLeft,
+            Math.max(minLeft, startSelection.left + (Number(deltaX) || 0)),
+        ),
+        top: Math.min(
+            maxTop,
+            Math.max(minTop, startSelection.top + (Number(deltaY) || 0)),
+        ),
+        width,
+        height,
+    };
+}
+
+function getResizeModes(handle) {
+    const safeHandle = String(handle || "").toLowerCase();
+    const horizontalMode = safeHandle.includes("e")
+        ? "left"
+        : safeHandle.includes("w")
+          ? "right"
+          : "center";
+    const verticalMode = safeHandle.includes("s")
+        ? "top"
+        : safeHandle.includes("n")
+          ? "bottom"
+          : "center";
+    return { horizontalMode, verticalMode };
+}
+
+/**
+ * Resizes a crop selection from one of its handles while preserving aspect ratio.
+ *
+ * @param {{
+ *   startSelection: { left: number, top: number, width: number, height: number },
+ *   handle: string,
+ *   deltaX: number,
+ *   deltaY: number,
+ *   bounds: { left: number, top: number, width: number, height: number },
+ *   aspectRatio: number,
+ *   minSize?: number,
+ * }} params
+ * @returns {{ left: number, top: number, width: number, height: number }}
+ */
+export function computeResizedCropSelection({
+    startSelection,
+    handle,
+    deltaX,
+    deltaY,
+    bounds,
+    aspectRatio,
+    minSize = 64,
+}) {
+    const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
+    const safeMinSize = Math.max(16, Number(minSize) || 64);
+    const { horizontalMode, verticalMode } = getResizeModes(handle);
+    const selectionCenterX = startSelection.left + startSelection.width / 2;
+    const selectionCenterY = startSelection.top + startSelection.height / 2;
+    const anchorX =
+        horizontalMode === "left"
+            ? startSelection.left
+            : horizontalMode === "right"
+              ? startSelection.left + startSelection.width
+              : selectionCenterX;
+    const anchorY =
+        verticalMode === "top"
+            ? startSelection.top
+            : verticalMode === "bottom"
+              ? startSelection.top + startSelection.height
+              : selectionCenterY;
+
+    let desiredWidth = startSelection.width;
+    if (horizontalMode === "left") {
+        desiredWidth = startSelection.width + (Number(deltaX) || 0);
+    } else if (horizontalMode === "right") {
+        desiredWidth = startSelection.width - (Number(deltaX) || 0);
+    } else if (verticalMode === "top") {
+        desiredWidth =
+            (startSelection.height + (Number(deltaY) || 0)) * safeAspectRatio;
+    } else if (verticalMode === "bottom") {
+        desiredWidth =
+            (startSelection.height - (Number(deltaY) || 0)) * safeAspectRatio;
+    }
+
+    if (horizontalMode !== "center" && verticalMode !== "center") {
+        const widthFromHorizontal =
+            horizontalMode === "left"
+                ? startSelection.width + (Number(deltaX) || 0)
+                : startSelection.width - (Number(deltaX) || 0);
+        const widthFromVertical =
+            verticalMode === "top"
+                ? (startSelection.height + (Number(deltaY) || 0)) *
+                  safeAspectRatio
+                : (startSelection.height - (Number(deltaY) || 0)) *
+                  safeAspectRatio;
+        desiredWidth =
+            Math.abs(widthFromHorizontal - startSelection.width) >=
+            Math.abs(widthFromVertical - startSelection.width)
+                ? widthFromHorizontal
+                : widthFromVertical;
+    }
+
+    const maxWidthHorizontal =
+        horizontalMode === "left"
+            ? bounds.left + bounds.width - anchorX
+            : horizontalMode === "right"
+              ? anchorX - bounds.left
+              : Math.min(
+                    anchorX - bounds.left,
+                    bounds.left + bounds.width - anchorX,
+                ) * 2;
+    const maxHeightVertical =
+        verticalMode === "top"
+            ? bounds.top + bounds.height - anchorY
+            : verticalMode === "bottom"
+              ? anchorY - bounds.top
+              : Math.min(
+                    anchorY - bounds.top,
+                    bounds.top + bounds.height - anchorY,
+                ) * 2;
+    const maxWidth = Math.max(
+        safeMinSize,
+        Math.min(maxWidthHorizontal, maxHeightVertical * safeAspectRatio),
+    );
+    const width = Math.min(maxWidth, Math.max(safeMinSize, desiredWidth));
+    const height = width / safeAspectRatio;
+    const left =
+        horizontalMode === "left"
+            ? anchorX
+            : horizontalMode === "right"
+              ? anchorX - width
+              : anchorX - width / 2;
+    const top =
+        verticalMode === "top"
+            ? anchorY
+            : verticalMode === "bottom"
+              ? anchorY - height
+              : anchorY - height / 2;
+    return clampCropSelection({
+        selection: { left, top, width, height },
+        bounds,
+        aspectRatio: safeAspectRatio,
+        minSize: safeMinSize,
+    });
+}
+
+/**
+ * Maps a crop selection to the original image source rectangle.
+ *
+ * @param {{
+ *   selection: { left: number, top: number, width: number, height: number },
+ *   imageBounds: { left: number, top: number, width: number, height: number },
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * }} params
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ */
+export function computeCropSourceRectFromSelection({
+    selection,
+    imageBounds,
+    imageWidth,
+    imageHeight,
+}) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const safeBoundsWidth = Math.max(1, Number(imageBounds.width) || 1);
+    const safeBoundsHeight = Math.max(1, Number(imageBounds.height) || 1);
+    const normalizedLeft =
+        (selection.left - imageBounds.left) / safeBoundsWidth;
+    const normalizedTop = (selection.top - imageBounds.top) / safeBoundsHeight;
+    const normalizedWidth = selection.width / safeBoundsWidth;
+    const normalizedHeight = selection.height / safeBoundsHeight;
+    return {
+        sourceX: Math.max(0, normalizedLeft * safeImageWidth),
+        sourceY: Math.max(0, normalizedTop * safeImageHeight),
+        sourceWidth: Math.min(safeImageWidth, normalizedWidth * safeImageWidth),
+        sourceHeight: Math.min(
+            safeImageHeight,
+            normalizedHeight * safeImageHeight,
+        ),
+    };
+}
