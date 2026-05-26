@@ -196,13 +196,22 @@ function renderUsersTable() {
                       )
                       .join("");
                   const roleCellHtml = `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
+                  const actionMenuLabel = escapeHtml(
+                      i18n.t("ui.app.users.action_menu_help"),
+                  );
+                  const deleteUserLabel = escapeHtml(
+                      i18n.t("ui.app.users.delete_user"),
+                  );
+                  const toggleButtonHtml = `<button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>`;
+                  const menuButtonHtml = `<button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${actionMenuLabel}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>`;
+                  const deleteButtonHtml = `<button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${deleteUserLabel}" title="${deleteUserLabel}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>`;
                   const actionsHtml =
                       isOwner || protectPrivilegedFromViewer
                           ? ""
                           : `
-                        <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
-                       <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>
-                       <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(i18n.t("ui.app.users.delete_user"))}" title="${escapeHtml(i18n.t("ui.app.users.delete_user"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>`;
+                       ${toggleButtonHtml}
+                       ${menuButtonHtml}
+                       ${deleteButtonHtml}`;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
