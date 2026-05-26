@@ -872,8 +872,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
     const cropInteractionController = new AbortController();
     const cropAspectRatio = Math.max(0.5, Number(aspectRatio) || 1);
     const minimumSelectionSize = 64;
-    const dragCommitThreshold = 2;
-    const maxZoomDepth = 12;
+    const AUTO_ZOOM_MIN_DRAG_DISTANCE = 2;
+    const MAX_AUTO_ZOOM_DEPTH = 12;
     const state = {
         dragging: false,
         dragPointerId: null,
@@ -913,6 +913,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                       height: frameRect.height,
                   }
                 : containBounds;
+        if (displayBounds.width <= 0 || displayBounds.height <= 0) return;
         state.displayBounds = displayBounds;
         if (!state.sourceRect) {
             state.sourceRect = {
@@ -928,14 +929,14 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             displayBounds.width / safeSourceWidth,
             displayBounds.height / safeSourceHeight,
         );
-        const imageWidth = cropImage.imageWidth * sourceScale;
-        const imageHeight = cropImage.imageHeight * sourceScale;
+        const scaledImageWidth = cropImage.imageWidth * sourceScale;
+        const scaledImageHeight = cropImage.imageHeight * sourceScale;
         const imageTranslateX =
             displayBounds.left - state.sourceRect.sourceX * sourceScale;
         const imageTranslateY =
             displayBounds.top - state.sourceRect.sourceY * sourceScale;
-        imageElement.style.width = `${imageWidth}px`;
-        imageElement.style.height = `${imageHeight}px`;
+        imageElement.style.width = `${scaledImageWidth}px`;
+        imageElement.style.height = `${scaledImageHeight}px`;
         imageElement.style.transform = `translate(${imageTranslateX}px, ${imageTranslateY}px)`;
         if (!state.selection) {
             state.selection = createInitialCropSelection({
@@ -1024,8 +1025,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         const deltaX = event.clientX - state.dragStartX;
         const deltaY = event.clientY - state.dragStartY;
         if (
-            Math.abs(deltaX) > dragCommitThreshold ||
-            Math.abs(deltaY) > dragCommitThreshold
+            Math.abs(deltaX) > AUTO_ZOOM_MIN_DRAG_DISTANCE ||
+            Math.abs(deltaY) > AUTO_ZOOM_MIN_DRAG_DISTANCE
         ) {
             state.shouldAutoZoomOnRelease = true;
         }
@@ -1062,12 +1063,29 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         state.dragPointerId = null;
         state.dragStartSelection = null;
         state.dragMode = "move";
-        if (state.shouldAutoZoomOnRelease && state.zoomDepth < maxZoomDepth) {
+        if (
+            state.shouldAutoZoomOnRelease &&
+            state.zoomDepth < MAX_AUTO_ZOOM_DEPTH
+        ) {
             const selectedSourceRect = getSelectedSourceRect();
             if (selectedSourceRect) {
                 state.sourceRect = selectedSourceRect;
                 state.zoomDepth += 1;
-                state.selection = null;
+                if (frameElement instanceof HTMLElement) {
+                    const frameRect = frameElement.getBoundingClientRect();
+                    state.selection = createInitialCropSelection({
+                        bounds: {
+                            left: 0,
+                            top: 0,
+                            width: frameRect.width,
+                            height: frameRect.height,
+                        },
+                        aspectRatio: cropAspectRatio,
+                        minSize: minimumSelectionSize,
+                    });
+                } else {
+                    state.selection = null;
+                }
             }
         }
         state.shouldAutoZoomOnRelease = false;
