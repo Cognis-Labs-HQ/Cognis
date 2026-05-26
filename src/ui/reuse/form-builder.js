@@ -1,3 +1,5 @@
+const NEAR_LIMIT_THRESHOLD = 0.1;
+
 /**
  * Reusable form builder and validator for dashboard and auth pages.
  *
@@ -81,8 +83,6 @@ export function createFormBuilder(ctx, options) {
     const submitLabelKey = String(
         options?.submitLabelKey ?? "ui.reuse.save",
     ).trim();
-    const nearLimitThreshold = 0.1;
-
     function renderAttribute(name, value) {
         if (value === true) {
             return ` ${escapeHtml(name)}`;
@@ -295,7 +295,7 @@ export function createFormBuilder(ctx, options) {
         counterElement.classList.toggle(
             "char-counter--near-limit",
             remainingCharacters <=
-                Math.ceil(maxCharacters * nearLimitThreshold),
+                Math.ceil(maxCharacters * NEAR_LIMIT_THRESHOLD),
         );
         counterElement.classList.toggle(
             "char-counter--at-limit",
