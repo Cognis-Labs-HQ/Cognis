@@ -148,6 +148,34 @@ test("mountWhenDirect wraps direct mounts with the shared loading state", async 
     }
 });
 
+test("mountWhenDirect clears loading state when direct mount throws", async () => {
+    const originalDocument = global.document;
+    const originalRouterFlag = globalThis.__spaRouter;
+    const body = createMockBody();
+    const root = { id: "app-root" };
+    global.document = {
+        body,
+        createElement(tagName) {
+            return createMockElement(tagName);
+        },
+        querySelector() {
+            return root;
+        },
+    };
+    globalThis.__spaRouter = false;
+
+    try {
+        await mountWhenDirect(async () => {
+            throw new Error("direct mount failed");
+        });
+        assert.equal(body.dataset.pageReady, "true");
+        assert.equal(body.attributes["aria-busy"], "false");
+    } finally {
+        global.document = originalDocument;
+        globalThis.__spaRouter = originalRouterFlag;
+    }
+});
+
 test("mountWhenDirect skips direct mounting during SPA router loads", async () => {
     const originalRouterFlag = globalThis.__spaRouter;
     globalThis.__spaRouter = true;

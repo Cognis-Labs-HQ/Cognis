@@ -69,6 +69,18 @@
   <string name="ui.reuse.debug">デバッグ</string>
   <string name="ui.reuse.subject">件名</string>
   <string name="ui.reuse.message">メッセージ</string>
+  <string name="ui.reuse.runtime_error_popup_title">ランタイムエラーを検出</string>
+  <string name="ui.reuse.runtime_error_popup_summary">エラー概要</string>
+  <string name="ui.reuse.runtime_error_popup_context">技術コンテキスト</string>
+  <string name="ui.reuse.runtime_error_popup_page_url">ページURL</string>
+  <string name="ui.reuse.runtime_error_popup_stack">スタックトレース</string>
+  <string name="ui.reuse.runtime_error_popup_console">コンソールトレース</string>
+  <string name="ui.reuse.runtime_error_popup_console_empty">最近のコンソール記録は取得されませんでした。</string>
+  <string name="ui.reuse.runtime_error_context_window_resource">ウィンドウリソース読み込みエラー</string>
+  <string name="ui.reuse.runtime_error_context_window_runtime">ウィンドウランタイムエラー</string>
+  <string name="ui.reuse.runtime_error_context_unhandled_rejection">未処理の Promise 拒否</string>
+  <string name="ui.reuse.runtime_error_context_route_mount">ルートマウント失敗</string>
+  <string name="ui.reuse.runtime_error_context_route_load">ルート読み込み失敗</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">ユーザー</string>

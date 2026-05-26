@@ -69,6 +69,18 @@
   <string name="ui.reuse.debug">Debug</string>
   <string name="ui.reuse.subject">Subject</string>
   <string name="ui.reuse.message">Message</string>
+  <string name="ui.reuse.runtime_error_popup_title">Runtime Error Detected</string>
+  <string name="ui.reuse.runtime_error_popup_summary">Error Summary</string>
+  <string name="ui.reuse.runtime_error_popup_context">Technical Context</string>
+  <string name="ui.reuse.runtime_error_popup_page_url">Page URL</string>
+  <string name="ui.reuse.runtime_error_popup_stack">Stack Trace</string>
+  <string name="ui.reuse.runtime_error_popup_console">Console Trace</string>
+  <string name="ui.reuse.runtime_error_popup_console_empty">No recent console entries were captured.</string>
+  <string name="ui.reuse.runtime_error_context_window_resource">Window Resource Load Error</string>
+  <string name="ui.reuse.runtime_error_context_window_runtime">Window Runtime Error</string>
+  <string name="ui.reuse.runtime_error_context_unhandled_rejection">Unhandled Promise Rejection</string>
+  <string name="ui.reuse.runtime_error_context_route_mount">Route Mount Failed</string>
+  <string name="ui.reuse.runtime_error_context_route_load">Route Load Failed</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">User</string>
