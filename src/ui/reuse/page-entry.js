@@ -305,6 +305,14 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     try {
         await mount(document.querySelector(rootSelector));
     } catch (error) {
+        console.error("[page-entry] Direct mount failed.", {
+            operation: "mountWhenDirect",
+            routePath:
+                typeof window !== "undefined"
+                    ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+                    : "",
+            error,
+        });
         mountError = error;
     } finally {
         finishPageLoading();

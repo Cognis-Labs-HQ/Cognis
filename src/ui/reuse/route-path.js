@@ -21,7 +21,7 @@
  * @returns {string}
  */
 
-const log = (...messageParts) => console.warn("[route-path]", ...messageParts);
+const log = (...messageParts) => console.error("[route-path]", ...messageParts);
 
 export function getCurrentRoutePath() {
     if (typeof window === "undefined" || !window.location) return "";

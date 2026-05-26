@@ -53,6 +53,8 @@ let handlersInstalled = false;
 let popupOpen = false;
 let recentPopupSignature = "";
 let recentPopupTimestamp = 0;
+const log = (...messageParts) =>
+    console.warn("[runtime-error-popup]", ...messageParts);
 
 function getI18nPromise() {
     if (!i18nPromise) {
@@ -335,7 +337,14 @@ function navigateToPreviousRouteIfDifferent(
     if (!normalizedCurrentRoutePath || !normalizedPreviousRoutePath) return;
     if (normalizedCurrentRoutePath === normalizedPreviousRoutePath) return;
     const normalizedLatestRoutePath = normalizeRoutePath(getCurrentRoutePath());
-    if (normalizedLatestRoutePath !== normalizedCurrentRoutePath) return;
+    if (normalizedLatestRoutePath !== normalizedCurrentRoutePath) {
+        log("Skipping back navigation because route already changed.", {
+            currentRoutePath: normalizedCurrentRoutePath,
+            latestRoutePath: normalizedLatestRoutePath,
+            previousRoutePath: normalizedPreviousRoutePath,
+        });
+        return;
+    }
     window.history.back();
 }
 
