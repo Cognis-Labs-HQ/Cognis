@@ -881,6 +881,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         dragStartY: 0,
         dragMode: "move",
         dragStartSelection: null,
+        dragStartSourceRect: null,
         displayBounds: null,
         selection: null,
         sourceRect: null,
@@ -1014,6 +1015,9 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         state.dragStartX = event.clientX;
         state.dragStartY = event.clientY;
         state.dragStartSelection = { ...state.selection };
+        state.dragStartSourceRect = state.sourceRect
+            ? { ...state.sourceRect }
+            : null;
         state.shouldAutoZoomOnRelease = false;
         frameElement.setPointerCapture(event.pointerId);
         frameElement.classList.add("profile-image-crop-frame--dragging");
@@ -1024,19 +1028,33 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (!state.dragStartSelection || !state.displayBounds) return;
         const deltaX = event.clientX - state.dragStartX;
         const deltaY = event.clientY - state.dragStartY;
+        const shouldPanZoomedViewport =
+            state.zoomDepth > 0 && state.dragMode === "move";
         if (
-            Math.abs(deltaX) > AUTO_ZOOM_MIN_DRAG_DISTANCE ||
-            Math.abs(deltaY) > AUTO_ZOOM_MIN_DRAG_DISTANCE
+            !shouldPanZoomedViewport &&
+            (Math.abs(deltaX) > AUTO_ZOOM_MIN_DRAG_DISTANCE ||
+                Math.abs(deltaY) > AUTO_ZOOM_MIN_DRAG_DISTANCE)
         ) {
             state.shouldAutoZoomOnRelease = true;
         }
         if (state.dragMode === "move") {
-            state.selection = computeMovedCropSelection({
+            const movedSelection = computeMovedCropSelection({
                 startSelection: state.dragStartSelection,
                 deltaX,
                 deltaY,
                 bounds: state.displayBounds,
             });
+            if (shouldPanZoomedViewport && state.dragStartSourceRect) {
+                state.sourceRect = composeCropSourceRect({
+                    baseSourceRect: state.dragStartSourceRect,
+                    selection: movedSelection,
+                    imageBounds: state.displayBounds,
+                });
+                state.selection = { ...state.dragStartSelection };
+                state.shouldAutoZoomOnRelease = false;
+            } else {
+                state.selection = movedSelection;
+            }
         } else {
             state.selection = computeResizedCropSelection({
                 startSelection: state.dragStartSelection,
@@ -1062,6 +1080,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         }
         state.dragPointerId = null;
         state.dragStartSelection = null;
+        state.dragStartSourceRect = null;
         state.dragMode = "move";
         if (
             state.shouldAutoZoomOnRelease &&
