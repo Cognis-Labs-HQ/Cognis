@@ -178,7 +178,7 @@ export function createFormBuilder(ctx, options) {
             criteriaDisplay === "inline" && criteriaItems
                 ? `<ul class="form-builder-criteria-list form-builder-criteria-list--inline">${criteriaItems}</ul>`
                 : "";
-        const validationNotice = `<p class="form-builder-validation-notice" data-form-builder-validation-notice="${escapeHtml(fieldName)}" aria-live="polite"></p>`;
+        const validationNotice = `<p class="form-builder-validation-notice" data-form-builder-validation-notice="${escapeHtml(fieldName)}" role="alert" aria-live="assertive"></p>`;
 
         const inputMarkup =
             type === "select"
@@ -449,8 +449,12 @@ export function createFormBuilder(ctx, options) {
                 "form-builder-input--invalid",
                 !fieldValid,
             );
+            const escapedFieldName =
+                typeof CSS !== "undefined" && typeof CSS.escape === "function"
+                    ? CSS.escape(fieldName)
+                    : fieldName.replace(/["\\]/g, "\\$&");
             const validationNoticeElement = formElement.querySelector(
-                `[data-form-builder-validation-notice="${fieldName}"]`,
+                `[data-form-builder-validation-notice="${escapedFieldName}"]`,
             );
             if (validationNoticeElement instanceof HTMLElement) {
                 const shouldShowRequiredNotice =
