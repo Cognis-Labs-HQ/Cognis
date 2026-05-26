@@ -1038,22 +1038,46 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             state.shouldAutoZoomOnRelease = true;
         }
         if (state.dragMode === "move") {
-            const movedSelection = computeMovedCropSelection({
-                startSelection: state.dragStartSelection,
-                deltaX,
-                deltaY,
-                bounds: state.displayBounds,
-            });
             if (shouldPanZoomedViewport && state.dragStartSourceRect) {
+                const startSourceRect = state.dragStartSourceRect;
+                const sourceDeltaX =
+                    (deltaX / state.displayBounds.width) *
+                    startSourceRect.sourceWidth;
+                const sourceDeltaY =
+                    (deltaY / state.displayBounds.height) *
+                    startSourceRect.sourceHeight;
+                const maxSourceX = Math.max(
+                    0,
+                    cropImage.imageWidth - startSourceRect.sourceWidth,
+                );
+                const maxSourceY = Math.max(
+                    0,
+                    cropImage.imageHeight - startSourceRect.sourceHeight,
+                );
                 state.sourceRect = composeCropSourceRect({
-                    baseSourceRect: state.dragStartSourceRect,
-                    selection: movedSelection,
+                    baseSourceRect: {
+                        ...startSourceRect,
+                        sourceX: Math.min(
+                            maxSourceX,
+                            Math.max(0, startSourceRect.sourceX + sourceDeltaX),
+                        ),
+                        sourceY: Math.min(
+                            maxSourceY,
+                            Math.max(0, startSourceRect.sourceY + sourceDeltaY),
+                        ),
+                    },
+                    selection: state.dragStartSelection,
                     imageBounds: state.displayBounds,
                 });
                 state.selection = { ...state.dragStartSelection };
                 state.shouldAutoZoomOnRelease = false;
             } else {
-                state.selection = movedSelection;
+                state.selection = computeMovedCropSelection({
+                    startSelection: state.dragStartSelection,
+                    deltaX,
+                    deltaY,
+                    bounds: state.displayBounds,
+                });
             }
         } else {
             state.selection = computeResizedCropSelection({
