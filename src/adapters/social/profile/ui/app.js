@@ -126,6 +126,13 @@ function createPostFormBuilder(canFollowers, canFriends, canEveryone) {
     );
 }
 
+function createPostFormBuilderForVisibility(profileVisibility) {
+    const canFollowers = profileVisibility !== "hidden";
+    const canFriends = profileVisibility !== "hidden";
+    const canEveryone = profileVisibility === "community";
+    return createPostFormBuilder(canFollowers, canFriends, canEveryone);
+}
+
 function toAbsoluteUrl(url) {
     if (!url) return url;
     return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -664,19 +671,12 @@ function renderPostsList() {
 
 function renderNewPost() {
     const profileVis = profile?.visibility ?? "hidden";
-    const canFollowers = profileVis !== "hidden";
-    const canFriends = profileVis !== "hidden";
-    const canEveryone = profileVis === "community";
 
     const visibilityHint =
-        !canFollowers || !canEveryone
+        profileVis === "hidden" || profileVis !== "community"
             ? `<span class="profile-visibility-tooltip">${renderInfoTooltip(i18n.t("ui.app.profile.post_visibility_hint"), i18n.t("ui.reuse.more_information"))}</span>`
             : "";
-    const postFormBuilder = createPostFormBuilder(
-        canFollowers,
-        canFriends,
-        canEveryone,
-    );
+    const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
 
     return `
     <div class="profile-posts-section">
@@ -1186,11 +1186,7 @@ function bindPageEvents() {
     const postFormElement = root.querySelector("#new-post-form");
     if (postFormElement instanceof HTMLFormElement) {
         const profileVis = profile?.visibility ?? "hidden";
-        const postFormBuilder = createPostFormBuilder(
-            profileVis !== "hidden",
-            profileVis !== "hidden",
-            profileVis === "community",
-        );
+        const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
         newPostFormController = postFormBuilder.attach(postFormElement);
         postFormElement.addEventListener("submit", (event) => {
             event.preventDefault();
