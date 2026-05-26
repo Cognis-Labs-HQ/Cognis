@@ -190,6 +190,109 @@
     justify-self: start;
 }
 
+.profile-image-crop-popup {
+    display: grid;
+    gap: 12px;
+}
+
+.profile-image-crop-frame {
+    position: relative;
+    width: min(100%, 640px);
+    justify-self: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.profile-image-crop-frame--dragging {
+    cursor: grabbing;
+}
+
+.profile-image-crop-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    pointer-events: none;
+    max-width: none;
+    max-height: none;
+}
+
+.profile-image-crop-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(
+            to right,
+            transparent calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% + 0.5px),
+            transparent calc(33.333% + 0.5px),
+            transparent calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% + 0.5px),
+            transparent calc(66.666% + 0.5px)
+        ),
+        linear-gradient(
+            to bottom,
+            transparent calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(33.333% + 0.5px),
+            transparent calc(33.333% + 0.5px),
+            transparent calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% - 0.5px),
+            rgba(255, 255, 255, 0.72) calc(66.666% + 0.5px),
+            transparent calc(66.666% + 0.5px)
+        );
+}
+
+.profile-image-crop-grid--expanded {
+    background-image:
+        repeating-linear-gradient(
+            to right,
+            transparent,
+            transparent calc(12.5% - 0.5px),
+            rgba(255, 255, 255, 0.55) calc(12.5% - 0.5px),
+            rgba(255, 255, 255, 0.55) calc(12.5% + 0.5px)
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent calc(12.5% - 0.5px),
+            rgba(255, 255, 255, 0.55) calc(12.5% - 0.5px),
+            rgba(255, 255, 255, 0.55) calc(12.5% + 0.5px)
+        );
+}
+
+.profile-image-crop-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.profile-image-crop-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+}
+
+.profile-image-crop-control input[type="range"] {
+    min-width: 220px;
+}
+
+.profile-image-crop-grid-toggle {
+    white-space: nowrap;
+}
+
 .profile-hero--full-banner {
     grid-template-rows: 360px;
 }

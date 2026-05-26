@@ -14,6 +14,11 @@ import { showToast } from "/static/reuse/toast.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import {
+    computeCropSourceRect,
+    computeCropViewport,
+    getCropOutputDimensions,
+} from "/static/adapters/social/profile/ui/image-crop.js";
 
 let root = null;
 let i18n = null;
@@ -33,6 +38,8 @@ let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
+let pendingAvatarCropAspect = 1;
+let pendingBannerCropAspect = 3;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -664,6 +671,310 @@ async function doRemoveBanner() {
     composer.refresh(elements);
 }
 
+function resolveCropAspectFromElement(element, fallbackAspectRatio) {
+    const fallback = Math.max(0.5, Number(fallbackAspectRatio) || 1);
+    if (!(element instanceof HTMLElement)) return fallback;
+    const bounds = element.getBoundingClientRect();
+    if (bounds.width <= 0 || bounds.height <= 0) return fallback;
+    return Math.max(0.5, bounds.width / bounds.height);
+}
+
+function buildCropPopupBody({
+    imageUrl,
+    imageType,
+    zoomValue,
+    aspectRatio,
+    gridExpanded,
+}) {
+    const clampedAspect = Math.max(0.5, Number(aspectRatio) || 1);
+    const gridLabel = gridExpanded
+        ? i18n.t("ui.app.profile.crop_grid_collapse")
+        : i18n.t("ui.app.profile.crop_grid_expand");
+    return `
+      <div class="profile-image-crop-popup">
+        <div
+          class="profile-image-crop-frame"
+          data-crop-frame
+          style="aspect-ratio: ${clampedAspect};"
+        >
+          <img
+            class="profile-image-crop-image"
+            data-crop-image
+            src="${escapeHtml(imageUrl)}"
+            alt="${escapeHtml(imageType)}"
+            draggable="false"
+          />
+          <div class="profile-image-crop-grid${gridExpanded ? " profile-image-crop-grid--expanded" : ""}" data-crop-grid></div>
+        </div>
+        <div class="profile-image-crop-controls">
+          <label class="profile-image-crop-control">
+            <span>${escapeHtml(i18n.t("ui.app.profile.crop_zoom_label"))}</span>
+            <input type="range" min="1" max="3" step="0.01" value="${escapeHtml(String(zoomValue))}" data-crop-zoom />
+          </label>
+          <button type="button" class="btn-neutral profile-image-crop-grid-toggle" data-crop-grid-toggle>${escapeHtml(gridLabel)}</button>
+        </div>
+      </div>
+    `;
+}
+
+async function loadCropImage(file) {
+    const imageUrl = URL.createObjectURL(file);
+    const imageElement = new Image();
+    imageElement.decoding = "async";
+    imageElement.src = imageUrl;
+    if (typeof imageElement.decode === "function") {
+        await imageElement.decode().catch(() => {});
+    }
+    if (!imageElement.complete) {
+        await new Promise((resolve, reject) => {
+            imageElement.addEventListener("load", resolve, { once: true });
+            imageElement.addEventListener(
+                "error",
+                () => reject(new Error("image_load_failed")),
+                { once: true },
+            );
+        });
+    }
+    if (!imageElement.naturalWidth || !imageElement.naturalHeight) {
+        URL.revokeObjectURL(imageUrl);
+        throw new Error("image_load_failed");
+    }
+    return {
+        imageUrl,
+        imageWidth: imageElement.naturalWidth,
+        imageHeight: imageElement.naturalHeight,
+    };
+}
+
+async function openImageCropPopup({ file, kind, aspectRatio }) {
+    const cropImage = await loadCropImage(file);
+    const cropInteractionController = new AbortController();
+    const state = {
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        dragging: false,
+        dragPointerId: null,
+        dragStartX: 0,
+        dragStartY: 0,
+        dragStartOffsetX: 0,
+        dragStartOffsetY: 0,
+        gridExpanded: false,
+    };
+    let frameElement = null;
+    let imageElement = null;
+    let saveViewport = null;
+    let renderQueued = false;
+
+    function renderCrop() {
+        if (!(frameElement instanceof HTMLElement)) return;
+        if (!(imageElement instanceof HTMLImageElement)) return;
+        const frameRect = frameElement.getBoundingClientRect();
+        const viewport = computeCropViewport({
+            imageWidth: cropImage.imageWidth,
+            imageHeight: cropImage.imageHeight,
+            frameWidth: frameRect.width,
+            frameHeight: frameRect.height,
+            zoom: state.zoom,
+            offsetX: state.offsetX,
+            offsetY: state.offsetY,
+        });
+        state.offsetX = viewport.offsetX;
+        state.offsetY = viewport.offsetY;
+        imageElement.style.transform = `translate(calc(-50% + ${viewport.offsetX}px), calc(-50% + ${viewport.offsetY}px)) scale(${viewport.fitScale * viewport.zoom})`;
+        saveViewport = viewport;
+    }
+
+    function queueRender() {
+        if (renderQueued) return;
+        renderQueued = true;
+        requestAnimationFrame(() => {
+            renderQueued = false;
+            renderCrop();
+        });
+    }
+
+    function handlePointerDown(event) {
+        if (!(frameElement instanceof HTMLElement)) return;
+        state.dragging = true;
+        state.dragPointerId = event.pointerId;
+        state.dragStartX = event.clientX;
+        state.dragStartY = event.clientY;
+        state.dragStartOffsetX = state.offsetX;
+        state.dragStartOffsetY = state.offsetY;
+        frameElement.setPointerCapture(event.pointerId);
+        frameElement.classList.add("profile-image-crop-frame--dragging");
+    }
+
+    function handlePointerMove(event) {
+        if (!state.dragging || state.dragPointerId !== event.pointerId) return;
+        state.offsetX = state.dragStartOffsetX + (event.clientX - state.dragStartX);
+        state.offsetY = state.dragStartOffsetY + (event.clientY - state.dragStartY);
+        queueRender();
+    }
+
+    function finishDrag(event) {
+        if (state.dragPointerId !== event.pointerId) return;
+        state.dragging = false;
+        if (frameElement instanceof HTMLElement) {
+            frameElement.classList.remove("profile-image-crop-frame--dragging");
+            if (frameElement.hasPointerCapture(event.pointerId)) {
+                frameElement.releasePointerCapture(event.pointerId);
+            }
+        }
+        state.dragPointerId = null;
+    }
+
+    const popupResult = await openPopup({
+        title: i18n.t(
+            kind === "avatar"
+                ? "ui.app.profile.crop_avatar_title"
+                : "ui.app.profile.crop_banner_title",
+        ),
+        body: () =>
+            buildCropPopupBody({
+                imageUrl: cropImage.imageUrl,
+                imageType: file.name,
+                zoomValue: state.zoom,
+                aspectRatio,
+                gridExpanded: state.gridExpanded,
+            }),
+        maxWidth: "760px",
+        actions: [
+            { id: "cancel", label: i18n.t("ui.reuse.cancel"), variant: "cancel" },
+            { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
+        ],
+        onOpen: (overlay) => {
+            frameElement = overlay.querySelector("[data-crop-frame]");
+            imageElement = overlay.querySelector("[data-crop-image]");
+            const zoomInput = overlay.querySelector("[data-crop-zoom]");
+            const gridToggle = overlay.querySelector("[data-crop-grid-toggle]");
+            const gridElement = overlay.querySelector("[data-crop-grid]");
+            if (!(frameElement instanceof HTMLElement)) return;
+            if (!(imageElement instanceof HTMLImageElement)) return;
+            if (!(zoomInput instanceof HTMLInputElement)) return;
+            if (!(gridToggle instanceof HTMLButtonElement)) return;
+            if (!(gridElement instanceof HTMLElement)) return;
+
+            frameElement.addEventListener("pointerdown", handlePointerDown, {
+                signal: cropInteractionController.signal,
+            });
+            frameElement.addEventListener("pointermove", handlePointerMove, {
+                signal: cropInteractionController.signal,
+            });
+            frameElement.addEventListener("pointerup", finishDrag, {
+                signal: cropInteractionController.signal,
+            });
+            frameElement.addEventListener("pointercancel", finishDrag, {
+                signal: cropInteractionController.signal,
+            });
+            frameElement.addEventListener("lostpointercapture", finishDrag, {
+                signal: cropInteractionController.signal,
+            });
+            frameElement.addEventListener(
+                "dragstart",
+                (event) => {
+                    event.preventDefault();
+                },
+                { signal: cropInteractionController.signal },
+            );
+            zoomInput.addEventListener(
+                "input",
+                () => {
+                    state.zoom = Number(zoomInput.value) || 1;
+                    queueRender();
+                },
+                { signal: cropInteractionController.signal },
+            );
+            gridToggle.addEventListener(
+                "click",
+                () => {
+                    state.gridExpanded = !state.gridExpanded;
+                    gridElement.classList.toggle(
+                        "profile-image-crop-grid--expanded",
+                        state.gridExpanded,
+                    );
+                    gridToggle.textContent = i18n.t(
+                        state.gridExpanded
+                            ? "ui.app.profile.crop_grid_collapse"
+                            : "ui.app.profile.crop_grid_expand",
+                    );
+                },
+                { signal: cropInteractionController.signal },
+            );
+            window.addEventListener("resize", queueRender, {
+                signal: cropInteractionController.signal,
+            });
+            queueRender();
+        },
+    });
+
+    cropInteractionController.abort();
+    if (popupResult !== "save" || !saveViewport) {
+        URL.revokeObjectURL(cropImage.imageUrl);
+        return null;
+    }
+
+    const sourceRect = computeCropSourceRect(saveViewport);
+    const outputDimensions =
+        kind === "avatar"
+            ? { width: 1024, height: 1024 }
+            : getCropOutputDimensions(aspectRatio, 1600);
+    const canvas = document.createElement("canvas");
+    canvas.width = outputDimensions.width;
+    canvas.height = outputDimensions.height;
+    const context = canvas.getContext("2d", { alpha: false });
+    if (!context) {
+        URL.revokeObjectURL(cropImage.imageUrl);
+        throw new Error("canvas_context_unavailable");
+    }
+    context.drawImage(
+        imageElement,
+        sourceRect.sourceX,
+        sourceRect.sourceY,
+        sourceRect.sourceWidth,
+        sourceRect.sourceHeight,
+        0,
+        0,
+        outputDimensions.width,
+        outputDimensions.height,
+    );
+    const blob = await new Promise((resolve) => {
+        canvas.toBlob(resolve, "image/png", 0.92);
+    });
+    URL.revokeObjectURL(cropImage.imageUrl);
+    return blob;
+}
+
+async function handleProfileImageUpload({ kind, file, aspectRatio }) {
+    const croppedBlob = await openImageCropPopup({ file, kind, aspectRatio });
+    if (!(croppedBlob instanceof Blob)) return false;
+    const endpoint =
+        kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
+    const response = await apiFetch(endpoint, {
+        method: "PUT",
+        headers: { "content-type": "image/png" },
+        body: await croppedBlob.arrayBuffer(),
+    });
+    if (!response.ok) {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+        return false;
+    }
+    if (kind === "avatar") {
+        if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
+        avatarBlobUrl = URL.createObjectURL(croppedBlob);
+    } else {
+        if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
+        bannerBlobUrl = URL.createObjectURL(croppedBlob);
+    }
+    profile = await loadOwnProfile();
+    composer.refresh(elements);
+    if (kind === "avatar") {
+        updateNavbarAvatar().catch(() => {});
+    }
+    return true;
+}
+
 async function openEditPopup() {
     const currentBio = profile?.bio ?? "";
     const currentLocation = profile?.location ?? "";
@@ -784,42 +1095,37 @@ async function openEditPopup() {
 
 avatarFileInput.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
-    if (!file) return;
-    const buffer = await file.arrayBuffer();
-    const res = await apiFetch("/api/v1/profile/avatar", {
-        method: "PUT",
-        headers: { "content-type": file.type },
-        body: buffer,
-    });
-    if (!res.ok) {
-        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    if (!file) {
+        avatarFileInput.value = "";
         return;
     }
-    if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
-    avatarBlobUrl = URL.createObjectURL(file);
-    profile = await loadOwnProfile();
-    composer.refresh(elements);
-    updateNavbarAvatar().catch(() => {});
+    try {
+        await handleProfileImageUpload({
+            kind: "avatar",
+            file,
+            aspectRatio: pendingAvatarCropAspect,
+        });
+    } catch {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    }
     avatarFileInput.value = "";
 });
 
 bannerFileInput.addEventListener("change", async () => {
     const file = bannerFileInput.files?.[0];
-    if (!file) return;
-    const buffer = await file.arrayBuffer();
-    const res = await apiFetch("/api/v1/profile/banner", {
-        method: "PUT",
-        headers: { "content-type": file.type },
-        body: buffer,
-    });
-    if (!res.ok) {
-        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    if (!file) {
+        bannerFileInput.value = "";
         return;
     }
-    if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
-    bannerBlobUrl = URL.createObjectURL(file);
-    profile = await loadOwnProfile();
-    composer.refresh(elements);
+    try {
+        await handleProfileImageUpload({
+            kind: "banner",
+            file,
+            aspectRatio: pendingBannerCropAspect,
+        });
+    } catch {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+    }
     bannerFileInput.value = "";
 });
 
@@ -1070,11 +1376,23 @@ function bindPageEvents() {
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
-        () => bannerFileInput.click(),
+        (event) => {
+            pendingBannerCropAspect = resolveCropAspectFromElement(
+                event.currentTarget,
+                pendingBannerCropAspect,
+            );
+            bannerFileInput.click();
+        },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
-        () => avatarFileInput.click(),
+        (event) => {
+            pendingAvatarCropAspect = resolveCropAspectFromElement(
+                event.currentTarget,
+                1,
+            );
+            avatarFileInput.click();
+        },
     );
     root.querySelector(".profile-avatar-remove-btn")?.addEventListener(
         "click",
@@ -1192,6 +1510,8 @@ export async function mount(rootEl, { signal } = {}) {
     bannerHeight = null;
     composer = null;
     elements = [];
+    pendingAvatarCropAspect = 1;
+    pendingBannerCropAspect = 3;
 
     if (isOwnProfile) {
         profile = await loadOwnProfile();

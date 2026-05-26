@@ -385,6 +385,11 @@
   <string name="ui.app.profile.its_you">Itu Anda</string>
   <string name="ui.app.profile.change_banner">Ubah foto banner</string>
   <string name="ui.app.profile.change_avatar">Ubah foto profil</string>
+  <string name="ui.app.profile.crop_avatar_title">Potong Foto Profil</string>
+  <string name="ui.app.profile.crop_banner_title">Potong Foto Banner</string>
+  <string name="ui.app.profile.crop_zoom_label">Zoom</string>
+  <string name="ui.app.profile.crop_grid_expand">Perluas Grid Panduan</string>
+  <string name="ui.app.profile.crop_grid_collapse">Perkecil Grid Panduan</string>
   <string name="ui.app.profile.achievements">Pencapaian</string>
   <string name="ui.app.profile.social_links.website">Situs Web</string>
   <string name="ui.app.profile.social_links.empty">Tidak ada tautan. Edit profil Anda untuk menambahkan situs web.</string>
