@@ -134,3 +134,20 @@ test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {
         "dashboard layout should not revoke a blob URL when it is still the active avatar source",
     );
 });
+
+test("dashboard layout re-shows theme toggle on shell reuse when enabled", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.ok(
+        /const existingThemeToggle\s*=\s*existingShell\.querySelector\("#theme-toggle"\);/m.test(
+            layoutSource,
+        ),
+        "dashboard layout should resolve the existing theme toggle when reusing the shell",
+    );
+    assert.ok(
+        layoutSource.includes('existingThemeToggle?.removeAttribute("hidden")'),
+        "dashboard layout should unhide the existing theme toggle when the page enables it",
+    );
+});

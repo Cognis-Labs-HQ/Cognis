@@ -551,8 +551,12 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".floating-toolbar")?.remove();
         }
 
+        const existingThemeToggle =
+            existingShell.querySelector("#theme-toggle");
         if (!showThemeToggle) {
-            existingShell.querySelector("#theme-toggle")?.remove();
+            existingThemeToggle?.remove();
+        } else {
+            existingThemeToggle?.removeAttribute("hidden");
         }
         applyStaticTranslations(
             i18n,

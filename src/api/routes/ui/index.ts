@@ -59,7 +59,6 @@ function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
 
 function resolveContentType(filePath: string) {
     const ext = path.extname(filePath);
-
     if (ext === ".css") return "text/css; charset=utf-8";
     if (ext === ".js") return "text/javascript; charset=utf-8";
     if (ext === ".webp") return "image/webp";
@@ -69,7 +68,6 @@ function resolveContentType(filePath: string) {
     if (ext === ".webmanifest")
         return "application/manifest+json; charset=utf-8";
     if (ext === ".json") return "application/json; charset=utf-8";
-
     return "image/png";
 }
 
@@ -255,6 +253,12 @@ async function resolveLoginRedirectLocation(
     if (!info) return "/login?reason=account_deleted";
     if (info.enabled === false) return "/login?reason=account_disabled";
     return "";
+}
+
+function sendRedirect(res: ServerResponse, location: string): true {
+    res.writeHead(302, { location });
+    res.end();
+    return true;
 }
 
 export function createUiRoutes(
@@ -604,12 +608,15 @@ export function createUiRoutes(
             return true;
         }
 
-        const session = ctx.getCookieSession(req);
-        if (runtime && session) {
+        if (runtime && !url.pathname.startsWith("/api/")) {
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
-                if (!manifest.entrypoints?.ui) continue;
+                if (
+                    !manifest.entrypoints?.ui ||
+                    (isModuleEnabled && !isModuleEnabled(manifest.id))
+                )
+                    continue;
 
                 try {
                     const routeFile = path.resolve(
@@ -620,13 +627,17 @@ export function createUiRoutes(
                     const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
-
                     const matchingRoute = routes.find(
                         (routeRule) => routeRule.path === url.pathname,
                     );
-                    if (!matchingRoute || url.pathname.startsWith("/api/")) {
-                        continue;
-                    }
+                    if (!matchingRoute) continue;
+                    const loginRedirect = await resolveLoginRedirectLocation(
+                        req,
+                        ctx,
+                        accountStore,
+                        log,
+                    );
+                    if (loginRedirect) return sendRedirect(res, loginRedirect);
                     if (matchingRoute.invalidAccessPolicy) {
                         log?.(
                             "warn",
@@ -637,37 +648,32 @@ export function createUiRoutes(
                                 path: url.pathname,
                             },
                         );
-                        res.writeHead(302, { location: "/dashboard" });
-                        res.end();
-                        return true;
+                        return sendRedirect(res, "/dashboard");
                     }
+                    const session = ctx.getCookieSession(req);
                     if (
                         matchingRoute.access &&
                         !isRoleAllowed(session.role, matchingRoute.access)
                     ) {
-                        res.writeHead(302, { location: "/dashboard" });
-                        res.end();
-                        return true;
+                        return sendRedirect(res, "/dashboard");
                     }
-                    if (matchingRoute) {
-                        const uiFile = path.resolve(
-                            MODULES_ROOT,
-                            manifest.id,
-                            manifest.entrypoints.ui,
-                        );
-                        await serveHtmlPage(
-                            res,
-                            uiFile,
-                            log,
-                            {
-                                path: url.pathname,
-                                method: req.method ?? "GET",
-                                moduleId: manifest.id,
-                            },
-                            ctx,
-                        );
-                        return true;
-                    }
+                    const uiFile = path.resolve(
+                        MODULES_ROOT,
+                        manifest.id,
+                        manifest.entrypoints.ui,
+                    );
+                    await serveHtmlPage(
+                        res,
+                        uiFile,
+                        log,
+                        {
+                            path: url.pathname,
+                            method: req.method ?? "GET",
+                            moduleId: manifest.id,
+                        },
+                        ctx,
+                    );
+                    return true;
                 } catch (error) {
                     log?.(
                         "error",
