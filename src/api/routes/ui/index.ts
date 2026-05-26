@@ -608,11 +608,10 @@ export function createUiRoutes(
             return true;
         }
 
-        if (runtime) {
+        if (runtime && !url.pathname.startsWith("/api/")) {
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
-                if (url.pathname.startsWith("/api/")) continue;
                 if (
                     !manifest.entrypoints?.ui ||
                     (isModuleEnabled && !isModuleEnabled(manifest.id))
