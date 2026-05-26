@@ -70,7 +70,7 @@ test("users action menu only includes tfa reset when target has configured tfa",
     assert.match(source, /id: "tfa-reset"/);
 });
 
-test("users action menu only includes resend when user has unverified email", () => {
+test("users action menu includes resend only when unverified emails exist", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
