@@ -883,8 +883,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         dragMode: "move",
         dragStartSelection: null,
         dragStartSourceRect: null,
-        dragAnchorX: 0,
-        dragAnchorY: 0,
+        dragAnchorLeft: 0,
+        dragAnchorTop: 0,
         displayBounds: null,
         selection: null,
         sourceRect: null,
@@ -935,10 +935,11 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         const minWidth = Math.min(maxWidth, minimumSelectionSize);
         const pointerDeltaLeft = pointerLeft - anchorLeft;
         const pointerDeltaTop = pointerTop - anchorTop;
-        const widthByLeft = Math.abs(pointerDeltaLeft);
-        const widthByTop = Math.abs(pointerDeltaTop) * cropAspectRatio;
+        const widthConstrainedByHorizontal = Math.abs(pointerDeltaLeft);
+        const widthConstrainedByVertical =
+            Math.abs(pointerDeltaTop) * cropAspectRatio;
         const width = clampValue(
-            Math.min(widthByLeft, widthByTop),
+            Math.min(widthConstrainedByHorizontal, widthConstrainedByVertical),
             minWidth,
             maxWidth,
         );
@@ -1085,8 +1086,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             state.dragMode = "move";
         } else if (isPointInsideBounds(pointerPosition, state.displayBounds)) {
             state.dragMode = "draw";
-            state.dragAnchorX = clampedPointerLeft;
-            state.dragAnchorY = clampedPointerTop;
+            state.dragAnchorLeft = clampedPointerLeft;
+            state.dragAnchorTop = clampedPointerTop;
         } else {
             return;
         }
@@ -1180,8 +1181,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
                 state.displayBounds.top + state.displayBounds.height,
             );
             state.selection = createSelectionFromAnchorDrag({
-                anchorLeft: state.dragAnchorX,
-                anchorTop: state.dragAnchorY,
+                anchorLeft: state.dragAnchorLeft,
+                anchorTop: state.dragAnchorTop,
                 pointerLeft: clampedPointerLeft,
                 pointerTop: clampedPointerTop,
                 bounds: state.displayBounds,
