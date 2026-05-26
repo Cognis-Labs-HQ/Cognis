@@ -432,6 +432,7 @@ async function loadRoute(path) {
         } catch (error) {
             if (!signal.aborted) {
                 console.error("[router] mount() error for", path, error);
+                finishPageLoading();
                 await openRuntimeErrorPopup({
                     error,
                     contextKey: "ui.reuse.runtime_error_context_route_mount",
@@ -445,6 +446,7 @@ async function loadRoute(path) {
             return false;
         }
         console.error("[router] route load error for", path, error);
+        finishPageLoading();
         await openRuntimeErrorPopup({
             error,
             contextKey: "ui.reuse.runtime_error_context_route_load",
