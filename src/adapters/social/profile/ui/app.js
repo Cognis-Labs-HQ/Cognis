@@ -129,10 +129,17 @@ function createPostFormBuilder(canFollowers, canFriends, canEveryone) {
     );
 }
 
+function getPostVisibilityCapabilities(profileVisibility) {
+    return {
+        canFollowers: profileVisibility !== "hidden",
+        canFriends: profileVisibility !== "hidden",
+        canEveryone: profileVisibility === "community",
+    };
+}
+
 function createPostFormBuilderForVisibility(profileVisibility) {
-    const canFollowers = profileVisibility !== "hidden";
-    const canFriends = profileVisibility !== "hidden";
-    const canEveryone = profileVisibility === "community";
+    const { canFollowers, canFriends, canEveryone } =
+        getPostVisibilityCapabilities(profileVisibility);
     return createPostFormBuilder(canFollowers, canFriends, canEveryone);
 }
 
@@ -674,8 +681,8 @@ function renderPostsList() {
 
 function renderNewPost() {
     const profileVis = profile?.visibility ?? "hidden";
-    const canFollowers = profileVis !== "hidden";
-    const canEveryone = profileVis === "community";
+    const { canFollowers, canEveryone } =
+        getPostVisibilityCapabilities(profileVis);
 
     const visibilityHint =
         !canFollowers || !canEveryone
