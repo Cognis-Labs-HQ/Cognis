@@ -91,6 +91,7 @@ test("users delete action is rendered as inline trash button in actions column",
 
     assert.match(source, /class="users-delete-btn btn-animated"/);
     assert.match(source, /await runUserMenuAction\("delete", username\)/);
+    assert.match(source, /users-delete-btn[\s\S]*users-menu-btn/);
 });
 
 test("users tfa reset action has standalone branch", () => {
