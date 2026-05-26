@@ -38,6 +38,10 @@
 import { openPopup } from "./popup.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
+import {
+    getCurrentRoutePath,
+    normalizeSameOriginRoutePath,
+} from "./route-path.js";
 
 const MAX_CONSOLE_ENTRY_COUNT = 30;
 const POPUP_DEDUPLICATION_WINDOW_MILLISECONDS = 1500;
@@ -293,26 +297,8 @@ export async function openRuntimeErrorPopup({
     }
 }
 
-function getCurrentRoutePath() {
-    if (typeof window === "undefined" || !window.location) return "";
-    return `${window.location.pathname}${window.location.search}${window.location.hash}`;
-}
-
 function normalizeRoutePath(routePath) {
-    if (
-        typeof routePath !== "string" ||
-        !routePath.trim() ||
-        typeof window === "undefined"
-    ) {
-        return "";
-    }
-    try {
-        const routeUrl = new URL(routePath, window.location.origin);
-        if (routeUrl.origin !== window.location.origin) return "";
-        return `${routeUrl.pathname}${routeUrl.search}${routeUrl.hash}`;
-    } catch {
-        return "";
-    }
+    return normalizeSameOriginRoutePath(routePath, { logFailures: true });
 }
 
 function getPreviousRoutePathFromReferrer() {
@@ -348,7 +334,8 @@ function navigateToPreviousRouteIfDifferent(
     const normalizedPreviousRoutePath = normalizeRoutePath(previousRoutePath);
     if (!normalizedCurrentRoutePath || !normalizedPreviousRoutePath) return;
     if (normalizedCurrentRoutePath === normalizedPreviousRoutePath) return;
-    if (getCurrentRoutePath() !== normalizedCurrentRoutePath) return;
+    const normalizedLatestRoutePath = normalizeRoutePath(getCurrentRoutePath());
+    if (normalizedLatestRoutePath !== normalizedCurrentRoutePath) return;
     window.history.back();
 }
 

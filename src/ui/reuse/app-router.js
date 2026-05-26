@@ -37,6 +37,7 @@
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { beginPageLoading } from "./page-entry.js";
+import { getCurrentRoutePath } from "./route-path.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 import {
     installRuntimeErrorHandlers,
@@ -465,7 +466,7 @@ export async function navigateTo(path) {
         const component = await resolveStudyChildComponent(path);
         if (!component) return;
     }
-    const previousRouterPage = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const previousRouterPage = getCurrentRoutePath();
     history.pushState({ routerPage: path, previousRouterPage }, "", path);
     await loadRoute(path);
 }
