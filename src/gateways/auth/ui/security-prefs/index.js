@@ -4,7 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
-import { openPasswordResetPopup } from "/static/gateways/auth/security-prefs/password-reset.js";
+import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
@@ -59,7 +59,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             return;
         }
         button.onclick = () => {
-            openPasswordResetPopup({
+            openPasswordChangePopup({
                 i18n,
                 apiFetch,
                 openPopup,

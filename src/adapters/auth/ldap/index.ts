@@ -130,6 +130,12 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 reason: "LDAP writeback client is unavailable.",
             };
         }
+        // Current-password validation would require a user bind/re-bind flow
+        // using the submitted password, but this adapter is token-oriented and
+        // only receives a writeback client contract (not direct credential-bind
+        // primitives). To guarantee "validate current password first" semantics,
+        // password changes stay disabled for LDAP until a dedicated validation
+        // contract is introduced.
         return {
             supported: false,
             reason: "LDAP adapter cannot validate current password for password changes.",
@@ -141,6 +147,8 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         _currentPassword: string,
         _nextPassword: string,
     ): Promise<{ updated: boolean; message?: string }> {
+        // Signature remains aligned with AuthProviderAdapter.resetPassword even
+        // though LDAP password change is intentionally blocked.
         const support = this.getPasswordResetSupport();
         return {
             updated: false,

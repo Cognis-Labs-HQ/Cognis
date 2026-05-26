@@ -81,7 +81,7 @@ function buildFormPasswordCriteria(policy) {
     return criteria;
 }
 
-export async function openPasswordResetPopup({
+export async function openPasswordChangePopup({
     i18n,
     apiFetch,
     openPopup,
@@ -93,8 +93,8 @@ export async function openPasswordResetPopup({
     const formBuilder = createFormBuilder(
         { i18n, escapeHtml },
         {
-            formId: "auth-password-reset-form",
-            formClassName: "auth-password-reset-form",
+            formId: "auth-password-change-form",
+            formClassName: "auth-password-change-form",
             includeSubmitButton: false,
             submitLabelKey: "ui.reuse.save",
             fields: [
@@ -169,7 +169,7 @@ export async function openPasswordResetPopup({
         closeProtection: true,
         onOpen: (overlay) => {
             const formElement = overlay.querySelector(
-                "#auth-password-reset-form",
+                "#auth-password-change-form",
             );
             if (formElement instanceof HTMLFormElement) {
                 formController = formBuilder.attach(formElement);

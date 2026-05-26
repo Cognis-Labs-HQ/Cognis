@@ -19,6 +19,7 @@ import {
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 const scryptAsync = promisify(scrypt);
+const PASSWORD_HISTORY_LIMIT = 10;
 
 async function hashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString("hex");
@@ -284,8 +285,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const passwordHistoryResult = await this.db.executeCommand({
             option: "SELECT",
             table: "local_auth_password_history",
-            columns: ["password_hash"],
+            columns: ["password_hash", "created_at"],
             where: [{ column: "account_id", value: accountId }],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit: PASSWORD_HISTORY_LIMIT,
         });
         for (const row of passwordHistoryResult.rows ?? []) {
             const passwordMatch = await verifyPassword(
@@ -318,6 +321,35 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     created_at: new Date().toISOString(),
                 },
             });
+            const trimmedHistoryResult = await txDb.executeCommand({
+                option: "SELECT",
+                table: "local_auth_password_history",
+                columns: ["password_hash", "created_at"],
+                where: [{ column: "account_id", value: accountId }],
+                orderBy: [{ column: "created_at", direction: "DESC" }],
+            });
+            const trimmedHistoryRows = trimmedHistoryResult.rows ?? [];
+            if (trimmedHistoryRows.length > PASSWORD_HISTORY_LIMIT) {
+                const cutoffHistoryRow =
+                    trimmedHistoryRows[PASSWORD_HISTORY_LIMIT - 1];
+                const cutoffTimestamp = String(
+                    cutoffHistoryRow?.created_at ?? "",
+                );
+                if (cutoffTimestamp) {
+                    await txDb.executeCommand({
+                        option: "DELETE",
+                        table: "local_auth_password_history",
+                        where: [
+                            { column: "account_id", value: accountId },
+                            {
+                                column: "created_at",
+                                operator: "<",
+                                value: cutoffTimestamp,
+                            },
+                        ],
+                    });
+                }
+            }
         });
         this.writeLog("info", "Updated local account password.", {
             component: "auth-local-store",
