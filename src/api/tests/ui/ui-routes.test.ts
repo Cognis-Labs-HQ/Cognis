@@ -272,6 +272,76 @@ test("module ui routes honor role access policies declared in routes.json", asyn
     assert.match(ownerRecorder.body, /Analytics Module/);
 });
 
+test("module ui routes redirect unauthenticated requests to login", async () => {
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "jitsi-meet",
+                entrypoints: { ui: "./ui/index.html" },
+            },
+        ],
+    } as any);
+    const recorder = createResponseRecorder();
+
+    await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/meetings"),
+    );
+
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/login");
+});
+
+test("module ui routes redirect revoked sessions with session_expired reason", async () => {
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "jitsi-meet",
+                entrypoints: { ui: "./ui/index.html" },
+            },
+        ],
+    } as any);
+    const token = issueAccessToken("u-meetings-expired", "user", 60);
+    revokeAccessTokensForSubject("u-meetings-expired");
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            headers: { cookie: `cognis_access_token=${token}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/meetings"),
+    );
+
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/login?reason=session_expired");
+});
+
+test("module ui routes match trailing slash paths", async () => {
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "jitsi-meet",
+                entrypoints: { ui: "./ui/index.html" },
+            },
+        ],
+    } as any);
+    const token = issueAccessToken("u-meetings-route", "user", 60);
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            headers: { cookie: `cognis_access_token=${token}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/meetings/"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /static\/modules\/jitsi-meet\/ui\/app\.js/);
+});
+
 test("module ui routes fail closed on invalid role access policies in routes.json", async () => {
     const route = createUiRoutes({
         listManifests: async () => [

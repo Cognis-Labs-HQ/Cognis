@@ -29,6 +29,19 @@ interface ModuleUiRouteRule {
     invalidAccessPolicy?: boolean;
 }
 
+function normalizeModuleUiPath(pathname: string): string {
+    const normalized = String(pathname ?? "").trim();
+    if (!normalized) return "";
+    if (normalized.length > 1 && normalized.endsWith("/")) {
+        return normalized.slice(0, -1);
+    }
+    return normalized;
+}
+
+function isMatchingModuleUiPath(routePath: string, requestPath: string): boolean {
+    return normalizeModuleUiPath(routePath) === normalizeModuleUiPath(requestPath);
+}
+
 function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -604,8 +617,7 @@ export function createUiRoutes(
             return true;
         }
 
-        const session = ctx.getCookieSession(req);
-        if (runtime && session) {
+        if (runtime) {
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
@@ -621,11 +633,30 @@ export function createUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
 
-                    const matchingRoute = routes.find(
-                        (routeRule) => routeRule.path === url.pathname,
+                    const matchingRoute = routes.find((routeRule) =>
+                        isMatchingModuleUiPath(routeRule.path, url.pathname),
                     );
                     if (!matchingRoute || url.pathname.startsWith("/api/")) {
                         continue;
+                    }
+                    const loginRedirect = await resolveLoginRedirectLocation(
+                        req,
+                        ctx,
+                        accountStore,
+                        log,
+                    );
+                    if (loginRedirect) {
+                        res.writeHead(302, { location: loginRedirect });
+                        res.end();
+                        return true;
+                    }
+                    const session = ctx.getCookieSession(req);
+                    if (!session) {
+                        res.writeHead(302, {
+                            location: "/login?reason=session_expired",
+                        });
+                        res.end();
+                        return true;
                     }
                     if (matchingRoute.invalidAccessPolicy) {
                         log?.(
