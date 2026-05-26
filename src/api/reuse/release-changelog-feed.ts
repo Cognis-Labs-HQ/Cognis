@@ -63,9 +63,7 @@ function normalizePreferredLanguages(preferredLanguages: string[]): string[] {
     const seen = new Set<string>();
     const normalized: string[] = [];
     for (const language of preferredLanguages) {
-        const normalizedLanguage = String(language ?? "")
-            .trim()
-            .toLowerCase();
+        const normalizedLanguage = String(language).trim().toLowerCase();
         if (!SAFE_LANG_PATTERN.test(normalizedLanguage)) continue;
         if (seen.has(normalizedLanguage)) continue;
         seen.add(normalizedLanguage);
