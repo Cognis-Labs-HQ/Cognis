@@ -239,6 +239,7 @@ function createChatParticipantAvatarButton({
     participantButton.className = "jitsi-chat-participant-item";
     if (selected) {
         participantButton.classList.add("jitsi-chat-participant-item-selected");
+        participantButton.classList.add("active");
     }
     participantButton.setAttribute("role", "listitem");
     participantButton.dataset.username = username;
@@ -2084,7 +2085,7 @@ export async function mount(root, { signal } = {}) {
                     const button = event.target.closest(
                         ".jitsi-chat-participant-item[data-username]",
                     );
-                    if (!(button instanceof HTMLElement)) return;
+                    if (!(button instanceof HTMLButtonElement)) return;
                     const username = normalizeUsername(button.dataset.username);
                     if (!username) return;
                     void activatePrivateChatForParticipant(username);
