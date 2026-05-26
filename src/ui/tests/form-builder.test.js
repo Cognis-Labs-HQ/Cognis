@@ -113,10 +113,7 @@ test("form builder prevents native invalid popups and renders themed required no
         source,
         /resolveMessage\("ui\.reuse\.field_required_notice"\)/,
     );
-    assert.match(
-        source,
-        /form-builder-validation-notice--visible/,
-    );
+    assert.match(source, /form-builder-validation-notice--visible/);
 });
 
 test("form builder supports textarea fields and max character counters", () => {
