@@ -27,4 +27,8 @@ test("password change popup revalidates confirm password reactively", () => {
         PASSWORD_CHANGE_SOURCE,
         /bindConfirmPasswordRevalidation\(\{\s*form:\s*formElement,\s*formController,\s*passwordFieldName:\s*"nextPassword",\s*confirmFieldName:\s*"confirmPassword",/m,
     );
+    assert.match(
+        PASSWORD_CHANGE_SOURCE,
+        /messageKey:\s*"ui\.app\.register\.passwords_match"/,
+    );
 });

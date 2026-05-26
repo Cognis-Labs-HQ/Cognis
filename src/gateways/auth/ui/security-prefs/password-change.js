@@ -140,8 +140,7 @@ export async function openPasswordChangePopup({
                                 if (passwordValue.length === 0) return null;
                                 return value === passwordValue;
                             },
-                            messageKey:
-                                "ui.app.register.error.password_mismatch",
+                            messageKey: "ui.app.register.passwords_match",
                             mode: "live",
                         },
                     ],
