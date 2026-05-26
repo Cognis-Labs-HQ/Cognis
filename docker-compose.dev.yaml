@@ -32,6 +32,7 @@ services:
             DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-dev-only-insecure-data-encryption-key-do-not-use-in-production}
             HOST: ${HOST}
             EXTERNAL_HOST: ${EXTERNAL_HOST}
+            CONTACT_EMAIL: ${CONTACT_EMAIL:-support@example.com}
             LOG_LEVEL: debug
             LOG_FILE: /app/logs/dev.log
         ports:

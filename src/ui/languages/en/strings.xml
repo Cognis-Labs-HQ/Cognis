@@ -99,6 +99,13 @@
   <string name="ui.app.login.form.username">Username</string>
   <string name="ui.app.login.form.password">Password</string>
   <string name="ui.app.login.form.submit">Login</string>
+  <string name="ui.app.login.login_link.action">Forgot your password? Email me a one-time login link.</string>
+  <string name="ui.app.login.login_link.username_required">Enter your username first.</string>
+  <string name="ui.app.login.login_link.sent">If a verified email is on file, we've sent a one-time login link.</string>
+  <string name="ui.app.login.login_link.rate_limited">A login link was requested too recently. Please wait before trying again.</string>
+  <string name="ui.app.login.login_link.invalid">That login link is invalid or has already been used.</string>
+  <string name="ui.app.login.login_link.contact_support">Password reset by email is unavailable. Please contact support.</string>
+  <string name="ui.app.login.login_link.contact_support_email">Password reset by email is unavailable. Please contact support at {email}.</string>
   <string name="ui.app.login.typing.sample.1">Self-study courses</string>
   <string name="ui.app.login.typing.sample.2">Learn with tutors</string>
   <string name="ui.app.login.typing.sample.3">Join classrooms</string>

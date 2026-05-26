@@ -12,6 +12,11 @@ export interface AuthAccountStore {
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
     getDisplayName(username: string): Promise<string | null>;
+    getInfo(username: string): Promise<{
+        username: string;
+        enabled: boolean;
+        role?: string;
+    } | null>;
     setFounder(username: string, isFounder: boolean): Promise<void>;
 }
 

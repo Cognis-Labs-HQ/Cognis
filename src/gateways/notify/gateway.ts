@@ -101,6 +101,15 @@ export interface VerificationEmailSender {
     ): Promise<void>;
 }
 
+export interface OneTimeLoginEmailSender {
+    canSendOneTimeLoginEmail(): boolean;
+    sendOneTimeLoginEmail(
+        to: string,
+        loginUrl: string,
+        theme?: string,
+    ): Promise<void>;
+}
+
 export interface RegistrationInviteEmailSender {
     canSendRegistrationInviteEmail(): boolean;
     sendRegistrationInviteEmail(
@@ -150,6 +159,15 @@ type SenderWithRegistrationInvite = {
     isConfigured?(): boolean;
 };
 
+type SenderWithOneTimeLogin = {
+    sendOneTimeLoginEmail(
+        to: string,
+        loginUrl: string,
+        theme?: string,
+    ): Promise<void>;
+    isConfigured?(): boolean;
+};
+
 function isSenderWithVerification(
     sender: NotificationSender,
 ): sender is NotificationSender & SenderWithVerification {
@@ -168,11 +186,21 @@ function isSenderWithRegistrationInvite(
     );
 }
 
+function isSenderWithOneTimeLogin(
+    sender: NotificationSender,
+): sender is NotificationSender & SenderWithOneTimeLogin {
+    return (
+        typeof (sender as Record<string, unknown>).sendOneTimeLoginEmail ===
+        "function"
+    );
+}
+
 export class CoreNotificationGateway
     implements
         NotificationGateway,
         VerificationEmailSender,
-        RegistrationInviteEmailSender
+        RegistrationInviteEmailSender,
+        OneTimeLoginEmailSender
 {
     private readonly senders = new Map<string, NotificationSender>();
     private readonly categories = new Map<string, string>();
@@ -366,6 +394,31 @@ export class CoreNotificationGateway
                 inviteUrl,
                 theme,
             );
+            return;
+        }
+        throw new Error("smtp_unavailable");
+    }
+
+    canSendOneTimeLoginEmail(): boolean {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithOneTimeLogin(sender)) continue;
+            if (typeof sender.isConfigured === "function")
+                return sender.isConfigured();
+            return true;
+        }
+        return false;
+    }
+
+    async sendOneTimeLoginEmail(
+        to: string,
+        loginUrl: string,
+        theme?: string,
+    ): Promise<void> {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithOneTimeLogin(sender)) continue;
+            await sender.sendOneTimeLoginEmail(to, loginUrl, theme);
             return;
         }
         throw new Error("smtp_unavailable");

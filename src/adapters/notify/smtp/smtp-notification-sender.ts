@@ -801,6 +801,29 @@ export class SmtpNotificationSender implements NotificationSender {
         );
     }
 
+    async sendOneTimeLoginEmail(
+        to: string,
+        loginUrl: string,
+        theme?: string,
+    ): Promise<void> {
+        if (!to) throw new Error("smtp_requires_recipient");
+        if (!loginUrl) throw new Error("smtp_requires_login_url");
+        if (this.rateLimiter.isThrottled(to)) {
+            throw new Error("smtp_rate_limited");
+        }
+        this.rateLimiter.record(to);
+        await sendMailWithRetry(
+            this.config,
+            to,
+            "Your Cognis one-time login link",
+            `Use this secure one-time login link to sign in to Cognis and reset your password:\n${loginUrl}\n\nThis link expires in 15 minutes and can only be used once.`,
+            this.sleep,
+            theme,
+            loginUrl,
+            "Sign In",
+        );
+    }
+
     async sendTestEmail(
         to: string,
         overrideConfig?: Record<string, unknown>,

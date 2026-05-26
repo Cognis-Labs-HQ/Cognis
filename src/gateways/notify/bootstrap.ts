@@ -375,6 +375,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
         gateway.canSendVerificationEmail(),
     );
+    ctx.capabilities.contribute("notify:canSendOneTimeLoginEmail", () =>
+        gateway.canSendOneTimeLoginEmail(),
+    );
     /**
      * notify:sendRegistrationInviteEmail — sends a registration invite via the
      * active notification sender.
@@ -393,6 +396,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 inviteUrl,
                 theme,
             ),
+    );
+    ctx.capabilities.contribute(
+        "notify:sendOneTimeLoginEmail",
+        async (to: string, loginUrl: string, theme?: string) =>
+            gateway.sendOneTimeLoginEmail(to, loginUrl, theme),
     );
     /**
      * notify:isEmailRegistered — checks whether an email is already registered
@@ -418,6 +426,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "notify:hasVerifiedEmail",
         async (accountId: string) => notifStore.hasVerifiedEmail(accountId),
+    );
+    ctx.capabilities.contribute(
+        "notify:getPrimaryEmail",
+        async (accountId: string) => notifStore.getPrimaryEmail(accountId),
     );
     ctx.log?.("info", "Notification gateway initialized.", {
         component: "notify-gateway",

@@ -114,6 +114,24 @@ p.auth-intro {
     color: #f1f7ff;
 }
 
+.auth-text-action {
+    margin-top: -2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #93c5fd;
+    text-align: left;
+    text-decoration: underline;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auth-text-action:hover,
+.auth-text-action:focus-visible {
+    color: #bfdbfe;
+}
+
 .auth-form-shell {
     width: 100%;
 }

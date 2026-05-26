@@ -58,9 +58,11 @@ async function dispatchRoute(
 function makeResponse() {
     let status = 0;
     let payload = "";
+    let headers: Record<string, unknown> = {};
     return {
-        writeHead(code: number) {
+        writeHead(code: number, nextHeaders?: Record<string, unknown>) {
             status = code;
+            headers = nextHeaders ?? {};
         },
         end(p: string) {
             payload = p;
@@ -71,11 +73,15 @@ function makeResponse() {
         get payload() {
             return payload;
         },
+        get headers() {
+            return headers;
+        },
     } as unknown as {
-        writeHead: (code: number) => void;
+        writeHead: (code: number, headers?: Record<string, unknown>) => void;
         end: (p: string) => void;
         status: number;
         payload: string;
+        headers: Record<string, unknown>;
     };
 }
 
@@ -549,6 +555,127 @@ test("login endpoint returns 503 when no auth providers are available", async ()
 
     assert.ok(handled, "login endpoint should handle the request");
     assert.equal(res.status, 401, "bad credentials should yield 401");
+});
+
+test("POST /api/v1/auth/request-login-link sends a one-time login link and consumes it once", async () => {
+    const previousExternalHost = process.env.EXTERNAL_HOST;
+    process.env.EXTERNAL_HOST = "https://cognis.example.com";
+    try {
+        const gatewayRegistry = new GatewayRegistry();
+        const routeRegistry = new RouteRegistry();
+        const capabilities = new CapabilityStore();
+        const db = new InMemoryTestExecutor();
+        let sentLink = "";
+        capabilities.contribute("notify:canSendOneTimeLoginEmail", () => true);
+        capabilities.contribute(
+            "notify:getPrimaryEmail",
+            async (accountId: string) =>
+                accountId === "alice" ? "alice@example.com" : null,
+        );
+        capabilities.contribute(
+            "notify:sendOneTimeLoginEmail",
+            async (_to: string, loginUrl: string) => {
+                sentLink = loginUrl;
+            },
+        );
+
+        await bootstrap({
+            dbExecutor: db,
+            adaptersRoot: "/nonexistent",
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+        });
+
+        const accountStore = capabilities.get<{
+            register: (username: string, password: string) => Promise<unknown>;
+        }>("auth:accountStore");
+        await accountStore?.register("alice", "pass12345");
+
+        const requestResult = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", { username: "alice" }),
+            "/api/v1/auth/request-login-link",
+        );
+        assert.equal(requestResult.handled, true);
+        assert.equal(requestResult.res.status, 200);
+        assert.match(
+            sentLink,
+            /^https:\/\/cognis\.example\.com\/login\?loginToken=/,
+        );
+
+        const sentUrl = new URL(sentLink);
+        const loginToken = sentUrl.searchParams.get("loginToken") ?? "";
+        assert.ok(loginToken, "expected one-time login token in emailed URL");
+
+        const consumeResult = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", { token: loginToken }),
+            "/api/v1/auth/consume-login-link",
+        );
+        assert.equal(consumeResult.handled, true);
+        assert.equal(consumeResult.res.status, 200);
+        assert.match(
+            String(consumeResult.res.headers["set-cookie"] ?? ""),
+            /cognis_access_token=/,
+        );
+        assert.match(consumeResult.res.payload, /"accountId":"alice"/);
+
+        const reuseResult = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", { token: loginToken }),
+            "/api/v1/auth/consume-login-link",
+        );
+        assert.equal(reuseResult.handled, true);
+        assert.equal(reuseResult.res.status, 401);
+        assert.match(reuseResult.res.payload, /invalid_token/);
+    } finally {
+        if (previousExternalHost === undefined) {
+            delete process.env.EXTERNAL_HOST;
+        } else {
+            process.env.EXTERNAL_HOST = previousExternalHost;
+        }
+    }
+});
+
+test("POST /api/v1/auth/request-login-link falls back to support contact details", async () => {
+    const previousContactEmail = process.env.CONTACT_EMAIL;
+    process.env.CONTACT_EMAIL = "support@cognis.example.com";
+    try {
+        const gatewayRegistry = new GatewayRegistry();
+        const routeRegistry = new RouteRegistry();
+        const capabilities = new CapabilityStore();
+        const db = new InMemoryTestExecutor();
+
+        await bootstrap({
+            dbExecutor: db,
+            adaptersRoot: "/nonexistent",
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+        });
+
+        const accountStore = capabilities.get<{
+            register: (username: string, password: string) => Promise<unknown>;
+        }>("auth:accountStore");
+        await accountStore?.register("support-user", "pass12345");
+
+        const result = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", { username: "support-user" }),
+            "/api/v1/auth/request-login-link",
+        );
+        assert.equal(result.handled, true);
+        assert.equal(result.res.status, 200);
+        assert.match(result.res.payload, /contact_support/);
+        assert.match(result.res.payload, /support@cognis\.example\.com/);
+    } finally {
+        if (previousContactEmail === undefined) {
+            delete process.env.CONTACT_EMAIL;
+        } else {
+            process.env.CONTACT_EMAIL = previousContactEmail;
+        }
+    }
 });
 
 test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user", async () => {

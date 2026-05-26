@@ -99,6 +99,13 @@
   <string name="ui.app.login.form.username">Nama pengguna</string>
   <string name="ui.app.login.form.password">Kata sandi</string>
   <string name="ui.app.login.form.submit">Masuk</string>
+  <string name="ui.app.login.login_link.action">Lupa kata sandi? Kirimkan tautan masuk sekali pakai ke email saya.</string>
+  <string name="ui.app.login.login_link.username_required">Masukkan nama pengguna Anda terlebih dahulu.</string>
+  <string name="ui.app.login.login_link.sent">Jika ada email terverifikasi untuk akun ini, kami sudah mengirimkan tautan masuk sekali pakai.</string>
+  <string name="ui.app.login.login_link.rate_limited">Tautan masuk baru saja diminta. Harap tunggu sebelum mencoba lagi.</string>
+  <string name="ui.app.login.login_link.invalid">Tautan masuk itu tidak valid atau sudah digunakan.</string>
+  <string name="ui.app.login.login_link.contact_support">Reset kata sandi lewat email tidak tersedia. Silakan hubungi dukungan.</string>
+  <string name="ui.app.login.login_link.contact_support_email">Reset kata sandi lewat email tidak tersedia. Silakan hubungi dukungan di {email}.</string>
   <string name="ui.app.login.typing.sample.1">Kursus belajar mandiri</string>
   <string name="ui.app.login.typing.sample.2">Belajar dengan tutor</string>
   <string name="ui.app.login.typing.sample.3">Gabung kelas</string>

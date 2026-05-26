@@ -26,6 +26,7 @@ export async function mount(root) {
     let currentTfaLoginAttemptId = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
+    let oneTimeLoginTokenHandled = false;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -188,6 +189,115 @@ export async function mount(root) {
         localStorage.removeItem("cognis_user_validation_mode");
     }
 
+    async function finalizeAuthenticatedSession(data) {
+        persistSession(data);
+        const requiresUserValidation =
+            data.requiredUserValidation === true &&
+            data.userValidationMode === "smtp";
+        if (requiresUserValidation) {
+            const requiredEmailClient =
+                await loadRequiredEmailEnforcementClient();
+            try {
+                await requiredEmailClient?.enforceRequiredEmailSetup({
+                    accountId: data.accountId,
+                    i18n,
+                });
+            } catch {
+                clearPersistedSession();
+                return;
+            }
+        }
+        await syncTimezoneOnLogin(data.accountId);
+        window.location.href = "/dashboard";
+    }
+
+    async function handleAuthResult(data) {
+        if (data.tfaRequired === true || data.tfaSetupRequired === true) {
+            const tfaLoginClient = await loadTfaLoginClient();
+            if (data.tfaRequired === true) {
+                currentTfaLoginAttemptId =
+                    tfaLoginClient?.switchToTfaPrompt(data) ?? null;
+            } else {
+                tfaLoginClient?.handleSetupRequired(persistSession, data);
+            }
+            return;
+        }
+        await finalizeAuthenticatedSession(data);
+    }
+
+    function buildSupportMessage(contactEmail) {
+        if (contactEmail) {
+            return i18n
+                .t("ui.app.login.login_link.contact_support_email")
+                .replace("{email}", contactEmail);
+        }
+        return i18n.t("ui.app.login.login_link.contact_support");
+    }
+
+    async function requestOneTimeLoginLink() {
+        const usernameEl = document.querySelector("#login-username");
+        const username = String(usernameEl?.value ?? "")
+            .trim()
+            .toLowerCase();
+        if (!username) {
+            showToast(i18n.t("ui.app.login.login_link.username_required"), {
+                variant: "warning",
+            });
+            usernameEl?.focus();
+            return;
+        }
+        const response = await fetch("/api/v1/auth/request-login-link", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ username }),
+        });
+        const body = await response.json().catch(() => null);
+        if (response.status === 429 || body?.error?.code === "rate_limited") {
+            showToast(i18n.t("ui.app.login.login_link.rate_limited"), {
+                variant: "warning",
+            });
+            return;
+        }
+        if (response.ok && body?.data?.outcome === "email_sent") {
+            showToast(i18n.t("ui.app.login.login_link.sent"), {
+                variant: "success",
+                permanent: true,
+            });
+            return;
+        }
+        if (response.ok && body?.data?.outcome === "contact_support") {
+            showToast(buildSupportMessage(body.data.contactEmail), {
+                variant: "info",
+                permanent: true,
+            });
+            return;
+        }
+        showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
+    }
+
+    async function consumeOneTimeLoginToken() {
+        if (oneTimeLoginTokenHandled) return;
+        const params = new URL(window.location.href).searchParams;
+        const loginToken = String(params.get("loginToken") ?? "").trim();
+        if (!loginToken) return;
+        oneTimeLoginTokenHandled = true;
+        const response = await fetch("/api/v1/auth/consume-login-link", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ token: loginToken }),
+        });
+        const body = await response.json().catch(() => null);
+        window.history.replaceState({}, "", "/login");
+        if (response.ok && body?.data) {
+            await handleAuthResult(body.data);
+            return;
+        }
+        showToast(i18n.t("ui.app.login.login_link.invalid"), {
+            variant: "error",
+            permanent: true,
+        });
+    }
+
     function renderLoginShell() {
         const brandlineHtml = renderAuthBrandline(
             i18n.t("ui.shared.brand.name"),
@@ -210,10 +320,8 @@ export async function mount(root) {
                   variant: "info",
                   title: i18n.t("ui.app.login.not_registered.title"),
                   body: i18n.t("ui.app.login.not_registered.body"),
-              }).replace(
-                  "</section>",
-                  `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a></section>`,
-              )
+                  footerHtml: `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
+              })
             : "";
         const formPanelHtml = `
       ${mobileBrandlineHtml}
@@ -229,6 +337,7 @@ export async function mount(root) {
             <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
             <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
           </label>
+          <button type="button" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</button>
         </div>
         <div id="login-tfa-fields" hidden></div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
@@ -276,6 +385,25 @@ export async function mount(root) {
                     runTypingShowcase(typingSamples);
                     renderLoginReasonToast();
                     document
+                        .querySelector("#login-request-link")
+                        ?.addEventListener("click", () => {
+                            requestOneTimeLoginLink().catch(() => {
+                                showToast(
+                                    i18n.t("ui.app.login.error.generic"),
+                                    {
+                                        variant: "error",
+                                    },
+                                );
+                            });
+                        });
+                    consumeOneTimeLoginToken().catch(() => {
+                        window.history.replaceState({}, "", "/login");
+                        showToast(i18n.t("ui.app.login.login_link.invalid"), {
+                            variant: "error",
+                            permanent: true,
+                        });
+                    });
+                    document
                         .querySelector("#login-form")
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
@@ -306,32 +434,9 @@ export async function mount(root) {
                                 const { response: tfaResponse, body: tfaBody } =
                                     await tfaLoginClient.verifyCode(payload);
                                 if (tfaResponse.ok && tfaBody?.data) {
-                                    persistSession(tfaBody.data);
-                                    const requiresUserValidation =
-                                        tfaBody.data.requiredUserValidation ===
-                                            true &&
-                                        tfaBody.data.userValidationMode ===
-                                            "smtp";
-                                    if (requiresUserValidation) {
-                                        const requiredEmailClient =
-                                            await loadRequiredEmailEnforcementClient();
-                                        try {
-                                            await requiredEmailClient?.enforceRequiredEmailSetup(
-                                                {
-                                                    accountId:
-                                                        tfaBody.data.accountId,
-                                                    i18n,
-                                                },
-                                            );
-                                        } catch {
-                                            clearPersistedSession();
-                                            return;
-                                        }
-                                    }
-                                    await syncTimezoneOnLogin(
-                                        tfaBody.data.accountId,
+                                    await finalizeAuthenticatedSession(
+                                        tfaBody.data,
                                     );
-                                    window.location.href = "/dashboard";
                                     return;
                                 }
                                 showToast(
@@ -362,46 +467,7 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                if (
-                                    body.data.tfaRequired === true ||
-                                    body.data.tfaSetupRequired === true
-                                ) {
-                                    const tfaLoginClient =
-                                        await loadTfaLoginClient();
-                                    if (body.data.tfaRequired === true) {
-                                        currentTfaLoginAttemptId =
-                                            tfaLoginClient?.switchToTfaPrompt(
-                                                body.data,
-                                            ) ?? null;
-                                    } else {
-                                        tfaLoginClient?.handleSetupRequired(
-                                            persistSession,
-                                            body.data,
-                                        );
-                                    }
-                                    return;
-                                }
-                                persistSession(body.data);
-                                const requiresUserValidation =
-                                    body.data.requiredUserValidation === true &&
-                                    body.data.userValidationMode === "smtp";
-                                if (requiresUserValidation) {
-                                    const requiredEmailClient =
-                                        await loadRequiredEmailEnforcementClient();
-                                    try {
-                                        await requiredEmailClient?.enforceRequiredEmailSetup(
-                                            {
-                                                accountId: body.data.accountId,
-                                                i18n,
-                                            },
-                                        );
-                                    } catch {
-                                        clearPersistedSession();
-                                        return;
-                                    }
-                                }
-                                await syncTimezoneOnLogin(body.data.accountId);
-                                window.location.href = "/dashboard";
+                                await handleAuthResult(body.data);
                                 return;
                             }
                             const errorMsg =
