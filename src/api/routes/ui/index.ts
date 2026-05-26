@@ -59,7 +59,6 @@ function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
 
 function resolveContentType(filePath: string) {
     const ext = path.extname(filePath);
-
     if (ext === ".css") return "text/css; charset=utf-8";
     if (ext === ".js") return "text/javascript; charset=utf-8";
     if (ext === ".webp") return "image/webp";
@@ -69,7 +68,6 @@ function resolveContentType(filePath: string) {
     if (ext === ".webmanifest")
         return "application/manifest+json; charset=utf-8";
     if (ext === ".json") return "application/json; charset=utf-8";
-
     return "image/png";
 }
 
@@ -255,6 +253,12 @@ async function resolveLoginRedirectLocation(
     if (!info) return "/login?reason=account_deleted";
     if (info.enabled === false) return "/login?reason=account_disabled";
     return "";
+}
+
+function sendRedirect(res: ServerResponse, location: string): true {
+    res.writeHead(302, { location });
+    res.end();
+    return true;
 }
 
 export function createUiRoutes(
@@ -608,8 +612,12 @@ export function createUiRoutes(
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
-                if (isModuleEnabled && !isModuleEnabled(manifest.id)) continue;
-                if (!manifest.entrypoints?.ui) continue;
+                if (
+                    !manifest.entrypoints?.ui ||
+                    (isModuleEnabled && !isModuleEnabled(manifest.id))
+                )
+                    continue;
+                if (url.pathname.startsWith("/api/")) continue;
 
                 try {
                     const routeFile = path.resolve(
@@ -617,7 +625,6 @@ export function createUiRoutes(
                         manifest.id,
                         "routes.json",
                     );
-                    if (url.pathname.startsWith("/api/")) continue;
                     const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
@@ -631,11 +638,7 @@ export function createUiRoutes(
                         accountStore,
                         log,
                     );
-                    if (loginRedirect) {
-                        res.writeHead(302, { location: loginRedirect });
-                        res.end();
-                        return true;
-                    }
+                    if (loginRedirect) return sendRedirect(res, loginRedirect);
                     if (matchingRoute.invalidAccessPolicy) {
                         log?.(
                             "warn",
@@ -646,18 +649,14 @@ export function createUiRoutes(
                                 path: url.pathname,
                             },
                         );
-                        res.writeHead(302, { location: "/dashboard" });
-                        res.end();
-                        return true;
+                        return sendRedirect(res, "/dashboard");
                     }
                     const session = ctx.getCookieSession(req);
                     if (
                         matchingRoute.access &&
                         !isRoleAllowed(session.role, matchingRoute.access)
                     ) {
-                        res.writeHead(302, { location: "/dashboard" });
-                        res.end();
-                        return true;
+                        return sendRedirect(res, "/dashboard");
                     }
                     const uiFile = path.resolve(
                         MODULES_ROOT,
