@@ -1,6 +1,6 @@
 /**
  * Percentage threshold for showing the near-limit counter state.
- * When remaining characters are <= 10% of max, near-limit styling is applied.
+ * When 10% or fewer characters remain available, near-limit styling is applied.
  */
 const NEAR_LIMIT_THRESHOLD = 0.1;
 
