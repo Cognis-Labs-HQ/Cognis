@@ -33,7 +33,7 @@ let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
-let postFormController = null;
+let newPostFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
 const POST_TITLE_MAX_CHARACTERS = 120;
@@ -927,7 +927,7 @@ async function doCreatePost() {
     const submitBtn = root.querySelector(
         '#new-post-form button[type="submit"]',
     );
-    const fieldValues = postFormController?.getValues() ?? {};
+    const fieldValues = newPostFormController?.getValues() ?? {};
     const content = String(fieldValues.content ?? "").trim();
     if (!content) return;
 
@@ -949,8 +949,8 @@ async function doCreatePost() {
             const postFormElement = root.querySelector("#new-post-form");
             if (postFormElement instanceof HTMLFormElement) {
                 postFormElement.reset();
-                postFormController?.validateField("title");
-                postFormController?.validateField("content");
+                newPostFormController?.validateField("title");
+                newPostFormController?.validateField("content");
             }
             composer.refresh(elements);
         } else {
@@ -1191,13 +1191,13 @@ function bindPageEvents() {
             profileVis !== "hidden",
             profileVis === "community",
         );
-        postFormController = postFormBuilder.attach(postFormElement);
+        newPostFormController = postFormBuilder.attach(postFormElement);
         postFormElement.addEventListener("submit", (event) => {
             event.preventDefault();
             doCreatePost();
         });
     } else {
-        postFormController = null;
+        newPostFormController = null;
     }
     root.querySelectorAll(".post-delete-btn[data-post-id]").forEach((btn) => {
         btn.addEventListener("click", () => doDeletePost(btn.dataset.postId));

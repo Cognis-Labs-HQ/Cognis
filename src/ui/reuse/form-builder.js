@@ -45,7 +45,7 @@
  *   fields: Array<{
  *     name: string,
  *     labelKey: string,
- *     type?: 'text'|'email'|'password'|'number'|'select'|'textarea',
+ *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea',
  *     required?: boolean,
  *     disabled?: boolean,
  *     value?: string,

@@ -95,7 +95,7 @@ test("form builder supports textarea fields and max character counters", () => {
     const source = read("src/ui/reuse/form-builder.js");
     assert.match(
         source,
-        /type\?: 'text'\|'email'\|'password'\|'number'\|'select'\|'textarea'/,
+        /type\?: 'text'\|'email'\|'password'\|'number'\|'url'\|'select'\|'textarea'/,
     );
     assert.match(source, /fieldConfig\.maxCharacters/);
     assert.match(source, /data-form-builder-char-counter=/);
