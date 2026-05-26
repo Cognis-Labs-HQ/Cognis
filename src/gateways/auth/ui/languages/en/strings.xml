@@ -2,7 +2,7 @@
   <string name="gateway.auth.security.loading">Loading security settings…</string>
   <string name="gateway.auth.security.section_title">Security</string>
   <string name="gateway.auth.security.load_failed">Unable to load password change capability.</string>
-  <string name="gateway.auth.security.unsupported_default">Password reset is not supported for this provider.</string>
+  <string name="gateway.auth.security.unsupported_default">Password change is not supported for this provider.</string>
   <string name="gateway.auth.security.reset_title">Change Password</string>
   <string name="gateway.auth.security.reset_action">Change Password</string>
   <string name="gateway.auth.security.popup_title">Change Password</string>

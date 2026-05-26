@@ -35,8 +35,8 @@ export interface AuthProviderAdapter {
     getPasswordResetSupport?(): { supported: boolean; reason?: string };
     resetPassword?(
         accountId: string,
-        currentPassword: string,
-        nextPassword: string,
+        currentPasswordOrNextPassword: string,
+        nextPassword?: string,
     ): Promise<{ updated: boolean; message?: string }>;
 }
 
@@ -339,11 +339,14 @@ export class CoreAuthGateway {
         if (typeof adapter.resetPassword !== "function") {
             throw new Error("password_reset_unsupported");
         }
-        const result = await adapter.resetPassword(
-            accountId,
-            currentPassword,
-            nextPassword,
-        );
+        const result =
+            adapter.resetPassword.length >= 3
+                ? await adapter.resetPassword(
+                      accountId,
+                      currentPassword,
+                      nextPassword,
+                  )
+                : await adapter.resetPassword(accountId, nextPassword);
         if (result.updated !== true) {
             throw new Error(result.message || "password_reset_failed");
         }

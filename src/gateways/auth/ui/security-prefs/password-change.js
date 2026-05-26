@@ -138,7 +138,8 @@ export async function openPasswordChangePopup({
                                 if (passwordValue.length === 0) return null;
                                 return value === passwordValue;
                             },
-                            messageKey: "ui.app.register.passwords_match",
+                            messageKey:
+                                "ui.app.register.error.password_mismatch",
                             mode: "live",
                         },
                     ],
@@ -187,10 +188,10 @@ export async function openPasswordChangePopup({
     }
 
     const values = formController.getValues();
-    const currentPassword = (values.currentPassword ?? "").trim();
+    const currentPassword = String(values.currentPassword ?? "");
     const nextPassword = (values.nextPassword ?? "").trim();
     const confirmPassword = (values.confirmPassword ?? "").trim();
-    if (!currentPassword || !nextPassword || !confirmPassword) {
+    if (!currentPassword.length || !nextPassword || !confirmPassword) {
         showToast(i18n.t("gateway.auth.security.required"), {
             variant: "warning",
         });

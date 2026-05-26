@@ -96,3 +96,23 @@ test("local adapter rejects previously used passwords", async () => {
     assert.equal(secondReset?.updated, false);
     assert.equal(secondReset?.message, "Password was used previously.");
 });
+
+test("local adapter volatile history keeps a bounded password history", async () => {
+    const store = new VolatileLocalAccountStore();
+    await store.register("golf", "pass-00");
+    const adapter = createAdapter(store);
+    let currentPassword = "pass-00";
+    for (let passwordIndex = 1; passwordIndex <= 10; passwordIndex += 1) {
+        const nextPassword = `pass-${String(passwordIndex).padStart(2, "0")}`;
+        const result = await adapter.resetPassword?.(
+            "golf",
+            currentPassword,
+            nextPassword,
+        );
+        assert.equal(result?.updated, true);
+        currentPassword = nextPassword;
+    }
+
+    const result = await adapter.resetPassword?.("golf", "pass-10", "pass-00");
+    assert.equal(result?.updated, true);
+});

@@ -11,3 +11,7 @@ Autentikasi lokal sekarang menyimpan riwayat hash kata sandi dan menolak perubah
 ## Ganti Istilah Reset
 
 Di Pengaturan Keamanan, teks “Reset Kata Sandi” diganti menjadi “Ubah Kata Sandi” untuk judul bagian, tombol aksi, dan judul popup.
+
+## Perbaiki Kasus Tepi Verifikasi
+
+Input kata sandi saat ini kini mempertahankan spasi di awal/akhir saat verifikasi, akun migrasi menambahkan hash sebelum rotasi ke riwayat sebelum pembaruan, adapter auth lama dengan dua parameter tetap kompatibel, dan retensi riwayat kata sandi kini dibatasi konsisten di penyimpanan DB maupun volatile.

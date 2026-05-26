@@ -29,8 +29,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.5` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.2.4` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.2` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.3` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5` |
@@ -50,7 +50,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                         | Version |
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
-| Authentication (auth) | `src/gateways/auth/`         | `1.4.7` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.4.8` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.4` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.5` |
 | Social                | `src/gateways/social/`       | `1.2.4` |

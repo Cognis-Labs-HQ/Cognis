@@ -11,3 +11,7 @@ Die lokale Authentifizierung speichert jetzt einen gehashten Passwortverlauf und
 ## Reset Zu Ändern Umbenannt
 
 In den Sicherheitseinstellungen wurde „Passwort Zurücksetzen“ in Abschnitt, Schaltfläche und Popup zu „Passwort Ändern“ umbenannt.
+
+## Randfälle Bei Prüfung Behoben
+
+Die Eingabe des aktuellen Passworts behält nun führende und nachgestellte Leerzeichen bei, migrierte Konten schreiben den Hash vor der Rotation vor dem Update in den Verlauf, bestehende Auth-Adapter mit Zwei-Parameter-Signatur bleiben kompatibel, und die Verlaufsspeicherung bleibt in DB- und Volatile-Store konsistent begrenzt.

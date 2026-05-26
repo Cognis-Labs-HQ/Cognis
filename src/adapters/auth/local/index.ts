@@ -49,7 +49,7 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
     async resetPassword(
         accountId: string,
         currentPassword: string,
-        nextPassword: string,
+        nextPassword?: string,
     ): Promise<{ updated: boolean; message?: string }> {
         if (!accountId || !currentPassword || !nextPassword) {
             return {

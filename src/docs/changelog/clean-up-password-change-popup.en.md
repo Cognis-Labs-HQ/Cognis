@@ -11,3 +11,7 @@ Local auth now stores hashed password history and rejects password changes when 
 ## Rename Reset To Change
 
 The Security settings UI now uses “Change Password” instead of “Reset Password” for the section title, action button, and popup title.
+
+## Fix Verification And Migration Edge Cases
+
+Current-password input now preserves surrounding whitespace during verification, migrated accounts backfill the pre-rotation hash into history before updates, legacy two-argument auth adapters remain compatible, and password-history retention is bounded consistently across DB and volatile stores.

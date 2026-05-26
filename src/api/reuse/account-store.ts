@@ -91,6 +91,8 @@ function hashPassword(input: string): string {
     );
 }
 
+const VOLATILE_PASSWORD_HISTORY_LIMIT = 10;
+
 /** Lowercases a username to enable case-insensitive lookups. */
 export function normalizeUsername(username: string): string {
     return username.toLowerCase();
@@ -197,6 +199,16 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         }
         account.passwordHash = nextPasswordHash;
         account.passwordHistoryHashes.push(nextPasswordHash);
+        if (
+            account.passwordHistoryHashes.length >
+            VOLATILE_PASSWORD_HISTORY_LIMIT
+        ) {
+            account.passwordHistoryHashes.splice(
+                0,
+                account.passwordHistoryHashes.length -
+                    VOLATILE_PASSWORD_HISTORY_LIMIT,
+            );
+        }
     }
 
     async setFounder(username: string, isFounder: boolean) {

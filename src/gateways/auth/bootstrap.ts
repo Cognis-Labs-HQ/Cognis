@@ -998,9 +998,9 @@ function createAuthGatewayRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const body = await readJson(req);
-            const currentPassword = String(body.currentPassword ?? "").trim();
+            const currentPassword = String(body.currentPassword ?? "");
             const nextPassword = String(body.password ?? "").trim();
-            if (!currentPassword) {
+            if (currentPassword.length === 0) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

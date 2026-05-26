@@ -145,7 +145,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     async resetPassword(
         _accountId: string,
         _currentPassword: string,
-        _nextPassword: string,
+        _nextPassword?: string,
     ): Promise<{ updated: boolean; message?: string }> {
         // Signature remains aligned with AuthProviderAdapter.resetPassword even
         // though LDAP password change is intentionally blocked.
