@@ -111,6 +111,7 @@ import {
     checkPlacement,
     gridStep,
     halfGrid,
+    registerOccupiedPlacement,
     snapGridFloor,
     snapGridRound,
 } from "./grid-math.js";
@@ -2960,6 +2961,16 @@ export function createPageComposer(
             if (!rowGroup.placements.length) {
                 continue;
             }
+            const rowPlacementIds = new Set(
+                rowGroup.placements.map((placement) => placement.id),
+            );
+            const occupiedOutsideRow = buildOccupiedSet(
+                sortedVisible.filter(
+                    (placement) => !rowPlacementIds.has(placement.id),
+                ),
+                [],
+                null,
+            );
             if (rowGroup.placements.length === 1) {
                 const placement = rowGroup.placements[0];
                 const bounds = resolvePlacementWidthBounds(
@@ -2976,7 +2987,7 @@ export function createPageComposer(
                     boundedWidth < bounds.max &&
                     canExpandPlacementWithoutConflicts(
                         placement,
-                        sortedVisible,
+                        occupiedOutsideRow,
                         bounds.max,
                     );
                 const normalizedPlacement = shouldExpandToFullWidth
@@ -2994,6 +3005,17 @@ export function createPageComposer(
                     normalizedPlacement.w !== placement.w
                 ) {
                     changed = true;
+                }
+                if (
+                    !checkPlacement(
+                        occupiedOutsideRow,
+                        normalizedPlacement.col,
+                        normalizedPlacement.row,
+                        normalizedPlacement.w,
+                        normalizedPlacement.h,
+                    )
+                ) {
+                    return null;
                 }
                 normalized.push(normalizedPlacement);
                 continue;
@@ -3118,6 +3140,7 @@ export function createPageComposer(
             }
 
             let column = 0;
+            const occupiedCells = new Set(occupiedOutsideRow);
             for (const descriptor of descriptors) {
                 if (column + descriptor.assignedWidth > maxCols + epsilon) {
                     return null;
@@ -3128,12 +3151,24 @@ export function createPageComposer(
                     w: descriptor.assignedWidth,
                 };
                 if (
+                    !checkPlacement(
+                        occupiedCells,
+                        nextPlacement.col,
+                        nextPlacement.row,
+                        nextPlacement.w,
+                        nextPlacement.h,
+                    )
+                ) {
+                    return null;
+                }
+                if (
                     nextPlacement.col !== descriptor.placement.col ||
                     nextPlacement.w !== descriptor.placement.w
                 ) {
                     changed = true;
                 }
                 normalized.push(nextPlacement);
+                registerOccupiedPlacement(occupiedCells, nextPlacement);
                 column += descriptor.assignedWidth;
             }
         }
@@ -3166,16 +3201,15 @@ export function createPageComposer(
      * any other visible placement.
      *
      * @param {{ id: string, row: number, h: number }} placement
-     * @param {Array<{ id: string, row: number, col: number, w: number, h: number }>} sortedVisible
+     * @param {Set<string>} occupiedCells
      * @param {number} targetWidth
      * @returns {boolean}
      */
     function canExpandPlacementWithoutConflicts(
         placement,
-        sortedVisible,
+        occupiedCells,
         targetWidth,
     ) {
-        const occupiedCells = buildOccupiedSet(sortedVisible, [], placement.id);
         return checkPlacement(
             occupiedCells,
             0,

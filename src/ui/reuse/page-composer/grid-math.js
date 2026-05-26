@@ -47,6 +47,26 @@ export function snapGridRound(raw, dim) {
 }
 
 /**
+ * Registers a placement's occupied cells into an existing occupied-grid set.
+ *
+ * @param {Set<string>} cells
+ * @param {{ row: number, col: number, w: number, h: number }} placement
+ * @returns {Set<string>}
+ */
+export function registerOccupiedPlacement(cells, placement) {
+    for (let rowIndex = placement.row * 2; rowIndex < (placement.row + placement.h) * 2; rowIndex++) {
+        for (
+            let columnIndex = placement.col * 2;
+            columnIndex < (placement.col + placement.w) * 2;
+            columnIndex++
+        ) {
+            cells.add(`${columnIndex},${rowIndex}`);
+        }
+    }
+    return cells;
+}
+
+/**
  * Builds the occupied cell set for current placements, excluding hidden items
  * and an optional active item being moved.
  *
@@ -60,19 +80,7 @@ export function buildOccupiedSet(placements, hidden, excludeId) {
     for (const placement of placements) {
         if (placement.id === excludeId) continue;
         if (hidden.includes(placement.id)) continue;
-        for (
-            let r = placement.row * 2;
-            r < (placement.row + placement.h) * 2;
-            r++
-        ) {
-            for (
-                let c = placement.col * 2;
-                c < (placement.col + placement.w) * 2;
-                c++
-            ) {
-                cells.add(`${c},${r}`);
-            }
-        }
+        registerOccupiedPlacement(cells, placement);
     }
     return cells;
 }
