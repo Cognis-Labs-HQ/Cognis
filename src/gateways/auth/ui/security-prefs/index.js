@@ -4,7 +4,8 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
-import { openPasswordResetPopup } from "/static/gateways/auth/security-prefs/password-reset.js";
+import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
+import { resolveLocalizedMessage } from "/static/gateways/auth/reuse/resolve-localized-message.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
@@ -35,13 +36,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
         }
         const disabled = capability?.supported === true ? "" : " disabled";
+        const reasonText = resolveLocalizedMessage(
+            i18n,
+            capability?.reason,
+            "gateway.auth.security.unsupported_default",
+        );
         const reason =
             capability?.supported === true
                 ? ""
-                : `<p>${escapeHtml(
-                      capability?.reason ||
-                          i18n.t("gateway.auth.security.unsupported_default"),
-                  )}</p>`;
+                : `<p>${escapeHtml(reasonText)}</p>`;
         return `
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
@@ -59,7 +62,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             return;
         }
         button.onclick = () => {
-            openPasswordResetPopup({
+            openPasswordChangePopup({
                 i18n,
                 apiFetch,
                 openPopup,
@@ -150,8 +153,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             ) {
                 lastUnsupportedToastKey = unsupportedToastKey;
                 showToast(
-                    capability.reason ||
-                        i18n.t("gateway.auth.security.unsupported_default"),
+                    resolveLocalizedMessage(
+                        i18n,
+                        capability.reason,
+                        "gateway.auth.security.unsupported_default",
+                    ),
                     {
                         variant: "warning",
                     },

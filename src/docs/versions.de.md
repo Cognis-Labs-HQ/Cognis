@@ -13,8 +13,8 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | SMTP-Benachrichtigung     | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Interne Benachrichtigung  | `src/adapters/notify/internal/`     | `0.5.2` |
 | Lokaler Dateispeicher     | `src/adapters/file/local/`          | `0.1.0` |
-| Lokale Auth               | `src/adapters/auth/local/`          | `0.2.3` |
-| LDAP-Auth                 | `src/adapters/auth/ldap/`           | `0.1.1` |
+| Lokale Auth               | `src/adapters/auth/local/`          | `0.2.5` |
+| LDAP-Auth                 | `src/adapters/auth/ldap/`           | `0.1.3` |
 | OIDC-Auth                 | `src/adapters/auth/oidc/`           | `0.1.1` |
 | SAML-Auth                 | `src/adapters/auth/saml/`           | `0.1.1` |
 | PostgreSQL-Datenbank      | `src/adapters/db/postgres/`         | `0.1.0` |
@@ -30,7 +30,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Komponente                | Pfad                         | Version |
 | ------------------------- | ---------------------------- | ------- |
 | Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
-| Authentifizierung (auth)  | `src/gateways/auth/`         | `1.3.6` |
+| Authentifizierung (auth)  | `src/gateways/auth/`         | `1.4.8` |
 | Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
 | Social                    | `src/gateways/social/`       | `1.2.0` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |

@@ -48,15 +48,36 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
 
     async resetPassword(
         accountId: string,
-        nextPassword: string,
+        currentPassword: string,
+        nextPassword?: string,
     ): Promise<{ updated: boolean; message?: string }> {
-        if (!accountId || !nextPassword) {
+        if (!accountId || !currentPassword || !nextPassword) {
             return {
                 updated: false,
-                message: "Missing password reset payload.",
+                message: "gateway.auth.security.required",
             };
         }
-        await this.store.setPassword(accountId, nextPassword);
+        const currentCredentials = await this.store.verify(
+            accountId,
+            currentPassword,
+        );
+        if (!currentCredentials) {
+            return {
+                updated: false,
+                message:
+                    "gateway.auth.security.error.current_password_incorrect",
+            };
+        }
+        try {
+            await this.store.setPassword(accountId, nextPassword);
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            return {
+                updated: false,
+                message,
+            };
+        }
         return { updated: true };
     }
 

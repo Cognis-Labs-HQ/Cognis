@@ -13,8 +13,8 @@
 | SMTP通知                   | `src/adapters/notify/smtp/`         | `0.1.0`    |
 | 内部通知                   | `src/adapters/notify/internal/`     | `0.5.2`    |
 | ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
-| ローカル認証               | `src/adapters/auth/local/`          | `0.2.3`    |
-| LDAP認証                   | `src/adapters/auth/ldap/`           | `0.1.1`    |
+| ローカル認証               | `src/adapters/auth/local/`          | `0.2.5`    |
+| LDAP 認証                  | `src/adapters/auth/ldap/`           | `0.1.3`    |
 | OIDC認証                   | `src/adapters/auth/oidc/`           | `0.1.1`    |
 | SAML認証                   | `src/adapters/auth/saml/`           | `0.1.1`    |
 | PostgreSQLデータベース     | `src/adapters/db/postgres/`         | `0.1.0`    |
@@ -30,7 +30,7 @@
 | コンポーネント             | パス                         | バージョン |
 | -------------------------- | ---------------------------- | ---------- |
 | データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
-| 認証 (auth)                | `src/gateways/auth/`         | `1.3.6`    |
+| 認証 (auth)                | `src/gateways/auth/`         | `1.4.8`    |
 | 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.0`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |

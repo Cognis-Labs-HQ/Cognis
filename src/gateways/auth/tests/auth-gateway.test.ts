@@ -460,6 +460,46 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     );
 });
 
+test("CoreAuthGateway.resetPasswordForAccount supports legacy 2-arg adapter contracts", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+
+    const db = {
+        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        executeCommand: async () => ({ rows: [] }),
+    } as ReturnType<typeof makeInMemoryDb> & {
+        execute: (
+            sql: string,
+            params?: unknown[],
+        ) => Promise<{ rows?: unknown[] }>;
+        executeCommand: () => Promise<{ rows?: unknown[] }>;
+    };
+
+    const gw = new CoreAuthGateway(db);
+    const calls: Array<{ accountId: string; nextPassword: string }> = [];
+    gw.registerAdapter({
+        id: "legacy",
+        name: "Legacy",
+        authenticate: async () => null,
+        getConfigSchema: () => [],
+        configure: () => undefined,
+        resetPassword: async (accountId: string, nextPassword?: string) => {
+            calls.push({ accountId, nextPassword: String(nextPassword ?? "") });
+            return { updated: true };
+        },
+    });
+
+    await gw.resetPasswordForAccount(
+        "legacy",
+        "legacy-user",
+        "current-pass",
+        "next-pass",
+    );
+
+    assert.deepEqual(calls, [
+        { accountId: "legacy-user", nextPassword: "next-pass" },
+    ]);
+});
+
 test("login endpoint returns 503 when no auth providers are available", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -712,7 +752,10 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
         routeRegistry,
         makeJsonRequest(
             "POST",
-            { password: "after-reset" },
+            {
+                currentPassword: "before-reset",
+                password: "after-reset",
+            },
             { authorization: `Bearer ${resetToken}` },
         ),
         "/api/v1/auth/reset-password",
@@ -731,6 +774,300 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     );
     assert.equal(oldCredentials, null);
     assert.equal(newCredentials?.accountId, "password-user");
+});
+
+test("POST /api/v1/auth/reset-password requires current password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("missing-current-pass", "before-reset");
+
+    const resetToken = issueAccessToken("missing-current-pass", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            { password: "after-reset" },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 400);
+    assert.match(res.payload, /Current password is required/);
+});
+
+test("POST /api/v1/auth/reset-password rejects incorrect current password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("wrong-current-pass", "before-reset");
+
+    const resetToken = issueAccessToken("wrong-current-pass", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "incorrect",
+                password: "after-reset",
+            },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 400);
+    assert.match(
+        res.payload,
+        /gateway\.auth\.security\.error\.current_password_incorrect/,
+    );
+});
+
+test("POST /api/v1/auth/reset-password rejects previously used password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("password-history-user", "before-reset");
+
+    const resetToken = issueAccessToken("password-history-user", "user", 60);
+    const firstReset = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "before-reset",
+                password: "after-reset",
+            },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+    assert.equal(firstReset.res.status, 200);
+
+    const secondReset = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "after-reset",
+                password: "before-reset",
+            },
+            {
+                authorization: `Bearer ${issueAccessToken("password-history-user", "user", 60)}`,
+            },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+    assert.equal(secondReset.handled, true);
+    assert.equal(secondReset.res.status, 400);
+    assert.match(secondReset.res.payload, /Password was used previously/);
+});
+
+test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current password", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+        verify: (
+            username: string,
+            password: string,
+        ) => Promise<{ accountId: string } | null>;
+    }>("auth:accountStore");
+    await accountStore?.register("spacey-user", "  before-reset  ");
+
+    const resetToken = issueAccessToken("spacey-user", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "  before-reset  ",
+                password: "after-reset",
+            },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    const nextCredentials = await accountStore?.verify(
+        "spacey-user",
+        "after-reset",
+    );
+    assert.equal(nextCredentials?.accountId, "spacey-user");
+});
+
+test("POST /api/v1/auth/reset-password backfills previous hash for migrated accounts", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("migrated-history-user", "before-reset");
+
+    await db.executeCommand({
+        option: "DELETE",
+        table: "local_auth_password_history",
+        where: [{ column: "account_id", value: "migrated-history-user" }],
+    });
+
+    const firstToken = issueAccessToken("migrated-history-user", "user", 60);
+    const firstReset = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "before-reset",
+                password: "after-reset",
+            },
+            { authorization: `Bearer ${firstToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+    assert.equal(firstReset.res.status, 200);
+
+    const secondToken = issueAccessToken("migrated-history-user", "user", 60);
+    const secondReset = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "after-reset",
+                password: "before-reset",
+            },
+            { authorization: `Bearer ${secondToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+    assert.equal(secondReset.handled, true);
+    assert.equal(secondReset.res.status, 400);
+    assert.match(secondReset.res.payload, /Password was used previously/);
+});
+
+test("POST /api/v1/auth/reset-password dispatches security notification when notify:dispatch is available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    const dispatched: Array<{
+        category: string;
+        recipientUsername: string;
+        subject: string;
+        body: string;
+    }> = [];
+    capabilities.contribute(
+        "notify:dispatch",
+        async (envelope: {
+            category: string;
+            recipientUsername: string;
+            subject: string;
+            body: string;
+        }) => {
+            dispatched.push(envelope);
+        },
+    );
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+    }>("auth:accountStore");
+    await accountStore?.register("notify-reset-user", "old-pass");
+
+    const resetToken = issueAccessToken("notify-reset-user", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            {
+                currentPassword: "old-pass",
+                password: "new-pass-12",
+            },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    assert.ok(
+        dispatched.length > 0,
+        "security notification should have been dispatched",
+    );
+    assert.equal(dispatched[0].category, "security");
+    assert.equal(dispatched[0].recipientUsername, "notify-reset-user");
 });
 
 test("POST /api/v1/auth/emergency-token requires admin auth", async () => {

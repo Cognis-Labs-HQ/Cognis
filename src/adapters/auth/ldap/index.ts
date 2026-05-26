@@ -115,49 +115,45 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         if (!this.writebackEnabled) {
             return {
                 supported: false,
-                reason: "LDAP writeback is disabled in adapter settings.",
+                reason: "gateway.auth.security.ldap.writeback_disabled",
             };
         }
         if (!this.writebackBaseDn) {
             return {
                 supported: false,
-                reason: "LDAP writeback base DN is not configured.",
+                reason: "gateway.auth.security.ldap.writeback_base_dn_missing",
             };
         }
         if (!this.client || typeof this.client.updatePassword !== "function") {
             return {
                 supported: false,
-                reason: "LDAP writeback client is unavailable.",
+                reason: "gateway.auth.security.ldap.writeback_client_unavailable",
             };
         }
-        return { supported: true };
+        // Current-password validation would require a user bind/re-bind flow
+        // using the submitted password, but this adapter is token-oriented and
+        // only receives a writeback client contract (not direct credential-bind
+        // primitives). To guarantee "validate current password first" semantics,
+        // password changes stay disabled for LDAP until a dedicated validation
+        // contract is introduced.
+        return {
+            supported: false,
+            reason: "gateway.auth.security.ldap.current_password_validation_unavailable",
+        };
     }
 
     async resetPassword(
-        accountId: string,
-        nextPassword: string,
+        _accountId: string,
+        _currentPassword: string,
+        _nextPassword?: string,
     ): Promise<{ updated: boolean; message?: string }> {
+        // Signature remains aligned with AuthProviderAdapter.resetPassword even
+        // though LDAP password change is intentionally blocked.
         const support = this.getPasswordResetSupport();
-        if (!support.supported) {
-            return { updated: false, message: support.reason };
-        }
-        if (!this.client || typeof this.client.updatePassword !== "function") {
-            return {
-                updated: false,
-                message: "LDAP writeback client is unavailable.",
-            };
-        }
-        const updated = await this.client.updatePassword(
-            accountId,
-            nextPassword,
-            {
-                baseDn: this.writebackBaseDn,
-                userAttribute: this.writebackUserAttribute,
-            },
-        );
-        return updated
-            ? { updated: true }
-            : { updated: false, message: "LDAP password writeback failed." };
+        return {
+            updated: false,
+            message: support.reason,
+        };
     }
 
     setClient(client: LdapClient): void {
