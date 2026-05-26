@@ -343,7 +343,7 @@ function bindUsersInteractions() {
             const target = event.target;
             if (
                 target instanceof HTMLElement &&
-                target.closest("button, select")
+                target.closest("button,select")
             )
                 return;
             const username = row.dataset.username;

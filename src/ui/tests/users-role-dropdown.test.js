@@ -116,5 +116,5 @@ test("users row click guard ignores role dropdown interaction", () => {
         "utf8",
     );
 
-    assert.match(source, /target\.closest\("button, select"\)/);
+    assert.match(source, /target\.closest\("button,select"\)/);
 });
