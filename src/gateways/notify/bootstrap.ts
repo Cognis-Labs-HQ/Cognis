@@ -262,7 +262,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         name: "Notification Gateway",
         version: "1.4.5",
         description: "Dispatches notifications via pluggable adapter senders.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
         required: true,
         hasAdapters: true,
     });

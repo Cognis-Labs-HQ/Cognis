@@ -9,7 +9,7 @@
         "api": "./api/index.js",
         "ui": "./ui/index.html"
     },
-    "publisher": "Cognis Labs",
+    "publisher": "Cognis Labs HQ",
     "ui": {
         "componentConfig": {
             "scriptUrl": "/static/modules/jitsi-meet/admin-config-popup.js"

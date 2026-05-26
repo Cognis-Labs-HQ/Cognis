@@ -5,5 +5,5 @@
     "required": true,
     "requires": ["files"],
     "description": "Structured application logging to stdout/stderr and file.",
-    "publisher": "Cognis Labs"
+    "publisher": "Cognis Labs HQ"
 }

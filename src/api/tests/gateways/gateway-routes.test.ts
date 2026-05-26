@@ -56,7 +56,7 @@ test("GET /api/v1/gateways returns registered gateways", async () => {
         id: "notify",
         name: "Notification Gateway",
         version: "0.1.0",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
     const handler = createGatewayRoutes(registry);
 
@@ -93,7 +93,7 @@ test("gateway routes log enable operations", async () => {
         id: "notify",
         name: "Notification Gateway",
         version: "0.1.0",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
     const entries: Array<{
         level: string;
@@ -141,7 +141,7 @@ test("GET /api/v1/gateways/:id returns a single gateway manifest", async () => {
         name: "Notification Gateway",
         version: "0.1.0",
         description: "Sends notifications.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
     const handler = createGatewayRoutes(registry);
 

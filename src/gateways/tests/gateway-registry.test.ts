@@ -9,7 +9,7 @@ test("GatewayRegistry.register and list", () => {
         id: "notify",
         name: "Notification Gateway",
         version: "0.1.0",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
     registry.register({
         id: "auth",
@@ -30,7 +30,7 @@ test("GatewayRegistry.get returns correct manifest", () => {
         name: "Notification Gateway",
         version: "0.1.0",
         description: "Sends notifications.",
-        publisher: "Cognis Labs",
+        publisher: "Cognis Labs HQ",
     });
 
     const manifest = registry.get("notify");
