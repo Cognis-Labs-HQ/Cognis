@@ -109,3 +109,12 @@ test("users tfa reset action has standalone branch", () => {
         /\/api\/v1\/tfa\/admin\/users\/\$\{encodeURIComponent\(username\)\}\/reset/,
     );
 });
+
+test("users row click guard ignores role dropdown interaction", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /target\.closest\("button,select"\)/);
+});
