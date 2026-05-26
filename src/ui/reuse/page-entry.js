@@ -301,21 +301,23 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
         installRuntimeErrorHandlers();
     }
     const finishPageLoading = beginPageLoading();
+    let mountError = null;
     try {
         await mount(document.querySelector(rootSelector));
     } catch (error) {
-        finishPageLoading();
-        const contextDetail =
-            typeof window !== "undefined" &&
-            typeof window.location?.pathname === "string"
-                ? window.location.pathname
-                : "";
-        await openRuntimeErrorPopup({
-            error,
-            contextKey: "ui.reuse.runtime_error_context_route_mount",
-            contextDetail,
-        }).catch(() => {});
+        mountError = error;
     } finally {
         finishPageLoading();
     }
+    if (!mountError) return;
+    const contextDetail =
+        typeof window !== "undefined" &&
+        typeof window.location?.pathname === "string"
+            ? window.location.pathname
+            : "";
+    await openRuntimeErrorPopup({
+        error: mountError,
+        contextKey: "ui.reuse.runtime_error_context_route_mount",
+        contextDetail,
+    }).catch(() => {});
 }

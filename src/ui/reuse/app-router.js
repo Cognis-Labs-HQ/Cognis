@@ -465,7 +465,8 @@ export async function navigateTo(path) {
         const component = await resolveStudyChildComponent(path);
         if (!component) return;
     }
-    history.pushState({ routerPage: path }, "", path);
+    const previousRouterPage = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    history.pushState({ routerPage: path, previousRouterPage }, "", path);
     await loadRoute(path);
 }
 

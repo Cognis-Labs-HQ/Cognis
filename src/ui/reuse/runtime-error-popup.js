@@ -189,6 +189,7 @@ export async function openRuntimeErrorPopup({
     contextKey = "",
     contextDetail = "",
     consoleEntries,
+    previousRoute = "",
 } = {}) {
     const normalizedErrorMessage = normalizeErrorMessage(error);
     const normalizedErrorStack = normalizeErrorStack(error);
@@ -203,6 +204,8 @@ export async function openRuntimeErrorPopup({
 
     popupOpen = true;
     try {
+        const currentRoutePath = getCurrentRoutePath();
+        const previousRoutePath = resolvePreviousRoutePath(previousRoute);
         const i18n = await getI18nPromise().catch(() => ({
             t(key) {
                 const fallbackLabels = {
@@ -235,9 +238,14 @@ export async function openRuntimeErrorPopup({
         else if (context) contextParts.push(context);
         if (contextDetail) contextParts.push(contextDetail);
         const resolvedContext = contextParts.join(": ") || "unknown";
+        const brandName = i18n.t("ui.shared.brand.name");
 
         const popupBody = () => `
             <div class="popup-error-report">
+                <div class="popup-error-report-brand">
+                    <img src="/static/assets/icons/cognis-icon.png" alt="${escapeHtml(brandName)}" class="popup-error-report-brand-icon" />
+                    <span class="popup-error-report-brand-name">${escapeHtml(brandName)}</span>
+                </div>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_summary"))}</h3>
                     <pre class="popup-error-report-trace">${escapeHtml(normalizedErrorMessage)}</pre>
@@ -261,7 +269,7 @@ export async function openRuntimeErrorPopup({
             </div>
         `;
 
-        await openPopup({
+        const popupAction = await openPopup({
             title: i18n.t("ui.reuse.runtime_error_popup_title"),
             body: popupBody,
             variant: "danger",
@@ -274,9 +282,68 @@ export async function openRuntimeErrorPopup({
                 },
             ],
         });
+        if (popupAction === null) {
+            navigateToPreviousRouteIfDifferent(currentRoutePath, previousRoutePath);
+        }
     } finally {
         popupOpen = false;
     }
+}
+
+function getCurrentRoutePath() {
+    if (typeof window === "undefined" || !window.location) return "";
+    return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
+function normalizeRoutePath(routePath) {
+    if (
+        typeof routePath !== "string" ||
+        !routePath.trim() ||
+        typeof window === "undefined"
+    ) {
+        return "";
+    }
+    try {
+        const routeUrl = new URL(routePath, window.location.origin);
+        if (routeUrl.origin !== window.location.origin) return "";
+        return `${routeUrl.pathname}${routeUrl.search}${routeUrl.hash}`;
+    } catch {
+        return "";
+    }
+}
+
+function getPreviousRoutePathFromReferrer() {
+    if (
+        typeof document === "undefined" ||
+        typeof document.referrer !== "string" ||
+        !document.referrer
+    ) {
+        return "";
+    }
+    return normalizeRoutePath(document.referrer);
+}
+
+function getPreviousRoutePathFromHistoryState() {
+    if (typeof window === "undefined") return "";
+    return normalizeRoutePath(window.history.state?.previousRouterPage);
+}
+
+function resolvePreviousRoutePath(explicitPreviousRoute) {
+    const explicitRoutePath = normalizeRoutePath(explicitPreviousRoute);
+    if (explicitRoutePath) return explicitRoutePath;
+    const stateRoutePath = getPreviousRoutePathFromHistoryState();
+    if (stateRoutePath) return stateRoutePath;
+    return getPreviousRoutePathFromReferrer();
+}
+
+function navigateToPreviousRouteIfDifferent(currentRoutePath, previousRoutePath) {
+    if (typeof window === "undefined") return;
+    const normalizedCurrentRoutePath = normalizeRoutePath(currentRoutePath);
+    const normalizedPreviousRoutePath = normalizeRoutePath(previousRoutePath);
+    if (!normalizedCurrentRoutePath || !normalizedPreviousRoutePath) return;
+    if (normalizedCurrentRoutePath === normalizedPreviousRoutePath) return;
+    if (getCurrentRoutePath() !== normalizedCurrentRoutePath) return;
+    window.history.back();
 }
 
 export function installRuntimeErrorHandlers() {
