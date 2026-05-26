@@ -573,6 +573,20 @@ code {
 .invite-revoke-btn {
     margin-right: 6px;
 }
+
+.users-delete-btn {
+    margin-right: 6px;
+    background: var(--color-danger);
+    color: var(--color-danger-text);
+    border: 1px solid var(--color-danger-border);
+    line-height: 1;
+}
+
+.users-delete-btn:hover:not(:disabled) {
+    background: var(--color-danger-border);
+    border-color: var(--color-danger-border);
+    color: var(--color-danger-text);
+}
 .content-panel a {
     color: var(--link-docs);
 }
