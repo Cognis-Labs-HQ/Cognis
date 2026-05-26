@@ -872,6 +872,8 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
     const cropInteractionController = new AbortController();
     const cropAspectRatio = Math.max(0.5, Number(aspectRatio) || 1);
     const minimumSelectionSize = 64;
+    const dragCommitThreshold = 2;
+    const maxZoomDepth = 12;
     const state = {
         dragging: false,
         dragPointerId: null,
@@ -921,7 +923,11 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
             };
         }
         const safeSourceWidth = Math.max(1, state.sourceRect.sourceWidth);
-        const sourceScale = displayBounds.width / safeSourceWidth;
+        const safeSourceHeight = Math.max(1, state.sourceRect.sourceHeight);
+        const sourceScale = Math.min(
+            displayBounds.width / safeSourceWidth,
+            displayBounds.height / safeSourceHeight,
+        );
         const imageWidth = cropImage.imageWidth * sourceScale;
         const imageHeight = cropImage.imageHeight * sourceScale;
         const imageTranslateX =
@@ -1017,7 +1023,10 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         if (!state.dragStartSelection || !state.displayBounds) return;
         const deltaX = event.clientX - state.dragStartX;
         const deltaY = event.clientY - state.dragStartY;
-        if (deltaX !== 0 || deltaY !== 0) {
+        if (
+            Math.abs(deltaX) > dragCommitThreshold ||
+            Math.abs(deltaY) > dragCommitThreshold
+        ) {
             state.shouldAutoZoomOnRelease = true;
         }
         if (state.dragMode === "move") {
@@ -1053,7 +1062,7 @@ async function openImageCropPopup({ file, kind, aspectRatio }) {
         state.dragPointerId = null;
         state.dragStartSelection = null;
         state.dragMode = "move";
-        if (state.shouldAutoZoomOnRelease) {
+        if (state.shouldAutoZoomOnRelease && state.zoomDepth < maxZoomDepth) {
             const selectedSourceRect = getSelectedSourceRect();
             if (selectedSourceRect) {
                 state.sourceRect = selectedSourceRect;
