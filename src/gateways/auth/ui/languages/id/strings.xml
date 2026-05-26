@@ -12,8 +12,6 @@
   <string name="gateway.auth.security.reset_failed">Reset kata sandi gagal.</string>
   <string name="gateway.auth.security.reset_success">Kata sandi diperbarui. Silakan masuk kembali.</string>
   <string name="gateway.auth.security.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
-  <string name="gateway.auth.security.password_requirements">Persyaratan Kata Sandi</string>
-  <string name="gateway.auth.security.passwords_match">Kata sandi cocok.</string>
   <string name="gateway.auth.security.password_too_short">Harus minimal {min} karakter.</string>
   <string name="gateway.auth.security.password_requires_uppercase">Harus mengandung minimal {count} huruf kapital.</string>
   <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung setidaknya {count} huruf kecil.</string>

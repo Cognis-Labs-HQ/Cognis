@@ -108,8 +108,7 @@ export async function openPasswordResetPopup({
                         passwordCriteria.length > 0
                             ? "floating-alert"
                             : "inline",
-                    floatingTitleKey:
-                        "gateway.auth.security.password_requirements",
+                    floatingTitleKey: "ui.app.register.password_requirements",
                     attributes: { autocomplete: "new-password" },
                 },
                 {
@@ -132,7 +131,7 @@ export async function openPasswordResetPopup({
                                 if (passwordValue.length === 0) return null;
                                 return value === passwordValue;
                             },
-                            messageKey: "gateway.auth.security.passwords_match",
+                            messageKey: "ui.app.register.passwords_match",
                             mode: "live",
                         },
                     ],

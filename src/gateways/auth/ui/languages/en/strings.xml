@@ -12,8 +12,6 @@
   <string name="gateway.auth.security.reset_failed">Password reset failed.</string>
   <string name="gateway.auth.security.reset_success">Password updated. Please sign in again.</string>
   <string name="gateway.auth.security.password_policy">Password does not meet the requirements.</string>
-  <string name="gateway.auth.security.password_requirements">Password Requirements</string>
-  <string name="gateway.auth.security.passwords_match">Passwords match.</string>
   <string name="gateway.auth.security.password_too_short">Must be at least {min} characters.</string>
   <string name="gateway.auth.security.password_requires_uppercase">Must contain at least {count} uppercase letter(s).</string>
   <string name="gateway.auth.security.password_requires_lowercase">Must contain at least {count} lowercase letter(s).</string>
