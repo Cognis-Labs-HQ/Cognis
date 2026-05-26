@@ -16,6 +16,10 @@
  */
 
 import { createI18n, readPreferredLanguages } from "./i18n.js";
+import {
+    installRuntimeErrorHandlers,
+    openRuntimeErrorPopup,
+} from "./runtime-error-popup.js";
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;
@@ -293,9 +297,24 @@ function endPageLoading(token) {
 export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     if (globalThis.__spaRouter) return;
     registerPageUnloadListeners();
+    if (typeof window !== "undefined") {
+        installRuntimeErrorHandlers();
+    }
     const finishPageLoading = beginPageLoading();
     try {
         await mount(document.querySelector(rootSelector));
+    } catch (error) {
+        finishPageLoading();
+        const contextDetail =
+            typeof window !== "undefined" &&
+            typeof window.location?.pathname === "string"
+                ? window.location.pathname
+                : "";
+        await openRuntimeErrorPopup({
+            error,
+            contextKey: "ui.reuse.runtime_error_context_route_mount",
+            contextDetail,
+        }).catch(() => {});
     } finally {
         finishPageLoading();
     }
