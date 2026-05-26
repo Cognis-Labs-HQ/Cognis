@@ -159,6 +159,7 @@ export async function mount(root, { signal } = {}) {
     let tokenInvalid = false;
     let inviteAdapterDisabled = false;
     let openRegistrationsEnabled = false;
+    let userValidationMode = "none";
     let invalidTokenToastToken = null;
     let availableLanguages = [];
     let selectedLanguage = DEFAULT_LOCALE;
@@ -187,17 +188,24 @@ export async function mount(root, { signal } = {}) {
         }
     } else if (hasTokenParam) {
         tokenInvalid = true;
-    } else {
-        try {
-            const response = await fetch("/api/v1/auth/registration-config");
-            if (response.ok) {
-                const payload = await response.json();
+    }
+
+    try {
+        const regConfigResponse = await fetch(
+            "/api/v1/auth/registration-config",
+        );
+        if (regConfigResponse.ok) {
+            const regConfigPayload = await regConfigResponse.json();
+            if (!token && !hasTokenParam) {
                 openRegistrationsEnabled =
-                    payload?.data?.registrationsEnabled === true;
+                    regConfigPayload?.data?.registrationsEnabled === true;
             }
-        } catch {
-            openRegistrationsEnabled = false;
+            userValidationMode = String(
+                regConfigPayload?.data?.userValidationMode ?? "none",
+            );
         }
+    } catch {
+        if (!token && !hasTokenParam) openRegistrationsEnabled = false;
     }
 
     try {
@@ -246,7 +254,11 @@ export async function mount(root, { signal } = {}) {
             .join(":");
     }
 
-    function createRegisterFormBuilder({ emailValue, emailLocked }) {
+    function createRegisterFormBuilder({
+        emailValue,
+        emailLocked,
+        emailRequired,
+    }) {
         const passwordCriteria = buildPasswordCriteria(passwordPolicy);
         const registerFormFields = [
             {
@@ -255,7 +267,7 @@ export async function mount(root, { signal } = {}) {
                 type: "email",
                 value: emailValue,
                 disabled: emailLocked,
-                required: true,
+                required: emailRequired,
                 maxCharacters: REGISTER_EMAIL_MAX_CHARACTERS,
                 className: emailLocked ? "auth-input--locked" : "",
             },
@@ -394,11 +406,19 @@ export async function mount(root, { signal } = {}) {
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,
                 emailLocked,
+                emailRequired: userValidationMode === "smtp",
             });
+            const emailVerifyNoticeHtml =
+                !isInviteFlow && userValidationMode === "smtp"
+                    ? renderInPageCallout({
+                          variant: "info",
+                          body: i18n.t("ui.app.register.email_verify_notice"),
+                      })
+                    : "";
             formHtml = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
-      ${!isInviteFlow ? renderInPageCallout({ variant: "info", body: i18n.t("ui.app.register.email_verify_notice") }) : ""}
+      ${emailVerifyNoticeHtml}
       <div class="auth-form-shell">
         ${registerFormBuilder.render()}
       </div>
@@ -426,6 +446,7 @@ export async function mount(root, { signal } = {}) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
       ${messageHtml}
       ${formHtml}
+      <button id="register-signin-instead" type="button" class="btn-animated auth-secondary-action">${escapeHtml(i18n.t("ui.reuse.sign_in_instead"))}</button>
     `;
         return renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
@@ -542,6 +563,18 @@ export async function mount(root, { signal } = {}) {
                 render: () => renderRegisterShell(),
                 onRender: () => {
                     runTypingShowcase(typingSamples);
+                    const signInInsteadButton = root.querySelector(
+                        "#register-signin-instead",
+                    );
+                    if (signInInsteadButton instanceof HTMLButtonElement) {
+                        signInInsteadButton.addEventListener(
+                            "click",
+                            () => {
+                                window.location.href = "/login";
+                            },
+                            signal ? { signal } : undefined,
+                        );
+                    }
 
                     if (tokenInvalid && invalidTokenToastToken !== token) {
                         invalidTokenToastToken = token;
@@ -594,6 +627,7 @@ export async function mount(root, { signal } = {}) {
                     const registerFormBuilder = createRegisterFormBuilder({
                         emailValue: lockedEmail || "",
                         emailLocked: Boolean(lockedEmail),
+                        emailRequired: userValidationMode === "smtp",
                     });
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,

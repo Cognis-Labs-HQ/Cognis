@@ -105,6 +105,20 @@ test("register page renders invalid-token intro message instead of disabled form
     );
 });
 
+test("register page provides a sign-in-instead button that routes to login", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/register.js"),
+        "utf8",
+    );
+
+    assert.match(source, /id="register-signin-instead"/);
+    assert.match(source, /ui\.reuse\.sign_in_instead/);
+    assert.match(
+        source,
+        /signInInsteadButton\.addEventListener\(\s*"click",\s*\(\) => \{\s*window\.location\.href = "\/login";/m,
+    );
+});
+
 test("register page HTML loads the auth gateway script", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/public/pages/register.html"),

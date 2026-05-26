@@ -247,7 +247,7 @@
   <string name="ui.app.register.error.username_too_long">Username must be 25 characters or fewer.</string>
   <string name="ui.app.register.error.username_not_lowercase">Username must be all lowercase.</string>
   <string name="ui.app.register.error.validation_failed">Please fix the highlighted fields before continuing.</string>
-  <string name="ui.app.register.submit">Create account</string>
+  <string name="ui.app.register.submit">Create Account</string>
   <string name="ui.app.register.password_requirements">Password requirements</string>
   <string name="ui.app.register.username_requirements">Username requirements</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
@@ -266,6 +266,7 @@
   <string name="ui.reuse.sensitive_action_prompt">Please confirm this sensitive action.</string>
   <string name="ui.reuse.enter_password_prompt">Enter your password to continue.</string>
   <string name="ui.reuse.incorrect_password">Incorrect password. Please try again.</string>
+  <string name="ui.reuse.sign_in_instead">Sign In Instead</string>
   <string name="ui.app.users.page_subtitle">Manage accounts and issue invites.</string>
   <string name="ui.app.users.username">Username</string>
   <string name="ui.app.users.role">Role</string>
