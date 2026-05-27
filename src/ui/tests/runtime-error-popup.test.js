@@ -18,7 +18,10 @@ test("runtime error popup renders branded header and supports previous-route fal
     assert.match(source, /navigateToPreviousRouteIfDifferent/);
     assert.match(source, /window\.history\.state\?\.previousRouterPage/);
     assert.match(source, /didReloadIntoCurrentDocument/);
-    assert.match(source, /window\.location\.assign\(normalizedPreviousRoutePath\)/);
+    assert.match(
+        source,
+        /window\.location\.assign\(normalizedPreviousRoutePath\)/,
+    );
     assert.match(
         source,
         /popupAction === null \|\| popupAction === (["'])close\1/,

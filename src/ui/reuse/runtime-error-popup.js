@@ -359,9 +359,8 @@ function navigateToPreviousRouteIfDifferent(
 function didReloadIntoCurrentDocument() {
     if (typeof window === "undefined" || !window.performance) return false;
     if (typeof window.performance.getEntriesByType === "function") {
-        const navigationEntries = window.performance.getEntriesByType(
-            "navigation",
-        );
+        const navigationEntries =
+            window.performance.getEntriesByType("navigation");
         const latestNavigationEntry = navigationEntries.at(-1);
         if (latestNavigationEntry?.type === "reload") return true;
     }
