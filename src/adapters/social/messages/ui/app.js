@@ -2115,6 +2115,9 @@ export async function mount(root, { signal } = {}) {
                 const composerInput = document.getElementById(
                     "messages-composer-input",
                 );
+                const composerSendButton = form?.querySelector(
+                    ".messages-composer-send",
+                );
                 const composerPreview = document.getElementById(
                     "messages-composer-preview",
                 );
@@ -2159,6 +2162,12 @@ export async function mount(root, { signal } = {}) {
                     }
                     if (composerComposePane instanceof HTMLElement) {
                         composerComposePane.hidden = isComposerPreviewMode;
+                    }
+                    if (composerInput instanceof HTMLTextAreaElement) {
+                        composerInput.hidden = isComposerPreviewMode;
+                    }
+                    if (composerSendButton instanceof HTMLButtonElement) {
+                        composerSendButton.hidden = isComposerPreviewMode;
                     }
                     if (composerPreviewPane instanceof HTMLElement) {
                         composerPreviewPane.hidden = !isComposerPreviewMode;
