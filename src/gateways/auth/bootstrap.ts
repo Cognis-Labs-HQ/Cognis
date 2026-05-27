@@ -57,6 +57,7 @@ const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
 const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
 const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
 const PASSWORD_RESET_RESPONSE_JITTER_MS = 120;
+const PASSWORD_RESET_LOOKUP_JITTER_MS = 40;
 
 function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -1014,7 +1015,9 @@ function createAuthGatewayRoutes(
                     },
                 });
             }
-            await sleep(Math.floor(Math.random() * 40));
+            await sleep(
+                Math.floor(Math.random() * PASSWORD_RESET_LOOKUP_JITTER_MS),
+            );
             const accountId = await getAccountIdByEmail(email).catch(
                 () => null,
             );

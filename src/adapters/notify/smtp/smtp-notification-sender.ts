@@ -253,38 +253,40 @@ function encodeQuotedPrintable(input: string): string {
 }
 
 function stripHtmlTags(html: string): string {
-    const withNormalizedBreaks = normalizeHtmlBreakTags(html);
-    return withNormalizedBreaks
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#x27;/g, "'")
-        .replace(/&#8212;/g, "—");
+    let out = "";
+    for (let cursor = 0; cursor < html.length; cursor++) {
+        if (html[cursor] === "<") {
+            const tagEnd = html.indexOf(">", cursor + 1);
+            if (tagEnd === -1) break;
+            const tagContent = html
+                .slice(cursor + 1, tagEnd)
+                .trim()
+                .replace(/^\/+/, "")
+                .toLowerCase();
+            if (tagContent.startsWith("br")) {
+                out += "\n";
+            }
+            cursor = tagEnd;
+            continue;
+        }
+        out += html[cursor];
+    }
+    return decodeBasicHtmlEntities(out);
 }
 
-function normalizeHtmlBreakTags(html: string): string {
-    const lower = html.toLowerCase();
-    let out = "";
-    let cursor = 0;
-    while (cursor < html.length) {
-        const tagStart = lower.indexOf("<br", cursor);
-        if (tagStart === -1) {
-            out += html.slice(cursor);
-            break;
-        }
-        out += html.slice(cursor, tagStart);
-        const tagEnd = lower.indexOf(">", tagStart + 3);
-        if (tagEnd === -1) {
-            out += html.slice(tagStart);
-            break;
-        }
-        out += "\n";
-        cursor = tagEnd + 1;
-    }
-    return out;
+function decodeBasicHtmlEntities(value: string): string {
+    const entityMap: Record<string, string> = {
+        nbsp: " ",
+        amp: "&",
+        quot: '"',
+        apos: "'",
+        "#x27": "'",
+        "#8212": "—",
+    };
+    return value.replace(
+        /&(nbsp|amp|quot|apos|#x27|#8212);/gi,
+        (match, entity: string) => entityMap[entity.toLowerCase()] ?? match,
+    );
 }
 
 function dotStuff(message: string): string {
