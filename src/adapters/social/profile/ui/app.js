@@ -867,7 +867,6 @@ async function openEditPopup() {
                     value: currentBio,
                     maxCharacters: PROFILE_BIO_MAX_CHARACTERS,
                     attributes: {
-                        id: "popup-edit-bio",
                         rows: 3,
                     },
                 },
@@ -931,7 +930,7 @@ async function openEditPopup() {
                 popupFormElement instanceof HTMLFormElement
                     ? profileEditFormBuilder.attach(popupFormElement)
                     : null;
-            const popupBioInput = overlay.querySelector("#popup-edit-bio");
+            const popupBioInput = overlay.querySelector('textarea[name="bio"]');
             const bioFieldWrapper = overlay.querySelector(
                 '[data-form-builder-field="bio"]',
             );
