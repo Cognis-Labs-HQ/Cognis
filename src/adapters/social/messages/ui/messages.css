@@ -385,8 +385,9 @@
 }
 
 .messages-composer-mode-row {
-    display: flex;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
 }
 
 .messages-composer-mode-toggle {
@@ -398,16 +399,35 @@
     padding: 0.3rem 0.65rem;
     font: inherit;
     font-size: 0.78rem;
+    width: 100%;
+}
+
+.messages-composer-mode-toggle[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background: color-mix(
+        in srgb,
+        var(--color-accent) 22%,
+        var(--color-surface)
+    );
 }
 
 .messages-composer-main {
+    min-width: 0;
+}
+
+.messages-composer-pane {
+    min-width: 0;
+}
+
+.messages-composer-pane--compose {
     display: flex;
     gap: 0.5rem;
     min-width: 0;
 }
 
 .messages-composer-input {
-    flex: 1;
+    width: 100%;
+    flex: 1 1 auto;
     resize: vertical;
     min-width: 0;
     min-height: 2.5rem;
@@ -420,9 +440,9 @@
 }
 
 .messages-composer-preview {
-    flex: 1;
+    width: 100%;
     min-width: 0;
-    min-height: 2.5rem;
+    min-height: 3rem;
     padding: 0.5rem;
     border-radius: 0.25rem;
     border: 1px solid var(--color-border);
@@ -485,6 +505,10 @@
     }
 
     .messages-composer-main {
+        gap: 0.4rem;
+    }
+
+    .messages-composer-pane--compose {
         gap: 0.4rem;
     }
 

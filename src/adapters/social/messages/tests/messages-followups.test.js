@@ -188,10 +188,24 @@ test("messages composer includes markdown compose preview switcher", () => {
         "utf8",
     );
 
+    assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
+    assert.match(appSource, /id="messages-composer-preview-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
     assert.match(appSource, /function renderComposerPreviewMarkup/);
     assert.match(appSource, /module\.social\.messages\.preview_placeholder/);
+    assert.match(
+        appSource,
+        /composerComposeToggle\?\.addEventListener\("click",[\s\S]*isComposerPreviewMode = false;/,
+    );
+    assert.match(
+        appSource,
+        /composerPreviewToggle\?\.addEventListener\("click",[\s\S]*isComposerPreviewMode = true;/,
+    );
     assert.match(messagesCssSource, /\.messages-composer-mode-toggle\s*\{/);
+    assert.match(
+        messagesCssSource,
+        /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+    );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
 });
