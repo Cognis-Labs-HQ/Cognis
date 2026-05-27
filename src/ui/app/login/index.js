@@ -251,23 +251,24 @@ export async function mount(root) {
                 <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
                     ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
                 </button>
-                <button type="button" id="login-link-submit" class="btn-animated">
+                <button type="submit" id="login-link-submit" class="btn-animated">
                     ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
                 </button>
             </div>
         `;
         enterPasswordResetMode();
-        const submitBtn = document.querySelector("#login-link-submit");
         const backLink = document.querySelector("#login-link-back");
         const emailInput = document.querySelector("#login-link-email");
         emailInput?.focus();
-        submitBtn?.addEventListener("click", () => {
-            requestPasswordResetLink().catch(() => {
+        submitPasswordReset = async () => {
+            try {
+                await requestPasswordResetLink();
+            } catch {
                 showToast(i18n.t("ui.app.login.error.generic"), {
                     variant: "error",
                 });
-            });
-        });
+            }
+        };
         backLink?.addEventListener("click", () => {
             composer.refresh();
         });
@@ -285,6 +286,7 @@ export async function mount(root) {
             </button>
         `;
         enterPasswordResetMode();
+        submitPasswordReset = null;
         document
             .querySelector("#login-link-back")
             ?.addEventListener("click", () => {
@@ -376,6 +378,7 @@ export async function mount(root) {
             </div>
         `;
         enterPasswordResetMode();
+        submitPasswordReset = null;
         document
             .querySelector("#login-link-invalid-back")
             ?.addEventListener("click", () => {

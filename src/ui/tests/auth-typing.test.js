@@ -124,9 +124,12 @@ test("password reset action uses form submit button", () => {
 
     assert.match(
         source,
-        /id="login-link-submit" class="btn-animated">[\s\S]*?\$\{escapeHtml\(i18n\.t\("ui\.app\.login\.login_link\.submit"\)\)\}/m,
+        /id="login-link-email"[\s\S]*?<button type="submit" id="login-link-submit"/m,
     );
-    assert.match(source, /<button type="submit" id="login-link-submit"/);
+    assert.match(
+        source,
+        /id="login-link-password"[\s\S]*?<button type="submit" id="login-link-submit"/m,
+    );
 });
 
 test("register page renders invalid-token intro message instead of disabled form shell", () => {
