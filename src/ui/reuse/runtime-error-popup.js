@@ -349,7 +349,7 @@ function navigateToPreviousRouteIfDifferent(
         });
         return;
     }
-    if (didReloadIntoCurrentDocument()) {
+    if (didReloadIntoCurrentDocument() && !hasLoadedMainPageBoilerplate()) {
         window.location.assign(normalizedPreviousRoutePath);
         return;
     }
@@ -366,6 +366,12 @@ function didReloadIntoCurrentDocument() {
     }
     // Fallback for older engines that do not expose Navigation Timing Level 2.
     return window.performance.navigation?.type === 1;
+}
+
+function hasLoadedMainPageBoilerplate() {
+    if (typeof document === "undefined") return false;
+    if (typeof document.querySelector !== "function") return false;
+    return Boolean(document.querySelector(".app-shell"));
 }
 
 export function installRuntimeErrorHandlers() {
