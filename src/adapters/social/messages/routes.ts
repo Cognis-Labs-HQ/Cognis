@@ -795,6 +795,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         const pendingRoomRequest = pendingIncomingRoomRequest
             ? pendingIncomingRoomRequest
             : await messagesStore.getPendingRoomMessageRequest(roomId);
+        // Derive incoming-pending state from both lookups so content stays
+        // hidden even if the incoming-specific query misses a pending row.
         const incomingPendingRoomRequest =
             pendingIncomingRoomRequest ||
             (pendingRoomRequest?.toAccountId === accountId
