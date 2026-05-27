@@ -127,10 +127,7 @@ function extractEmailAddress(value: string): string {
     const sanitized = sanitizeHeader(value);
     const openingBracketIndex = sanitized.indexOf("<");
     if (openingBracketIndex === -1) return sanitized;
-    const closingBracketIndex = sanitized.indexOf(
-        ">",
-        openingBracketIndex + 1,
-    );
+    const closingBracketIndex = sanitized.indexOf(">", openingBracketIndex + 1);
     if (closingBracketIndex === -1) return sanitized;
     const bracketed = sanitized
         .slice(openingBracketIndex + 1, closingBracketIndex)

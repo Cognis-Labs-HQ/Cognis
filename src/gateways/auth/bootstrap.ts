@@ -20,6 +20,7 @@ import {
 } from "../../api/reuse/access-token-http.js";
 import {
     issueAccessToken,
+    lookupAccessToken,
     verifyAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
@@ -64,7 +65,9 @@ function sleep(ms: number): Promise<void> {
 async function waitForPasswordResetResponseFloor(
     startedAt: number,
 ): Promise<void> {
-    const jitterMs = Math.floor(Math.random() * PASSWORD_RESET_RESPONSE_JITTER_MS);
+    const jitterMs = Math.floor(
+        Math.random() * PASSWORD_RESET_RESPONSE_JITTER_MS,
+    );
     const targetMs = PASSWORD_RESET_MIN_RESPONSE_MS + jitterMs;
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs >= targetMs) return;
@@ -952,7 +955,9 @@ function createAuthGatewayRoutes(
                 payload: unknown,
             ) => {
                 await waitForPasswordResetResponseFloor(requestStartedAt);
-                res.writeHead(statusCode, { "content-type": "application/json" });
+                res.writeHead(statusCode, {
+                    "content-type": "application/json",
+                });
                 res.end(JSON.stringify(payload));
                 return true;
             };
@@ -1209,7 +1214,9 @@ function createAuthGatewayRoutes(
                 return true;
             }
             const revokedToken = revokeAccessToken(rawToken);
-            const revokedSubjectTokens = revokeAccessTokensForSubject(claims.sub);
+            const revokedSubjectTokens = revokeAccessTokensForSubject(
+                claims.sub,
+            );
             if (!revokedToken) {
                 log?.(
                     "warn",
