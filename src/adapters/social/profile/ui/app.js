@@ -36,6 +36,7 @@ let canRequestMessageTarget = false;
 let relationship = null;
 const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
 const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
+let pendingBannerAspectRatio = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
 let newPostFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
@@ -997,7 +998,7 @@ bannerFileInput.addEventListener("change", async () => {
         await handleProfileImageUpload({
             kind: "banner",
             file,
-            aspectRatio: BANNER_CROP_WIDTH_TO_HEIGHT_RATIO,
+            aspectRatio: pendingBannerAspectRatio,
         });
     } catch {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
@@ -1255,7 +1256,13 @@ function bindPageEvents() {
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
-        () => {
+        (e) => {
+            const btn = e.currentTarget;
+            const { width, height } = btn.getBoundingClientRect();
+            pendingBannerAspectRatio =
+                width > 0 && height > 0
+                    ? width / height
+                    : BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
             bannerFileInput.click();
         },
     );
