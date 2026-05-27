@@ -133,13 +133,6 @@ p.auth-intro {
     color: #bfdbfe;
 }
 
-.auth-link-form-heading {
-    margin: 0 0 4px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #d6e7ff;
-}
-
 .auth-link-unavailable-message {
     margin: 0 0 8px;
     font-size: 0.98rem;

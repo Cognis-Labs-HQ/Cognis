@@ -299,13 +299,9 @@ export async function mount(root) {
         const heading = document.querySelector(".auth-heading");
         if (heading)
             heading.textContent = i18n.t("ui.app.login.login_link.title");
-        const loginSubmit = document.querySelector(
-            '#login-form button[type="submit"]',
-        );
+        const loginSubmit = document.querySelector("#login-form-submit");
         if (loginSubmit) loginSubmit.hidden = true;
-        const signupCallout = document.querySelector(
-            "#login-form .in-page-callout",
-        );
+        const signupCallout = document.querySelector("#login-signup-callout");
         if (signupCallout) signupCallout.hidden = true;
     }
 
@@ -511,12 +507,12 @@ export async function mount(root) {
       </div>
     `;
         const signupCalloutHtml = publicRegistrationEnabled
-            ? renderInPageCallout({
+            ? `<div id="login-signup-callout">${renderInPageCallout({
                   variant: "info",
                   title: i18n.t("ui.app.login.not_registered.title"),
                   body: i18n.t("ui.app.login.not_registered.body"),
                   footerHtml: `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
-              })
+              })}</div>`
             : "";
         const formPanelHtml = `
       ${mobileBrandlineHtml}
@@ -537,7 +533,7 @@ export async function mount(root) {
         <div id="login-tfa-fields" hidden></div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
-        <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
+        <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
       <div id="sso-buttons" class="sso-buttons"></div>
     `;
