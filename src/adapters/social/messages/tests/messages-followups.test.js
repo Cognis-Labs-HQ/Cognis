@@ -28,6 +28,10 @@ test("messages member count control opens local member summary without jitsi cal
         source,
         /openPopup\([\s\S]*module\.social\.messages\.member_summary_title/,
     );
+    assert.match(
+        source,
+        /module\.social\.messages\.member_summary_title[\s\S]*onOpen:\s*\(overlay\)\s*=>\s*\{[\s\S]*overlay\.addEventListener\("error", handleProfileAvatarError,[\s\S]*hydrateProfileAvatars\(overlay\)/,
+    );
 });
 
 test("messages IRC layout keeps read receipts inline and centered", () => {

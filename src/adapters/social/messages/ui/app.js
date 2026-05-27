@@ -1918,6 +1918,16 @@ export async function mount(root, { signal } = {}) {
                         "module.social.messages.member_summary_empty",
                     ),
                 }),
+                onOpen: (overlay) => {
+                    overlay.addEventListener(
+                        "error",
+                        handleProfileAvatarError,
+                        {
+                            capture: true,
+                        },
+                    );
+                    void hydrateProfileAvatars(overlay);
+                },
                 actions: [
                     {
                         id: "close",
