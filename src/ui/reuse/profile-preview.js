@@ -132,7 +132,7 @@ async function showPreview(link) {
                 <span>@${escapeHtml(handleText)}</span>
             </div>
         </div>
-        ${profile.bio ? `<div class="profile-mini-preview__bio">${renderMarkdown(profile.bio ?? "")}</div>` : ""}
+        ${profile.bio ? `<div class="profile-mini-preview__bio">${renderMarkdown(profile.bio)}</div>` : ""}
         ${stats ? `<p class="profile-mini-preview__stats">${escapeHtml(stats)}</p>` : ""}
     `;
     positionPreview(link, preview);
