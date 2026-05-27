@@ -55,3 +55,8 @@ test("renderMarkdown still supports hyphen unordered lists", () => {
     const html = renderMarkdown("- one\n- two");
     assert.equal(html, "<ul>\n<li>one</li>\n<li>two</li>\n</ul>");
 });
+
+test("renderMarkdown does not treat leading asterisk bullets as unordered lists", () => {
+    const html = renderMarkdown("* item");
+    assert.equal(html, "<p>* item</p>");
+});

@@ -207,7 +207,6 @@
     flex-direction: column;
     align-self: end;
     width: min(100%, 56rem);
-    max-width: 100%;
     max-height: 100%;
 }
 
