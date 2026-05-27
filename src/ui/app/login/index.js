@@ -227,11 +227,11 @@ export async function mount(root) {
 
     function buildSupportMessage(contactEmail) {
         if (contactEmail) {
-            return i18n
-                .t("ui.app.login.login_link.contact_support_email")
-                .replace("{email}", escapeHtml(contactEmail));
+            return escapeHtml(
+                i18n.t("ui.app.login.login_link.contact_support_email"),
+            ).replace("{email}", escapeHtml(contactEmail));
         }
-        return i18n.t("ui.app.login.login_link.contact_support");
+        return escapeHtml(i18n.t("ui.app.login.login_link.contact_support"));
     }
 
     function switchToLoginLinkEmailForm() {
