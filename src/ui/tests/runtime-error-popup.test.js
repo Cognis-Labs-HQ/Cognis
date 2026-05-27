@@ -19,6 +19,8 @@ test("runtime error popup renders branded header and supports previous-route fal
     assert.match(source, /window\.history\.state\?\.previousRouterPage/);
     assert.match(source, /hasLoadedMainPageBoilerplate/);
     assert.match(source, /didReloadIntoCurrentDocument/);
+    assert.match(source, /id:\s*["']copy["']/);
+    assert.match(source, /navigator\.clipboard\?\.writeText/);
     assert.match(
         source,
         /window\.location\.assign\(normalizedPreviousRoutePath\)/,
@@ -41,6 +43,8 @@ test("popup styles constrain dialog height and apply themed scrollbars", () => {
         /\.popup-overlay,\s*[\s\S]*\.popup-overlay \*\s*\{\s*scrollbar-color:/m,
     );
     assert.match(source, /\.popup-error-report-brand\s*\{/);
+    assert.match(source, /data-popup-action="copy"/);
+    assert.match(source, /\/static\/assets\/reuse\/clipboard\.svg/);
 });
 
 test("router stores previous route in history state during SPA navigation", () => {
@@ -323,4 +327,102 @@ test("runtime error popup caches main boilerplate lookup result", () => {
     assert.equal(context.__testExports.hasLoadedMainPageBoilerplate(), true);
     assert.equal(context.__testExports.hasLoadedMainPageBoilerplate(), true);
     assert.equal(querySelectorCalls, 1);
+});
+
+test("runtime error popup copy action writes full crash detail text", async () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
+
+    const copiedValues = [];
+    const context = {
+        console,
+        Date,
+        openPopup(options) {
+            return Promise.resolve()
+                .then(() => options.onAction("copy"))
+                .then(() => "close");
+        },
+        shouldSuppressConnectionRecoveryPopup() {
+            return false;
+        },
+        createI18n() {
+            return Promise.resolve({
+                t(key) {
+                    return key;
+                },
+            });
+        },
+        escapeHtml(value) {
+            return String(value ?? "");
+        },
+        getCurrentRoutePath() {
+            return "/broken";
+        },
+        normalizeSameOriginRoutePath(routePath) {
+            return String(routePath ?? "");
+        },
+        navigator: {
+            clipboard: {
+                writeText(value) {
+                    copiedValues.push(value);
+                    return Promise.resolve();
+                },
+            },
+        },
+        window: {
+            location: {
+                href: "https://example.com/broken",
+                assign() {},
+            },
+            history: {
+                back() {},
+                state: {
+                    previousRouterPage: "/dashboard",
+                },
+            },
+            performance: {
+                getEntriesByType() {
+                    return [{ type: "reload" }];
+                },
+            },
+            addEventListener() {},
+        },
+        document: {
+            referrer: "",
+            querySelector() {
+                return {};
+            },
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    await context.__testExports.openRuntimeErrorPopup({
+        error: new Error("Route mount failed"),
+        context: "Route mount failed",
+        consoleEntries: [
+            {
+                timestamp: "2026-05-27T00:00:00.000Z",
+                level: "error",
+                message: "Example console entry",
+            },
+        ],
+    });
+
+    assert.equal(copiedValues.length, 1);
+    assert.match(copiedValues[0], /ui\.reuse\.runtime_error_popup_summary/);
+    assert.match(copiedValues[0], /Route mount failed/);
+    assert.match(copiedValues[0], /https:\/\/example\.com\/broken/);
+    assert.match(copiedValues[0], /Example console entry/);
 });

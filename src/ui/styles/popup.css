@@ -112,6 +112,27 @@
     cursor: pointer;
 }
 
+.popup-action-btn[data-popup-action="copy"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popup-action-btn[data-popup-action="copy"]::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/clipboard.svg");
+    mask-image: url("/static/assets/reuse/clipboard.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
 .popup-action-btn--neutral {
     background: transparent;
     border: 1px solid var(--border);

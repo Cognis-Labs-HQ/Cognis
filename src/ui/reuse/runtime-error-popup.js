@@ -192,6 +192,45 @@ function getConsoleEntriesMarkup(i18n, consoleEntries = null) {
     return `<pre class="popup-error-report-trace">${renderedEntries}</pre>`;
 }
 
+function getConsoleEntriesText(i18n, consoleEntries = null) {
+    const effectiveConsoleEntries = Array.isArray(consoleEntries)
+        ? consoleEntries
+        : consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT);
+    if (!effectiveConsoleEntries.length) {
+        return i18n.t("ui.reuse.runtime_error_popup_console_empty");
+    }
+    return effectiveConsoleEntries
+        .map(
+            (entry) =>
+                `${entry.timestamp} [${String(entry.level).toUpperCase()}] ${entry.message || ""}`,
+        )
+        .join("\n");
+}
+
+function buildCrashDetailText(
+    i18n,
+    { errorMessage, context, pageUrl, errorStack, consoleEntriesText } = {},
+) {
+    return [
+        `${i18n.t("ui.reuse.runtime_error_popup_summary")}\n${errorMessage}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_context")}\n${context}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_page_url")}\n${pageUrl}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_stack")}\n${errorStack}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_console")}\n${consoleEntriesText}`,
+    ].join("\n\n");
+}
+
+async function copyTextToClipboard(value) {
+    if (typeof navigator === "undefined") return false;
+    if (typeof navigator.clipboard?.writeText !== "function") return false;
+    try {
+        await navigator.clipboard.writeText(value);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export async function openRuntimeErrorPopup({
     error,
     context = "",
@@ -250,6 +289,20 @@ export async function openRuntimeErrorPopup({
         else if (context) contextParts.push(context);
         if (contextDetail) contextParts.push(contextDetail);
         const resolvedContext = contextParts.join(": ") || "unknown";
+        const resolvedPageUrl =
+            typeof window === "undefined" ? "" : window.location.href;
+        const resolvedStack = normalizedErrorStack || normalizedErrorMessage;
+        const resolvedConsoleEntriesText = getConsoleEntriesText(
+            i18n,
+            consoleEntries,
+        );
+        const crashDetailText = buildCrashDetailText(i18n, {
+            errorMessage: normalizedErrorMessage,
+            context: resolvedContext,
+            pageUrl: resolvedPageUrl,
+            errorStack: resolvedStack,
+            consoleEntriesText: resolvedConsoleEntriesText,
+        });
         const brandName = i18n.t("ui.shared.brand.name");
 
         const popupBody = () => `
@@ -268,11 +321,11 @@ export async function openRuntimeErrorPopup({
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_page_url"))}</h3>
-                    <pre class="popup-error-report-trace">${escapeHtml(window.location.href)}</pre>
+                    <pre class="popup-error-report-trace">${escapeHtml(resolvedPageUrl)}</pre>
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_stack"))}</h3>
-                    <pre class="popup-error-report-trace">${escapeHtml(normalizedErrorStack || normalizedErrorMessage)}</pre>
+                    <pre class="popup-error-report-trace">${escapeHtml(resolvedStack)}</pre>
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_console"))}</h3>
@@ -288,11 +341,20 @@ export async function openRuntimeErrorPopup({
             maxWidth: "960px",
             actions: [
                 {
+                    id: "copy",
+                    label: "Copy",
+                },
+                {
                     id: "close",
                     label: i18n.t("ui.reuse.dismiss"),
                     variant: "confirm",
                 },
             ],
+            onAction: async (actionId) => {
+                if (actionId !== "copy") return;
+                await copyTextToClipboard(crashDetailText);
+                return false;
+            },
         });
         if (popupAction === null || popupAction === "close") {
             navigateToPreviousRouteIfDifferent(
