@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
@@ -214,39 +215,131 @@ test("messages composer includes markdown compose preview switcher", () => {
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
 });
 
-test("messages pending incoming requests skip room-key fetches during thread refresh paths", () => {
+function loadMessagesUiTestExports({
+    apiFetch = async () => ({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        async json() {
+            return { data: { key: "00" } };
+        },
+    }),
+    importRoomKey = async (hex) => ({ importedHex: hex }),
+} = {}) {
     const appSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
+    const testableSource =
+        appSource
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "")
+            .replace(/\nawait mountWhenDirect\(mount\);\s*$/, "\n") +
+        "\n" +
+        "globalThis.__testExports = { hasIncomingPendingRequest, resolveThreadRoomKey, requireRoomKey };\n";
 
-    assert.match(
-        appSource,
-        /function hasIncomingPendingRequest\(pendingRequest\)\s*\{\s*return pendingRequest\?\.direction === "incoming";\s*\}/,
+    const context = {
+        console,
+        TextEncoder,
+        URLSearchParams,
+        localStorage: {
+            getItem() {
+                return null;
+            },
+            setItem() {},
+        },
+        document: {
+            getElementById() {
+                return null;
+            },
+            querySelector() {
+                return null;
+            },
+        },
+        window: {
+            addEventListener() {},
+        },
+        history: {
+            pushState() {},
+            replaceState() {},
+        },
+        createAnchoredPopup() {
+            return {
+                reposition() {},
+            };
+        },
+        apiFetch,
+        importRoomKey,
+        mountWhenDirect: async () => {},
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "messages-ui-app.js",
+    });
+
+    return context.__testExports;
+}
+
+test("messages UI skips room-key fetch for incoming pending requests", async () => {
+    let apiFetchCallCount = 0;
+    const { resolveThreadRoomKey } = loadMessagesUiTestExports({
+        apiFetch: async () => {
+            apiFetchCallCount += 1;
+            return {
+                ok: true,
+                status: 200,
+                statusText: "OK",
+                async json() {
+                    return { data: { key: "00" } };
+                },
+            };
+        },
+    });
+
+    const key = await resolveThreadRoomKey(
+        {
+            pendingRequest: {
+                direction: "incoming",
+                canRespond: true,
+            },
+        },
+        "room-1",
     );
-    assert.match(
-        appSource,
-        /const key = hasIncomingPendingRequest\(room\?\.pendingRequest\)\s*\?\s*null\s*:\s*await requireRoomKey\(roomId\);/,
-    );
-    assert.match(
-        appSource,
-        /const key = hasIncomingPendingRequest\(selectedRoom\?\.pendingRequest\)\s*\?\s*null\s*:\s*await requireRoomKey\(selectedRoomId\);/,
-    );
+
+    assert.equal(key, null);
+    assert.equal(apiFetchCallCount, 0);
 });
 
-test("messages required room-key fetches throw detailed errors for runtime popup handling", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+test("requireRoomKey throws detailed errors on failure", async () => {
+    const { requireRoomKey } = loadMessagesUiTestExports({
+        apiFetch: async () => ({
+            ok: false,
+            status: 403,
+            statusText: "Forbidden",
+            async json() {
+                return {
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Approve the message request before reading messages.",
+                    },
+                };
+            },
+        }),
+    });
 
-    assert.match(appSource, /async function requireRoomKey\(roomId\)/);
-    assert.match(
-        appSource,
-        /if \(!res\.ok\) \{[\s\S]*const payload = await res\.json\(\)\.catch\(\(\) => null\);[\s\S]*const error = new Error\(message\);[\s\S]*error\.status = res\.status;[\s\S]*error\.code = payload\?\.error\?\.code;[\s\S]*error\.roomId = roomId;[\s\S]*throw error;[\s\S]*\}/,
-    );
-    assert.match(
-        appSource,
-        /const key = await requireRoomKey\(selectedRoomId\);/,
+    await assert.rejects(
+        () => requireRoomKey("room-403"),
+        (error) => {
+            assert.equal(
+                error.message,
+                "Approve the message request before reading messages.",
+            );
+            assert.equal(error.status, 403);
+            assert.equal(error.code, "forbidden");
+            assert.equal(error.roomId, "room-403");
+            return true;
+        },
     );
 });

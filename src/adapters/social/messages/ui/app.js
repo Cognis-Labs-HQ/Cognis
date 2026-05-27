@@ -334,6 +334,13 @@ function hasIncomingPendingRequest(pendingRequest) {
     return pendingRequest?.direction === "incoming";
 }
 
+async function resolveThreadRoomKey(roomOrPendingRequest, roomId) {
+    const pendingRequest =
+        roomOrPendingRequest?.pendingRequest ?? roomOrPendingRequest ?? null;
+    if (hasIncomingPendingRequest(pendingRequest)) return null;
+    return requireRoomKey(roomId);
+}
+
 async function requireRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
     const res = await apiFetch(
@@ -1563,9 +1570,7 @@ export async function mount(root, { signal } = {}) {
         }
         syncComposerAvailability(room);
         syncPendingRequestBanner(room?.pendingRequest ?? null);
-        const key = hasIncomingPendingRequest(room?.pendingRequest)
-            ? null
-            : await requireRoomKey(roomId);
+        const key = await resolveThreadRoomKey(room, roomId);
         const threadResult = await renderThread(
             roomId,
             key,
@@ -1702,9 +1707,7 @@ export async function mount(root, { signal } = {}) {
         const selectedRoom = rooms.find(
             (room) => String(room.id) === String(selectedRoomId),
         );
-        const key = hasIncomingPendingRequest(selectedRoom?.pendingRequest)
-            ? null
-            : await requireRoomKey(selectedRoomId);
+        const key = await resolveThreadRoomKey(selectedRoom, selectedRoomId);
         await renderThread(
             selectedRoomId,
             key,
@@ -1792,9 +1795,7 @@ export async function mount(root, { signal } = {}) {
         const selectedRoom = rooms.find(
             (room) => String(room.id) === String(selectedRoomId),
         );
-        const key = hasIncomingPendingRequest(selectedRoom?.pendingRequest)
-            ? null
-            : await requireRoomKey(selectedRoomId);
+        const key = await resolveThreadRoomKey(selectedRoom, selectedRoomId);
         const threadResult = await renderThread(
             selectedRoomId,
             key,
@@ -2301,11 +2302,10 @@ export async function mount(root, { signal } = {}) {
                             (room) =>
                                 String(room.id) === String(selectedRoomId),
                         );
-                        const key = hasIncomingPendingRequest(
-                            selectedRoom?.pendingRequest,
-                        )
-                            ? null
-                            : await requireRoomKey(selectedRoomId);
+                        const key = await resolveThreadRoomKey(
+                            selectedRoom,
+                            selectedRoomId,
+                        );
                         await renderThread(
                             selectedRoomId,
                             key,
