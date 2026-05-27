@@ -15,6 +15,7 @@
  */
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { readPreferredLanguages } from "../../reuse/i18n.js";
 import { openPopup } from "../../reuse/popup.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import {
@@ -76,7 +77,10 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
 
     let changelogPayload;
     try {
-        const response = await apiFetch("/api/v1/system/release-changelog");
+        const langs = readPreferredLanguages().join(",");
+        const response = await apiFetch(
+            `/api/v1/system/release-changelog?langs=${encodeURIComponent(langs)}`,
+        );
         if (!response.ok) return;
         changelogPayload = await response.json();
     } catch {

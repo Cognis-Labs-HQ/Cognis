@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, HealthService } from "@cognis/core";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
+import { resolveLangs } from "../../reuse/preferred-languages.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -163,15 +164,17 @@ export function createSystemRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
+            const langs = resolveLangs(url);
             const [releaseVersion, entries] = await Promise.all([
                 readReleaseVersion(),
-                loadReleaseChangelogEntries(),
+                loadReleaseChangelogEntries(langs),
             ]);
             log?.("debug", "Served release changelog feed.", {
                 ...logMeta,
                 accountId: claims.sub,
                 releaseVersion,
                 entryCount: entries.length,
+                langs,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { releaseVersion, entries } }));
