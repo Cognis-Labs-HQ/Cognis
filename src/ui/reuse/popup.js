@@ -418,6 +418,8 @@ export async function openPopup({
                 return;
             }
             if (event.key === "Enter") {
+                if (document.activeElement instanceof HTMLTextAreaElement)
+                    return;
                 const confirmBtn = overlay.querySelector(
                     "[data-popup-action].btn-confirm",
                 );

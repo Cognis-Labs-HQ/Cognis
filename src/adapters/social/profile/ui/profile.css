@@ -939,17 +939,17 @@
     font-style: italic;
 }
 
-.profile-edit-bio-preview-section {
+.profile-edit-bio-preview {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--surface-2);
+    color: var(--text);
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     margin-top: 4px;
-}
-
-.profile-edit-bio-preview-heading {
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: var(--text-muted);
+    opacity: 0.8;
 }
 
 .post-form-footer {

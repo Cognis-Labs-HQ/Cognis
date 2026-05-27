@@ -921,16 +921,7 @@ async function openEditPopup() {
     let profileEditFormController = null;
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
-        body: () =>
-            `${profileEditFormBuilder.render()}
-            <div class="profile-edit-bio-preview-section">
-              <div class="profile-edit-bio-preview-heading">${escapeHtml(i18n.t("ui.app.profile.preview"))}</div>
-              <div
-                id="profile-edit-bio-preview"
-                class="profile-compose-preview"
-                aria-live="polite"
-              >${renderComposerMarkdownPreview(currentBio, i18n.t("ui.app.profile.bio_preview_placeholder"))}</div>
-            </div>`,
+        body: () => profileEditFormBuilder.render(),
         variant: "info",
         maxWidth: "40%",
         onOpen: (overlay) => {
@@ -941,11 +932,21 @@ async function openEditPopup() {
                     ? profileEditFormBuilder.attach(popupFormElement)
                     : null;
             const popupBioInput = overlay.querySelector("#popup-edit-bio");
-            const bioPreviewElement = overlay.querySelector(
-                "#profile-edit-bio-preview",
+            const bioFieldWrapper = overlay.querySelector(
+                '[data-form-builder-field="bio"]',
             );
+            const bioPreviewElement = document.createElement("div");
+            bioPreviewElement.id = "profile-edit-bio-preview";
+            bioPreviewElement.className =
+                "profile-edit-bio-preview profile-markdown";
+            bioPreviewElement.setAttribute("aria-live", "polite");
+            if (bioFieldWrapper instanceof HTMLElement) {
+                bioFieldWrapper.insertAdjacentElement(
+                    "afterend",
+                    bioPreviewElement,
+                );
+            }
             const renderBioPreview = () => {
-                if (!(bioPreviewElement instanceof HTMLElement)) return;
                 const bioValue =
                     popupBioInput instanceof HTMLTextAreaElement
                         ? popupBioInput.value
