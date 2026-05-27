@@ -27,6 +27,7 @@ export async function mount(root) {
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
     let passwordResetTokenHandled = false;
+    let submitPasswordReset = null;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -314,6 +315,11 @@ export async function mount(root) {
         if (signupCallout) signupCallout.hidden = true;
     }
 
+    function resetPasswordResetMode() {
+        isPasswordResetMode = false;
+        submitPasswordReset = null;
+    }
+
     async function handleRequestLinkClick() {
         const res = await fetch("/api/v1/auth/login-link-status");
         const body = await res.json().catch(() => null);
@@ -391,8 +397,6 @@ export async function mount(root) {
                 composer.refresh();
             });
     }
-
-    let submitPasswordReset = null;
 
     function renderPasswordResetForm(token, showBackButton = true) {
         const backButtonHtml = showBackButton
@@ -587,6 +591,7 @@ export async function mount(root) {
                 },
                 render: () => renderLoginShell(),
                 onRender: () => {
+                    resetPasswordResetMode();
                     loadLoginMethods();
                     runTypingShowcase(typingSamples);
                     renderLoginReasonToast();

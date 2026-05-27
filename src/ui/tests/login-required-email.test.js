@@ -32,6 +32,20 @@ test("login UI includes password reset token flow and nested signup callout link
     assert.match(source, /footerHtml:\s*`<a href="\/register"/);
 });
 
+test("login UI resets password reset mode on refresh re-render", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    assert.match(source, /function resetPasswordResetMode\(\)/);
+    assert.match(source, /isPasswordResetMode = false/);
+    assert.match(source, /submitPasswordReset = null/);
+    assert.match(
+        source,
+        /onRender:\s*\(\)\s*=>\s*{[\s\S]*resetPasswordResetMode\(\)/,
+    );
+});
+
 test("notify required-email helper checks verified primary email", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/notify/ui/login-required-email-flow.js"),
