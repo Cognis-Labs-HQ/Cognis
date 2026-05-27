@@ -53,8 +53,8 @@ import {
 const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
 const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
-const ONE_TIME_LOGIN_TTL_SECONDS = 15 * 60;
-const ONE_TIME_LOGIN_RATE_LIMIT_MS = 60_000;
+const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
+const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
@@ -392,10 +392,10 @@ function createAuthGatewayRoutes(
     }
 
     const oneTimeLoginAccountRateLimiter = new MemoryRateLimiter(
-        ONE_TIME_LOGIN_RATE_LIMIT_MS,
+        PASSWORD_RESET_RATE_LIMIT_MS,
     );
     const oneTimeLoginIpRateLimiter = new MemoryRateLimiter(
-        ONE_TIME_LOGIN_RATE_LIMIT_MS,
+        PASSWORD_RESET_RATE_LIMIT_MS,
     );
 
     function resolveRequestAddress(req: IncomingMessage): string {
@@ -911,9 +911,7 @@ function createAuthGatewayRoutes(
             const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
                 "notify:canSendOneTimeLoginEmail",
             );
-            const contactEmail = String(
-                process.env.CONTACT_EMAIL ?? "",
-            ).trim();
+            const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -950,9 +948,7 @@ function createAuthGatewayRoutes(
             const addressRateLimitKey = `address:${requestAddress}`;
             const emailRateLimitKey = `email:${email}`;
             if (
-                oneTimeLoginAccountRateLimiter.isThrottled(
-                    emailRateLimitKey,
-                ) ||
+                oneTimeLoginAccountRateLimiter.isThrottled(emailRateLimitKey) ||
                 oneTimeLoginIpRateLimiter.isThrottled(addressRateLimitKey)
             ) {
                 res.writeHead(429, { "content-type": "application/json" });
@@ -1017,7 +1013,7 @@ function createAuthGatewayRoutes(
             const loginToken = issueAccessToken(
                 accountId,
                 resolveRole(accountInfo.role),
-                ONE_TIME_LOGIN_TTL_SECONDS,
+                PASSWORD_RESET_TOKEN_TTL_SECONDS,
                 {
                     providerId: "local",
                 },

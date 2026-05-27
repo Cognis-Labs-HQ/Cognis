@@ -282,12 +282,11 @@ export async function mount(root) {
                 ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
             </button>
         `;
-        document.querySelector("#login-link-back")?.addEventListener(
-            "click",
-            () => {
+        document
+            .querySelector("#login-link-back")
+            ?.addEventListener("click", () => {
                 composer.refresh();
-            },
-        );
+            });
     }
 
     async function handleRequestLinkClick() {
@@ -367,9 +366,9 @@ export async function mount(root) {
                 ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
             </button>
         `;
-        document.querySelector("#login-link-submit")?.addEventListener(
-            "click",
-            async () => {
+        document
+            .querySelector("#login-link-submit")
+            ?.addEventListener("click", async () => {
                 const nextPassword = String(
                     document.querySelector("#login-link-password")?.value ?? "",
                 ).trim();
@@ -378,22 +377,31 @@ export async function mount(root) {
                         ?.value ?? "",
                 ).trim();
                 if (!nextPassword || !confirmPassword) {
-                    showToast(i18n.t("ui.app.login.login_link.password_required"), {
-                        variant: "warning",
-                    });
+                    showToast(
+                        i18n.t("ui.app.login.login_link.password_required"),
+                        {
+                            variant: "warning",
+                        },
+                    );
                     return;
                 }
                 if (nextPassword !== confirmPassword) {
-                    showToast(i18n.t("ui.app.register.error.password_mismatch"), {
-                        variant: "error",
-                    });
+                    showToast(
+                        i18n.t("ui.app.register.error.password_mismatch"),
+                        {
+                            variant: "error",
+                        },
+                    );
                     return;
                 }
-                const response = await fetch("/api/v1/auth/consume-login-link", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ token, password: nextPassword }),
-                });
+                const response = await fetch(
+                    "/api/v1/auth/consume-login-link",
+                    {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ token, password: nextPassword }),
+                    },
+                );
                 const body = await response.json().catch(() => null);
                 if (response.ok && body?.data?.updated === true) {
                     window.history.replaceState({}, "", "/login");
@@ -413,22 +421,20 @@ export async function mount(root) {
                         permanent: true,
                     },
                 );
-            },
-        );
-        document.querySelector("#login-link-back")?.addEventListener(
-            "click",
-            () => {
+            });
+        document
+            .querySelector("#login-link-back")
+            ?.addEventListener("click", () => {
                 window.history.replaceState({}, "", "/login");
                 composer.refresh();
-            },
-        );
+            });
     }
 
     async function consumePasswordResetToken() {
         if (passwordResetTokenHandled) return;
         const params = new URL(window.location.href).searchParams;
         const loginToken = String(
-            params.get("passwordResetToken") ?? params.get("loginToken") ?? "",
+            params.get("passwordResetToken") ?? "",
         ).trim();
         if (!loginToken) return;
         passwordResetTokenHandled = true;

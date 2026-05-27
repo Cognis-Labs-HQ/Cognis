@@ -112,7 +112,7 @@
   <string name="ui.app.login.form.password">Password</string>
   <string name="ui.app.login.form.submit">Login</string>
   <string name="ui.app.login.login_link.action">Forgot your password?</string>
-  <string name="ui.app.login.login_link.title">Reset your password</string>
+  <string name="ui.app.login.login_link.title">Reset Your Password</string>
   <string name="ui.app.login.login_link.email">Email Address</string>
   <string name="ui.app.login.login_link.email_required">Enter your email address.</string>
   <string name="ui.app.login.login_link.submit">Reset Password</string>
