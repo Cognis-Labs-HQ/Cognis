@@ -235,12 +235,18 @@ export async function mount(root) {
         return escapeHtml(i18n.t("ui.app.login.login_link.contact_support"));
     }
 
-    function switchToLoginLinkEmailForm() {
+    function replaceCredentialFieldsContent(html) {
         const credentialFields = document.querySelector(
             "#login-credential-fields",
         );
-        if (!credentialFields) return;
-        credentialFields.innerHTML = `
+        if (!credentialFields) return false;
+        credentialFields.innerHTML = html;
+        return true;
+    }
+
+    function switchToLoginLinkEmailForm() {
+        if (
+            !replaceCredentialFieldsContent(`
             <label>
                 <span>${escapeHtml(i18n.t("ui.app.login.login_link.email"))}</span>
                 <input id="login-link-email" type="email" autocomplete="email"
@@ -255,7 +261,10 @@ export async function mount(root) {
                     ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
                 </button>
             </div>
-        `;
+        `)
+        ) {
+            return;
+        }
         enterPasswordResetMode();
         const backLink = document.querySelector("#login-link-back");
         const emailInput = document.querySelector("#login-link-email");
@@ -275,16 +284,16 @@ export async function mount(root) {
     }
 
     function showLoginLinkUnavailable(contactEmail) {
-        const credentialFields = document.querySelector(
-            "#login-credential-fields",
-        );
-        if (!credentialFields) return;
-        credentialFields.innerHTML = `
+        if (
+            !replaceCredentialFieldsContent(`
             <p class="auth-link-unavailable-message">${buildSupportMessage(contactEmail)}</p>
             <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
                 ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
             </button>
-        `;
+        `)
+        ) {
+            return;
+        }
         enterPasswordResetMode();
         submitPasswordReset = null;
         document
@@ -357,11 +366,8 @@ export async function mount(root) {
     }
 
     function showPasswordResetLinkInvalid() {
-        const credentialFields = document.querySelector(
-            "#login-credential-fields",
-        );
-        if (!credentialFields) return;
-        credentialFields.innerHTML = `
+        if (
+            !replaceCredentialFieldsContent(`
             ${renderInPageCallout({
                 variant: "danger",
                 title: i18n.t("ui.reuse.error"),
@@ -372,7 +378,10 @@ export async function mount(root) {
                     ${escapeHtml(i18n.t("ui.app.login.login_link.go_back"))}
                 </button>
             </div>
-        `;
+        `)
+        ) {
+            return;
+        }
         enterPasswordResetMode();
         submitPasswordReset = null;
         document
@@ -386,16 +395,13 @@ export async function mount(root) {
     let submitPasswordReset = null;
 
     function renderPasswordResetForm(token, showBackButton = true) {
-        const credentialFields = document.querySelector(
-            "#login-credential-fields",
-        );
-        if (!credentialFields) return;
         const backButtonHtml = showBackButton
             ? `<button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
                     ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
                 </button>`
             : "";
-        credentialFields.innerHTML = `
+        if (
+            !replaceCredentialFieldsContent(`
             <label>
                 <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
                 <input id="login-link-password" type="password" autocomplete="new-password"
@@ -414,7 +420,10 @@ export async function mount(root) {
                     ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
                 </button>
             </div>
-        `;
+        `)
+        ) {
+            return;
+        }
         enterPasswordResetMode();
         submitPasswordReset = async () => {
             const nextPassword = String(
@@ -478,15 +487,21 @@ export async function mount(root) {
             params.get("passwordResetToken") ?? "",
         ).trim();
         if (!loginToken) return;
-        passwordResetTokenHandled = true;
-        const checkRes = await fetch(
-            `/api/v1/auth/check-login-link?token=${encodeURIComponent(loginToken)}`,
-        );
-        if (!checkRes.ok) {
-            showPasswordResetLinkInvalid();
-            return;
+        try {
+            passwordResetTokenHandled = true;
+            const checkRes = await fetch(
+                `/api/v1/auth/check-login-link?token=${encodeURIComponent(loginToken)}`,
+            );
+            if (!checkRes.ok) {
+                passwordResetTokenHandled = false;
+                showPasswordResetLinkInvalid();
+                return;
+            }
+            renderPasswordResetForm(loginToken, false);
+        } catch (error) {
+            passwordResetTokenHandled = false;
+            throw error;
         }
-        renderPasswordResetForm(loginToken, false);
     }
 
     function renderLoginShell() {
@@ -600,7 +615,16 @@ export async function mount(root) {
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
                             if (isPasswordResetMode) {
-                                await submitPasswordReset?.();
+                                try {
+                                    await submitPasswordReset?.();
+                                } catch {
+                                    showToast(
+                                        i18n.t("ui.app.login.error.generic"),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
+                                }
                                 return;
                             }
                             const form = event.target;

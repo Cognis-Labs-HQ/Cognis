@@ -125,8 +125,20 @@ function sanitizeSmtpPath(value: string): string {
 
 function extractEmailAddress(value: string): string {
     const sanitized = sanitizeHeader(value);
-    const bracketed = sanitized.match(/<([^<>\s]+@[^<>\s]+)>/);
-    return bracketed?.[1] ?? sanitized;
+    const openingBracketIndex = sanitized.indexOf("<");
+    if (openingBracketIndex === -1) return sanitized;
+    const closingBracketIndex = sanitized.indexOf(
+        ">",
+        openingBracketIndex + 1,
+    );
+    if (closingBracketIndex === -1) return sanitized;
+    const bracketed = sanitized
+        .slice(openingBracketIndex + 1, closingBracketIndex)
+        .trim();
+    if (!bracketed || /\s/.test(bracketed) || !bracketed.includes("@")) {
+        return sanitized;
+    }
+    return bracketed;
 }
 
 function getAddressDomain(value: string): string | null {
@@ -244,8 +256,8 @@ function encodeQuotedPrintable(input: string): string {
 }
 
 function stripHtmlTags(html: string): string {
-    return html
-        .replace(/<br\s*\/?\s*>/gi, "\n")
+    const withNormalizedBreaks = normalizeHtmlBreakTags(html);
+    return withNormalizedBreaks
         .replace(/<[^>]+>/g, "")
         .replace(/&nbsp;/g, " ")
         .replace(/&amp;/g, "&")
@@ -254,6 +266,28 @@ function stripHtmlTags(html: string): string {
         .replace(/&quot;/g, '"')
         .replace(/&#x27;/g, "'")
         .replace(/&#8212;/g, "—");
+}
+
+function normalizeHtmlBreakTags(html: string): string {
+    const lower = html.toLowerCase();
+    let out = "";
+    let cursor = 0;
+    while (cursor < html.length) {
+        const tagStart = lower.indexOf("<br", cursor);
+        if (tagStart === -1) {
+            out += html.slice(cursor);
+            break;
+        }
+        out += html.slice(cursor, tagStart);
+        const tagEnd = lower.indexOf(">", tagStart + 3);
+        if (tagEnd === -1) {
+            out += html.slice(tagStart);
+            break;
+        }
+        out += "\n";
+        cursor = tagEnd + 1;
+    }
+    return out;
 }
 
 function dotStuff(message: string): string {

@@ -18,6 +18,7 @@ interface AccessTokenRecord {
     expiresAt: number | null;
     issuedAt?: number;
     setupPending?: boolean;
+    purpose?: "session" | "password-reset";
 }
 
 const tokenStore = new Map<string, AccessTokenRecord>();
@@ -108,6 +109,7 @@ function loadTokenStore(now = Date.now()) {
                 const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
                 const setupPending = (record as { setupPending?: unknown })
                     .setupPending;
+                const purpose = (record as { purpose?: unknown }).purpose;
 
                 if (typeof subject !== "string" || !isAccessRole(role))
                     continue;
@@ -124,6 +126,13 @@ function loadTokenStore(now = Date.now()) {
                 ) {
                     continue;
                 }
+                if (
+                    purpose !== undefined &&
+                    purpose !== "session" &&
+                    purpose !== "password-reset"
+                ) {
+                    continue;
+                }
 
                 store.set(tokenHash, {
                     subject,
@@ -132,6 +141,7 @@ function loadTokenStore(now = Date.now()) {
                     expiresAt,
                     issuedAt,
                     setupPending,
+                    purpose,
                 });
                 if (store.size >= MAX_TOKEN_STORE_SIZE) break;
             }
@@ -206,6 +216,7 @@ export function lookupAccessToken(token: string): {
     providerId: string;
     revoked: boolean;
     setupPending: boolean;
+    purpose: "session" | "password-reset";
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
@@ -215,6 +226,7 @@ export function lookupAccessToken(token: string): {
         providerId: stored.record.providerId,
         revoked: stored.revoked,
         setupPending: stored.record.setupPending === true,
+        purpose: stored.record.purpose ?? "session",
     };
 }
 
@@ -223,9 +235,29 @@ export function verifyAccessToken(token: string): {
     role: AccessRole;
     providerId: string;
     setupPending: boolean;
+} | null;
+export function verifyAccessToken(
+    token: string,
+    options: { purpose: "session" | "password-reset" },
+): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    setupPending: boolean;
+} | null;
+export function verifyAccessToken(
+    token: string,
+    options?: { purpose: "session" | "password-reset" },
+): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    setupPending: boolean;
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored || stored.revoked) return null;
+    const purpose = stored.record.purpose ?? "session";
+    if (purpose !== (options?.purpose ?? "session")) return null;
     return {
         sub: stored.record.subject,
         role: stored.record.role,
@@ -300,6 +332,7 @@ export function issueAccessToken(
         issuedAt?: number;
         providerId?: string;
         setupPending?: boolean;
+        purpose?: "session" | "password-reset";
     },
 ): string {
     pruneExpiredTokens();
@@ -321,6 +354,7 @@ export function issueAccessToken(
         expiresAt,
         issuedAt,
         setupPending: options?.setupPending === true,
+        purpose: options?.purpose ?? "session",
     });
     persistTokenStore();
     return token;

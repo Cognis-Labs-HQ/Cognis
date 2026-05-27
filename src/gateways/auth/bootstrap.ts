@@ -20,7 +20,6 @@ import {
 } from "../../api/reuse/access-token-http.js";
 import {
     issueAccessToken,
-    lookupAccessToken,
     verifyAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
@@ -55,6 +54,22 @@ const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
 const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
 const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
+const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
+const PASSWORD_RESET_RESPONSE_JITTER_MS = 120;
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForPasswordResetResponseFloor(
+    startedAt: number,
+): Promise<void> {
+    const jitterMs = Math.floor(Math.random() * PASSWORD_RESET_RESPONSE_JITTER_MS);
+    const targetMs = PASSWORD_RESET_MIN_RESPONSE_MS + jitterMs;
+    const elapsedMs = Date.now() - startedAt;
+    if (elapsedMs >= targetMs) return;
+    await sleep(targetMs - elapsedMs);
+}
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
@@ -153,6 +168,9 @@ function resolveRole(sessionRole: string | undefined): AccessRole {
     return "user";
 }
 
+// NOTE: This limiter keeps state in-process for single-instance deployments.
+// In multi-instance setups (for example, behind a load balancer), use a shared
+// store-backed limiter (such as Redis) to enforce global throttling.
 class MemoryRateLimiter {
     private readonly lastSeenAt = new Map<string, number>();
 
@@ -928,21 +946,27 @@ function createAuthGatewayRoutes(
             url.pathname === "/api/v1/auth/request-login-link" &&
             req.method === "POST"
         ) {
+            const requestStartedAt = Date.now();
+            const respondWithPasswordResetEnvelope = async (
+                statusCode: number,
+                payload: unknown,
+            ) => {
+                await waitForPasswordResetResponseFloor(requestStartedAt);
+                res.writeHead(statusCode, { "content-type": "application/json" });
+                res.end(JSON.stringify(payload));
+                return true;
+            };
             const body = await readJson(req);
             const email = String(body.email ?? "")
                 .trim()
                 .toLowerCase();
             if (!email) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "email_required",
-                            message: "Email is required",
-                        },
-                    }),
-                );
-                return true;
+                return respondWithPasswordResetEnvelope(400, {
+                    error: {
+                        code: "email_required",
+                        message: "Email is required",
+                    },
+                });
             }
             const requestAddress = resolveRequestAddress(req);
             const addressRateLimitKey = `address:${requestAddress}`;
@@ -951,17 +975,13 @@ function createAuthGatewayRoutes(
                 oneTimeLoginAccountRateLimiter.isThrottled(emailRateLimitKey) ||
                 oneTimeLoginIpRateLimiter.isThrottled(addressRateLimitKey)
             ) {
-                res.writeHead(429, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "rate_limited",
-                            message:
-                                "A password reset link was requested too recently. Please wait before trying again.",
-                        },
-                    }),
-                );
-                return true;
+                return respondWithPasswordResetEnvelope(429, {
+                    error: {
+                        code: "rate_limited",
+                        message:
+                            "A password reset link was requested too recently. Please wait before trying again.",
+                    },
+                });
             }
             oneTimeLoginAccountRateLimiter.record(emailRateLimitKey);
             oneTimeLoginIpRateLimiter.record(addressRateLimitKey);
@@ -982,17 +1002,14 @@ function createAuthGatewayRoutes(
                 typeof getAccountIdByEmail !== "function" ||
                 !externalBaseUrl
             ) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        data: {
-                            outcome: "contact_support",
-                            contactEmail,
-                        },
-                    }),
-                );
-                return true;
+                return respondWithPasswordResetEnvelope(200, {
+                    data: {
+                        outcome: "contact_support",
+                        contactEmail,
+                    },
+                });
             }
+            await sleep(Math.floor(Math.random() * 40));
             const accountId = await getAccountIdByEmail(email).catch(
                 () => null,
             );
@@ -1000,15 +1017,11 @@ function createAuthGatewayRoutes(
                 ? await accountStore.getInfo(accountId).catch(() => null)
                 : null;
             if (!accountInfo || accountInfo.enabled === false) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        data: {
-                            outcome: "email_sent",
-                        },
-                    }),
-                );
-                return true;
+                return respondWithPasswordResetEnvelope(200, {
+                    data: {
+                        outcome: "email_sent",
+                    },
+                });
             }
             const loginToken = issueAccessToken(
                 accountId,
@@ -1016,6 +1029,7 @@ function createAuthGatewayRoutes(
                 PASSWORD_RESET_TOKEN_TTL_SECONDS,
                 {
                     providerId: "local",
+                    purpose: "password-reset",
                 },
             );
             const loginUrl = `${externalBaseUrl}/login?passwordResetToken=${encodeURIComponent(loginToken)}`;
@@ -1026,39 +1040,31 @@ function createAuthGatewayRoutes(
                 const message =
                     error instanceof Error ? error.message : String(error);
                 if (message === "smtp_rate_limited") {
-                    res.writeHead(429, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "rate_limited",
-                                message:
-                                    "A password reset link was requested too recently. Please wait before trying again.",
-                            },
-                        }),
-                    );
-                    return true;
+                    return respondWithPasswordResetEnvelope(429, {
+                        error: {
+                            code: "rate_limited",
+                            message:
+                                "A password reset link was requested too recently. Please wait before trying again.",
+                        },
+                    });
                 }
                 log?.("warn", "Failed to send password reset email.", {
                     ...logMeta,
                     error: message,
                 });
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        data: {
-                            outcome: "contact_support",
-                            contactEmail,
-                        },
-                    }),
-                );
-                return true;
+                return respondWithPasswordResetEnvelope(200, {
+                    data: {
+                        outcome: "contact_support",
+                        contactEmail,
+                    },
+                });
             }
             log?.("info", "Sent password reset email.", {
                 ...logMeta,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { outcome: "email_sent" } }));
-            return true;
+            return respondWithPasswordResetEnvelope(200, {
+                data: { outcome: "email_sent" },
+            });
         }
 
         if (
@@ -1066,7 +1072,9 @@ function createAuthGatewayRoutes(
             req.method === "GET"
         ) {
             const rawToken = String(url.searchParams.get("token") ?? "").trim();
-            const claims = rawToken ? verifyAccessToken(rawToken) : null;
+            const claims = rawToken
+                ? verifyAccessToken(rawToken, { purpose: "password-reset" })
+                : null;
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -1127,7 +1135,9 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const claims = verifyAccessToken(rawToken);
+            const claims = verifyAccessToken(rawToken, {
+                purpose: "password-reset",
+            });
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -1198,8 +1208,28 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            revokeAccessToken(rawToken);
-            revokeAccessTokensForSubject(claims.sub);
+            const revokedToken = revokeAccessToken(rawToken);
+            const revokedSubjectTokens = revokeAccessTokensForSubject(claims.sub);
+            if (!revokedToken) {
+                log?.(
+                    "warn",
+                    "Password reset token revocation did not remove active token.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                    },
+                );
+            }
+            if (revokedSubjectTokens < 1) {
+                log?.(
+                    "warn",
+                    "No active subject tokens were revoked after password reset.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                    },
+                );
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             return true;
