@@ -40,6 +40,9 @@ function fakeFileGateway() {
         _has(key: string) {
             return store.has(key);
         },
+        _keys() {
+            return Array.from(store.keys());
+        },
     };
 }
 
@@ -462,6 +465,122 @@ test("profile routes - avatar upload succeeds and sets avatarKey", async () => {
     const parsed = JSON.parse(body);
     assert.match(parsed.data.avatarKey, /^alice\//);
     assert.ok(gateway._has(parsed.data.avatarKey));
+});
+
+test("profile routes - avatar upload deletes replaced file", async () => {
+    const profileStore = new VolatileProfileStore();
+    await setupUser(profileStore, "alice");
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken("alice", "user", 60);
+    let firstResponseBody = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("first image"), "image/png"),
+        {
+            writeHead() {},
+            end(payload: string) {
+                firstResponseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/profile/avatar"),
+    );
+    const firstAvatarKey = JSON.parse(firstResponseBody).data.avatarKey;
+
+    let secondResponseBody = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("second image"), "image/png"),
+        {
+            writeHead() {},
+            end(payload: string) {
+                secondResponseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/profile/avatar"),
+    );
+
+    const secondAvatarKey = JSON.parse(secondResponseBody).data.avatarKey;
+    assert.notEqual(secondAvatarKey, firstAvatarKey);
+    assert.equal(gateway._has(firstAvatarKey), false);
+    assert.equal(gateway._has(secondAvatarKey), true);
+});
+
+test("profile routes - avatar upload cleans up stored file when update fails", async () => {
+    const profileStore = new VolatileProfileStore();
+    await setupUser(profileStore, "alice");
+    const gateway = fakeFileGateway();
+    const originalUpdateProfile = profileStore.updateProfile.bind(profileStore);
+    profileStore.updateProfile = async (accountId, updates) => {
+        if ("avatarKey" in updates) throw new Error("update failed");
+        return originalUpdateProfile(accountId, updates);
+    };
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken("alice", "user", 60);
+
+    await assert.rejects(
+        route(
+            makeReq("PUT", token, Buffer.from("image"), "image/png"),
+            {
+                writeHead() {},
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/profile/avatar"),
+        ),
+        /update failed/,
+    );
+    assert.deepEqual(gateway._keys(), []);
+});
+
+test("profile routes - avatar upload succeeds when previous delete fails", async () => {
+    const profileStore = new VolatileProfileStore();
+    await setupUser(profileStore, "alice");
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken("alice", "user", 60);
+
+    let firstResponseBody = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("first image"), "image/png"),
+        {
+            writeHead() {},
+            end(payload: string) {
+                firstResponseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/profile/avatar"),
+    );
+    const firstAvatarKey = JSON.parse(firstResponseBody).data.avatarKey;
+
+    const originalDelete = gateway.delete.bind(gateway);
+    let shouldFailDelete = true;
+    gateway.delete = async (key: string) => {
+        if (key === firstAvatarKey && shouldFailDelete) {
+            shouldFailDelete = false;
+            throw new Error("transient delete failure");
+        }
+        return originalDelete(key);
+    };
+
+    let status = 0;
+    let secondResponseBody = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("second image"), "image/png"),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                secondResponseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/profile/avatar"),
+    );
+
+    assert.equal(status, 200);
+    const secondAvatarKey = JSON.parse(secondResponseBody).data.avatarKey;
+    assert.notEqual(secondAvatarKey, firstAvatarKey);
+    assert.equal(gateway._has(secondAvatarKey), true);
+    const profile = await profileStore.getProfile("alice");
+    assert.equal(profile?.avatarKey, secondAvatarKey);
 });
 
 test("profile routes - avatar upload rejects disallowed MIME type", async () => {

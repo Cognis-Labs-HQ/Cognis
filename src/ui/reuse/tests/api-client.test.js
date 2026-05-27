@@ -10,6 +10,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 function loadApiClientForTests({
     token = "test-token",
     fetchImpl = async () => ({ ok: true, status: 200 }),
+    now = () => Date.now(),
 } = {}) {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/api-client.js"),
@@ -21,6 +22,7 @@ function loadApiClientForTests({
         "globalThis.__testExports = {\n" +
         "  apiFetch,\n" +
         "  configureConnectionRecoveryPrompt,\n" +
+        "  shouldSuppressConnectionRecoveryPopup,\n" +
         "};\n";
 
     const showToastCalls = [];
@@ -36,6 +38,9 @@ function loadApiClientForTests({
         },
         fetch: fetchImpl,
         URL,
+        Date: {
+            now,
+        },
         window: {
             location: {
                 origin: "https://example.com",
@@ -118,4 +123,80 @@ test("apiFetch shows a permanent warning toast for retryable API server response
     assert.equal(showToastCalls[0].message, "Connection interrupted.");
     assert.equal(showToastCalls[0].options.variant, "warning");
     assert.equal(showToastCalls[0].options.permanent, true);
+});
+
+test("apiFetch marks toast-triggering network failures for crash popup suppression", async () => {
+    const networkError = new Error("Failed to fetch");
+    networkError.name = "TypeError";
+    const { apiClient } = loadApiClientForTests({
+        fetchImpl: async () => {
+            throw networkError;
+        },
+        now: () => 1_000,
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await assert.rejects(apiClient.apiFetch("/api/v1/users"), networkError);
+
+    assert.equal(
+        apiClient.shouldSuppressConnectionRecoveryPopup(networkError),
+        true,
+    );
+});
+
+test("api client suppresses crash popups for retryable HTTP errors right after the connection toast", async () => {
+    let now = 1_000;
+    const { apiClient } = loadApiClientForTests({
+        fetchImpl: async () => ({ ok: false, status: 503 }),
+        now: () => now,
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await apiClient.apiFetch("/api/v1/users");
+
+    assert.equal(
+        apiClient.shouldSuppressConnectionRecoveryPopup(
+            new Error('HTTP 503 while loading "/api/v1/users"'),
+        ),
+        true,
+    );
+    now = 7_000;
+    assert.equal(
+        apiClient.shouldSuppressConnectionRecoveryPopup(
+            new Error('HTTP 503 while loading "/api/v1/users"'),
+        ),
+        false,
+    );
+});
+
+test("api client suppresses marked connection failures across deep cause chains", async () => {
+    let now = 1_000;
+    const networkError = new Error("Failed to fetch");
+    networkError.name = "TypeError";
+    const { apiClient } = loadApiClientForTests({
+        fetchImpl: async () => {
+            throw networkError;
+        },
+        now: () => now,
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await assert.rejects(apiClient.apiFetch("/api/v1/users"), networkError);
+
+    const wrappedError = new Error("Route mount failed");
+    let currentError = wrappedError;
+    const errorChainDepth = 20_000;
+    for (let index = 0; index < errorChainDepth; index += 1) {
+        const nextError =
+            index === errorChainDepth - 1
+                ? networkError
+                : new Error(`Wrapped error ${index}`);
+        currentError.cause = nextError;
+        currentError = nextError;
+    }
+
+    assert.equal(
+        apiClient.shouldSuppressConnectionRecoveryPopup(wrappedError),
+        true,
+    );
 });
