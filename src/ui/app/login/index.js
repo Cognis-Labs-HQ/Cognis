@@ -371,6 +371,8 @@ export async function mount(root) {
         enterPasswordResetMode();
     }
 
+    let submitPasswordReset = null;
+
     function renderPasswordResetForm(token, showBackButton = true) {
         const credentialFields = document.querySelector(
             "#login-credential-fields",
@@ -402,61 +404,55 @@ export async function mount(root) {
             </div>
         `;
         enterPasswordResetMode();
+        submitPasswordReset = async () => {
+            const nextPassword = String(
+                document.querySelector("#login-link-password")?.value ?? "",
+            ).trim();
+            const confirmPassword = String(
+                document.querySelector("#login-link-confirm-password")?.value ??
+                    "",
+            ).trim();
+            if (!nextPassword || !confirmPassword) {
+                showToast(i18n.t("ui.app.login.login_link.password_required"), {
+                    variant: "warning",
+                });
+                return;
+            }
+            if (nextPassword !== confirmPassword) {
+                showToast(i18n.t("ui.app.register.error.password_mismatch"), {
+                    variant: "error",
+                });
+                return;
+            }
+            const response = await fetch("/api/v1/auth/consume-login-link", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ token, password: nextPassword }),
+            });
+            const body = await response.json().catch(() => null);
+            if (response.ok && body?.data?.updated === true) {
+                window.history.replaceState({}, "", "/login");
+                showToast(i18n.t("ui.app.login.login_link.reset_success"), {
+                    variant: "success",
+                    permanent: true,
+                });
+                composer.refresh();
+                return;
+            }
+            showToast(
+                body?.error?.message
+                    ? String(body.error.message)
+                    : i18n.t("ui.app.login.login_link.invalid"),
+                {
+                    variant: "error",
+                    permanent: true,
+                },
+            );
+        };
         document
             .querySelector("#login-link-submit")
-            ?.addEventListener("click", async () => {
-                const nextPassword = String(
-                    document.querySelector("#login-link-password")?.value ?? "",
-                ).trim();
-                const confirmPassword = String(
-                    document.querySelector("#login-link-confirm-password")
-                        ?.value ?? "",
-                ).trim();
-                if (!nextPassword || !confirmPassword) {
-                    showToast(
-                        i18n.t("ui.app.login.login_link.password_required"),
-                        {
-                            variant: "warning",
-                        },
-                    );
-                    return;
-                }
-                if (nextPassword !== confirmPassword) {
-                    showToast(
-                        i18n.t("ui.app.register.error.password_mismatch"),
-                        {
-                            variant: "error",
-                        },
-                    );
-                    return;
-                }
-                const response = await fetch(
-                    "/api/v1/auth/consume-login-link",
-                    {
-                        method: "POST",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify({ token, password: nextPassword }),
-                    },
-                );
-                const body = await response.json().catch(() => null);
-                if (response.ok && body?.data?.updated === true) {
-                    window.history.replaceState({}, "", "/login");
-                    showToast(i18n.t("ui.app.login.login_link.reset_success"), {
-                        variant: "success",
-                        permanent: true,
-                    });
-                    composer.refresh();
-                    return;
-                }
-                showToast(
-                    body?.error?.message
-                        ? String(body.error.message)
-                        : i18n.t("ui.app.login.login_link.invalid"),
-                    {
-                        variant: "error",
-                        permanent: true,
-                    },
-                );
+            ?.addEventListener("click", () => {
+                submitPasswordReset?.();
             });
         if (showBackButton) {
             document
@@ -597,9 +593,7 @@ export async function mount(root) {
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
                             if (isPasswordResetMode) {
-                                document
-                                    .querySelector("#login-link-submit")
-                                    ?.click();
+                                await submitPasswordReset?.();
                                 return;
                             }
                             const form = event.target;
