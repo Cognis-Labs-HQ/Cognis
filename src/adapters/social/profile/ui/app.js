@@ -148,6 +148,14 @@ function createPostFormBuilderForVisibility(profileVisibility) {
     return createPostFormBuilder(canFollowers, canFriends, canEveryone);
 }
 
+function renderComposerMarkdownPreview(content, emptyMessage) {
+    const normalizedContent = String(content ?? "");
+    if (!normalizedContent.trim()) {
+        return `<p class="profile-compose-preview-empty">${escapeHtml(emptyMessage)}</p>`;
+    }
+    return renderMarkdown(normalizedContent);
+}
+
 function toAbsoluteUrl(url) {
     if (!url) return url;
     return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -702,6 +710,20 @@ function renderNewPost() {
       </h3>
       <div class="new-post-form-wrap">
         ${postFormBuilder.render()}
+        <div class="profile-compose-preview-switcher">
+          <button
+            type="button"
+            id="profile-post-preview-toggle"
+            class="btn-secondary btn-animated profile-compose-preview-toggle"
+            aria-pressed="false"
+          >${escapeHtml(i18n.t("ui.app.profile.preview"))}</button>
+        </div>
+        <div
+          id="profile-post-preview"
+          class="profile-compose-preview profile-compose-preview--hidden"
+          hidden
+          aria-live="polite"
+        >${renderComposerMarkdownPreview("", i18n.t("ui.app.profile.post_preview_placeholder"))}</div>
         ${visibilityHint}
       </div>
     </div>
@@ -899,7 +921,16 @@ async function openEditPopup() {
     let profileEditFormController = null;
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
-        body: () => profileEditFormBuilder.render(),
+        body: () =>
+            `${profileEditFormBuilder.render()}
+            <div class="profile-edit-bio-preview-section">
+              <div class="profile-edit-bio-preview-heading">${escapeHtml(i18n.t("ui.app.profile.preview"))}</div>
+              <div
+                id="profile-edit-bio-preview"
+                class="profile-compose-preview"
+                aria-live="polite"
+              >${renderComposerMarkdownPreview(currentBio, i18n.t("ui.app.profile.bio_preview_placeholder"))}</div>
+            </div>`,
         variant: "info",
         maxWidth: "40%",
         onOpen: (overlay) => {
@@ -909,6 +940,23 @@ async function openEditPopup() {
                 popupFormElement instanceof HTMLFormElement
                     ? profileEditFormBuilder.attach(popupFormElement)
                     : null;
+            const popupBioInput = overlay.querySelector("#popup-edit-bio");
+            const bioPreviewElement = overlay.querySelector(
+                "#profile-edit-bio-preview",
+            );
+            const renderBioPreview = () => {
+                if (!(bioPreviewElement instanceof HTMLElement)) return;
+                const bioValue =
+                    popupBioInput instanceof HTMLTextAreaElement
+                        ? popupBioInput.value
+                        : "";
+                bioPreviewElement.innerHTML = renderComposerMarkdownPreview(
+                    bioValue,
+                    i18n.t("ui.app.profile.bio_preview_placeholder"),
+                );
+            };
+            renderBioPreview();
+            popupBioInput?.addEventListener("input", renderBioPreview);
         },
         actions: [
             {
@@ -1282,6 +1330,66 @@ function bindPageEvents() {
         const profileVis = profile?.visibility ?? "hidden";
         const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
         newPostFormController = postFormBuilder.attach(postFormElement);
+        const postPreviewToggle = root.querySelector("#profile-post-preview-toggle");
+        const postPreviewElement = root.querySelector("#profile-post-preview");
+        const postTitleInput = postFormElement.querySelector("#post-title");
+        const postContentInput = postFormElement.querySelector("#post-content");
+        const postContentFieldWrapper = postFormElement.querySelector(
+            '[data-form-builder-field="content"]',
+        );
+        let isPostPreviewMode = false;
+        const renderPostPreview = () => {
+            if (!(postPreviewElement instanceof HTMLElement)) return;
+            const titleValue =
+                postTitleInput instanceof HTMLInputElement
+                    ? postTitleInput.value.trim()
+                    : "";
+            const contentValue =
+                postContentInput instanceof HTMLTextAreaElement
+                    ? postContentInput.value
+                    : "";
+            const titleMarkup = titleValue
+                ? `<strong class="profile-post-title">${escapeHtml(titleValue)}</strong>`
+                : "";
+            const bodyMarkup = `<div class="profile-post-body profile-markdown">${renderComposerMarkdownPreview(
+                contentValue,
+                i18n.t("ui.app.profile.post_preview_placeholder"),
+            )}</div>`;
+            postPreviewElement.innerHTML = `${titleMarkup}${bodyMarkup}`;
+        };
+        const syncPostComposerMode = () => {
+            const previewButtonLabel = i18n.t(
+                isPostPreviewMode
+                    ? "ui.app.profile.compose"
+                    : "ui.app.profile.preview",
+            );
+            if (postPreviewToggle instanceof HTMLButtonElement) {
+                postPreviewToggle.textContent = previewButtonLabel;
+                postPreviewToggle.setAttribute(
+                    "aria-pressed",
+                    String(isPostPreviewMode),
+                );
+            }
+            if (postContentFieldWrapper instanceof HTMLElement) {
+                postContentFieldWrapper.hidden = isPostPreviewMode;
+            }
+            if (postPreviewElement instanceof HTMLElement) {
+                postPreviewElement.hidden = !isPostPreviewMode;
+                postPreviewElement.classList.toggle(
+                    "profile-compose-preview--hidden",
+                    !isPostPreviewMode,
+                );
+            }
+        };
+        renderPostPreview();
+        syncPostComposerMode();
+        postTitleInput?.addEventListener("input", renderPostPreview);
+        postContentInput?.addEventListener("input", renderPostPreview);
+        postPreviewToggle?.addEventListener("click", () => {
+            isPostPreviewMode = !isPostPreviewMode;
+            syncPostComposerMode();
+            renderPostPreview();
+        });
         postFormElement.addEventListener("submit", (event) => {
             event.preventDefault();
             doCreatePost();

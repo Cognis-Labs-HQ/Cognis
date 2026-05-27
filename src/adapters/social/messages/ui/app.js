@@ -774,6 +774,14 @@ function renderMessageBodyMarkup(messageText) {
     return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText)}</div>`;
 }
 
+function renderComposerPreviewMarkup(content, emptyMessage) {
+    const normalizedText = String(content ?? "");
+    if (!normalizedText.trim()) {
+        return `<p class="messages-composer-preview-empty">${escapeHtml(emptyMessage)}</p>`;
+    }
+    return renderMarkdown(normalizedText);
+}
+
 function statusUnknownSvgMarkup() {
     return statusBadgeSvgMarkup();
 }
@@ -1468,6 +1476,9 @@ export async function mount(root, { signal } = {}) {
     function syncComposerAvailability(room) {
         const input = document.getElementById("messages-composer-input");
         const sendButton = document.querySelector(".messages-composer-send");
+        const previewToggle = document.getElementById(
+            "messages-composer-preview-toggle",
+        );
         const canSend =
             Boolean(room) &&
             room?.canSend !== false &&
@@ -1480,6 +1491,9 @@ export async function mount(root, { signal } = {}) {
         }
         if (sendButton) {
             sendButton.disabled = !canSend;
+        }
+        if (previewToggle instanceof HTMLButtonElement) {
+            previewToggle.disabled = !canSend;
         }
     }
 
@@ -2043,16 +2057,32 @@ export async function mount(root, { signal } = {}) {
                     <div class="messages-thread-list" id="messages-thread-list"></div>
                     <div class="messages-typing-status" id="messages-typing-status"></div>
                     <form class="messages-composer" id="messages-composer">
-                        <textarea
-                            id="messages-composer-input"
-                            class="messages-composer-input"
-                            placeholder="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
-                            aria-label="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
-                            rows="2"
-                        ></textarea>
-                        <button type="submit" class="messages-composer-send">
-                            ${escapeHtml(i18n.t("module.social.messages.send"))}
-                        </button>
+                        <div class="messages-composer-mode-row">
+                            <button
+                                type="button"
+                                class="messages-composer-mode-toggle"
+                                id="messages-composer-preview-toggle"
+                                aria-pressed="false"
+                            >${escapeHtml(i18n.t("module.social.messages.preview"))}</button>
+                        </div>
+                        <div class="messages-composer-main">
+                            <textarea
+                                id="messages-composer-input"
+                                class="messages-composer-input"
+                                placeholder="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
+                                aria-label="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
+                                rows="2"
+                            ></textarea>
+                            <div
+                                id="messages-composer-preview"
+                                class="messages-composer-preview messages-message-body"
+                                hidden
+                                aria-live="polite"
+                            >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
+                            <button type="submit" class="messages-composer-send">
+                                ${escapeHtml(i18n.t("module.social.messages.send"))}
+                            </button>
+                        </div>
                     </form>
                 </section>`,
             onRender: () => {
@@ -2060,7 +2090,50 @@ export async function mount(root, { signal } = {}) {
                     "messages-thread-list",
                 );
                 const form = document.getElementById("messages-composer");
+                const composerInput = document.getElementById(
+                    "messages-composer-input",
+                );
+                const composerPreview = document.getElementById(
+                    "messages-composer-preview",
+                );
+                const composerPreviewToggle = document.getElementById(
+                    "messages-composer-preview-toggle",
+                );
+                let isComposerPreviewMode = false;
                 const passiveEventOptions = signal ? { signal } : undefined;
+                const renderComposerPreview = () => {
+                    if (!(composerPreview instanceof HTMLElement)) return;
+                    const contentValue =
+                        composerInput instanceof HTMLTextAreaElement
+                            ? composerInput.value
+                            : "";
+                    composerPreview.innerHTML = renderComposerPreviewMarkup(
+                        contentValue,
+                        i18n.t("module.social.messages.preview_placeholder"),
+                    );
+                };
+                const syncComposerMode = () => {
+                    const previewButtonLabel = i18n.t(
+                        isComposerPreviewMode
+                            ? "module.social.messages.compose"
+                            : "module.social.messages.preview",
+                    );
+                    if (composerPreviewToggle instanceof HTMLButtonElement) {
+                        composerPreviewToggle.textContent = previewButtonLabel;
+                        composerPreviewToggle.setAttribute(
+                            "aria-pressed",
+                            String(isComposerPreviewMode),
+                        );
+                    }
+                    if (composerInput instanceof HTMLTextAreaElement) {
+                        composerInput.hidden = isComposerPreviewMode;
+                    }
+                    if (composerPreview instanceof HTMLElement) {
+                        composerPreview.hidden = !isComposerPreviewMode;
+                    }
+                };
+                renderComposerPreview();
+                syncComposerMode();
 
                 threadList?.addEventListener(
                     "click",
@@ -2405,6 +2478,7 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
                     if (input) input.value = "";
+                    renderComposerPreview();
                     if (threadList) {
                         await renderThread(
                             selectedRoomId,
@@ -2418,12 +2492,10 @@ export async function mount(root, { signal } = {}) {
                     startLiveRefreshPolling();
                 });
 
-                const composerInput = document.getElementById(
-                    "messages-composer-input",
-                );
                 composerInput?.addEventListener("input", () => {
                     const hasText = Boolean((composerInput.value ?? "").trim());
                     queueTypingUpdate(hasText);
+                    renderComposerPreview();
                 });
                 composerInput?.addEventListener("keydown", (keyboardEvent) => {
                     if (
@@ -2434,6 +2506,12 @@ export async function mount(root, { signal } = {}) {
                         keyboardEvent.preventDefault();
                         form?.requestSubmit();
                     }
+                });
+                composerPreviewToggle?.addEventListener("click", () => {
+                    if (composerInput?.disabled) return;
+                    isComposerPreviewMode = !isComposerPreviewMode;
+                    syncComposerMode();
+                    renderComposerPreview();
                 });
 
                 if (selectedRoomId) {

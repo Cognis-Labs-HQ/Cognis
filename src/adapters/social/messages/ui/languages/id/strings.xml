@@ -2,6 +2,9 @@
   <string name="module.social.messages.empty">Percakapan akan muncul di sini. Mulai percakapan hari ini!</string>
   <string name="module.social.messages.placeholder">Ketik pesan…</string>
   <string name="module.social.messages.send">Kirim</string>
+  <string name="module.social.messages.compose">Tulis</string>
+  <string name="module.social.messages.preview">Pratinjau</string>
+  <string name="module.social.messages.preview_placeholder">Pratinjau pesan Anda akan muncul di sini.</string>
   <string name="module.social.messages.new">Percakapan Baru</string>
   <string name="module.social.messages.load_earlier">Muat lebih awal</string>
   <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>

@@ -2,6 +2,9 @@
   <string name="module.social.messages.empty">Unterhaltungen erscheinen hier. Starten Sie noch heute eine Unterhaltung!</string>
   <string name="module.social.messages.placeholder">Nachricht eingeben…</string>
   <string name="module.social.messages.send">Senden</string>
+  <string name="module.social.messages.compose">Verfassen</string>
+  <string name="module.social.messages.preview">Vorschau</string>
+  <string name="module.social.messages.preview_placeholder">Ihre Nachrichtenvorschau erscheint hier.</string>
   <string name="module.social.messages.new">Neue Unterhaltung</string>
   <string name="module.social.messages.load_earlier">Frühere laden</string>
   <string name="module.social.messages.start_failed">Konversation konnte nicht gestartet werden.</string>

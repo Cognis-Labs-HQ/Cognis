@@ -908,6 +908,50 @@
     gap: 10px;
 }
 
+.profile-compose-preview-switcher {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.profile-compose-preview-toggle {
+    font-size: 0.82rem;
+    padding: 4px 12px;
+}
+
+.profile-compose-preview {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--surface);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-compose-preview--hidden {
+    display: none;
+}
+
+.profile-compose-preview-empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.profile-edit-bio-preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.profile-edit-bio-preview-heading {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
 .post-form-footer {
     display: flex;
     align-items: center;

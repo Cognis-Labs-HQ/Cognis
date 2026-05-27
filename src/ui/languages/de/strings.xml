@@ -384,6 +384,10 @@
   <string name="ui.app.profile.post_content">Was denkst du?</string>
   <string name="ui.app.profile.post_title">Titel (optional)</string>
   <string name="ui.app.profile.post_submit">Veröffentlichen</string>
+  <string name="ui.app.profile.compose">Verfassen</string>
+  <string name="ui.app.profile.preview">Vorschau</string>
+  <string name="ui.app.profile.bio_preview_placeholder">Die Vorschau deiner Biografie erscheint hier.</string>
+  <string name="ui.app.profile.post_preview_placeholder">Die Vorschau deines Beitrags erscheint hier.</string>
   <string name="ui.app.profile.no_posts">Noch keine Beiträge.</string>
   <string name="ui.app.profile.delete_post">Löschen</string>
   <string name="ui.app.profile.delete_post_confirm">Diesen Beitrag löschen?</string>
