@@ -14,6 +14,58 @@ export function clampCropOffset(offset, maxOffset) {
     return Math.min(safeMaxOffset, Math.max(-safeMaxOffset, safeOffset));
 }
 
+function clampSourceRectToImage({
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    imageWidth,
+    imageHeight,
+}) {
+    const resolvedImageWidth = Number(imageWidth);
+    const resolvedImageHeight = Number(imageHeight);
+    const safeImageWidth =
+        Number.isFinite(resolvedImageWidth) && resolvedImageWidth > 0
+            ? resolvedImageWidth
+            : 1;
+    const safeImageHeight =
+        Number.isFinite(resolvedImageHeight) && resolvedImageHeight > 0
+            ? resolvedImageHeight
+            : 1;
+    const clampedSourceX = Math.min(
+        safeImageWidth - 1,
+        Math.max(0, Number(sourceX) || 0),
+    );
+    const clampedSourceY = Math.min(
+        safeImageHeight - 1,
+        Math.max(0, Number(sourceY) || 0),
+    );
+    const maxSourceWidth = safeImageWidth - clampedSourceX;
+    const maxSourceHeight = safeImageHeight - clampedSourceY;
+    const resolvedSourceWidth = Number(sourceWidth);
+    const resolvedSourceHeight = Number(sourceHeight);
+    const normalizedSourceWidth =
+        Number.isFinite(resolvedSourceWidth) && resolvedSourceWidth > 0
+            ? resolvedSourceWidth
+            : maxSourceWidth;
+    const normalizedSourceHeight =
+        Number.isFinite(resolvedSourceHeight) && resolvedSourceHeight > 0
+            ? resolvedSourceHeight
+            : maxSourceHeight;
+    return {
+        sourceX: clampedSourceX,
+        sourceY: clampedSourceY,
+        sourceWidth: Math.min(
+            maxSourceWidth,
+            Math.max(1, normalizedSourceWidth),
+        ),
+        sourceHeight: Math.min(
+            maxSourceHeight,
+            Math.max(1, normalizedSourceHeight),
+        ),
+    };
+}
+
 /**
  * Computes the scaled image geometry and clamped drag offsets for a crop frame.
  *
@@ -118,12 +170,14 @@ export function computeCropSourceRect(viewport) {
     const sourceHeight =
         (viewport.frameHeight / viewport.renderedHeight) * viewport.imageHeight;
 
-    return {
-        sourceX: Math.max(0, sourceX),
-        sourceY: Math.max(0, sourceY),
-        sourceWidth: Math.min(viewport.imageWidth, sourceWidth),
-        sourceHeight: Math.min(viewport.imageHeight, sourceHeight),
-    };
+    return clampSourceRectToImage({
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        imageWidth: viewport.imageWidth,
+        imageHeight: viewport.imageHeight,
+    });
 }
 
 /**
@@ -460,15 +514,14 @@ export function computeCropSourceRectFromSelection({
     const normalizedTop = (selection.top - imageBounds.top) / safeBoundsHeight;
     const normalizedWidth = selection.width / safeBoundsWidth;
     const normalizedHeight = selection.height / safeBoundsHeight;
-    return {
-        sourceX: Math.max(0, normalizedLeft * safeImageWidth),
-        sourceY: Math.max(0, normalizedTop * safeImageHeight),
-        sourceWidth: Math.min(safeImageWidth, normalizedWidth * safeImageWidth),
-        sourceHeight: Math.min(
-            safeImageHeight,
-            normalizedHeight * safeImageHeight,
-        ),
-    };
+    return clampSourceRectToImage({
+        sourceX: normalizedLeft * safeImageWidth,
+        sourceY: normalizedTop * safeImageHeight,
+        sourceWidth: normalizedWidth * safeImageWidth,
+        sourceHeight: normalizedHeight * safeImageHeight,
+        imageWidth: safeImageWidth,
+        imageHeight: safeImageHeight,
+    });
 }
 
 /**
@@ -514,5 +567,69 @@ export function composeCropSourceRect({
         sourceY: safeBaseSourceRect.sourceY + nestedSourceRect.sourceY,
         sourceWidth: nestedSourceRect.sourceWidth,
         sourceHeight: nestedSourceRect.sourceHeight,
+    };
+}
+
+/**
+ * Pans an existing source rectangle inside image bounds without changing zoom.
+ *
+ * @param {{
+ *   startSourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   sourceDeltaX: number,
+ *   sourceDeltaY: number,
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * }} params
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ */
+export function panCropSourceRect({
+    startSourceRect,
+    sourceDeltaX,
+    sourceDeltaY,
+    imageWidth,
+    imageHeight,
+}) {
+    const normalizedStartSourceRect = clampSourceRectToImage({
+        sourceX: Number(startSourceRect?.sourceX) || 0,
+        sourceY: Number(startSourceRect?.sourceY) || 0,
+        sourceWidth: Number(startSourceRect?.sourceWidth) || 1,
+        sourceHeight: Number(startSourceRect?.sourceHeight) || 1,
+        imageWidth,
+        imageHeight,
+    });
+    const maxSourceX = Math.max(
+        0,
+        (Number(imageWidth) || 1) - normalizedStartSourceRect.sourceWidth,
+    );
+    const maxSourceY = Math.max(
+        0,
+        (Number(imageHeight) || 1) - normalizedStartSourceRect.sourceHeight,
+    );
+    return {
+        ...normalizedStartSourceRect,
+        sourceX: Math.min(
+            maxSourceX,
+            Math.max(
+                0,
+                normalizedStartSourceRect.sourceX + (Number(sourceDeltaX) || 0),
+            ),
+        ),
+        sourceY: Math.min(
+            maxSourceY,
+            Math.max(
+                0,
+                normalizedStartSourceRect.sourceY + (Number(sourceDeltaY) || 0),
+            ),
+        ),
     };
 }

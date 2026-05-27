@@ -6,22 +6,8 @@ import {
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
+    panCropSourceRect,
 } from "/static/adapters/social/profile/image-crop.js";
-
-/**
- * Derives a crop aspect ratio from the visible element dimensions.
- *
- * @param {EventTarget | null} element
- * @param {number} fallbackAspectRatio
- * @returns {number}
- */
-export function resolveCropAspectFromElement(element, fallbackAspectRatio) {
-    const fallback = Math.max(0.5, Number(fallbackAspectRatio) || 1);
-    if (!(element instanceof HTMLElement)) return fallback;
-    const bounds = element.getBoundingClientRect();
-    if (bounds.width <= 0 || bounds.height <= 0) return fallback;
-    return Math.max(0.5, bounds.width / bounds.height);
-}
 
 function buildCropPopupBody({
     imageUrl,
@@ -379,34 +365,12 @@ export async function openImageCropPopup({
                 const sourceRegionDeltaY =
                     (deltaY / state.displayBounds.height) *
                     startSourceRect.sourceHeight;
-                const maxSourceX = Math.max(
-                    0,
-                    cropImage.imageWidth - startSourceRect.sourceWidth,
-                );
-                const maxSourceY = Math.max(
-                    0,
-                    cropImage.imageHeight - startSourceRect.sourceHeight,
-                );
-                state.sourceRect = composeCropSourceRect({
-                    baseSourceRect: {
-                        ...startSourceRect,
-                        sourceX: Math.min(
-                            maxSourceX,
-                            Math.max(
-                                0,
-                                startSourceRect.sourceX + sourceRegionDeltaX,
-                            ),
-                        ),
-                        sourceY: Math.min(
-                            maxSourceY,
-                            Math.max(
-                                0,
-                                startSourceRect.sourceY + sourceRegionDeltaY,
-                            ),
-                        ),
-                    },
-                    selection: state.dragStartSelection,
-                    imageBounds: state.displayBounds,
+                state.sourceRect = panCropSourceRect({
+                    startSourceRect,
+                    sourceDeltaX: sourceRegionDeltaX,
+                    sourceDeltaY: sourceRegionDeltaY,
+                    imageWidth: cropImage.imageWidth,
+                    imageHeight: cropImage.imageHeight,
                 });
                 state.selection = { ...state.dragStartSelection };
                 state.shouldAutoZoomOnRelease = false;
