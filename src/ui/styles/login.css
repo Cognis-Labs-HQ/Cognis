@@ -125,11 +125,26 @@ p.auth-intro {
     font-size: 0.98rem;
     font-weight: 600;
     cursor: pointer;
+    display: inline;
 }
 
 .auth-text-action:hover,
 .auth-text-action:focus-visible {
     color: #bfdbfe;
+}
+
+.auth-link-form-heading {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #d6e7ff;
+}
+
+.auth-link-unavailable-message {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    color: #93c5fd;
+    line-height: 1.5;
 }
 
 .auth-form-shell {

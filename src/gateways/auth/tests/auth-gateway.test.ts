@@ -568,9 +568,9 @@ test("POST /api/v1/auth/request-login-link sends a one-time login link and consu
         let sentLink = "";
         capabilities.contribute("notify:canSendOneTimeLoginEmail", () => true);
         capabilities.contribute(
-            "notify:getPrimaryEmail",
-            async (accountId: string) =>
-                accountId === "alice" ? "alice@example.com" : null,
+            "notify:getAccountIdByEmail",
+            async (email: string) =>
+                email === "alice@example.com" ? "alice" : null,
         );
         capabilities.contribute(
             "notify:sendOneTimeLoginEmail",
@@ -594,7 +594,7 @@ test("POST /api/v1/auth/request-login-link sends a one-time login link and consu
 
         const requestResult = await dispatchRoute(
             routeRegistry,
-            makeJsonRequest("POST", { username: "alice" }),
+            makeJsonRequest("POST", { email: "alice@example.com" }),
             "/api/v1/auth/request-login-link",
         );
         assert.equal(requestResult.handled, true);
@@ -662,7 +662,7 @@ test("POST /api/v1/auth/request-login-link falls back to support contact details
 
         const result = await dispatchRoute(
             routeRegistry,
-            makeJsonRequest("POST", { username: "support-user" }),
+            makeJsonRequest("POST", { email: "support-user@example.com" }),
             "/api/v1/auth/request-login-link",
         );
         assert.equal(result.handled, true);

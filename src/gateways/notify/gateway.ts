@@ -89,6 +89,7 @@ export interface NotificationConfigStore {
 
 export interface NotificationEmailStore {
     getPrimaryEmail(accountId: string): Promise<string | null>;
+    getAccountIdByEmail(email: string): Promise<string | null>;
 }
 
 export interface VerificationEmailSender {

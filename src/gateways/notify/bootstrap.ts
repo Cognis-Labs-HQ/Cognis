@@ -431,6 +431,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:getPrimaryEmail",
         async (accountId: string) => notifStore.getPrimaryEmail(accountId),
     );
+    ctx.capabilities.contribute(
+        "notify:getAccountIdByEmail",
+        async (email: string) => notifStore.getAccountIdByEmail(email),
+    );
     ctx.log?.("info", "Notification gateway initialized.", {
         component: "notify-gateway",
         senderCount: gateway.listSenders().length,

@@ -950,31 +950,53 @@ function createAuthGatewayRoutes(
         }
 
         if (
+            url.pathname === "/api/v1/auth/login-link-status" &&
+            req.method === "GET"
+        ) {
+            const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
+                "notify:canSendOneTimeLoginEmail",
+            );
+            const contactEmail = String(
+                process.env.CONTACT_EMAIL ?? "",
+            ).trim();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        available: Boolean(canSendOneTimeLoginEmail?.()),
+                        contactEmail,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/auth/request-login-link" &&
             req.method === "POST"
         ) {
             const body = await readJson(req);
-            const username = String(body.username ?? "")
+            const email = String(body.email ?? "")
                 .trim()
                 .toLowerCase();
-            if (!username) {
+            if (!email) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "username_required",
-                            message: "Username is required",
+                            code: "email_required",
+                            message: "Email is required",
                         },
                     }),
                 );
                 return true;
             }
             const requestAddress = resolveRequestAddress(req);
-            const accountRateLimitKey = `account:${username}`;
             const addressRateLimitKey = `address:${requestAddress}`;
+            const emailRateLimitKey = `email:${email}`;
             if (
                 oneTimeLoginAccountRateLimiter.isThrottled(
-                    accountRateLimitKey,
+                    emailRateLimitKey,
                 ) ||
                 oneTimeLoginIpRateLimiter.isThrottled(addressRateLimitKey)
             ) {
@@ -990,7 +1012,7 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            oneTimeLoginAccountRateLimiter.record(accountRateLimitKey);
+            oneTimeLoginAccountRateLimiter.record(emailRateLimitKey);
             oneTimeLoginIpRateLimiter.record(addressRateLimitKey);
             const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
             const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
@@ -999,19 +1021,14 @@ function createAuthGatewayRoutes(
             const sendOneTimeLoginEmail = capabilities.get<
                 (to: string, loginUrl: string, theme?: string) => Promise<void>
             >("notify:sendOneTimeLoginEmail");
-            const getPrimaryEmail = capabilities.get<
-                (accountId: string) => Promise<string | null>
-            >("notify:getPrimaryEmail");
+            const getAccountIdByEmail = capabilities.get<
+                (email: string) => Promise<string | null>
+            >("notify:getAccountIdByEmail");
             const externalBaseUrl = resolveExternalBaseUrl();
-            const accountInfo = await accountStore
-                .getInfo(username)
-                .catch(() => null);
             if (
-                !accountInfo ||
-                accountInfo.enabled === false ||
                 !canSendOneTimeLoginEmail?.() ||
                 typeof sendOneTimeLoginEmail !== "function" ||
-                typeof getPrimaryEmail !== "function" ||
+                typeof getAccountIdByEmail !== "function" ||
                 !externalBaseUrl
             ) {
                 res.writeHead(200, { "content-type": "application/json" });
@@ -1025,30 +1042,32 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const primaryEmail = await getPrimaryEmail(username).catch(
+            const accountId = await getAccountIdByEmail(email).catch(
                 () => null,
             );
-            if (!primaryEmail) {
+            const accountInfo = accountId
+                ? await accountStore.getInfo(accountId).catch(() => null)
+                : null;
+            if (!accountInfo || accountInfo.enabled === false) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         data: {
-                            outcome: "contact_support",
-                            contactEmail,
+                            outcome: "email_sent",
                         },
                     }),
                 );
                 return true;
             }
             const loginToken = issueOneTimeLoginToken({
-                accountId: username,
+                accountId,
                 role: resolveRole(accountInfo.role),
                 provider: "local",
                 providerId: "local",
             });
             const loginUrl = `${externalBaseUrl}/login?loginToken=${encodeURIComponent(loginToken)}`;
             try {
-                await sendOneTimeLoginEmail(primaryEmail, loginUrl);
+                await sendOneTimeLoginEmail(email, loginUrl);
             } catch (error) {
                 revokeOneTimeLoginToken(loginToken);
                 const message =
@@ -1068,7 +1087,6 @@ function createAuthGatewayRoutes(
                 }
                 log?.("warn", "Failed to send one-time login email.", {
                     ...logMeta,
-                    accountId: username,
                     error: message,
                 });
                 res.writeHead(200, { "content-type": "application/json" });
@@ -1084,7 +1102,6 @@ function createAuthGatewayRoutes(
             }
             log?.("info", "Sent one-time login email.", {
                 ...logMeta,
-                accountId: username,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { outcome: "email_sent" } }));

@@ -229,27 +229,95 @@ export async function mount(root) {
         if (contactEmail) {
             return i18n
                 .t("ui.app.login.login_link.contact_support_email")
-                .replace("{email}", contactEmail);
+                .replace("{email}", escapeHtml(contactEmail));
         }
         return i18n.t("ui.app.login.login_link.contact_support");
     }
 
+    function switchToLoginLinkEmailForm() {
+        const credentialFields = document.querySelector(
+            "#login-credential-fields",
+        );
+        if (!credentialFields) return;
+        credentialFields.innerHTML = `
+            <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
+            <label>
+                <span>${escapeHtml(i18n.t("ui.app.login.login_link.email"))}</span>
+                <input id="login-link-email" type="email" autocomplete="email"
+                    placeholder="${escapeHtml(i18n.t("ui.app.login.login_link.email"))}"
+                    required />
+            </label>
+            <button type="button" id="login-link-submit" class="btn-animated">
+                ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
+            </button>
+            <a href="#" id="login-link-back" class="auth-text-action">
+                ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+            </a>
+        `;
+        const submitBtn = document.querySelector("#login-link-submit");
+        const backLink = document.querySelector("#login-link-back");
+        const emailInput = document.querySelector("#login-link-email");
+        emailInput?.focus();
+        submitBtn?.addEventListener("click", () => {
+            requestOneTimeLoginLink().catch(() => {
+                showToast(i18n.t("ui.app.login.error.generic"), {
+                    variant: "error",
+                });
+            });
+        });
+        backLink?.addEventListener("click", (event) => {
+            event.preventDefault();
+            composer.refresh();
+        });
+    }
+
+    function showLoginLinkUnavailable(contactEmail) {
+        const credentialFields = document.querySelector(
+            "#login-credential-fields",
+        );
+        if (!credentialFields) return;
+        credentialFields.innerHTML = `
+            <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
+            <p class="auth-link-unavailable-message">${buildSupportMessage(contactEmail)}</p>
+            <a href="#" id="login-link-back" class="auth-text-action">
+                ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+            </a>
+        `;
+        document.querySelector("#login-link-back")?.addEventListener(
+            "click",
+            (event) => {
+                event.preventDefault();
+                composer.refresh();
+            },
+        );
+    }
+
+    async function handleRequestLinkClick() {
+        const res = await fetch("/api/v1/auth/login-link-status");
+        const body = await res.json().catch(() => null);
+        if (body?.data?.available === true) {
+            switchToLoginLinkEmailForm();
+        } else {
+            showLoginLinkUnavailable(body?.data?.contactEmail ?? "");
+        }
+    }
+
     async function requestOneTimeLoginLink() {
-        const usernameEl = document.querySelector("#login-username");
-        const username = String(usernameEl?.value ?? "")
+        const emailEl = document.querySelector("#login-link-email");
+        const email = String(emailEl?.value ?? "")
             .trim()
             .toLowerCase();
-        if (!username) {
-            showToast(i18n.t("ui.app.login.login_link.username_required"), {
+        if (!email) {
+            showToast(i18n.t("ui.app.login.login_link.email_required"), {
                 variant: "warning",
             });
-            usernameEl?.focus();
+            emailEl?.focus();
             return;
         }
         const response = await fetch("/api/v1/auth/request-login-link", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ username }),
+            body: JSON.stringify({ email }),
         });
         const body = await response.json().catch(() => null);
         if (response.status === 429 || body?.error?.code === "rate_limited") {
@@ -337,7 +405,7 @@ export async function mount(root) {
             <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
             <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
           </label>
-          <button type="button" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</button>
+          <a href="#" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</a>
         </div>
         <div id="login-tfa-fields" hidden></div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
@@ -386,8 +454,9 @@ export async function mount(root) {
                     renderLoginReasonToast();
                     document
                         .querySelector("#login-request-link")
-                        ?.addEventListener("click", () => {
-                            requestOneTimeLoginLink().catch(() => {
+                        ?.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            handleRequestLinkClick().catch(() => {
                                 showToast(
                                     i18n.t("ui.app.login.error.generic"),
                                     {
