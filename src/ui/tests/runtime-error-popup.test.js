@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -47,4 +48,69 @@ test("router stores previous route in history state during SPA navigation", () =
         source,
         /history\.pushState\(\{\s*routerPage:\s*path,\s*previousRouterPage\s*\},\s*["']["'],\s*path\)/,
     );
+});
+
+test("runtime error popup suppresses crash dialogs for connection-interruption failures", async () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source.replace(/^import .*;\n/gm, "").replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
+
+    const openPopupCalls = [];
+    const context = {
+        console,
+        Date,
+        openPopup(options) {
+            openPopupCalls.push(options);
+            return Promise.resolve("close");
+        },
+        shouldSuppressConnectionRecoveryPopup() {
+            return true;
+        },
+        createI18n() {
+            return Promise.resolve({
+                t(key) {
+                    return key;
+                },
+            });
+        },
+        escapeHtml(value) {
+            return String(value ?? "");
+        },
+        getCurrentRoutePath() {
+            return "/dashboard";
+        },
+        normalizeSameOriginRoutePath(routePath) {
+            return String(routePath ?? "");
+        },
+        window: {
+            location: {
+                href: "https://example.com/dashboard",
+            },
+            history: {
+                back() {},
+                state: {},
+            },
+            addEventListener() {},
+        },
+        document: {
+            referrer: "",
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    await context.__testExports.openRuntimeErrorPopup({
+        error: new Error("HTTP 503 while loading \"/api/v1/users\""),
+        context: "Route load failed",
+    });
+
+    assert.equal(openPopupCalls.length, 0);
 });

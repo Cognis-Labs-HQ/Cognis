@@ -36,6 +36,7 @@
  */
 
 import { openPopup } from "./popup.js";
+import { shouldSuppressConnectionRecoveryPopup } from "./api-client.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
 import {
@@ -204,6 +205,9 @@ export async function openRuntimeErrorPopup({
         errorMessage: normalizedErrorMessage,
         errorStack: normalizedErrorStack,
     });
+    if (shouldSuppressConnectionRecoveryPopup(error)) {
+        return;
+    }
     if (popupOpen || shouldSuppressPopup(popupSignature)) {
         return;
     }
