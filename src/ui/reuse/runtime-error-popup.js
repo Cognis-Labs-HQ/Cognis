@@ -353,7 +353,6 @@ export async function openRuntimeErrorPopup({
             onAction: async (actionId) => {
                 if (actionId !== "copy") return;
                 await copyTextToClipboard(crashDetailText);
-                // Keep the popup open so users can continue reviewing details.
                 return false;
             },
         });
