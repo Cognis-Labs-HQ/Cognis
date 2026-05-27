@@ -771,7 +771,7 @@ function renderMessageBodyMarkup(messageText) {
     const wrapClass = shouldAllowTextWrapping(normalizedText)
         ? ""
         : " messages-message-body--no-wrap";
-    return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText)}</div>`;
+    return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText, { softBreaks: true })}</div>`;
 }
 
 function renderComposerPreviewMarkup(content, emptyMessage) {
@@ -779,7 +779,7 @@ function renderComposerPreviewMarkup(content, emptyMessage) {
     if (!normalizedText.trim()) {
         return `<p class="messages-composer-preview-empty">${escapeHtml(emptyMessage)}</p>`;
     }
-    return renderMarkdown(normalizedText);
+    return renderMarkdown(normalizedText, { softBreaks: true });
 }
 
 function statusUnknownSvgMarkup() {

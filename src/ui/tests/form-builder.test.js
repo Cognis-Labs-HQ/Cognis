@@ -155,7 +155,7 @@ test("profile bio and post editors use form builder max-character fields", () =>
     );
     assert.match(source, /onOpen: \(overlay\) => \{/);
     assert.match(source, /profileEditFormBuilder\.attach\(popupFormElement\)/);
-    assert.match(source, /id="profile-edit-bio-preview"/);
+    assert.match(source, /bioPreviewElement\.id = "profile-edit-bio-preview"/);
     assert.match(source, /id="profile-post-preview-toggle"/);
     assert.match(source, /function renderComposerMarkdownPreview/);
     assert.match(source, /ui\.app\.profile\.bio_preview_placeholder/);

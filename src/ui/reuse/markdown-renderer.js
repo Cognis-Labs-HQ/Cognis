@@ -234,9 +234,11 @@ function lineStartsBlock(line) {
  * and paragraph normalization.
  *
  * @param {string} markdown
+ * @param {{ softBreaks?: boolean }} [options]
  * @returns {string}
  */
-export function renderMarkdown(markdown) {
+export function renderMarkdown(markdown, options = {}) {
+    const softBreaks = Boolean(options.softBreaks);
     const lines = String(markdown ?? "")
         .replaceAll("\r\n", "\n")
         .replaceAll("\r", "\n")
@@ -368,7 +370,13 @@ export function renderMarkdown(markdown) {
             paragraphLines.push(nextParagraphLine.trim());
             index += 1;
         }
-        html.push(`<p>${renderInline(paragraphLines.join(" "))}</p>`);
+        if (softBreaks && paragraphLines.length > 1) {
+            html.push(
+                `<p>${paragraphLines.map((l) => renderInline(l)).join("<br>")}</p>`,
+            );
+        } else {
+            html.push(`<p>${renderInline(paragraphLines.join(" "))}</p>`);
+        }
     }
 
     closeList();

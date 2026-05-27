@@ -585,6 +585,7 @@ export async function mount(root, { signal } = {}) {
                     : "";
                 const body = renderMarkdown(
                     String(message?.text ?? i18n.t("ui.reuse.unknown")),
+                    { softBreaks: true },
                 );
                 return `<article class="${messageClass}">
               <header class="jitsi-chat-message-head">
