@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import vm from "node:vm";
+import { createRoomKeyStore } from "../ui/room-keys.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
@@ -215,76 +215,10 @@ test("messages composer includes markdown compose preview switcher", () => {
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
 });
 
-function loadMessagesUiTestExports({
-    apiFetch = async () => ({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        async json() {
-            return { data: { key: "00" } };
-        },
-    }),
-    importRoomKey = async (hex) => ({ importedHex: hex }),
-} = {}) {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
-    const testableSource =
-        appSource
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "")
-            .replace(/\nawait mountWhenDirect\(mount\);\s*$/, "\n") +
-        "\n" +
-        "globalThis.__testExports = { hasIncomingPendingRequest, resolveThreadRoomKey, requireRoomKey };\n";
-
-    const context = {
-        console,
-        TextEncoder,
-        URLSearchParams,
-        localStorage: {
-            getItem() {
-                return null;
-            },
-            setItem() {},
-        },
-        document: {
-            getElementById() {
-                return null;
-            },
-            querySelector() {
-                return null;
-            },
-        },
-        window: {
-            addEventListener() {},
-        },
-        history: {
-            pushState() {},
-            replaceState() {},
-        },
-        createAnchoredPopup() {
-            return {
-                reposition() {},
-            };
-        },
-        apiFetch,
-        importRoomKey,
-        mountWhenDirect: async () => {},
-    };
-    context.globalThis = context;
-
-    vm.runInNewContext(testableSource, context, {
-        filename: "messages-ui-app.js",
-    });
-
-    return context.__testExports;
-}
-
 test("messages UI skips room-key fetch for incoming pending requests", async () => {
     let apiFetchCallCount = 0;
-    const { resolveThreadRoomKey } = loadMessagesUiTestExports({
-        apiFetch: async () => {
+    const { resolveThreadRoomKey } = createRoomKeyStore({
+        fetchRoomKey: async () => {
             apiFetchCallCount += 1;
             return {
                 ok: true,
@@ -312,8 +246,8 @@ test("messages UI skips room-key fetch for incoming pending requests", async () 
 });
 
 test("requireRoomKey throws detailed errors on failure", async () => {
-    const { requireRoomKey } = loadMessagesUiTestExports({
-        apiFetch: async () => ({
+    const { requireRoomKey } = createRoomKeyStore({
+        fetchRoomKey: async () => ({
             ok: false,
             status: 403,
             statusText: "Forbidden",

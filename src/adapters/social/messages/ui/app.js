@@ -39,6 +39,7 @@ import {
     handleProfileAvatarError,
     isProfileAvatarUnavailable,
 } from "/static/gateways/social/reuse/profile-avatar.js";
+import { createRoomKeyStore } from "./room-keys.mjs";
 
 const TEXT_ENCODER = new TextEncoder();
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
@@ -60,6 +61,12 @@ const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
+const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
+    {
+        fetchRoomKey: apiFetch,
+        importKey: importRoomKey,
+    },
+);
 
 /**
  * Fetches the full emoji list from the social gateway static asset, caching
@@ -237,7 +244,6 @@ async function decryptMessageOrReturnPlaintext(key, message) {
     }
 }
 
-const roomKeyCache = new Map();
 const threadRenderSignatures = new Map();
 
 function stableJson(value) {
@@ -314,61 +320,6 @@ function roomListRenderSignature(rooms, selectedRoomId) {
             })),
         })),
     });
-}
-
-async function getRoomKey(roomId) {
-    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-    const res = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
-    );
-    if (!res.ok) return null;
-    const payload = await res.json();
-    const hex = payload?.data?.key;
-    if (!hex) return null;
-    const key = await importRoomKey(hex);
-    roomKeyCache.set(roomId, key);
-    return key;
-}
-
-function hasIncomingPendingRequest(pendingRequest) {
-    return pendingRequest?.direction === "incoming";
-}
-
-async function resolveThreadRoomKey(roomOrPendingRequest, roomId) {
-    const pendingRequest =
-        roomOrPendingRequest?.pendingRequest ?? roomOrPendingRequest ?? null;
-    if (hasIncomingPendingRequest(pendingRequest)) return null;
-    return requireRoomKey(roomId);
-}
-
-async function requireRoomKey(roomId) {
-    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-    const res = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
-    );
-    if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        const message =
-            payload?.error?.message ||
-            `Failed to load room key (${res.status} ${res.statusText || "unknown"}).`;
-        const error = new Error(message);
-        error.status = res.status;
-        error.code = payload?.error?.code;
-        error.roomId = roomId;
-        throw error;
-    }
-    const payload = await res.json();
-    const hex = payload?.data?.key;
-    if (!hex) {
-        const error = new Error("Room key missing.");
-        error.status = 500;
-        error.code = "missing_key";
-        error.roomId = roomId;
-        throw error;
-    }
-    const key = await importRoomKey(hex);
-    roomKeyCache.set(roomId, key);
-    return key;
 }
 
 function profileHref(handle) {
