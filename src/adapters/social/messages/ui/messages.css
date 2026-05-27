@@ -374,7 +374,8 @@
 
 .messages-composer {
     display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.45rem;
     padding: 0.75rem 1rem;
     border-top: 1px solid var(--color-border);
     flex-shrink: 0;
@@ -383,8 +384,50 @@
     min-width: 0;
 }
 
+.messages-composer-mode-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.messages-composer-mode-toggle {
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0.3rem 0.65rem;
+    font: inherit;
+    font-size: 0.78rem;
+    width: 100%;
+}
+
+.messages-composer-mode-toggle[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background: color-mix(
+        in srgb,
+        var(--color-accent) 22%,
+        var(--color-surface)
+    );
+}
+
+.messages-composer-main {
+    min-width: 0;
+}
+
+.messages-composer-pane {
+    min-width: 0;
+}
+
+.messages-composer-pane--compose {
+    display: flex;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
 .messages-composer-input {
-    flex: 1;
+    width: 100%;
+    flex: 1 1 auto;
     resize: vertical;
     min-width: 0;
     min-height: 2.5rem;
@@ -394,6 +437,25 @@
     background: var(--color-surface);
     color: var(--color-text);
     box-sizing: border-box;
+}
+
+.messages-composer-preview {
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+}
+
+.messages-composer-preview-empty {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-style: italic;
 }
 
 .messages-composer-send {
@@ -406,12 +468,14 @@
 }
 
 .messages-composer-input:disabled,
-.messages-composer-send:disabled {
+.messages-composer-send:disabled,
+.messages-composer-mode-toggle:disabled {
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-.messages-composer-send:hover {
+.messages-composer-send:hover,
+.messages-composer-mode-toggle:hover {
     filter: brightness(1.1);
 }
 
@@ -440,10 +504,24 @@
         padding: 0.5rem 0.65rem;
     }
 
+    .messages-composer-main {
+        gap: 0.4rem;
+    }
+
+    .messages-composer-pane--compose {
+        gap: 0.4rem;
+    }
+
     .messages-composer-input {
         min-height: 2.25rem;
         max-height: 4.75rem;
         resize: none;
+    }
+
+    .messages-composer-preview {
+        min-height: 2.25rem;
+        max-height: 4.75rem;
+        overflow-y: auto;
     }
 
     .messages-composer-send {

@@ -2,6 +2,9 @@
   <string name="module.social.messages.empty">Conversations will show up here. Start a conversation today!</string>
   <string name="module.social.messages.placeholder">Type a message…</string>
   <string name="module.social.messages.send">Send</string>
+  <string name="module.social.messages.compose">Compose</string>
+  <string name="module.social.messages.preview">Preview</string>
+  <string name="module.social.messages.preview_placeholder">Your message preview will appear here.</string>
   <string name="module.social.messages.new">New Conversation</string>
   <string name="module.social.messages.load_earlier">Load earlier</string>
   <string name="module.social.messages.start_failed">Failed to start conversation.</string>

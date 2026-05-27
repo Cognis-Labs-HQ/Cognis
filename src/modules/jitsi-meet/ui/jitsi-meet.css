@@ -298,6 +298,44 @@
     overflow-wrap: anywhere;
 }
 
+.jitsi-chat-message-body > :first-child {
+    margin-top: 0;
+}
+
+.jitsi-chat-message-body > :last-child {
+    margin-bottom: 0;
+}
+
+.jitsi-chat-message-body p {
+    margin: 0;
+}
+
+.jitsi-chat-message-body p + p {
+    margin-top: 0.35rem;
+}
+
+.jitsi-chat-message-body ul,
+.jitsi-chat-message-body ol {
+    margin: 0.25rem 0 0.25rem 1rem;
+}
+
+.jitsi-chat-message-body li + li {
+    margin-top: 0.15rem;
+}
+
+.jitsi-chat-message-body pre {
+    margin: 0.25rem 0;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.4rem;
+    background: rgba(15, 23, 42, 0.22);
+    overflow-x: auto;
+}
+
+.jitsi-chat-message-own .jitsi-chat-message-body a {
+    color: inherit;
+    text-decoration-color: currentColor;
+}
+
 .jitsi-chat-form {
     display: flex;
     flex-direction: column;

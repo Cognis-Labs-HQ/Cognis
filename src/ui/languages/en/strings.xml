@@ -384,6 +384,10 @@
   <string name="ui.app.profile.post_content">What's on your mind?</string>
   <string name="ui.app.profile.post_title">Title (optional)</string>
   <string name="ui.app.profile.post_submit">Publish</string>
+  <string name="ui.app.profile.compose">Compose</string>
+  <string name="ui.app.profile.preview">Preview</string>
+  <string name="ui.app.profile.bio_preview_placeholder">Your bio preview will appear here.</string>
+  <string name="ui.app.profile.post_preview_placeholder">Your post preview will appear here.</string>
   <string name="ui.app.profile.no_posts">No posts yet.</string>
   <string name="ui.app.profile.delete_post">Delete</string>
   <string name="ui.app.profile.delete_post_confirm">Delete this post?</string>

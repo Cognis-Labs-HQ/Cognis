@@ -384,6 +384,10 @@
   <string name="ui.app.profile.post_content">今何を考えていますか？</string>
   <string name="ui.app.profile.post_title">タイトル（任意）</string>
   <string name="ui.app.profile.post_submit">公開</string>
+  <string name="ui.app.profile.compose">作成</string>
+  <string name="ui.app.profile.preview">プレビュー</string>
+  <string name="ui.app.profile.bio_preview_placeholder">自己紹介のプレビューがここに表示されます。</string>
+  <string name="ui.app.profile.post_preview_placeholder">投稿のプレビューがここに表示されます。</string>
   <string name="ui.app.profile.no_posts">まだ投稿がありません。</string>
   <string name="ui.app.profile.delete_post">削除</string>
   <string name="ui.app.profile.delete_post_confirm">この投稿を削除しますか？</string>

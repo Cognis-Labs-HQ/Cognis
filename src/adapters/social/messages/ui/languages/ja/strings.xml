@@ -2,6 +2,9 @@
   <string name="module.social.messages.empty">会話はここに表示されます。今日から会話を始めましょう！</string>
   <string name="module.social.messages.placeholder">メッセージを入力…</string>
   <string name="module.social.messages.send">送信</string>
+  <string name="module.social.messages.compose">作成</string>
+  <string name="module.social.messages.preview">プレビュー</string>
+  <string name="module.social.messages.preview_placeholder">メッセージのプレビューがここに表示されます。</string>
   <string name="module.social.messages.new">新しい会話</string>
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
