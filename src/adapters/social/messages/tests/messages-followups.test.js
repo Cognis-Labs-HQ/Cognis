@@ -30,7 +30,7 @@ test("messages member count control opens local member summary without jitsi cal
     );
     assert.match(
         source,
-        /module\.social\.messages\.member_summary_title[\s\S]*onOpen:\s*\(overlay\)\s*=>\s*\{[\s\S]*overlay\.addEventListener\("error", handleProfileAvatarError,[\s\S]*hydrateProfileAvatars\(overlay\)/,
+        /module\.social\.messages\.member_summary_title[\s\S]*onOpen:\s*\(overlay\)\s*=>\s*\{[\s\S]*overlay\.addEventListener\([\s\S]*handleProfileAvatarError[\s\S]*capture:\s*true[\s\S]*hydrateProfileAvatars\(overlay\)/,
     );
 });
 
