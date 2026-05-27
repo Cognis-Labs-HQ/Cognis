@@ -364,6 +364,7 @@ function didReloadIntoCurrentDocument() {
         const latestNavigationEntry = navigationEntries.at(-1);
         if (latestNavigationEntry?.type === "reload") return true;
     }
+    // Fallback for older engines that do not expose Navigation Timing Level 2.
     return window.performance.navigation?.type === 1;
 }
 
