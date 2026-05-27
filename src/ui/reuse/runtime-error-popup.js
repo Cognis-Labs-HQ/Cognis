@@ -350,9 +350,26 @@ export async function openRuntimeErrorPopup({
                     variant: "confirm",
                 },
             ],
-            onAction: async (actionId) => {
+            onAction: async (actionId, overlay) => {
                 if (actionId !== "copy") return;
-                await copyTextToClipboard(crashDetailText);
+                const copied = await copyTextToClipboard(crashDetailText);
+                if (
+                    copied &&
+                    overlay != null &&
+                    typeof overlay.querySelector === "function"
+                ) {
+                    const copyBtn = overlay.querySelector(
+                        '[data-popup-action="copy"]',
+                    );
+                    if (copyBtn != null && copyBtn.classList != null) {
+                        copyBtn.classList.add("popup-action-btn--copied");
+                        setTimeout(() => {
+                            copyBtn.classList.remove(
+                                "popup-action-btn--copied",
+                            );
+                        }, 1500);
+                    }
+                }
                 return false;
             },
         });

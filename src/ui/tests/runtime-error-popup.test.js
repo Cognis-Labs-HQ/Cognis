@@ -426,3 +426,180 @@ test("runtime error popup copy action writes full crash detail text", async () =
     assert.match(copiedValues[0], /https:\/\/example\.com\/broken/);
     assert.match(copiedValues[0], /Example console entry/);
 });
+
+test("runtime error popup copy action adds and removes copied class on success", async () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
+
+    const addedClasses = [];
+    const removedClasses = [];
+    const timeouts = [];
+    const copyBtn = {
+        classList: {
+            add(...cls) {
+                addedClasses.push(...cls);
+            },
+            remove(...cls) {
+                removedClasses.push(...cls);
+            },
+        },
+    };
+    const overlay = {
+        querySelector(selector) {
+            if (selector === '[data-popup-action="copy"]') return copyBtn;
+            return null;
+        },
+    };
+
+    const context = {
+        console,
+        Date,
+        openPopup(options) {
+            return Promise.resolve()
+                .then(() => options.onAction("copy", overlay))
+                .then(() => "close");
+        },
+        shouldSuppressConnectionRecoveryPopup() {
+            return false;
+        },
+        createI18n() {
+            return Promise.resolve({
+                t(key) {
+                    return key;
+                },
+            });
+        },
+        escapeHtml(value) {
+            return String(value ?? "");
+        },
+        getCurrentRoutePath() {
+            return "/broken";
+        },
+        normalizeSameOriginRoutePath(routePath) {
+            return String(routePath ?? "");
+        },
+        setTimeout(fn, ms) {
+            timeouts.push({ fn, ms });
+        },
+        navigator: {
+            clipboard: {
+                writeText() {
+                    return Promise.resolve();
+                },
+            },
+        },
+        window: {
+            location: { href: "https://example.com/broken", assign() {} },
+            history: { back() {}, state: {} },
+            addEventListener() {},
+        },
+        document: {
+            referrer: "",
+            querySelector() {
+                return {};
+            },
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    await context.__testExports.openRuntimeErrorPopup({
+        error: new Error("Boom"),
+        context: "test",
+    });
+
+    assert.deepEqual(addedClasses, ["popup-action-btn--copied"]);
+    assert.equal(timeouts.length, 1);
+    assert.equal(timeouts[0].ms, 1500);
+
+    // Simulate timeout firing
+    timeouts[0].fn();
+    assert.deepEqual(removedClasses, ["popup-action-btn--copied"]);
+});
+
+test("runtime error popup copy action skips class toggle when overlay is not an HTMLElement", async () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
+
+    const timeouts = [];
+    const context = {
+        console,
+        Date,
+        openPopup(options) {
+            return Promise.resolve()
+                .then(() => options.onAction("copy", null))
+                .then(() => "close");
+        },
+        shouldSuppressConnectionRecoveryPopup() {
+            return false;
+        },
+        createI18n() {
+            return Promise.resolve({
+                t(key) {
+                    return key;
+                },
+            });
+        },
+        escapeHtml(value) {
+            return String(value ?? "");
+        },
+        getCurrentRoutePath() {
+            return "/broken";
+        },
+        normalizeSameOriginRoutePath(routePath) {
+            return String(routePath ?? "");
+        },
+        setTimeout(fn, ms) {
+            timeouts.push({ fn, ms });
+        },
+        navigator: {
+            clipboard: {
+                writeText() {
+                    return Promise.resolve();
+                },
+            },
+        },
+        window: {
+            location: { href: "https://example.com/broken", assign() {} },
+            history: { back() {}, state: {} },
+            addEventListener() {},
+        },
+        document: {
+            referrer: "",
+            querySelector() {
+                return {};
+            },
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    await context.__testExports.openRuntimeErrorPopup({
+        error: new Error("Boom"),
+        context: "test",
+    });
+
+    assert.equal(timeouts.length, 0);
+});

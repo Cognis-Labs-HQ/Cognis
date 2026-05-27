@@ -116,6 +116,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    transition: color 0.5s ease;
 }
 
 .popup-action-btn[data-popup-action="copy"]::before {
@@ -131,6 +132,28 @@
     mask-size: contain;
     -webkit-mask-position: center;
     mask-position: center;
+}
+
+.popup-action-btn--copied {
+    color: var(--color-success-outline-text);
+}
+
+.popup-action-btn--copied::before {
+    -webkit-mask-image: url("/static/assets/reuse/check.svg");
+    mask-image: url("/static/assets/reuse/check.svg");
+    animation: popup-copy-icon-pop 0.25s ease;
+}
+
+@keyframes popup-copy-icon-pop {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.4);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .popup-action-btn--neutral {
