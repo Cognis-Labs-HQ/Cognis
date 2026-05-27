@@ -613,6 +613,7 @@
 .profile-hero-bio-wrap {
     flex: 1;
     min-width: 0;
+    max-width: 50%;
     min-height: 0;
     max-height: 13.5rem;
     padding: 8px 14px;
@@ -1124,6 +1125,10 @@
 
     .profile-hero-stats-bio .profile-hero-stats {
         flex-shrink: 1;
+    }
+
+    .profile-hero-bio-wrap {
+        max-width: 100%;
     }
 }
 
