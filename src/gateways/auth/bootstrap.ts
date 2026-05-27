@@ -19,6 +19,7 @@ import {
     shouldSetSecureCookie,
 } from "../../api/reuse/access-token-http.js";
 import {
+    consumeAccessToken,
     issueAccessToken,
     lookupAccessToken,
     verifyAccessToken,
@@ -1143,7 +1144,7 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const claims = verifyAccessToken(rawToken, {
+            const claims = consumeAccessToken(rawToken, {
                 purpose: "password-reset",
             });
             if (!claims) {
@@ -1216,24 +1217,13 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const revokedToken = revokeAccessToken(rawToken);
             const revokedSubjectTokens = revokeAccessTokensForSubject(
                 claims.sub,
             );
-            if (!revokedToken) {
-                log?.(
-                    "warn",
-                    "Password reset token revocation did not remove active token.",
-                    {
-                        ...logMeta,
-                        accountId: claims.sub,
-                    },
-                );
-            }
             if (revokedSubjectTokens < 1) {
                 log?.(
                     "warn",
-                    "No active subject tokens were revoked after password reset.",
+                    "No additional active subject tokens were revoked after password reset.",
                     {
                         ...logMeta,
                         accountId: claims.sub,

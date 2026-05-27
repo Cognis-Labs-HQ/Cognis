@@ -266,6 +266,48 @@ export function verifyAccessToken(
     };
 }
 
+export function consumeAccessToken(token: string): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    setupPending: boolean;
+} | null;
+export function consumeAccessToken(
+    token: string,
+    options: { purpose: "session" | "password-reset" },
+): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    setupPending: boolean;
+} | null;
+export function consumeAccessToken(
+    token: string,
+    options?: { purpose: "session" | "password-reset" },
+): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    setupPending: boolean;
+} | null {
+    pruneExpiredTokens();
+    const tokenHash = hashToken(token);
+    const record = tokenStore.get(tokenHash);
+    if (!record) return null;
+    const purpose = record.purpose ?? "session";
+    if (purpose !== (options?.purpose ?? "session")) return null;
+    tokenStore.delete(tokenHash);
+    revokedTokenStore.set(tokenHash, record);
+    verifiedAtByToken.delete(tokenHash);
+    persistTokenStore();
+    return {
+        sub: record.subject,
+        role: record.role,
+        providerId: record.providerId,
+        setupPending: record.setupPending === true,
+    };
+}
+
 export function revokeAccessToken(rawToken: string): boolean {
     pruneExpiredTokens();
     const tokenHash = hashToken(rawToken);
