@@ -19,15 +19,19 @@ test("messages member count control opens local member summary without jitsi cal
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
+    const memberSummaryPopupSource =
+        source.match(
+            /await openPopup\(\{[\s\S]*?module\.social\.messages\.member_summary_title[\s\S]*?maxWidth:\s*"560px",[\s\S]*?\}\);/,
+        )?.[0] ?? "";
+
     assert.match(source, /id="messages-member-summary-btn"/);
     assert.doesNotMatch(
         source,
         /loadMeetingChatSummary[\s\S]*\/api\/v1\/modules\/jitsi-meet\/meetings\/chat-room-summary/,
     );
-    assert.match(
-        source,
-        /openPopup\([\s\S]*module\.social\.messages\.member_summary_title/,
-    );
+    assert.match(memberSummaryPopupSource, /onOpen:\s*\(overlay\)\s*=>/);
+    assert.match(memberSummaryPopupSource, /handleProfileAvatarError/);
+    assert.match(memberSummaryPopupSource, /hydrateProfileAvatars\(overlay\)/);
 });
 
 test("messages IRC layout keeps read receipts inline and centered", () => {
