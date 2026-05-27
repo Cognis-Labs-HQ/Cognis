@@ -675,6 +675,9 @@
 
 .profile-avatar-badge {
     position: absolute;
+    bottom: 0;
+    right: 0;
+    transform: translate(25%, 25%);
     font-size: 1.1rem;
     line-height: 1;
     display: flex;
@@ -689,28 +692,12 @@
     user-select: none;
 }
 
-.profile-avatar-badge--admin {
-    bottom: 2px;
-    left: 2px;
-    width: 2rem;
-    height: 2rem;
-    background: transparent;
-    box-shadow: none;
-}
-
+.profile-avatar-badge--admin,
 .profile-avatar-badge--owner {
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
     width: 2rem;
     height: 2rem;
     background: transparent;
     box-shadow: none;
-}
-
-.profile-avatar-badge--teacher {
-    bottom: 4px;
-    right: 4px;
 }
 
 .profile-avatar-badge-icon {
