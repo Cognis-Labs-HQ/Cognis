@@ -13,6 +13,7 @@
   <string name="module.social.messages.template_body_placeholder">Hai {displayName}, terima kasih sudah menghubungi saya.</string>
   <string name="module.social.messages.template_variables">Variabel:</string>
   <string name="module.social.messages.template_preview">Pratinjau template</string>
+  <string name="module.social.messages.template_editor">Editor template</string>
   <string name="module.social.messages.template_new">Template baru</string>
   <string name="module.social.messages.template_save">Simpan template</string>
   <string name="module.social.messages.template_use">Gunakan</string>

@@ -13,6 +13,7 @@
   <string name="module.social.messages.template_body_placeholder">Hallo {displayName}, danke für deine Nachricht.</string>
   <string name="module.social.messages.template_variables">Variablen:</string>
   <string name="module.social.messages.template_preview">Vorlagenvorschau</string>
+  <string name="module.social.messages.template_editor">Vorlageneditor</string>
   <string name="module.social.messages.template_new">Neue Vorlage</string>
   <string name="module.social.messages.template_save">Vorlage speichern</string>
   <string name="module.social.messages.template_use">Verwenden</string>

@@ -13,6 +13,7 @@
   <string name="module.social.messages.template_body_placeholder">こんにちは {displayName} さん、ご連絡ありがとうございます。</string>
   <string name="module.social.messages.template_variables">変数:</string>
   <string name="module.social.messages.template_preview">テンプレートプレビュー</string>
+  <string name="module.social.messages.template_editor">テンプレートエディター</string>
   <string name="module.social.messages.template_new">新しいテンプレート</string>
   <string name="module.social.messages.template_save">テンプレートを保存</string>
   <string name="module.social.messages.template_use">使用</string>

@@ -64,6 +64,12 @@ const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const MESSAGE_TEMPLATES_STORAGE_KEY = "messages:saved-templates:v1";
 const MAX_SAVED_MESSAGE_TEMPLATES = 100;
 
+/**
+ * Returns a sanitized template record or null when required fields are missing.
+ *
+ * @param {unknown} record
+ * @returns {{id: string; title: string; content: string} | null}
+ */
 function normalizeMessageTemplateRecord(record) {
     if (!record || typeof record !== "object") return null;
     const id = String(record.id ?? "").trim();
@@ -124,12 +130,21 @@ function resolveMessageTemplateVariables(text, room, currentAccountId) {
     if (typeof text !== "string") return "";
     const recipient = resolveTemplateRecipient(room, currentAccountId);
     const values = {
-        username: recipient?.username ?? undefined,
-        handle: recipient?.username ?? undefined,
-        display_name: recipient?.displayName ?? undefined,
-        displayName: recipient?.displayName ?? undefined,
+        username: recipient?.username ?? "",
+        handle: recipient?.username ?? "",
+        display_name: recipient?.displayName ?? "",
+        displayName: recipient?.displayName ?? "",
     };
     return formatTemplate(text, values);
+}
+
+function createMessageTemplateId() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    const randomBytes = crypto.getRandomValues(new Uint8Array(12));
+    const randomSuffix = Array.from(randomBytes, (value) =>
+        value.toString(16).padStart(2, "0"),
+    ).join("");
+    return `template-${Date.now().toString(36)}-${randomSuffix}`;
 }
 
 /**
@@ -1607,6 +1622,44 @@ export async function mount(root, { signal } = {}) {
         }
         syncComposerAvailability(room);
         syncPendingRequestBanner(room?.pendingRequest ?? null);
+        const composerInputElement = document.getElementById(
+            "messages-composer-input",
+        );
+        const composerPreviewElement = document.getElementById(
+            "messages-composer-preview",
+        );
+        if (
+            composerInputElement instanceof HTMLTextAreaElement &&
+            composerPreviewElement instanceof HTMLElement
+        ) {
+            composerPreviewElement.innerHTML = renderComposerPreviewMarkup(
+                resolveMessageTemplateVariables(
+                    composerInputElement.value,
+                    room,
+                    currentAccountId,
+                ),
+                i18n.t("module.social.messages.preview_placeholder"),
+            );
+        }
+        const templateBodyElement = document.getElementById(
+            "messages-template-body",
+        );
+        const templatePreviewElement = document.getElementById(
+            "messages-template-preview",
+        );
+        if (
+            templateBodyElement instanceof HTMLTextAreaElement &&
+            templatePreviewElement instanceof HTMLElement
+        ) {
+            templatePreviewElement.innerHTML = renderComposerPreviewMarkup(
+                resolveMessageTemplateVariables(
+                    templateBodyElement.value,
+                    room,
+                    currentAccountId,
+                ),
+                i18n.t("module.social.messages.preview_placeholder"),
+            );
+        }
         const key = await getRoomKey(roomId);
         const threadResult = await renderThread(
             roomId,
@@ -2204,8 +2257,17 @@ export async function mount(root, { signal } = {}) {
                                 hidden
                             >
                                 <div class="messages-template-library">
-                                    <div class="messages-template-library-list" id="messages-template-library-list"></div>
-                                    <form class="messages-template-editor" id="messages-template-editor">
+                                    <div
+                                        class="messages-template-library-list"
+                                        id="messages-template-library-list"
+                                        role="list"
+                                        aria-label="${escapeHtml(i18n.t("module.social.messages.templates"))}"
+                                    ></div>
+                                    <form
+                                        class="messages-template-editor"
+                                        id="messages-template-editor"
+                                        aria-label="${escapeHtml(i18n.t("module.social.messages.template_editor"))}"
+                                    >
                                         <label class="messages-template-label" for="messages-template-title">${escapeHtml(i18n.t("module.social.messages.template_title"))}</label>
                                         <input
                                             id="messages-template-title"
@@ -2833,10 +2895,7 @@ export async function mount(root, { signal } = {}) {
                         );
                         if (!templateRecord) return;
                         if (composerInput instanceof HTMLTextAreaElement) {
-                            composerInput.value =
-                                resolveSelectedRoomTemplateContent(
-                                    templateRecord.content,
-                                );
+                            composerInput.value = templateRecord.content;
                             queueTypingUpdate(
                                 Boolean((composerInput.value ?? "").trim()),
                             );
@@ -2894,9 +2953,7 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
                     const templateRecord = {
-                        id:
-                            activeTemplateId ??
-                            `template-${Date.now().toString(36)}`,
+                        id: activeTemplateId ?? createMessageTemplateId(),
                         title: titleValue,
                         content: contentValue,
                     };
@@ -2931,14 +2988,6 @@ export async function mount(root, { signal } = {}) {
                 });
                 templateBodyInput?.addEventListener("input", () => {
                     renderTemplateEditorPreview();
-                });
-                templateLibraryList?.addEventListener("mousedown", (event) => {
-                    if (
-                        event.target instanceof HTMLButtonElement &&
-                        event.target.dataset.templateAction
-                    ) {
-                        event.preventDefault();
-                    }
                 });
                 composerTemplatesPane?.addEventListener(
                     "click",
