@@ -363,3 +363,117 @@ test("GET /messages/rooms includes member avatar keys from profiles", async () =
     assert.equal(payload.data[0].members[0].avatarKey, "avatars/alice.png");
     assert.equal(payload.data[0].members[1].avatarKey, "avatars/bob.png");
 });
+
+test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction notification with emoji", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const dispatched: Array<Record<string, unknown>> = [];
+    const messagesStore = {
+        async getRoom(roomId: string) {
+            assert.equal(roomId, "room-1");
+            return { id: roomId, kind: "dm", title: null, avatarKey: null };
+        },
+        async getMember(roomId: string, accountId: string) {
+            if (roomId !== "room-1") return null;
+            if (accountId === "alice") {
+                return {
+                    roomId,
+                    accountId,
+                    role: "member",
+                    muted: false,
+                    archived: false,
+                };
+            }
+            if (accountId === "bob") {
+                return {
+                    roomId,
+                    accountId,
+                    role: "member",
+                    muted: false,
+                    archived: false,
+                };
+            }
+            return null;
+        },
+        async getPendingIncomingRoomMessageRequest() {
+            return null;
+        },
+        async getPendingRoomMessageRequest() {
+            return null;
+        },
+        async getMessage(messageId: string) {
+            assert.equal(messageId, "msg-1");
+            return {
+                id: "msg-1",
+                chatroomId: "room-1",
+                senderId: "bob",
+            };
+        },
+        async hasMessageReaction() {
+            return false;
+        },
+        async setMessageReaction() {},
+    };
+    const profileStore = {
+        async getProfile(accountId: string) {
+            if (accountId === "alice") {
+                return {
+                    accountId,
+                    handle: "alice",
+                    displayName: "Alice",
+                    visibility: "community",
+                };
+            }
+            if (accountId === "bob") {
+                return {
+                    accountId,
+                    handle: "bob",
+                    displayName: "Bob",
+                    visibility: "community",
+                };
+            }
+            return null;
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: async (envelope: Record<string, unknown>) => {
+            dispatched.push(envelope);
+            return { dispatched: ["bob"] };
+        },
+        isAdapterEnabled: () => true,
+    });
+    let statusCode = 0;
+    let responseBody = "";
+    const req = makeReq("POST", token);
+    req[Symbol.asyncIterator] = async function* () {
+        yield Buffer.from(JSON.stringify({ emoji: "🔥" }));
+    };
+
+    const handled = await route(
+        req,
+        {
+            writeHead(status: number) {
+                statusCode = status;
+            },
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL(
+            "http://localhost/api/v1/messages/rooms/room-1/messages/msg-1/reactions",
+        ),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(statusCode, 200);
+    assert.equal(JSON.parse(responseBody).data.active, true);
+    assert.equal(dispatched.length, 1);
+    assert.equal(dispatched[0].subject, "New reaction 🔥");
+    assert.equal(dispatched[0].body, "Reacted with 🔥");
+    assert.deepEqual(dispatched[0].metadata, {
+        roomId: "room-1",
+        messageId: "msg-1",
+        reaction: "🔥",
+    });
+});

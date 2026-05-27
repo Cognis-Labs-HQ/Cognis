@@ -1410,7 +1410,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         category: "messages",
                         recipientUsername: recipient.handle,
                         subject: "New reaction",
-                        body: "New reaction",
+                        body: `Reacted with ${emoji}`,
                         senderName: sender?.handle ?? accountId,
                         actionUrl: `/messages/${roomId}`,
                         metadata: {
