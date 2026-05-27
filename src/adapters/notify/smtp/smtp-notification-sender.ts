@@ -4,6 +4,10 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+import {
+    decodeBasicHtmlEntities,
+    encodeBasicHtmlEntities,
+} from "./html-entities.js";
 
 export interface SmtpConfig {
     host: string;
@@ -44,12 +48,7 @@ async function loadEmailTemplate(): Promise<string> {
 }
 
 function escapeHtmlForEmail(text: string): string {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#x27;");
+    return encodeBasicHtmlEntities(text);
 }
 
 interface ThemePalette {
@@ -125,8 +124,17 @@ function sanitizeSmtpPath(value: string): string {
 
 function extractEmailAddress(value: string): string {
     const sanitized = sanitizeHeader(value);
-    const bracketed = sanitized.match(/<([^<>\s]+@[^<>\s]+)>/);
-    return bracketed?.[1] ?? sanitized;
+    const openingBracketIndex = sanitized.indexOf("<");
+    if (openingBracketIndex === -1) return sanitized;
+    const closingBracketIndex = sanitized.indexOf(">", openingBracketIndex + 1);
+    if (closingBracketIndex === -1) return sanitized;
+    const bracketed = sanitized
+        .slice(openingBracketIndex + 1, closingBracketIndex)
+        .trim();
+    if (!bracketed || /\s/.test(bracketed) || !bracketed.includes("@")) {
+        return sanitized;
+    }
+    return bracketed;
 }
 
 function getAddressDomain(value: string): string | null {
@@ -244,16 +252,25 @@ function encodeQuotedPrintable(input: string): string {
 }
 
 function stripHtmlTags(html: string): string {
-    return html
-        .replace(/<br\s*\/?\s*>/gi, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#x27;/g, "'")
-        .replace(/&#8212;/g, "—");
+    let out = "";
+    for (let cursor = 0; cursor < html.length; cursor++) {
+        if (html[cursor] === "<") {
+            const tagEnd = html.indexOf(">", cursor + 1);
+            if (tagEnd === -1) break;
+            const tagContent = html
+                .slice(cursor + 1, tagEnd)
+                .trim()
+                .replace(/^\/+/, "")
+                .toLowerCase();
+            if (tagContent.startsWith("br")) {
+                out += "\n";
+            }
+            cursor = tagEnd;
+            continue;
+        }
+        out += html[cursor];
+    }
+    return decodeBasicHtmlEntities(out);
 }
 
 function dotStuff(message: string): string {
@@ -798,6 +815,42 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             inviteUrl,
             "Sign Up",
+        );
+    }
+
+    async sendOneTimeLoginEmail(
+        to: string,
+        loginUrl: string,
+        options?: {
+            theme?: string;
+            subject?: string;
+            body?: string;
+            actionLabel?: string;
+        },
+    ): Promise<void> {
+        if (!to) throw new Error("smtp_requires_recipient");
+        if (!loginUrl) throw new Error("smtp_requires_login_url");
+        if (this.rateLimiter.isThrottled(to)) {
+            throw new Error("smtp_rate_limited");
+        }
+        this.rateLimiter.record(to);
+        const theme = options?.theme;
+        const subject = options?.subject?.trim();
+        const body = options?.body?.trim();
+        if (!subject || !body) {
+            throw new Error(
+                "One-time login email subject and body are required.",
+            );
+        }
+        await sendMailWithRetry(
+            this.config,
+            to,
+            subject,
+            body,
+            this.sleep,
+            theme,
+            loginUrl,
+            options?.actionLabel,
         );
     }
 

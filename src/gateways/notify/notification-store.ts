@@ -647,6 +647,21 @@ export class DbNotificationStore implements NotificationConfigStore {
         return emails.find((e) => e.primary && e.verified)?.email ?? null;
     }
 
+    async getAccountIdByEmail(email: string): Promise<string | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "user_emails",
+            columns: ["account_id"],
+            where: [
+                { column: "email", value: email },
+                { column: "verified", value: true },
+                { column: "is_primary", value: true },
+            ],
+            limit: 1,
+        });
+        return (result.rows?.[0]?.account_id as string | undefined) ?? null;
+    }
+
     async setPrimaryEmail(accountId: string, email: string): Promise<void> {
         await this.db.executeCommand({
             option: "UPDATE",

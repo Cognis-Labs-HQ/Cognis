@@ -16,7 +16,8 @@
  *   variant?: 'info' | 'success' | 'warning' | 'danger',
  *   title: string,
  *   body?: string,
- *   icon?: string
+ *   icon?: string,
+ *   footerHtml?: string
  * }} options
  * @returns {string}
  */
@@ -42,6 +43,7 @@ export function renderInPageCallout({
     title,
     body = "",
     icon,
+    footerHtml = "",
 }) {
     const safeVariant = ["info", "success", "warning", "danger"].includes(
         variant,
@@ -59,6 +61,7 @@ export function renderInPageCallout({
                   ? `<p class="in-page-callout__body">${escapeHtml(body)}</p>`
                   : ""
           }
+          ${footerHtml}
         </div>
       </section>
     `;

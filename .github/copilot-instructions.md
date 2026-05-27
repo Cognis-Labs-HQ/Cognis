@@ -372,6 +372,10 @@ API sanity and security are paramount.
 - Never expose internal error details to API consumers; log them server-side.
 - Do not introduce new dependencies without flagging them for review.
 
+## Docker environment variables
+
+All environment variables consumed by the application container must be declared with their default value in `docker/Dockerfile` using `ENV KEY=value`. Docker Compose files must never set a default via the `${VAR:-default}` fallback syntax for application-layer variables — they should reference `${VAR}` or `${VAR:?error}` only. Defaults belong exclusively in the Dockerfile so there is one canonical source of truth for the container's runtime configuration.
+
 ## Logging coverage requirements
 
 Comprehensive logging is required for every new feature and behaviour change.

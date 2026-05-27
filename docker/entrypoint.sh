@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 LOG_FILE_PATH="${LOG_FILE:-/app/logs/app.log}"
 SHUTDOWN_TIMEOUT_SECONDS=25
+DEFAULT_DATA_ENCRYPTION_KEY="not-secure-change-me"
 
 app_log() {
   local level="$1"
@@ -42,6 +43,10 @@ shutdown() {
 
 trap 'shutdown TERM' TERM
 trap 'shutdown INT' INT
+
+if [[ "${DATA_ENCRYPTION_KEY:-}" == "${DEFAULT_DATA_ENCRYPTION_KEY}" ]]; then
+  app_log "warn" "DATA_ENCRYPTION_KEY is using the default insecure value. Set a unique key outside local development."
+fi
 
 "$@" &
 child_pid=$!

@@ -19,8 +19,10 @@ import {
     shouldSetSecureCookie,
 } from "../../api/reuse/access-token-http.js";
 import {
+    consumeAccessToken,
     issueAccessToken,
     lookupAccessToken,
+    verifyAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
     revokeAccessToken,
@@ -34,6 +36,7 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import { validateUsername } from "../../api/reuse/account-store.js";
+import { resolveExternalBaseUrl } from "../../api/reuse/url-parts.js";
 import {
     runAuthBootstrapHooks,
     runAuthRouteBootstrapHooks,
@@ -51,6 +54,27 @@ import {
 const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
 const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
+const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
+const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
+const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
+const PASSWORD_RESET_RESPONSE_JITTER_MS = 120;
+const PASSWORD_RESET_LOOKUP_JITTER_MS = 40;
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForPasswordResetResponseFloor(
+    startedAt: number,
+): Promise<void> {
+    const jitterMs = Math.floor(
+        Math.random() * PASSWORD_RESET_RESPONSE_JITTER_MS,
+    );
+    const targetMs = PASSWORD_RESET_MIN_RESPONSE_MS + jitterMs;
+    const elapsedMs = Date.now() - startedAt;
+    if (elapsedMs >= targetMs) return;
+    await sleep(targetMs - elapsedMs);
+}
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
@@ -147,6 +171,43 @@ function resolveRole(sessionRole: string | undefined): AccessRole {
         return sessionRole;
     }
     return "user";
+}
+
+// NOTE: This limiter keeps state in-process for single-instance deployments.
+// In multi-instance setups (for example, behind a load balancer), use a shared
+// store-backed limiter (such as Redis) to enforce global throttling.
+class MemoryRateLimiter {
+    private readonly lastSeenAt = new Map<string, number>();
+
+    constructor(
+        private readonly minIntervalMs: number,
+        private readonly now: () => number = () => Date.now(),
+    ) {}
+
+    private pruneExpiredEntries(): void {
+        const now = this.now();
+        for (const [key, lastSeenAt] of this.lastSeenAt.entries()) {
+            if (now - lastSeenAt >= this.minIntervalMs) {
+                this.lastSeenAt.delete(key);
+            }
+        }
+    }
+
+    isThrottled(key: string): boolean {
+        this.pruneExpiredEntries();
+        const normalizedKey = key.trim();
+        if (!normalizedKey) return false;
+        const lastSeenAt = this.lastSeenAt.get(normalizedKey);
+        if (lastSeenAt === undefined) return false;
+        return this.now() - lastSeenAt < this.minIntervalMs;
+    }
+
+    record(key: string): void {
+        this.pruneExpiredEntries();
+        const normalizedKey = key.trim();
+        if (!normalizedKey) return;
+        this.lastSeenAt.set(normalizedKey, this.now());
+    }
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
@@ -351,6 +412,250 @@ function createAuthGatewayRoutes(
             "registration:public:isEnabled",
         );
         return Boolean(isPublicRegistrationEnabled?.());
+    }
+
+    const oneTimeLoginAccountRateLimiter = new MemoryRateLimiter(
+        PASSWORD_RESET_RATE_LIMIT_MS,
+    );
+    const oneTimeLoginIpRateLimiter = new MemoryRateLimiter(
+        PASSWORD_RESET_RATE_LIMIT_MS,
+    );
+
+    function resolveRequestAddress(req: IncomingMessage): string {
+        const forwardedFor = req.headers["x-forwarded-for"];
+        if (typeof forwardedFor === "string") {
+            const firstHop = forwardedFor.split(",")[0]?.trim();
+            if (firstHop) return firstHop;
+        }
+        return String(req.socket?.remoteAddress ?? "unknown");
+    }
+
+    async function respondToSuccessfulLogin(
+        req: IncomingMessage,
+        res: ServerResponse,
+        session: {
+            accountId: string;
+            provider: string;
+            role?: string;
+        },
+        providerId: string,
+        logMeta: Record<string, unknown>,
+    ): Promise<true> {
+        let role = resolveRole(session.role);
+        const profileStore = capabilities.get<{
+            getProfile(accountId: string): Promise<{ role?: string } | null>;
+        }>("social:profileStore");
+        if (profileStore) {
+            const existingProfile = await profileStore
+                .getProfile(session.accountId)
+                .catch(() => null);
+            if (existingProfile?.role === "owner") {
+                role = "owner";
+            }
+        }
+        const isFounder = await accountStore
+            .isFounder(session.accountId)
+            .catch((error) => {
+                ctx.log?.(
+                    "warn",
+                    "Failed to resolve founder status during login.",
+                    {
+                        component: "auth-gateway",
+                        accountId: session.accountId,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+                return false;
+            });
+        if (isFounder && (role === "admin" || role === "owner")) {
+            role = "owner";
+        }
+        const accessTokenTtlSeconds =
+            authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
+        const localAdapter = authGateway.getLocalAdapter();
+        if (localAdapter) {
+            await localAdapter
+                .updateLastLogin(session.accountId)
+                .catch(() => undefined);
+        }
+        const createProfile = capabilities.get<
+            (
+                accountId: string,
+                handle: string,
+                role?: string,
+                displayName?: string,
+            ) => Promise<void>
+        >("profile:createProfile");
+        const accountDisplayName =
+            (await accountStore.getDisplayName(session.accountId))?.trim() ||
+            undefined;
+        await createProfile?.(
+            session.accountId,
+            session.accountId,
+            role,
+            accountDisplayName,
+        );
+        const securitySettings = await readSecuritySettings();
+        const canSendVerificationEmail = capabilities.get<() => boolean>(
+            "notify:canSendVerificationEmail",
+        );
+        const isInitialAdmin =
+            (role === "admin" || role === "owner") && isFounder;
+        const shouldRequireSmtpValidation =
+            securitySettings.userValidationMode === "smtp" && !isInitialAdmin;
+        const requiresUserValidation = shouldRequireSmtpValidation
+            ? Boolean(canSendVerificationEmail?.())
+            : false;
+        const getTfaUserStatus = capabilities.get<
+            (accountId: string) => Promise<{
+                requiresSetup: boolean;
+                hasConfiguredMethod: boolean;
+            }>
+        >("tfa:getUserStatus");
+        const getTfaLoginMethods = capabilities.get<
+            (accountId: string) => Promise<Array<{ id: string; name: string }>>
+        >("tfa:getLoginMethods");
+        const tfaStatus = getTfaUserStatus
+            ? await getTfaUserStatus(session.accountId).catch(() => null)
+            : null;
+        const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
+        const requiresTfaSetup = tfaStatus?.requiresSetup === true;
+        if (requiresTfa && getTfaLoginMethods) {
+            const methods = await getTfaLoginMethods(session.accountId)
+                .catch(() => [])
+                .then((items) =>
+                    items.filter(
+                        (item) =>
+                            typeof item.id === "string" &&
+                            typeof item.name === "string",
+                    ),
+                );
+            if (methods.length > 0) {
+                const pendingAttempt =
+                    authRouteBootstrapRuntime.createPendingTfaLoginAttempt({
+                        accountId: session.accountId,
+                        role,
+                        isFounder,
+                        provider: session.provider,
+                        providerId,
+                        displayName: accountDisplayName ?? session.accountId,
+                        userValidationMode: securitySettings.userValidationMode,
+                        requiredUserValidation: requiresUserValidation,
+                    });
+                log?.("info", "Login entered TFA challenge flow.", {
+                    ...logMeta,
+                    accountId: session.accountId,
+                    provider: session.provider,
+                    role,
+                    methodCount: methods.length,
+                });
+                res.writeHead(200, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        data: {
+                            tfaRequired: true,
+                            loginAttemptId: pendingAttempt.id,
+                            methods,
+                            accountId: session.accountId,
+                            displayName:
+                                accountDisplayName ?? session.accountId,
+                            provider: session.provider,
+                            providerId,
+                            role,
+                            isFounder,
+                            userValidationMode:
+                                securitySettings.userValidationMode,
+                            requiredUserValidation: requiresUserValidation,
+                        },
+                    }),
+                );
+                return true;
+            }
+        }
+        if (requiresTfaSetup) {
+            const pendingSetupToken = issueAccessToken(
+                session.accountId,
+                role,
+                accessTokenTtlSeconds,
+                {
+                    providerId,
+                    setupPending: true,
+                },
+            );
+            log?.("info", "Login succeeded with pending TFA setup gate.", {
+                ...logMeta,
+                accountId: session.accountId,
+                provider: session.provider,
+                role,
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
+                    req,
+                    pendingSetupToken,
+                    accessTokenTtlSeconds,
+                ),
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        accountId: session.accountId,
+                        displayName: accountDisplayName ?? session.accountId,
+                        provider: session.provider,
+                        providerId,
+                        role,
+                        isFounder,
+                        token: pendingSetupToken,
+                        userValidationMode: securitySettings.userValidationMode,
+                        requiredUserValidation: requiresUserValidation,
+                        tfaSetupRequired: true,
+                    },
+                }),
+            );
+            return true;
+        }
+        log?.("info", "Login succeeded.", {
+            ...logMeta,
+            accountId: session.accountId,
+            provider: session.provider,
+            role,
+            requiresUserValidation,
+        });
+        const apiToken = issueAccessToken(
+            session.accountId,
+            role,
+            accessTokenTtlSeconds,
+            { providerId },
+        );
+        res.writeHead(200, {
+            "content-type": "application/json",
+            "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
+                req,
+                apiToken,
+                accessTokenTtlSeconds,
+            ),
+        });
+        res.end(
+            JSON.stringify({
+                data: {
+                    accountId: session.accountId,
+                    displayName: accountDisplayName ?? session.accountId,
+                    provider: session.provider,
+                    providerId,
+                    role,
+                    isFounder,
+                    token: apiToken,
+                    userValidationMode: securitySettings.userValidationMode,
+                    requiredUserValidation: requiresUserValidation,
+                },
+            }),
+        );
+        return true;
     }
 
     return async (
@@ -622,6 +927,327 @@ function createAuthGatewayRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/login-link-status" &&
+            req.method === "GET"
+        ) {
+            const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
+                "notify:canSendOneTimeLoginEmail",
+            );
+            const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        available: Boolean(canSendOneTimeLoginEmail?.()),
+                        contactEmail,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/request-login-link" &&
+            req.method === "POST"
+        ) {
+            const requestStartedAt = Date.now();
+            const respondWithPasswordResetEnvelope = async (
+                statusCode: number,
+                payload: unknown,
+            ) => {
+                await waitForPasswordResetResponseFloor(requestStartedAt);
+                res.writeHead(statusCode, {
+                    "content-type": "application/json",
+                });
+                res.end(JSON.stringify(payload));
+                return true;
+            };
+            const body = await readJson(req);
+            const email = String(body.email ?? "")
+                .trim()
+                .toLowerCase();
+            if (!email) {
+                return respondWithPasswordResetEnvelope(400, {
+                    error: {
+                        code: "email_required",
+                        message: "Email is required",
+                    },
+                });
+            }
+            const requestAddress = resolveRequestAddress(req);
+            const addressRateLimitKey = `address:${requestAddress}`;
+            const emailRateLimitKey = `email:${email}`;
+            if (
+                oneTimeLoginAccountRateLimiter.isThrottled(emailRateLimitKey) ||
+                oneTimeLoginIpRateLimiter.isThrottled(addressRateLimitKey)
+            ) {
+                return respondWithPasswordResetEnvelope(429, {
+                    error: {
+                        code: "rate_limited",
+                        message:
+                            "A password reset link was requested too recently. Please wait before trying again.",
+                    },
+                });
+            }
+            oneTimeLoginAccountRateLimiter.record(emailRateLimitKey);
+            oneTimeLoginIpRateLimiter.record(addressRateLimitKey);
+            const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
+            const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
+                "notify:canSendOneTimeLoginEmail",
+            );
+            const sendOneTimeLoginEmail = capabilities.get<
+                (
+                    to: string,
+                    loginUrl: string,
+                    options?: {
+                        theme?: string;
+                        subject?: string;
+                        body?: string;
+                        actionLabel?: string;
+                    },
+                ) => Promise<void>
+            >("notify:sendOneTimeLoginEmail");
+            const getAccountIdByEmail = capabilities.get<
+                (email: string) => Promise<string | null>
+            >("notify:getAccountIdByEmail");
+            const externalBaseUrl = resolveExternalBaseUrl();
+            if (
+                !canSendOneTimeLoginEmail?.() ||
+                typeof sendOneTimeLoginEmail !== "function" ||
+                typeof getAccountIdByEmail !== "function" ||
+                !externalBaseUrl
+            ) {
+                return respondWithPasswordResetEnvelope(200, {
+                    data: {
+                        outcome: "contact_support",
+                        contactEmail,
+                    },
+                });
+            }
+            await sleep(
+                Math.floor(Math.random() * PASSWORD_RESET_LOOKUP_JITTER_MS),
+            );
+            const accountId = await getAccountIdByEmail(email).catch(
+                () => null,
+            );
+            const accountInfo = accountId
+                ? await accountStore.getInfo(accountId).catch(() => null)
+                : null;
+            if (!accountInfo || accountInfo.enabled === false) {
+                return respondWithPasswordResetEnvelope(200, {
+                    data: {
+                        outcome: "email_sent",
+                    },
+                });
+            }
+            const loginToken = issueAccessToken(
+                accountId,
+                resolveRole(accountInfo.role),
+                PASSWORD_RESET_TOKEN_TTL_SECONDS,
+                {
+                    providerId: "local",
+                    purpose: "password-reset",
+                },
+            );
+            const loginUrl = `${externalBaseUrl}/login?passwordResetToken=${encodeURIComponent(loginToken)}`;
+            try {
+                await sendOneTimeLoginEmail(email, loginUrl, {
+                    subject: "Your Cognis password reset link",
+                    body: `Use this secure password reset link to choose a new Cognis password:\n${loginUrl}\n\nThis link expires in 15 minutes and can only be used once.`,
+                    actionLabel: "Reset Password",
+                });
+            } catch (error) {
+                revokeAccessToken(loginToken);
+                const message =
+                    error instanceof Error ? error.message : String(error);
+                if (message === "smtp_rate_limited") {
+                    return respondWithPasswordResetEnvelope(429, {
+                        error: {
+                            code: "rate_limited",
+                            message:
+                                "A password reset link was requested too recently. Please wait before trying again.",
+                        },
+                    });
+                }
+                log?.("warn", "Failed to send password reset email.", {
+                    ...logMeta,
+                    error: message,
+                });
+                return respondWithPasswordResetEnvelope(200, {
+                    data: {
+                        outcome: "contact_support",
+                        contactEmail,
+                    },
+                });
+            }
+            log?.("info", "Sent password reset email.", {
+                ...logMeta,
+            });
+            return respondWithPasswordResetEnvelope(200, {
+                data: { outcome: "email_sent" },
+            });
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/check-login-link" &&
+            req.method === "GET"
+        ) {
+            const rawToken = String(url.searchParams.get("token") ?? "").trim();
+            const claims = rawToken
+                ? verifyAccessToken(rawToken, { purpose: "password-reset" })
+                : null;
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_token",
+                            message: "Invalid or expired login link",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { valid: true } }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/consume-login-link" &&
+            req.method === "POST"
+        ) {
+            const body = await readJson(req);
+            const rawToken = String(body.token ?? "").trim();
+            const nextPassword = String(body.password ?? "").trim();
+            if (!rawToken) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_token",
+                            message: "Invalid or expired login link",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (!nextPassword) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Password is required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (nextPassword.length < 8) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_too_short",
+                            message: "Password must be at least 8 characters",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const claims = consumeAccessToken(rawToken, {
+                purpose: "password-reset",
+            });
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_token",
+                            message: "Invalid or expired login link",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const accountInfo = await accountStore
+                .getInfo(claims.sub)
+                .catch(() => null);
+            if (!accountInfo || accountInfo.enabled === false) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_token",
+                            message: "Invalid or expired login link",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (claims.providerId !== "local") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "provider_unsupported",
+                            message:
+                                "Password reset by email is unavailable for this account.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const localAdapter = authGateway.getLocalAdapter();
+            if (!localAdapter?.store) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "provider_unsupported",
+                            message:
+                                "Password reset by email is unavailable for this account.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            try {
+                await localAdapter.store.setPassword(claims.sub, nextPassword);
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : String(error);
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_reset_failed",
+                            message,
+                        },
+                    }),
+                );
+                return true;
+            }
+            const revokedSubjectTokens = revokeAccessTokensForSubject(
+                claims.sub,
+            );
+            if (revokedSubjectTokens < 1) {
+                log?.(
+                    "warn",
+                    "No additional active subject tokens were revoked after password reset.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                    },
+                );
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
@@ -667,235 +1293,13 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            let role = resolveRole(session.role);
-            const profileStore = capabilities.get<{
-                getProfile(
-                    accountId: string,
-                ): Promise<{ role?: string } | null>;
-            }>("social:profileStore");
-            if (profileStore) {
-                const existingProfile = await profileStore
-                    .getProfile(session.accountId)
-                    .catch(() => null);
-                if (existingProfile?.role === "owner") {
-                    role = "owner";
-                }
-            }
-            const isFounder = await accountStore
-                .isFounder(session.accountId)
-                .catch((error) => {
-                    ctx.log?.(
-                        "warn",
-                        "Failed to resolve founder status during login.",
-                        {
-                            component: "auth-gateway",
-                            accountId: session.accountId,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                    // Founder status only affects owner elevation and optional UI routing; keep login available on lookup failure.
-                    return false;
-                });
-            if (isFounder && (role === "admin" || role === "owner")) {
-                role = "owner";
-            }
-            const accessTokenTtlSeconds =
-                authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
-            const localAdapter = authGateway.getLocalAdapter();
-            if (localAdapter) {
-                await localAdapter
-                    .updateLastLogin(session.accountId)
-                    .catch(() => undefined);
-            }
-            const createProfile = capabilities.get<
-                (
-                    accountId: string,
-                    handle: string,
-                    role?: string,
-                    displayName?: string,
-                ) => Promise<void>
-            >("profile:createProfile");
-            const accountDisplayName =
-                (
-                    await accountStore.getDisplayName(session.accountId)
-                )?.trim() || undefined;
-            await createProfile?.(
-                session.accountId,
-                session.accountId,
-                role,
-                accountDisplayName,
+            return respondToSuccessfulLogin(
+                req,
+                res,
+                session,
+                adapter.id,
+                logMeta,
             );
-            const securitySettings = await readSecuritySettings();
-            const canSendVerificationEmail = capabilities.get<() => boolean>(
-                "notify:canSendVerificationEmail",
-            );
-            const isInitialAdmin =
-                (role === "admin" || role === "owner") && isFounder;
-            const shouldRequireSmtpValidation =
-                securitySettings.userValidationMode === "smtp" &&
-                !isInitialAdmin;
-            const requiresUserValidation = shouldRequireSmtpValidation
-                ? Boolean(canSendVerificationEmail?.())
-                : false;
-            const getTfaUserStatus = capabilities.get<
-                (accountId: string) => Promise<{
-                    requiresSetup: boolean;
-                    hasConfiguredMethod: boolean;
-                }>
-            >("tfa:getUserStatus");
-            const getTfaLoginMethods = capabilities.get<
-                (
-                    accountId: string,
-                ) => Promise<Array<{ id: string; name: string }>>
-            >("tfa:getLoginMethods");
-            const tfaStatus = getTfaUserStatus
-                ? await getTfaUserStatus(session.accountId).catch(() => null)
-                : null;
-            const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
-            const requiresTfaSetup = tfaStatus?.requiresSetup === true;
-            if (requiresTfa && getTfaLoginMethods) {
-                const methods = await getTfaLoginMethods(session.accountId)
-                    .catch(() => [])
-                    .then((items) =>
-                        items.filter(
-                            (item) =>
-                                typeof item.id === "string" &&
-                                typeof item.name === "string",
-                        ),
-                    );
-                if (methods.length > 0) {
-                    const pendingAttempt =
-                        authRouteBootstrapRuntime.createPendingTfaLoginAttempt({
-                            accountId: session.accountId,
-                            role,
-                            isFounder,
-                            provider: session.provider,
-                            providerId: adapter.id,
-                            displayName:
-                                accountDisplayName ?? session.accountId,
-                            userValidationMode:
-                                securitySettings.userValidationMode,
-                            requiredUserValidation: requiresUserValidation,
-                        });
-                    log?.("info", "Login entered TFA challenge flow.", {
-                        ...logMeta,
-                        accountId: session.accountId,
-                        provider: session.provider,
-                        role,
-                        methodCount: methods.length,
-                    });
-                    res.writeHead(200, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            data: {
-                                tfaRequired: true,
-                                loginAttemptId: pendingAttempt.id,
-                                methods,
-                                accountId: session.accountId,
-                                displayName:
-                                    accountDisplayName ?? session.accountId,
-                                provider: session.provider,
-                                providerId: adapter.id,
-                                role,
-                                isFounder,
-                                userValidationMode:
-                                    securitySettings.userValidationMode,
-                                requiredUserValidation: requiresUserValidation,
-                            },
-                        }),
-                    );
-                    return true;
-                }
-            }
-            if (requiresTfaSetup) {
-                const pendingSetupToken = issueAccessToken(
-                    session.accountId,
-                    role,
-                    accessTokenTtlSeconds,
-                    {
-                        providerId: adapter.id,
-                        setupPending: true,
-                    },
-                );
-                log?.("info", "Login succeeded with pending TFA setup gate.", {
-                    ...logMeta,
-                    accountId: session.accountId,
-                    provider: session.provider,
-                    role,
-                });
-                res.writeHead(200, {
-                    "content-type": "application/json",
-                    "set-cookie":
-                        authRouteBootstrapRuntime.buildAccessTokenCookie(
-                            req,
-                            pendingSetupToken,
-                            accessTokenTtlSeconds,
-                        ),
-                });
-                res.end(
-                    JSON.stringify({
-                        data: {
-                            accountId: session.accountId,
-                            displayName:
-                                accountDisplayName ?? session.accountId,
-                            provider: session.provider,
-                            providerId: adapter.id,
-                            role,
-                            isFounder,
-                            token: pendingSetupToken,
-                            userValidationMode:
-                                securitySettings.userValidationMode,
-                            requiredUserValidation: requiresUserValidation,
-                            tfaSetupRequired: true,
-                        },
-                    }),
-                );
-                return true;
-            }
-            log?.("info", "Login succeeded.", {
-                ...logMeta,
-                accountId: session.accountId,
-                provider: session.provider,
-                role,
-                requiresUserValidation,
-            });
-            const apiToken = issueAccessToken(
-                session.accountId,
-                role,
-                accessTokenTtlSeconds,
-                {
-                    providerId: adapter.id,
-                },
-            );
-            res.writeHead(200, {
-                "content-type": "application/json",
-                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                    req,
-                    apiToken,
-                    accessTokenTtlSeconds,
-                ),
-            });
-            res.end(
-                JSON.stringify({
-                    data: {
-                        accountId: session.accountId,
-                        displayName: accountDisplayName ?? session.accountId,
-                        provider: session.provider,
-                        providerId: adapter.id,
-                        role,
-                        isFounder,
-                        token: apiToken,
-                        userValidationMode: securitySettings.userValidationMode,
-                        requiredUserValidation: requiresUserValidation,
-                    },
-                }),
-            );
-            return true;
         }
 
         if (

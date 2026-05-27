@@ -26,6 +26,8 @@ export async function mount(root) {
     let currentTfaLoginAttemptId = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
+    let passwordResetTokenHandled = false;
+    let submitPasswordReset = null;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -34,6 +36,7 @@ export async function mount(root) {
     let loginReasonToastShown = false;
 
     let publicRegistrationEnabled = false;
+    let isPasswordResetMode = false;
     try {
         const regConfigRes = await fetch("/api/v1/auth/registration-config");
         if (regConfigRes.ok) {
@@ -188,6 +191,323 @@ export async function mount(root) {
         localStorage.removeItem("cognis_user_validation_mode");
     }
 
+    async function finalizeAuthenticatedSession(data) {
+        persistSession(data);
+        const requiresUserValidation =
+            data.requiredUserValidation === true &&
+            data.userValidationMode === "smtp";
+        if (requiresUserValidation) {
+            const requiredEmailClient =
+                await loadRequiredEmailEnforcementClient();
+            try {
+                await requiredEmailClient?.enforceRequiredEmailSetup({
+                    accountId: data.accountId,
+                    i18n,
+                });
+            } catch {
+                clearPersistedSession();
+                return;
+            }
+        }
+        await syncTimezoneOnLogin(data.accountId);
+        window.location.href = "/dashboard";
+    }
+
+    async function handleAuthResult(data) {
+        if (data.tfaRequired === true || data.tfaSetupRequired === true) {
+            const tfaLoginClient = await loadTfaLoginClient();
+            if (data.tfaRequired === true) {
+                currentTfaLoginAttemptId =
+                    tfaLoginClient?.switchToTfaPrompt(data) ?? null;
+            } else {
+                tfaLoginClient?.handleSetupRequired(persistSession, data);
+            }
+            return;
+        }
+        await finalizeAuthenticatedSession(data);
+    }
+
+    function buildSupportMessage(contactEmail) {
+        if (contactEmail) {
+            return escapeHtml(
+                i18n.t("ui.app.login.login_link.contact_support_email"),
+            ).replace("{email}", escapeHtml(contactEmail));
+        }
+        return escapeHtml(i18n.t("ui.app.login.login_link.contact_support"));
+    }
+
+    function replaceCredentialFieldsContent(html) {
+        const credentialFields = document.querySelector(
+            "#login-credential-fields",
+        );
+        if (!credentialFields) return false;
+        credentialFields.innerHTML = html;
+        return true;
+    }
+
+    function switchToLoginLinkEmailForm() {
+        if (
+            !replaceCredentialFieldsContent(`
+            <label>
+                <span>${escapeHtml(i18n.t("ui.app.login.login_link.email"))}</span>
+                <input id="login-link-email" type="email" autocomplete="email"
+                    placeholder="${escapeHtml(i18n.t("ui.app.login.login_link.email"))}"
+                    required />
+            </label>
+            <div class="auth-reset-actions">
+                <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+                </button>
+                <button type="submit" id="login-link-submit" class="btn-animated">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
+                </button>
+            </div>
+        `)
+        ) {
+            return;
+        }
+        enterPasswordResetMode();
+        const backLink = document.querySelector("#login-link-back");
+        const emailInput = document.querySelector("#login-link-email");
+        emailInput?.focus();
+        submitPasswordReset = async () => {
+            try {
+                await requestPasswordResetLink();
+            } catch {
+                showToast(i18n.t("ui.app.login.error.generic"), {
+                    variant: "error",
+                });
+            }
+        };
+        backLink?.addEventListener("click", () => {
+            composer.refresh();
+        });
+    }
+
+    function showLoginLinkUnavailable(contactEmail) {
+        if (
+            !replaceCredentialFieldsContent(`
+            <p class="auth-link-unavailable-message">${buildSupportMessage(contactEmail)}</p>
+            <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+            </button>
+        `)
+        ) {
+            return;
+        }
+        enterPasswordResetMode();
+        submitPasswordReset = null;
+        document
+            .querySelector("#login-link-back")
+            ?.addEventListener("click", () => {
+                composer.refresh();
+            });
+    }
+
+    function enterPasswordResetMode() {
+        isPasswordResetMode = true;
+        const heading = document.querySelector(".auth-heading");
+        if (heading)
+            heading.textContent = i18n.t("ui.app.login.login_link.title");
+        const loginSubmit = document.querySelector("#login-form-submit");
+        if (loginSubmit) loginSubmit.hidden = true;
+        const signupCallout = document.querySelector("#login-signup-callout");
+        if (signupCallout) signupCallout.hidden = true;
+    }
+
+    function resetPasswordResetMode() {
+        isPasswordResetMode = false;
+        submitPasswordReset = null;
+    }
+
+    async function handleRequestLinkClick() {
+        const res = await fetch("/api/v1/auth/login-link-status");
+        const body = await res.json().catch(() => null);
+        if (body?.data?.available === true) {
+            switchToLoginLinkEmailForm();
+        } else {
+            showLoginLinkUnavailable(body?.data?.contactEmail ?? "");
+        }
+    }
+
+    async function requestPasswordResetLink() {
+        const emailEl = document.querySelector("#login-link-email");
+        const email = String(emailEl?.value ?? "")
+            .trim()
+            .toLowerCase();
+        if (!email) {
+            showToast(i18n.t("ui.app.login.login_link.email_required"), {
+                variant: "warning",
+            });
+            emailEl?.focus();
+            return;
+        }
+        const response = await fetch("/api/v1/auth/request-login-link", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email }),
+        });
+        const body = await response.json().catch(() => null);
+        if (response.status === 429 || body?.error?.code === "rate_limited") {
+            showToast(i18n.t("ui.app.login.login_link.rate_limited"), {
+                variant: "warning",
+            });
+            return;
+        }
+        if (response.ok && body?.data?.outcome === "email_sent") {
+            showToast(i18n.t("ui.app.login.login_link.sent"), {
+                variant: "success",
+                permanent: true,
+            });
+            return;
+        }
+        if (response.ok && body?.data?.outcome === "contact_support") {
+            showToast(buildSupportMessage(body.data.contactEmail), {
+                variant: "info",
+                permanent: true,
+            });
+            return;
+        }
+        showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
+    }
+
+    function showPasswordResetLinkInvalid() {
+        if (
+            !replaceCredentialFieldsContent(`
+            ${renderInPageCallout({
+                variant: "danger",
+                title: i18n.t("ui.reuse.error"),
+                body: i18n.t("ui.app.login.login_link.invalid"),
+            })}
+            <div class="auth-reset-actions">
+                <button type="button" id="login-link-invalid-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.go_back"))}
+                </button>
+            </div>
+        `)
+        ) {
+            return;
+        }
+        enterPasswordResetMode();
+        submitPasswordReset = null;
+        document
+            .querySelector("#login-link-invalid-back")
+            ?.addEventListener("click", () => {
+                window.history.replaceState({}, "", "/login");
+                composer.refresh();
+            });
+    }
+
+    function renderPasswordResetForm(token, showBackButton = true) {
+        const backButtonHtml = showBackButton
+            ? `<button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+                </button>`
+            : "";
+        if (
+            !replaceCredentialFieldsContent(`
+            <label>
+                <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+                <input id="login-link-password" type="password" autocomplete="new-password"
+                    placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}"
+                    required />
+            </label>
+            <label>
+                <span>${escapeHtml(i18n.t("ui.app.register.confirm_password"))}</span>
+                <input id="login-link-confirm-password" type="password" autocomplete="new-password"
+                    placeholder="${escapeHtml(i18n.t("ui.app.register.confirm_password"))}"
+                    required />
+            </label>
+            <div class="auth-reset-actions">
+                ${backButtonHtml}
+                <button type="submit" id="login-link-submit" class="btn-animated">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
+                </button>
+            </div>
+        `)
+        ) {
+            return;
+        }
+        enterPasswordResetMode();
+        submitPasswordReset = async () => {
+            const nextPassword = String(
+                document.querySelector("#login-link-password")?.value ?? "",
+            ).trim();
+            const confirmPassword = String(
+                document.querySelector("#login-link-confirm-password")?.value ??
+                    "",
+            ).trim();
+            if (!nextPassword || !confirmPassword) {
+                showToast(i18n.t("ui.app.login.login_link.password_required"), {
+                    variant: "warning",
+                });
+                return;
+            }
+            if (nextPassword !== confirmPassword) {
+                showToast(i18n.t("ui.app.register.error.password_mismatch"), {
+                    variant: "error",
+                });
+                return;
+            }
+            const response = await fetch("/api/v1/auth/consume-login-link", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ token, password: nextPassword }),
+            });
+            const body = await response.json().catch(() => null);
+            if (response.ok && body?.data?.updated === true) {
+                window.history.replaceState({}, "", "/login");
+                showToast(i18n.t("ui.app.login.login_link.reset_success"), {
+                    variant: "success",
+                    permanent: true,
+                });
+                composer.refresh();
+                return;
+            }
+            showToast(
+                body?.error?.message
+                    ? String(body.error.message)
+                    : i18n.t("ui.app.login.login_link.invalid"),
+                {
+                    variant: "error",
+                    permanent: true,
+                },
+            );
+        };
+        if (showBackButton) {
+            document
+                .querySelector("#login-link-back")
+                ?.addEventListener("click", () => {
+                    window.history.replaceState({}, "", "/login");
+                    composer.refresh();
+                });
+        }
+    }
+
+    async function consumePasswordResetToken() {
+        if (passwordResetTokenHandled) return;
+        const params = new URL(window.location.href).searchParams;
+        const loginToken = String(
+            params.get("passwordResetToken") ?? "",
+        ).trim();
+        if (!loginToken) return;
+        try {
+            passwordResetTokenHandled = true;
+            const checkRes = await fetch(
+                `/api/v1/auth/check-login-link?token=${encodeURIComponent(loginToken)}`,
+            );
+            if (!checkRes.ok) {
+                passwordResetTokenHandled = false;
+                showPasswordResetLinkInvalid();
+                return;
+            }
+            renderPasswordResetForm(loginToken, false);
+        } catch (error) {
+            passwordResetTokenHandled = false;
+            throw error;
+        }
+    }
+
     function renderLoginShell() {
         const brandlineHtml = renderAuthBrandline(
             i18n.t("ui.shared.brand.name"),
@@ -206,14 +526,12 @@ export async function mount(root) {
       </div>
     `;
         const signupCalloutHtml = publicRegistrationEnabled
-            ? renderInPageCallout({
+            ? `<div id="login-signup-callout">${renderInPageCallout({
                   variant: "info",
                   title: i18n.t("ui.app.login.not_registered.title"),
                   body: i18n.t("ui.app.login.not_registered.body"),
-              }).replace(
-                  "</section>",
-                  `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a></section>`,
-              )
+                  footerHtml: `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
+              })}</div>`
             : "";
         const formPanelHtml = `
       ${mobileBrandlineHtml}
@@ -229,11 +547,12 @@ export async function mount(root) {
             <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
             <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
           </label>
+          <a href="#" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</a>
         </div>
         <div id="login-tfa-fields" hidden></div>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
-        <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
+        <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
       <div id="sso-buttons" class="sso-buttons"></div>
     `;
@@ -272,13 +591,47 @@ export async function mount(root) {
                 },
                 render: () => renderLoginShell(),
                 onRender: () => {
+                    resetPasswordResetMode();
                     loadLoginMethods();
                     runTypingShowcase(typingSamples);
                     renderLoginReasonToast();
                     document
+                        .querySelector("#login-request-link")
+                        ?.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            handleRequestLinkClick().catch(() => {
+                                showToast(
+                                    i18n.t("ui.app.login.error.generic"),
+                                    {
+                                        variant: "error",
+                                    },
+                                );
+                            });
+                        });
+                    consumePasswordResetToken().catch(() => {
+                        window.history.replaceState({}, "", "/login");
+                        showToast(i18n.t("ui.app.login.login_link.invalid"), {
+                            variant: "error",
+                            permanent: true,
+                        });
+                    });
+                    document
                         .querySelector("#login-form")
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
+                            if (isPasswordResetMode) {
+                                try {
+                                    await submitPasswordReset?.();
+                                } catch {
+                                    showToast(
+                                        i18n.t("ui.app.login.error.generic"),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
+                                }
+                                return;
+                            }
                             const form = event.target;
                             const tfaFields =
                                 form.querySelector("#login-tfa-fields");
@@ -306,32 +659,9 @@ export async function mount(root) {
                                 const { response: tfaResponse, body: tfaBody } =
                                     await tfaLoginClient.verifyCode(payload);
                                 if (tfaResponse.ok && tfaBody?.data) {
-                                    persistSession(tfaBody.data);
-                                    const requiresUserValidation =
-                                        tfaBody.data.requiredUserValidation ===
-                                            true &&
-                                        tfaBody.data.userValidationMode ===
-                                            "smtp";
-                                    if (requiresUserValidation) {
-                                        const requiredEmailClient =
-                                            await loadRequiredEmailEnforcementClient();
-                                        try {
-                                            await requiredEmailClient?.enforceRequiredEmailSetup(
-                                                {
-                                                    accountId:
-                                                        tfaBody.data.accountId,
-                                                    i18n,
-                                                },
-                                            );
-                                        } catch {
-                                            clearPersistedSession();
-                                            return;
-                                        }
-                                    }
-                                    await syncTimezoneOnLogin(
-                                        tfaBody.data.accountId,
+                                    await finalizeAuthenticatedSession(
+                                        tfaBody.data,
                                     );
-                                    window.location.href = "/dashboard";
                                     return;
                                 }
                                 showToast(
@@ -362,46 +692,7 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                if (
-                                    body.data.tfaRequired === true ||
-                                    body.data.tfaSetupRequired === true
-                                ) {
-                                    const tfaLoginClient =
-                                        await loadTfaLoginClient();
-                                    if (body.data.tfaRequired === true) {
-                                        currentTfaLoginAttemptId =
-                                            tfaLoginClient?.switchToTfaPrompt(
-                                                body.data,
-                                            ) ?? null;
-                                    } else {
-                                        tfaLoginClient?.handleSetupRequired(
-                                            persistSession,
-                                            body.data,
-                                        );
-                                    }
-                                    return;
-                                }
-                                persistSession(body.data);
-                                const requiresUserValidation =
-                                    body.data.requiredUserValidation === true &&
-                                    body.data.userValidationMode === "smtp";
-                                if (requiresUserValidation) {
-                                    const requiredEmailClient =
-                                        await loadRequiredEmailEnforcementClient();
-                                    try {
-                                        await requiredEmailClient?.enforceRequiredEmailSetup(
-                                            {
-                                                accountId: body.data.accountId,
-                                                i18n,
-                                            },
-                                        );
-                                    } catch {
-                                        clearPersistedSession();
-                                        return;
-                                    }
-                                }
-                                await syncTimezoneOnLogin(body.data.accountId);
-                                window.location.href = "/dashboard";
+                                await handleAuthResult(body.data);
                                 return;
                             }
                             const errorMsg =

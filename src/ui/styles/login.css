@@ -40,6 +40,8 @@
     background: rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     padding: 10px 14px;
+    text-decoration: none;
+    color: inherit;
 }
 
 .auth-brandline--panel-mobile {
@@ -114,6 +116,32 @@ p.auth-intro {
     color: #f1f7ff;
 }
 
+.auth-text-action {
+    margin-top: -2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #93c5fd;
+    text-align: left;
+    text-decoration: underline;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline;
+}
+
+.auth-text-action:hover,
+.auth-text-action:focus-visible {
+    color: #bfdbfe;
+}
+
+.auth-link-unavailable-message {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    color: #93c5fd;
+    line-height: 1.5;
+}
+
 .auth-form-shell {
     width: 100%;
 }
@@ -178,6 +206,17 @@ p.auth-intro {
     color: #d6e7ff;
     cursor: pointer;
     border-radius: 6px;
+}
+
+.auth-reset-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.auth-reset-actions button {
+    flex: 1;
+    margin-top: 0;
 }
 
 @keyframes blink-cursor {
