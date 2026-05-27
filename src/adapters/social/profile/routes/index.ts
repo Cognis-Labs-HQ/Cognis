@@ -33,6 +33,7 @@ const BANNER_ALLOWED_MIME = new Set([
     "image/webp",
     "image/gif",
 ]);
+type ProfileMediaKey = "avatarKey" | "bannerKey";
 
 function profileResponse(
     profile: AccountProfile,
@@ -109,6 +110,36 @@ async function canViewFullProfile(
         profileStore.isFollowing(target.accountId, requesterId),
     ]);
     return requesterFollowsTarget && targetFollowsRequester;
+}
+
+async function replaceProfileMedia(
+    profileStore: ProfileStore,
+    fileGateway: FileStorageGateway,
+    accountId: string,
+    key: ProfileMediaKey,
+    content: Uint8Array,
+    contentType: string,
+): Promise<{ updated: AccountProfile; storedKey: string } | null> {
+    const existing = await profileStore.getProfile(accountId);
+    if (!existing) return null;
+    const previousKey = existing[key];
+    const stored = await fileGateway.store(accountId, content, contentType);
+    try {
+        const updated = await profileStore.updateProfile(accountId, {
+            [key]: stored.key,
+        } as Partial<Pick<AccountProfile, ProfileMediaKey>>);
+        if (!updated) {
+            await fileGateway.delete(stored.key);
+            return null;
+        }
+        if (previousKey && previousKey !== stored.key) {
+            await fileGateway.delete(previousKey);
+        }
+        return { updated, storedKey: stored.key };
+    } catch (error) {
+        await fileGateway.delete(stored.key);
+        throw error;
+    }
 }
 
 /**
@@ -376,13 +407,27 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const existing = await profileStore.getProfile(claims!.sub);
-            if (existing?.avatarKey)
-                await fileGateway.delete(existing.avatarKey);
-            const stored = await fileGateway.store(claims!.sub, body, mime);
-            const updated = await profileStore.updateProfile(claims!.sub, {
-                avatarKey: stored.key,
-            });
+            const result = await replaceProfileMedia(
+                profileStore,
+                fileGateway,
+                claims!.sub,
+                "avatarKey",
+                body,
+                mime,
+            );
+            if (!result) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Profile not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const { updated, storedKey } = result;
             if (updated) {
                 await onProfileChanged?.({
                     accountId: updated.accountId,
@@ -395,12 +440,12 @@ export function createProfileRoutes(
                 ...logMeta,
                 mime,
                 sizeBytes: body.length,
-                avatarKey: stored.key,
+                avatarKey: storedKey,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: { avatarKey: stored.key, profile: updated },
+                    data: { avatarKey: storedKey, profile: updated },
                 }),
             );
             return true;
@@ -517,23 +562,37 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const existing = await profileStore.getProfile(claims!.sub);
-            if (existing?.bannerKey)
-                await fileGateway.delete(existing.bannerKey);
-            const stored = await fileGateway.store(claims!.sub, body, mime);
-            const updated = await profileStore.updateProfile(claims!.sub, {
-                bannerKey: stored.key,
-            });
+            const result = await replaceProfileMedia(
+                profileStore,
+                fileGateway,
+                claims!.sub,
+                "bannerKey",
+                body,
+                mime,
+            );
+            if (!result) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Profile not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const { updated, storedKey } = result;
             log?.("info", "Uploaded banner.", {
                 ...logMeta,
                 mime,
                 sizeBytes: body.length,
-                bannerKey: stored.key,
+                bannerKey: storedKey,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: { bannerKey: stored.key, profile: updated },
+                    data: { bannerKey: storedKey, profile: updated },
                 }),
             );
             return true;
