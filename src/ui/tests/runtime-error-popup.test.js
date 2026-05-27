@@ -56,7 +56,9 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
         "utf8",
     );
     const testableSource =
-        source.replace(/^import .*;\n/gm, "").replace(/\bexport\s+/g, "") +
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
         "\n" +
         "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
@@ -108,7 +110,7 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
     });
 
     await context.__testExports.openRuntimeErrorPopup({
-        error: new Error("HTTP 503 while loading \"/api/v1/users\""),
+        error: new Error('HTTP 503 while loading "/api/v1/users"'),
         context: "Route load failed",
     });
 
