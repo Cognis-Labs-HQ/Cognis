@@ -245,5 +245,8 @@ test("messages required room-key fetches throw detailed errors for runtime popup
         appSource,
         /if \(!res\.ok\) \{[\s\S]*const payload = await res\.json\(\)\.catch\(\(\) => null\);[\s\S]*const error = new Error\(message\);[\s\S]*error\.status = res\.status;[\s\S]*error\.code = payload\?\.error\?\.code;[\s\S]*error\.roomId = roomId;[\s\S]*throw error;[\s\S]*\}/,
     );
-    assert.match(appSource, /const key = await requireRoomKey\(selectedRoomId\);/);
+    assert.match(
+        appSource,
+        /const key = await requireRoomKey\(selectedRoomId\);/,
+    );
 });
