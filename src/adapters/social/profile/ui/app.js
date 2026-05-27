@@ -1330,7 +1330,9 @@ function bindPageEvents() {
         const profileVis = profile?.visibility ?? "hidden";
         const postFormBuilder = createPostFormBuilderForVisibility(profileVis);
         newPostFormController = postFormBuilder.attach(postFormElement);
-        const postPreviewToggle = root.querySelector("#profile-post-preview-toggle");
+        const postPreviewToggle = root.querySelector(
+            "#profile-post-preview-toggle",
+        );
         const postPreviewElement = root.querySelector("#profile-post-preview");
         const postTitleInput = postFormElement.querySelector("#post-title");
         const postContentInput = postFormElement.querySelector("#post-content");
