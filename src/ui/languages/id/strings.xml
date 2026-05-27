@@ -398,6 +398,10 @@
   <string name="ui.app.profile.post_content">Apa yang Anda pikirkan?</string>
   <string name="ui.app.profile.post_title">Judul (opsional)</string>
   <string name="ui.app.profile.post_submit">Terbitkan</string>
+  <string name="ui.app.profile.compose">Tulis</string>
+  <string name="ui.app.profile.preview">Pratinjau</string>
+  <string name="ui.app.profile.bio_preview_placeholder">Pratinjau bio Anda akan muncul di sini.</string>
+  <string name="ui.app.profile.post_preview_placeholder">Pratinjau postingan Anda akan muncul di sini.</string>
   <string name="ui.app.profile.no_posts">Belum ada postingan.</string>
   <string name="ui.app.profile.delete_post">Hapus</string>
   <string name="ui.app.profile.delete_post_confirm">Hapus postingan ini?</string>

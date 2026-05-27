@@ -218,6 +218,67 @@
     position: relative;
 }
 
+.markdown-code-block {
+    margin: 0.35rem 0;
+    padding: 0.5rem 0.6rem;
+    border-radius: 0.45rem;
+    border: 1px solid var(--border, var(--color-border));
+    background: color-mix(
+        in srgb,
+        var(--surface-soft, var(--color-surface-elevated)) 88%,
+        #0b1120
+    );
+    overflow-x: auto;
+}
+
+.markdown-code {
+    display: block;
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+    font-size: 0.83rem;
+    line-height: 1.45;
+    color: var(--text, var(--color-text));
+    white-space: pre;
+}
+
+.markdown-token {
+    color: inherit;
+}
+
+.markdown-code.language-javascript,
+.markdown-code.language-typescript,
+.markdown-code.language-json,
+.markdown-code.language-bash,
+.markdown-code.language-python,
+.markdown-code.language-sql,
+.markdown-code.language-html,
+.markdown-code.language-css,
+.markdown-code.language-plaintext {
+    color: var(--text, var(--color-text));
+}
+
+.markdown-token--comment {
+    color: color-mix(
+        in srgb,
+        var(--text-muted, var(--color-text-muted)) 88%,
+        #84cc16
+    );
+}
+
+.markdown-token--keyword {
+    color: color-mix(in srgb, var(--accent, var(--color-accent)) 72%, #60a5fa);
+    font-weight: 600;
+}
+
+.markdown-token--string {
+    color: color-mix(in srgb, #f97316 70%, var(--text, var(--color-text)));
+}
+
+.markdown-token--number {
+    color: color-mix(in srgb, #22c55e 64%, var(--text, var(--color-text)));
+}
+
 .form-builder-input {
     width: 100%;
 }

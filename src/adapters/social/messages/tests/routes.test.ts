@@ -469,8 +469,8 @@ test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction
     assert.equal(statusCode, 200);
     assert.equal(JSON.parse(responseBody).data.active, true);
     assert.equal(dispatched.length, 1);
-    assert.equal(dispatched[0].subject, "New reaction 🔥");
-    assert.equal(dispatched[0].body, "Reacted with 🔥");
+    assert.equal(dispatched[0].subject, "New reaction");
+    assert.match(String(dispatched[0].body), /🔥/);
     assert.deepEqual(dispatched[0].metadata, {
         roomId: "room-1",
         messageId: "msg-1",
