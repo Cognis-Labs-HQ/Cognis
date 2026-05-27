@@ -473,32 +473,32 @@ test("profile routes - avatar upload deletes replaced file", async () => {
     const gateway = fakeFileGateway();
     const route = createProfileRoutes(profileStore, gateway);
     const token = issueAccessToken("alice", "user", 60);
-    let body = "";
+    let firstBody = "";
     await route(
         makeReq("PUT", token, Buffer.from("first image"), "image/png"),
         {
             writeHead() {},
             end(payload: string) {
-                body = payload;
+                firstBody = payload;
             },
         } as any,
         new URL("http://localhost/api/v1/profile/avatar"),
     );
-    const firstAvatarKey = JSON.parse(body).data.avatarKey;
+    const firstAvatarKey = JSON.parse(firstBody).data.avatarKey;
 
-    body = "";
+    let secondBody = "";
     await route(
         makeReq("PUT", token, Buffer.from("second image"), "image/png"),
         {
             writeHead() {},
             end(payload: string) {
-                body = payload;
+                secondBody = payload;
             },
         } as any,
         new URL("http://localhost/api/v1/profile/avatar"),
     );
 
-    const secondAvatarKey = JSON.parse(body).data.avatarKey;
+    const secondAvatarKey = JSON.parse(secondBody).data.avatarKey;
     assert.notEqual(secondAvatarKey, firstAvatarKey);
     assert.equal(gateway._has(firstAvatarKey), false);
     assert.equal(gateway._has(secondAvatarKey), true);
