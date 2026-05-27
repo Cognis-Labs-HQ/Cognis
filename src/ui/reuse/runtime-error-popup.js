@@ -342,7 +342,7 @@ export async function openRuntimeErrorPopup({
             actions: [
                 {
                     id: "copy",
-                    label: "Copy",
+                    label: i18n.t("ui.reuse.copy"),
                 },
                 {
                     id: "close",
@@ -353,6 +353,7 @@ export async function openRuntimeErrorPopup({
             onAction: async (actionId) => {
                 if (actionId !== "copy") return;
                 await copyTextToClipboard(crashDetailText);
+                // Keep the popup open so users can continue reviewing details.
                 return false;
             },
         });
