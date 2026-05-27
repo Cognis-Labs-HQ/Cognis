@@ -112,6 +112,50 @@
     cursor: pointer;
 }
 
+.popup-action-btn[data-popup-action="copy"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.5s ease;
+}
+
+.popup-action-btn[data-popup-action="copy"]::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/clipboard.svg");
+    mask-image: url("/static/assets/reuse/clipboard.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.popup-action-btn--copied {
+    color: var(--color-success-outline-text);
+}
+
+.popup-action-btn[data-popup-action="copy"].popup-action-btn--copied::before {
+    -webkit-mask-image: url("/static/assets/reuse/check.svg");
+    mask-image: url("/static/assets/reuse/check.svg");
+    animation: popup-copy-icon-pop 0.25s ease;
+}
+
+@keyframes popup-copy-icon-pop {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.4);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
 .popup-action-btn--neutral {
     background: transparent;
     border: 1px solid var(--border);

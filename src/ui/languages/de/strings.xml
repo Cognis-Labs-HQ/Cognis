@@ -57,6 +57,7 @@
   <string name="ui.reuse.add">Hinzufügen</string>
   <string name="ui.reuse.remove">Entfernen</string>
   <string name="ui.reuse.dismiss">Schließen</string>
+  <string name="ui.reuse.copy">Kopieren</string>
   <string name="ui.reuse.confirm">Bestätigen</string>
   <string name="ui.reuse.error">Fehler</string>
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>

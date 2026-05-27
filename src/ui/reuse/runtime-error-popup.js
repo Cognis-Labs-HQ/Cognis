@@ -36,6 +36,7 @@
  */
 
 import { openPopup } from "./popup.js";
+import { shouldSuppressConnectionRecoveryPopup } from "./api-client.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
 import {
@@ -53,6 +54,8 @@ let handlersInstalled = false;
 let popupOpen = false;
 let recentPopupSignature = "";
 let recentPopupTimestamp = 0;
+let hasCheckedMainPageBoilerplate = false;
+let hasMainPageBoilerplate = false;
 const log = (...messageParts) =>
     console.warn("[runtime-error-popup]", ...messageParts);
 
@@ -189,6 +192,45 @@ function getConsoleEntriesMarkup(i18n, consoleEntries = null) {
     return `<pre class="popup-error-report-trace">${renderedEntries}</pre>`;
 }
 
+function getConsoleEntriesText(i18n, consoleEntries = null) {
+    const effectiveConsoleEntries = Array.isArray(consoleEntries)
+        ? consoleEntries
+        : consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT);
+    if (!effectiveConsoleEntries.length) {
+        return i18n.t("ui.reuse.runtime_error_popup_console_empty");
+    }
+    return effectiveConsoleEntries
+        .map(
+            (entry) =>
+                `${entry.timestamp} [${String(entry.level).toUpperCase()}] ${entry.message || ""}`,
+        )
+        .join("\n");
+}
+
+function buildCrashDetailText(
+    i18n,
+    { errorMessage, context, pageUrl, errorStack, consoleEntriesText } = {},
+) {
+    return [
+        `${i18n.t("ui.reuse.runtime_error_popup_summary")}\n${errorMessage}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_context")}\n${context}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_page_url")}\n${pageUrl}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_stack")}\n${errorStack}`,
+        `${i18n.t("ui.reuse.runtime_error_popup_console")}\n${consoleEntriesText}`,
+    ].join("\n\n");
+}
+
+async function copyTextToClipboard(value) {
+    if (typeof navigator === "undefined") return false;
+    if (typeof navigator.clipboard?.writeText !== "function") return false;
+    try {
+        await navigator.clipboard.writeText(value);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export async function openRuntimeErrorPopup({
     error,
     context = "",
@@ -204,6 +246,9 @@ export async function openRuntimeErrorPopup({
         errorMessage: normalizedErrorMessage,
         errorStack: normalizedErrorStack,
     });
+    if (shouldSuppressConnectionRecoveryPopup(error)) {
+        return;
+    }
     if (popupOpen || shouldSuppressPopup(popupSignature)) {
         return;
     }
@@ -244,6 +289,20 @@ export async function openRuntimeErrorPopup({
         else if (context) contextParts.push(context);
         if (contextDetail) contextParts.push(contextDetail);
         const resolvedContext = contextParts.join(": ") || "unknown";
+        const resolvedPageUrl =
+            typeof window === "undefined" ? "" : window.location.href;
+        const resolvedStack = normalizedErrorStack || normalizedErrorMessage;
+        const resolvedConsoleEntriesText = getConsoleEntriesText(
+            i18n,
+            consoleEntries,
+        );
+        const crashDetailText = buildCrashDetailText(i18n, {
+            errorMessage: normalizedErrorMessage,
+            context: resolvedContext,
+            pageUrl: resolvedPageUrl,
+            errorStack: resolvedStack,
+            consoleEntriesText: resolvedConsoleEntriesText,
+        });
         const brandName = i18n.t("ui.shared.brand.name");
 
         const popupBody = () => `
@@ -262,11 +321,11 @@ export async function openRuntimeErrorPopup({
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_page_url"))}</h3>
-                    <pre class="popup-error-report-trace">${escapeHtml(window.location.href)}</pre>
+                    <pre class="popup-error-report-trace">${escapeHtml(resolvedPageUrl)}</pre>
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_stack"))}</h3>
-                    <pre class="popup-error-report-trace">${escapeHtml(normalizedErrorStack || normalizedErrorMessage)}</pre>
+                    <pre class="popup-error-report-trace">${escapeHtml(resolvedStack)}</pre>
                 </section>
                 <section>
                     <h3>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_console"))}</h3>
@@ -282,11 +341,37 @@ export async function openRuntimeErrorPopup({
             maxWidth: "960px",
             actions: [
                 {
+                    id: "copy",
+                    label: i18n.t("ui.reuse.copy"),
+                },
+                {
                     id: "close",
                     label: i18n.t("ui.reuse.dismiss"),
                     variant: "confirm",
                 },
             ],
+            onAction: async (actionId, overlay) => {
+                if (actionId !== "copy") return;
+                const copied = await copyTextToClipboard(crashDetailText);
+                if (
+                    copied &&
+                    overlay != null &&
+                    typeof overlay.querySelector === "function"
+                ) {
+                    const copyBtn = overlay.querySelector(
+                        '[data-popup-action="copy"]',
+                    );
+                    if (copyBtn != null && copyBtn.classList != null) {
+                        copyBtn.classList.add("popup-action-btn--copied");
+                        setTimeout(() => {
+                            copyBtn.classList.remove(
+                                "popup-action-btn--copied",
+                            );
+                        }, 1500);
+                    }
+                }
+                return false;
+            },
         });
         if (popupAction === null || popupAction === "close") {
             navigateToPreviousRouteIfDifferent(
@@ -345,7 +430,32 @@ function navigateToPreviousRouteIfDifferent(
         });
         return;
     }
+    if (didReloadIntoCurrentDocument() && !hasLoadedMainPageBoilerplate()) {
+        window.location.assign(normalizedPreviousRoutePath);
+        return;
+    }
     window.history.back();
+}
+
+function didReloadIntoCurrentDocument() {
+    if (typeof window === "undefined" || !window.performance) return false;
+    if (typeof window.performance.getEntriesByType === "function") {
+        const navigationEntries =
+            window.performance.getEntriesByType("navigation");
+        const latestNavigationEntry = navigationEntries.at(-1);
+        if (latestNavigationEntry?.type === "reload") return true;
+    }
+    // Fallback for older engines that do not expose Navigation Timing Level 2.
+    return window.performance.navigation?.type === 1;
+}
+
+function hasLoadedMainPageBoilerplate() {
+    if (typeof document === "undefined") return false;
+    if (typeof document.querySelector !== "function") return false;
+    if (hasCheckedMainPageBoilerplate) return hasMainPageBoilerplate;
+    hasMainPageBoilerplate = Boolean(document.querySelector(".app-shell"));
+    hasCheckedMainPageBoilerplate = true;
+    return hasMainPageBoilerplate;
 }
 
 export function installRuntimeErrorHandlers() {
