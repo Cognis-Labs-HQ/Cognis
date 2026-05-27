@@ -473,32 +473,32 @@ test("profile routes - avatar upload deletes replaced file", async () => {
     const gateway = fakeFileGateway();
     const route = createProfileRoutes(profileStore, gateway);
     const token = issueAccessToken("alice", "user", 60);
-    let firstBody = "";
+    let firstResponseBody = "";
     await route(
         makeReq("PUT", token, Buffer.from("first image"), "image/png"),
         {
             writeHead() {},
             end(payload: string) {
-                firstBody = payload;
+                firstResponseBody = payload;
             },
         } as any,
         new URL("http://localhost/api/v1/profile/avatar"),
     );
-    const firstAvatarKey = JSON.parse(firstBody).data.avatarKey;
+    const firstAvatarKey = JSON.parse(firstResponseBody).data.avatarKey;
 
-    let secondBody = "";
+    let secondResponseBody = "";
     await route(
         makeReq("PUT", token, Buffer.from("second image"), "image/png"),
         {
             writeHead() {},
             end(payload: string) {
-                secondBody = payload;
+                secondResponseBody = payload;
             },
         } as any,
         new URL("http://localhost/api/v1/profile/avatar"),
     );
 
-    const secondAvatarKey = JSON.parse(secondBody).data.avatarKey;
+    const secondAvatarKey = JSON.parse(secondResponseBody).data.avatarKey;
     assert.notEqual(secondAvatarKey, firstAvatarKey);
     assert.equal(gateway._has(firstAvatarKey), false);
     assert.equal(gateway._has(secondAvatarKey), true);
@@ -537,27 +537,31 @@ test("profile routes - avatar upload succeeds when previous delete fails", async
     const route = createProfileRoutes(profileStore, gateway);
     const token = issueAccessToken("alice", "user", 60);
 
-    let firstBody = "";
+    let firstResponseBody = "";
     await route(
         makeReq("PUT", token, Buffer.from("first image"), "image/png"),
         {
             writeHead() {},
             end(payload: string) {
-                firstBody = payload;
+                firstResponseBody = payload;
             },
         } as any,
         new URL("http://localhost/api/v1/profile/avatar"),
     );
-    const firstAvatarKey = JSON.parse(firstBody).data.avatarKey;
+    const firstAvatarKey = JSON.parse(firstResponseBody).data.avatarKey;
 
     const originalDelete = gateway.delete.bind(gateway);
+    let shouldFailDelete = true;
     gateway.delete = async (key: string) => {
-        if (key === firstAvatarKey) throw new Error("transient delete failure");
+        if (key === firstAvatarKey && shouldFailDelete) {
+            shouldFailDelete = false;
+            throw new Error("transient delete failure");
+        }
         return originalDelete(key);
     };
 
     let status = 0;
-    let secondBody = "";
+    let secondResponseBody = "";
     await route(
         makeReq("PUT", token, Buffer.from("second image"), "image/png"),
         {
@@ -565,14 +569,14 @@ test("profile routes - avatar upload succeeds when previous delete fails", async
                 status = code;
             },
             end(payload: string) {
-                secondBody = payload;
+                secondResponseBody = payload;
             },
         } as any,
         new URL("http://localhost/api/v1/profile/avatar"),
     );
 
     assert.equal(status, 200);
-    const secondAvatarKey = JSON.parse(secondBody).data.avatarKey;
+    const secondAvatarKey = JSON.parse(secondResponseBody).data.avatarKey;
     assert.notEqual(secondAvatarKey, firstAvatarKey);
     assert.equal(gateway._has(secondAvatarKey), true);
     const profile = await profileStore.getProfile("alice");

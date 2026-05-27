@@ -112,6 +112,12 @@ async function canViewFullProfile(
     return requesterFollowsTarget && targetFollowsRequester;
 }
 
+/**
+ * Stores replacement media and updates profile key atomically from the caller's perspective.
+ * If profile persistence fails, the newly stored object is rolled back.
+ * If deleting the previously referenced object fails, the update still succeeds and the
+ * optional callback is invoked so callers can log/observe cleanup failures.
+ */
 async function replaceProfileMedia(
     profileStore: ProfileStore,
     fileGateway: FileStorageGateway,
@@ -119,6 +125,7 @@ async function replaceProfileMedia(
     key: ProfileMediaKey,
     content: Uint8Array,
     contentType: string,
+    onPreviousDeleteError?: (error: unknown, previousKey: string) => void,
 ): Promise<{ updated: AccountProfile; storedKey: string } | null> {
     const existing = await profileStore.getProfile(accountId);
     if (!existing) return null;
@@ -140,7 +147,9 @@ async function replaceProfileMedia(
     if (previousKey && previousKey !== stored.key) {
         try {
             await fileGateway.delete(previousKey);
-        } catch {}
+        } catch (error) {
+            onPreviousDeleteError?.(error, previousKey);
+        }
     }
     return { updated, storedKey: stored.key };
 }
@@ -417,6 +426,21 @@ export function createProfileRoutes(
                 "avatarKey",
                 body,
                 mime,
+                (error, previousKey) => {
+                    log?.(
+                        "warn",
+                        "Failed to delete replaced avatar file.",
+                        {
+                            ...logMeta,
+                            accountId: claims!.sub,
+                            previousKey,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                },
             );
             if (!result) {
                 res.writeHead(404, { "content-type": "application/json" });
@@ -572,6 +596,21 @@ export function createProfileRoutes(
                 "bannerKey",
                 body,
                 mime,
+                (error, previousKey) => {
+                    log?.(
+                        "warn",
+                        "Failed to delete replaced banner file.",
+                        {
+                            ...logMeta,
+                            accountId: claims!.sub,
+                            previousKey,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                },
             );
             if (!result) {
                 res.writeHead(404, { "content-type": "application/json" });
