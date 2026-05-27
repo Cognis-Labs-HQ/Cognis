@@ -530,6 +530,47 @@
     overflow-y: auto;
 }
 
+.profile-markdown {
+    overflow-wrap: anywhere;
+}
+
+.profile-markdown > :first-child {
+    margin-top: 0;
+}
+
+.profile-markdown > :last-child {
+    margin-bottom: 0;
+}
+
+.profile-markdown p {
+    margin: 0;
+}
+
+.profile-markdown p + p {
+    margin-top: 0.35rem;
+}
+
+.profile-markdown ul,
+.profile-markdown ol {
+    margin: 0.3rem 0 0.3rem 1rem;
+}
+
+.profile-markdown li + li {
+    margin-top: 0.15rem;
+}
+
+.profile-markdown pre {
+    margin: 0.35rem 0;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.4rem;
+    background: var(--surface-soft);
+    overflow-x: auto;
+}
+
+.profile-markdown a {
+    color: var(--link);
+}
+
 .profile-hero-details {
     display: flex;
     flex-wrap: wrap;
@@ -915,8 +956,6 @@
     margin: 0;
     font-size: 0.92rem;
     color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-word;
 }
 
 .profile-post-actions {

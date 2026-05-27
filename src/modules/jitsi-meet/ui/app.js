@@ -5,6 +5,7 @@ import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import {
     bytesToHex,
     hexToBytes,
@@ -582,15 +583,15 @@ export async function mount(root, { signal } = {}) {
                 const safeTime = createdAt
                     ? new Date(createdAt).toLocaleTimeString()
                     : "";
-                const body = escapeHtml(
+                const body = renderMarkdown(
                     String(message?.text ?? i18n.t("ui.reuse.unknown")),
-                ).replace(/\n/g, "<br>");
+                );
                 return `<article class="${messageClass}">
               <header class="jitsi-chat-message-head">
                 <strong>${escapeHtml(sender)}</strong>
                 <time>${escapeHtml(safeTime)}</time>
               </header>
-              <p class="jitsi-chat-message-body">${body}</p>
+              <div class="jitsi-chat-message-body">${body}</div>
               ${messageReactions.renderReactionRow(message)}
             </article>`;
             })

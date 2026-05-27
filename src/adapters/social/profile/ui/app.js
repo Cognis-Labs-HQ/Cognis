@@ -10,6 +10,7 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
@@ -319,7 +320,7 @@ function renderHero() {
         profile?.bio || details
             ? `
       <div class="profile-hero-bio-wrap">
-        ${profile?.bio ? `<p class="profile-hero-bio">${escapeHtml(profile.bio)}</p>` : ""}
+        ${profile?.bio ? `<div class="profile-hero-bio profile-markdown">${renderMarkdown(String(profile.bio))}</div>` : ""}
         ${details ? `<div class="profile-hero-details">${details}</div>` : ""}
       </div>
     `
@@ -665,7 +666,7 @@ function renderPostsList() {
             ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(i18n.t(`ui.app.profile.post_visibility.${p.visibility}`) || p.visibility)}</span>` : ""}
             <time class="profile-post-date" datetime="${escapeHtml(p.createdAt ?? "")}">${formatDate(p.createdAt)}</time>
           </div>
-          <p class="profile-post-body">${escapeHtml(p.content)}</p>
+          <div class="profile-post-body profile-markdown">${renderMarkdown(String(p.content ?? ""))}</div>
           ${
               isOwnProfile
                   ? `<div class="profile-post-actions">
