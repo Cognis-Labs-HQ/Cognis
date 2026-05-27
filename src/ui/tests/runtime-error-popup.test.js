@@ -17,6 +17,8 @@ test("runtime error popup renders branded header and supports previous-route fal
     assert.match(source, /\/static\/assets\/icons\/cognis-icon\.png/);
     assert.match(source, /navigateToPreviousRouteIfDifferent/);
     assert.match(source, /window\.history\.state\?\.previousRouterPage/);
+    assert.match(source, /didReloadIntoCurrentDocument/);
+    assert.match(source, /window\.location\.assign\(normalizedPreviousRoutePath\)/);
     assert.match(
         source,
         /popupAction === null \|\| popupAction === (["'])close\1/,
@@ -115,4 +117,84 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
     });
 
     assert.equal(openPopupCalls.length, 0);
+});
+
+test("runtime error popup uses full navigation fallback after reload-origin failures", async () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
+
+    const locationAssignCalls = [];
+    let historyBackCalls = 0;
+    const context = {
+        console,
+        Date,
+        openPopup() {
+            return Promise.resolve("close");
+        },
+        shouldSuppressConnectionRecoveryPopup() {
+            return false;
+        },
+        createI18n() {
+            return Promise.resolve({
+                t(key) {
+                    return key;
+                },
+            });
+        },
+        escapeHtml(value) {
+            return String(value ?? "");
+        },
+        getCurrentRoutePath() {
+            return "/broken";
+        },
+        normalizeSameOriginRoutePath(routePath) {
+            return String(routePath ?? "");
+        },
+        window: {
+            location: {
+                href: "https://example.com/broken",
+                assign(routePath) {
+                    locationAssignCalls.push(routePath);
+                },
+            },
+            history: {
+                back() {
+                    historyBackCalls += 1;
+                },
+                state: {
+                    previousRouterPage: "/dashboard",
+                },
+            },
+            performance: {
+                getEntriesByType() {
+                    return [{ type: "reload" }];
+                },
+            },
+            addEventListener() {},
+        },
+        document: {
+            referrer: "",
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    await context.__testExports.openRuntimeErrorPopup({
+        error: new Error("Route mount failed"),
+        context: "Route mount failed",
+    });
+
+    assert.deepEqual(locationAssignCalls, ["/dashboard"]);
+    assert.equal(historyBackCalls, 0);
 });

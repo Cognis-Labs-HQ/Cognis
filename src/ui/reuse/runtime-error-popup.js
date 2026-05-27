@@ -349,7 +349,23 @@ function navigateToPreviousRouteIfDifferent(
         });
         return;
     }
+    if (didReloadIntoCurrentDocument()) {
+        window.location.assign(normalizedPreviousRoutePath);
+        return;
+    }
     window.history.back();
+}
+
+function didReloadIntoCurrentDocument() {
+    if (typeof window === "undefined" || !window.performance) return false;
+    if (typeof window.performance.getEntriesByType === "function") {
+        const navigationEntries = window.performance.getEntriesByType(
+            "navigation",
+        );
+        const latestNavigationEntry = navigationEntries.at(-1);
+        if (latestNavigationEntry?.type === "reload") return true;
+    }
+    return window.performance.navigation?.type === 1;
 }
 
 export function installRuntimeErrorHandlers() {
