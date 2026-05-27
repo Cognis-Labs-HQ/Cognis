@@ -185,10 +185,10 @@ test("api client suppresses marked connection failures across deep cause chains"
 
     const wrappedError = new Error("Route mount failed");
     let currentError = wrappedError;
-    const wrapperDepth = 20_000;
-    for (let index = 0; index < wrapperDepth; index += 1) {
+    const errorChainDepth = 20_000;
+    for (let index = 0; index < errorChainDepth; index += 1) {
         const nextError =
-            index === wrapperDepth - 1
+            index === errorChainDepth - 1
                 ? networkError
                 : new Error(`Wrapped error ${index}`);
         currentError.cause = nextError;
