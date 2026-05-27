@@ -213,3 +213,37 @@ test("messages composer includes markdown compose preview switcher", () => {
     );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
 });
+
+test("messages pending incoming requests skip room-key fetches during thread refresh paths", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+
+    assert.match(
+        appSource,
+        /function hasIncomingPendingRequest\(pendingRequest\)\s*\{\s*return pendingRequest\?\.direction === "incoming";\s*\}/,
+    );
+    assert.match(
+        appSource,
+        /const key = hasIncomingPendingRequest\(room\?\.pendingRequest\)\s*\?\s*null\s*:\s*await requireRoomKey\(roomId\);/,
+    );
+    assert.match(
+        appSource,
+        /const key = hasIncomingPendingRequest\(selectedRoom\?\.pendingRequest\)\s*\?\s*null\s*:\s*await requireRoomKey\(selectedRoomId\);/,
+    );
+});
+
+test("messages required room-key fetches throw detailed errors for runtime popup handling", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+
+    assert.match(appSource, /async function requireRoomKey\(roomId\)/);
+    assert.match(
+        appSource,
+        /if \(!res\.ok\) \{[\s\S]*const payload = await res\.json\(\)\.catch\(\(\) => null\);[\s\S]*const error = new Error\(message\);[\s\S]*error\.status = res\.status;[\s\S]*error\.code = payload\?\.error\?\.code;[\s\S]*error\.roomId = roomId;[\s\S]*throw error;[\s\S]*\}/,
+    );
+    assert.match(appSource, /const key = await requireRoomKey\(selectedRoomId\);/);
+});

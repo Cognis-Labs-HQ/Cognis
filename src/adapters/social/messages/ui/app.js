@@ -330,6 +330,40 @@ async function getRoomKey(roomId) {
     return key;
 }
 
+function hasIncomingPendingRequest(pendingRequest) {
+    return pendingRequest?.direction === "incoming";
+}
+
+async function requireRoomKey(roomId) {
+    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
+    const res = await apiFetch(
+        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+    );
+    if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        const message =
+            payload?.error?.message ||
+            `Failed to load room key (${res.status} ${res.statusText || "unknown"}).`;
+        const error = new Error(message);
+        error.status = res.status;
+        error.code = payload?.error?.code;
+        error.roomId = roomId;
+        throw error;
+    }
+    const payload = await res.json();
+    const hex = payload?.data?.key;
+    if (!hex) {
+        const error = new Error("Room key missing.");
+        error.status = 500;
+        error.code = "missing_key";
+        error.roomId = roomId;
+        throw error;
+    }
+    const key = await importRoomKey(hex);
+    roomKeyCache.set(roomId, key);
+    return key;
+}
+
 function profileHref(handle) {
     if (!handle) return "";
     return `/profile/${encodeURIComponent(String(handle).replace(/^@/, ""))}`;
@@ -1529,7 +1563,9 @@ export async function mount(root, { signal } = {}) {
         }
         syncComposerAvailability(room);
         syncPendingRequestBanner(room?.pendingRequest ?? null);
-        const key = await getRoomKey(roomId);
+        const key = hasIncomingPendingRequest(room?.pendingRequest)
+            ? null
+            : await requireRoomKey(roomId);
         const threadResult = await renderThread(
             roomId,
             key,
@@ -1663,7 +1699,12 @@ export async function mount(root, { signal } = {}) {
         if (!res.ok) return;
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
-        const key = await getRoomKey(selectedRoomId);
+        const selectedRoom = rooms.find(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        const key = hasIncomingPendingRequest(selectedRoom?.pendingRequest)
+            ? null
+            : await requireRoomKey(selectedRoomId);
         await renderThread(
             selectedRoomId,
             key,
@@ -1748,7 +1789,12 @@ export async function mount(root, { signal } = {}) {
         await reloadRoomsList();
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
-        const key = await getRoomKey(selectedRoomId);
+        const selectedRoom = rooms.find(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        const key = hasIncomingPendingRequest(selectedRoom?.pendingRequest)
+            ? null
+            : await requireRoomKey(selectedRoomId);
         const threadResult = await renderThread(
             selectedRoomId,
             key,
@@ -2251,7 +2297,15 @@ export async function mount(root, { signal } = {}) {
                         const beforeTime =
                             button.getAttribute("data-before-time");
                         if (!beforeTime) return;
-                        const key = await getRoomKey(selectedRoomId);
+                        const selectedRoom = rooms.find(
+                            (room) =>
+                                String(room.id) === String(selectedRoomId),
+                        );
+                        const key = hasIncomingPendingRequest(
+                            selectedRoom?.pendingRequest,
+                        )
+                            ? null
+                            : await requireRoomKey(selectedRoomId);
                         await renderThread(
                             selectedRoomId,
                             key,
@@ -2485,7 +2539,7 @@ export async function mount(root, { signal } = {}) {
                     const text = (input?.value ?? "").trim();
                     if (!text) return;
                     queueTypingUpdate(false);
-                    const key = await getRoomKey(selectedRoomId);
+                    const key = await requireRoomKey(selectedRoomId);
                     if (!key) {
                         showToast(
                             i18n.t("module.social.messages.key_unavailable"),
