@@ -13,6 +13,9 @@
 import { showToast } from "./toast.js";
 
 const RETRYABLE_SERVER_STATUS_CODES = new Set([502, 503, 504]);
+const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(
+    `\\b(${[...RETRYABLE_SERVER_STATUS_CODES].join("|")})\\b`,
+);
 const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
 const connectionRecoveryFailureMarker = Symbol("connectionRecoveryFailure");
 
@@ -62,7 +65,9 @@ function parseRetryableStatusCodeFromMessage(message) {
     if (typeof message !== "string") return null;
     const normalizedMessage = message.trim();
     if (!normalizedMessage) return null;
-    const statusMatch = normalizedMessage.match(/\b(502|503|504)\b/);
+    const statusMatch = normalizedMessage.match(
+        RETRYABLE_SERVER_STATUS_MESSAGE_REGEX,
+    );
     if (!statusMatch) return null;
     return Number(statusMatch[1]);
 }
@@ -79,16 +84,21 @@ function isRecentConnectionRecoverySignal() {
     );
 }
 
-function isMarkedConnectionRecoveryFailure(value, seen = new Set()) {
-    if (!value || (typeof value !== "object" && typeof value !== "function")) {
-        return false;
+function isMarkedConnectionRecoveryFailure(value) {
+    const seen = new Set();
+    let currentValue = value;
+    while (
+        currentValue &&
+        (typeof currentValue === "object" || typeof currentValue === "function")
+    ) {
+        if (seen.has(currentValue)) return false;
+        seen.add(currentValue);
+        if (currentValue[connectionRecoveryFailureMarker] === true) {
+            return true;
+        }
+        currentValue = currentValue.cause;
     }
-    if (seen.has(value)) return false;
-    seen.add(value);
-    if (value[connectionRecoveryFailureMarker] === true) {
-        return true;
-    }
-    return isMarkedConnectionRecoveryFailure(value.cause, seen);
+    return false;
 }
 
 export function shouldSuppressConnectionRecoveryPopup(error) {

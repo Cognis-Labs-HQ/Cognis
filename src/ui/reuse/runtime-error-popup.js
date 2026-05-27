@@ -54,6 +54,8 @@ let handlersInstalled = false;
 let popupOpen = false;
 let recentPopupSignature = "";
 let recentPopupTimestamp = 0;
+let hasCheckedMainPageBoilerplate = false;
+let hasMainPageBoilerplate = false;
 const log = (...messageParts) =>
     console.warn("[runtime-error-popup]", ...messageParts);
 
@@ -371,7 +373,10 @@ function didReloadIntoCurrentDocument() {
 function hasLoadedMainPageBoilerplate() {
     if (typeof document === "undefined") return false;
     if (typeof document.querySelector !== "function") return false;
-    return Boolean(document.querySelector(".app-shell"));
+    if (hasCheckedMainPageBoilerplate) return hasMainPageBoilerplate;
+    hasMainPageBoilerplate = Boolean(document.querySelector(".app-shell"));
+    hasCheckedMainPageBoilerplate = true;
+    return hasMainPageBoilerplate;
 }
 
 export function installRuntimeErrorHandlers() {
