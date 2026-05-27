@@ -21,6 +21,7 @@ import {
 import {
     issueAccessToken,
     lookupAccessToken,
+    verifyAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
     revokeAccessToken,
@@ -52,7 +53,6 @@ import {
 const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
 const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
-const ONE_TIME_LOGIN_TOKEN_BYTES = 24;
 const ONE_TIME_LOGIN_TTL_SECONDS = 15 * 60;
 const ONE_TIME_LOGIN_RATE_LIMIT_MS = 60_000;
 
@@ -151,14 +151,6 @@ function resolveRole(sessionRole: string | undefined): AccessRole {
         return sessionRole;
     }
     return "user";
-}
-
-interface OneTimeLoginRecord {
-    accountId: string;
-    role: AccessRole;
-    provider: string;
-    providerId: string;
-    expiresAt: number;
 }
 
 class MemoryRateLimiter {
@@ -399,49 +391,12 @@ function createAuthGatewayRoutes(
         return Boolean(isPublicRegistrationEnabled?.());
     }
 
-    const oneTimeLoginLinks = new Map<string, OneTimeLoginRecord>();
     const oneTimeLoginAccountRateLimiter = new MemoryRateLimiter(
         ONE_TIME_LOGIN_RATE_LIMIT_MS,
     );
     const oneTimeLoginIpRateLimiter = new MemoryRateLimiter(
         ONE_TIME_LOGIN_RATE_LIMIT_MS,
     );
-
-    function pruneExpiredOneTimeLoginLinks(now = Date.now()): void {
-        for (const [token, record] of oneTimeLoginLinks.entries()) {
-            if (record.expiresAt < now) {
-                oneTimeLoginLinks.delete(token);
-            }
-        }
-    }
-
-    function issueOneTimeLoginToken(
-        record: Omit<OneTimeLoginRecord, "expiresAt">,
-    ) {
-        pruneExpiredOneTimeLoginLinks();
-        const token = randomBytes(ONE_TIME_LOGIN_TOKEN_BYTES).toString(
-            "base64url",
-        );
-        oneTimeLoginLinks.set(token, {
-            ...record,
-            expiresAt: Date.now() + ONE_TIME_LOGIN_TTL_SECONDS * 1000,
-        });
-        return token;
-    }
-
-    function consumeOneTimeLoginToken(
-        token: string,
-    ): OneTimeLoginRecord | null {
-        pruneExpiredOneTimeLoginLinks();
-        const record = oneTimeLoginLinks.get(token) ?? null;
-        if (!record) return null;
-        oneTimeLoginLinks.delete(token);
-        return record;
-    }
-
-    function revokeOneTimeLoginToken(token: string): void {
-        oneTimeLoginLinks.delete(token);
-    }
 
     function resolveRequestAddress(req: IncomingMessage): string {
         const forwardedFor = req.headers["x-forwarded-for"];
@@ -1006,7 +961,7 @@ function createAuthGatewayRoutes(
                         error: {
                             code: "rate_limited",
                             message:
-                                "A login link was requested too recently. Please wait before trying again.",
+                                "A password reset link was requested too recently. Please wait before trying again.",
                         },
                     }),
                 );
@@ -1059,17 +1014,19 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const loginToken = issueOneTimeLoginToken({
+            const loginToken = issueAccessToken(
                 accountId,
-                role: resolveRole(accountInfo.role),
-                provider: "local",
-                providerId: "local",
-            });
-            const loginUrl = `${externalBaseUrl}/login?loginToken=${encodeURIComponent(loginToken)}`;
+                resolveRole(accountInfo.role),
+                ONE_TIME_LOGIN_TTL_SECONDS,
+                {
+                    providerId: "local",
+                },
+            );
+            const loginUrl = `${externalBaseUrl}/login?passwordResetToken=${encodeURIComponent(loginToken)}`;
             try {
                 await sendOneTimeLoginEmail(email, loginUrl);
             } catch (error) {
-                revokeOneTimeLoginToken(loginToken);
+                revokeAccessToken(loginToken);
                 const message =
                     error instanceof Error ? error.message : String(error);
                 if (message === "smtp_rate_limited") {
@@ -1079,13 +1036,13 @@ function createAuthGatewayRoutes(
                             error: {
                                 code: "rate_limited",
                                 message:
-                                    "A login link was requested too recently. Please wait before trying again.",
+                                    "A password reset link was requested too recently. Please wait before trying again.",
                             },
                         }),
                     );
                     return true;
                 }
-                log?.("warn", "Failed to send one-time login email.", {
+                log?.("warn", "Failed to send password reset email.", {
                     ...logMeta,
                     error: message,
                 });
@@ -1100,7 +1057,7 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            log?.("info", "Sent one-time login email.", {
+            log?.("info", "Sent password reset email.", {
                 ...logMeta,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -1114,6 +1071,7 @@ function createAuthGatewayRoutes(
         ) {
             const body = await readJson(req);
             const rawToken = String(body.token ?? "").trim();
+            const nextPassword = String(body.password ?? "").trim();
             if (!rawToken) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -1126,8 +1084,32 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const loginRecord = consumeOneTimeLoginToken(rawToken);
-            if (!loginRecord) {
+            if (!nextPassword) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Password is required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (nextPassword.length < 8) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_too_short",
+                            message: "Password must be at least 8 characters",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const claims = verifyAccessToken(rawToken);
+            if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -1140,7 +1122,7 @@ function createAuthGatewayRoutes(
                 return true;
             }
             const accountInfo = await accountStore
-                .getInfo(loginRecord.accountId)
+                .getInfo(claims.sub)
                 .catch(() => null);
             if (!accountInfo || accountInfo.enabled === false) {
                 res.writeHead(401, { "content-type": "application/json" });
@@ -1154,17 +1136,54 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            return respondToSuccessfulLogin(
-                req,
-                res,
-                {
-                    accountId: loginRecord.accountId,
-                    provider: loginRecord.provider,
-                    role: accountInfo.role ?? loginRecord.role,
-                },
-                loginRecord.providerId,
-                logMeta,
-            );
+            if (claims.providerId !== "local") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "provider_unsupported",
+                            message:
+                                "Password reset by email is unavailable for this account.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const localAdapter = authGateway.getLocalAdapter();
+            if (!localAdapter?.store) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "provider_unsupported",
+                            message:
+                                "Password reset by email is unavailable for this account.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            try {
+                await localAdapter.store.setPassword(claims.sub, nextPassword);
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : String(error);
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_reset_failed",
+                            message,
+                        },
+                    }),
+                );
+                return true;
+            }
+            revokeAccessToken(rawToken);
+            revokeAccessTokensForSubject(claims.sub);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
         }
 
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {

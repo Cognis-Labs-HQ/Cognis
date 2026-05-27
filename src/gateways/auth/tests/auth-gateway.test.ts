@@ -557,7 +557,7 @@ test("login endpoint returns 503 when no auth providers are available", async ()
     assert.equal(res.status, 401, "bad credentials should yield 401");
 });
 
-test("POST /api/v1/auth/request-login-link sends a one-time login link and consumes it once", async () => {
+test("POST /api/v1/auth/request-login-link sends a password reset link and consumes it once", async () => {
     const previousExternalHost = process.env.EXTERNAL_HOST;
     process.env.EXTERNAL_HOST = "https://cognis.example.com";
     try {
@@ -601,29 +601,43 @@ test("POST /api/v1/auth/request-login-link sends a one-time login link and consu
         assert.equal(requestResult.res.status, 200);
         assert.match(
             sentLink,
-            /^https:\/\/cognis\.example\.com\/login\?loginToken=/,
+            /^https:\/\/cognis\.example\.com\/login\?passwordResetToken=/,
         );
 
         const sentUrl = new URL(sentLink);
-        const loginToken = sentUrl.searchParams.get("loginToken") ?? "";
-        assert.ok(loginToken, "expected one-time login token in emailed URL");
+        const loginToken = sentUrl.searchParams.get("passwordResetToken") ?? "";
+        assert.ok(loginToken, "expected password reset token in emailed URL");
 
         const consumeResult = await dispatchRoute(
             routeRegistry,
-            makeJsonRequest("POST", { token: loginToken }),
+            makeJsonRequest("POST", {
+                token: loginToken,
+                password: "new-pass-123",
+            }),
             "/api/v1/auth/consume-login-link",
         );
         assert.equal(consumeResult.handled, true);
         assert.equal(consumeResult.res.status, 200);
-        assert.match(
-            String(consumeResult.res.headers["set-cookie"] ?? ""),
-            /cognis_access_token=/,
+        assert.match(consumeResult.res.payload, /"updated":true/);
+
+        const loginResult = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", {
+                provider: "local",
+                username: "alice",
+                password: "new-pass-123",
+            }),
+            "/api/v1/auth/login",
         );
-        assert.match(consumeResult.res.payload, /"accountId":"alice"/);
+        assert.equal(loginResult.handled, true);
+        assert.equal(loginResult.res.status, 200);
 
         const reuseResult = await dispatchRoute(
             routeRegistry,
-            makeJsonRequest("POST", { token: loginToken }),
+            makeJsonRequest("POST", {
+                token: loginToken,
+                password: "newer-pass-123",
+            }),
             "/api/v1/auth/consume-login-link",
         );
         assert.equal(reuseResult.handled, true);

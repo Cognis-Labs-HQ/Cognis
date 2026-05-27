@@ -26,7 +26,7 @@ export async function mount(root) {
     let currentTfaLoginAttemptId = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
-    let oneTimeLoginTokenHandled = false;
+    let passwordResetTokenHandled = false;
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -250,23 +250,22 @@ export async function mount(root) {
             <button type="button" id="login-link-submit" class="btn-animated">
                 ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
             </button>
-            <a href="#" id="login-link-back" class="auth-text-action">
+            <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
                 ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
-            </a>
+            </button>
         `;
         const submitBtn = document.querySelector("#login-link-submit");
         const backLink = document.querySelector("#login-link-back");
         const emailInput = document.querySelector("#login-link-email");
         emailInput?.focus();
         submitBtn?.addEventListener("click", () => {
-            requestOneTimeLoginLink().catch(() => {
+            requestPasswordResetLink().catch(() => {
                 showToast(i18n.t("ui.app.login.error.generic"), {
                     variant: "error",
                 });
             });
         });
-        backLink?.addEventListener("click", (event) => {
-            event.preventDefault();
+        backLink?.addEventListener("click", () => {
             composer.refresh();
         });
     }
@@ -279,14 +278,13 @@ export async function mount(root) {
         credentialFields.innerHTML = `
             <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
             <p class="auth-link-unavailable-message">${buildSupportMessage(contactEmail)}</p>
-            <a href="#" id="login-link-back" class="auth-text-action">
+            <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
                 ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
-            </a>
+            </button>
         `;
         document.querySelector("#login-link-back")?.addEventListener(
             "click",
-            (event) => {
-                event.preventDefault();
+            () => {
                 composer.refresh();
             },
         );
@@ -302,7 +300,7 @@ export async function mount(root) {
         }
     }
 
-    async function requestOneTimeLoginLink() {
+    async function requestPasswordResetLink() {
         const emailEl = document.querySelector("#login-link-email");
         const email = String(emailEl?.value ?? "")
             .trim()
@@ -343,27 +341,98 @@ export async function mount(root) {
         showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
     }
 
-    async function consumeOneTimeLoginToken() {
-        if (oneTimeLoginTokenHandled) return;
+    function renderPasswordResetForm(token) {
+        const credentialFields = document.querySelector(
+            "#login-credential-fields",
+        );
+        if (!credentialFields) return;
+        credentialFields.innerHTML = `
+            <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
+            <label>
+                <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+                <input id="login-link-password" type="password" autocomplete="new-password"
+                    placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}"
+                    required />
+            </label>
+            <label>
+                <span>${escapeHtml(i18n.t("ui.app.register.confirm_password"))}</span>
+                <input id="login-link-confirm-password" type="password" autocomplete="new-password"
+                    placeholder="${escapeHtml(i18n.t("ui.app.register.confirm_password"))}"
+                    required />
+            </label>
+            <button type="button" id="login-link-submit" class="btn-animated">
+                ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
+            </button>
+            <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+            </button>
+        `;
+        document.querySelector("#login-link-submit")?.addEventListener(
+            "click",
+            async () => {
+                const nextPassword = String(
+                    document.querySelector("#login-link-password")?.value ?? "",
+                ).trim();
+                const confirmPassword = String(
+                    document.querySelector("#login-link-confirm-password")
+                        ?.value ?? "",
+                ).trim();
+                if (!nextPassword || !confirmPassword) {
+                    showToast(i18n.t("ui.app.login.login_link.password_required"), {
+                        variant: "warning",
+                    });
+                    return;
+                }
+                if (nextPassword !== confirmPassword) {
+                    showToast(i18n.t("ui.app.register.error.password_mismatch"), {
+                        variant: "error",
+                    });
+                    return;
+                }
+                const response = await fetch("/api/v1/auth/consume-login-link", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ token, password: nextPassword }),
+                });
+                const body = await response.json().catch(() => null);
+                if (response.ok && body?.data?.updated === true) {
+                    window.history.replaceState({}, "", "/login");
+                    showToast(i18n.t("ui.app.login.login_link.reset_success"), {
+                        variant: "success",
+                        permanent: true,
+                    });
+                    composer.refresh();
+                    return;
+                }
+                showToast(
+                    body?.error?.message
+                        ? String(body.error.message)
+                        : i18n.t("ui.app.login.login_link.invalid"),
+                    {
+                        variant: "error",
+                        permanent: true,
+                    },
+                );
+            },
+        );
+        document.querySelector("#login-link-back")?.addEventListener(
+            "click",
+            () => {
+                window.history.replaceState({}, "", "/login");
+                composer.refresh();
+            },
+        );
+    }
+
+    async function consumePasswordResetToken() {
+        if (passwordResetTokenHandled) return;
         const params = new URL(window.location.href).searchParams;
-        const loginToken = String(params.get("loginToken") ?? "").trim();
+        const loginToken = String(
+            params.get("passwordResetToken") ?? params.get("loginToken") ?? "",
+        ).trim();
         if (!loginToken) return;
-        oneTimeLoginTokenHandled = true;
-        const response = await fetch("/api/v1/auth/consume-login-link", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ token: loginToken }),
-        });
-        const body = await response.json().catch(() => null);
-        window.history.replaceState({}, "", "/login");
-        if (response.ok && body?.data) {
-            await handleAuthResult(body.data);
-            return;
-        }
-        showToast(i18n.t("ui.app.login.login_link.invalid"), {
-            variant: "error",
-            permanent: true,
-        });
+        passwordResetTokenHandled = true;
+        renderPasswordResetForm(loginToken);
     }
 
     function renderLoginShell() {
@@ -465,7 +534,7 @@ export async function mount(root) {
                                 );
                             });
                         });
-                    consumeOneTimeLoginToken().catch(() => {
+                    consumePasswordResetToken().catch(() => {
                         window.history.replaceState({}, "", "/login");
                         showToast(i18n.t("ui.app.login.login_link.invalid"), {
                             variant: "error",

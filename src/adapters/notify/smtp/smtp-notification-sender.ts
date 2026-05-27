@@ -815,12 +815,12 @@ export class SmtpNotificationSender implements NotificationSender {
         await sendMailWithRetry(
             this.config,
             to,
-            "Your Cognis one-time login link",
-            `Use this secure one-time login link to sign in to Cognis and reset your password:\n${loginUrl}\n\nThis link expires in 15 minutes and can only be used once.`,
+            "Your Cognis password reset link",
+            `Use this secure password reset link to choose a new Cognis password:\n${loginUrl}\n\nThis link expires in 15 minutes and can only be used once.`,
             this.sleep,
             theme,
             loginUrl,
-            "Sign In",
+            "Reset Password",
         );
     }
 
