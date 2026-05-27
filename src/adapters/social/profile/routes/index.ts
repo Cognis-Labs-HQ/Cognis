@@ -124,22 +124,25 @@ async function replaceProfileMedia(
     if (!existing) return null;
     const previousKey = existing[key];
     const stored = await fileGateway.store(accountId, content, contentType);
+    let updated: AccountProfile | null = null;
     try {
-        const updated = await profileStore.updateProfile(accountId, {
+        updated = await profileStore.updateProfile(accountId, {
             [key]: stored.key,
         } as Partial<Pick<AccountProfile, ProfileMediaKey>>);
-        if (!updated) {
-            await fileGateway.delete(stored.key);
-            return null;
-        }
-        if (previousKey && previousKey !== stored.key) {
-            await fileGateway.delete(previousKey);
-        }
-        return { updated, storedKey: stored.key };
     } catch (error) {
         await fileGateway.delete(stored.key);
         throw error;
     }
+    if (!updated) {
+        await fileGateway.delete(stored.key);
+        return null;
+    }
+    if (previousKey && previousKey !== stored.key) {
+        try {
+            await fileGateway.delete(previousKey);
+        } catch {}
+    }
+    return { updated, storedKey: stored.key };
 }
 
 /**

@@ -530,6 +530,55 @@ test("profile routes - avatar upload cleans up stored file when update fails", a
     assert.deepEqual(gateway._keys(), []);
 });
 
+test("profile routes - avatar upload succeeds when previous delete fails", async () => {
+    const profileStore = new VolatileProfileStore();
+    await setupUser(profileStore, "alice");
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken("alice", "user", 60);
+
+    let firstBody = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("first image"), "image/png"),
+        {
+            writeHead() {},
+            end(payload: string) {
+                firstBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/profile/avatar"),
+    );
+    const firstAvatarKey = JSON.parse(firstBody).data.avatarKey;
+
+    const originalDelete = gateway.delete.bind(gateway);
+    gateway.delete = async (key: string) => {
+        if (key === firstAvatarKey) throw new Error("transient delete failure");
+        return originalDelete(key);
+    };
+
+    let status = 0;
+    let secondBody = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("second image"), "image/png"),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                secondBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/profile/avatar"),
+    );
+
+    assert.equal(status, 200);
+    const secondAvatarKey = JSON.parse(secondBody).data.avatarKey;
+    assert.notEqual(secondAvatarKey, firstAvatarKey);
+    assert.equal(gateway._has(secondAvatarKey), true);
+    const profile = await profileStore.getProfile("alice");
+    assert.equal(profile?.avatarKey, secondAvatarKey);
+});
+
 test("profile routes - avatar upload rejects disallowed MIME type", async () => {
     const profileStore = new VolatileProfileStore();
     await setupUser(profileStore, "alice");
