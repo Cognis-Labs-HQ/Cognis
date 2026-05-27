@@ -168,3 +168,35 @@ test("api client suppresses crash popups for retryable HTTP errors right after t
         false,
     );
 });
+
+test("api client suppresses marked connection failures across deep cause chains", async () => {
+    let now = 1_000;
+    const networkError = new Error("Failed to fetch");
+    networkError.name = "TypeError";
+    const { apiClient } = loadApiClientForTests({
+        fetchImpl: async () => {
+            throw networkError;
+        },
+        now: () => now,
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await assert.rejects(apiClient.apiFetch("/api/v1/users"), networkError);
+
+    const wrappedError = new Error("Route mount failed");
+    let currentError = wrappedError;
+    const wrapperDepth = 20_000;
+    for (let index = 0; index < wrapperDepth; index += 1) {
+        const nextError =
+            index === wrapperDepth - 1
+                ? networkError
+                : new Error(`Wrapped error ${index}`);
+        currentError.cause = nextError;
+        currentError = nextError;
+    }
+
+    assert.equal(
+        apiClient.shouldSuppressConnectionRecoveryPopup(wrappedError),
+        true,
+    );
+});

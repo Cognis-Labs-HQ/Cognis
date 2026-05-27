@@ -289,3 +289,38 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
     assert.deepEqual(locationAssignCalls, []);
     assert.equal(historyBackCalls, 1);
 });
+
+test("runtime error popup caches main boilerplate lookup result", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { hasLoadedMainPageBoilerplate };\n";
+
+    let querySelectorCalls = 0;
+    const context = {
+        console,
+        Date,
+        document: {
+            querySelector(selector) {
+                if (selector !== ".app-shell") return null;
+                querySelectorCalls += 1;
+                return {};
+            },
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    assert.equal(context.__testExports.hasLoadedMainPageBoilerplate(), true);
+    assert.equal(context.__testExports.hasLoadedMainPageBoilerplate(), true);
+    assert.equal(querySelectorCalls, 1);
+});
