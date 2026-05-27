@@ -234,11 +234,13 @@ function lineStartsBlock(line) {
  * and paragraph normalization.
  *
  * @param {string} markdown
- * @param {{ softBreaks?: boolean }} [options]
+ * @param {{ softBreaks?: boolean }} [options] Options object. When softBreaks
+ *   is true, single line breaks within paragraphs are preserved as <br> tags
+ *   instead of being normalized to spaces.
  * @returns {string}
  */
 export function renderMarkdown(markdown, options = {}) {
-    const softBreaks = Boolean(options.softBreaks);
+    const { softBreaks = false } = options;
     const lines = String(markdown ?? "")
         .replaceAll("\r\n", "\n")
         .replaceAll("\r", "\n")
