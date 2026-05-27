@@ -399,8 +399,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.capabilities.contribute(
         "notify:sendOneTimeLoginEmail",
-        async (to: string, loginUrl: string, theme?: string) =>
-            gateway.sendOneTimeLoginEmail(to, loginUrl, theme),
+        async (
+            to: string,
+            loginUrl: string,
+            options?: {
+                theme?: string;
+                subject?: string;
+                body?: string;
+                actionLabel?: string;
+            },
+        ) => gateway.sendOneTimeLoginEmail(to, loginUrl, options),
     );
     /**
      * notify:isEmailRegistered — checks whether an email is already registered

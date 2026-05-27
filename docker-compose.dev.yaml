@@ -25,16 +25,16 @@ services:
             dockerfile: docker/Dockerfile
         image: cognis:dev
         environment:
-            NODE_ENV: development
-            COGNIS_UI_DEMO_MODE: "1"
-            DATABASE_URL: postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:-cognis}@db:5432/${POSTGRES_DB:-cognis}
+            - NODE_ENV=development
+            - COGNIS_UI_DEMO_MODE=1
+            - DATABASE_URL=postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:-cognis}@db:5432/${POSTGRES_DB:-cognis}
             # Required in dev too; define it in .env (see env.example).
-            DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY}
-            HOST: ${HOST}
-            EXTERNAL_HOST: ${EXTERNAL_HOST}
-            CONTACT_EMAIL: ${CONTACT_EMAIL}
-            LOG_LEVEL: debug
-            LOG_FILE: /app/logs/dev.log
+            - DATA_ENCRYPTION_KEY
+            - HOST
+            - EXTERNAL_HOST
+            - CONTACT_EMAIL
+            - LOG_LEVEL=debug
+            - LOG_FILE=/app/logs/dev.log
         ports:
             - "${PORT:-3000}:3000"
         volumes:

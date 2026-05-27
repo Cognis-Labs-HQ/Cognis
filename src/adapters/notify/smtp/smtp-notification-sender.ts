@@ -4,6 +4,10 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+import {
+    decodeBasicHtmlEntities,
+    encodeBasicHtmlEntities,
+} from "./html-entities.js";
 
 export interface SmtpConfig {
     host: string;
@@ -44,12 +48,7 @@ async function loadEmailTemplate(): Promise<string> {
 }
 
 function escapeHtmlForEmail(text: string): string {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#x27;");
+    return encodeBasicHtmlEntities(text);
 }
 
 interface ThemePalette {
@@ -272,21 +271,6 @@ function stripHtmlTags(html: string): string {
         out += html[cursor];
     }
     return decodeBasicHtmlEntities(out);
-}
-
-function decodeBasicHtmlEntities(value: string): string {
-    const entityMap: Record<string, string> = {
-        nbsp: " ",
-        amp: "&",
-        quot: '"',
-        apos: "'",
-        "#x27": "'",
-        "#8212": "—",
-    };
-    return value.replace(
-        /&(nbsp|amp|quot|apos|#x27|#8212);/gi,
-        (match, entity: string) => entityMap[entity.toLowerCase()] ?? match,
-    );
 }
 
 function dotStuff(message: string): string {
@@ -837,7 +821,12 @@ export class SmtpNotificationSender implements NotificationSender {
     async sendOneTimeLoginEmail(
         to: string,
         loginUrl: string,
-        theme?: string,
+        options?: {
+            theme?: string;
+            subject?: string;
+            body?: string;
+            actionLabel?: string;
+        },
     ): Promise<void> {
         if (!to) throw new Error("smtp_requires_recipient");
         if (!loginUrl) throw new Error("smtp_requires_login_url");
@@ -845,15 +834,23 @@ export class SmtpNotificationSender implements NotificationSender {
             throw new Error("smtp_rate_limited");
         }
         this.rateLimiter.record(to);
+        const theme = options?.theme;
+        const subject = options?.subject?.trim();
+        const body = options?.body?.trim();
+        if (!subject || !body) {
+            throw new Error(
+                "One-time login email subject and body are required.",
+            );
+        }
         await sendMailWithRetry(
             this.config,
             to,
-            "Your Cognis password reset link",
-            `Use this secure password reset link to choose a new Cognis password:\n${loginUrl}\n\nThis link expires in 15 minutes and can only be used once.`,
+            subject,
+            body,
             this.sleep,
             theme,
             loginUrl,
-            "Reset Password",
+            options?.actionLabel,
         );
     }
 

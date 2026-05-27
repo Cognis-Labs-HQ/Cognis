@@ -37,7 +37,7 @@ ENV MEDIA_LOCATION=/app/media
 ENV HOST=cognis
 ENV EXTERNAL_HOST=
 ENV CONTACT_EMAIL=
-ENV DATA_ENCRYPTION_KEY=
+ENV DATA_ENCRYPTION_KEY=not-secure-change-me
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/usr/local/bin/healthcheck.sh"]

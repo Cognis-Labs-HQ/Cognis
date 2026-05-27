@@ -107,7 +107,12 @@ export interface OneTimeLoginEmailSender {
     sendOneTimeLoginEmail(
         to: string,
         loginUrl: string,
-        theme?: string,
+        options?: {
+            theme?: string;
+            subject?: string;
+            body?: string;
+            actionLabel?: string;
+        },
     ): Promise<void>;
 }
 
@@ -164,7 +169,12 @@ type SenderWithOneTimeLogin = {
     sendOneTimeLoginEmail(
         to: string,
         loginUrl: string,
-        theme?: string,
+        options?: {
+            theme?: string;
+            subject?: string;
+            body?: string;
+            actionLabel?: string;
+        },
     ): Promise<void>;
     isConfigured?(): boolean;
 };
@@ -414,12 +424,17 @@ export class CoreNotificationGateway
     async sendOneTimeLoginEmail(
         to: string,
         loginUrl: string,
-        theme?: string,
+        options?: {
+            theme?: string;
+            subject?: string;
+            body?: string;
+            actionLabel?: string;
+        },
     ): Promise<void> {
         for (const [id, sender] of this.senders.entries()) {
             if (this.disabledSenders.has(id)) continue;
             if (!isSenderWithOneTimeLogin(sender)) continue;
-            await sender.sendOneTimeLoginEmail(to, loginUrl, theme);
+            await sender.sendOneTimeLoginEmail(to, loginUrl, options);
             return;
         }
         throw new Error("smtp_unavailable");

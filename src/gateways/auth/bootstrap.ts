@@ -997,7 +997,16 @@ function createAuthGatewayRoutes(
                 "notify:canSendOneTimeLoginEmail",
             );
             const sendOneTimeLoginEmail = capabilities.get<
-                (to: string, loginUrl: string, theme?: string) => Promise<void>
+                (
+                    to: string,
+                    loginUrl: string,
+                    options?: {
+                        theme?: string;
+                        subject?: string;
+                        body?: string;
+                        actionLabel?: string;
+                    },
+                ) => Promise<void>
             >("notify:sendOneTimeLoginEmail");
             const getAccountIdByEmail = capabilities.get<
                 (email: string) => Promise<string | null>
@@ -1043,7 +1052,11 @@ function createAuthGatewayRoutes(
             );
             const loginUrl = `${externalBaseUrl}/login?passwordResetToken=${encodeURIComponent(loginToken)}`;
             try {
-                await sendOneTimeLoginEmail(email, loginUrl);
+                await sendOneTimeLoginEmail(email, loginUrl, {
+                    subject: "Your Cognis password reset link",
+                    body: `Use this secure password reset link to choose a new Cognis password:\n${loginUrl}\n\nThis link expires in 15 minutes and can only be used once.`,
+                    actionLabel: "Reset Password",
+                });
             } catch (error) {
                 revokeAccessToken(loginToken);
                 const message =
