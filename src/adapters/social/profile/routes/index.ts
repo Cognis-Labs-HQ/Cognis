@@ -427,19 +427,15 @@ export function createProfileRoutes(
                 body,
                 mime,
                 (error, previousKey) => {
-                    log?.(
-                        "warn",
-                        "Failed to delete replaced avatar file.",
-                        {
-                            ...logMeta,
-                            accountId: claims!.sub,
-                            previousKey,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
+                    log?.("warn", "Failed to delete replaced avatar file.", {
+                        ...logMeta,
+                        accountId: claims!.sub,
+                        previousKey,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
                 },
             );
             if (!result) {
@@ -597,19 +593,15 @@ export function createProfileRoutes(
                 body,
                 mime,
                 (error, previousKey) => {
-                    log?.(
-                        "warn",
-                        "Failed to delete replaced banner file.",
-                        {
-                            ...logMeta,
-                            accountId: claims!.sub,
-                            previousKey,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
+                    log?.("warn", "Failed to delete replaced banner file.", {
+                        ...logMeta,
+                        accountId: claims!.sub,
+                        previousKey,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
                 },
             );
             if (!result) {
