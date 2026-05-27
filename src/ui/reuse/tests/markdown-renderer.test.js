@@ -45,3 +45,13 @@ test("renderMarkdown normalizes paragraph line spacing", () => {
         "<p>First line continues here</p>\n<p>Second paragraph</p>",
     );
 });
+
+test("renderMarkdown treats leading asterisks as emphasis text, not list bullets", () => {
+    const html = renderMarkdown("*hello*");
+    assert.equal(html, "<p><em>hello</em></p>");
+});
+
+test("renderMarkdown still supports hyphen unordered lists", () => {
+    const html = renderMarkdown("- one\n- two");
+    assert.equal(html, "<ul>\n<li>one</li>\n<li>two</li>\n</ul>");
+});

@@ -205,7 +205,7 @@ function renderCodeBlockMarkup(infoString, codeLines) {
 }
 
 function isListItem(line) {
-    return /^([-*+]|\d+\.)\s+/.test(line.trimStart());
+    return /^([-+]|\d+\.)\s+/.test(line.trimStart());
 }
 
 function listTypeOfLine(line) {
@@ -213,7 +213,7 @@ function listTypeOfLine(line) {
 }
 
 function stripListPrefix(line) {
-    return line.trimStart().replace(/^([-*+]|\d+\.)\s+/, "");
+    return line.trimStart().replace(/^([-+]|\d+\.)\s+/, "");
 }
 
 function lineStartsBlock(line) {

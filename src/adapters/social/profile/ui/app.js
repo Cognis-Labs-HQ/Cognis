@@ -713,8 +713,14 @@ function renderNewPost() {
         <div class="profile-compose-preview-switcher">
           <button
             type="button"
+            id="profile-post-compose-toggle"
+            class="profile-compose-mode-toggle"
+            aria-pressed="true"
+          >${escapeHtml(i18n.t("ui.app.profile.compose"))}</button>
+          <button
+            type="button"
             id="profile-post-preview-toggle"
-            class="btn-secondary btn-animated profile-compose-preview-toggle"
+            class="profile-compose-mode-toggle"
             aria-pressed="false"
           >${escapeHtml(i18n.t("ui.app.profile.preview"))}</button>
         </div>
@@ -1333,12 +1339,12 @@ function bindPageEvents() {
         const postPreviewToggle = root.querySelector(
             "#profile-post-preview-toggle",
         );
+        const postComposeToggle = root.querySelector(
+            "#profile-post-compose-toggle",
+        );
         const postPreviewElement = root.querySelector("#profile-post-preview");
         const postTitleInput = postFormElement.querySelector("#post-title");
         const postContentInput = postFormElement.querySelector("#post-content");
-        const postContentFieldWrapper = postFormElement.querySelector(
-            '[data-form-builder-field="content"]',
-        );
         let isPostPreviewMode = false;
         const renderPostPreview = () => {
             if (!(postPreviewElement instanceof HTMLElement)) return;
@@ -1360,20 +1366,21 @@ function bindPageEvents() {
             postPreviewElement.innerHTML = `${titleMarkup}${bodyMarkup}`;
         };
         const syncPostComposerMode = () => {
-            const previewButtonLabel = i18n.t(
-                isPostPreviewMode
-                    ? "ui.app.profile.compose"
-                    : "ui.app.profile.preview",
-            );
+            const isComposeMode = !isPostPreviewMode;
+            if (postComposeToggle instanceof HTMLButtonElement) {
+                postComposeToggle.setAttribute(
+                    "aria-pressed",
+                    String(isComposeMode),
+                );
+            }
             if (postPreviewToggle instanceof HTMLButtonElement) {
-                postPreviewToggle.textContent = previewButtonLabel;
                 postPreviewToggle.setAttribute(
                     "aria-pressed",
                     String(isPostPreviewMode),
                 );
             }
-            if (postContentFieldWrapper instanceof HTMLElement) {
-                postContentFieldWrapper.hidden = isPostPreviewMode;
+            if (postFormElement instanceof HTMLFormElement) {
+                postFormElement.hidden = isPostPreviewMode;
             }
             if (postPreviewElement instanceof HTMLElement) {
                 postPreviewElement.hidden = !isPostPreviewMode;
@@ -1387,8 +1394,12 @@ function bindPageEvents() {
         syncPostComposerMode();
         postTitleInput?.addEventListener("input", renderPostPreview);
         postContentInput?.addEventListener("input", renderPostPreview);
+        postComposeToggle?.addEventListener("click", () => {
+            isPostPreviewMode = false;
+            syncPostComposerMode();
+        });
         postPreviewToggle?.addEventListener("click", () => {
-            isPostPreviewMode = !isPostPreviewMode;
+            isPostPreviewMode = true;
             syncPostComposerMode();
             renderPostPreview();
         });
