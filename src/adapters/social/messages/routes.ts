@@ -795,6 +795,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         const pendingRoomRequest = pendingIncomingRoomRequest
             ? pendingIncomingRoomRequest
             : await messagesStore.getPendingRoomMessageRequest(roomId);
+        const incomingPendingRoomRequest =
+            pendingIncomingRoomRequest ||
+            (pendingRoomRequest?.toAccountId === accountId
+                ? pendingRoomRequest
+                : null);
         const pendingRequestSummary = await summarizeRoomRequest(
             pendingRoomRequest,
             profileStore,
@@ -869,7 +874,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
 
         // GET /messages/rooms/:id/key
         if (sub === "key" && !subArg && req.method === "GET") {
-            if (pendingIncomingRoomRequest) {
+            if (incomingPendingRoomRequest) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -904,7 +909,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         // GET/POST /messages/rooms/:id/messages
         if (sub === "messages" && !subArg) {
             if (req.method === "GET") {
-                if (pendingIncomingRoomRequest) {
+                if (incomingPendingRoomRequest) {
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -1046,7 +1051,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             if (req.method === "POST") {
-                if (pendingIncomingRoomRequest) {
+                if (incomingPendingRoomRequest) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -1149,7 +1154,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
 
         // POST /messages/rooms/:id/read
         if (sub === "read" && !subArg && req.method === "POST") {
-            if (pendingIncomingRoomRequest) {
+            if (incomingPendingRoomRequest) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { ok: true } }));
                 return true;
@@ -1163,7 +1168,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         // GET/POST /messages/rooms/:id/typing
         if (sub === "typing" && !subArg) {
             if (req.method === "POST") {
-                if (pendingIncomingRoomRequest) {
+                if (incomingPendingRoomRequest) {
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(JSON.stringify({ data: { ok: true } }));
                     return true;
@@ -1187,7 +1192,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             if (req.method === "GET") {
-                if (pendingIncomingRoomRequest) {
+                if (incomingPendingRoomRequest) {
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(JSON.stringify({ data: [] }));
                     return true;
@@ -1344,7 +1349,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             subArg2 === "reactions" &&
             req.method === "POST"
         ) {
-            if (pendingIncomingRoomRequest) {
+            if (incomingPendingRoomRequest) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
