@@ -117,6 +117,7 @@
   <string name="ui.app.login.login_link.email_required">Masukkan alamat email Anda.</string>
   <string name="ui.app.login.login_link.submit">Reset Kata Sandi</string>
   <string name="ui.app.login.login_link.back">Kembali ke Masuk</string>
+  <string name="ui.app.login.login_link.go_back">Kembali</string>
   <string name="ui.app.login.login_link.sent">Jika ada email terverifikasi untuk akun ini, kami telah mengirimkan tautan reset kata sandi.</string>
   <string name="ui.app.login.login_link.rate_limited">Tautan reset kata sandi baru saja diminta. Harap tunggu sebelum mencoba lagi.</string>
   <string name="ui.app.login.login_link.invalid">Tautan reset kata sandi itu tidak valid atau sudah digunakan.</string>

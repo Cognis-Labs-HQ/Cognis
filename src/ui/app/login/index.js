@@ -363,12 +363,25 @@ export async function mount(root) {
             "#login-credential-fields",
         );
         if (!credentialFields) return;
-        credentialFields.innerHTML = renderInPageCallout({
-            variant: "danger",
-            title: i18n.t("ui.reuse.error"),
-            body: i18n.t("ui.app.login.login_link.invalid"),
-        });
+        credentialFields.innerHTML = `
+            ${renderInPageCallout({
+                variant: "danger",
+                title: i18n.t("ui.reuse.error"),
+                body: i18n.t("ui.app.login.login_link.invalid"),
+            })}
+            <div class="auth-reset-actions">
+                <button type="button" id="login-link-invalid-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.go_back"))}
+                </button>
+            </div>
+        `;
         enterPasswordResetMode();
+        document
+            .querySelector("#login-link-invalid-back")
+            ?.addEventListener("click", () => {
+                window.history.replaceState({}, "", "/login");
+                composer.refresh();
+            });
     }
 
     let submitPasswordReset = null;
@@ -398,7 +411,7 @@ export async function mount(root) {
             </label>
             <div class="auth-reset-actions">
                 ${backButtonHtml}
-                <button type="button" id="login-link-submit" class="btn-animated">
+                <button type="submit" id="login-link-submit" class="btn-animated">
                     ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
                 </button>
             </div>
@@ -449,11 +462,6 @@ export async function mount(root) {
                 },
             );
         };
-        document
-            .querySelector("#login-link-submit")
-            ?.addEventListener("click", () => {
-                submitPasswordReset?.();
-            });
         if (showBackButton) {
             document
                 .querySelector("#login-link-back")

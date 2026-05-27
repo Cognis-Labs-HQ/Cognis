@@ -117,6 +117,7 @@
   <string name="ui.app.login.login_link.email_required">メールアドレスを入力してください。</string>
   <string name="ui.app.login.login_link.submit">パスワードをリセット</string>
   <string name="ui.app.login.login_link.back">サインインに戻る</string>
+  <string name="ui.app.login.login_link.go_back">戻る</string>
   <string name="ui.app.login.login_link.sent">このアカウントに確認済みメールアドレスがある場合、パスワードリセットリンクを送信しました。</string>
   <string name="ui.app.login.login_link.rate_limited">最近パスワードリセットリンクがリクエストされました。しばらく待ってから再度お試しください。</string>
   <string name="ui.app.login.login_link.invalid">このパスワードリセットリンクは無効か、すでに使用されています。</string>

@@ -93,6 +93,42 @@ test("login and register include mobile auth brandline inside auth panel", () =>
     assert.match(registerSource, /auth-brandline--panel-mobile/);
 });
 
+test("auth brandline links to base domain", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/auth-layout.js"),
+        "utf8",
+    );
+
+    assert.match(source, /<a class="\$\{classes\}" href="\/">/);
+});
+
+test("invalid reset token view renders go-back login action", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /id="login-link-invalid-back"/);
+    assert.match(source, /ui\.app\.login\.login_link\.go_back/);
+    assert.match(
+        source,
+        /login-link-invalid-back[\s\S]*?window\.history\.replaceState\(\{\},\s*"",\s*"\/login"\);[\s\S]*?composer\.refresh\(\);/m,
+    );
+});
+
+test("password reset action uses form submit button", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /id="login-link-submit" class="btn-animated">[\s\S]*?\$\{escapeHtml\(i18n\.t\("ui\.app\.login\.login_link\.submit"\)\)\}/m,
+    );
+    assert.match(source, /<button type="submit" id="login-link-submit"/);
+});
+
 test("register page renders invalid-token intro message instead of disabled form shell", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/register.js"),

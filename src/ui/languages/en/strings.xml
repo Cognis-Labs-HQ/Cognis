@@ -117,6 +117,7 @@
   <string name="ui.app.login.login_link.email_required">Enter your email address.</string>
   <string name="ui.app.login.login_link.submit">Reset Password</string>
   <string name="ui.app.login.login_link.back">Sign In Instead</string>
+  <string name="ui.app.login.login_link.go_back">Go Back</string>
   <string name="ui.app.login.login_link.sent">If a verified email is on file, we've sent a password reset link.</string>
   <string name="ui.app.login.login_link.rate_limited">A password reset link was requested too recently. Please wait before trying again.</string>
   <string name="ui.app.login.login_link.invalid">That password reset link is invalid or has already been used.</string>
