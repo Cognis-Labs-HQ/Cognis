@@ -191,6 +191,13 @@ test("messages composer includes markdown compose preview switcher", () => {
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
     );
+    const templatesCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-template-composer.css",
+        ),
+        "utf8",
+    );
 
     assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
@@ -227,6 +234,10 @@ test("messages composer includes markdown compose preview switcher", () => {
         /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
     );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
-    assert.match(messagesCssSource, /\.messages-template-library\s*\{/);
-    assert.match(messagesCssSource, /\.messages-template-card\s*\{/);
+    assert.match(
+        messagesCssSource,
+        /@import url\("\/static\/adapters\/social\/messages\/messages-template-composer\.css"\);/,
+    );
+    assert.match(templatesCssSource, /\.messages-template-library\s*\{/);
+    assert.match(templatesCssSource, /\.messages-template-card\s*\{/);
 });

@@ -115,9 +115,7 @@ function resolveTemplateRecipient(room, currentAccountId) {
     return {
         username: String(preferredRecipient?.handle ?? "").trim(),
         displayName: String(
-            preferredRecipient?.displayName ??
-                preferredRecipient?.handle ??
-                "",
+            preferredRecipient?.displayName ?? preferredRecipient?.handle ?? "",
         ).trim(),
     };
 }
@@ -2835,9 +2833,10 @@ export async function mount(root, { signal } = {}) {
                         );
                         if (!templateRecord) return;
                         if (composerInput instanceof HTMLTextAreaElement) {
-                            composerInput.value = resolveSelectedRoomTemplateContent(
-                                templateRecord.content,
-                            );
+                            composerInput.value =
+                                resolveSelectedRoomTemplateContent(
+                                    templateRecord.content,
+                                );
                             queueTypingUpdate(
                                 Boolean((composerInput.value ?? "").trim()),
                             );
@@ -2902,7 +2901,8 @@ export async function mount(root, { signal } = {}) {
                         content: contentValue,
                     };
                     const existingIndex = savedMessageTemplates.findIndex(
-                        (entry) => String(entry.id) === String(templateRecord.id),
+                        (entry) =>
+                            String(entry.id) === String(templateRecord.id),
                     );
                     if (existingIndex >= 0) {
                         savedMessageTemplates = [
@@ -2940,27 +2940,35 @@ export async function mount(root, { signal } = {}) {
                         event.preventDefault();
                     }
                 });
-                composerTemplatesPane?.addEventListener("click", (clickEvent) => {
-                    const tokenButton = clickEvent.target.closest(
-                        "[data-template-token]",
-                    );
-                    if (!(tokenButton instanceof HTMLButtonElement)) return;
-                    const token = String(
-                        tokenButton.dataset.templateToken ?? "",
-                    ).trim();
-                    if (!token) return;
-                    if (!(templateBodyInput instanceof HTMLTextAreaElement)) {
-                        return;
-                    }
-                    const start = templateBodyInput.selectionStart ?? 0;
-                    const end = templateBodyInput.selectionEnd ?? 0;
-                    const currentValue = templateBodyInput.value;
-                    templateBodyInput.value = `${currentValue.slice(0, start)}${token}${currentValue.slice(end)}`;
-                    const nextCursor = start + token.length;
-                    templateBodyInput.setSelectionRange(nextCursor, nextCursor);
-                    templateBodyInput.focus();
-                    renderTemplateEditorPreview();
-                });
+                composerTemplatesPane?.addEventListener(
+                    "click",
+                    (clickEvent) => {
+                        const tokenButton = clickEvent.target.closest(
+                            "[data-template-token]",
+                        );
+                        if (!(tokenButton instanceof HTMLButtonElement)) return;
+                        const token = String(
+                            tokenButton.dataset.templateToken ?? "",
+                        ).trim();
+                        if (!token) return;
+                        if (
+                            !(templateBodyInput instanceof HTMLTextAreaElement)
+                        ) {
+                            return;
+                        }
+                        const start = templateBodyInput.selectionStart ?? 0;
+                        const end = templateBodyInput.selectionEnd ?? 0;
+                        const currentValue = templateBodyInput.value;
+                        templateBodyInput.value = `${currentValue.slice(0, start)}${token}${currentValue.slice(end)}`;
+                        const nextCursor = start + token.length;
+                        templateBodyInput.setSelectionRange(
+                            nextCursor,
+                            nextCursor,
+                        );
+                        templateBodyInput.focus();
+                        renderTemplateEditorPreview();
+                    },
+                );
 
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
