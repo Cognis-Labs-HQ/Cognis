@@ -194,22 +194,39 @@ test("messages composer includes markdown compose preview switcher", () => {
 
     assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
+    assert.match(appSource, /id="messages-composer-templates-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-pane"/);
+    assert.match(appSource, /id="messages-composer-templates-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
+    assert.match(appSource, /id="messages-template-library-list"/);
+    assert.match(appSource, /id="messages-template-editor"/);
+    assert.match(appSource, /data-template-token="\{username\}"/);
+    assert.match(appSource, /data-template-token="\{displayName\}"/);
     assert.match(appSource, /function renderComposerPreviewMarkup/);
+    assert.match(appSource, /function resolveMessageTemplateVariables/);
     assert.match(appSource, /module\.social\.messages\.preview_placeholder/);
     assert.match(
         appSource,
-        /composerComposeToggle\?\.addEventListener\("click",[\s\S]*isComposerPreviewMode = false;/,
+        /composerComposeToggle\?\.addEventListener\("click",[\s\S]*composerMode = "compose";/,
     );
     assert.match(
         appSource,
-        /composerPreviewToggle\?\.addEventListener\("click",[\s\S]*isComposerPreviewMode = true;/,
+        /composerPreviewToggle\?\.addEventListener\("click",[\s\S]*composerMode = "preview";/,
+    );
+    assert.match(
+        appSource,
+        /composerTemplatesToggle\?\.addEventListener\("click",[\s\S]*composerMode = "templates";/,
+    );
+    assert.match(
+        appSource,
+        /resolveMessageTemplateVariables\([\s\S]*currentRoom[\s\S]*currentAccountId/,
     );
     assert.match(messagesCssSource, /\.messages-composer-mode-toggle\s*\{/);
     assert.match(
         messagesCssSource,
-        /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+        /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
     );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
+    assert.match(messagesCssSource, /\.messages-template-library\s*\{/);
+    assert.match(messagesCssSource, /\.messages-template-card\s*\{/);
 });

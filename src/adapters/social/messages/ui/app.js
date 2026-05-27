@@ -23,6 +23,7 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { formatTemplate } from "/static/reuse/format-template.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
@@ -60,6 +61,78 @@ const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
+const MESSAGE_TEMPLATES_STORAGE_KEY = "messages:saved-templates:v1";
+const MAX_SAVED_MESSAGE_TEMPLATES = 100;
+
+function normalizeMessageTemplateRecord(record) {
+    if (!record || typeof record !== "object") return null;
+    const id = String(record.id ?? "").trim();
+    const title = String(record.title ?? "").trim();
+    const content = String(record.content ?? "").trim();
+    if (!id || !title || !content) return null;
+    return {
+        id,
+        title,
+        content,
+    };
+}
+
+function loadSavedMessageTemplates() {
+    try {
+        const raw = localStorage.getItem(MESSAGE_TEMPLATES_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .map((entry) => normalizeMessageTemplateRecord(entry))
+            .filter(Boolean);
+    } catch {
+        return [];
+    }
+}
+
+function persistSavedMessageTemplates(templates) {
+    const normalizedTemplates = Array.isArray(templates)
+        ? templates
+              .map((entry) => normalizeMessageTemplateRecord(entry))
+              .filter(Boolean)
+        : [];
+    localStorage.setItem(
+        MESSAGE_TEMPLATES_STORAGE_KEY,
+        JSON.stringify(normalizedTemplates),
+    );
+}
+
+function resolveTemplateRecipient(room, currentAccountId) {
+    const members = Array.isArray(room?.members) ? room.members : [];
+    const preferredRecipient =
+        members.find(
+            (member) => String(member?.accountId ?? "") !== currentAccountId,
+        ) ??
+        members[0] ??
+        null;
+    if (!preferredRecipient) return null;
+    return {
+        username: String(preferredRecipient?.handle ?? "").trim(),
+        displayName: String(
+            preferredRecipient?.displayName ??
+                preferredRecipient?.handle ??
+                "",
+        ).trim(),
+    };
+}
+
+function resolveMessageTemplateVariables(text, room, currentAccountId) {
+    if (typeof text !== "string") return "";
+    const recipient = resolveTemplateRecipient(room, currentAccountId);
+    const values = {
+        username: recipient?.username ?? undefined,
+        handle: recipient?.username ?? undefined,
+        display_name: recipient?.displayName ?? undefined,
+        displayName: recipient?.displayName ?? undefined,
+    };
+    return formatTemplate(text, values);
+}
 
 /**
  * Fetches the full emoji list from the social gateway static asset, caching
@@ -1344,6 +1417,7 @@ export async function mount(root, { signal } = {}) {
     let pendingBannerSlotElement = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
+    let savedMessageTemplates = loadSavedMessageTemplates();
 
     let rooms = await loadRooms(i18n);
     if (signal?.aborted) return;
@@ -1482,6 +1556,9 @@ export async function mount(root, { signal } = {}) {
         const previewToggle = document.getElementById(
             "messages-composer-preview-toggle",
         );
+        const templatesToggle = document.getElementById(
+            "messages-composer-templates-toggle",
+        );
         const canSend =
             Boolean(room) &&
             room?.canSend !== false &&
@@ -1500,6 +1577,9 @@ export async function mount(root, { signal } = {}) {
         }
         if (composeToggle instanceof HTMLButtonElement) {
             composeToggle.disabled = !canSend;
+        }
+        if (templatesToggle instanceof HTMLButtonElement) {
+            templatesToggle.disabled = !canSend;
         }
     }
 
@@ -2086,6 +2166,12 @@ export async function mount(root, { signal } = {}) {
                                 id="messages-composer-preview-toggle"
                                 aria-pressed="false"
                             >${escapeHtml(i18n.t("module.social.messages.preview"))}</button>
+                            <button
+                                type="button"
+                                class="messages-composer-mode-toggle"
+                                id="messages-composer-templates-toggle"
+                                aria-pressed="false"
+                            >${escapeHtml(i18n.t("module.social.messages.templates"))}</button>
                         </div>
                         <div class="messages-composer-main">
                             <div
@@ -2113,6 +2199,49 @@ export async function mount(root, { signal } = {}) {
                                     class="messages-composer-preview messages-message-body"
                                     aria-live="polite"
                                 >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
+                            </div>
+                            <div
+                                id="messages-composer-templates-pane"
+                                class="messages-composer-pane messages-composer-pane--templates"
+                                hidden
+                            >
+                                <div class="messages-template-library">
+                                    <div class="messages-template-library-list" id="messages-template-library-list"></div>
+                                    <form class="messages-template-editor" id="messages-template-editor">
+                                        <label class="messages-template-label" for="messages-template-title">${escapeHtml(i18n.t("module.social.messages.template_title"))}</label>
+                                        <input
+                                            id="messages-template-title"
+                                            class="messages-template-title-input"
+                                            type="text"
+                                            maxlength="120"
+                                            placeholder="${escapeHtml(i18n.t("module.social.messages.template_title_placeholder"))}"
+                                        />
+                                        <label class="messages-template-label" for="messages-template-body">${escapeHtml(i18n.t("module.social.messages.template_body"))}</label>
+                                        <textarea
+                                            id="messages-template-body"
+                                            class="messages-template-body-input"
+                                            rows="4"
+                                            placeholder="${escapeHtml(i18n.t("module.social.messages.template_body_placeholder"))}"
+                                        ></textarea>
+                                        <div class="messages-template-token-row">
+                                            <span class="messages-template-token-label">${escapeHtml(i18n.t("module.social.messages.template_variables"))}</span>
+                                            <button type="button" class="messages-template-token-btn" data-template-token="{username}">{username}</button>
+                                            <button type="button" class="messages-template-token-btn" data-template-token="{displayName}">{displayName}</button>
+                                        </div>
+                                        <div class="messages-template-preview">
+                                            <p class="messages-template-preview-label">${escapeHtml(i18n.t("module.social.messages.template_preview"))}</p>
+                                            <div
+                                                id="messages-template-preview"
+                                                class="messages-template-preview-markup messages-message-body"
+                                                aria-live="polite"
+                                            >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
+                                        </div>
+                                        <div class="messages-template-actions">
+                                            <button type="button" class="messages-template-reset-btn" id="messages-template-reset-btn">${escapeHtml(i18n.t("module.social.messages.template_new"))}</button>
+                                            <button type="submit" class="messages-template-save-btn">${escapeHtml(i18n.t("module.social.messages.template_save"))}</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -2143,21 +2272,122 @@ export async function mount(root, { signal } = {}) {
                 const composerPreviewToggle = document.getElementById(
                     "messages-composer-preview-toggle",
                 );
-                let isComposerPreviewMode = false;
+                const composerTemplatesToggle = document.getElementById(
+                    "messages-composer-templates-toggle",
+                );
+                const composerTemplatesPane = document.getElementById(
+                    "messages-composer-templates-pane",
+                );
+                const templateLibraryList = document.getElementById(
+                    "messages-template-library-list",
+                );
+                const templateEditor = document.getElementById(
+                    "messages-template-editor",
+                );
+                const templateTitleInput = document.getElementById(
+                    "messages-template-title",
+                );
+                const templateBodyInput = document.getElementById(
+                    "messages-template-body",
+                );
+                const templatePreview = document.getElementById(
+                    "messages-template-preview",
+                );
+                const templateResetButton = document.getElementById(
+                    "messages-template-reset-btn",
+                );
+                let composerMode = "compose";
+                let activeTemplateId = null;
                 const passiveEventOptions = signal ? { signal } : undefined;
+                const resolveSelectedRoomTemplateContent = (content) => {
+                    const selectedRoom = rooms.find(
+                        (room) => String(room.id) === String(selectedRoomId),
+                    );
+                    return resolveMessageTemplateVariables(
+                        content,
+                        selectedRoom,
+                        currentAccountId,
+                    );
+                };
                 const renderComposerPreview = () => {
                     if (!(composerPreview instanceof HTMLElement)) return;
                     const contentValue =
                         composerInput instanceof HTMLTextAreaElement
                             ? composerInput.value
                             : "";
+                    const resolvedContent =
+                        resolveSelectedRoomTemplateContent(contentValue);
                     composerPreview.innerHTML = renderComposerPreviewMarkup(
-                        contentValue,
+                        resolvedContent,
                         i18n.t("module.social.messages.preview_placeholder"),
                     );
                 };
+                const renderTemplateEditorPreview = () => {
+                    if (!(templatePreview instanceof HTMLElement)) return;
+                    const bodyValue =
+                        templateBodyInput instanceof HTMLTextAreaElement
+                            ? templateBodyInput.value
+                            : "";
+                    const resolvedContent =
+                        resolveSelectedRoomTemplateContent(bodyValue);
+                    templatePreview.innerHTML = renderComposerPreviewMarkup(
+                        resolvedContent,
+                        i18n.t("module.social.messages.preview_placeholder"),
+                    );
+                };
+                const renderTemplateLibrary = () => {
+                    if (!(templateLibraryList instanceof HTMLElement)) return;
+                    if (savedMessageTemplates.length === 0) {
+                        templateLibraryList.innerHTML = `<p class="messages-template-list-empty">${escapeHtml(i18n.t("module.social.messages.templates_empty"))}</p>`;
+                        return;
+                    }
+                    templateLibraryList.innerHTML = savedMessageTemplates
+                        .map((templateRecord) => {
+                            const isActive =
+                                String(templateRecord.id) ===
+                                String(activeTemplateId);
+                            return `<article class="messages-template-card${isActive ? " messages-template-card--active" : ""}" data-template-id="${escapeHtml(templateRecord.id)}">
+                                <h4 class="messages-template-card-title">${escapeHtml(templateRecord.title)}</h4>
+                                <p class="messages-template-card-snippet">${escapeHtml(templateRecord.content.slice(0, 120))}</p>
+                                <div class="messages-template-card-actions">
+                                    <button type="button" class="messages-template-card-btn" data-template-action="use" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(i18n.t("module.social.messages.template_use"))}</button>
+                                    <button type="button" class="messages-template-card-btn" data-template-action="edit" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(i18n.t("module.social.messages.template_edit"))}</button>
+                                    <button type="button" class="messages-template-card-btn" data-template-action="delete" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(i18n.t("module.social.messages.template_delete"))}</button>
+                                </div>
+                            </article>`;
+                        })
+                        .join("");
+                };
+                const resetTemplateEditor = () => {
+                    activeTemplateId = null;
+                    if (templateTitleInput instanceof HTMLInputElement) {
+                        templateTitleInput.value = "";
+                    }
+                    if (templateBodyInput instanceof HTMLTextAreaElement) {
+                        templateBodyInput.value = "";
+                    }
+                    renderTemplateEditorPreview();
+                    renderTemplateLibrary();
+                };
+                const editTemplateById = (templateId) => {
+                    const templateRecord = savedMessageTemplates.find(
+                        (entry) => String(entry.id) === String(templateId),
+                    );
+                    if (!templateRecord) return;
+                    activeTemplateId = templateRecord.id;
+                    if (templateTitleInput instanceof HTMLInputElement) {
+                        templateTitleInput.value = templateRecord.title;
+                    }
+                    if (templateBodyInput instanceof HTMLTextAreaElement) {
+                        templateBodyInput.value = templateRecord.content;
+                    }
+                    renderTemplateEditorPreview();
+                    renderTemplateLibrary();
+                };
                 const syncComposerMode = () => {
-                    const isComposeMode = !isComposerPreviewMode;
+                    const isComposeMode = composerMode === "compose";
+                    const isPreviewMode = composerMode === "preview";
+                    const isTemplatesMode = composerMode === "templates";
                     if (composerComposeToggle instanceof HTMLButtonElement) {
                         composerComposeToggle.setAttribute(
                             "aria-pressed",
@@ -2167,23 +2397,34 @@ export async function mount(root, { signal } = {}) {
                     if (composerPreviewToggle instanceof HTMLButtonElement) {
                         composerPreviewToggle.setAttribute(
                             "aria-pressed",
-                            String(isComposerPreviewMode),
+                            String(isPreviewMode),
+                        );
+                    }
+                    if (composerTemplatesToggle instanceof HTMLButtonElement) {
+                        composerTemplatesToggle.setAttribute(
+                            "aria-pressed",
+                            String(isTemplatesMode),
                         );
                     }
                     if (composerComposePane instanceof HTMLElement) {
-                        composerComposePane.hidden = isComposerPreviewMode;
+                        composerComposePane.hidden = !isComposeMode;
                     }
                     if (composerInput instanceof HTMLTextAreaElement) {
-                        composerInput.hidden = isComposerPreviewMode;
+                        composerInput.hidden = !isComposeMode;
                     }
                     if (composerSendButton instanceof HTMLButtonElement) {
-                        composerSendButton.hidden = isComposerPreviewMode;
+                        composerSendButton.hidden = !isComposeMode;
                     }
                     if (composerPreviewPane instanceof HTMLElement) {
-                        composerPreviewPane.hidden = !isComposerPreviewMode;
+                        composerPreviewPane.hidden = !isPreviewMode;
+                    }
+                    if (composerTemplatesPane instanceof HTMLElement) {
+                        composerTemplatesPane.hidden = !isTemplatesMode;
                     }
                 };
                 renderComposerPreview();
+                renderTemplateEditorPreview();
+                renderTemplateLibrary();
                 syncComposerMode();
 
                 threadList?.addEventListener(
@@ -2482,7 +2723,11 @@ export async function mount(root, { signal } = {}) {
                     const input = document.getElementById(
                         "messages-composer-input",
                     );
-                    const text = (input?.value ?? "").trim();
+                    const text = resolveMessageTemplateVariables(
+                        input?.value ?? "",
+                        currentRoom,
+                        currentAccountId,
+                    ).trim();
                     if (!text) return;
                     queueTypingUpdate(false);
                     const key = await getRoomKey(selectedRoomId);
@@ -2560,14 +2805,161 @@ export async function mount(root, { signal } = {}) {
                 });
                 composerComposeToggle?.addEventListener("click", () => {
                     if (composerInput?.disabled) return;
-                    isComposerPreviewMode = false;
+                    composerMode = "compose";
                     syncComposerMode();
                 });
                 composerPreviewToggle?.addEventListener("click", () => {
                     if (composerInput?.disabled) return;
-                    isComposerPreviewMode = true;
+                    composerMode = "preview";
                     syncComposerMode();
                     renderComposerPreview();
+                });
+                composerTemplatesToggle?.addEventListener("click", () => {
+                    if (composerInput?.disabled) return;
+                    composerMode = "templates";
+                    syncComposerMode();
+                    renderTemplateLibrary();
+                    renderTemplateEditorPreview();
+                });
+                templateLibraryList?.addEventListener("click", (clickEvent) => {
+                    const actionButton = clickEvent.target.closest(
+                        "[data-template-action]",
+                    );
+                    if (!(actionButton instanceof HTMLButtonElement)) return;
+                    const templateId = actionButton.dataset.templateId;
+                    if (!templateId) return;
+                    const action = actionButton.dataset.templateAction;
+                    if (action === "use") {
+                        const templateRecord = savedMessageTemplates.find(
+                            (entry) => String(entry.id) === String(templateId),
+                        );
+                        if (!templateRecord) return;
+                        if (composerInput instanceof HTMLTextAreaElement) {
+                            composerInput.value = resolveSelectedRoomTemplateContent(
+                                templateRecord.content,
+                            );
+                            queueTypingUpdate(
+                                Boolean((composerInput.value ?? "").trim()),
+                            );
+                        }
+                        renderComposerPreview();
+                        composerMode = "compose";
+                        syncComposerMode();
+                        return;
+                    }
+                    if (action === "edit") {
+                        editTemplateById(templateId);
+                        return;
+                    }
+                    if (action !== "delete") return;
+                    savedMessageTemplates = savedMessageTemplates.filter(
+                        (entry) => String(entry.id) !== String(templateId),
+                    );
+                    persistSavedMessageTemplates(savedMessageTemplates);
+                    if (String(activeTemplateId) === String(templateId)) {
+                        resetTemplateEditor();
+                    } else {
+                        renderTemplateLibrary();
+                    }
+                    showToast(
+                        i18n.t("module.social.messages.template_deleted"),
+                        { variant: "success" },
+                    );
+                });
+                templateEditor?.addEventListener("submit", (submitEvent) => {
+                    submitEvent.preventDefault();
+                    const titleValue =
+                        templateTitleInput instanceof HTMLInputElement
+                            ? templateTitleInput.value.trim()
+                            : "";
+                    const contentValue =
+                        templateBodyInput instanceof HTMLTextAreaElement
+                            ? templateBodyInput.value.trim()
+                            : "";
+                    if (!titleValue || !contentValue) {
+                        showToast(
+                            i18n.t("module.social.messages.template_invalid"),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    if (
+                        !activeTemplateId &&
+                        savedMessageTemplates.length >=
+                            MAX_SAVED_MESSAGE_TEMPLATES
+                    ) {
+                        showToast(
+                            i18n.t("module.social.messages.template_limit"),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    const templateRecord = {
+                        id:
+                            activeTemplateId ??
+                            `template-${Date.now().toString(36)}`,
+                        title: titleValue,
+                        content: contentValue,
+                    };
+                    const existingIndex = savedMessageTemplates.findIndex(
+                        (entry) => String(entry.id) === String(templateRecord.id),
+                    );
+                    if (existingIndex >= 0) {
+                        savedMessageTemplates = [
+                            ...savedMessageTemplates.slice(0, existingIndex),
+                            templateRecord,
+                            ...savedMessageTemplates.slice(existingIndex + 1),
+                        ];
+                    } else {
+                        savedMessageTemplates = [
+                            templateRecord,
+                            ...savedMessageTemplates,
+                        ];
+                    }
+                    persistSavedMessageTemplates(savedMessageTemplates);
+                    activeTemplateId = templateRecord.id;
+                    renderTemplateLibrary();
+                    showToast(i18n.t("module.social.messages.template_saved"), {
+                        variant: "success",
+                    });
+                });
+                templateResetButton?.addEventListener("click", () => {
+                    resetTemplateEditor();
+                    if (templateTitleInput instanceof HTMLInputElement) {
+                        templateTitleInput.focus();
+                    }
+                });
+                templateBodyInput?.addEventListener("input", () => {
+                    renderTemplateEditorPreview();
+                });
+                templateLibraryList?.addEventListener("mousedown", (event) => {
+                    if (
+                        event.target instanceof HTMLButtonElement &&
+                        event.target.dataset.templateAction
+                    ) {
+                        event.preventDefault();
+                    }
+                });
+                composerTemplatesPane?.addEventListener("click", (clickEvent) => {
+                    const tokenButton = clickEvent.target.closest(
+                        "[data-template-token]",
+                    );
+                    if (!(tokenButton instanceof HTMLButtonElement)) return;
+                    const token = String(
+                        tokenButton.dataset.templateToken ?? "",
+                    ).trim();
+                    if (!token) return;
+                    if (!(templateBodyInput instanceof HTMLTextAreaElement)) {
+                        return;
+                    }
+                    const start = templateBodyInput.selectionStart ?? 0;
+                    const end = templateBodyInput.selectionEnd ?? 0;
+                    const currentValue = templateBodyInput.value;
+                    templateBodyInput.value = `${currentValue.slice(0, start)}${token}${currentValue.slice(end)}`;
+                    const nextCursor = start + token.length;
+                    templateBodyInput.setSelectionRange(nextCursor, nextCursor);
+                    templateBodyInput.focus();
+                    renderTemplateEditorPreview();
                 });
 
                 if (selectedRoomId) {
