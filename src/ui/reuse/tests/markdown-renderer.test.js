@@ -16,6 +16,6 @@ test("renderMarkdown escapes HTML in markdown content", () => {
 });
 
 test("renderMarkdown does not render unsafe link protocols", () => {
-    const html = renderMarkdown("[x](javascript:alert(1))");
+    const html = renderMarkdown("[x](javascript:alert%281%29)");
     assert.equal(html, "<p>x</p>");
 });

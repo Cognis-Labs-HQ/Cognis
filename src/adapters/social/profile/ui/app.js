@@ -320,7 +320,7 @@ function renderHero() {
         profile?.bio || details
             ? `
       <div class="profile-hero-bio-wrap">
-        ${profile?.bio ? `<div class="profile-hero-bio profile-markdown">${renderMarkdown(String(profile.bio))}</div>` : ""}
+        ${profile?.bio ? `<div class="profile-hero-bio profile-markdown">${renderMarkdown(profile.bio ?? "")}</div>` : ""}
         ${details ? `<div class="profile-hero-details">${details}</div>` : ""}
       </div>
     `
@@ -666,7 +666,7 @@ function renderPostsList() {
             ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(i18n.t(`ui.app.profile.post_visibility.${p.visibility}`) || p.visibility)}</span>` : ""}
             <time class="profile-post-date" datetime="${escapeHtml(p.createdAt ?? "")}">${formatDate(p.createdAt)}</time>
           </div>
-          <div class="profile-post-body profile-markdown">${renderMarkdown(String(p.content ?? ""))}</div>
+          <div class="profile-post-body profile-markdown">${renderMarkdown(p.content ?? "")}</div>
           ${
               isOwnProfile
                   ? `<div class="profile-post-actions">
