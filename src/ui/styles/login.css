@@ -213,6 +213,17 @@ p.auth-intro {
     border-radius: 6px;
 }
 
+.auth-reset-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.auth-reset-actions button {
+    flex: 1;
+    margin-top: 0;
+}
+
 @keyframes blink-cursor {
     0%,
     45% {

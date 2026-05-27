@@ -240,20 +240,22 @@ export async function mount(root) {
         );
         if (!credentialFields) return;
         credentialFields.innerHTML = `
-            <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
             <label>
                 <span>${escapeHtml(i18n.t("ui.app.login.login_link.email"))}</span>
                 <input id="login-link-email" type="email" autocomplete="email"
                     placeholder="${escapeHtml(i18n.t("ui.app.login.login_link.email"))}"
                     required />
             </label>
-            <button type="button" id="login-link-submit" class="btn-animated">
-                ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
-            </button>
-            <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
-                ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
-            </button>
+            <div class="auth-reset-actions">
+                <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+                </button>
+                <button type="button" id="login-link-submit" class="btn-animated">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
+                </button>
+            </div>
         `;
+        enterPasswordResetMode();
         const submitBtn = document.querySelector("#login-link-submit");
         const backLink = document.querySelector("#login-link-back");
         const emailInput = document.querySelector("#login-link-email");
@@ -276,17 +278,31 @@ export async function mount(root) {
         );
         if (!credentialFields) return;
         credentialFields.innerHTML = `
-            <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
             <p class="auth-link-unavailable-message">${buildSupportMessage(contactEmail)}</p>
             <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
                 ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
             </button>
         `;
+        enterPasswordResetMode();
         document
             .querySelector("#login-link-back")
             ?.addEventListener("click", () => {
                 composer.refresh();
             });
+    }
+
+    function enterPasswordResetMode() {
+        const heading = document.querySelector(".auth-heading");
+        if (heading)
+            heading.textContent = i18n.t("ui.app.login.login_link.title");
+        const loginSubmit = document.querySelector(
+            '#login-form button[type="submit"]',
+        );
+        if (loginSubmit) loginSubmit.hidden = true;
+        const signupCallout = document.querySelector(
+            "#login-form .in-page-callout",
+        );
+        if (signupCallout) signupCallout.hidden = true;
     }
 
     async function handleRequestLinkClick() {
@@ -346,7 +362,6 @@ export async function mount(root) {
         );
         if (!credentialFields) return;
         credentialFields.innerHTML = `
-            <p class="auth-link-form-heading">${escapeHtml(i18n.t("ui.app.login.login_link.title"))}</p>
             <label>
                 <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
                 <input id="login-link-password" type="password" autocomplete="new-password"
@@ -359,13 +374,16 @@ export async function mount(root) {
                     placeholder="${escapeHtml(i18n.t("ui.app.register.confirm_password"))}"
                     required />
             </label>
-            <button type="button" id="login-link-submit" class="btn-animated">
-                ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
-            </button>
-            <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
-                ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
-            </button>
+            <div class="auth-reset-actions">
+                <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+                </button>
+                <button type="button" id="login-link-submit" class="btn-animated">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
+                </button>
+            </div>
         `;
+        enterPasswordResetMode();
         document
             .querySelector("#login-link-submit")
             ?.addEventListener("click", async () => {
