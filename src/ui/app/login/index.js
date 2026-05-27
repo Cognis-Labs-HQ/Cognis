@@ -35,6 +35,7 @@ export async function mount(root) {
     let loginReasonToastShown = false;
 
     let publicRegistrationEnabled = false;
+    let isPasswordResetMode = false;
     try {
         const regConfigRes = await fetch("/api/v1/auth/registration-config");
         if (regConfigRes.ok) {
@@ -292,6 +293,7 @@ export async function mount(root) {
     }
 
     function enterPasswordResetMode() {
+        isPasswordResetMode = true;
         const heading = document.querySelector(".auth-heading");
         if (heading)
             heading.textContent = i18n.t("ui.app.login.login_link.title");
@@ -356,11 +358,29 @@ export async function mount(root) {
         showToast(i18n.t("ui.app.login.error.generic"), { variant: "error" });
     }
 
-    function renderPasswordResetForm(token) {
+    function showPasswordResetLinkInvalid() {
         const credentialFields = document.querySelector(
             "#login-credential-fields",
         );
         if (!credentialFields) return;
+        credentialFields.innerHTML = renderInPageCallout({
+            variant: "danger",
+            title: i18n.t("ui.reuse.error"),
+            body: i18n.t("ui.app.login.login_link.invalid"),
+        });
+        enterPasswordResetMode();
+    }
+
+    function renderPasswordResetForm(token, showBackButton = true) {
+        const credentialFields = document.querySelector(
+            "#login-credential-fields",
+        );
+        if (!credentialFields) return;
+        const backButtonHtml = showBackButton
+            ? `<button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
+                    ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
+                </button>`
+            : "";
         credentialFields.innerHTML = `
             <label>
                 <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
@@ -375,9 +395,7 @@ export async function mount(root) {
                     required />
             </label>
             <div class="auth-reset-actions">
-                <button type="button" id="login-link-back" class="btn-animated auth-secondary-action">
-                    ${escapeHtml(i18n.t("ui.app.login.login_link.back"))}
-                </button>
+                ${backButtonHtml}
                 <button type="button" id="login-link-submit" class="btn-animated">
                     ${escapeHtml(i18n.t("ui.app.login.login_link.submit"))}
                 </button>
@@ -440,12 +458,14 @@ export async function mount(root) {
                     },
                 );
             });
-        document
-            .querySelector("#login-link-back")
-            ?.addEventListener("click", () => {
-                window.history.replaceState({}, "", "/login");
-                composer.refresh();
-            });
+        if (showBackButton) {
+            document
+                .querySelector("#login-link-back")
+                ?.addEventListener("click", () => {
+                    window.history.replaceState({}, "", "/login");
+                    composer.refresh();
+                });
+        }
     }
 
     async function consumePasswordResetToken() {
@@ -456,7 +476,14 @@ export async function mount(root) {
         ).trim();
         if (!loginToken) return;
         passwordResetTokenHandled = true;
-        renderPasswordResetForm(loginToken);
+        const checkRes = await fetch(
+            `/api/v1/auth/check-login-link?token=${encodeURIComponent(loginToken)}`,
+        );
+        if (!checkRes.ok) {
+            showPasswordResetLinkInvalid();
+            return;
+        }
+        renderPasswordResetForm(loginToken, false);
     }
 
     function renderLoginShell() {
@@ -569,6 +596,12 @@ export async function mount(root) {
                         .querySelector("#login-form")
                         ?.addEventListener("submit", async (event) => {
                             event.preventDefault();
+                            if (isPasswordResetMode) {
+                                document
+                                    .querySelector("#login-link-submit")
+                                    ?.click();
+                                return;
+                            }
                             const form = event.target;
                             const tfaFields =
                                 form.querySelector("#login-tfa-fields");

@@ -1062,6 +1062,29 @@ function createAuthGatewayRoutes(
         }
 
         if (
+            url.pathname === "/api/v1/auth/check-login-link" &&
+            req.method === "GET"
+        ) {
+            const rawToken = String(url.searchParams.get("token") ?? "").trim();
+            const claims = rawToken ? verifyAccessToken(rawToken) : null;
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_token",
+                            message: "Invalid or expired login link",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { valid: true } }));
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/auth/consume-login-link" &&
             req.method === "POST"
         ) {
