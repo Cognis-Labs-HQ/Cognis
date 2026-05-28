@@ -120,6 +120,7 @@ function createAdapterMock(): TfaMethodAdapter {
             message:
                 payload.code === "123456" ? undefined : "invalid_totp_code",
         }),
+        beginLoginChallenge: async () => ({ ready: true }),
         getConfigSchema: () => [],
         configure: () => undefined,
     };
@@ -174,4 +175,33 @@ test("tfa gateway dispatches low recovery-code notification after recovery login
     assert.equal(notifications.length, 1);
     assert.equal(notifications[0].category, "security");
     assert.equal(notifications[0].recipientUsername, "alice");
+});
+
+test("tfa gateway excludes methods when login challenge is not ready", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({
+            pendingPayload: {},
+            view: { prompt: "prompt" },
+        }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        beginLoginChallenge: async () => ({ ready: false }),
+        verifyLogin: async () => ({ verified: false }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    await gateway.enableAdapter("smtp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "smtp",
+        enabled: true,
+        sortOrder: 0,
+        state: { email: "alice@example.com" },
+        configuredAt: new Date().toISOString(),
+    });
+    const methods = await gateway.getLoginMethods("alice");
+    assert.equal(methods.some((method) => method.id === "smtp"), false);
 });

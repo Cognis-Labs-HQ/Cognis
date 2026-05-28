@@ -49,6 +49,10 @@ export interface TfaMethodAdapter {
         state: Record<string, unknown>;
         payload: Record<string, unknown>;
     }): Promise<{ verified: boolean; message?: string }>;
+    beginLoginChallenge?(input: {
+        accountId: string;
+        state: Record<string, unknown>;
+    }): Promise<{ ready: boolean; message?: string }>;
     renderMethodDetails?(input: {
         accountId: string;
         state: Record<string, unknown>;
@@ -119,6 +123,7 @@ export class CoreTfaGateway {
         private readonly store: DbTfaStore,
         private readonly options: {
             dispatchNotification?: NotifyDispatch;
+            adapterFactoryContext?: Record<string, unknown>;
             log?: (
                 level: string,
                 message: string,
@@ -506,10 +511,50 @@ export class CoreTfaGateway {
         accountId: string,
     ): Promise<Array<{ id: string; name: string }>> {
         const status = await this.getUserStatus(accountId);
-        const methods = status.enabledMethods.map((method) => ({
-            id: method.id,
-            name: method.name,
-        }));
+        const configuredMethods = await this.store.listUserMethods(accountId);
+        const configuredStateByMethodId = new Map(
+            configuredMethods
+                .filter((method) => method.enabled)
+                .map((method) => [method.methodId, method.state]),
+        );
+        const methods: Array<{ id: string; name: string }> = [];
+        for (const method of status.enabledMethods) {
+            const adapter = this.adapters.get(method.id);
+            if (!adapter || !this.enabledAdapters.has(method.id)) {
+                continue;
+            }
+            if (typeof adapter.beginLoginChallenge === "function") {
+                try {
+                    const challenge = await adapter.beginLoginChallenge({
+                        accountId,
+                        state: configuredStateByMethodId.get(method.id) ?? {},
+                    });
+                    if (!challenge.ready) {
+                        continue;
+                    }
+                } catch (error) {
+                    this.options.log?.(
+                        "error",
+                        "Failed to prepare TFA login challenge.",
+                        {
+                            component: "tfa-gateway",
+                            operation: "prepare_login_challenge",
+                            accountId,
+                            methodId: method.id,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    continue;
+                }
+            }
+            methods.push({
+                id: method.id,
+                name: method.name,
+            });
+        }
         if (status.hasRecoveryCodes) {
             methods.push({ id: "recovery_code", name: "Recovery Code" });
         }
@@ -601,7 +646,9 @@ export class CoreTfaGateway {
                 );
                 const module = await import(`${entryPath}?t=${Date.now()}`);
                 if (typeof module.createAdapter !== "function") continue;
-                const adapter = module.createAdapter() as TfaMethodAdapter;
+                const adapter = module.createAdapter(
+                    this.options.adapterFactoryContext ?? {},
+                ) as TfaMethodAdapter;
                 this.registerAdapter(adapter);
             } catch {
                 // Skip broken adapters

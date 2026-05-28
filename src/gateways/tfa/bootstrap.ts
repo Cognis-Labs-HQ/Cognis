@@ -32,11 +32,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 metadata?: Record<string, unknown>;
             }) => Promise<unknown>
         >("notify:dispatch");
+    const canSendVerificationEmail = ctx.capabilities.get<() => boolean>(
+        "notify:canSendVerificationEmail",
+    );
+    const sendVerificationEmail = ctx.capabilities.get<
+        (
+            to: string,
+            code: string,
+            verifyUrl?: string,
+            theme?: string,
+        ) => Promise<void>
+    >("notify:sendVerificationEmail");
+    const getPrimaryEmail = ctx.capabilities.get<
+        (accountId: string) => Promise<string | null>
+    >("notify:getPrimaryEmail");
     const registerNotificationCategory = ctx.capabilities.get<
         (id: string, label: string) => void
     >("notify:registerCategory");
     const gateway = new CoreTfaGateway(store, {
         dispatchNotification,
+        adapterFactoryContext: {
+            canSendVerificationEmail,
+            sendVerificationEmail,
+            getPrimaryEmail,
+            log: ctx.log,
+        },
         log: ctx.log,
     });
     const revokeSetupPendingAccessTokens = ctx.capabilities.get<
@@ -61,7 +81,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.0.4",
+        version: "1.0.5",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs HQ",
@@ -89,6 +109,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: [
             "/static/gateways/tfa/languages",
             "/static/adapters/tfa/totp/languages",
+            "/static/adapters/tfa/smtp/languages",
         ],
     });
     registerLimitedAuthPathAllowance("tfa", (path, _accountId) => {
