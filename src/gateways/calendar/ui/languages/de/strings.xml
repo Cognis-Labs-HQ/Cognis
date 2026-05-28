@@ -1,0 +1,20 @@
+<resources>
+  <string name="gateway.calendar.page_title">Kalender</string>
+  <string name="gateway.calendar.page_subtitle">Kalender und Termine erstellen und Feeds exportieren.</string>
+  <string name="gateway.calendar.my_calendars">Meine Kalender</string>
+  <string name="gateway.calendar.events">Termine</string>
+  <string name="gateway.calendar.no_calendars">Du hast noch keine Kalender.</string>
+  <string name="gateway.calendar.no_events">Für diesen Kalender sind keine Termine geplant.</string>
+  <string name="gateway.calendar.visibility_private">Privat</string>
+  <string name="gateway.calendar.visibility_public">Öffentlich</string>
+  <string name="gateway.calendar.calendar_name_placeholder">Kalendername</string>
+  <string name="gateway.calendar.create_calendar">Kalender erstellen</string>
+  <string name="gateway.calendar.create_calendar_success">Kalender erstellt.</string>
+  <string name="gateway.calendar.create_calendar_failed">Kalender konnte nicht erstellt werden.</string>
+  <string name="gateway.calendar.event_title_placeholder">Termintitel</string>
+  <string name="gateway.calendar.attendees_placeholder">Einladungen (Komma-getrennte Benutzernamen)</string>
+  <string name="gateway.calendar.create_event">Termin erstellen</string>
+  <string name="gateway.calendar.create_event_success">Termin erstellt.</string>
+  <string name="gateway.calendar.create_event_failed">Termin konnte nicht erstellt werden.</string>
+  <string name="gateway.calendar.load_failed">Kalender konnten nicht geladen werden.</string>
+</resources>

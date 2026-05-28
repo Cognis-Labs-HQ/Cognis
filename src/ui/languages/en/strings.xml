@@ -3,6 +3,7 @@
   <string name="ui.reuse.dashboard">Dashboard</string>
   <string name="ui.reuse.messages">Messages</string>
   <string name="ui.reuse.study">Study</string>
+  <string name="ui.reuse.calendar">Calendar</string>
   <string name="ui.reuse.profile">Profile</string>
   <string name="ui.reuse.settings">Settings</string>
   <string name="ui.reuse.docs">Docs</string>

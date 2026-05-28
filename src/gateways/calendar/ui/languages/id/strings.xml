@@ -1,0 +1,20 @@
+<resources>
+  <string name="gateway.calendar.page_title">Kalender</string>
+  <string name="gateway.calendar.page_subtitle">Buat kalender, acara, dan ekspor feed.</string>
+  <string name="gateway.calendar.my_calendars">Kalender Saya</string>
+  <string name="gateway.calendar.events">Acara</string>
+  <string name="gateway.calendar.no_calendars">Anda belum memiliki kalender.</string>
+  <string name="gateway.calendar.no_events">Belum ada acara di kalender ini.</string>
+  <string name="gateway.calendar.visibility_private">Privat</string>
+  <string name="gateway.calendar.visibility_public">Publik</string>
+  <string name="gateway.calendar.calendar_name_placeholder">Nama kalender</string>
+  <string name="gateway.calendar.create_calendar">Buat Kalender</string>
+  <string name="gateway.calendar.create_calendar_success">Kalender dibuat.</string>
+  <string name="gateway.calendar.create_calendar_failed">Kalender tidak dapat dibuat.</string>
+  <string name="gateway.calendar.event_title_placeholder">Judul acara</string>
+  <string name="gateway.calendar.attendees_placeholder">Undangan (nama pengguna dipisah koma)</string>
+  <string name="gateway.calendar.create_event">Buat Acara</string>
+  <string name="gateway.calendar.create_event_success">Acara dibuat.</string>
+  <string name="gateway.calendar.create_event_failed">Acara tidak dapat dibuat.</string>
+  <string name="gateway.calendar.load_failed">Kalender tidak dapat dimuat.</string>
+</resources>
