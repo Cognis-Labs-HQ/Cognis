@@ -75,6 +75,10 @@ type CalendarBootstrapBaseCtx = Omit<
     "adapterId" | "adapterRoot" | "isAdapterEnabled"
 >;
 
+/**
+ * Escapes text for ICS fields.
+ * RFC 5545 requires escaping backslashes, semicolons, commas, and new lines.
+ */
 function escapeIcsText(value: string): string {
     return value
         .replaceAll("\\", "\\\\")
@@ -94,12 +98,16 @@ function formatIcsDate(dateInput: string): string {
     return parsed.toISOString().replace(/[-:]/g, "").replace(".000", "");
 }
 
-function parseIcsDate(value: string): string {
+/**
+ * Parses compact ICS datetime values (`YYYYMMDDTHHMMSSZ`) into ISO strings.
+ * Returns null when the input does not match the expected datetime format.
+ */
+function parseIcsDate(value: string): string | null {
     const compact = value.trim();
     const match = compact.match(
         /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/,
     );
-    if (!match) return new Date().toISOString();
+    if (!match) return null;
     const [, year, month, day, hour, minute, second] = match;
     return new Date(
         Date.UTC(
@@ -113,6 +121,10 @@ function parseIcsDate(value: string): string {
     ).toISOString();
 }
 
+/**
+ * Extracts a normalized attendee identifier from ICS attendee lines.
+ * Supports values such as `ATTENDEE;CN=Name:mailto:user@example.com`.
+ */
 function parseIcsAttendee(value: string): string | null {
     const normalized = value.trim();
     const mailToMatch = normalized.match(/mailto:([^;\s]+)/i);
@@ -123,6 +135,16 @@ function parseIcsAttendee(value: string): string | null {
         return normalized.split(":").at(-1)?.trim().toLowerCase() ?? null;
     }
     return normalized ? normalized.toLowerCase() : null;
+}
+
+function normalizeAttendeeList(attendees: string[]): string[] {
+    return Array.from(
+        new Set(
+            attendees
+                .map((entry) => String(entry ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
 }
 
 export class CoreCalendarGateway {
@@ -284,12 +306,8 @@ export class CoreCalendarGateway {
             throw new Error("calendar_invalid_range");
         }
 
-        const normalizedAttendees = Array.from(
-            new Set(
-                (input.attendees ?? [])
-                    .map((entry) => String(entry ?? "").trim())
-                    .filter(Boolean),
-            ),
+        const normalizedAttendees = normalizeAttendeeList(
+            input.attendees ?? [],
         );
 
         const now = new Date().toISOString();
@@ -422,15 +440,21 @@ export class CoreCalendarGateway {
             }
             if (line === "END:VEVENT") {
                 if (current?.summary && current.dtstart && current.dtend) {
+                    const startIso = parseIcsDate(current.dtstart);
+                    const endIso = parseIcsDate(current.dtend);
+                    if (!startIso || !endIso) {
+                        current = null;
+                        continue;
+                    }
                     importedEvents.push(
                         this.addEvent({
                             ownerAccountId: input.ownerAccountId,
                             calendarId: input.calendarId,
                             title: current.summary,
                             description: current.description ?? null,
-                            startAt: parseIcsDate(current.dtstart),
-                            endAt: parseIcsDate(current.dtend),
-                            attendees: current.attendees,
+                            startAt: startIso,
+                            endAt: endIso,
+                            attendees: normalizeAttendeeList(current.attendees),
                         }),
                     );
                 }

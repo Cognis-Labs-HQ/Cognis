@@ -64,7 +64,7 @@ function renderEventsList(events, i18n) {
         .join("")}</ul>`;
 }
 
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
     });
@@ -125,96 +125,115 @@ export async function mount(root) {
                     const createForm = root.querySelector(
                         "#calendar-create-form",
                     );
-                    createForm?.addEventListener("submit", async (event) => {
-                        event.preventDefault();
-                        const name = String(
-                            root.querySelector("#calendar-name")?.value ?? "",
-                        ).trim();
-                        const visibility = String(
-                            root.querySelector("#calendar-visibility")?.value ??
-                                "private",
-                        );
-                        if (!name) return;
-                        const response = await apiFetch(
-                            "/api/v1/calendar/calendars",
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({ name, visibility }),
-                            },
-                        );
-                        if (!response.ok) {
+                    createForm?.addEventListener(
+                        "submit",
+                        async (event) => {
+                            event.preventDefault();
+                            const name = String(
+                                root.querySelector("#calendar-name")?.value ??
+                                    "",
+                            ).trim();
+                            const visibility = String(
+                                root.querySelector("#calendar-visibility")
+                                    ?.value ?? "private",
+                            );
+                            if (!name) return;
+                            const response = await apiFetch(
+                                "/api/v1/calendar/calendars",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    body: JSON.stringify({ name, visibility }),
+                                },
+                            );
+                            if (!response.ok) {
+                                showToast(
+                                    i18n.t(
+                                        "gateway.calendar.create_calendar_failed",
+                                    ),
+                                    "error",
+                                );
+                                return;
+                            }
                             showToast(
                                 i18n.t(
-                                    "gateway.calendar.create_calendar_failed",
+                                    "gateway.calendar.create_calendar_success",
                                 ),
-                                "error",
+                                "success",
                             );
-                            return;
-                        }
-                        showToast(
-                            i18n.t("gateway.calendar.create_calendar_success"),
-                            "success",
-                        );
-                        navigateTo("/calendar");
-                    });
+                            navigateTo("/calendar");
+                        },
+                        { signal },
+                    );
 
                     const eventForm = root.querySelector(
                         "#calendar-event-form",
                     );
-                    eventForm?.addEventListener("submit", async (event) => {
-                        event.preventDefault();
-                        if (!selectedCalendarId) return;
-                        const title = String(
-                            root.querySelector("#calendar-event-title")
-                                ?.value ?? "",
-                        ).trim();
-                        const startAt = String(
-                            root.querySelector("#calendar-event-start")
-                                ?.value ?? "",
-                        ).trim();
-                        const endAt = String(
-                            root.querySelector("#calendar-event-end")?.value ??
-                                "",
-                        ).trim();
-                        const attendeesRaw = String(
-                            root.querySelector("#calendar-event-attendees")
-                                ?.value ?? "",
-                        ).trim();
-                        const attendees = attendeesRaw
-                            ? attendeesRaw
-                                  .split(",")
-                                  .map((entry) => entry.trim())
-                                  .filter(Boolean)
-                            : [];
-                        const response = await apiFetch(
-                            `/api/v1/calendar/calendars/${encodeURIComponent(selectedCalendarId)}/events`,
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({
-                                    title,
-                                    startAt: new Date(startAt).toISOString(),
-                                    endAt: new Date(endAt).toISOString(),
-                                    attendees,
-                                }),
-                            },
-                        );
-                        if (!response.ok) {
-                            showToast(
-                                i18n.t("gateway.calendar.create_event_failed"),
-                                "error",
+                    eventForm?.addEventListener(
+                        "submit",
+                        async (event) => {
+                            event.preventDefault();
+                            if (!selectedCalendarId) return;
+                            const title = String(
+                                root.querySelector("#calendar-event-title")
+                                    ?.value ?? "",
+                            ).trim();
+                            const startAt = String(
+                                root.querySelector("#calendar-event-start")
+                                    ?.value ?? "",
+                            ).trim();
+                            const endAt = String(
+                                root.querySelector("#calendar-event-end")
+                                    ?.value ?? "",
+                            ).trim();
+                            const attendeesRaw = String(
+                                root.querySelector("#calendar-event-attendees")
+                                    ?.value ?? "",
+                            ).trim();
+                            const attendees = attendeesRaw
+                                ? attendeesRaw
+                                      .split(",")
+                                      .map((entry) => entry.trim())
+                                      .filter(Boolean)
+                                : [];
+                            const response = await apiFetch(
+                                `/api/v1/calendar/calendars/${encodeURIComponent(selectedCalendarId)}/events`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        title,
+                                        startAt: new Date(
+                                            startAt,
+                                        ).toISOString(),
+                                        endAt: new Date(endAt).toISOString(),
+                                        attendees,
+                                    }),
+                                },
                             );
-                            return;
-                        }
-                        showToast(
-                            i18n.t("gateway.calendar.create_event_success"),
-                            "success",
-                        );
-                        navigateTo(
-                            `/calendar?calendarId=${encodeURIComponent(selectedCalendarId)}`,
-                        );
-                    });
+                            if (!response.ok) {
+                                showToast(
+                                    i18n.t(
+                                        "gateway.calendar.create_event_failed",
+                                    ),
+                                    "error",
+                                );
+                                return;
+                            }
+                            showToast(
+                                i18n.t("gateway.calendar.create_event_success"),
+                                "success",
+                            );
+                            navigateTo(
+                                `/calendar?calendarId=${encodeURIComponent(selectedCalendarId)}`,
+                            );
+                        },
+                        { signal },
+                    );
                 },
             },
         ],
