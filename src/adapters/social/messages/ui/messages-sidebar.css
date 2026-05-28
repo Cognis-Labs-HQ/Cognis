@@ -53,6 +53,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: none;
+}
+
+button.messages-sidebar-template-load-btn:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
+    transform: none;
+    border-color: transparent;
 }
 
 .messages-sidebar-template-load-btn:hover {
@@ -77,6 +83,7 @@
     border-radius: 0.3rem;
     line-height: 1;
     border: 1px solid;
+    transition: none;
 }
 
 .toolbar .messages-sidebar-template-edit-btn,
@@ -110,8 +117,8 @@
 
 .messages-template-edit-icon {
     display: inline-block;
-    width: 11px;
-    height: 11px;
+    width: 16.5px;
+    height: 16.5px;
     background-color: currentColor;
     -webkit-mask-image: url("/static/assets/reuse/edit.svg");
     mask-image: url("/static/assets/reuse/edit.svg");
@@ -122,6 +129,10 @@
     -webkit-mask-position: center;
     mask-position: center;
     vertical-align: middle;
+}
+
+.messages-sidebar-template-delete-btn {
+    font-size: 1.08rem;
 }
 
 .messages-sidebar-menu-btn {
