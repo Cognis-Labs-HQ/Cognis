@@ -8,6 +8,7 @@
   <string name="module.social.messages.new">Neue Unterhaltung</string>
   <string name="module.social.messages.load_earlier">Frühere laden</string>
   <string name="module.social.messages.start_failed">Konversation konnte nicht gestartet werden.</string>
+  <string name="module.social.messages.request_action_failed">Nachrichtenanfrage konnte nicht aktualisiert werden.</string>
   <string name="module.social.messages.members">Mitglieder</string>
   <string name="module.social.messages.set_avatar">Avatar festlegen</string>
   <string name="module.social.messages.leave_conversation">Konversation Verlassen</string>
