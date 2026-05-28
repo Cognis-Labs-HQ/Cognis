@@ -84,9 +84,14 @@ function normalizeMessageTemplateRecord(record) {
     };
 }
 
-function loadSavedMessageTemplates() {
+function templateStorageKey(accountId) {
+    return `${MESSAGE_TEMPLATES_STORAGE_KEY}:${accountId}`;
+}
+
+function loadSavedMessageTemplates(accountId) {
+    if (!accountId) return [];
     try {
-        const raw = localStorage.getItem(MESSAGE_TEMPLATES_STORAGE_KEY);
+        const raw = localStorage.getItem(templateStorageKey(accountId));
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         if (!Array.isArray(parsed)) return [];
@@ -98,14 +103,15 @@ function loadSavedMessageTemplates() {
     }
 }
 
-function persistSavedMessageTemplates(templates) {
+function persistSavedMessageTemplates(templates, accountId) {
+    if (!accountId) return;
     const normalizedTemplates = Array.isArray(templates)
         ? templates
               .map((entry) => normalizeMessageTemplateRecord(entry))
               .filter(Boolean)
         : [];
     localStorage.setItem(
-        MESSAGE_TEMPLATES_STORAGE_KEY,
+        templateStorageKey(accountId),
         JSON.stringify(normalizedTemplates),
     );
 }
@@ -1423,7 +1429,7 @@ export async function mount(root, { signal } = {}) {
     let pendingBannerSlotElement = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
-    let savedMessageTemplates = loadSavedMessageTemplates();
+    let savedMessageTemplates = loadSavedMessageTemplates(currentAccountId);
     let openTemplatesPopupFromSidebar = null;
 
     const renderSidebarTemplateList = () => {
@@ -2485,7 +2491,10 @@ export async function mount(root, { signal } = {}) {
                                     ...savedMessageTemplates,
                                 ];
                             }
-                            persistSavedMessageTemplates(savedMessageTemplates);
+                            persistSavedMessageTemplates(
+                                savedMessageTemplates,
+                                currentAccountId,
+                            );
                             renderSidebarTemplateList();
                             showToast(
                                 i18n.t("module.social.messages.template_saved"),
@@ -3153,7 +3162,10 @@ export async function mount(root, { signal } = {}) {
             savedMessageTemplates = savedMessageTemplates.filter(
                 (entry) => String(entry.id) !== String(templateId),
             );
-            persistSavedMessageTemplates(savedMessageTemplates);
+            persistSavedMessageTemplates(
+                savedMessageTemplates,
+                currentAccountId,
+            );
             renderSidebarTemplateList();
             showToast(i18n.t("module.social.messages.template_deleted"), {
                 variant: "success",

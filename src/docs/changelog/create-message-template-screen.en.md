@@ -16,6 +16,10 @@ The popup submit button now reads "Create" when adding a new template and "Save"
 
 The chat list and template list each have their own scroll region so a large number of conversations never pushes the templates section out of view.
 
-## Template edit and delete buttons refined
+## Templates scoped per account
 
-Edit and delete buttons now sit immediately beside the template name and are as compact as possible. The edit button uses the same icon as the page layout editor. The edit button is styled neutrally and the delete button is styled as a warning action.
+Saved message templates are now isolated to the account that created them. On a shared device, switching accounts shows only that account's own templates instead of those from a previous session.
+
+## Composer text preserved across layout rerenders
+
+Unsent text typed in the message composer is no longer lost when the page recompositor rebuilds the layout grid, such as when crossing a responsive column breakpoint.

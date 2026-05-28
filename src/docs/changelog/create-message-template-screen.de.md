@@ -16,6 +16,10 @@ Die Senden-Schaltfläche des Popups zeigt nun „Erstellen" beim Anlegen einer n
 
 Die Gesprächsliste und die Vorlagenliste verfügen jeweils über einen eigenen Scrollbereich, sodass viele Gespräche den Vorlagenabschnitt nie aus dem sichtbaren Bereich drängen.
 
-## Bearbeiten- und Löschen-Schaltflächen der Vorlagen überarbeitet
+## Vorlagen pro Konto isoliert
 
-Die Schaltflächen zum Bearbeiten und Löschen befinden sich jetzt direkt neben dem Vorlagennamen und sind so kompakt wie möglich. Die Bearbeiten-Schaltfläche verwendet dasselbe Symbol wie der Seitenlayout-Editor. Die Bearbeiten-Schaltfläche ist neutral gestaltet, die Löschen-Schaltfläche als Warnungsaktion.
+Gespeicherte Nachrichtenvorlagen sind nun auf das Konto beschränkt, das sie erstellt hat. Auf einem gemeinsam genutzten Gerät werden nach dem Kontowechsel nur noch die eigenen Vorlagen des aktuellen Kontos angezeigt.
+
+## Kompositortext bleibt bei Layout-Neuaufbau erhalten
+
+Eingetippter, noch nicht gesendeter Text im Nachrichtenkompositor geht nicht mehr verloren, wenn der Seitenkompositor das Layout-Raster neu aufbaut, etwa beim Überschreiten eines responsiven Spaltenumbruchpunkts.

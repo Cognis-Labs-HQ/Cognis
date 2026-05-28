@@ -16,6 +16,10 @@ Tombol kirim popup kini menampilkan "Buat" saat menambahkan templat baru dan "Si
 
 Daftar percakapan dan daftar templat masing-masing memiliki area gulir tersendiri sehingga banyaknya percakapan tidak pernah menyembunyikan bagian templat dari tampilan.
 
-## Tombol ubah dan hapus templat disempurnakan
+## Templat terisolasi per akun
 
-Tombol ubah dan hapus kini berada tepat di sebelah nama templat dan seringkas mungkin. Tombol ubah menggunakan ikon yang sama dengan editor tata letak halaman. Tombol ubah ditampilkan secara netral dan tombol hapus sebagai tindakan peringatan.
+Templat pesan yang disimpan kini terisolasi untuk akun yang membuatnya. Di perangkat bersama, mengganti akun hanya akan menampilkan templat milik akun tersebut, bukan milik sesi sebelumnya.
+
+## Teks komposer dipertahankan saat tata letak dibangun ulang
+
+Teks yang diketik di komposer pesan yang belum dikirim tidak lagi hilang ketika kompositor halaman membangun ulang kisi tata letak, seperti saat melewati titik putus kolom responsif.

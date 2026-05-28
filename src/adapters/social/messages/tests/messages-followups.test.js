@@ -343,3 +343,26 @@ test("requireRoomKey throws detailed errors on failure", async () => {
         },
     );
 });
+
+test("messages saved templates are scoped to the current account", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function loadSavedMessageTemplates\(accountId\)/);
+    assert.match(
+        source,
+        /function persistSavedMessageTemplates\(templates, accountId\)/,
+    );
+    assert.match(source, /function templateStorageKey\(accountId\)/);
+    assert.match(
+        source,
+        /`\$\{MESSAGE_TEMPLATES_STORAGE_KEY\}:\$\{accountId\}`/,
+    );
+    assert.match(source, /loadSavedMessageTemplates\(currentAccountId\)/);
+    assert.match(
+        source,
+        /persistSavedMessageTemplates\(\s*savedMessageTemplates,\s*currentAccountId,?\s*\)/m,
+    );
+});

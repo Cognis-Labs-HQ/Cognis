@@ -260,6 +260,18 @@ test("page composer persists drafts and renders large-form draft reset control",
     assert.match(source, /i18n\.t\("ui\.reuse\.reset_draft"\)/);
 });
 
+test("page composer preserves excluded form values in transient snapshots across rerenders", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /if \(persistableOnly && isExcludedFromFormMemory\(field\)\)/,
+    );
+});
+
 test("page composer preserves missing placements and shows warning placeholders", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer/init.js"),

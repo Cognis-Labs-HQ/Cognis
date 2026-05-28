@@ -422,7 +422,7 @@ export function createPageComposer(
                     if (field.type === "file") {
                         return;
                     }
-                    if (isExcludedFromFormMemory(field)) {
+                    if (persistableOnly && isExcludedFromFormMemory(field)) {
                         return;
                     }
                     if (persistableOnly && isSensitiveDraftField(field)) {
@@ -453,7 +453,6 @@ export function createPageComposer(
                 if (!fieldMap) return;
                 card.querySelectorAll("input, textarea, select").forEach(
                     (field, fieldIndex) => {
-                        if (isExcludedFromFormMemory(field)) return;
                         const key = getFormFieldKey(field, fieldIndex);
                         if (!fieldMap.has(key)) return;
                         writeFormFieldValue(field, fieldMap.get(key));
