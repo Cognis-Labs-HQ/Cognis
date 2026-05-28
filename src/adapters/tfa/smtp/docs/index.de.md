@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Der SMTP-TFA-Adapter ergänzt das TFA-Gateway um E-Mail-Codes als zweiten Faktor. Für Einrichtung und Anmeldung sendet er Einmalcodes an die primäre E-Mail-Adresse des Nutzers, wobei der Verifizierungs-E-Mail-Fluss des Notification-Gateways genutzt wird.
+Der SMTP-TFA-Adapter ergänzt das TFA-Gateway um E-Mail-Codes als zweiten Faktor. Für Einrichtung und Anmeldung sendet er Einmalcodes an die primäre E-Mail-Adresse des Nutzers, wobei der Verifizierungs-E-Mail-Fluss des Notification-Gateways genutzt wird. Challenge-Codes sind flüchtig und werden nur im Prozessspeicher gehalten.
 
 ## Voraussetzungen
 

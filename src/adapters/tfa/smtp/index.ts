@@ -40,11 +40,9 @@ function challengeKey(scope: "setup" | "login", accountId: string): string {
 }
 
 function generateNumericCode(codeLength: number): string {
-    let code = "";
-    for (let i = 0; i < codeLength; i += 1) {
-        code += String(randomInt(0, 10));
-    }
-    return code;
+    return Array.from({ length: codeLength }, () =>
+        String(randomInt(0, 10)),
+    ).join("");
 }
 
 class SmtpTfaAdapter implements TfaMethodAdapter {

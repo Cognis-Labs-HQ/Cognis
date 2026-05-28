@@ -510,24 +510,21 @@ export class CoreTfaGateway {
     async getLoginMethods(
         accountId: string,
     ): Promise<Array<{ id: string; name: string }>> {
-        const status = await this.getUserStatus(accountId);
         const configuredMethods = await this.store.listUserMethods(accountId);
-        const configuredStateByMethodId = new Map(
-            configuredMethods
-                .filter((method) => method.enabled)
-                .map((method) => [method.methodId, method.state]),
-        );
+        const enabledConfiguredMethods = configuredMethods
+            .filter((method) => method.enabled)
+            .sort((left, right) => left.sortOrder - right.sortOrder);
         const methods: Array<{ id: string; name: string }> = [];
-        for (const method of status.enabledMethods) {
-            const adapter = this.adapters.get(method.id);
-            if (!adapter || !this.enabledAdapters.has(method.id)) {
+        for (const method of enabledConfiguredMethods) {
+            const adapter = this.adapters.get(method.methodId);
+            if (!adapter || !this.enabledAdapters.has(method.methodId)) {
                 continue;
             }
             if (typeof adapter.beginLoginChallenge === "function") {
                 try {
                     const challenge = await adapter.beginLoginChallenge({
                         accountId,
-                        state: configuredStateByMethodId.get(method.id) ?? {},
+                        state: method.state,
                     });
                     if (!challenge.ready) {
                         continue;
@@ -540,7 +537,7 @@ export class CoreTfaGateway {
                             component: "tfa-gateway",
                             operation: "prepare_login_challenge",
                             accountId,
-                            methodId: method.id,
+                            methodId: method.methodId,
                             error:
                                 error instanceof Error
                                     ? error.message
@@ -551,11 +548,11 @@ export class CoreTfaGateway {
                 }
             }
             methods.push({
-                id: method.id,
-                name: method.name,
+                id: adapter.id,
+                name: adapter.name,
             });
         }
-        if (status.hasRecoveryCodes) {
+        if (await this.store.hasUnusedRecoveryCodes(accountId)) {
             methods.push({ id: "recovery_code", name: "Recovery Code" });
         }
         return methods;

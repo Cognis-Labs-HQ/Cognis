@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SMTP TFA adapter adds email-code second-factor support to the TFA gateway. It sends setup and login verification codes to the user's primary email using the Notification gateway's SMTP verification-email flow.
+The SMTP TFA adapter adds email-code second-factor support to the TFA gateway. It sends setup and login verification codes to the user's primary email using the Notification gateway's SMTP verification-email flow. Challenge codes are ephemeral and stored only in process memory.
 
 ## Requirements
 
