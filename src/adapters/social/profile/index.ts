@@ -266,6 +266,7 @@ export async function bootstrapSocialAdapter(
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
             "/static/adapters/social/profile/profile.css",
+            "/static/adapters/social/profile/crop.css",
             "/static/styles/reuse/char-counter.css",
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),

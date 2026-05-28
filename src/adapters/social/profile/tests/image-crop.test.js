@@ -5,6 +5,7 @@ import {
     clampCropOffset,
     composeCropSourceRect,
     computeContainImageBounds,
+    computeMaxAspectSourceRect,
     computeCropSourceRectFromSelection,
     computeCropSourceRect,
     computeCropViewport,
@@ -13,6 +14,7 @@ import {
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
+    sourceRectToCoverObjectPositionPercent,
 } from "../ui/image-crop.js";
 
 test("clampCropOffset limits offsets to range", () => {
@@ -103,6 +105,64 @@ test("computeContainImageBounds centers contained image inside frame", () => {
     assert.equal(imageBounds.height, 225);
     assert.equal(imageBounds.left, 0);
     assert.equal(imageBounds.top, 87.5);
+});
+
+test("computeMaxAspectSourceRect keeps full width for tall source images", () => {
+    const sourceRect = computeMaxAspectSourceRect({
+        imageWidth: 900,
+        imageHeight: 1200,
+        aspectRatio: 3,
+    });
+
+    assert.equal(sourceRect.sourceX, 0);
+    assert.equal(sourceRect.sourceWidth, 900);
+    assert.equal(sourceRect.sourceHeight, 300);
+    assert.equal(sourceRect.sourceY, 450);
+});
+
+test("computeMaxAspectSourceRect keeps full height for wide source images", () => {
+    const sourceRect = computeMaxAspectSourceRect({
+        imageWidth: 2400,
+        imageHeight: 900,
+        aspectRatio: 1,
+    });
+
+    assert.equal(sourceRect.sourceY, 0);
+    assert.equal(sourceRect.sourceHeight, 900);
+    assert.equal(sourceRect.sourceWidth, 900);
+    assert.equal(sourceRect.sourceX, 750);
+});
+
+test("sourceRectToCoverObjectPositionPercent uses overflow distance for pan", () => {
+    const pan = sourceRectToCoverObjectPositionPercent(
+        {
+            sourceX: 0,
+            sourceY: 300,
+            sourceWidth: 900,
+            sourceHeight: 300,
+        },
+        900,
+        1200,
+    );
+
+    assert.equal(pan.panX, 50);
+    assert.equal(pan.panY, 33.33333333333333);
+});
+
+test("sourceRectToCoverObjectPositionPercent keeps centered crop at 50/50", () => {
+    const pan = sourceRectToCoverObjectPositionPercent(
+        {
+            sourceX: 300,
+            sourceY: 300,
+            sourceWidth: 600,
+            sourceHeight: 600,
+        },
+        1200,
+        1200,
+    );
+
+    assert.equal(pan.panX, 50);
+    assert.equal(pan.panY, 50);
 });
 
 test("createInitialCropSelection uses centered max-size area for target ratio", () => {

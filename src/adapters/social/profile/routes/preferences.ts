@@ -25,7 +25,13 @@ export function createPreferencesRoutes(
         const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = decodeURIComponent(match[1]);
-        if (!ctx.canAccessUserData(claims, accountId)) {
+        const pageId = decodeURIComponent(match[2]);
+        const allowPublicProfileBannerRead =
+            req.method === "GET" && pageId === "profile-banner";
+        if (
+            !ctx.canAccessUserData(claims, accountId) &&
+            !allowPublicProfileBannerRead
+        ) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -37,7 +43,6 @@ export function createPreferencesRoutes(
             );
             return true;
         }
-        const pageId = decodeURIComponent(match[2]);
 
         if (req.method === "GET") {
             res.writeHead(200, { "content-type": "application/json" });
