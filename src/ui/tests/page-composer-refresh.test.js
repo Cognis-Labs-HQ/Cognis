@@ -250,10 +250,7 @@ test("page composer persists drafts and renders large-form draft reset control",
         source,
         /if \(isExcludedFromFormMemory\(field\)\) \{\s*return;\s*\}/m,
     );
-    assert.match(
-        source,
-        /if \(isExcludedFromFormMemory\(field\)\) return;/,
-    );
+    assert.match(source, /if \(isExcludedFromFormMemory\(field\)\) return;/);
     assert.match(
         source,
         /if \(!account \|\| !scopeKey\) \{\s*return null;\s*\}/m,
