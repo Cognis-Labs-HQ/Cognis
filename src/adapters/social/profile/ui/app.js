@@ -300,7 +300,8 @@ function sourceRectCenterToPanPercent(sourceRect, imageWidth, imageHeight) {
     const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
     return {
         panX: clampBannerPanPercent(
-            ((sourceRect.sourceX + sourceRect.sourceWidth / 2) / safeImageWidth) *
+            ((sourceRect.sourceX + sourceRect.sourceWidth / 2) /
+                safeImageWidth) *
                 100,
         ),
         panY: clampBannerPanPercent(
