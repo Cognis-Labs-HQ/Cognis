@@ -43,7 +43,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    flex: 0 1 auto;
+    flex: 1;
     font: inherit;
     font-size: 0.8rem;
     color: var(--color-text);
