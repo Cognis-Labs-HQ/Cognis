@@ -232,6 +232,11 @@ test("page composer persists drafts and renders large-form draft reset control",
     );
 
     assert.match(source, /FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft"/);
+    assert.match(source, /function isExcludedFromFormMemory\(field\)/);
+    assert.match(
+        source,
+        /field\.closest\('\[data-composer-exclude-form-memory="true"\]'\)/,
+    );
     assert.match(source, /function loadPersistedFormState\(scopeKey\)/);
     assert.match(
         source,
@@ -240,6 +245,14 @@ test("page composer persists drafts and renders large-form draft reset control",
     assert.match(
         source,
         /function clearPersistedFormState\(scopeKey, elementId = null\)/,
+    );
+    assert.match(
+        source,
+        /if \(isExcludedFromFormMemory\(field\)\) \{\s*return;\s*\}/m,
+    );
+    assert.match(
+        source,
+        /if \(isExcludedFromFormMemory\(field\)\) return;/,
     );
     assert.match(
         source,

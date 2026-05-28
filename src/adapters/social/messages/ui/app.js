@@ -2241,7 +2241,7 @@ export async function mount(root, { signal } = {}) {
                     <div id="messages-request-banner-slot"></div>
                     <div class="messages-thread-list" id="messages-thread-list"></div>
                     <div class="messages-typing-status" id="messages-typing-status"></div>
-                    <form class="messages-composer" id="messages-composer">
+                    <form class="messages-composer" id="messages-composer" data-composer-exclude-form-memory="true">
                         <div class="messages-composer-mode-row">
                             <button
                                 type="button"

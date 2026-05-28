@@ -206,6 +206,10 @@ test("messages templates are opened from sidebar in a popup", () => {
 
     assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
+    assert.match(
+        appSource,
+        /id="messages-composer" data-composer-exclude-form-memory="true"/,
+    );
     assert.match(appSource, /id="messages-open-templates-btn"/);
     assert.match(appSource, /id="messages-composer-preview-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
