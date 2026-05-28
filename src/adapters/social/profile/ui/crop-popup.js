@@ -126,13 +126,13 @@ export async function openImageCropPopup({
         imageHeight: cropImage.imageHeight,
         aspectRatio: cropAspectRatio,
     });
-    const avatarPopupContentWidthEstimatePx = Math.sqrt(
+    const avatarPopupGeometricMeanPx = Math.sqrt(
         cropImage.imageWidth * cropImage.imageHeight,
     );
     const popupContentWidthPx =
         kind === "avatar"
             ? Math.min(
-                  avatarPopupContentWidthEstimatePx,
+                  avatarPopupGeometricMeanPx,
                   defaultSourceRect.sourceWidth,
               )
             : defaultSourceRect.sourceWidth;
@@ -273,9 +273,9 @@ export async function openImageCropPopup({
             frameWidth: frameRect.width,
             frameHeight: frameRect.height,
         });
-        const useFullFrameBounds =
+        const shouldExpandToFrame =
             state.zoomDepth > 0 || !isFullImageSourceRect(state.sourceRect);
-        const displayBounds = useFullFrameBounds
+        const displayBounds = shouldExpandToFrame
             ? {
                   left: 0,
                   top: 0,

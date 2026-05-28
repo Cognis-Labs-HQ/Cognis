@@ -318,6 +318,7 @@ function roomListRenderSignature(rooms, selectedRoomId) {
 
 /**
  * Returns the cached room key for a room, fetching and importing it on cache miss.
+ * Imported keys are cached in roomKeyCache for this session and reused on later calls.
  *
  * @param {string} roomId
  * @returns {Promise<CryptoKey|null>}

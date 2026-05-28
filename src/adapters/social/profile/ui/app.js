@@ -891,7 +891,10 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
-        if (shouldPreserveOriginalGif && isCropResultWithSourceRect(cropResult)) {
+        if (
+            shouldPreserveOriginalGif &&
+            isCropResultWithSourceRect(cropResult)
+        ) {
             const pan = sourceRectCenterToPanPercent(
                 cropResult.sourceRect,
                 cropResult.imageWidth,
