@@ -1,45 +1,54 @@
 import type {
     CalendarAdapter,
     CalendarAdapterBootstrapCtx,
-} from '../../../gateways/calendar/gateway.js';
-import { resolveRouteContext, type RouteContext } from '../../../api/reuse/route-context.js';
+} from "../../../gateways/calendar/gateway.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 
 export function createCalendarAdapter(): CalendarAdapter {
     return {
-        adapterId: 'caldav',
-        adapterName: 'CalDAV',
+        adapterId: "caldav",
+        adapterName: "CalDAV",
     };
 }
 
 function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
-        ctx.capabilities.get<RouteContext>('auth:routeContext'),
+        ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
 
     return async (req, res, url): Promise<boolean> => {
         const exportMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/caldav\/calendars\/([^/]+)\/export$/,
         );
-        if (exportMatch && req.method === 'GET') {
-            const claims = routeContext.requireAuth(req, res, 'user');
+        if (exportMatch && req.method === "GET") {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(exportMatch[1]);
-            const calendar = ctx.gateway.getOwnedCalendar(claims.sub, calendarId);
+            const calendar = ctx.gateway.getOwnedCalendar(
+                claims.sub,
+                calendarId,
+            );
             if (!calendar) {
-                res.writeHead(404, { 'content-type': 'application/json' });
+                res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        error: { code: 'not_found', message: 'Calendar not found.' },
+                        error: {
+                            code: "not_found",
+                            message: "Calendar not found.",
+                        },
                     }),
                 );
                 return true;
             }
-            if (calendar.visibility === 'public') {
-                res.writeHead(200, { 'content-type': 'application/json' });
+            if (calendar.visibility === "public") {
+                res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         data: {
-                            access: 'public',
+                            access: "public",
                             url: `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.id)}`,
                         },
                     }),
@@ -50,11 +59,11 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 ownerAccountId: claims.sub,
                 calendarId: calendar.id,
             });
-            res.writeHead(200, { 'content-type': 'application/json' });
+            res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
-                        access: 'private',
+                        access: "private",
                         url: `/api/v1/calendar/caldav/private/${encodeURIComponent(tokenRecord.token)}`,
                         expiresAt: tokenRecord.expiresAt,
                     },
@@ -66,23 +75,25 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         const publicMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/caldav\/public\/([^/]+)$/,
         );
-        if (publicMatch && req.method === 'GET') {
+        if (publicMatch && req.method === "GET") {
             const calendarId = decodeURIComponent(publicMatch[1]);
             const calendar = ctx.gateway.getCalendar(calendarId);
-            if (!calendar || calendar.visibility !== 'public') {
-                res.writeHead(404, { 'content-type': 'application/json' });
+            if (!calendar || calendar.visibility !== "public") {
+                res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: 'not_found',
-                            message: 'Calendar export not found.',
+                            code: "not_found",
+                            message: "Calendar export not found.",
                         },
                     }),
                 );
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendarId);
-            res.writeHead(200, { 'content-type': 'text/calendar; charset=utf-8' });
+            res.writeHead(200, {
+                "content-type": "text/calendar; charset=utf-8",
+            });
             res.end(ics);
             return true;
         }
@@ -90,23 +101,25 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         const privateMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/caldav\/private\/([^/]+)$/,
         );
-        if (privateMatch && req.method === 'GET') {
+        if (privateMatch && req.method === "GET") {
             const token = decodeURIComponent(privateMatch[1]);
             const tokenRecord = ctx.gateway.resolvePrivateExportToken(token);
             if (!tokenRecord) {
-                res.writeHead(404, { 'content-type': 'application/json' });
+                res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: 'not_found',
-                            message: 'Calendar export token not found.',
+                            code: "not_found",
+                            message: "Calendar export token not found.",
                         },
                     }),
                 );
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(tokenRecord.calendarId);
-            res.writeHead(200, { 'content-type': 'text/calendar; charset=utf-8' });
+            res.writeHead(200, {
+                "content-type": "text/calendar; charset=utf-8",
+            });
             res.end(ics);
             return true;
         }
@@ -118,5 +131,5 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
 export async function bootstrapCalendarAdapter(
     ctx: CalendarAdapterBootstrapCtx,
 ): Promise<void> {
-    ctx.registerRoute(createCaldavRoutes(ctx), 'calendar');
+    ctx.registerRoute(createCaldavRoutes(ctx), "calendar");
 }

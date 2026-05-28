@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
-import { readdir, readFile } from 'node:fs/promises';
-import path from 'node:path';
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { CapabilityStore, GatewayRegistry } from '@cognis/core';
+import { randomUUID } from "node:crypto";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 
-export type CalendarVisibility = 'private' | 'public';
+export type CalendarVisibility = "private" | "public";
 
 export interface CalendarRecord {
     id: string;
@@ -72,23 +72,26 @@ export interface CalendarAdapterBootstrapCtx {
 
 type CalendarBootstrapBaseCtx = Omit<
     CalendarAdapterBootstrapCtx,
-    'adapterId' | 'adapterRoot' | 'isAdapterEnabled'
+    "adapterId" | "adapterRoot" | "isAdapterEnabled"
 >;
 
 function escapeIcsText(value: string): string {
     return value
-        .replaceAll('\\', '\\\\')
-        .replaceAll(';', '\\;')
-        .replaceAll(',', '\\,')
-        .replaceAll('\n', '\\n');
+        .replaceAll("\\", "\\\\")
+        .replaceAll(";", "\\;")
+        .replaceAll(",", "\\,")
+        .replaceAll("\n", "\\n");
 }
 
 function formatIcsDate(dateInput: string): string {
     const parsed = new Date(dateInput);
     if (Number.isNaN(parsed.getTime())) {
-        return new Date().toISOString().replace(/[-:]/g, '').replace('.000', '');
+        return new Date()
+            .toISOString()
+            .replace(/[-:]/g, "")
+            .replace(".000", "");
     }
-    return parsed.toISOString().replace(/[-:]/g, '').replace('.000', '');
+    return parsed.toISOString().replace(/[-:]/g, "").replace(".000", "");
 }
 
 function parseIcsDate(value: string): string {
@@ -116,8 +119,8 @@ function parseIcsAttendee(value: string): string | null {
     if (mailToMatch?.[1]) {
         return mailToMatch[1].trim().toLowerCase();
     }
-    if (normalized.includes(':')) {
-        return normalized.split(':').at(-1)?.trim().toLowerCase() ?? null;
+    if (normalized.includes(":")) {
+        return normalized.split(":").at(-1)?.trim().toLowerCase() ?? null;
     }
     return normalized ? normalized.toLowerCase() : null;
 }
@@ -125,7 +128,10 @@ function parseIcsAttendee(value: string): string | null {
 export class CoreCalendarGateway {
     private readonly calendarsById = new Map<string, CalendarRecord>();
     private readonly calendarIdsByOwner = new Map<string, Set<string>>();
-    private readonly eventsByCalendar = new Map<string, CalendarEventRecord[]>();
+    private readonly eventsByCalendar = new Map<
+        string,
+        CalendarEventRecord[]
+    >();
     private readonly tokensByValue = new Map<string, CaldavTokenRecord>();
     private readonly registeredAdapters = new Map<string, CalendarAdapter>();
     private readonly adapterRequires = new Map<string, string[]>();
@@ -147,7 +153,7 @@ export class CoreCalendarGateway {
                 name: adapter.adapterName,
                 active:
                     !this.disabledAdapters.has(adapter.adapterId) &&
-                    (typeof adapter.isConfigured === 'function'
+                    (typeof adapter.isConfigured === "function"
                         ? adapter.isConfigured()
                         : true),
                 ...(requires?.length ? { requires } : {}),
@@ -158,7 +164,7 @@ export class CoreCalendarGateway {
     isAdapterEnabled(adapterId: string): boolean {
         const adapter = this.registeredAdapters.get(adapterId);
         if (!adapter || this.disabledAdapters.has(adapterId)) return false;
-        if (typeof adapter.isConfigured === 'function') {
+        if (typeof adapter.isConfigured === "function") {
             return adapter.isConfigured();
         }
         return true;
@@ -172,7 +178,7 @@ export class CoreCalendarGateway {
         const adapter = this.registeredAdapters.get(adapterId);
         if (!adapter) return null;
         return {
-            ...(typeof adapter.getConfig === 'function'
+            ...(typeof adapter.getConfig === "function"
                 ? adapter.getConfig()
                 : {}),
             enabled: !this.disabledAdapters.has(adapterId),
@@ -186,12 +192,12 @@ export class CoreCalendarGateway {
         const adapter = this.registeredAdapters.get(adapterId);
         if (!adapter) return;
         const { enabled, ...adapterConfig } = config;
-        if (enabled === false || enabled === 'false') {
+        if (enabled === false || enabled === "false") {
             this.disabledAdapters.add(adapterId);
         } else {
             this.disabledAdapters.delete(adapterId);
         }
-        if (typeof adapter.setConfig === 'function') {
+        if (typeof adapter.setConfig === "function") {
             adapter.setConfig(adapterConfig);
         }
     }
@@ -214,7 +220,7 @@ export class CoreCalendarGateway {
             id: randomUUID(),
             ownerAccountId: input.ownerAccountId,
             name: input.name,
-            visibility: input.visibility ?? 'private',
+            visibility: input.visibility ?? "private",
             createdAt: now,
             updatedAt: now,
         };
@@ -231,7 +237,9 @@ export class CoreCalendarGateway {
         if (!ids) return [];
         return Array.from(ids)
             .map((id) => this.calendarsById.get(id))
-            .filter((calendar): calendar is CalendarRecord => Boolean(calendar));
+            .filter((calendar): calendar is CalendarRecord =>
+                Boolean(calendar),
+            );
     }
 
     getCalendar(calendarId: string): CalendarRecord | null {
@@ -243,7 +251,8 @@ export class CoreCalendarGateway {
         calendarId: string,
     ): CalendarRecord | null {
         const calendar = this.calendarsById.get(calendarId);
-        if (!calendar || calendar.ownerAccountId !== ownerAccountId) return null;
+        if (!calendar || calendar.ownerAccountId !== ownerAccountId)
+            return null;
         return calendar;
     }
 
@@ -262,20 +271,23 @@ export class CoreCalendarGateway {
         endAt: string;
         attendees?: string[];
     }): CalendarEventRecord {
-        const calendar = this.getOwnedCalendar(input.ownerAccountId, input.calendarId);
+        const calendar = this.getOwnedCalendar(
+            input.ownerAccountId,
+            input.calendarId,
+        );
         if (!calendar) {
-            throw new Error('calendar_not_found');
+            throw new Error("calendar_not_found");
         }
         const startIso = new Date(input.startAt).toISOString();
         const endIso = new Date(input.endAt).toISOString();
         if (new Date(endIso).getTime() <= new Date(startIso).getTime()) {
-            throw new Error('calendar_invalid_range');
+            throw new Error("calendar_invalid_range");
         }
 
         const normalizedAttendees = Array.from(
             new Set(
                 (input.attendees ?? [])
-                    .map((entry) => String(entry ?? '').trim())
+                    .map((entry) => String(entry ?? "").trim())
                     .filter(Boolean),
             ),
         );
@@ -286,7 +298,7 @@ export class CoreCalendarGateway {
             calendarId: calendar.id,
             title: input.title,
             description:
-                typeof input.description === 'string' &&
+                typeof input.description === "string" &&
                 input.description.trim().length > 0
                     ? input.description
                     : null,
@@ -310,9 +322,12 @@ export class CoreCalendarGateway {
         calendarId: string;
         ttlSeconds?: number;
     }): CaldavTokenRecord {
-        const calendar = this.getOwnedCalendar(input.ownerAccountId, input.calendarId);
+        const calendar = this.getOwnedCalendar(
+            input.ownerAccountId,
+            input.calendarId,
+        );
         if (!calendar) {
-            throw new Error('calendar_not_found');
+            throw new Error("calendar_not_found");
         }
         const ttlSeconds = Math.max(60, input.ttlSeconds ?? 60 * 60 * 24 * 7);
         const now = Date.now();
@@ -339,20 +354,21 @@ export class CoreCalendarGateway {
     exportCalendarAsIcs(calendarId: string): string {
         const calendar = this.calendarsById.get(calendarId);
         if (!calendar) {
-            throw new Error('calendar_not_found');
+            throw new Error("calendar_not_found");
         }
         const events = this.listEvents(calendarId);
         const lines = [
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//Cognis//Calendar Gateway//EN',
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//Cognis//Calendar Gateway//EN",
             `X-WR-CALNAME:${escapeIcsText(calendar.name)}`,
             ...events.flatMap((event) => {
                 const attendeeLines = event.attendees.map(
-                    (attendee) => `ATTENDEE;CN=${escapeIcsText(attendee)}:mailto:${escapeIcsText(attendee)}`,
+                    (attendee) =>
+                        `ATTENDEE;CN=${escapeIcsText(attendee)}:mailto:${escapeIcsText(attendee)}`,
                 );
                 return [
-                    'BEGIN:VEVENT',
+                    "BEGIN:VEVENT",
                     `UID:${event.id}`,
                     `DTSTAMP:${formatIcsDate(event.updatedAt)}`,
                     `DTSTART:${formatIcsDate(event.startAt)}`,
@@ -362,13 +378,13 @@ export class CoreCalendarGateway {
                         ? [`DESCRIPTION:${escapeIcsText(event.description)}`]
                         : []),
                     ...attendeeLines,
-                    'END:VEVENT',
+                    "END:VEVENT",
                 ];
             }),
-            'END:VCALENDAR',
-            '',
+            "END:VCALENDAR",
+            "",
         ];
-        return lines.join('\r\n');
+        return lines.join("\r\n");
     }
 
     importIcs(input: {
@@ -376,15 +392,18 @@ export class CoreCalendarGateway {
         calendarId: string;
         ics: string;
     }): { importedCount: number } {
-        const calendar = this.getOwnedCalendar(input.ownerAccountId, input.calendarId);
+        const calendar = this.getOwnedCalendar(
+            input.ownerAccountId,
+            input.calendarId,
+        );
         if (!calendar) {
-            throw new Error('calendar_not_found');
+            throw new Error("calendar_not_found");
         }
 
         const lines = input.ics
-            .replaceAll('\r\n', '\n')
-            .replaceAll('\r', '\n')
-            .split('\n');
+            .replaceAll("\r\n", "\n")
+            .replaceAll("\r", "\n")
+            .split("\n");
         const importedEvents: CalendarEventRecord[] = [];
         let current: {
             summary?: string;
@@ -397,11 +416,11 @@ export class CoreCalendarGateway {
         for (const rawLine of lines) {
             const line = rawLine.trim();
             if (!line) continue;
-            if (line === 'BEGIN:VEVENT') {
+            if (line === "BEGIN:VEVENT") {
                 current = { attendees: [] };
                 continue;
             }
-            if (line === 'END:VEVENT') {
+            if (line === "END:VEVENT") {
                 if (current?.summary && current.dtstart && current.dtend) {
                     importedEvents.push(
                         this.addEvent({
@@ -419,15 +438,15 @@ export class CoreCalendarGateway {
                 continue;
             }
             if (!current) continue;
-            if (line.startsWith('SUMMARY:')) {
-                current.summary = line.slice('SUMMARY:'.length).trim();
-            } else if (line.startsWith('DESCRIPTION:')) {
-                current.description = line.slice('DESCRIPTION:'.length).trim();
-            } else if (line.startsWith('DTSTART:')) {
-                current.dtstart = line.slice('DTSTART:'.length).trim();
-            } else if (line.startsWith('DTEND:')) {
-                current.dtend = line.slice('DTEND:'.length).trim();
-            } else if (line.startsWith('ATTENDEE')) {
+            if (line.startsWith("SUMMARY:")) {
+                current.summary = line.slice("SUMMARY:".length).trim();
+            } else if (line.startsWith("DESCRIPTION:")) {
+                current.description = line.slice("DESCRIPTION:".length).trim();
+            } else if (line.startsWith("DTSTART:")) {
+                current.dtstart = line.slice("DTSTART:".length).trim();
+            } else if (line.startsWith("DTEND:")) {
+                current.dtend = line.slice("DTEND:".length).trim();
+            } else if (line.startsWith("ATTENDEE")) {
                 const attendee = parseIcsAttendee(line);
                 if (attendee) current.attendees.push(attendee);
             }
@@ -447,17 +466,17 @@ export class CoreCalendarGateway {
         entries.sort((a, b) => a.localeCompare(b));
 
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, 'package.json');
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
-                const raw = await readFile(pkgPath, 'utf8');
+                const raw = await readFile(pkgPath, "utf8");
                 const pkg = JSON.parse(raw) as { main?: string };
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
                 try {
                     const manifestRaw = await readFile(
-                        path.join(adaptersRoot, entry, 'manifest.json'),
-                        'utf8',
+                        path.join(adaptersRoot, entry, "manifest.json"),
+                        "utf8",
                     );
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
@@ -471,7 +490,7 @@ export class CoreCalendarGateway {
 
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
                 const mod = await import(entryPath);
-                if (typeof mod.createCalendarAdapter === 'function') {
+                if (typeof mod.createCalendarAdapter === "function") {
                     const factory =
                         mod.createCalendarAdapter as () => CalendarAdapter | null;
                     const adapter = factory();
@@ -497,11 +516,11 @@ export class CoreCalendarGateway {
         entries.sort((a, b) => a.localeCompare(b));
 
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, 'package.json');
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
             let mod: Record<string, unknown>;
             try {
-                const raw = await readFile(pkgPath, 'utf8');
+                const raw = await readFile(pkgPath, "utf8");
                 const pkg = JSON.parse(raw) as { main?: string };
                 if (!pkg.main) continue;
                 mod = await import(path.resolve(adaptersRoot, entry, pkg.main));
@@ -509,7 +528,7 @@ export class CoreCalendarGateway {
                 continue;
             }
 
-            if (typeof mod.bootstrapCalendarAdapter !== 'function') continue;
+            if (typeof mod.bootstrapCalendarAdapter !== "function") continue;
             const bootstrapFn = mod.bootstrapCalendarAdapter as (
                 ctx: CalendarAdapterBootstrapCtx,
             ) => Promise<void> | void;
@@ -532,10 +551,10 @@ export class CoreCalendarGateway {
                 await bootstrapFn(adapterCtx);
             } catch (error) {
                 baseCtx.log?.(
-                    'error',
+                    "error",
                     `Calendar gateway: adapter "${entry}" bootstrap failed — skipping.`,
                     {
-                        component: 'calendar-gateway',
+                        component: "calendar-gateway",
                         adapterId: entry,
                         error:
                             error instanceof Error
