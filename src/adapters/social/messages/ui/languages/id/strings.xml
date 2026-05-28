@@ -8,6 +8,7 @@
   <string name="module.social.messages.new">Percakapan Baru</string>
   <string name="module.social.messages.load_earlier">Muat lebih awal</string>
   <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>
+  <string name="module.social.messages.request_action_failed">Gagal memperbarui permintaan pesan.</string>
   <string name="module.social.messages.members">anggota</string>
   <string name="module.social.messages.set_avatar">Atur avatar</string>
   <string name="module.social.messages.leave_conversation">Tinggalkan Percakapan</string>

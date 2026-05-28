@@ -1587,21 +1587,26 @@ export async function mount(root, { signal } = {}) {
         const res = await apiFetch(
             `/api/v1/messages/requests/${encodeURIComponent(requestId)}/${action}`,
             { method: "POST" },
-        ).catch(() => null);
+        ).catch((error) => {
+            console.warn("[messages] pending-request action failed", {
+                action,
+                requestId,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            return null;
+        });
         if (!res) {
-            showToast(i18n.t("module.social.messages.start_failed"), {
+            showToast(i18n.t("module.social.messages.request_action_failed"), {
                 variant: "error",
             });
             return;
         }
         if (!res.ok) return;
         const payload = await res.json().catch(() => null);
+        await reloadRoomsList();
         if (action === "approve") {
             setSelectedRoomPendingRequest(null);
             syncPendingRequestBanner(null);
-        }
-        await reloadRoomsList();
-        if (action === "approve") {
             const nextRoomId =
                 payload?.data?.id || roomIdHint || selectedRoomId;
             if (nextRoomId) {
