@@ -26,6 +26,7 @@
   <string name="module.social.messages.new">新しい会話</string>
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
+  <string name="module.social.messages.request_action_failed">メッセージリクエストを更新できませんでした。</string>
   <string name="module.social.messages.members">メンバー</string>
   <string name="module.social.messages.set_avatar">アバターを設定</string>
   <string name="module.social.messages.leave_conversation">会話から退出</string>

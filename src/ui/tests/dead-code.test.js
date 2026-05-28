@@ -56,6 +56,15 @@ const DYNAMIC_CLASS_NAMES = new Set([
     "popup-dialog--warning",
     "popup-dialog--danger",
     "popup-dialog--confirm",
+    "language-javascript",
+    "language-typescript",
+    "language-json",
+    "language-bash",
+    "language-python",
+    "language-sql",
+    "language-html",
+    "language-css",
+    "language-plaintext",
 ]);
 
 // Reuse module exports that are fully implemented but not yet wired up to

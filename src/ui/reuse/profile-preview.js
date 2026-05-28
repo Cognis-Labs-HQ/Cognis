@@ -1,6 +1,7 @@
 import { apiFetch } from "./api-client.js";
 import { getInitialsText, pickInitialsColor } from "./avatar-utils.js";
 import { escapeHtml } from "./escape-html.js";
+import { renderMarkdown } from "./markdown-renderer.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
@@ -131,7 +132,7 @@ async function showPreview(link) {
                 <span>@${escapeHtml(handleText)}</span>
             </div>
         </div>
-        ${profile.bio ? `<p class="profile-mini-preview__bio">${escapeHtml(profile.bio)}</p>` : ""}
+        ${profile.bio ? `<div class="profile-mini-preview__bio">${renderMarkdown(profile.bio)}</div>` : ""}
         ${stats ? `<p class="profile-mini-preview__stats">${escapeHtml(stats)}</p>` : ""}
     `;
     positionPreview(link, preview);

@@ -40,6 +40,7 @@ import {
     handleProfileAvatarError,
     isProfileAvatarUnavailable,
 } from "/static/gateways/social/reuse/profile-avatar.js";
+import { createRoomKeyStore } from "./room-keys.mjs";
 
 const TEXT_ENCODER = new TextEncoder();
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
@@ -146,6 +147,13 @@ function createMessageTemplateId() {
     ).join("");
     return `template-${Date.now().toString(36)}-${randomSuffix}`;
 }
+
+const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
+    {
+        fetchRoomKey: apiFetch,
+        importKey: importRoomKey,
+    },
+);
 
 /**
  * Fetches the full emoji list from the social gateway static asset, caching
@@ -323,7 +331,6 @@ async function decryptMessageOrReturnPlaintext(key, message) {
     }
 }
 
-const roomKeyCache = new Map();
 const threadRenderSignatures = new Map();
 
 function stableJson(value) {
@@ -400,20 +407,6 @@ function roomListRenderSignature(rooms, selectedRoomId) {
             })),
         })),
     });
-}
-
-async function getRoomKey(roomId) {
-    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-    const res = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
-    );
-    if (!res.ok) return null;
-    const payload = await res.json();
-    const hex = payload?.data?.key;
-    if (!hex) return null;
-    const key = await importRoomKey(hex);
-    roomKeyCache.set(roomId, key);
-    return key;
 }
 
 function profileHref(handle) {
@@ -1660,7 +1653,7 @@ export async function mount(root, { signal } = {}) {
                 i18n.t("module.social.messages.preview_placeholder"),
             );
         }
-        const key = await getRoomKey(roomId);
+        const key = await resolveThreadRoomKey(room, roomId);
         const threadResult = await renderThread(
             roomId,
             key,
@@ -1726,11 +1719,26 @@ export async function mount(root, { signal } = {}) {
         const res = await apiFetch(
             `/api/v1/messages/requests/${encodeURIComponent(requestId)}/${action}`,
             { method: "POST" },
-        );
+        ).catch((error) => {
+            console.warn("[messages] pending-request action failed", {
+                action,
+                requestId,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            return null;
+        });
+        if (!res) {
+            showToast(i18n.t("module.social.messages.request_action_failed"), {
+                variant: "error",
+            });
+            return;
+        }
         if (!res.ok) return;
         const payload = await res.json().catch(() => null);
         await reloadRoomsList();
         if (action === "approve") {
+            setSelectedRoomPendingRequest(null);
+            syncPendingRequestBanner(null);
             const nextRoomId =
                 payload?.data?.id || roomIdHint || selectedRoomId;
             if (nextRoomId) {
@@ -1794,7 +1802,10 @@ export async function mount(root, { signal } = {}) {
         if (!res.ok) return;
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
-        const key = await getRoomKey(selectedRoomId);
+        const selectedRoom = rooms.find(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        const key = await resolveThreadRoomKey(selectedRoom, selectedRoomId);
         await renderThread(
             selectedRoomId,
             key,
@@ -1879,7 +1890,10 @@ export async function mount(root, { signal } = {}) {
         await reloadRoomsList();
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
-        const key = await getRoomKey(selectedRoomId);
+        const selectedRoom = rooms.find(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        const key = await resolveThreadRoomKey(selectedRoom, selectedRoomId);
         const threadResult = await renderThread(
             selectedRoomId,
             key,
@@ -2552,7 +2566,14 @@ export async function mount(root, { signal } = {}) {
                         const beforeTime =
                             button.getAttribute("data-before-time");
                         if (!beforeTime) return;
-                        const key = await getRoomKey(selectedRoomId);
+                        const selectedRoom = rooms.find(
+                            (room) =>
+                                String(room.id) === String(selectedRoomId),
+                        );
+                        const key = await resolveThreadRoomKey(
+                            selectedRoom,
+                            selectedRoomId,
+                        );
                         await renderThread(
                             selectedRoomId,
                             key,
@@ -2790,7 +2811,12 @@ export async function mount(root, { signal } = {}) {
                     ).trim();
                     if (!text) return;
                     queueTypingUpdate(false);
-                    const key = await getRoomKey(selectedRoomId);
+                    let key = null;
+                    try {
+                        key = await requireRoomKey(selectedRoomId);
+                    } catch {
+                        key = null;
+                    }
                     if (!key) {
                         showToast(
                             i18n.t("module.social.messages.key_unavailable"),

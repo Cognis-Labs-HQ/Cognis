@@ -747,6 +747,36 @@ button.dropdown-item {
     margin: 10px 0 0;
     font-size: 0.9rem;
     line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.profile-mini-preview__bio > :first-child {
+    margin-top: 0;
+}
+
+.profile-mini-preview__bio > :last-child {
+    margin-bottom: 0;
+}
+
+.profile-mini-preview__bio p {
+    margin: 0;
+}
+
+.profile-mini-preview__bio p + p {
+    margin-top: 0.35rem;
+}
+
+.profile-mini-preview__bio ul,
+.profile-mini-preview__bio ol {
+    margin: 0.3rem 0 0.3rem 1rem;
+}
+
+.profile-mini-preview__bio li + li {
+    margin-top: 0.15rem;
+}
+
+.profile-mini-preview__bio a {
+    color: var(--link);
 }
 
 .profile-mini-preview__stats {
