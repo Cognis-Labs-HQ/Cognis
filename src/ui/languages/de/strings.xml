@@ -51,6 +51,7 @@
   <string name="ui.reuse.followers">Follower</string>
   <string name="ui.reuse.following">folgt</string>
   <string name="ui.reuse.posts">Beiträge</string>
+  <string name="ui.reuse.create">Erstellen</string>
   <string name="ui.reuse.save">Speichern</string>
   <string name="ui.reuse.discard">Verwerfen</string>
   <string name="ui.reuse.done">Fertig</string>

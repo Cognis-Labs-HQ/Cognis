@@ -183,7 +183,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
 });
 
-test("messages composer includes markdown compose preview switcher", () => {
+test("messages templates are opened from sidebar in a popup", () => {
     const appSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
@@ -192,27 +192,93 @@ test("messages composer includes markdown compose preview switcher", () => {
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
     );
+    const templatesCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/messages-template-composer.css",
+        ),
+        "utf8",
+    );
+    const sidebarCssSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages-sidebar.css"),
+        "utf8",
+    );
 
     assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
+    assert.match(
+        appSource,
+        /id="messages-composer" data-composer-exclude-form-memory="true"/,
+    );
+    assert.match(appSource, /id="messages-open-templates-btn"/);
     assert.match(appSource, /id="messages-composer-preview-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
+    assert.match(
+        appSource,
+        /openTemplatesPopupFromSidebar = async \([\s\S]*preloadTemplateId = null/,
+    );
+    assert.match(
+        appSource,
+        /await openPopup\(\{[\s\S]*title:\s*i18n\.t\("module\.social\.messages\.templates"\)/,
+    );
+    assert.match(appSource, /id="messages-template-editor"/);
+    assert.match(appSource, /data-template-token="\{username\}"/);
+    assert.match(appSource, /data-template-token="\{displayName\}"/);
     assert.match(appSource, /function renderComposerPreviewMarkup/);
+    assert.match(appSource, /function resolveMessageTemplateVariables/);
     assert.match(appSource, /module\.social\.messages\.preview_placeholder/);
     assert.match(
         appSource,
-        /composerComposeToggle\?\.addEventListener\("click",[\s\S]*isComposerPreviewMode = false;/,
+        /composerComposeToggle\?\.addEventListener\("click",[\s\S]*composerMode = "compose";/,
     );
     assert.match(
         appSource,
-        /composerPreviewToggle\?\.addEventListener\("click",[\s\S]*isComposerPreviewMode = true;/,
+        /composerPreviewToggle\?\.addEventListener\("click",[\s\S]*composerMode = "preview";/,
     );
+    assert.match(
+        appSource,
+        /templatesBtn\?\.addEventListener\("click",[\s\S]*openTemplatesPopupFromSidebar/,
+    );
+    assert.match(
+        appSource,
+        /resolveMessageTemplateVariables\([\s\S]*currentRoom[\s\S]*currentAccountId/,
+    );
+    assert.match(appSource, /id="messages-sidebar-template-list"/);
+    assert.match(appSource, /data-template-action="use"/);
+    assert.match(appSource, /data-template-action="edit"/);
+    assert.match(appSource, /data-template-action="delete"/);
     assert.match(messagesCssSource, /\.messages-composer-mode-toggle\s*\{/);
     assert.match(
         messagesCssSource,
         /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
     );
+    assert.match(sidebarCssSource, /\.messages-sidebar-menu-btn\s*\{/);
+    assert.match(
+        sidebarCssSource,
+        /\.messages-sidebar-section-label--btn\s*\{/,
+    );
+    assert.match(sidebarCssSource, /\.messages-sidebar-template-list\s*\{/);
+    assert.match(
+        sidebarCssSource,
+        /\.messages-sidebar-template-load-btn\s*\{[\s\S]*flex:\s*1;/,
+    );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
+    assert.match(
+        messagesCssSource,
+        /@import url\("\/static\/adapters\/social\/messages\/messages-template-composer\.css"\);/,
+    );
+    assert.match(
+        messagesCssSource,
+        /@import url\("\/static\/adapters\/social\/messages\/messages-sidebar\.css"\);/,
+    );
+    assert.match(
+        templatesCssSource,
+        /\.messages-template-card\s*\{[\s\S]*display:\s*flex;[\s\S]*align-items:\s*center;/,
+    );
+    assert.match(
+        templatesCssSource,
+        /\.messages-template-card-actions\s*\{[\s\S]*flex-shrink:\s*0;/,
+    );
 });
 
 test("messages UI skips room-key fetch for incoming pending requests", async () => {
@@ -275,5 +341,28 @@ test("requireRoomKey throws detailed errors on failure", async () => {
             assert.equal(error.roomId, "room-403");
             return true;
         },
+    );
+});
+
+test("messages saved templates are scoped to the current account", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function loadSavedMessageTemplates\(accountId\)/);
+    assert.match(
+        source,
+        /function persistSavedMessageTemplates\(templates, accountId\)/,
+    );
+    assert.match(source, /function templateStorageKey\(accountId\)/);
+    assert.match(
+        source,
+        /`\$\{MESSAGE_TEMPLATES_STORAGE_KEY\}:\$\{accountId\}`/,
+    );
+    assert.match(source, /loadSavedMessageTemplates\(currentAccountId\)/);
+    assert.match(
+        source,
+        /persistSavedMessageTemplates\(\s*savedMessageTemplates,\s*currentAccountId,?\s*\)/m,
     );
 });

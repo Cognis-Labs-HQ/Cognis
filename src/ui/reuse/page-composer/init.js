@@ -375,6 +375,15 @@ export function createPageComposer(
         );
     }
 
+    function isExcludedFromFormMemory(field) {
+        if (!(field instanceof Element)) {
+            return false;
+        }
+        return (
+            field.closest('[data-composer-exclude-form-memory="true"]') !== null
+        );
+    }
+
     function readFormFieldValue(field) {
         if (field.type === "checkbox" || field.type === "radio") {
             return field.checked;
@@ -411,6 +420,9 @@ export function createPageComposer(
                 const fieldMap = new Map();
                 fields.forEach((field, fieldIndex) => {
                     if (field.type === "file") {
+                        return;
+                    }
+                    if (persistableOnly && isExcludedFromFormMemory(field)) {
                         return;
                     }
                     if (persistableOnly && isSensitiveDraftField(field)) {
@@ -609,7 +621,10 @@ export function createPageComposer(
             card.querySelectorAll("input, textarea, select"),
         );
         const persistableFields = fields.filter(
-            (field) => !isSensitiveDraftField(field) && field.type !== "file",
+            (field) =>
+                !isSensitiveDraftField(field) &&
+                field.type !== "file" &&
+                !isExcludedFromFormMemory(field),
         );
         if (persistableFields.length < LARGE_FORM_RESET_FIELD_THRESHOLD) {
             card.querySelector("[data-composer-draft-reset-wrapper]")?.remove();
@@ -657,6 +672,7 @@ export function createPageComposer(
                 card.querySelectorAll("input, textarea, select").forEach(
                     (field) => {
                         if (field.type === "file") return;
+                        if (isExcludedFromFormMemory(field)) return;
                         field.addEventListener("input", persistDraftSnapshot);
                         field.addEventListener("change", persistDraftSnapshot);
                     },
