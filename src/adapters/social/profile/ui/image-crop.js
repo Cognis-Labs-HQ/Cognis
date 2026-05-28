@@ -245,6 +245,12 @@ export function computeContainImageBounds({
  *   sourceWidth: number,
  *   sourceHeight: number,
  * }}
+ * @example
+ * const sourceRect = computeMaxAspectSourceRect({
+ *   imageWidth: 2400,
+ *   imageHeight: 1600,
+ *   aspectRatio: 3,
+ * });
  */
 export function computeMaxAspectSourceRect({
     imageWidth,

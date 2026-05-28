@@ -316,6 +316,12 @@ function roomListRenderSignature(rooms, selectedRoomId) {
     });
 }
 
+/**
+ * Returns the cached room key for a room, fetching and importing it on cache miss.
+ *
+ * @param {string} roomId
+ * @returns {Promise<CryptoKey|null>}
+ */
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
     const res = await apiFetch(

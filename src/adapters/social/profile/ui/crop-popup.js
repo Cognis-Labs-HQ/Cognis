@@ -126,12 +126,15 @@ export async function openImageCropPopup({
         imageHeight: cropImage.imageHeight,
         aspectRatio: cropAspectRatio,
     });
-    const avatarPopupContentWidthPx = Math.sqrt(
+    const avatarPopupContentWidthEstimatePx = Math.sqrt(
         cropImage.imageWidth * cropImage.imageHeight,
     );
     const popupContentWidthPx =
         kind === "avatar"
-            ? Math.min(avatarPopupContentWidthPx, defaultSourceRect.sourceWidth)
+            ? Math.min(
+                  avatarPopupContentWidthEstimatePx,
+                  defaultSourceRect.sourceWidth,
+              )
             : defaultSourceRect.sourceWidth;
     const popupMaxWidthPx = Math.min(
         POPUP_MAX_WIDTH_PX,
@@ -272,15 +275,14 @@ export async function openImageCropPopup({
         });
         const useFullFrameBounds =
             state.zoomDepth > 0 || !isFullImageSourceRect(state.sourceRect);
-        const displayBounds =
-            useFullFrameBounds
-                ? {
-                      left: 0,
-                      top: 0,
-                      width: frameRect.width,
-                      height: frameRect.height,
-                  }
-                : containBounds;
+        const displayBounds = useFullFrameBounds
+            ? {
+                  left: 0,
+                  top: 0,
+                  width: frameRect.width,
+                  height: frameRect.height,
+              }
+            : containBounds;
         if (displayBounds.width <= 0 || displayBounds.height <= 0) return;
         state.displayBounds = displayBounds;
         const safeSourceWidth = Math.max(1, state.sourceRect.sourceWidth);

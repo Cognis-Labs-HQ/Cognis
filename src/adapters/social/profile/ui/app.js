@@ -838,8 +838,27 @@ function isGifFile(file) {
     return /\.gif$/i.test(file.name);
 }
 
+function shouldPreserveOriginalMedia(kind, file) {
+    return kind === "banner" && isGifFile(file);
+}
+
+function isCropResultWithSourceRect(cropResult) {
+    if (!cropResult || typeof cropResult !== "object") return false;
+    if (!("sourceRect" in cropResult)) return false;
+    const sourceRect = cropResult.sourceRect;
+    if (!sourceRect || typeof sourceRect !== "object") return false;
+    return (
+        Number.isFinite(Number(cropResult.imageWidth)) &&
+        Number.isFinite(Number(cropResult.imageHeight)) &&
+        Number.isFinite(Number(sourceRect.sourceX)) &&
+        Number.isFinite(Number(sourceRect.sourceY)) &&
+        Number.isFinite(Number(sourceRect.sourceWidth)) &&
+        Number.isFinite(Number(sourceRect.sourceHeight))
+    );
+}
+
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-    const shouldPreserveOriginalGif = kind === "banner" && isGifFile(file);
+    const shouldPreserveOriginalGif = shouldPreserveOriginalMedia(kind, file);
     const cropResult = await openImageCropPopup({
         file,
         kind,
@@ -872,11 +891,7 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
-        if (
-            shouldPreserveOriginalGif &&
-            typeof cropResult === "object" &&
-            "sourceRect" in cropResult
-        ) {
+        if (shouldPreserveOriginalGif && isCropResultWithSourceRect(cropResult)) {
             const pan = sourceRectCenterToPanPercent(
                 cropResult.sourceRect,
                 cropResult.imageWidth,
