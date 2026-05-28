@@ -2505,7 +2505,12 @@ export async function mount(root, { signal } = {}) {
                     const text = (input?.value ?? "").trim();
                     if (!text) return;
                     queueTypingUpdate(false);
-                    const key = await requireRoomKey(selectedRoomId);
+                    let key = null;
+                    try {
+                        key = await requireRoomKey(selectedRoomId);
+                    } catch {
+                        key = null;
+                    }
                     if (!key) {
                         showToast(
                             i18n.t("module.social.messages.key_unavailable"),
