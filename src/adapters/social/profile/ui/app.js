@@ -295,6 +295,25 @@ function getBannerObjectPositionCssValue() {
     return `${bannerPanX}% ${bannerPanY}%`;
 }
 
+/**
+ * Converts a source rectangle center into CSS object-position percentages.
+ *
+ * @param {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }} sourceRect
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ * @returns {{ panX: number, panY: number }}
+ * @example
+ * sourceRectCenterToPanPercent(
+ *   { sourceX: 100, sourceY: 40, sourceWidth: 300, sourceHeight: 120 },
+ *   1000,
+ *   500,
+ * );
+ */
 function sourceRectCenterToPanPercent(sourceRect, imageWidth, imageHeight) {
     const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
     const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
@@ -838,10 +857,31 @@ function isGifFile(file) {
     return /\.gif$/i.test(file.name);
 }
 
-function shouldPreserveOriginalMedia(kind, file) {
+function shouldPreserveOriginalGif(kind, file) {
     return kind === "banner" && isGifFile(file);
 }
 
+/**
+ * Returns whether a crop popup result contains source rectangle metadata.
+ *
+ * @param {unknown} cropResult
+ * @returns {cropResult is {
+ *   sourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * }}
+ * @example
+ * isCropResultWithSourceRect({
+ *   sourceRect: { sourceX: 0, sourceY: 0, sourceWidth: 1200, sourceHeight: 400 },
+ *   imageWidth: 1600,
+ *   imageHeight: 900,
+ * });
+ */
 function isCropResultWithSourceRect(cropResult) {
     if (!cropResult || typeof cropResult !== "object") return false;
     if (!("sourceRect" in cropResult)) return false;
@@ -858,22 +898,22 @@ function isCropResultWithSourceRect(cropResult) {
 }
 
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-    const shouldPreserveOriginalGif = shouldPreserveOriginalMedia(kind, file);
+    const preserveOriginalGif = shouldPreserveOriginalGif(kind, file);
     const cropResult = await openImageCropPopup({
         file,
         kind,
         aspectRatio,
-        outputMode: shouldPreserveOriginalGif ? "sourceRect" : "blob",
+        outputMode: preserveOriginalGif ? "sourceRect" : "blob",
         openPopupDialog: openPopup,
         translate: (key) => i18n.t(key),
         escapeHtmlText: escapeHtml,
     });
     if (!cropResult) return false;
-    const uploadBlob = shouldPreserveOriginalGif ? file : cropResult;
+    const uploadBlob = preserveOriginalGif ? file : cropResult;
     if (!(uploadBlob instanceof Blob)) return false;
     const endpoint =
         kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
-    const contentType = shouldPreserveOriginalGif
+    const contentType = preserveOriginalGif
         ? file.type || "application/octet-stream"
         : "image/png";
     const response = await apiFetch(endpoint, {
@@ -891,10 +931,7 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
-        if (
-            shouldPreserveOriginalGif &&
-            isCropResultWithSourceRect(cropResult)
-        ) {
+        if (preserveOriginalGif && isCropResultWithSourceRect(cropResult)) {
             const pan = sourceRectCenterToPanPercent(
                 cropResult.sourceRect,
                 cropResult.imageWidth,

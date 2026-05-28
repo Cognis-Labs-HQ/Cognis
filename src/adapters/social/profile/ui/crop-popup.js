@@ -248,13 +248,13 @@ export async function openImageCropPopup({
         });
     }
 
-    function isFullImageSourceRect(sourceRect) {
+    function isFullImageSourceRect(sourceRect, imageWidth, imageHeight) {
         return (
             sourceRect.sourceX <= SOURCE_RECT_EPSILON &&
             sourceRect.sourceY <= SOURCE_RECT_EPSILON &&
-            Math.abs(sourceRect.sourceWidth - cropImage.imageWidth) <=
+            Math.abs(sourceRect.sourceWidth - imageWidth) <=
                 SOURCE_RECT_EPSILON &&
-            Math.abs(sourceRect.sourceHeight - cropImage.imageHeight) <=
+            Math.abs(sourceRect.sourceHeight - imageHeight) <=
                 SOURCE_RECT_EPSILON
         );
     }
@@ -274,7 +274,12 @@ export async function openImageCropPopup({
             frameHeight: frameRect.height,
         });
         const shouldExpandToFrame =
-            state.zoomDepth > 0 || !isFullImageSourceRect(state.sourceRect);
+            state.zoomDepth > 0 ||
+            !isFullImageSourceRect(
+                state.sourceRect,
+                cropImage.imageWidth,
+                cropImage.imageHeight,
+            );
         const displayBounds = shouldExpandToFrame
             ? {
                   left: 0,
