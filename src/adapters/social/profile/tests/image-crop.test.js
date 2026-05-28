@@ -5,6 +5,7 @@ import {
     clampCropOffset,
     composeCropSourceRect,
     computeContainImageBounds,
+    computeMaxAspectSourceRect,
     computeCropSourceRectFromSelection,
     computeCropSourceRect,
     computeCropViewport,
@@ -103,6 +104,32 @@ test("computeContainImageBounds centers contained image inside frame", () => {
     assert.equal(imageBounds.height, 225);
     assert.equal(imageBounds.left, 0);
     assert.equal(imageBounds.top, 87.5);
+});
+
+test("computeMaxAspectSourceRect keeps full width for tall source images", () => {
+    const sourceRect = computeMaxAspectSourceRect({
+        imageWidth: 900,
+        imageHeight: 1200,
+        aspectRatio: 3,
+    });
+
+    assert.equal(sourceRect.sourceX, 0);
+    assert.equal(sourceRect.sourceWidth, 900);
+    assert.equal(sourceRect.sourceHeight, 300);
+    assert.equal(sourceRect.sourceY, 450);
+});
+
+test("computeMaxAspectSourceRect keeps full height for wide source images", () => {
+    const sourceRect = computeMaxAspectSourceRect({
+        imageWidth: 2400,
+        imageHeight: 900,
+        aspectRatio: 1,
+    });
+
+    assert.equal(sourceRect.sourceY, 0);
+    assert.equal(sourceRect.sourceHeight, 900);
+    assert.equal(sourceRect.sourceWidth, 900);
+    assert.equal(sourceRect.sourceX, 750);
 });
 
 test("createInitialCropSelection uses centered max-size area for target ratio", () => {

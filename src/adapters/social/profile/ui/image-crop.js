@@ -232,6 +232,54 @@ export function computeContainImageBounds({
 }
 
 /**
+ * Computes the largest centered source rectangle that matches a crop aspect ratio.
+ *
+ * @param {{
+ *   imageWidth: number,
+ *   imageHeight: number,
+ *   aspectRatio: number,
+ * }} params
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ */
+export function computeMaxAspectSourceRect({
+    imageWidth,
+    imageHeight,
+    aspectRatio,
+}) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
+    const imageAspectRatio = safeImageWidth / safeImageHeight;
+
+    if (imageAspectRatio > safeAspectRatio) {
+        const sourceWidth = safeImageHeight * safeAspectRatio;
+        return clampSourceRectToImage({
+            sourceX: (safeImageWidth - sourceWidth) / 2,
+            sourceY: 0,
+            sourceWidth,
+            sourceHeight: safeImageHeight,
+            imageWidth: safeImageWidth,
+            imageHeight: safeImageHeight,
+        });
+    }
+
+    const sourceHeight = safeImageWidth / safeAspectRatio;
+    return clampSourceRectToImage({
+        sourceX: 0,
+        sourceY: (safeImageHeight - sourceHeight) / 2,
+        sourceWidth: safeImageWidth,
+        sourceHeight,
+        imageWidth: safeImageWidth,
+        imageHeight: safeImageHeight,
+    });
+}
+
+/**
  * Creates a centered initial crop selection inside image bounds.
  *
  * @param {{
