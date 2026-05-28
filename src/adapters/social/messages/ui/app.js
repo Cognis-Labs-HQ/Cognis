@@ -3123,11 +3123,18 @@ export async function mount(root, { signal } = {}) {
                 (entry) => String(entry.id) === String(templateId),
             );
             if (!templateRecord) return;
+            const escapedTemplateTitle = escapeHtml(templateRecord.title);
+            const deleteConfirmBodyTemplate = i18n
+                .t("module.social.messages.template_delete_confirm_body")
+                .replace("{name}", "{templateName}");
+            const deleteConfirmBody = escapeHtml(
+                deleteConfirmBodyTemplate,
+            ).replace("{templateName}", escapedTemplateTitle);
             const deleteResult = await openPopup({
                 title: i18n.t(
                     "module.social.messages.template_delete_confirm_title",
                 ),
-                body: `<p>${escapeHtml(i18n.t("module.social.messages.template_delete_confirm_body").replace("{name}", templateRecord.title))}</p>`,
+                body: deleteConfirmBody,
                 variant: "danger",
                 actions: [
                     {

@@ -19,7 +19,7 @@
   <string name="module.social.messages.template_use">Verwenden</string>
   <string name="module.social.messages.template_edit">Bearbeiten</string>
   <string name="module.social.messages.template_delete">Löschen</string>
-  <string name="module.social.messages.template_delete_confirm_title">Vorlage Löschen?</string>
+  <string name="module.social.messages.template_delete_confirm_title">Vorlage löschen?</string>
   <string name="module.social.messages.template_delete_confirm_body">Möchten Sie "{name}" wirklich löschen?</string>
   <string name="module.social.messages.template_saved">Vorlage gespeichert.</string>
   <string name="module.social.messages.template_deleted">Vorlage gelöscht.</string>
