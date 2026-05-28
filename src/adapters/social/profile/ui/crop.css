@@ -1,15 +1,18 @@
 .profile-image-crop-popup {
-    --crop-frame-vertical-offset: 280px;
+    --crop-frame-vertical-offset: 180px;
     display: grid;
     gap: 12px;
     justify-items: center;
+}
+
+.profile-image-crop-popup--banner {
+    --crop-frame-vertical-offset: 132px;
 }
 
 .profile-image-crop-frame {
     position: relative;
     width: min(
         100%,
-        640px,
         calc(
             (100vh - var(--crop-frame-vertical-offset)) *
                 var(--crop-aspect-ratio, 1)
@@ -24,7 +27,7 @@
         calc(100dvh - var(--crop-frame-vertical-offset))
     );
     justify-self: center;
-    border-radius: 12px;
+    border-radius: 0;
     overflow: hidden;
     background: var(--surface-soft);
     border: 1px solid var(--border);

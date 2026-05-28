@@ -14,6 +14,50 @@ export function clampCropOffset(offset, maxOffset) {
     return Math.min(safeMaxOffset, Math.max(-safeMaxOffset, safeOffset));
 }
 
+/**
+ * Converts a source crop rectangle to object-position percentages for
+ * object-fit: cover.
+ *
+ * @param {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }} sourceRect
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ * @returns {{ panX: number, panY: number }}
+ */
+export function sourceRectToCoverObjectPositionPercent(
+    sourceRect,
+    imageWidth,
+    imageHeight,
+) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const safeSourceRect = clampSourceRectToImage({
+        sourceX: sourceRect?.sourceX,
+        sourceY: sourceRect?.sourceY,
+        sourceWidth: sourceRect?.sourceWidth,
+        sourceHeight: sourceRect?.sourceHeight,
+        imageWidth: safeImageWidth,
+        imageHeight: safeImageHeight,
+    });
+    const overflowX = Math.max(0, safeImageWidth - safeSourceRect.sourceWidth);
+    const overflowY = Math.max(
+        0,
+        safeImageHeight - safeSourceRect.sourceHeight,
+    );
+    const panX =
+        overflowX === 0 ? 50 : (safeSourceRect.sourceX / overflowX) * 100;
+    const panY =
+        overflowY === 0 ? 50 : (safeSourceRect.sourceY / overflowY) * 100;
+    return {
+        panX: Math.min(100, Math.max(0, panX)),
+        panY: Math.min(100, Math.max(0, panY)),
+    };
+}
+
 function clampSourceRectToImage({
     sourceX,
     sourceY,
@@ -229,6 +273,60 @@ export function computeContainImageBounds({
         width,
         height,
     };
+}
+
+/**
+ * Computes the largest centered source rectangle that matches a crop aspect ratio.
+ *
+ * @param {{
+ *   imageWidth: number,
+ *   imageHeight: number,
+ *   aspectRatio: number,
+ * }} params
+ * @returns {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }}
+ * @example
+ * const sourceRect = computeMaxAspectSourceRect({
+ *   imageWidth: 2400,
+ *   imageHeight: 1600,
+ *   aspectRatio: 3,
+ * });
+ */
+export function computeMaxAspectSourceRect({
+    imageWidth,
+    imageHeight,
+    aspectRatio,
+}) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const safeAspectRatio = Math.max(0.25, Number(aspectRatio) || 1);
+    const imageAspectRatio = safeImageWidth / safeImageHeight;
+
+    if (imageAspectRatio > safeAspectRatio) {
+        const sourceWidth = safeImageHeight * safeAspectRatio;
+        return clampSourceRectToImage({
+            sourceX: (safeImageWidth - sourceWidth) / 2,
+            sourceY: 0,
+            sourceWidth,
+            sourceHeight: safeImageHeight,
+            imageWidth: safeImageWidth,
+            imageHeight: safeImageHeight,
+        });
+    }
+
+    const sourceHeight = safeImageWidth / safeAspectRatio;
+    return clampSourceRectToImage({
+        sourceX: 0,
+        sourceY: (safeImageHeight - sourceHeight) / 2,
+        sourceWidth: safeImageWidth,
+        sourceHeight,
+        imageWidth: safeImageWidth,
+        imageHeight: safeImageHeight,
+    });
 }
 
 /**

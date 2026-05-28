@@ -2,6 +2,7 @@ import {
     clampCropSelection,
     composeCropSourceRect,
     computeContainImageBounds,
+    computeMaxAspectSourceRect,
     computeMovedCropSelection,
     computeResizedCropSelection,
     createInitialCropSelection,
@@ -9,15 +10,24 @@ import {
     panCropSourceRect,
 } from "/static/adapters/social/profile/image-crop.js";
 
+const POPUP_VIEWPORT_MAX_WIDTH = "95vw";
+const POPUP_MAX_WIDTH_PX = 1400;
+const POPUP_HORIZONTAL_CHROME_PX = 40;
+
 function buildCropPopupBody({
     imageUrl,
     imageType,
+    kind,
     aspectRatio,
     escapeHtmlText,
 }) {
     const clampedAspect = Math.max(0.5, Number(aspectRatio) || 1);
+    const popupClass =
+        kind === "banner"
+            ? "profile-image-crop-popup profile-image-crop-popup--banner"
+            : "profile-image-crop-popup";
     return `
-      <div class="profile-image-crop-popup">
+      <div class="${escapeHtmlText(popupClass)}">
         <div
           class="profile-image-crop-frame"
           data-crop-frame
@@ -82,27 +92,63 @@ async function loadCropImage(file) {
  *   file: File,
  *   kind: "avatar" | "banner",
  *   aspectRatio: number,
+ *   // "blob": return cropped PNG output
+ *   // "sourceRect": return selected source rectangle (for preserving original media)
+ *   outputMode?: "blob" | "sourceRect",
  *   openPopupDialog: (config: object) => Promise<string>,
  *   translate: (key: string) => string,
  *   escapeHtmlText: (value: string) => string,
  * }} params
- * @returns {Promise<Blob | null>}
+ * @returns {Promise<Blob | {
+ *   sourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * } | null>}
  */
 export async function openImageCropPopup({
     file,
     kind,
     aspectRatio,
+    outputMode = "blob",
     openPopupDialog,
     translate,
     escapeHtmlText,
 }) {
     const cropImage = await loadCropImage(file);
-    const cropInteractionController = new AbortController();
     const cropAspectRatio = Math.max(0.5, Number(aspectRatio) || 1);
+    const defaultSourceRect = computeMaxAspectSourceRect({
+        imageWidth: cropImage.imageWidth,
+        imageHeight: cropImage.imageHeight,
+        aspectRatio: cropAspectRatio,
+    });
+    const avatarPopupGeometricMeanPx = Math.sqrt(
+        cropImage.imageWidth * cropImage.imageHeight,
+    );
+    const popupContentWidthPx =
+        kind === "avatar"
+            ? Math.min(
+                  avatarPopupGeometricMeanPx,
+                  defaultSourceRect.sourceWidth,
+              )
+            : defaultSourceRect.sourceWidth;
+    const popupMaxWidthPx = Math.min(
+        POPUP_MAX_WIDTH_PX,
+        Math.max(
+            1,
+            Math.round(popupContentWidthPx + POPUP_HORIZONTAL_CHROME_PX),
+        ),
+    );
+    const cropInteractionController = new AbortController();
     const minimumSelectionSize = 64;
-    const initialSelectionFillRatio = 0.96;
+    const initialSelectionFillRatio = 1;
     const AUTO_ZOOM_MIN_DRAG_DISTANCE = 2;
     const MAX_AUTO_ZOOM_DEPTH = 12;
+    const SOURCE_RECT_EPSILON = 0.001;
     const state = {
         dragging: false,
         dragPointerId: null,
@@ -115,7 +161,7 @@ export async function openImageCropPopup({
         dragAnchorTop: null,
         displayBounds: null,
         selection: null,
-        sourceRect: null,
+        sourceRect: { ...defaultSourceRect },
         zoomDepth: 0,
         shouldAutoZoomOnRelease: false,
     };
@@ -202,36 +248,48 @@ export async function openImageCropPopup({
         });
     }
 
+    function isFullImageSourceRect(sourceRect, imageWidth, imageHeight) {
+        return (
+            sourceRect.sourceX <= SOURCE_RECT_EPSILON &&
+            sourceRect.sourceY <= SOURCE_RECT_EPSILON &&
+            Math.abs(sourceRect.sourceWidth - imageWidth) <=
+                SOURCE_RECT_EPSILON &&
+            Math.abs(sourceRect.sourceHeight - imageHeight) <=
+                SOURCE_RECT_EPSILON
+        );
+    }
+
     function renderCrop() {
         if (!(frameElement instanceof HTMLElement)) return;
         if (!(imageElement instanceof HTMLImageElement)) return;
         if (!(selectionElement instanceof HTMLElement)) return;
         const frameRect = frameElement.getBoundingClientRect();
+        if (!state.sourceRect) {
+            state.sourceRect = { ...defaultSourceRect };
+        }
         const containBounds = computeContainImageBounds({
             imageWidth: cropImage.imageWidth,
             imageHeight: cropImage.imageHeight,
             frameWidth: frameRect.width,
             frameHeight: frameRect.height,
         });
-        const displayBounds =
-            state.zoomDepth > 0
-                ? {
-                      left: 0,
-                      top: 0,
-                      width: frameRect.width,
-                      height: frameRect.height,
-                  }
-                : containBounds;
+        const shouldExpandToFrame =
+            state.zoomDepth > 0 ||
+            !isFullImageSourceRect(
+                state.sourceRect,
+                cropImage.imageWidth,
+                cropImage.imageHeight,
+            );
+        const displayBounds = shouldExpandToFrame
+            ? {
+                  left: 0,
+                  top: 0,
+                  width: frameRect.width,
+                  height: frameRect.height,
+              }
+            : containBounds;
         if (displayBounds.width <= 0 || displayBounds.height <= 0) return;
         state.displayBounds = displayBounds;
-        if (!state.sourceRect) {
-            state.sourceRect = {
-                sourceX: 0,
-                sourceY: 0,
-                sourceWidth: cropImage.imageWidth,
-                sourceHeight: cropImage.imageHeight,
-            };
-        }
         const safeSourceWidth = Math.max(1, state.sourceRect.sourceWidth);
         const safeSourceHeight = Math.max(1, state.sourceRect.sourceHeight);
         const sourceScale = Math.min(
@@ -284,12 +342,7 @@ export async function openImageCropPopup({
 
     function resetCrop() {
         state.zoomDepth = 0;
-        state.sourceRect = {
-            sourceX: 0,
-            sourceY: 0,
-            sourceWidth: cropImage.imageWidth,
-            sourceHeight: cropImage.imageHeight,
-        };
+        state.sourceRect = { ...defaultSourceRect };
         state.selection = null;
         state.shouldAutoZoomOnRelease = false;
     }
@@ -468,10 +521,11 @@ export async function openImageCropPopup({
             buildCropPopupBody({
                 imageUrl: cropImage.imageUrl,
                 imageType: file.name,
+                kind,
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),
-        maxWidth: "760px",
+        maxWidth: `min(${POPUP_VIEWPORT_MAX_WIDTH}, ${popupMaxWidthPx}px)`,
         actions: [
             {
                 id: "reset",
@@ -548,6 +602,14 @@ export async function openImageCropPopup({
         selection: saveCropState.selection,
         imageBounds: saveCropState.imageBounds,
     });
+    if (outputMode === "sourceRect") {
+        URL.revokeObjectURL(cropImage.imageUrl);
+        return {
+            sourceRect,
+            imageWidth: cropImage.imageWidth,
+            imageHeight: cropImage.imageHeight,
+        };
+    }
     const outputDimensions =
         kind === "avatar"
             ? { width: 1024, height: 1024 }

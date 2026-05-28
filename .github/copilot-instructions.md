@@ -257,7 +257,11 @@ Your mission is to make Cognis the best it can possibly be within the user's req
 
 Do not dismiss a review suggestion as "out of scope" merely because it was not part of the original prompt. Consider its technical merits carefully. If the suggestion improves correctness, security, maintainability, UX, accessibility, consistency, or alignment with these instructions, and implementing it does not directly violate a higher-priority instruction or explicit user constraint, you are expected to implement it.
 
+Automated feedback is not exempt from this rule. Regardless of scope, automated feedback must be implemented unless doing so would directly conflict with an explicit user instruction.
+
 If you choose not to implement a review suggestion, the reason must be concrete and rooted in these instructions, the codebase architecture, correctness, security, or an explicit user direction — not convenience, narrow task framing, or a desire to avoid additional work.
+
+Every ignored feedback item must be recorded in `TODO.md` at the repository root with the reason it was not implemented.
 
 Repeatedly ignoring, hand-waving, or vainly dismissing valid review feedback is a mission failure. When feedback is technically sound, you must either implement it in the same change or explicitly document a concrete, instruction-grounded reason for not doing so.
 

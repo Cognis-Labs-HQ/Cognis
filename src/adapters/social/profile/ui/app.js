@@ -16,6 +16,7 @@ import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { openImageCropPopup } from "/static/adapters/social/profile/crop-popup.js";
+import { sourceRectToCoverObjectPositionPercent } from "/static/adapters/social/profile/image-crop.js";
 
 let root = null;
 let i18n = null;
@@ -29,6 +30,8 @@ let posts = [];
 let avatarBlobUrl = null;
 let bannerBlobUrl = null;
 let bannerHeight = null;
+let bannerPanX = 50;
+let bannerPanY = 50;
 let composer = null;
 let elements = [];
 let bannerMenuCloseHandler = null;
@@ -244,25 +247,28 @@ async function loadImageAsBlob(fileKey) {
     }
 }
 
-async function loadBannerHeightPreference() {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return "half";
+async function loadBannerLayoutPreference(accountId) {
+    if (!accountId) return { height: "half", panX: 50, panY: 50 };
     try {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/profile-banner`,
+            `/api/v1/users/${encodeURIComponent(accountId)}/preferences/profile-banner`,
         );
-        if (!res.ok) return "half";
+        if (!res.ok) return { height: "half", panX: 50, panY: 50 };
         const payload = await res.json();
         const raw = payload?.data?.layoutJson;
-        if (!raw) return "half";
+        if (!raw) return { height: "half", panX: 50, panY: 50 };
         const parsed = JSON.parse(raw);
-        return parsed?.height === "full" ? "full" : "half";
+        return {
+            height: parsed?.height === "full" ? "full" : "half",
+            panX: resolveBannerPanPercent(parsed?.panX),
+            panY: resolveBannerPanPercent(parsed?.panY),
+        };
     } catch {
-        return "half";
+        return { height: "half", panX: 50, panY: 50 };
     }
 }
 
-async function saveBannerHeightPreference(height) {
+async function saveBannerLayoutPreference({ height, panX, panY }) {
     const account = localStorage.getItem("cognis_account");
     if (!account) return;
     await apiFetch(
@@ -270,9 +276,55 @@ async function saveBannerHeightPreference(height) {
         {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ layout: { height } }),
+            body: JSON.stringify({ layout: { height, panX, panY } }),
         },
     );
+}
+
+function clampBannerPanPercent(value) {
+    return Math.min(100, Math.max(0, Number(value) || 0));
+}
+
+function resolveBannerPanPercent(value) {
+    const normalized = Number(value);
+    if (!Number.isFinite(normalized)) return 50;
+    return clampBannerPanPercent(normalized);
+}
+
+function getBannerObjectPositionCssValue() {
+    return `${bannerPanX}% ${bannerPanY}%`;
+}
+
+/**
+ * Converts a source rectangle into CSS object-position percentages for
+ * object-fit: cover.
+ *
+ * @param {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }} sourceRect
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ * @returns {{ panX: number, panY: number }}
+ * @example
+ * sourceRectToPanPercent(
+ *   { sourceX: 100, sourceY: 40, sourceWidth: 300, sourceHeight: 120 },
+ *   1000,
+ *   500,
+ * );
+ */
+function sourceRectToPanPercent(sourceRect, imageWidth, imageHeight) {
+    const pan = sourceRectToCoverObjectPositionPercent(
+        sourceRect,
+        imageWidth,
+        imageHeight,
+    );
+    return {
+        panX: clampBannerPanPercent(pan.panX),
+        panY: clampBannerPanPercent(pan.panY),
+    };
 }
 
 function visibilityClass(v) {
@@ -309,8 +361,9 @@ function renderAvatarContent() {
 }
 
 function renderHero() {
+    const bannerImageObjectPosition = getBannerObjectPositionCssValue();
     const bannerContent = bannerBlobUrl
-        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" alt="" />`
+        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
         : `<div class="profile-hero-banner-placeholder"></div>`;
 
     const details = [
@@ -800,22 +853,63 @@ function isGifFile(file) {
     return /\.gif$/i.test(file.name);
 }
 
+function shouldPreserveOriginalGif(kind, file) {
+    return kind === "banner" && isGifFile(file);
+}
+
+/**
+ * Returns whether a crop popup result contains source rectangle metadata.
+ *
+ * @param {unknown} cropResult
+ * @returns {cropResult is {
+ *   sourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * }}
+ * @example
+ * isCropResultWithSourceRect({
+ *   sourceRect: { sourceX: 0, sourceY: 0, sourceWidth: 1200, sourceHeight: 400 },
+ *   imageWidth: 1600,
+ *   imageHeight: 900,
+ * });
+ */
+function isCropResultWithSourceRect(cropResult) {
+    if (!cropResult || typeof cropResult !== "object") return false;
+    if (!("sourceRect" in cropResult)) return false;
+    const sourceRect = cropResult.sourceRect;
+    if (!sourceRect || typeof sourceRect !== "object") return false;
+    return (
+        Number.isFinite(Number(cropResult.imageWidth)) &&
+        Number.isFinite(Number(cropResult.imageHeight)) &&
+        Number.isFinite(Number(sourceRect.sourceX)) &&
+        Number.isFinite(Number(sourceRect.sourceY)) &&
+        Number.isFinite(Number(sourceRect.sourceWidth)) &&
+        Number.isFinite(Number(sourceRect.sourceHeight))
+    );
+}
+
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-    const skipCrop = isGifFile(file);
-    const uploadBlob = skipCrop
-        ? file
-        : await openImageCropPopup({
-              file,
-              kind,
-              aspectRatio,
-              openPopupDialog: openPopup,
-              translate: (key) => i18n.t(key),
-              escapeHtmlText: escapeHtml,
-          });
+    const preserveOriginalGif = shouldPreserveOriginalGif(kind, file);
+    const cropResult = await openImageCropPopup({
+        file,
+        kind,
+        aspectRatio,
+        outputMode: preserveOriginalGif ? "sourceRect" : "blob",
+        openPopupDialog: openPopup,
+        translate: (key) => i18n.t(key),
+        escapeHtmlText: escapeHtml,
+    });
+    if (!cropResult) return false;
+    const uploadBlob = preserveOriginalGif ? file : cropResult;
     if (!(uploadBlob instanceof Blob)) return false;
     const endpoint =
         kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
-    const contentType = skipCrop
+    const contentType = preserveOriginalGif
         ? file.type || "application/octet-stream"
         : "image/png";
     const response = await apiFetch(endpoint, {
@@ -833,6 +927,23 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
+        if (preserveOriginalGif && isCropResultWithSourceRect(cropResult)) {
+            const pan = sourceRectToPanPercent(
+                cropResult.sourceRect,
+                cropResult.imageWidth,
+                cropResult.imageHeight,
+            );
+            bannerPanX = pan.panX;
+            bannerPanY = pan.panY;
+        } else {
+            bannerPanX = 50;
+            bannerPanY = 50;
+        }
+        await saveBannerLayoutPreference({
+            height: bannerHeight === "full" ? "full" : "half",
+            panX: bannerPanX,
+            panY: bannerPanY,
+        });
     }
     profile = await loadOwnProfile();
     composer.refresh(elements);
@@ -1316,7 +1427,10 @@ function bindPageEvents() {
             const { width, height } = btn.getBoundingClientRect();
             pendingBannerAspectRatio =
                 width > 0 && height > 0
-                    ? width / height
+                    ? Math.min(
+                          BANNER_CROP_WIDTH_TO_HEIGHT_RATIO,
+                          width / height,
+                      )
                     : BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
             bannerFileInput.click();
         },
@@ -1467,7 +1581,11 @@ function bindPageEvents() {
                         bannerMenuCloseHandler,
                         true,
                     );
-                    await saveBannerHeightPreference(bannerHeight);
+                    await saveBannerLayoutPreference({
+                        height: bannerHeight,
+                        panX: bannerPanX,
+                        panY: bannerPanY,
+                    });
                     composer.refresh(elements);
                 });
             },
@@ -1521,6 +1639,8 @@ export async function mount(rootEl, { signal } = {}) {
     posts = [];
     revokeProfileBlobUrls();
     bannerHeight = null;
+    bannerPanX = 50;
+    bannerPanY = 50;
     composer = null;
     elements = [];
 
@@ -1570,7 +1690,10 @@ export async function mount(rootEl, { signal } = {}) {
 
     avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
     bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
-    bannerHeight = await loadBannerHeightPreference();
+    const bannerLayout = await loadBannerLayoutPreference(profile?.accountId);
+    bannerHeight = bannerLayout.height;
+    bannerPanX = bannerLayout.panX;
+    bannerPanY = bannerLayout.panY;
 
     if (isAborted()) return;
 
