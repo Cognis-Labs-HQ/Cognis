@@ -122,8 +122,8 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
             ?.stringsBaseUrl,
         [
             "/static/gateways/tfa/languages",
-            "/static/adapters/tfa/smtp/languages",
             "/static/adapters/tfa/totp/languages",
+            "/static/adapters/tfa/smtp/languages",
         ],
     );
     assert.equal(

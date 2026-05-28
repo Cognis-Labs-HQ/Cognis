@@ -203,5 +203,8 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
         configuredAt: new Date().toISOString(),
     });
     const methods = await gateway.getLoginMethods("alice");
-    assert.equal(methods.some((method) => method.id === "smtp"), false);
+    assert.equal(
+        methods.some((method) => method.id === "smtp"),
+        false,
+    );
 });

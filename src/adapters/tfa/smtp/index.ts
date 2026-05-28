@@ -99,10 +99,13 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         return true;
     }
 
-    private async sendCode(scope: "setup" | "login", input: {
-        accountId: string;
-        email: string;
-    }): Promise<void> {
+    private async sendCode(
+        scope: "setup" | "login",
+        input: {
+            accountId: string;
+            email: string;
+        },
+    ): Promise<void> {
         this.assertEmailCodeAvailable();
         const key = challengeKey(scope, input.accountId);
         const code = this.issueCode(key);
@@ -127,8 +130,9 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         };
     }> {
         this.assertEmailCodeAvailable();
-        const primaryEmail =
-            await this.context.getPrimaryEmail?.(input.accountId);
+        const primaryEmail = await this.context.getPrimaryEmail?.(
+            input.accountId,
+        );
         if (!primaryEmail) {
             throw new Error("primary_email_required");
         }
@@ -221,7 +225,8 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     component: "adapter-tfa-smtp",
                     operation: "send_login_code",
                     accountId: input.accountId,
-                    error: error instanceof Error ? error.message : String(error),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 },
             );
             return { ready: false, message: "smtp_unavailable" };
@@ -240,7 +245,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 message: "code_required",
             });
         }
-        const verified = this.verifyCode(challengeKey("login", input.accountId), code);
+        const verified = this.verifyCode(
+            challengeKey("login", input.accountId),
+            code,
+        );
         if (!verified) {
             return Promise.resolve({
                 verified: false,
@@ -266,6 +274,8 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     }
 }
 
-export function createAdapter(context?: SmtpTfaAdapterContext): TfaMethodAdapter {
+export function createAdapter(
+    context?: SmtpTfaAdapterContext,
+): TfaMethodAdapter {
     return new SmtpTfaAdapter(context);
 }
