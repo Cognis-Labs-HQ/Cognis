@@ -87,16 +87,27 @@ async function loadCropImage(file) {
  *   file: File,
  *   kind: "avatar" | "banner",
  *   aspectRatio: number,
+ *   outputMode?: "blob" | "sourceRect",
  *   openPopupDialog: (config: object) => Promise<string>,
  *   translate: (key: string) => string,
  *   escapeHtmlText: (value: string) => string,
  * }} params
- * @returns {Promise<Blob | null>}
+ * @returns {Promise<Blob | {
+ *   sourceRect: {
+ *     sourceX: number,
+ *     sourceY: number,
+ *     sourceWidth: number,
+ *     sourceHeight: number,
+ *   },
+ *   imageWidth: number,
+ *   imageHeight: number,
+ * } | null>}
  */
 export async function openImageCropPopup({
     file,
     kind,
     aspectRatio,
+    outputMode = "blob",
     openPopupDialog,
     translate,
     escapeHtmlText,
@@ -477,7 +488,7 @@ export async function openImageCropPopup({
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),
-        maxWidth: "min(95vw, 1400px)",
+        maxWidth: `min(95vw, ${Math.min(1400, Math.max(1, Math.round(cropImage.imageWidth + 40)))}px)`,
         actions: [
             {
                 id: "reset",
@@ -554,6 +565,14 @@ export async function openImageCropPopup({
         selection: saveCropState.selection,
         imageBounds: saveCropState.imageBounds,
     });
+    if (outputMode === "sourceRect") {
+        URL.revokeObjectURL(cropImage.imageUrl);
+        return {
+            sourceRect,
+            imageWidth: cropImage.imageWidth,
+            imageHeight: cropImage.imageHeight,
+        };
+    }
     const outputDimensions =
         kind === "avatar"
             ? { width: 1024, height: 1024 }

@@ -29,6 +29,8 @@ let posts = [];
 let avatarBlobUrl = null;
 let bannerBlobUrl = null;
 let bannerHeight = null;
+let bannerPanX = 50;
+let bannerPanY = 50;
 let composer = null;
 let elements = [];
 let bannerMenuCloseHandler = null;
@@ -244,25 +246,39 @@ async function loadImageAsBlob(fileKey) {
     }
 }
 
-async function loadBannerHeightPreference() {
+async function loadBannerLayoutPreference() {
     const account = localStorage.getItem("cognis_account");
-    if (!account) return "half";
+    if (!account) return { height: "half", panX: 50, panY: 50 };
     try {
         const res = await apiFetch(
             `/api/v1/users/${encodeURIComponent(account)}/preferences/profile-banner`,
         );
-        if (!res.ok) return "half";
+        if (!res.ok) return { height: "half", panX: 50, panY: 50 };
         const payload = await res.json();
         const raw = payload?.data?.layoutJson;
-        if (!raw) return "half";
+        if (!raw) return { height: "half", panX: 50, panY: 50 };
         const parsed = JSON.parse(raw);
-        return parsed?.height === "full" ? "full" : "half";
+        return {
+            height: parsed?.height === "full" ? "full" : "half",
+            panX:
+                Number.isFinite(Number(parsed?.panX)) &&
+                Number(parsed.panX) >= 0 &&
+                Number(parsed.panX) <= 100
+                    ? Number(parsed.panX)
+                    : 50,
+            panY:
+                Number.isFinite(Number(parsed?.panY)) &&
+                Number(parsed.panY) >= 0 &&
+                Number(parsed.panY) <= 100
+                    ? Number(parsed.panY)
+                    : 50,
+        };
     } catch {
-        return "half";
+        return { height: "half", panX: 50, panY: 50 };
     }
 }
 
-async function saveBannerHeightPreference(height) {
+async function saveBannerLayoutPreference({ height, panX, panY }) {
     const account = localStorage.getItem("cognis_account");
     if (!account) return;
     await apiFetch(
@@ -270,9 +286,29 @@ async function saveBannerHeightPreference(height) {
         {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ layout: { height } }),
+            body: JSON.stringify({ layout: { height, panX, panY } }),
         },
     );
+}
+
+function clampBannerPanPercent(value) {
+    return Math.min(100, Math.max(0, Number(value) || 0));
+}
+
+function sourceRectCenterToPanPercent(sourceRect, imageWidth, imageHeight) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    return {
+        panX: clampBannerPanPercent(
+            ((sourceRect.sourceX + sourceRect.sourceWidth / 2) / safeImageWidth) *
+                100,
+        ),
+        panY: clampBannerPanPercent(
+            ((sourceRect.sourceY + sourceRect.sourceHeight / 2) /
+                safeImageHeight) *
+                100,
+        ),
+    };
 }
 
 function visibilityClass(v) {
@@ -310,7 +346,7 @@ function renderAvatarContent() {
 
 function renderHero() {
     const bannerContent = bannerBlobUrl
-        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" alt="" />`
+        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(`${bannerPanX}% ${bannerPanY}%`)};" alt="" />`
         : `<div class="profile-hero-banner-placeholder"></div>`;
 
     const details = [
@@ -801,21 +837,22 @@ function isGifFile(file) {
 }
 
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-    const skipCrop = isGifFile(file);
-    const uploadBlob = skipCrop
-        ? file
-        : await openImageCropPopup({
-              file,
-              kind,
-              aspectRatio,
-              openPopupDialog: openPopup,
-              translate: (key) => i18n.t(key),
-              escapeHtmlText: escapeHtml,
-          });
+    const preserveGifUpload = kind === "banner" && isGifFile(file);
+    const cropResult = await openImageCropPopup({
+        file,
+        kind,
+        aspectRatio,
+        outputMode: preserveGifUpload ? "sourceRect" : "blob",
+        openPopupDialog: openPopup,
+        translate: (key) => i18n.t(key),
+        escapeHtmlText: escapeHtml,
+    });
+    if (!cropResult) return false;
+    const uploadBlob = preserveGifUpload ? file : cropResult;
     if (!(uploadBlob instanceof Blob)) return false;
     const endpoint =
         kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
-    const contentType = skipCrop
+    const contentType = preserveGifUpload
         ? file.type || "application/octet-stream"
         : "image/png";
     const response = await apiFetch(endpoint, {
@@ -833,6 +870,23 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
+        if (preserveGifUpload && cropResult && !(cropResult instanceof Blob)) {
+            const pan = sourceRectCenterToPanPercent(
+                cropResult.sourceRect,
+                cropResult.imageWidth,
+                cropResult.imageHeight,
+            );
+            bannerPanX = pan.panX;
+            bannerPanY = pan.panY;
+        } else {
+            bannerPanX = 50;
+            bannerPanY = 50;
+        }
+        await saveBannerLayoutPreference({
+            height: bannerHeight === "full" ? "full" : "half",
+            panX: bannerPanX,
+            panY: bannerPanY,
+        });
     }
     profile = await loadOwnProfile();
     composer.refresh(elements);
@@ -1467,7 +1521,11 @@ function bindPageEvents() {
                         bannerMenuCloseHandler,
                         true,
                     );
-                    await saveBannerHeightPreference(bannerHeight);
+                    await saveBannerLayoutPreference({
+                        height: bannerHeight,
+                        panX: bannerPanX,
+                        panY: bannerPanY,
+                    });
                     composer.refresh(elements);
                 });
             },
@@ -1521,6 +1579,8 @@ export async function mount(rootEl, { signal } = {}) {
     posts = [];
     revokeProfileBlobUrls();
     bannerHeight = null;
+    bannerPanX = 50;
+    bannerPanY = 50;
     composer = null;
     elements = [];
 
@@ -1570,7 +1630,10 @@ export async function mount(rootEl, { signal } = {}) {
 
     avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
     bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
-    bannerHeight = await loadBannerHeightPreference();
+    const bannerLayout = await loadBannerLayoutPreference();
+    bannerHeight = bannerLayout.height;
+    bannerPanX = bannerLayout.panX;
+    bannerPanY = bannerLayout.panY;
 
     if (isAborted()) return;
 
