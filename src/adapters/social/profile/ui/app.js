@@ -346,8 +346,9 @@ function renderAvatarContent() {
 }
 
 function renderHero() {
+    const bannerImageObjectPosition = getBannerObjectPositionCssValue();
     const bannerContent = bannerBlobUrl
-        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(getBannerObjectPositionCssValue())};" alt="" />`
+        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
         : `<div class="profile-hero-banner-placeholder"></div>`;
 
     const details = [
@@ -838,22 +839,22 @@ function isGifFile(file) {
 }
 
 async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-    const preserveGifUpload = kind === "banner" && isGifFile(file);
+    const shouldPreserveOriginalGif = kind === "banner" && isGifFile(file);
     const cropResult = await openImageCropPopup({
         file,
         kind,
         aspectRatio,
-        outputMode: preserveGifUpload ? "sourceRect" : "blob",
+        outputMode: shouldPreserveOriginalGif ? "sourceRect" : "blob",
         openPopupDialog: openPopup,
         translate: (key) => i18n.t(key),
         escapeHtmlText: escapeHtml,
     });
     if (!cropResult) return false;
-    const uploadBlob = preserveGifUpload ? file : cropResult;
+    const uploadBlob = shouldPreserveOriginalGif ? file : cropResult;
     if (!(uploadBlob instanceof Blob)) return false;
     const endpoint =
         kind === "avatar" ? "/api/v1/profile/avatar" : "/api/v1/profile/banner";
-    const contentType = preserveGifUpload
+    const contentType = shouldPreserveOriginalGif
         ? file.type || "application/octet-stream"
         : "image/png";
     const response = await apiFetch(endpoint, {
@@ -872,7 +873,7 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
         if (
-            preserveGifUpload &&
+            shouldPreserveOriginalGif &&
             typeof cropResult === "object" &&
             "sourceRect" in cropResult
         ) {

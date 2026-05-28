@@ -26,7 +26,7 @@ function buildCropPopupBody({
             ? "profile-image-crop-popup profile-image-crop-popup--banner"
             : "profile-image-crop-popup";
     return `
-      <div class="${popupClass}">
+      <div class="${escapeHtmlText(popupClass)}">
         <div
           class="profile-image-crop-frame"
           data-crop-frame
