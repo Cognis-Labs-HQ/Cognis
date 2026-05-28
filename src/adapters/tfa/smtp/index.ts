@@ -5,6 +5,7 @@ const DEFAULT_CODE_LENGTH = 6;
 const MIN_CODE_LENGTH = 4;
 const MAX_CODE_LENGTH = 10;
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
+const NUMERIC_DIGITS = "0123456789";
 
 interface SmtpTfaAdapterContext {
     canSendVerificationEmail?: () => boolean;
@@ -40,8 +41,9 @@ function challengeKey(scope: "setup" | "login", accountId: string): string {
 }
 
 function generateNumericCode(codeLength: number): string {
-    return Array.from({ length: codeLength }, () =>
-        String(randomInt(0, 10)),
+    return Array.from(
+        { length: codeLength },
+        () => NUMERIC_DIGITS[randomInt(0, NUMERIC_DIGITS.length)],
     ).join("");
 }
 
@@ -79,7 +81,17 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         return challenge;
     }
 
+    private cleanupExpiredChallenges(): void {
+        const now = Date.now();
+        for (const [key, challenge] of this.challenges.entries()) {
+            if (now > challenge.expiresAt) {
+                this.challenges.delete(key);
+            }
+        }
+    }
+
     private issueCode(key: string): string {
+        this.cleanupExpiredChallenges();
         const code = generateNumericCode(this.codeLength);
         this.challenges.set(key, {
             code,

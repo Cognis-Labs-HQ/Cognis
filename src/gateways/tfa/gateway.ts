@@ -514,44 +514,48 @@ export class CoreTfaGateway {
         const enabledConfiguredMethods = configuredMethods
             .filter((method) => method.enabled)
             .sort((left, right) => left.sortOrder - right.sortOrder);
-        const methods: Array<{ id: string; name: string }> = [];
-        for (const method of enabledConfiguredMethods) {
-            const adapter = this.adapters.get(method.methodId);
-            if (!adapter || !this.enabledAdapters.has(method.methodId)) {
-                continue;
-            }
-            if (typeof adapter.beginLoginChallenge === "function") {
-                try {
-                    const challenge = await adapter.beginLoginChallenge({
-                        accountId,
-                        state: method.state,
-                    });
-                    if (!challenge.ready) {
-                        continue;
-                    }
-                } catch (error) {
-                    this.options.log?.(
-                        "error",
-                        "Failed to prepare TFA login challenge.",
-                        {
-                            component: "tfa-gateway",
-                            operation: "prepare_login_challenge",
-                            accountId,
-                            methodId: method.methodId,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                    continue;
+        const resolvedMethods = await Promise.all(
+            enabledConfiguredMethods.map(async (method) => {
+                const adapter = this.adapters.get(method.methodId);
+                if (!adapter || !this.enabledAdapters.has(method.methodId)) {
+                    return null;
                 }
-            }
-            methods.push({
-                id: adapter.id,
-                name: adapter.name,
-            });
-        }
+                if (typeof adapter.beginLoginChallenge === "function") {
+                    try {
+                        const challenge = await adapter.beginLoginChallenge({
+                            accountId,
+                            state: method.state,
+                        });
+                        if (!challenge.ready) {
+                            return null;
+                        }
+                    } catch (error) {
+                        this.options.log?.(
+                            "error",
+                            "Failed to prepare TFA login challenge.",
+                            {
+                                component: "tfa-gateway",
+                                operation: "prepare_login_challenge",
+                                accountId,
+                                methodId: method.methodId,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                        return null;
+                    }
+                }
+                return {
+                    id: adapter.id,
+                    name: adapter.name,
+                };
+            }),
+        );
+        const methods = resolvedMethods.filter(
+            (method): method is { id: string; name: string } => method != null,
+        );
         if (await this.store.hasUnusedRecoveryCodes(accountId)) {
             methods.push({ id: "recovery_code", name: "Recovery Code" });
         }
