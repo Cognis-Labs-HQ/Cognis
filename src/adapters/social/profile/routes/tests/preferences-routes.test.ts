@@ -42,3 +42,59 @@ test("preferences routes save and load layout preferences", async () => {
     );
     assert.match(body, /layoutJson/);
 });
+
+test("preferences routes allow reading another user's profile-banner layout", async () => {
+    const store = new VolatileUserPreferenceStore();
+    await store.set(
+        "u1",
+        "profile-banner",
+        JSON.stringify({ height: "half", panX: 25, panY: 40 }),
+    );
+    const route = createPreferencesRoutes(store);
+    const token = issueAccessToken("u2", "user", 60);
+    let status = 0;
+    let body = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: "Bearer " + token },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users/u1/preferences/profile-banner"),
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.equal(
+        parsed?.data?.layoutJson,
+        JSON.stringify({ height: "half", panX: 25, panY: 40 }),
+    );
+});
+
+test("preferences routes still deny reading another user's non-banner preference", async () => {
+    const store = new VolatileUserPreferenceStore();
+    await store.set("u1", "home", JSON.stringify({ a: 1 }));
+    const route = createPreferencesRoutes(store);
+    const token = issueAccessToken("u2", "user", 60);
+    let status = 0;
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: "Bearer " + token },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/u1/preferences/home"),
+    );
+    assert.equal(status, 403);
+});

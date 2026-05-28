@@ -14,6 +14,50 @@ export function clampCropOffset(offset, maxOffset) {
     return Math.min(safeMaxOffset, Math.max(-safeMaxOffset, safeOffset));
 }
 
+/**
+ * Converts a source crop rectangle to object-position percentages for
+ * object-fit: cover.
+ *
+ * @param {{
+ *   sourceX: number,
+ *   sourceY: number,
+ *   sourceWidth: number,
+ *   sourceHeight: number,
+ * }} sourceRect
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ * @returns {{ panX: number, panY: number }}
+ */
+export function sourceRectToCoverObjectPositionPercent(
+    sourceRect,
+    imageWidth,
+    imageHeight,
+) {
+    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
+    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+    const safeSourceRect = clampSourceRectToImage({
+        sourceX: sourceRect?.sourceX,
+        sourceY: sourceRect?.sourceY,
+        sourceWidth: sourceRect?.sourceWidth,
+        sourceHeight: sourceRect?.sourceHeight,
+        imageWidth: safeImageWidth,
+        imageHeight: safeImageHeight,
+    });
+    const overflowX = Math.max(0, safeImageWidth - safeSourceRect.sourceWidth);
+    const overflowY = Math.max(
+        0,
+        safeImageHeight - safeSourceRect.sourceHeight,
+    );
+    const panX =
+        overflowX === 0 ? 50 : (safeSourceRect.sourceX / overflowX) * 100;
+    const panY =
+        overflowY === 0 ? 50 : (safeSourceRect.sourceY / overflowY) * 100;
+    return {
+        panX: Math.min(100, Math.max(0, panX)),
+        panY: Math.min(100, Math.max(0, panY)),
+    };
+}
+
 function clampSourceRectToImage({
     sourceX,
     sourceY,

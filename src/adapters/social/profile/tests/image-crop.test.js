@@ -14,6 +14,7 @@ import {
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
+    sourceRectToCoverObjectPositionPercent,
 } from "../ui/image-crop.js";
 
 test("clampCropOffset limits offsets to range", () => {
@@ -130,6 +131,38 @@ test("computeMaxAspectSourceRect keeps full height for wide source images", () =
     assert.equal(sourceRect.sourceHeight, 900);
     assert.equal(sourceRect.sourceWidth, 900);
     assert.equal(sourceRect.sourceX, 750);
+});
+
+test("sourceRectToCoverObjectPositionPercent uses overflow distance for pan", () => {
+    const pan = sourceRectToCoverObjectPositionPercent(
+        {
+            sourceX: 0,
+            sourceY: 300,
+            sourceWidth: 900,
+            sourceHeight: 300,
+        },
+        900,
+        1200,
+    );
+
+    assert.equal(pan.panX, 50);
+    assert.equal(pan.panY, 33.33333333333333);
+});
+
+test("sourceRectToCoverObjectPositionPercent keeps centered crop at 50/50", () => {
+    const pan = sourceRectToCoverObjectPositionPercent(
+        {
+            sourceX: 300,
+            sourceY: 300,
+            sourceWidth: 600,
+            sourceHeight: 600,
+        },
+        1200,
+        1200,
+    );
+
+    assert.equal(pan.panX, 50);
+    assert.equal(pan.panY, 50);
 });
 
 test("createInitialCropSelection uses centered max-size area for target ratio", () => {

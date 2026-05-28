@@ -16,6 +16,7 @@ import { formatDate } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { openImageCropPopup } from "/static/adapters/social/profile/crop-popup.js";
+import { sourceRectToCoverObjectPositionPercent } from "/static/adapters/social/profile/image-crop.js";
 
 let root = null;
 let i18n = null;
@@ -246,12 +247,11 @@ async function loadImageAsBlob(fileKey) {
     }
 }
 
-async function loadBannerLayoutPreference() {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return { height: "half", panX: 50, panY: 50 };
+async function loadBannerLayoutPreference(accountId) {
+    if (!accountId) return { height: "half", panX: 50, panY: 50 };
     try {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/profile-banner`,
+            `/api/v1/users/${encodeURIComponent(accountId)}/preferences/profile-banner`,
         );
         if (!res.ok) return { height: "half", panX: 50, panY: 50 };
         const payload = await res.json();
@@ -296,7 +296,8 @@ function getBannerObjectPositionCssValue() {
 }
 
 /**
- * Converts a source rectangle center into CSS object-position percentages.
+ * Converts a source rectangle into CSS object-position percentages for
+ * object-fit: cover.
  *
  * @param {{
  *   sourceX: number,
@@ -308,26 +309,21 @@ function getBannerObjectPositionCssValue() {
  * @param {number} imageHeight
  * @returns {{ panX: number, panY: number }}
  * @example
- * sourceRectCenterToPanPercent(
+ * sourceRectToPanPercent(
  *   { sourceX: 100, sourceY: 40, sourceWidth: 300, sourceHeight: 120 },
  *   1000,
  *   500,
  * );
  */
-function sourceRectCenterToPanPercent(sourceRect, imageWidth, imageHeight) {
-    const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
-    const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
+function sourceRectToPanPercent(sourceRect, imageWidth, imageHeight) {
+    const pan = sourceRectToCoverObjectPositionPercent(
+        sourceRect,
+        imageWidth,
+        imageHeight,
+    );
     return {
-        panX: clampBannerPanPercent(
-            ((sourceRect.sourceX + sourceRect.sourceWidth / 2) /
-                safeImageWidth) *
-                100,
-        ),
-        panY: clampBannerPanPercent(
-            ((sourceRect.sourceY + sourceRect.sourceHeight / 2) /
-                safeImageHeight) *
-                100,
-        ),
+        panX: clampBannerPanPercent(pan.panX),
+        panY: clampBannerPanPercent(pan.panY),
     };
 }
 
@@ -932,7 +928,7 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
         if (preserveOriginalGif && isCropResultWithSourceRect(cropResult)) {
-            const pan = sourceRectCenterToPanPercent(
+            const pan = sourceRectToPanPercent(
                 cropResult.sourceRect,
                 cropResult.imageWidth,
                 cropResult.imageHeight,
@@ -1694,7 +1690,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
     bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
-    const bannerLayout = await loadBannerLayoutPreference();
+    const bannerLayout = await loadBannerLayoutPreference(profile?.accountId);
     bannerHeight = bannerLayout.height;
     bannerPanX = bannerLayout.panX;
     bannerPanY = bannerLayout.panY;
