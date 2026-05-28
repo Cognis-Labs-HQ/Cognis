@@ -7,14 +7,16 @@
 }
 
 .messages-template-card {
-    display: grid;
-    gap: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
 }
 
 .messages-template-card-actions {
     display: flex;
     gap: 0.4rem;
-    flex-wrap: wrap;
+    flex-shrink: 0;
 }
 
 .messages-template-token-btn,

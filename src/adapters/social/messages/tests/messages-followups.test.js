@@ -254,7 +254,10 @@ test("messages templates are opened from sidebar in a popup", () => {
         /\.messages-sidebar-section-label--btn\s*\{/,
     );
     assert.match(sidebarCssSource, /\.messages-sidebar-template-list\s*\{/);
-    assert.match(sidebarCssSource, /\.messages-sidebar-template-load-btn\s*\{/);
+    assert.match(
+        sidebarCssSource,
+        /\.messages-sidebar-template-load-btn\s*\{[\s\S]*flex:\s*1;/,
+    );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
     assert.match(
         messagesCssSource,
@@ -264,7 +267,14 @@ test("messages templates are opened from sidebar in a popup", () => {
         messagesCssSource,
         /@import url\("\/static\/adapters\/social\/messages\/messages-sidebar\.css"\);/,
     );
-    assert.match(templatesCssSource, /\.messages-template-card\s*\{/);
+    assert.match(
+        templatesCssSource,
+        /\.messages-template-card\s*\{[\s\S]*display:\s*flex;[\s\S]*align-items:\s*center;/,
+    );
+    assert.match(
+        templatesCssSource,
+        /\.messages-template-card-actions\s*\{[\s\S]*flex-shrink:\s*0;/,
+    );
 });
 
 test("messages UI skips room-key fetch for incoming pending requests", async () => {
