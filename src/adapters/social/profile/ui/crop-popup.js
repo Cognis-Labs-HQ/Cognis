@@ -9,6 +9,10 @@ import {
     panCropSourceRect,
 } from "/static/adapters/social/profile/image-crop.js";
 
+const POPUP_VIEWPORT_MAX_WIDTH = "95vw";
+const POPUP_MAX_WIDTH_PX = 1400;
+const POPUP_HORIZONTAL_CHROME_PX = 40;
+
 function buildCropPopupBody({
     imageUrl,
     imageType,
@@ -87,6 +91,8 @@ async function loadCropImage(file) {
  *   file: File,
  *   kind: "avatar" | "banner",
  *   aspectRatio: number,
+ *   // "blob": return cropped PNG output
+ *   // "sourceRect": return selected source rectangle (for preserving original media)
  *   outputMode?: "blob" | "sourceRect",
  *   openPopupDialog: (config: object) => Promise<string>,
  *   translate: (key: string) => string,
@@ -113,6 +119,13 @@ export async function openImageCropPopup({
     escapeHtmlText,
 }) {
     const cropImage = await loadCropImage(file);
+    const popupMaxWidthPx = Math.min(
+        POPUP_MAX_WIDTH_PX,
+        Math.max(
+            1,
+            Math.round(cropImage.imageWidth + POPUP_HORIZONTAL_CHROME_PX),
+        ),
+    );
     const cropInteractionController = new AbortController();
     const cropAspectRatio = Math.max(0.5, Number(aspectRatio) || 1);
     const minimumSelectionSize = 64;
@@ -488,7 +501,7 @@ export async function openImageCropPopup({
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),
-        maxWidth: `min(95vw, ${Math.min(1400, Math.max(1, Math.round(cropImage.imageWidth + 40)))}px)`,
+        maxWidth: `min(${POPUP_VIEWPORT_MAX_WIDTH}, ${popupMaxWidthPx}px)`,
         actions: [
             {
                 id: "reset",

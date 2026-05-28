@@ -260,18 +260,8 @@ async function loadBannerLayoutPreference() {
         const parsed = JSON.parse(raw);
         return {
             height: parsed?.height === "full" ? "full" : "half",
-            panX:
-                Number.isFinite(Number(parsed?.panX)) &&
-                Number(parsed.panX) >= 0 &&
-                Number(parsed.panX) <= 100
-                    ? Number(parsed.panX)
-                    : 50,
-            panY:
-                Number.isFinite(Number(parsed?.panY)) &&
-                Number(parsed.panY) >= 0 &&
-                Number(parsed.panY) <= 100
-                    ? Number(parsed.panY)
-                    : 50,
+            panX: resolveBannerPanPercent(parsed?.panX),
+            panY: resolveBannerPanPercent(parsed?.panY),
         };
     } catch {
         return { height: "half", panX: 50, panY: 50 };
@@ -293,6 +283,16 @@ async function saveBannerLayoutPreference({ height, panX, panY }) {
 
 function clampBannerPanPercent(value) {
     return Math.min(100, Math.max(0, Number(value) || 0));
+}
+
+function resolveBannerPanPercent(value) {
+    const normalized = Number(value);
+    if (!Number.isFinite(normalized)) return 50;
+    return clampBannerPanPercent(normalized);
+}
+
+function getBannerObjectPositionCssValue() {
+    return `${bannerPanX}% ${bannerPanY}%`;
 }
 
 function sourceRectCenterToPanPercent(sourceRect, imageWidth, imageHeight) {
@@ -347,7 +347,7 @@ function renderAvatarContent() {
 
 function renderHero() {
     const bannerContent = bannerBlobUrl
-        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(`${bannerPanX}% ${bannerPanY}%`)};" alt="" />`
+        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(getBannerObjectPositionCssValue())};" alt="" />`
         : `<div class="profile-hero-banner-placeholder"></div>`;
 
     const details = [
@@ -871,7 +871,11 @@ async function handleProfileImageUpload({ kind, file, aspectRatio }) {
     } else {
         if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
         bannerBlobUrl = URL.createObjectURL(uploadBlob);
-        if (preserveGifUpload && cropResult && !(cropResult instanceof Blob)) {
+        if (
+            preserveGifUpload &&
+            typeof cropResult === "object" &&
+            "sourceRect" in cropResult
+        ) {
             const pan = sourceRectCenterToPanPercent(
                 cropResult.sourceRect,
                 cropResult.imageWidth,
