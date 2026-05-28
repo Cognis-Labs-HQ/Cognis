@@ -27,7 +27,7 @@
         calc(100dvh - var(--crop-frame-vertical-offset))
     );
     justify-self: center;
-    border-radius: 12px;
+    border-radius: 0;
     overflow: hidden;
     background: var(--surface-soft);
     border: 1px solid var(--border);
