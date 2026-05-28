@@ -1376,7 +1376,10 @@ function bindPageEvents() {
             const { width, height } = btn.getBoundingClientRect();
             pendingBannerAspectRatio =
                 width > 0 && height > 0
-                    ? width / height
+                    ? Math.min(
+                          BANNER_CROP_WIDTH_TO_HEIGHT_RATIO,
+                          width / height,
+                      )
                     : BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
             bannerFileInput.click();
         },

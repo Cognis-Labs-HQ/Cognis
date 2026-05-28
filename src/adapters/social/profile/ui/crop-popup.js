@@ -119,11 +119,16 @@ export async function openImageCropPopup({
     escapeHtmlText,
 }) {
     const cropImage = await loadCropImage(file);
+    const avatarPopupContentWidthPx = Math.sqrt(
+        cropImage.imageWidth * cropImage.imageHeight,
+    );
+    const popupContentWidthPx =
+        kind === "avatar" ? avatarPopupContentWidthPx : cropImage.imageWidth;
     const popupMaxWidthPx = Math.min(
         POPUP_MAX_WIDTH_PX,
         Math.max(
             1,
-            Math.round(cropImage.imageWidth + POPUP_HORIZONTAL_CHROME_PX),
+            Math.round(popupContentWidthPx + POPUP_HORIZONTAL_CHROME_PX),
         ),
     );
     const cropInteractionController = new AbortController();
