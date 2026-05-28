@@ -61,13 +61,30 @@
 
 .messages-sidebar-template-edit-btn,
 .messages-sidebar-template-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    min-width: 0;
+    min-height: 0;
+    flex: 0 0 auto;
+    text-align: center;
     cursor: pointer;
-    padding: 0.1rem 0.2rem;
+    padding: 0;
     font: inherit;
-    font-size: 0.74rem;
-    border-radius: 0.25rem;
+    font-size: 0.6rem;
+    border-radius: 0.2rem;
     line-height: 1;
     border: 1px solid;
+}
+
+.toolbar .messages-sidebar-template-edit-btn,
+.toolbar .messages-sidebar-template-delete-btn {
+    width: 1rem;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
 }
 
 .messages-sidebar-template-edit-btn {
@@ -83,8 +100,8 @@
 
 .messages-sidebar-template-delete-btn {
     background: transparent;
-    color: var(--color-warning-outline-text, #f59e0b);
-    border-color: var(--color-warning-outline-text, #f59e0b);
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+    border-color: var(--color-danger-outline-text, var(--color-danger-text));
 }
 
 .messages-sidebar-template-delete-btn:hover {
@@ -93,8 +110,8 @@
 
 .messages-template-edit-icon {
     display: inline-block;
-    width: 11px;
-    height: 11px;
+    width: 9px;
+    height: 9px;
     background-color: currentColor;
     -webkit-mask-image: url("/static/assets/reuse/edit.svg");
     mask-image: url("/static/assets/reuse/edit.svg");
