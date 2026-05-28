@@ -183,7 +183,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
 });
 
-test("messages composer includes markdown compose preview switcher", () => {
+test("messages templates are opened from sidebar in a popup", () => {
     const appSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
@@ -199,13 +199,22 @@ test("messages composer includes markdown compose preview switcher", () => {
         ),
         "utf8",
     );
+    const sidebarCssSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages-sidebar.css"),
+        "utf8",
+    );
 
     assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
-    assert.match(appSource, /id="messages-composer-templates-toggle"/);
+    assert.match(appSource, /id="messages-open-templates-btn"/);
+    assert.doesNotMatch(appSource, /id="messages-composer-templates-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-pane"/);
-    assert.match(appSource, /id="messages-composer-templates-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
+    assert.match(appSource, /openTemplatesPopupFromSidebar = async \(\) =>/);
+    assert.match(
+        appSource,
+        /await openPopup\(\{[\s\S]*title:\s*i18n\.t\("module\.social\.messages\.templates"\)/,
+    );
     assert.match(appSource, /id="messages-template-library-list"/);
     assert.match(appSource, /id="messages-template-editor"/);
     assert.match(appSource, /data-template-token="\{username\}"/);
@@ -223,7 +232,7 @@ test("messages composer includes markdown compose preview switcher", () => {
     );
     assert.match(
         appSource,
-        /composerTemplatesToggle\?\.addEventListener\("click",[\s\S]*composerMode = "templates";/,
+        /templatesBtn\?\.addEventListener\("click",[\s\S]*openTemplatesPopupFromSidebar/,
     );
     assert.match(
         appSource,
@@ -232,12 +241,17 @@ test("messages composer includes markdown compose preview switcher", () => {
     assert.match(messagesCssSource, /\.messages-composer-mode-toggle\s*\{/);
     assert.match(
         messagesCssSource,
-        /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
+        /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
     );
+    assert.match(sidebarCssSource, /\.messages-sidebar-menu-btn\s*\{/);
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
     assert.match(
         messagesCssSource,
         /@import url\("\/static\/adapters\/social\/messages\/messages-template-composer\.css"\);/,
+    );
+    assert.match(
+        messagesCssSource,
+        /@import url\("\/static\/adapters\/social\/messages\/messages-sidebar\.css"\);/,
     );
     assert.match(templatesCssSource, /\.messages-template-library\s*\{/);
     assert.match(templatesCssSource, /\.messages-template-card\s*\{/);

@@ -1,0 +1,32 @@
+.messages-sidebar-section {
+    border-top: 1px solid var(--color-border);
+    padding: 0.6rem 0.8rem 0.8rem;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.messages-sidebar-section-label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.messages-sidebar-menu-btn {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0.45rem 0.7rem;
+    font: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.messages-sidebar-menu-btn:hover {
+    filter: brightness(1.1);
+}

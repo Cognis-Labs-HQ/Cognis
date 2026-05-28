@@ -1,6 +1,7 @@
 @import url("/static/adapters/social/messages/messages-style-variants.css");
 @import url("/static/adapters/social/messages/messages-chat-shared.css");
 @import url("/static/adapters/social/messages/messages-template-composer.css");
+@import url("/static/adapters/social/messages/messages-sidebar.css");
 .messages-sidebar-content {
     display: flex;
     flex-direction: column;
@@ -387,7 +388,7 @@
 
 .messages-composer-mode-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
 }
 
@@ -423,10 +424,6 @@
 .messages-composer-pane--compose {
     display: flex;
     gap: 0.5rem;
-    min-width: 0;
-}
-
-.messages-composer-pane--templates {
     min-width: 0;
 }
 
