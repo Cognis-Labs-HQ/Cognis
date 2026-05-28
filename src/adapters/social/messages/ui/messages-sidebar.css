@@ -56,7 +56,9 @@
     transition: none;
 }
 
-button.messages-sidebar-template-load-btn:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
+button.messages-sidebar-template-load-btn:hover:not(:disabled):not(
+        .dropdown-item
+    ):not([class*="btn-"]) {
     transform: none;
     border-color: transparent;
 }
