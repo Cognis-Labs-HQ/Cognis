@@ -52,6 +52,7 @@
   <string name="ui.reuse.followers">pengikut</string>
   <string name="ui.reuse.following">mengikuti</string>
   <string name="ui.reuse.posts">postingan</string>
+  <string name="ui.reuse.create">Buat</string>
   <string name="ui.reuse.save">Simpan</string>
   <string name="ui.reuse.discard">Batalkan</string>
   <string name="ui.reuse.done">Selesai</string>

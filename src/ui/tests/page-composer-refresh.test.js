@@ -232,6 +232,11 @@ test("page composer persists drafts and renders large-form draft reset control",
     );
 
     assert.match(source, /FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft"/);
+    assert.match(source, /function isExcludedFromFormMemory\(field\)/);
+    assert.match(
+        source,
+        /field\.closest\('\[data-composer-exclude-form-memory="true"\]'\)/,
+    );
     assert.match(source, /function loadPersistedFormState\(scopeKey\)/);
     assert.match(
         source,
@@ -241,6 +246,7 @@ test("page composer persists drafts and renders large-form draft reset control",
         source,
         /function clearPersistedFormState\(scopeKey, elementId = null\)/,
     );
+    assert.match(source, /if \(isExcludedFromFormMemory\(field\)\) return;/);
     assert.match(
         source,
         /if \(!account \|\| !scopeKey\) \{\s*return null;\s*\}/m,
@@ -252,6 +258,18 @@ test("page composer persists drafts and renders large-form draft reset control",
         /button\.setAttribute\("aria-label", i18n\.t\("ui\.reuse\.reset_draft"\)\)/,
     );
     assert.match(source, /i18n\.t\("ui\.reuse\.reset_draft"\)/);
+});
+
+test("page composer preserves excluded form values in transient snapshots across rerenders", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /if \(persistableOnly && isExcludedFromFormMemory\(field\)\)/,
+    );
 });
 
 test("page composer preserves missing placements and shows warning placeholders", () => {

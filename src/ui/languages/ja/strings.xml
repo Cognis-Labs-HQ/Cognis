@@ -52,6 +52,7 @@
   <string name="ui.reuse.followers">フォロワー</string>
   <string name="ui.reuse.following">フォロー中</string>
   <string name="ui.reuse.posts">投稿</string>
+  <string name="ui.reuse.create">作成</string>
   <string name="ui.reuse.save">保存</string>
   <string name="ui.reuse.discard">元に戻す</string>
   <string name="ui.reuse.done">完了</string>
