@@ -1,5 +1,5 @@
 .profile-image-crop-popup {
-    --crop-frame-vertical-offset: 280px;
+    --crop-frame-vertical-offset: 180px;
     display: grid;
     gap: 12px;
     justify-items: center;
@@ -9,7 +9,6 @@
     position: relative;
     width: min(
         100%,
-        640px,
         calc(
             (100vh - var(--crop-frame-vertical-offset)) *
                 var(--crop-aspect-ratio, 1)

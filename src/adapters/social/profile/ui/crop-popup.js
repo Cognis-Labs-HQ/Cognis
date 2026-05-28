@@ -471,7 +471,7 @@ export async function openImageCropPopup({
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),
-        maxWidth: "760px",
+        maxWidth: "min(95vw, 1400px)",
         actions: [
             {
                 id: "reset",
