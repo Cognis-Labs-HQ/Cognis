@@ -1451,8 +1451,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         recipientUsername: recipient.handle,
                         subject: "New reaction",
                         body: `Reacted with ${emoji}`,
-                        senderName:
-                            sender?.handle ?? sender?.displayName,
+                        senderName: sender?.handle,
                         actionUrl: `/messages/${roomId}`,
                         metadata: {
                             roomId,
