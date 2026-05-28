@@ -13,3 +13,8 @@ Der SMTP-TFA-Adapter ergänzt das TFA-Gateway um E-Mail-Codes als zweiten Faktor
 ## Konfiguration
 
 - `codeLength` (Zahl, optional): Länge der generierten numerischen Codes. Werte werden auf 4–10 Stellen begrenzt.
+
+## Laufzeitverhalten
+
+- Challenge-Codes werden im Prozessspeicher gespeichert. Ein Neustart der App macht ausstehende Setup-/Login-Codes ungültig.
+- In Multi-Instanz-Deployments sollte dieser Adapter nur verwendet werden, wenn Anfragen während eines Challenge-Fensters an dieselbe Instanz gebunden bleiben.

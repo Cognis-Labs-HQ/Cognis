@@ -13,3 +13,8 @@ Adapter TFA SMTP menambahkan faktor kedua berbasis kode email ke gateway TFA. Sa
 ## Konfigurasi
 
 - `codeLength` (angka, opsional): Panjang kode numerik yang dihasilkan. Nilai dibatasi ke rentang 4–10 digit.
+
+## Perilaku runtime
+
+- Kode challenge disimpan di memori proses. Restart aplikasi akan membatalkan kode setup/login yang masih menunggu.
+- Pada deployment multi-instance, adapter ini sebaiknya dipakai hanya jika request selama jendela challenge diarahkan ke instance yang sama.

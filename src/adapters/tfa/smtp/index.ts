@@ -41,7 +41,7 @@ function challengeKey(scope: "setup" | "login", accountId: string): string {
 
 function generateNumericCode(codeLength: number): string {
     let code = "";
-    for (let index = 0; index < codeLength; index += 1) {
+    for (let i = 0; i < codeLength; i += 1) {
         code += String(randomInt(0, 10));
     }
     return code;

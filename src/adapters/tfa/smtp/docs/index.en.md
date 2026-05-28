@@ -13,3 +13,8 @@ The SMTP TFA adapter adds email-code second-factor support to the TFA gateway. I
 ## Configuration
 
 - `codeLength` (number, optional): Length of generated numeric codes. Values are clamped to 4–10 digits.
+
+## Runtime behavior
+
+- Challenge codes are stored in process memory. Restarting the app invalidates pending setup/login codes.
+- In multi-instance deployments, this adapter should only be used when requests are pinned to the same instance during a challenge window.
