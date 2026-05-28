@@ -1587,9 +1587,19 @@ export async function mount(root, { signal } = {}) {
         const res = await apiFetch(
             `/api/v1/messages/requests/${encodeURIComponent(requestId)}/${action}`,
             { method: "POST" },
-        );
+        ).catch(() => null);
+        if (!res) {
+            showToast(i18n.t("module.social.messages.start_failed"), {
+                variant: "error",
+            });
+            return;
+        }
         if (!res.ok) return;
         const payload = await res.json().catch(() => null);
+        if (action === "approve") {
+            setSelectedRoomPendingRequest(null);
+            syncPendingRequestBanner(null);
+        }
         await reloadRoomsList();
         if (action === "approve") {
             const nextRoomId =

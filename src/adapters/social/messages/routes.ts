@@ -494,6 +494,21 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                                   toAccountId: targetId,
                                   roomId: room.id,
                               });
+                    if (dispatch) {
+                        const sender = await profileStore.getProfile(accountId);
+                        await dispatch({
+                            category: "messages",
+                            recipientUsername: targets[0].handle,
+                            subject: "New message request",
+                            body: "New message request",
+                            senderName: sender?.handle ?? accountId,
+                            actionUrl: `/messages/${room.id}`,
+                            metadata: {
+                                roomId: room.id,
+                                requestId: request.id,
+                            },
+                        }).catch(() => undefined);
+                    }
                     res.writeHead(202, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -1130,6 +1145,12 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                             otherMember.muted
                         )
                             continue;
+                        const pendingIncomingForRecipient =
+                            await messagesStore.getPendingIncomingRoomMessageRequest(
+                                roomId,
+                                otherMember.accountId,
+                            );
+                        if (pendingIncomingForRecipient) continue;
                         const recipient = await profileStore.getProfile(
                             otherMember.accountId,
                         );
@@ -1407,6 +1428,16 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 !hasReaction,
             );
             if (dispatch && !hasReaction && message.senderId !== accountId) {
+                const pendingIncomingForMessageSender =
+                    await messagesStore.getPendingIncomingRoomMessageRequest(
+                        roomId,
+                        message.senderId,
+                    );
+                if (pendingIncomingForMessageSender) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ data: { active: !hasReaction } }));
+                    return true;
+                }
                 const [sender, recipient, recipientMember] = await Promise.all([
                     profileStore.getProfile(accountId),
                     profileStore.getProfile(message.senderId),
