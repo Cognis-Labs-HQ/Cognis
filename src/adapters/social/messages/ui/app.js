@@ -1426,6 +1426,29 @@ export async function mount(root, { signal } = {}) {
     let savedMessageTemplates = loadSavedMessageTemplates();
     let openTemplatesPopupFromSidebar = null;
 
+    const renderSidebarTemplateList = () => {
+        const listElement = document.getElementById(
+            "messages-sidebar-template-list",
+        );
+        if (!(listElement instanceof HTMLElement)) return;
+        if (savedMessageTemplates.length === 0) {
+            listElement.innerHTML = `<li class="messages-template-list-empty">${escapeHtml(i18n.t("module.social.messages.templates_empty"))}</li>`;
+            return;
+        }
+        listElement.innerHTML = savedMessageTemplates
+            .map(
+                (templateRecord) =>
+                    `<li class="messages-template-card" data-template-id="${escapeHtml(templateRecord.id)}">
+                        <button type="button" class="messages-sidebar-template-load-btn" data-template-action="use" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(templateRecord.title)}</button>
+                        <div class="messages-template-card-actions">
+                            <button type="button" class="messages-sidebar-template-edit-btn" aria-label="${escapeHtml(i18n.t("module.social.messages.template_edit"))}" data-template-action="edit" data-template-id="${escapeHtml(templateRecord.id)}"><span class="messages-template-edit-icon" aria-hidden="true"></span></button>
+                            <button type="button" class="messages-sidebar-template-delete-btn" aria-label="${escapeHtml(i18n.t("module.social.messages.template_delete"))}" data-template-action="delete" data-template-id="${escapeHtml(templateRecord.id)}">🗑</button>
+                        </div>
+                    </li>`,
+            )
+            .join("");
+    };
+
     let rooms = await loadRooms(i18n);
     if (signal?.aborted) return;
     if (
@@ -2200,10 +2223,10 @@ export async function mount(root, { signal } = {}) {
             ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
         </ul>
         <section class="messages-sidebar-section">
-            <p class="messages-sidebar-section-label">${escapeHtml(i18n.t("module.social.messages.templates"))}</p>
-            <button type="button" class="messages-sidebar-menu-btn" id="messages-open-templates-btn">
+            <button type="button" class="messages-sidebar-section-label messages-sidebar-section-label--btn" id="messages-open-templates-btn">
                 ${escapeHtml(i18n.t("module.social.messages.templates"))}
             </button>
+            <ul class="messages-sidebar-template-list" id="messages-sidebar-template-list"></ul>
         </section>
     </div>`;
 
@@ -2291,12 +2314,10 @@ export async function mount(root, { signal } = {}) {
                 );
                 let composerMode = "compose";
                 let activeTemplateId = null;
-                let templateLibraryList = null;
                 let templateEditor = null;
                 let templateTitleInput = null;
                 let templateBodyInput = null;
                 let templatePreview = null;
-                let templateResetButton = null;
                 const passiveEventOptions = signal ? { signal } : undefined;
                 const resolveSelectedRoomTemplateContent = (content) => {
                     const selectedRoom = rooms.find(
@@ -2334,87 +2355,44 @@ export async function mount(root, { signal } = {}) {
                         i18n.t("module.social.messages.preview_placeholder"),
                     );
                 };
-                const renderTemplatePopupBody = () =>
-                    `<div class="messages-template-library">
-                        <div
-                            class="messages-template-library-list"
-                            id="messages-template-library-list"
-                            role="list"
-                            aria-label="${escapeHtml(i18n.t("module.social.messages.templates"))}"
-                        ></div>
-                        <form
-                            class="messages-template-editor"
-                            id="messages-template-editor"
-                            aria-label="${escapeHtml(i18n.t("module.social.messages.template_editor"))}"
-                        >
-                            <label class="messages-template-label" for="messages-template-title">${escapeHtml(i18n.t("module.social.messages.template_title"))}</label>
-                            <input
-                                id="messages-template-title"
-                                class="messages-template-title-input"
-                                type="text"
-                                maxlength="120"
-                                placeholder="${escapeHtml(i18n.t("module.social.messages.template_title_placeholder"))}"
-                            />
-                            <label class="messages-template-label" for="messages-template-body">${escapeHtml(i18n.t("module.social.messages.template_body"))}</label>
-                            <textarea
-                                id="messages-template-body"
-                                class="messages-template-body-input"
-                                rows="4"
-                                placeholder="${escapeHtml(i18n.t("module.social.messages.template_body_placeholder"))}"
-                            ></textarea>
-                            <div class="messages-template-token-row">
-                                <span class="messages-template-token-label">${escapeHtml(i18n.t("module.social.messages.template_variables"))}</span>
-                                <button type="button" class="messages-template-token-btn" data-template-token="{username}">{username}</button>
-                                <button type="button" class="messages-template-token-btn" data-template-token="{displayName}">{displayName}</button>
-                            </div>
-                            <div class="messages-template-preview">
-                                <p class="messages-template-preview-label">${escapeHtml(i18n.t("module.social.messages.template_preview"))}</p>
-                                <div
-                                    id="messages-template-preview"
-                                    class="messages-template-preview-markup messages-message-body"
-                                    aria-live="polite"
-                                >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
-                            </div>
-                            <div class="messages-template-actions">
-                                <button type="button" class="messages-template-reset-btn" id="messages-template-reset-btn">${escapeHtml(i18n.t("module.social.messages.template_new"))}</button>
-                                <button type="submit" class="messages-template-save-btn">${escapeHtml(i18n.t("module.social.messages.template_save"))}</button>
-                            </div>
-                        </form>
-                    </div>`;
-                const renderTemplateLibrary = () => {
-                    if (!(templateLibraryList instanceof HTMLElement)) return;
-                    if (savedMessageTemplates.length === 0) {
-                        templateLibraryList.innerHTML = `<p class="messages-template-list-empty">${escapeHtml(i18n.t("module.social.messages.templates_empty"))}</p>`;
-                        return;
-                    }
-                    templateLibraryList.innerHTML = savedMessageTemplates
-                        .map((templateRecord) => {
-                            const isActive =
-                                String(templateRecord.id) ===
-                                String(activeTemplateId);
-                            return `<article class="messages-template-card${isActive ? " messages-template-card--active" : ""}" data-template-id="${escapeHtml(templateRecord.id)}">
-                                <h4 class="messages-template-card-title">${escapeHtml(templateRecord.title)}</h4>
-                                <p class="messages-template-card-snippet">${escapeHtml(templateRecord.content.slice(0, 120))}</p>
-                                <div class="messages-template-card-actions">
-                                    <button type="button" class="messages-template-card-btn" data-template-action="use" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(i18n.t("module.social.messages.template_use"))}</button>
-                                    <button type="button" class="messages-template-card-btn" data-template-action="edit" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(i18n.t("module.social.messages.template_edit"))}</button>
-                                    <button type="button" class="messages-template-card-btn" data-template-action="delete" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(i18n.t("module.social.messages.template_delete"))}</button>
-                                </div>
-                            </article>`;
-                        })
-                        .join("");
-                };
-                const resetTemplateEditor = () => {
-                    activeTemplateId = null;
-                    if (templateTitleInput instanceof HTMLInputElement) {
-                        templateTitleInput.value = "";
-                    }
-                    if (templateBodyInput instanceof HTMLTextAreaElement) {
-                        templateBodyInput.value = "";
-                    }
-                    renderTemplateEditorPreview();
-                    renderTemplateLibrary();
-                };
+                const renderTemplatePopupBody = (isEditing) =>
+                    `<form
+                        class="messages-template-editor"
+                        id="messages-template-editor"
+                        aria-label="${escapeHtml(i18n.t("module.social.messages.template_editor"))}"
+                    >
+                        <label class="messages-template-label" for="messages-template-title">${escapeHtml(i18n.t("module.social.messages.template_title"))}</label>
+                        <input
+                            id="messages-template-title"
+                            class="messages-template-title-input"
+                            type="text"
+                            maxlength="120"
+                            placeholder="${escapeHtml(i18n.t("module.social.messages.template_title_placeholder"))}"
+                        />
+                        <label class="messages-template-label" for="messages-template-body">${escapeHtml(i18n.t("module.social.messages.template_body"))}</label>
+                        <textarea
+                            id="messages-template-body"
+                            class="messages-template-body-input"
+                            rows="4"
+                            placeholder="${escapeHtml(i18n.t("module.social.messages.template_body_placeholder"))}"
+                        ></textarea>
+                        <div class="messages-template-token-row">
+                            <span class="messages-template-token-label">${escapeHtml(i18n.t("module.social.messages.template_variables"))}</span>
+                            <button type="button" class="messages-template-token-btn" data-template-token="{username}">{username}</button>
+                            <button type="button" class="messages-template-token-btn" data-template-token="{displayName}">{displayName}</button>
+                        </div>
+                        <div class="messages-template-preview">
+                            <p class="messages-template-preview-label">${escapeHtml(i18n.t("module.social.messages.template_preview"))}</p>
+                            <div
+                                id="messages-template-preview"
+                                class="messages-template-preview-markup messages-message-body"
+                                aria-live="polite"
+                            >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
+                        </div>
+                        <div class="messages-template-actions">
+                            <button type="submit" class="messages-template-save-btn">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
+                        </div>
+                    </form>`;
                 const editTemplateById = (templateId) => {
                     const templateRecord = savedMessageTemplates.find(
                         (entry) => String(entry.id) === String(templateId),
@@ -2428,7 +2406,6 @@ export async function mount(root, { signal } = {}) {
                         templateBodyInput.value = templateRecord.content;
                     }
                     renderTemplateEditorPreview();
-                    renderTemplateLibrary();
                 };
                 const bindTemplatePopupEvents = (overlay) => {
                     templateLibraryList = overlay.querySelector(
@@ -2446,78 +2423,20 @@ export async function mount(root, { signal } = {}) {
                     templatePreview = overlay.querySelector(
                         "#messages-template-preview",
                     );
-                    templateResetButton = overlay.querySelector(
-                        "#messages-template-reset-btn",
+                const bindTemplatePopupEvents = (overlay) => {
+                    templateEditor = overlay.querySelector(
+                        "#messages-template-editor",
+                    );
+                    templateTitleInput = overlay.querySelector(
+                        "#messages-template-title",
+                    );
+                    templateBodyInput = overlay.querySelector(
+                        "#messages-template-body",
+                    );
+                    templatePreview = overlay.querySelector(
+                        "#messages-template-preview",
                     );
                     renderTemplateEditorPreview();
-                    renderTemplateLibrary();
-                    templateLibraryList?.addEventListener(
-                        "click",
-                        (clickEvent) => {
-                            const actionButton = clickEvent.target.closest(
-                                "[data-template-action]",
-                            );
-                            if (!(actionButton instanceof HTMLButtonElement)) {
-                                return;
-                            }
-                            const templateId = actionButton.dataset.templateId;
-                            if (!templateId) return;
-                            const action = actionButton.dataset.templateAction;
-                            if (action === "use") {
-                                const templateRecord =
-                                    savedMessageTemplates.find(
-                                        (entry) =>
-                                            String(entry.id) ===
-                                            String(templateId),
-                                    );
-                                if (!templateRecord) return;
-                                if (
-                                    composerInput instanceof HTMLTextAreaElement
-                                ) {
-                                    composerInput.value =
-                                        templateRecord.content;
-                                    queueTypingUpdate(
-                                        Boolean(
-                                            (composerInput.value ?? "").trim(),
-                                        ),
-                                    );
-                                }
-                                renderComposerPreview();
-                                composerMode = "compose";
-                                syncComposerMode();
-                                overlay
-                                    .querySelector(
-                                        '[data-popup-action="close"]',
-                                    )
-                                    ?.click();
-                                return;
-                            }
-                            if (action === "edit") {
-                                editTemplateById(templateId);
-                                return;
-                            }
-                            if (action !== "delete") return;
-                            savedMessageTemplates =
-                                savedMessageTemplates.filter(
-                                    (entry) =>
-                                        String(entry.id) !== String(templateId),
-                                );
-                            persistSavedMessageTemplates(savedMessageTemplates);
-                            if (
-                                String(activeTemplateId) === String(templateId)
-                            ) {
-                                resetTemplateEditor();
-                            } else {
-                                renderTemplateLibrary();
-                            }
-                            showToast(
-                                i18n.t(
-                                    "module.social.messages.template_deleted",
-                                ),
-                                { variant: "success" },
-                            );
-                        },
-                    );
                     templateEditor?.addEventListener(
                         "submit",
                         (submitEvent) => {
@@ -2583,20 +2502,16 @@ export async function mount(root, { signal } = {}) {
                                 ];
                             }
                             persistSavedMessageTemplates(savedMessageTemplates);
-                            activeTemplateId = templateRecord.id;
-                            renderTemplateLibrary();
+                            renderSidebarTemplateList();
                             showToast(
                                 i18n.t("module.social.messages.template_saved"),
                                 { variant: "success" },
                             );
+                            overlay
+                                .querySelector('[data-popup-action="close"]')
+                                ?.click();
                         },
                     );
-                    templateResetButton?.addEventListener("click", () => {
-                        resetTemplateEditor();
-                        if (templateTitleInput instanceof HTMLInputElement) {
-                            templateTitleInput.focus();
-                        }
-                    });
                     templateBodyInput?.addEventListener("input", () => {
                         renderTemplateEditorPreview();
                     });
@@ -2627,11 +2542,13 @@ export async function mount(root, { signal } = {}) {
                         renderTemplateEditorPreview();
                     });
                 };
-                openTemplatesPopupFromSidebar = async () => {
+                openTemplatesPopupFromSidebar = async (preloadTemplateId = null) => {
+                    activeTemplateId = null;
+                    const isEditing = preloadTemplateId !== null;
                     await openPopup({
                         title: i18n.t("module.social.messages.templates"),
-                        body: renderTemplatePopupBody(),
-                        maxWidth: "920px",
+                        body: renderTemplatePopupBody(isEditing),
+                        maxWidth: "600px",
                         actions: [
                             {
                                 id: "close",
@@ -2641,7 +2558,9 @@ export async function mount(root, { signal } = {}) {
                         ],
                         onOpen: (overlay) => {
                             bindTemplatePopupEvents(overlay);
-                            if (
+                            if (isEditing) {
+                                editTemplateById(preloadTemplateId);
+                            } else if (
                                 templateTitleInput instanceof HTMLInputElement
                             ) {
                                 templateTitleInput.focus();
@@ -3183,6 +3102,49 @@ export async function mount(root, { signal } = {}) {
         templatesBtn?.addEventListener("click", () => {
             void openTemplatesPopupFromSidebar?.();
         });
+
+        const sidebarTemplateList = document.getElementById(
+            "messages-sidebar-template-list",
+        );
+        sidebarTemplateList?.addEventListener("click", (clickEvent) => {
+            const actionButton = clickEvent.target.closest(
+                "[data-template-action]",
+            );
+            if (!(actionButton instanceof HTMLButtonElement)) return;
+            const templateId = actionButton.dataset.templateId;
+            if (!templateId) return;
+            const action = actionButton.dataset.templateAction;
+            if (action === "use") {
+                const templateRecord = savedMessageTemplates.find(
+                    (entry) => String(entry.id) === String(templateId),
+                );
+                if (!templateRecord) return;
+                const composerInput = document.getElementById(
+                    "messages-composer-input",
+                );
+                if (composerInput instanceof HTMLTextAreaElement) {
+                    composerInput.value = templateRecord.content;
+                    composerInput.dispatchEvent(new Event("input"));
+                }
+                return;
+            }
+            if (action === "edit") {
+                void openTemplatesPopupFromSidebar?.(templateId);
+                return;
+            }
+            if (action !== "delete") return;
+            savedMessageTemplates = savedMessageTemplates.filter(
+                (entry) => String(entry.id) !== String(templateId),
+            );
+            persistSavedMessageTemplates(savedMessageTemplates);
+            renderSidebarTemplateList();
+            showToast(
+                i18n.t("module.social.messages.template_deleted"),
+                { variant: "success" },
+            );
+        });
+
+        renderSidebarTemplateList();
     }
 
     const composer = createPageComposer(root, {
