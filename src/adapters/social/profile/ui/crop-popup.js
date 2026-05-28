@@ -12,12 +12,17 @@ import {
 function buildCropPopupBody({
     imageUrl,
     imageType,
+    kind,
     aspectRatio,
     escapeHtmlText,
 }) {
     const clampedAspect = Math.max(0.5, Number(aspectRatio) || 1);
+    const popupClass =
+        kind === "banner"
+            ? "profile-image-crop-popup profile-image-crop-popup--banner"
+            : "profile-image-crop-popup";
     return `
-      <div class="profile-image-crop-popup">
+      <div class="${popupClass}">
         <div
           class="profile-image-crop-frame"
           data-crop-frame
@@ -468,6 +473,7 @@ export async function openImageCropPopup({
             buildCropPopupBody({
                 imageUrl: cropImage.imageUrl,
                 imageType: file.name,
+                kind,
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),

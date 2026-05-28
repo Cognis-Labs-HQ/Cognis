@@ -5,6 +5,10 @@
     justify-items: center;
 }
 
+.profile-image-crop-popup--banner {
+    --crop-frame-vertical-offset: 132px;
+}
+
 .profile-image-crop-frame {
     position: relative;
     width: min(
