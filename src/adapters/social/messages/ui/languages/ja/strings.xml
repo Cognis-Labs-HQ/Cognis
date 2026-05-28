@@ -19,6 +19,8 @@
   <string name="module.social.messages.template_use">使用</string>
   <string name="module.social.messages.template_edit">編集</string>
   <string name="module.social.messages.template_delete">削除</string>
+  <string name="module.social.messages.template_delete_confirm_title">テンプレートを削除しますか？</string>
+  <string name="module.social.messages.template_delete_confirm_body">「{name}」を本当に削除しますか？</string>
   <string name="module.social.messages.template_saved">テンプレートを保存しました。</string>
   <string name="module.social.messages.template_deleted">テンプレートを削除しました。</string>
   <string name="module.social.messages.template_invalid">テンプレート名と本文は必須です。</string>

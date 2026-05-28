@@ -1442,7 +1442,7 @@ export async function mount(root, { signal } = {}) {
                         <button type="button" class="messages-sidebar-template-load-btn" data-template-action="use" data-template-id="${escapeHtml(templateRecord.id)}">${escapeHtml(templateRecord.title)}</button>
                         <div class="messages-template-card-actions">
                             <button type="button" class="messages-sidebar-template-edit-btn" aria-label="${escapeHtml(i18n.t("module.social.messages.template_edit"))}" data-template-action="edit" data-template-id="${escapeHtml(templateRecord.id)}"><span class="messages-template-edit-icon" aria-hidden="true"></span></button>
-                            <button type="button" class="messages-sidebar-template-delete-btn" aria-label="${escapeHtml(i18n.t("module.social.messages.template_delete"))}" data-template-action="delete" data-template-id="${escapeHtml(templateRecord.id)}">🗑</button>
+                            <button type="button" class="messages-sidebar-template-delete-btn btn-cancel" aria-label="${escapeHtml(i18n.t("module.social.messages.template_delete"))}" data-template-action="delete" data-template-id="${escapeHtml(templateRecord.id)}">🗑</button>
                         </div>
                     </li>`,
             )
@@ -2390,7 +2390,7 @@ export async function mount(root, { signal } = {}) {
                             >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
                         </div>
                         <div class="messages-template-actions">
-                            <button type="submit" class="messages-template-save-btn">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
+                            <button type="submit" class="messages-template-save-btn btn-confirm">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
                         </div>
                     </form>`;
                 const editTemplateById = (templateId) => {
@@ -3092,7 +3092,7 @@ export async function mount(root, { signal } = {}) {
         const sidebarTemplateList = document.getElementById(
             "messages-sidebar-template-list",
         );
-        sidebarTemplateList?.addEventListener("click", (clickEvent) => {
+        sidebarTemplateList?.addEventListener("click", async (clickEvent) => {
             const actionButton = clickEvent.target.closest(
                 "[data-template-action]",
             );
@@ -3119,6 +3119,30 @@ export async function mount(root, { signal } = {}) {
                 return;
             }
             if (action !== "delete") return;
+            const templateRecord = savedMessageTemplates.find(
+                (entry) => String(entry.id) === String(templateId),
+            );
+            if (!templateRecord) return;
+            const deleteResult = await openPopup({
+                title: i18n.t(
+                    "module.social.messages.template_delete_confirm_title",
+                ),
+                body: `<p>${escapeHtml(i18n.t("module.social.messages.template_delete_confirm_body").replace("{name}", templateRecord.title))}</p>`,
+                variant: "danger",
+                actions: [
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "confirm",
+                        label: i18n.t("module.social.messages.template_delete"),
+                        variant: "confirm",
+                    },
+                ],
+            });
+            if (deleteResult !== "confirm") return;
             savedMessageTemplates = savedMessageTemplates.filter(
                 (entry) => String(entry.id) !== String(templateId),
             );

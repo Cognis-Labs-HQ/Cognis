@@ -19,6 +19,8 @@
   <string name="module.social.messages.template_use">Gunakan</string>
   <string name="module.social.messages.template_edit">Ubah</string>
   <string name="module.social.messages.template_delete">Hapus</string>
+  <string name="module.social.messages.template_delete_confirm_title">Hapus Template?</string>
+  <string name="module.social.messages.template_delete_confirm_body">Apakah Anda yakin ingin menghapus "{name}"?</string>
   <string name="module.social.messages.template_saved">Template tersimpan.</string>
   <string name="module.social.messages.template_deleted">Template dihapus.</string>
   <string name="module.social.messages.template_invalid">Judul template dan pesan wajib diisi.</string>
