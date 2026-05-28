@@ -19,8 +19,7 @@
     flex-shrink: 0;
 }
 
-.messages-template-token-btn,
-.messages-template-save-btn {
+.messages-template-token-btn {
     border: 1px solid var(--color-border);
     border-radius: 0.3rem;
     background: var(--color-surface);
@@ -29,12 +28,6 @@
     padding: 0.25rem 0.55rem;
     font: inherit;
     font-size: 0.74rem;
-}
-
-.messages-template-save-btn {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-    color: var(--color-accent-contrast);
 }
 
 .messages-template-editor {

@@ -2390,7 +2390,7 @@ export async function mount(root, { signal } = {}) {
                             >${renderComposerPreviewMarkup("", i18n.t("module.social.messages.preview_placeholder"))}</div>
                         </div>
                         <div class="messages-template-actions">
-                            <button type="submit" class="messages-template-save-btn btn-confirm">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
+                            <button type="submit" class="btn-confirm">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
                         </div>
                     </form>`;
                 const editTemplateById = (templateId) => {
