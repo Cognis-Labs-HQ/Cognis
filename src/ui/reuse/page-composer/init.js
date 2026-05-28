@@ -379,11 +379,6 @@ export function createPageComposer(
         if (!(field instanceof Element)) {
             return false;
         }
-        if (
-            field.getAttribute("data-composer-exclude-form-memory") === "true"
-        ) {
-            return true;
-        }
         return (
             field.closest('[data-composer-exclude-form-memory="true"]') !== null
         );

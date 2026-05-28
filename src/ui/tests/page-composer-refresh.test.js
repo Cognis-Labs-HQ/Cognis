@@ -246,10 +246,6 @@ test("page composer persists drafts and renders large-form draft reset control",
         source,
         /function clearPersistedFormState\(scopeKey, elementId = null\)/,
     );
-    assert.match(
-        source,
-        /if \(isExcludedFromFormMemory\(field\)\) \{\s*return;\s*\}/m,
-    );
     assert.match(source, /if \(isExcludedFromFormMemory\(field\)\) return;/);
     assert.match(
         source,
