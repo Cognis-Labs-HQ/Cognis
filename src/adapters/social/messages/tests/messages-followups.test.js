@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRoomKeyStore } from "../ui/room-keys.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
@@ -212,4 +213,67 @@ test("messages composer includes markdown compose preview switcher", () => {
         /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
     );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
+});
+
+test("messages UI skips room-key fetch for incoming pending requests", async () => {
+    let apiFetchCallCount = 0;
+    const { resolveThreadRoomKey } = createRoomKeyStore({
+        fetchRoomKey: async () => {
+            apiFetchCallCount += 1;
+            return {
+                ok: true,
+                status: 200,
+                statusText: "OK",
+                async json() {
+                    return { data: { key: "00" } };
+                },
+            };
+        },
+    });
+
+    const key = await resolveThreadRoomKey(
+        {
+            pendingRequest: {
+                direction: "incoming",
+                canRespond: true,
+            },
+        },
+        "room-1",
+    );
+
+    assert.equal(key, null);
+    assert.equal(apiFetchCallCount, 0);
+});
+
+test("requireRoomKey throws detailed errors on failure", async () => {
+    const { requireRoomKey } = createRoomKeyStore({
+        fetchRoomKey: async () => ({
+            ok: false,
+            status: 403,
+            statusText: "Forbidden",
+            async json() {
+                return {
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Approve the message request before reading messages.",
+                    },
+                };
+            },
+        }),
+    });
+
+    await assert.rejects(
+        () => requireRoomKey("room-403"),
+        (error) => {
+            assert.equal(
+                error.message,
+                "Approve the message request before reading messages.",
+            );
+            assert.equal(error.status, 403);
+            assert.equal(error.code, "forbidden");
+            assert.equal(error.roomId, "room-403");
+            return true;
+        },
+    );
 });
