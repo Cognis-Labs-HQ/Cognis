@@ -14,6 +14,72 @@
     letter-spacing: 0.03em;
 }
 
+.messages-sidebar-section-label--btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    padding: 0;
+    font: inherit;
+}
+
+.messages-sidebar-section-label--btn:hover {
+    color: var(--color-text);
+}
+
+.messages-sidebar-template-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+    max-height: 12rem;
+    overflow-y: auto;
+}
+
+.messages-sidebar-template-load-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--color-text);
+    text-align: left;
+    padding: 0;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.messages-sidebar-template-load-btn:hover {
+    color: var(--color-accent);
+}
+
+.messages-sidebar-template-edit-btn,
+.messages-sidebar-template-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.1rem 0.25rem;
+    font: inherit;
+    font-size: 0.74rem;
+    color: var(--color-text-muted);
+    border-radius: 0.25rem;
+    line-height: 1;
+}
+
+.messages-sidebar-template-edit-btn:hover,
+.messages-sidebar-template-delete-btn:hover {
+    color: var(--color-text);
+    background: var(--color-surface-elevated);
+}
+
+.messages-template-edit-icon::before {
+    content: "✎";
+}
+
 .messages-sidebar-menu-btn {
     width: 100%;
     border: 1px solid var(--color-border);

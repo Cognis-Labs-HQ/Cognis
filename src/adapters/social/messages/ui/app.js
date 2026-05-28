@@ -2408,22 +2408,6 @@ export async function mount(root, { signal } = {}) {
                     renderTemplateEditorPreview();
                 };
                 const bindTemplatePopupEvents = (overlay) => {
-                    templateLibraryList = overlay.querySelector(
-                        "#messages-template-library-list",
-                    );
-                    templateEditor = overlay.querySelector(
-                        "#messages-template-editor",
-                    );
-                    templateTitleInput = overlay.querySelector(
-                        "#messages-template-title",
-                    );
-                    templateBodyInput = overlay.querySelector(
-                        "#messages-template-body",
-                    );
-                    templatePreview = overlay.querySelector(
-                        "#messages-template-preview",
-                    );
-                const bindTemplatePopupEvents = (overlay) => {
                     templateEditor = overlay.querySelector(
                         "#messages-template-editor",
                     );
@@ -2542,7 +2526,9 @@ export async function mount(root, { signal } = {}) {
                         renderTemplateEditorPreview();
                     });
                 };
-                openTemplatesPopupFromSidebar = async (preloadTemplateId = null) => {
+                openTemplatesPopupFromSidebar = async (
+                    preloadTemplateId = null,
+                ) => {
                     activeTemplateId = null;
                     const isEditing = preloadTemplateId !== null;
                     await openPopup({
@@ -3138,10 +3124,9 @@ export async function mount(root, { signal } = {}) {
             );
             persistSavedMessageTemplates(savedMessageTemplates);
             renderSidebarTemplateList();
-            showToast(
-                i18n.t("module.social.messages.template_deleted"),
-                { variant: "success" },
-            );
+            showToast(i18n.t("module.social.messages.template_deleted"), {
+                variant: "success",
+            });
         });
 
         renderSidebarTemplateList();
