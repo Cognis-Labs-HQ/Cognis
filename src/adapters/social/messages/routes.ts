@@ -501,7 +501,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                             recipientUsername: targets[0].handle,
                             subject: "New message request",
                             body: "New message request",
-                            senderName: sender?.handle ?? accountId,
+                            senderName:
+                                sender?.handle ?? sender?.displayName,
                             actionUrl: `/messages/${room.id}`,
                             metadata: {
                                 roomId: room.id,
@@ -1137,7 +1138,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 // Notify other members (subject to per-member mute and category prefs).
                 if (dispatch) {
                     const sender = await profileStore.getProfile(accountId);
-                    const senderHandle = sender?.handle ?? accountId;
+                    const senderHandle =
+                        sender?.handle ?? sender?.displayName;
                     const members = await messagesStore.listMembers(roomId);
                     for (const otherMember of members) {
                         if (
@@ -1449,7 +1451,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         recipientUsername: recipient.handle,
                         subject: "New reaction",
                         body: `Reacted with ${emoji}`,
-                        senderName: sender?.handle ?? accountId,
+                        senderName:
+                            sender?.handle ?? sender?.displayName,
                         actionUrl: `/messages/${roomId}`,
                         metadata: {
                             roomId,

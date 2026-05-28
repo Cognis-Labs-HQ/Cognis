@@ -1588,7 +1588,7 @@ export async function mount(root, { signal } = {}) {
             `/api/v1/messages/requests/${encodeURIComponent(requestId)}/${action}`,
             { method: "POST" },
         ).catch((error) => {
-            console.warn("[messages] pending-request action failed", {
+            console.error("[messages] pending-request action failed", {
                 action,
                 requestId,
                 error: error instanceof Error ? error.message : String(error),
@@ -2508,7 +2508,11 @@ export async function mount(root, { signal } = {}) {
                     let key = null;
                     try {
                         key = await requireRoomKey(selectedRoomId);
-                    } catch {
+                    } catch (error) {
+                        console.error(
+                            "[messages] requireRoomKey failed",
+                            error,
+                        );
                         key = null;
                     }
                     if (!key) {
