@@ -11,3 +11,11 @@ Popup templat kini hanya menampilkan formulir editor. Templat tidak lagi dipilih
 ## Label Buat dan Simpan pada tombol kirim popup
 
 Tombol kirim popup kini menampilkan "Buat" saat menambahkan templat baru dan "Simpan" saat mengedit templat yang ada.
+
+## Daftar obrolan dan templat bergulir secara independen
+
+Daftar percakapan dan daftar templat masing-masing memiliki area gulir tersendiri sehingga banyaknya percakapan tidak pernah menyembunyikan bagian templat dari tampilan.
+
+## Tombol ubah dan hapus templat disempurnakan
+
+Tombol ubah dan hapus kini berada tepat di sebelah nama templat dan seringkas mungkin. Tombol ubah menggunakan ikon yang sama dengan editor tata letak halaman. Tombol ubah ditampilkan secara netral dan tombol hapus sebagai tindakan peringatan.

@@ -3,6 +3,7 @@
     padding: 0.6rem 0.8rem 0.8rem;
     display: grid;
     gap: 0.45rem;
+    flex-shrink: 0;
 }
 
 .messages-sidebar-section-label {
@@ -42,13 +43,12 @@
     background: none;
     border: none;
     cursor: pointer;
-    flex: 1;
+    flex: 0 1 auto;
     font: inherit;
     font-size: 0.8rem;
     color: var(--color-text);
     text-align: left;
     padding: 0;
-    width: 100%;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -61,25 +61,50 @@
 
 .messages-sidebar-template-edit-btn,
 .messages-sidebar-template-delete-btn {
-    background: none;
-    border: none;
     cursor: pointer;
-    padding: 0.1rem 0.25rem;
+    padding: 0.1rem 0.2rem;
     font: inherit;
     font-size: 0.74rem;
-    color: var(--color-text-muted);
     border-radius: 0.25rem;
     line-height: 1;
+    border: 1px solid;
 }
 
-.messages-sidebar-template-edit-btn:hover,
-.messages-sidebar-template-delete-btn:hover {
+.messages-sidebar-template-edit-btn {
+    background: transparent;
     color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.messages-sidebar-template-edit-btn:hover {
+    background: var(--color-surface-elevated);
+    border-color: var(--color-text-muted);
+}
+
+.messages-sidebar-template-delete-btn {
+    background: transparent;
+    color: var(--color-warning-outline-text, #f59e0b);
+    border-color: var(--color-warning-outline-text, #f59e0b);
+}
+
+.messages-sidebar-template-delete-btn:hover {
     background: var(--color-surface-elevated);
 }
 
-.messages-template-edit-icon::before {
-    content: "✎";
+.messages-template-edit-icon {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    background-color: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/edit.svg");
+    mask-image: url("/static/assets/reuse/edit.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    vertical-align: middle;
 }
 
 .messages-sidebar-menu-btn {
