@@ -220,21 +220,48 @@ function listEventsInWindow(events, startDate, endDate) {
     });
 }
 
-function formatEventTimeRange(startAt, endAt) {
+/**
+ * Formats a start/end timestamp pair into a compact localized time range.
+ *
+ * @param {string} startAt
+ * @param {string} endAt
+ * @param {string | undefined} locale
+ * @returns {string}
+ */
+function formatEventTimeRange(startAt, endAt, locale) {
     const formatOptions = {
         hour: "numeric",
         minute: "2-digit",
     };
-    const startText = new Date(startAt).toLocaleTimeString([], formatOptions);
-    const endText = new Date(endAt).toLocaleTimeString([], formatOptions);
+    const startText = new Date(startAt).toLocaleTimeString(
+        locale ?? undefined,
+        formatOptions,
+    );
+    const endText = new Date(endAt).toLocaleTimeString(
+        locale ?? undefined,
+        formatOptions,
+    );
     return `${startText} - ${endText}`;
 }
 
-function renderSlotEvents(slotEvents) {
+/**
+ * Renders compact event chips for a calendar slot.
+ *
+ * @param {Array<{ title: string, startAt: string, endAt: string, calendarColor?: string }>} slotEvents
+ * @param {string | undefined} locale
+ * @returns {string}
+ */
+function renderSlotEvents(slotEvents, locale) {
     return slotEvents
         .map(
             (event) =>
-                `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}"><span class="calendar-slot-event-time">${escapeHtml(formatEventTimeRange(event.startAt, event.endAt))}</span> <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong></span>`,
+                `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(
+                    event.calendarColor ?? "#1f8ceb",
+                )}"><span class="calendar-slot-event-time">${escapeHtml(
+                    formatEventTimeRange(event.startAt, event.endAt, locale),
+                )}</span> <strong class="calendar-slot-event-title">${escapeHtml(
+                    event.title,
+                )}</strong></span>`,
         )
         .join("");
 }
@@ -270,7 +297,9 @@ function renderDayView(events, day, i18n) {
             hour: "2-digit",
             minute: "2-digit",
         });
-        const eventCells = slotEvents.length ? renderSlotEvents(slotEvents) : "";
+        const eventCells = slotEvents.length
+            ? renderSlotEvents(slotEvents, i18n?.locale)
+            : "";
         slots.push(`<div class="calendar-timeslot-row">
       <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
       <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>
@@ -319,7 +348,7 @@ function renderWeekView(events, weekStart, i18n) {
                     );
                 });
                 const eventCells = slotEvents.length
-                    ? renderSlotEvents(slotEvents)
+                    ? renderSlotEvents(slotEvents, i18n?.locale)
                     : "";
                 return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>`;
             })
