@@ -63,13 +63,22 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
 });
 
 test("configured method popup uses non-secret prompt when no QR data exists", () => {
-    assert.match(SOURCE, /gateway\.tfa\.settings\.method_manage_prompt_no_secret/);
+    assert.match(
+        SOURCE,
+        /gateway\.tfa\.settings\.method_manage_prompt_no_secret/,
+    );
     assert.match(SOURCE, /qrImage\.src \|\| manualSecret/);
 });
 
 test("tfa save removes canceled setup methods from preferred targets", () => {
     assert.match(SOURCE, /for \(const id of \[\.\.\.requestedPreferredIds\]\)/);
-    assert.match(SOURCE, /const preferredIndex =\s*requestedPreferredIds\.indexOf\(id\);/);
-    assert.match(SOURCE, /requestedPreferredIds\.splice\(preferredIndex,\s*1\)/);
+    assert.match(
+        SOURCE,
+        /const preferredIndex =\s*requestedPreferredIds\.indexOf\(id\);/,
+    );
+    assert.match(
+        SOURCE,
+        /requestedPreferredIds\.splice\(preferredIndex,\s*1\)/,
+    );
     assert.doesNotMatch(SOURCE, /tfa_method_setup_incomplete/);
 });
