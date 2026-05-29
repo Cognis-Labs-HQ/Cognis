@@ -480,7 +480,7 @@ export async function mount(root, { signal } = {}) {
         let popupController = null;
 
         function participantKey(entry) {
-            return `${entry.type}:${entry.value}`;
+            return JSON.stringify([entry.type, entry.value]);
         }
 
         function renderParticipants(overlay) {
@@ -520,7 +520,7 @@ export async function mount(root, { signal } = {}) {
                 renderParticipantOptions(overlay);
                 return;
             }
-            if (calendarUi.isLikelyEmail(query) && canInviteExternal) {
+            if (calendarUi.matchesEmailPattern(query) && canInviteExternal) {
                 const email = query.toLowerCase();
                 participantOptions.push({
                     type: "email",
@@ -569,14 +569,13 @@ export async function mount(root, { signal } = {}) {
             const existing = new Set(
                 selectedParticipants.map((entry) => participantKey(entry)),
             );
-            participantOptions = participantOptions.filter(
-                (entry, index, array) =>
-                    !existing.has(participantKey(entry)) &&
-                    array.findIndex(
-                        (candidate) =>
-                            participantKey(candidate) === participantKey(entry),
-                    ) === index,
-            );
+            const seen = new Set();
+            participantOptions = participantOptions.filter((entry) => {
+                const key = participantKey(entry);
+                if (existing.has(key) || seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
             renderParticipantOptions(overlay);
         }
 

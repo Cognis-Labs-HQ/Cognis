@@ -8,7 +8,7 @@ const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
 // Thursday offset used in ISO week number calculation (ISO 8601: week containing Thursday)
 const ISO_WEEK_THURSDAY_OFFSET = 4;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
@@ -81,7 +81,7 @@ function splitInviteEmails(value) {
     );
 }
 
-function isLikelyEmail(value) {
+function matchesEmailPattern(value) {
     return EMAIL_PATTERN.test(String(value ?? "").trim());
 }
 
@@ -270,8 +270,8 @@ function renderSlotEvents(slotEvents, locale) {
         .join("");
 }
 
-function renderSlotCreateButton(start, end) {
-    return `<button type="button" class="calendar-timeslot-hover-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="+">+</button>`;
+function renderSlotCreateButton(start, end, i18n) {
+    return `<button type="button" class="calendar-timeslot-hover-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(i18n.t("gateway.calendar.add_event"))}">+</button>`;
 }
 
 function getISOWeekNumber(date) {
@@ -310,7 +310,7 @@ function renderDayView(events, day, i18n) {
             : "";
         slots.push(`<div class="calendar-timeslot-row">
       <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
-      <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end)}</div>
+      <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</div>
     </div>`);
     }
     return `<div class="calendar-day-view">
@@ -336,7 +336,7 @@ function renderWeekView(events, weekStart, i18n) {
         .map((day) => {
             const dayStart = startOfDay(day);
             const dayEnd = addDays(dayStart, 1);
-            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${renderSlotCreateButton(dayStart, dayEnd)}</div>`;
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${renderSlotCreateButton(dayStart, dayEnd, i18n)}</div>`;
         })
         .join("");
     const slotRows = [];
@@ -358,7 +358,7 @@ function renderWeekView(events, weekStart, i18n) {
                 const eventCells = slotEvents.length
                     ? renderSlotEvents(slotEvents, i18n?.locale)
                     : "";
-                return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end)}</div>`;
+                return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</div>`;
             })
             .join("");
         const timeLabel = new Date(
@@ -574,7 +574,7 @@ export {
     normalizeHexColor,
     splitHandles,
     splitInviteEmails,
-    isLikelyEmail,
+    matchesEmailPattern,
     collectUpcomingEvents,
     fetchCalendarState,
     fetchEvents,

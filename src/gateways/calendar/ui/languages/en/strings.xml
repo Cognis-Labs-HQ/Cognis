@@ -30,6 +30,7 @@
   <string name="gateway.calendar.create_meeting_failed">Could not create meeting link.</string>
   <string name="gateway.calendar.event_meeting_link">Meeting Link</string>
   <string name="gateway.calendar.create_event">Create Event</string>
+  <string name="gateway.calendar.add_event">Add event</string>
   <string name="gateway.calendar.create_event_success">Event created.</string>
   <string name="gateway.calendar.create_event_failed">Could not create event.</string>
   <string name="gateway.calendar.load_failed">Could not load calendars.</string>
