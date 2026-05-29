@@ -6,7 +6,8 @@ import { normalizeCalendarColor } from "/static/gateways/calendar/color.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
-const WEEK_NUMBER_OFFSET = 4;
+// Thursday offset used in ISO week number calculation (ISO 8601: week containing Thursday)
+const ISO_WEEK_THURSDAY_OFFSET = 4;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
@@ -222,7 +223,10 @@ function listEventsInWindow(events, startDate, endDate) {
 function getISOWeekNumber(date) {
     const thursday = new Date(date);
     thursday.setDate(
-        date.getDate() - ((date.getDay() + 6) % 7) + WEEK_NUMBER_OFFSET - 1,
+        date.getDate() -
+            ((date.getDay() + 6) % 7) +
+            ISO_WEEK_THURSDAY_OFFSET -
+            1,
     );
     const yearStart = new Date(thursday.getFullYear(), 0, 1);
     return Math.ceil(((thursday - yearStart) / 86400000 + 1) / 7);

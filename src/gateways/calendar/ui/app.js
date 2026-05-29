@@ -504,7 +504,7 @@ export async function mount(root, { signal } = {}) {
         await openPopup({
             title: i18n.t("gateway.calendar.create_calendar"),
             body: () => `
-        <form id="calendar-create-popup-form" class="calendar-inline-form">
+        <form id="calendar-create-popup-form" class="calendar-create-form">
           <div class="calendar-create-row">
             <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
             <input id="calendar-popup-name" type="text" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
