@@ -58,6 +58,22 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
     );
     assert.match(
         SOURCE,
+        /primary_email_required:\s*"ui\.app\.settings\.emails_verify_unavailable"/,
+    );
+    assert.match(
+        SOURCE,
+        /invalid_smtp_code:\s*"ui\.app\.login\.tfa\.error_invalid"/,
+    );
+    assert.match(
+        SOURCE,
+        /tfa_method_enable_failed:\s*"gateway\.tfa\.settings\.setup_failed"/,
+    );
+    assert.match(
+        SOURCE,
+        /tfa_preferences_not_confirmed:\s*"gateway\.tfa\.settings\.setup_failed"/,
+    );
+    assert.match(
+        SOURCE,
         /showToast\(resolveTranslatedTfaErrorMessage\(setup\?\.errorMessage\),/,
     );
 });

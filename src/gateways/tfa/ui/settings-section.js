@@ -72,12 +72,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             invalid_recovery_code: "ui.app.login.tfa.error_invalid",
             code_required: "ui.app.login.tfa.error_invalid",
             recovery_code_required: "ui.app.login.tfa.error_invalid",
+            invalid_smtp_code: "ui.app.login.tfa.error_invalid",
             smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
+            primary_email_required: "ui.app.settings.emails_verify_unavailable",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
             method_not_configured: "gateway.tfa.settings.setup_failed",
             verification_failed: "gateway.tfa.settings.setup_failed",
+            tfa_method_enable_failed: "gateway.tfa.settings.setup_failed",
+            tfa_preferences_not_confirmed: "gateway.tfa.settings.setup_failed",
         };
         const mappedMessage = resolveTranslatedMessage(
             messageKeyByCode[normalizedMessage],
