@@ -111,7 +111,7 @@
     padding: 0.35rem 0.5rem;
 }
 
-.calendar-select-link {
+.calendar-item-btn {
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -132,7 +132,7 @@
     flex-shrink: 0;
 }
 
-.calendar-select-label {
+.calendar-item-label {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -145,7 +145,7 @@
     flex-shrink: 0;
 }
 
-.calendar-select-link[aria-current="page"] .calendar-select-label {
+.calendar-item-btn[data-current="true"] .calendar-item-label {
     font-weight: 700;
 }
 

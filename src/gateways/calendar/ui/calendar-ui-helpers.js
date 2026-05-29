@@ -261,9 +261,9 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-        <button type="button" class="calendar-select-link" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
+        <button type="button" class="calendar-item-btn" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
           <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
-          <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
+          <span class="calendar-item-label">${escapeHtml(calendar.name)}</span>
           <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
         </button>
       </li>`,

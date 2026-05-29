@@ -482,9 +482,8 @@ export async function mount(root, { signal } = {}) {
                             const calendar = calendars.find(
                                 (c) => c.id === calendarId,
                             );
-                            if (calendar) {
-                                openCalendarEditPopup(calendar);
-                            }
+                            if (!calendar) return;
+                            openCalendarEditPopup(calendar);
                         },
                         { signal },
                     );
