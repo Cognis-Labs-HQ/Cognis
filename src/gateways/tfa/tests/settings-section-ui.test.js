@@ -35,6 +35,10 @@ test("tfa settings drag and drop uses dirty tracker", () => {
         SOURCE,
         /nextPreferredMethodIds\.splice\(\s*targetIsAfter \? targetIndex \+ 1 : targetIndex,\s*0,\s*methodId,\s*\)/,
     );
+    assert.doesNotMatch(
+        SOURCE,
+        /showToast\(\s*i18n\.t\("gateway\.tfa\.settings\.method_moved_available"\)/,
+    );
 });
 
 test("tfa required setup popup is guarded against duplicate concurrent flows", () => {
@@ -56,4 +60,16 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
         SOURCE,
         /showToast\(resolveTranslatedTfaErrorMessage\(setup\?\.errorMessage\),/,
     );
+});
+
+test("configured method popup uses non-secret prompt when no QR data exists", () => {
+    assert.match(SOURCE, /gateway\.tfa\.settings\.method_manage_prompt_no_secret/);
+    assert.match(SOURCE, /qrImage\.src \|\| manualSecret/);
+});
+
+test("tfa save removes canceled setup methods from preferred targets", () => {
+    assert.match(SOURCE, /for \(const id of \[\.\.\.requestedPreferredIds\]\)/);
+    assert.match(SOURCE, /const preferredIndex =\s*requestedPreferredIds\.indexOf\(id\);/);
+    assert.match(SOURCE, /requestedPreferredIds\.splice\(preferredIndex,\s*1\)/);
+    assert.doesNotMatch(SOURCE, /tfa_method_setup_incomplete/);
 });

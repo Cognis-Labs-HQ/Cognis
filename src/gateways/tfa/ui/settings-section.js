@@ -353,6 +353,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 : "";
         const qrSvg = typeof details.qrSvg === "string" ? details.qrSvg : "";
         const qrImage = createQrImageSource(qrSvg);
+        const methodManagePrompt =
+            qrImage.src || manualSecret
+                ? i18n.t("gateway.tfa.settings.method_manage_prompt")
+                : i18n.t("gateway.tfa.settings.method_manage_prompt_no_secret");
         let action = null;
         try {
             action = await openPopup({
@@ -360,7 +364,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 maxWidth: "520px",
                 body: () => `
                 <div class="stack">
-                  <p class="settings-tfa-setup-prompt">${escapeHtml(i18n.t("gateway.tfa.settings.method_manage_prompt"))}</p>
+                  <p class="settings-tfa-setup-prompt">${escapeHtml(methodManagePrompt)}</p>
                   ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.tfa.settings.qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
                   ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.tfa.settings.manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
                 </div>`,
@@ -452,10 +456,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             ) {
                 pendingPreferredIds = pendingPreferredIds.filter(
                     (entry) => entry !== methodId,
-                );
-                showToast(
-                    i18n.t("gateway.tfa.settings.method_moved_available"),
-                    { variant: "warning" },
                 );
                 rerender();
                 markDirty?.("security-tfa", isDirtyTfa());
@@ -743,7 +743,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     )
                     .map((method) => [method.id, method]),
             );
-            for (const id of requestedPreferredIds) {
+            for (const id of [...requestedPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
                     const method = allMethodsById.get(id);
                     if (method?.configuredAt) {
@@ -754,7 +754,12 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     } else {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {
-                            throw new Error("tfa_method_setup_incomplete");
+                            const preferredIndex =
+                                requestedPreferredIds.indexOf(id);
+                            if (preferredIndex >= 0) {
+                                requestedPreferredIds.splice(preferredIndex, 1);
+                            }
+                            continue;
                         }
                     }
                 }
