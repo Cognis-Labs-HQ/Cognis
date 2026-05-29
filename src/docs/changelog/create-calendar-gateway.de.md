@@ -16,3 +16,12 @@ auf Termine, einschließlich Wiederholung, Frei/Belegt-Steuerung und
 das Dashboard zeigt kommende Kalendertermine, die Übersetzungen wurden erweitert,
 und Gateway-Tests decken spezielle Invited-Kalender, Terminaktualisierungen und
 das Löschen gespiegelter Kopien ab.
+
+## Fehlerbehebung: Termin-Popup beim Öffnen per URL nicht mehr blockiert
+
+Wenn die Kalenderseite mit einem `eventId`-URL-Parameter geöffnet wird, lässt sich
+das Termin-Popup jetzt wieder normal schließen. Zuvor wurde die Schließaktion
+lautlos verworfen, weil der `onAction`-Handler nach dem String `"close"` prüfte,
+obwohl die Popup-Implementierung die Aktion bereits intern in `null` umwandelt.
+Die Prüfung erfolgt jetzt korrekt auf `null`, sodass das Popup geschlossen werden
+kann und der Seitenlade-Indikator beim Direktaufruf nicht mehr endlos dreht.

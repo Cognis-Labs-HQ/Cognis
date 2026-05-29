@@ -425,7 +425,7 @@ export function createCalendarPopupManager({
                     },
                 ],
                 onAction: async (actionId) => {
-                    if (actionId === "close") {
+                    if (actionId === null) {
                         setSelectedEventId("");
                         syncRouteSelection();
                         return true;

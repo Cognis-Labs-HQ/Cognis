@@ -15,3 +15,13 @@ tumpang tindih. Tampilan kalender menampilkan lencana acara yang lebih kaya,
 dasbor menampilkan acara kalender mendatang, terjemahan diperluas, dan pengujian
 gateway kini mencakup kalender Invited khusus, pembaruan acara, dan penghapusan
 salinan cermin.
+
+## Perbaikan: popup acara dari URL kini dapat ditutup
+
+Ketika halaman kalender dibuka dengan parameter URL `eventId`, popup detail acara
+kini dapat ditutup dengan normal. Sebelumnya, tindakan tutup diabaikan tanpa
+pemberitahuan karena penangan `onAction` memeriksa string `"close"`, padahal
+implementasi popup mengubahnya menjadi `null` sebelum memanggil handler.
+Pemeriksaan kini dilakukan terhadap `null`, sehingga popup dapat ditutup dan
+indikator pemuatan halaman tidak lagi berputar tanpa henti saat membuka halaman
+melalui tautan langsung.
