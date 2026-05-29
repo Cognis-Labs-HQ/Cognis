@@ -211,10 +211,11 @@ export async function dispatchInviteNotifications({
     if (!dispatchNotification) return;
     await Promise.all(
         event.attendees.map(async (attendee) => {
-            const recipientUsername = await resolveNotificationRecipientUsername(
-                attendee,
-                resolveAccountId,
-            );
+            const recipientUsername =
+                await resolveNotificationRecipientUsername(
+                    attendee,
+                    resolveAccountId,
+                );
             const invitedCopy = gateway
                 .listMirroredEvents(event.id)
                 .find((copy) => {
@@ -317,10 +318,11 @@ export async function dispatchCancellationNotifications({
     if (!dispatchNotification) return;
     await Promise.all(
         event.attendees.map(async (attendee) => {
-            const recipientUsername = await resolveNotificationRecipientUsername(
-                attendee,
-                resolveAccountId,
-            );
+            const recipientUsername =
+                await resolveNotificationRecipientUsername(
+                    attendee,
+                    resolveAccountId,
+                );
             try {
                 await dispatchNotification({
                     category: "calendar",

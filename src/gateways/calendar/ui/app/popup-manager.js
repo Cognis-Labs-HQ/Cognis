@@ -106,7 +106,8 @@ export function createCalendarPopupManager({
                         return [accountId, username, handle].some(
                             (value) =>
                                 value &&
-                                value.toLowerCase() === identifier.toLowerCase(),
+                                value.toLowerCase() ===
+                                    identifier.toLowerCase(),
                         );
                     });
                     if (!matchedUser) return;
