@@ -450,18 +450,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 targetTable.id === "available-tfa-methods" &&
                 isCurrentlyPreferred
             ) {
-                const methodName =
-                    getAllUniqueMethods().find(
-                        (method) => method.id === methodId,
-                    )?.name ?? methodId;
                 pendingPreferredIds = pendingPreferredIds.filter(
                     (entry) => entry !== methodId,
                 );
                 showToast(
-                    formatTemplate(
-                        i18n.t("gateway.tfa.settings.method_deactivated"),
-                        { method: methodName },
-                    ),
+                    i18n.t("gateway.tfa.settings.method_moved_available"),
                     { variant: "warning" },
                 );
                 rerender();
@@ -732,6 +725,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         },
         isDirty: () => isDirtyTfa(),
         async save() {
+            const requestedPreferredIds = [...pendingPreferredIds];
             const currentStatus = await fetchTfaStatus();
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
@@ -749,29 +743,45 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     )
                     .map((method) => [method.id, method]),
             );
-            for (const id of [...pendingPreferredIds]) {
+            for (const id of requestedPreferredIds) {
                 if (!currentEnabledIds.has(id)) {
                     const method = allMethodsById.get(id);
                     if (method?.configuredAt) {
-                        await enableMethod(id);
+                        const enabled = await enableMethod(id);
+                        if (!enabled) {
+                            throw new Error("tfa_method_enable_failed");
+                        }
                     } else {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {
-                            pendingPreferredIds = pendingPreferredIds.filter(
-                                (entry) => entry !== id,
-                            );
+                            throw new Error("tfa_method_setup_incomplete");
                         }
                     }
                 }
             }
             for (const id of currentEnabledIds) {
-                if (!pendingPreferredIds.includes(id)) {
+                if (!requestedPreferredIds.includes(id)) {
                     await disableMethod(id);
                 }
             }
-            await savePreferred(pendingPreferredIds);
+            await savePreferred(requestedPreferredIds);
             tfaStatus = await fetchTfaStatus();
-            savedPreferredIds = [...pendingPreferredIds];
+            const confirmedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
+                (method) => method.id,
+            );
+            if (
+                confirmedPreferredIds.length !== requestedPreferredIds.length ||
+                confirmedPreferredIds.some(
+                    (id, index) => id !== requestedPreferredIds[index],
+                )
+            ) {
+                pendingPreferredIds = [...requestedPreferredIds];
+                rerender();
+                markDirty?.("security-tfa", true);
+                throw new Error("tfa_preferences_not_confirmed");
+            }
+            pendingPreferredIds = [...confirmedPreferredIds];
+            savedPreferredIds = [...confirmedPreferredIds];
             rerender();
             markDirty?.("security-tfa", false);
         },

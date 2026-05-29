@@ -83,3 +83,13 @@ test("smtp adapter login challenge reports unavailable when SMTP sender is missi
     });
     assert.equal(challenge?.ready, false);
 });
+
+test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {
+    const adapter = createAdapter();
+    const details = await adapter.renderMethodDetails?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        issuer: "Cognis",
+    });
+    assert.deepEqual(details, { details: {} });
+});

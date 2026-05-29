@@ -268,6 +268,18 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         return Promise.resolve({ verified: true });
     }
 
+    async renderMethodDetails(input: {
+        accountId: string;
+        state: Record<string, unknown>;
+        issuer: string;
+    }): Promise<{ details: Record<string, string> } | null> {
+        const email = String(input.state.email ?? "").trim();
+        if (!email) {
+            return null;
+        }
+        return { details: {} };
+    }
+
     getConfigSchema() {
         return [
             {
