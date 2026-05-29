@@ -4,6 +4,7 @@ import { createPageComposer } from "/static/reuse/page-composer/init.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createCalendarPopupManager } from "./popup-manager.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
 export async function mount(root, { signal } = {}) {
