@@ -13,11 +13,14 @@ function createStoreMock() {
             configuredAt: string | null;
             updatedAt: string;
         }>,
-        adapterConfigs: [] as Array<{
-            adapterId: string;
-            enabled: boolean;
-            config: Record<string, unknown>;
-        }>,
+        adapterConfigs: new Map<
+            string,
+            {
+                adapterId: string;
+                enabled: boolean;
+                config: Record<string, unknown>;
+            }
+        >(),
         recoveryCodes: [] as Array<{
             accountId: string;
             codeHash: string;
@@ -27,18 +30,14 @@ function createStoreMock() {
         }>,
     };
     return {
-        listAdapterConfigs: async () => state.adapterConfigs,
+        listAdapterConfigs: async () =>
+            Array.from(state.adapterConfigs.values()),
         saveAdapterConfig: async (
             adapterId: string,
             enabled: boolean,
             config: Record<string, unknown>,
         ) => {
-            state.adapterConfigs = [
-                ...state.adapterConfigs.filter(
-                    (entry) => entry.adapterId !== adapterId,
-                ),
-                { adapterId, enabled, config },
-            ];
+            state.adapterConfigs.set(adapterId, { adapterId, enabled, config });
         },
         listUserMethods: async (accountId: string) =>
             state.methods.filter((entry) => entry.accountId === accountId),

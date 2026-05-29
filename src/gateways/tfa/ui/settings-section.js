@@ -463,6 +463,21 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 );
                 rerender();
                 markDirty?.("security-tfa", isDirtyTfa());
+                const allMethods = [
+                    ...(tfaStatus?.availableMethods ?? []),
+                    ...(tfaStatus?.enabledMethods ?? []),
+                ];
+                const deactivatedMethod = allMethods.find(
+                    (method) => method.id === methodId,
+                );
+                if (deactivatedMethod) {
+                    showToast(
+                        i18n.t("gateway.tfa.settings.method_deactivated", {
+                            method: deactivatedMethod.name,
+                        }),
+                        { variant: "info" },
+                    );
+                }
                 return;
             }
             if (
@@ -724,21 +739,21 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         },
         isDirty: () => isDirtyTfa(),
         async save() {
-            const requestedPreferredIds = [...pendingPreferredIds];
+            const snapshotPreferredIds = [...pendingPreferredIds];
             const currentStatus = await fetchTfaStatus();
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
             );
-            for (const id of [...requestedPreferredIds]) {
+            for (const id of [...snapshotPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
                     const enabled = await enableMethod(id);
                     if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {
                             const preferredIndex =
-                                requestedPreferredIds.indexOf(id);
+                                snapshotPreferredIds.indexOf(id);
                             if (preferredIndex >= 0) {
-                                requestedPreferredIds.splice(preferredIndex, 1);
+                                snapshotPreferredIds.splice(preferredIndex, 1);
                             }
                             continue;
                         }
@@ -746,22 +761,22 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 }
             }
             for (const id of currentEnabledIds) {
-                if (!requestedPreferredIds.includes(id)) {
+                if (!snapshotPreferredIds.includes(id)) {
                     await disableMethod(id);
                 }
             }
-            await savePreferred(requestedPreferredIds);
+            await savePreferred(snapshotPreferredIds);
             tfaStatus = await fetchTfaStatus();
             const confirmedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
                 (method) => method.id,
             );
             if (
-                confirmedPreferredIds.length !== requestedPreferredIds.length ||
+                confirmedPreferredIds.length !== snapshotPreferredIds.length ||
                 confirmedPreferredIds.some(
-                    (id, index) => id !== requestedPreferredIds[index],
+                    (id, index) => id !== snapshotPreferredIds[index],
                 )
             ) {
-                pendingPreferredIds = [...requestedPreferredIds];
+                pendingPreferredIds = [...snapshotPreferredIds];
                 rerender();
                 markDirty?.("security-tfa", true);
                 throw new Error("tfa_preferences_not_confirmed");

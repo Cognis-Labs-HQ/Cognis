@@ -63,6 +63,18 @@ export interface TfaMethodAdapter {
     configure(config: Record<string, unknown>): void;
 }
 
+/**
+ * Factory function signature that TFA adapter modules must export as `createAdapter`.
+ *
+ * The gateway calls this once at startup, passing an opaque `context` object assembled
+ * from `CoreTfaGateway` options (`adapterFactoryContext`). Adapters may read
+ * well-known keys from it (e.g. capability handles contributed by other gateways) but
+ * must never require a specific shape — treat every key as optional.
+ */
+export type TfaAdapterFactory = (
+    context: Record<string, unknown>,
+) => TfaMethodAdapter;
+
 export interface TfaAdapterInfo {
     id: string;
     name: string;
@@ -701,9 +713,10 @@ export class CoreTfaGateway {
                 );
                 const module = await import(`${entryPath}?t=${Date.now()}`);
                 if (typeof module.createAdapter !== "function") continue;
-                const adapter = module.createAdapter(
+                const factory = module.createAdapter as TfaAdapterFactory;
+                const adapter = factory(
                     this.options.adapterFactoryContext ?? {},
-                ) as TfaMethodAdapter;
+                );
                 this.registerAdapter(adapter);
             } catch {
                 // Skip broken adapters

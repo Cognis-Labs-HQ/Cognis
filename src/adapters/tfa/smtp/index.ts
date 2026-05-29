@@ -29,7 +29,10 @@ interface CodeChallenge {
 }
 
 function clampCodeLength(input: unknown): number {
-    const parsed = Number.parseInt(String(input ?? DEFAULT_CODE_LENGTH), 10);
+    if (typeof input !== "number" && typeof input !== "string") {
+        return DEFAULT_CODE_LENGTH;
+    }
+    const parsed = Number.parseInt(String(input), 10);
     if (!Number.isFinite(parsed)) {
         return DEFAULT_CODE_LENGTH;
     }
