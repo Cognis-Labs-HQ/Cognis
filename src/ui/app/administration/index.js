@@ -773,7 +773,10 @@ function bindDependencyLinks() {
         if (!targetId) return;
         link.addEventListener("click", (e) => {
             e.preventDefault();
-            e.stopPropagation();
+            if (link.closest(".adapter-inline-row")) {
+                // Adapter rows open config on click, so keep synced-pill clicks scoped to scroll-only behavior.
+                e.stopPropagation();
+            }
             let targetElement = null;
             if (targetId.startsWith("gateway-")) {
                 targetElement = root.querySelector(

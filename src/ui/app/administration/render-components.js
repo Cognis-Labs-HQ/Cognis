@@ -188,12 +188,16 @@ function renderInlineAdapters(
                     : syncTargetGatewayId
                       ? escapeHtml(syncTargetGatewayId)
                       : "";
+            const syncedToTemplate = escapeHtml(
+                i18n.t("ui.app.admin.synced_to"),
+            );
             const syncedPillLabel =
                 syncTargetName.length > 0
-                    ? escapeHtml(i18n.t("ui.app.admin.synced_to")).replace(
-                          "{module}",
-                          syncTargetName,
-                      )
+                    ? syncedToTemplate.includes("{module}")
+                        ? syncedToTemplate
+                              .split("{module}")
+                              .join(syncTargetName)
+                        : `${syncedToTemplate} ${syncTargetName}`
                     : "";
             const syncedPill =
                 syncTargetGatewayId && syncTargetName.length > 0
@@ -243,7 +247,9 @@ function renderGatewaysContent(gateways, allAdapters, i18n, escapeHtml) {
         }
         adaptersByGatewayId.get(gatewayId).push(adapter);
     }
-    const gatewayById = new Map(gateways.map((gateway) => [gateway.id, gateway]));
+    const gatewayById = new Map(
+        gateways.map((gateway) => [gateway.id, gateway]),
+    );
     const adapterByCompositeKey = new Map(
         allAdapters.map((adapter) => [
             `${adapter._gatewayId}:${resolveAdapterId(adapter)}`,
