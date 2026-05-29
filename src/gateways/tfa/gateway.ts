@@ -68,6 +68,10 @@ export interface TfaAdapterInfo {
     name: string;
     enabled: boolean;
     locked?: boolean;
+    syncedTo?: {
+        gatewayId: string;
+        adapterId?: string;
+    };
     config: Record<string, unknown>;
     schema: TfaConfigField[];
 }
@@ -124,6 +128,13 @@ export class CoreTfaGateway {
         string,
         () => boolean
     >();
+    private readonly adapterSyncTargets = new Map<
+        string,
+        {
+            gatewayId: string;
+            adapterId?: string;
+        }
+    >();
 
     constructor(
         private readonly store: DbTfaStore,
@@ -153,6 +164,9 @@ export class CoreTfaGateway {
             enabled: this.isAdapterEnabled(adapter.id),
             ...(this.adapterAvailabilityChecks.has(adapter.id)
                 ? { locked: true }
+                : {}),
+            ...(this.adapterSyncTargets.has(adapter.id)
+                ? { syncedTo: this.adapterSyncTargets.get(adapter.id) }
                 : {}),
             config: {},
             schema: adapter.getConfigSchema(),
@@ -238,6 +252,16 @@ export class CoreTfaGateway {
 
     setAdapterAvailabilityCheck(adapterId: string, check: () => boolean): void {
         this.adapterAvailabilityChecks.set(adapterId, check);
+    }
+
+    setAdapterSyncTarget(
+        adapterId: string,
+        target: {
+            gatewayId: string;
+            adapterId?: string;
+        },
+    ): void {
+        this.adapterSyncTargets.set(adapterId, target);
     }
 
     async getUserStatus(accountId: string): Promise<UserTfaStatus> {

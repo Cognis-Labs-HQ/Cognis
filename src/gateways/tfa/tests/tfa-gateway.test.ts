@@ -260,6 +260,10 @@ test("tfa gateway SMTP availability check tethers SMTP TFA to notification state
     });
     let smtpEnabled = false;
     gateway.setAdapterAvailabilityCheck("smtp", () => smtpEnabled);
+    gateway.setAdapterSyncTarget("smtp", {
+        gatewayId: "notify",
+        adapterId: "smtp",
+    });
     await gateway.loadPersistedConfigs();
 
     assert.equal(gateway.isAdapterEnabled("smtp"), false);
@@ -268,6 +272,10 @@ test("tfa gateway SMTP availability check tethers SMTP TFA to notification state
     assert.ok(smtpOff !== undefined);
     assert.equal(smtpOff.enabled, false);
     assert.equal(smtpOff.locked, true);
+    assert.deepEqual(smtpOff.syncedTo, {
+        gatewayId: "notify",
+        adapterId: "smtp",
+    });
 
     smtpEnabled = true;
     assert.equal(gateway.isAdapterEnabled("smtp"), true);
@@ -276,6 +284,10 @@ test("tfa gateway SMTP availability check tethers SMTP TFA to notification state
     assert.ok(smtpOn !== undefined);
     assert.equal(smtpOn.enabled, true);
     assert.equal(smtpOn.locked, true);
+    assert.deepEqual(smtpOn.syncedTo, {
+        gatewayId: "notify",
+        adapterId: "smtp",
+    });
 });
 
 test("tfa gateway login methods follow configured preferred ordering", async () => {

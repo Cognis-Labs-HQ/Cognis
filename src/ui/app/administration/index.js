@@ -767,25 +767,48 @@ function bindIntegrityRerun() {
 }
 
 function bindDependencyLinks() {
-    root.querySelectorAll(".dependency-link[data-scroll-to]").forEach(
-        (link) => {
-            if (!(link instanceof HTMLAnchorElement)) return;
-            const targetId = link.dataset.scrollTo;
-            if (!targetId) return;
-            link.addEventListener("click", (e) => {
-                e.preventDefault();
-                const targetElement = root.querySelector(
-                    `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"], [data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
+    root.querySelectorAll("a[data-scroll-to]").forEach((link) => {
+        if (!(link instanceof HTMLAnchorElement)) return;
+        const targetId = link.dataset.scrollTo;
+        if (!targetId) return;
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            let targetElement = null;
+            if (targetId.startsWith("gateway-")) {
+                targetElement = root.querySelector(
+                    `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"]`,
                 );
-                if (!(targetElement instanceof HTMLElement)) return;
-                targetElement.setAttribute("open", "");
-                targetElement.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
+            } else if (targetId.startsWith("module-")) {
+                targetElement = root.querySelector(
+                    `[data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
+                );
+            } else if (targetId.startsWith("adapter-")) {
+                const adapterRef = targetId.replace(/^adapter-/, "");
+                const separatorIndex = adapterRef.indexOf(":");
+                if (separatorIndex > 0) {
+                    const targetGatewayId = adapterRef.slice(0, separatorIndex);
+                    const targetAdapterId = adapterRef.slice(
+                        separatorIndex + 1,
+                    );
+                    targetElement = root.querySelector(
+                        `.adapter-inline-row[data-gateway-id="${CSS.escape(
+                            targetGatewayId,
+                        )}"][data-adapter-id="${CSS.escape(targetAdapterId)}"]`,
+                    );
+                }
+            }
+            if (!(targetElement instanceof HTMLElement)) return;
+            const gatewayContainer = targetElement.closest("[data-gateway]");
+            if (gatewayContainer instanceof HTMLElement) {
+                gatewayContainer.setAttribute("open", "");
+            }
+            targetElement.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
             });
-        },
-    );
+        });
+    });
 }
 
 /**

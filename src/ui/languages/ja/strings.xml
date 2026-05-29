@@ -195,6 +195,7 @@
   <string name="ui.app.admin.toggle_module">モジュールの有効状態を切り替え</string>
   <string name="ui.app.admin.toggle_gateway">ゲートウェイの有効状態を切り替え</string>
   <string name="ui.app.admin.toggle_adapter">アダプターの有効状態を切り替え</string>
+  <string name="ui.app.admin.synced_to">{module} と同期</string>
   <string name="ui.app.admin.checking">確認中...</string>
   <string name="ui.app.admin.components">コンポーネント</string>
   <string name="ui.app.admin.gateways">ゲートウェイ</string>
