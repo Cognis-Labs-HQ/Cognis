@@ -1,7 +1,7 @@
 {
     "id": "tfa",
     "name": "Two-Factor Authentication Gateway",
-    "version": "1.0.3",
+    "version": "1.0.7",
     "required": false,
     "requires": ["db", "auth"],
     "hasAdapters": true

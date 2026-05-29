@@ -523,16 +523,18 @@ function createAuthGatewayRoutes(
             : null;
         const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
         const requiresTfaSetup = tfaStatus?.requiresSetup === true;
-        if (requiresTfa && getTfaLoginMethods) {
-            const methods = await getTfaLoginMethods(session.accountId)
-                .catch(() => [])
-                .then((items) =>
-                    items.filter(
-                        (item) =>
-                            typeof item.id === "string" &&
-                            typeof item.name === "string",
-                    ),
-                );
+        if (requiresTfa) {
+            const methods = getTfaLoginMethods
+                ? await getTfaLoginMethods(session.accountId)
+                      .catch(() => [])
+                      .then((items) =>
+                          items.filter(
+                              (item) =>
+                                  typeof item.id === "string" &&
+                                  typeof item.name === "string",
+                          ),
+                      )
+                : [];
             if (methods.length > 0) {
                 const pendingAttempt =
                     authRouteBootstrapRuntime.createPendingTfaLoginAttempt({
@@ -576,6 +578,27 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
+            log?.(
+                "warn",
+                "Login denied because configured TFA challenges are unavailable.",
+                {
+                    ...logMeta,
+                    accountId: session.accountId,
+                    provider: session.provider,
+                    role,
+                },
+            );
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "tfa_unavailable",
+                        message:
+                            "Two-factor authentication is temporarily unavailable. Please try again.",
+                    },
+                }),
+            );
+            return true;
         }
         if (requiresTfaSetup) {
             const pendingSetupToken = issueAccessToken(

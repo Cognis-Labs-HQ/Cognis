@@ -8,6 +8,7 @@ function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
     }
     const placeholderKeyByMethod = {
         recovery_code: "ui.app.login.tfa.code_placeholder_recovery",
+        smtp: "ui.app.login.tfa.code_placeholder_smtp",
         totp: "ui.app.login.tfa.code_placeholder_totp",
     };
     const placeholderKey =
@@ -121,6 +122,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
     await ensurePageStylesheet("/static/gateways/tfa/login.css");
     const i18n = await extendI18n(baseI18n, [
         "/static/gateways/tfa/languages",
+        "/static/adapters/tfa/smtp/languages",
         "/static/adapters/tfa/totp/languages",
     ]);
     return {

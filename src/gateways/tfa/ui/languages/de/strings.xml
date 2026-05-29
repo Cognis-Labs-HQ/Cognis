@@ -22,6 +22,7 @@
   <string name="gateway.tfa.settings.method_moved_available">Methode wurde zu den verfügbaren Methoden verschoben.</string>
   <string name="gateway.tfa.settings.method_manage_title">Zwei-Faktor-Methode Verwalten</string>
   <string name="gateway.tfa.settings.method_manage_prompt">Diese Methode ist bereits konfiguriert. Sie können QR-Code und Geheimnis prüfen oder das Geheimnis rotieren.</string>
+  <string name="gateway.tfa.settings.method_manage_prompt_no_secret">Diese Methode ist bereits konfiguriert. Sie können Methodendetails prüfen oder die Einrichtung erneut ausführen.</string>
   <string name="gateway.tfa.settings.method_rotate">Geheimnis Rotieren</string>
   <string name="gateway.tfa.settings.method_details_failed">QR-Details dieser Methode konnten nicht geladen werden.</string>
   <string name="gateway.tfa.settings.recovery_codes_action">Wiederherstellungscodes Erneuern</string>

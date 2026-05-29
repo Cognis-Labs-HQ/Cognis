@@ -28,8 +28,13 @@ export async function beginTfaSetup(apiFetch, methodId) {
             body: JSON.stringify({}),
         },
     );
-    if (!response.ok) return null;
     const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+        return {
+            errorMessage:
+                payload?.error?.message ?? payload?.error?.code ?? null,
+        };
+    }
     return payload?.data ?? null;
 }
 

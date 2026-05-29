@@ -72,11 +72,18 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             invalid_recovery_code: "ui.app.login.tfa.error_invalid",
             code_required: "ui.app.login.tfa.error_invalid",
             recovery_code_required: "ui.app.login.tfa.error_invalid",
+            invalid_smtp_code: "ui.app.login.tfa.error_invalid",
+            smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
+            smtp_capability_missing:
+                "ui.app.settings.emails_verify_unavailable",
+            primary_email_required: "ui.app.settings.emails_verify_unavailable",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
             method_not_configured: "gateway.tfa.settings.setup_failed",
             verification_failed: "gateway.tfa.settings.setup_failed",
+            tfa_method_enable_failed: "gateway.tfa.settings.setup_failed",
+            tfa_preferences_not_confirmed: "gateway.tfa.settings.setup_failed",
         };
         const mappedMessage = resolveTranslatedMessage(
             messageKeyByCode[normalizedMessage],
@@ -235,7 +242,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     async function runTfaSetupFlow(methodId) {
         const setup = await beginSetup(methodId);
         if (!setup?.setupId) {
-            showToast(i18n.t("gateway.tfa.settings.setup_failed"), {
+            showToast(resolveTranslatedTfaErrorMessage(setup?.errorMessage), {
                 variant: "error",
             });
             return false;
@@ -352,6 +359,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 : "";
         const qrSvg = typeof details.qrSvg === "string" ? details.qrSvg : "";
         const qrImage = createQrImageSource(qrSvg);
+        const methodManagePrompt =
+            qrImage.src || manualSecret
+                ? i18n.t("gateway.tfa.settings.method_manage_prompt")
+                : i18n.t("gateway.tfa.settings.method_manage_prompt_no_secret");
         let action = null;
         try {
             action = await openPopup({
@@ -359,7 +370,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 maxWidth: "520px",
                 body: () => `
                 <div class="stack">
-                  <p class="settings-tfa-setup-prompt">${escapeHtml(i18n.t("gateway.tfa.settings.method_manage_prompt"))}</p>
+                  <p class="settings-tfa-setup-prompt">${escapeHtml(methodManagePrompt)}</p>
                   ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.tfa.settings.qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
                   ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.tfa.settings.manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
                 </div>`,
@@ -449,22 +460,26 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 targetTable.id === "available-tfa-methods" &&
                 isCurrentlyPreferred
             ) {
-                const methodName =
-                    getAllUniqueMethods().find(
-                        (method) => method.id === methodId,
-                    )?.name ?? methodId;
                 pendingPreferredIds = pendingPreferredIds.filter(
                     (entry) => entry !== methodId,
                 );
-                showToast(
-                    formatTemplate(
-                        i18n.t("gateway.tfa.settings.method_deactivated"),
-                        { method: methodName },
-                    ),
-                    { variant: "warning" },
-                );
                 rerender();
                 markDirty?.("security-tfa", isDirtyTfa());
+                const allMethods = [
+                    ...(tfaStatus?.availableMethods ?? []),
+                    ...(tfaStatus?.enabledMethods ?? []),
+                ];
+                const deactivatedMethod = allMethods.find(
+                    (method) => method.id === methodId,
+                );
+                if (deactivatedMethod) {
+                    showToast(
+                        i18n.t("gateway.tfa.settings.method_deactivated", {
+                            method: deactivatedMethod.name,
+                        }),
+                        { variant: "info" },
+                    );
+                }
                 return;
             }
             if (
@@ -571,22 +586,17 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 row.onclick = async () => {
                     const methodId = row.getAttribute("data-tfa-method-row");
                     if (!methodId) return;
-                    const methodEntry = (
-                        tfaStatus?.availableMethods ?? []
-                    ).find((entry) => entry.id === methodId);
-                    if (!methodEntry?.configuredAt) {
+                    const enabled = await enableMethod(methodId);
+                    if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(methodId);
                         if (!setupCompleted) return;
-                        tfaStatus = await fetchTfaStatus();
-                        savedPreferredIds = (
-                            tfaStatus?.enabledMethods ?? []
-                        ).map((method) => method.id);
-                        pendingPreferredIds = [...savedPreferredIds];
-                        markDirty?.("security-tfa", false);
-                    } else {
-                        await openConfiguredMethodPopup(methodId);
-                        tfaStatus = await fetchTfaStatus();
                     }
+                    tfaStatus = await fetchTfaStatus();
+                    savedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
+                        (method) => method.id,
+                    );
+                    pendingPreferredIds = [...savedPreferredIds];
+                    markDirty?.("security-tfa", false);
                     rerender();
                 };
             });
@@ -731,46 +741,51 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         },
         isDirty: () => isDirtyTfa(),
         async save() {
+            const workingPreferredIds = [...pendingPreferredIds];
             const currentStatus = await fetchTfaStatus();
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
             );
-            const allMethods = [
-                ...(currentStatus.availableMethods ?? []),
-                ...(currentStatus.enabledMethods ?? []),
-            ];
-            const allMethodsById = new Map(
-                allMethods
-                    .filter(
-                        (method, index, arr) =>
-                            arr.findIndex((entry) => entry.id === method.id) ===
-                            index,
-                    )
-                    .map((method) => [method.id, method]),
-            );
-            for (const id of [...pendingPreferredIds]) {
+            for (const id of [...workingPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
-                    const method = allMethodsById.get(id);
-                    if (method?.configuredAt) {
-                        await enableMethod(id);
-                    } else {
+                    const enabled = await enableMethod(id);
+                    if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {
-                            pendingPreferredIds = pendingPreferredIds.filter(
-                                (entry) => entry !== id,
-                            );
+                            const preferredIndex =
+                                workingPreferredIds.indexOf(id);
+                            if (preferredIndex >= 0) {
+                                workingPreferredIds.splice(preferredIndex, 1);
+                            }
+                            continue;
                         }
                     }
                 }
             }
             for (const id of currentEnabledIds) {
-                if (!pendingPreferredIds.includes(id)) {
+                if (!workingPreferredIds.includes(id)) {
                     await disableMethod(id);
                 }
             }
-            await savePreferred(pendingPreferredIds);
+            await savePreferred(workingPreferredIds);
             tfaStatus = await fetchTfaStatus();
-            savedPreferredIds = [...pendingPreferredIds];
+            const confirmedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
+                (method) => method.id,
+            );
+            // Both arrays contain unique IDs: TFA methods are configured at most once per account.
+            // Use Set-based equality so result is independent of server-returned order.
+            const confirmedSet = new Set(confirmedPreferredIds);
+            if (
+                confirmedPreferredIds.length !== workingPreferredIds.length ||
+                workingPreferredIds.some((id) => !confirmedSet.has(id))
+            ) {
+                pendingPreferredIds = [...workingPreferredIds];
+                rerender();
+                markDirty?.("security-tfa", true);
+                throw new Error("tfa_preferences_not_confirmed");
+            }
+            pendingPreferredIds = [...confirmedPreferredIds];
+            savedPreferredIds = [...confirmedPreferredIds];
             rerender();
             markDirty?.("security-tfa", false);
         },

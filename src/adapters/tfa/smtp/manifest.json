@@ -1,0 +1,8 @@
+{
+    "id": "smtp",
+    "name": "SMTP Email Code",
+    "version": "1.0.0",
+    "gateway": "tfa",
+    "description": "Email-based TFA adapter that sends one-time login codes through the notification SMTP sender.",
+    "publisher": "Cognis Labs HQ"
+}
