@@ -448,7 +448,9 @@ function renderYearMonthMiniGrid(monthDate, i18n) {
     </div>`);
         if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;
     }
-    const monthLabel = monthStart.toLocaleDateString(undefined, { month: "long" });
+    const monthLabel = monthStart.toLocaleDateString(undefined, {
+        month: "long",
+    });
     const openMonthLabel = `${i18n.t("gateway.calendar.open_month_view")} ${monthLabel}`;
     return `<article class="calendar-year-month">
     <button type="button" class="calendar-year-month-title" data-year-month-index="${monthStart.getMonth()}" aria-label="${escapeHtml(openMonthLabel)}">${escapeHtml(monthLabel)}</button>
