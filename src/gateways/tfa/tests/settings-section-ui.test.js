@@ -46,3 +46,14 @@ test("tfa required setup popup is guarded against duplicate concurrent flows", (
     assert.match(SOURCE, /requiredSetupPromptActive = true;/);
     assert.match(SOURCE, /requiredSetupPromptActive = false;/);
 });
+
+test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
+    assert.match(
+        SOURCE,
+        /smtp_unavailable:\s*"ui\.app\.settings\.emails_verify_unavailable"/,
+    );
+    assert.match(
+        SOURCE,
+        /showToast\(resolveTranslatedTfaErrorMessage\(setup\?\.errorMessage\),/,
+    );
+});
