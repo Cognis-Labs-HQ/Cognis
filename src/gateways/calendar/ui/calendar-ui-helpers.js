@@ -261,11 +261,14 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-        <button type="button" class="calendar-select-link" data-calendar-select="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""} title="${escapeHtml(i18n.t(calendar.visibility === "public" ? "gateway.calendar.visibility_public" : "gateway.calendar.visibility_private"))}">
-          <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
-          <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
-          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
-        </button>
+        <div class="calendar-list-row">
+          <button type="button" class="calendar-select-link" data-calendar-select="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""} title="${escapeHtml(i18n.t(calendar.visibility === "public" ? "gateway.calendar.visibility_public" : "gateway.calendar.visibility_private"))}">
+            <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
+            <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
+            <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
+          </button>
+          <button type="button" class="calendar-edit-btn btn-no-animation" data-calendar-edit="${escapeHtml(calendar.id)}" aria-label="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">✏</button>
+        </div>
       </li>`,
         )
         .join("")}</ul>`;
@@ -377,7 +380,7 @@ function renderSlotEvents(slotEvents, locale, i18n) {
 }
 
 function renderSlotCreateButton(start, end, i18n) {
-    return `<button type="button" class="calendar-timeslot-hover-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(i18n.t("gateway.calendar.add_event"))}">+</button>`;
+    return `<button type="button" class="calendar-timeslot-hover-add btn-no-animation" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(i18n.t("gateway.calendar.add_event"))}">+</button>`;
 }
 
 function getISOWeekNumber(date) {
@@ -412,6 +415,13 @@ function renderDayView(events, day, i18n) {
         day: "2-digit",
     });
     const todayInTimezone = nowFormatter.format(now);
+    const dayStart = startOfDay(day);
+    const dayEnd = addDays(dayStart, 1);
+    const allDayEvents = listEventsInWindow(events, dayStart, dayEnd);
+    const allDayRow = `<div class="calendar-day-all-day-row">
+  <span class="calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</span>
+  <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents.slice(0, 3), i18n?.locale, i18n) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</div>
+</div>`;
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
         const start = new Date(day.getTime() + slotIndex * HALF_HOUR_MS);
         const end = new Date(start.getTime() + HALF_HOUR_MS);
@@ -434,6 +444,7 @@ function renderDayView(events, day, i18n) {
     }
     return `<div class="calendar-day-view">
   <h4 class="calendar-day-heading">${escapeHtml(dayLabel)}</h4>
+  ${allDayRow}
   <div class="calendar-timeslot-grid">${slots.join("")}</div>
 </div>`;
 }

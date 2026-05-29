@@ -124,6 +124,17 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
+    function formatYearLabel(date) {
+        return String(new Date(date).getFullYear());
+    }
+
+    function getTodayNavLabel(view) {
+        if (view === "week") return i18n.t("gateway.calendar.this_week");
+        if (view === "month") return i18n.t("gateway.calendar.this_month");
+        if (view === "year") return i18n.t("gateway.calendar.this_year");
+        return i18n.t("gateway.calendar.today");
+    }
+
     const popupManager = createCalendarPopupManager({
         root,
         signal,
@@ -150,7 +161,7 @@ export async function mount(root, { signal } = {}) {
         refreshComposer: () => composer?.refresh(),
     });
 
-    const { bindViewInteractions, openEventComposerPopup, openEventPopup } =
+    const { bindViewInteractions, openEventComposerPopup, openEventPopup, openCalendarEditPopup } =
         popupManager;
 
     composer = createPageComposer(root, {
@@ -170,10 +181,12 @@ export async function mount(root, { signal } = {}) {
               </div>
               <div class="calendar-view-nav">
                 <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                <button type="button" data-calendar-nav="today">${i18n.t("gateway.calendar.today")}</button>
+                <button type="button" data-calendar-nav="today">${escapeHtml(getTodayNavLabel(selectedView))}</button>
                 <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
               </div>
               ${selectedView === "month" ? `<p class="calendar-nav-month-label">${escapeHtml(formatMonthYearLabel(activeDate))}</p>` : ""}
+              ${selectedView === "week" ? `<p class="calendar-nav-month-label">${escapeHtml(formatMonthYearLabel(activeDate))}</p>` : ""}
+              ${selectedView === "year" ? `<p class="calendar-nav-month-label">${escapeHtml(formatYearLabel(activeDate))}</p>` : ""}
             </header>
             <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n)}</div>
           </section>
@@ -455,6 +468,21 @@ export async function mount(root, { signal } = {}) {
                     toolbarList.addEventListener(
                         "click",
                         (event) => {
+                            const editBtn = event.target.closest(
+                                "[data-calendar-edit]",
+                            );
+                            if (editBtn instanceof HTMLElement) {
+                                const calendarId = String(
+                                    editBtn.getAttribute("data-calendar-edit") ?? "",
+                                ).trim();
+                                const calendar = calendars.find(
+                                    (c) => c.id === calendarId,
+                                );
+                                if (calendar) {
+                                    openCalendarEditPopup(calendar);
+                                }
+                                return;
+                            }
                             const button = event.target.closest(
                                 "[data-calendar-select]",
                             );

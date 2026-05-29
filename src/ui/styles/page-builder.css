@@ -933,6 +933,14 @@ body[data-theme="light"] .slider::before {
     box-shadow: none;
 }
 
+.btn-no-animation {
+    transition: none !important;
+}
+
+.btn-no-animation:hover:not(:disabled) {
+    transform: none;
+}
+
 [class*="btn-"]:disabled {
     opacity: 0.38;
     cursor: not-allowed;

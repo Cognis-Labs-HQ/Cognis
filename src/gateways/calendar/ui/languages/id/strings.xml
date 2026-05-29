@@ -89,5 +89,25 @@
   <string name="gateway.calendar.respond_all_events">Semua Acara Dalam Seri</string>
   <string name="gateway.calendar.load_event_failed">Tidak dapat memuat acara.</string>
   <string name="gateway.calendar.overlap_warning">Waktu ini bertumpang tindih dengan acara lain di kalender yang dipilih.</string>
-  <string name="gateway.calendar.update_series">Perbarui Seluruh Seri</string>
+  <string name="gateway.calendar.this_week">Minggu Ini</string>
+  <string name="gateway.calendar.this_month">Bulan Ini</string>
+  <string name="gateway.calendar.this_year">Tahun Ini</string>
+  <string name="gateway.calendar.edit_calendar">Edit Kalender</string>
+  <string name="gateway.calendar.update_calendar">Simpan Perubahan</string>
+  <string name="gateway.calendar.update_calendar_success">Kalender diperbarui.</string>
+  <string name="gateway.calendar.update_calendar_failed">Kalender tidak dapat diperbarui.</string>
+  <string name="gateway.calendar.delete_calendar">Hapus Kalender</string>
+  <string name="gateway.calendar.delete_calendar_success">Kalender dihapus.</string>
+  <string name="gateway.calendar.delete_calendar_failed">Tidak dapat menghapus kalender.</string>
+  <string name="gateway.calendar.share_calendar">Bagikan Kalender</string>
+  <string name="gateway.calendar.share_link_permission_read">Hanya Baca</string>
+  <string name="gateway.calendar.share_link_permission_write">Baca &amp; Tulis</string>
+  <string name="gateway.calendar.share_link_expiry_1h">Kedaluwarsa dalam 1 jam</string>
+  <string name="gateway.calendar.share_link_expiry_24h">Kedaluwarsa dalam 24 jam</string>
+  <string name="gateway.calendar.share_link_expiry_7d">Kedaluwarsa dalam 7 hari</string>
+  <string name="gateway.calendar.share_link_expiry_30d">Kedaluwarsa dalam 30 hari</string>
+  <string name="gateway.calendar.share_link_generate">Buat Tautan</string>
+  <string name="gateway.calendar.share_link_copy">Salin</string>
+  <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>
+  <string name="gateway.calendar.share_link_failed">Tidak dapat membuat tautan berbagi.</string>
 </resources>

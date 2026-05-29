@@ -35,6 +35,53 @@
     border: 1px solid var(--field-border);
 }
 
+.calendar-edit-popup {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.calendar-share-section {
+    border-top: 1px solid var(--field-border);
+    padding-top: 0.65rem;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.calendar-share-label {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.calendar-share-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.calendar-share-controls select {
+    flex: 1 1 110px;
+    min-width: 110px;
+}
+
+.calendar-share-result {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.calendar-share-url-field {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+}
+
+.calendar-delete-zone {
+    border-top: 1px solid var(--field-border);
+    padding-top: 0.65rem;
+}
+
 .calendar-events-list,
 .calendar-calendars-list {
     list-style: none;
@@ -54,6 +101,10 @@
     border-radius: 10px;
     padding: 0.5rem 0.6rem;
     background: var(--surface, transparent);
+}
+
+.calendar-calendars-list li {
+    padding: 0.3rem 0.5rem;
 }
 
 .calendar-events-list--compact li {
@@ -92,6 +143,30 @@
     font-size: 0.8rem;
     opacity: 0.8;
     flex-shrink: 0;
+}
+
+.calendar-list-row {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.calendar-edit-btn {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    opacity: 0.6;
+    padding: 0.15rem 0.3rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.calendar-edit-btn:hover:not(:disabled) {
+    opacity: 1;
+    background: var(--surface-2, color-mix(in srgb, var(--field-border) 30%, transparent));
 }
 
 .calendar-select-link[aria-current="page"] .calendar-select-label {
@@ -179,6 +254,25 @@
 .calendar-day-view {
     display: grid;
     gap: 0.5rem;
+}
+
+.calendar-day-all-day-row {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 2.2rem;
+}
+
+.calendar-day-all-day-label {
+    font-size: 0.78rem;
+    opacity: 0.8;
+    padding: 0.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--field-border);
+    white-space: nowrap;
 }
 
 .calendar-day-heading {
@@ -294,6 +388,10 @@
     color: inherit;
     opacity: 0.7;
     z-index: 1;
+}
+
+.calendar-timeslot-hover-add:hover:not(:disabled) {
+    transform: translate(-50%, -50%);
 }
 
 .calendar-timeslot-events--current {
@@ -557,9 +655,12 @@
     color: inherit;
     font-weight: 700;
     font-size: 0.9rem;
+    line-height: 1.3;
     text-align: center;
     width: 100%;
     padding: 0;
+    height: auto;
+    display: block;
 }
 
 .calendar-year-mini-grid {

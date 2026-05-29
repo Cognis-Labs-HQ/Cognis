@@ -1,4 +1,26 @@
+import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
+
 export function createCalendarPopupManager({
+    root,
+    signal,
+    i18n,
+    calendarUi,
+    apiFetch,
+    showToast,
+    openPopup,
+    escapeHtml,
+    normalizeDateTimeInputValue,
+    getCalendars,
+    getSelectedCalendarId,
+    setSelectedCalendarId,
+    setSelectedEventId,
+    getEventsByCalendar,
+    getCanInviteExternal,
+    getJitsiAvailable,
+    reloadState,
+    syncRouteSelection,
+    refreshComposer,
+}) {
     root,
     signal,
     i18n,
@@ -910,10 +932,22 @@ export function createCalendarPopupManager({
         );
     }
 
+    const { openCalendarEditPopup } = createCalendarEditPopupHandler({
+        i18n,
+        apiFetch,
+        showToast,
+        openPopup,
+        escapeHtml,
+        calendarUi,
+        reloadState,
+        refreshComposer,
+    });
+
     return {
         bindViewInteractions,
         openDeleteEventPopup,
         openEventComposerPopup,
         openEventPopup,
+        openCalendarEditPopup,
     };
 }

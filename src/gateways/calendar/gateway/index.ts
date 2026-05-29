@@ -1,7 +1,7 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { normalizeCalendarColor } from "../color.js";
 import type { CalendarStore } from "../calendar-store.js";
-import { ResponseTracker } from "./response-tracker.js";
+import { CalendarTokenStore } from "./token-store.js";
 import {
     normalizeAttendeeList,
     normalizeEventRecurrence,
@@ -37,11 +37,7 @@ export class CoreCalendarGateway {
         string,
         CalendarEventRecord[]
     >();
-    private readonly tokensByValue = new Map<string, CaldavTokenRecord>();
-    private readonly scopedMeetingTokensByValue = new Map<
-        string,
-        ScopedMeetingAccessTokenRecord
-    >();
+    private readonly tokenStore = new CalendarTokenStore();
     private readonly registeredAdapters = new Map<string, CalendarAdapter>();
     private readonly adapterRequires = new Map<string, string[]>();
     private readonly disabledAdapters = new Set<string>();
@@ -311,6 +307,42 @@ export class CoreCalendarGateway {
             .get(calendar.ownerAccountId)
             ?.delete(calendar.id);
         this.scheduleStoreWrite(() => this.store?.deleteCalendar(calendar.id));
+    }
+
+    updateCalendar(input: {
+        ownerAccountId: string;
+        calendarId: string;
+        name?: string;
+        visibility?: CalendarVisibility;
+        color?: string;
+    }): CalendarRecord {
+        const calendar = this.getOwnedCalendar(
+            input.ownerAccountId,
+            input.calendarId,
+        );
+        if (!calendar) {
+            throw new Error("calendar_not_found");
+        }
+        if (input.name !== undefined) {
+            if (calendar.isDefault) {
+                throw new Error("calendar_default_name_locked");
+            }
+            const normalizedName = String(input.name ?? "").trim();
+            if (!normalizedName) {
+                throw new Error("calendar_name_required");
+            }
+            calendar.name = normalizedName;
+        }
+        if (input.visibility !== undefined) {
+            calendar.visibility = input.visibility;
+        }
+        if (input.color !== undefined) {
+            calendar.color = normalizeCalendarColor(input.color);
+        }
+        calendar.updatedAt = new Date().toISOString();
+        this.upsertCalendarRecord(calendar);
+        this.scheduleStoreWrite(() => this.store?.saveCalendar(calendar));
+        return calendar;
     }
 
     addEvent(input: {
@@ -714,26 +746,18 @@ export class CoreCalendarGateway {
         if (!calendar) {
             throw new Error("calendar_not_found");
         }
-        const token: CaldavTokenRecord = {
-            token: randomBytes(24).toString("hex"),
-            ownerAccountId: input.ownerAccountId,
-            calendarId: input.calendarId,
-            expiresAt: new Date(
-                Date.now() + (input.ttlSeconds ?? 3600) * 1000,
-            ).toISOString(),
-        };
-        this.tokensByValue.set(token.token, token);
-        return token;
+        return this.tokenStore.issueCaldavToken(
+            {
+                ownerAccountId: input.ownerAccountId,
+                calendarId: input.calendarId,
+                expiresAt: "",
+            },
+            input.ttlSeconds,
+        );
     }
 
     resolvePrivateExportToken(tokenValue: string): CaldavTokenRecord | null {
-        const token = this.tokensByValue.get(tokenValue) ?? null;
-        if (!token) return null;
-        if (new Date(token.expiresAt).getTime() <= Date.now()) {
-            this.tokensByValue.delete(tokenValue);
-            return null;
-        }
-        return token;
+        return this.tokenStore.resolveCaldavToken(tokenValue);
     }
 
     issueScopedMeetingAccessToken(input: {
@@ -742,29 +766,21 @@ export class CoreCalendarGateway {
         eventId?: string | null;
         ttlSeconds?: number;
     }): ScopedMeetingAccessTokenRecord {
-        const token: ScopedMeetingAccessTokenRecord = {
-            token: randomBytes(24).toString("hex"),
-            targetUrl: input.targetUrl,
-            createdByAccountId: input.createdByAccountId,
-            eventId: input.eventId ?? null,
-            expiresAt: new Date(
-                Date.now() + (input.ttlSeconds ?? 900) * 1000,
-            ).toISOString(),
-        };
-        this.scopedMeetingTokensByValue.set(token.token, token);
-        return token;
+        return this.tokenStore.issueScopedMeetingToken(
+            {
+                targetUrl: input.targetUrl,
+                createdByAccountId: input.createdByAccountId,
+                eventId: input.eventId ?? null,
+                expiresAt: "",
+            },
+            input.ttlSeconds,
+        );
     }
 
     consumeScopedMeetingAccessToken(
         tokenValue: string,
     ): ScopedMeetingAccessTokenRecord | null {
-        const token = this.scopedMeetingTokensByValue.get(tokenValue) ?? null;
-        if (!token) return null;
-        this.scopedMeetingTokensByValue.delete(tokenValue);
-        if (new Date(token.expiresAt).getTime() <= Date.now()) {
-            return null;
-        }
-        return token;
+        return this.tokenStore.consumeScopedMeetingToken(tokenValue);
     }
 
     exportCalendarAsIcs(calendarId: string): string {
