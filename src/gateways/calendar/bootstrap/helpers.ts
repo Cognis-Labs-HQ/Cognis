@@ -100,6 +100,38 @@ export function sendCalendarError(
     });
 }
 
+export function requireOrganizerOwnedSourceEvent(input: {
+    gateway: CoreCalendarGateway;
+    ownerAccountId: string;
+    calendarId: string;
+    eventId: string;
+    res: ServerResponse;
+    actionVerb: "edit" | "delete";
+}): CalendarEventRecord | null {
+    const targetEvent = input.gateway.getOwnedEvent(
+        input.ownerAccountId,
+        input.calendarId,
+        input.eventId,
+    );
+    if (!targetEvent) {
+        sendCalendarError(input.res, "not_found", "Event not found.", 404);
+        return null;
+    }
+    const isOrganizerOwnedSourceEvent =
+        targetEvent.createdBy === input.ownerAccountId &&
+        targetEvent.sourceEventId === null;
+    if (!isOrganizerOwnedSourceEvent) {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            `Only the event organizer can ${input.actionVerb} this event.`,
+            403,
+        );
+        return null;
+    }
+    return targetEvent;
+}
+
 export function buildEventActionUrl(
     calendarId: string,
     eventId: string,
@@ -428,7 +460,6 @@ export async function syncInvitedCopiesForEvents({
                 ownerAccountId: copyCalendar.ownerAccountId,
                 calendarId: copy.calendarId,
                 eventId: copy.id,
-                allowMirroredEventMutation: true,
             });
         }
 
@@ -454,7 +485,6 @@ export async function syncInvitedCopiesForEvents({
                     status: event.status,
                     recurrence: event.recurrence,
                     targetCalendarId: invitedCalendar.id,
-                    allowMirroredEventMutation: true,
                 });
                 continue;
             }

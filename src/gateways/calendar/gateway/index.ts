@@ -458,7 +458,6 @@ export class CoreCalendarGateway {
         status?: CalendarEventStatus;
         recurrence?: CalendarEventRecurrence;
         updateAll?: boolean;
-        allowMirroredEventMutation?: boolean;
     }): CalendarEventRecord {
         const event = this.getOwnedEvent(
             input.ownerAccountId,
@@ -467,13 +466,6 @@ export class CoreCalendarGateway {
         );
         if (!event) {
             throw new Error("calendar_event_not_found");
-        }
-        if (
-            input.allowMirroredEventMutation !== true &&
-            (event.createdBy !== input.ownerAccountId ||
-                event.sourceEventId !== null)
-        ) {
-            throw new Error("calendar_event_forbidden");
         }
         const targetCalendarId =
             typeof input.targetCalendarId === "string" &&
@@ -615,7 +607,6 @@ export class CoreCalendarGateway {
         calendarId: string;
         eventId: string;
         deleteAll?: boolean;
-        allowMirroredEventMutation?: boolean;
     }): CalendarEventRecord[] {
         const event = this.getOwnedEvent(
             input.ownerAccountId,
@@ -624,13 +615,6 @@ export class CoreCalendarGateway {
         );
         if (!event) {
             throw new Error("calendar_event_not_found");
-        }
-        if (
-            input.allowMirroredEventMutation !== true &&
-            (event.createdBy !== input.ownerAccountId ||
-                event.sourceEventId !== null)
-        ) {
-            throw new Error("calendar_event_forbidden");
         }
         const targetEvents =
             input.deleteAll === true &&

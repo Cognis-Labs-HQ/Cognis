@@ -16,6 +16,7 @@ import {
     normalizeResponseValue,
     normalizeStringList,
     normalizeVisibility,
+    requireOrganizerOwnedSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
     sendCalendarError,
@@ -474,6 +475,18 @@ function createCalendarCoreRoutes({
                 );
                 return true;
             }
+            if (
+                !requireOrganizerOwnedSourceEvent({
+                    gateway,
+                    ownerAccountId: claims.sub,
+                    calendarId,
+                    eventId,
+                    res,
+                    actionVerb: "edit",
+                })
+            ) {
+                return true;
+            }
             try {
                 const attendees = Array.isArray(body.attendees)
                     ? await normalizeAttendeesForOwner(
@@ -564,15 +577,6 @@ function createCalendarCoreRoutes({
                     );
                     return true;
                 }
-                if (message === "calendar_event_forbidden") {
-                    sendCalendarError(
-                        res,
-                        "forbidden",
-                        "Only the event organizer can edit this event.",
-                        403,
-                    );
-                    return true;
-                }
                 if (message === "calendar_invalid_range") {
                     sendCalendarError(
                         res,
@@ -605,18 +609,16 @@ function createCalendarCoreRoutes({
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
             try {
-                const targetEvent = gateway.getOwnedEvent(
-                    claims.sub,
-                    calendarId,
-                    eventId,
-                );
-                if (!targetEvent) {
-                    sendCalendarError(
+                if (
+                    !requireOrganizerOwnedSourceEvent({
+                        gateway,
+                        ownerAccountId: claims.sub,
+                        calendarId,
+                        eventId,
                         res,
-                        "not_found",
-                        "Event not found.",
-                        404,
-                    );
+                        actionVerb: "delete",
+                    })
+                ) {
                     return true;
                 }
                 const deletedEvents = gateway.deleteEvent({
@@ -647,15 +649,6 @@ function createCalendarCoreRoutes({
                         "not_found",
                         "Event not found.",
                         404,
-                    );
-                    return true;
-                }
-                if (message === "calendar_event_forbidden") {
-                    sendCalendarError(
-                        res,
-                        "forbidden",
-                        "Only the event organizer can delete this event.",
-                        403,
                     );
                     return true;
                 }
