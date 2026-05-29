@@ -245,45 +245,45 @@ test("tfa gateway auto-enables adapters with defaultEnabled on fresh install", a
     assert.ok(available !== undefined);
 });
 
-test("tfa gateway SMTP availability check tethers SMTP TFA to notification state", async () => {
+test("tfa gateway adapter availability check controls enabled state and exposes sync target", async () => {
     const storeMock = createStoreMock();
     const gateway = new CoreTfaGateway(storeMock as any);
     gateway.registerAdapter({
-        id: "smtp",
-        name: "Email",
+        id: "custom",
+        name: "Custom",
         beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
         verifySetup: async () => ({ verified: true, state: {} }),
         verifyLogin: async () => ({ verified: false }),
         getConfigSchema: () => [],
         configure: () => undefined,
     });
-    let smtpEnabled = false;
-    gateway.setAdapterAvailabilityCheck("smtp", () => smtpEnabled);
-    gateway.setAdapterSyncTarget("smtp", {
+    let customEnabled = false;
+    gateway.setAdapterAvailabilityCheck("custom", () => customEnabled);
+    gateway.setAdapterSyncTarget("custom", {
         gatewayId: "notify",
         adapterId: "smtp",
     });
     await gateway.loadPersistedConfigs();
 
-    assert.equal(gateway.isAdapterEnabled("smtp"), false);
+    assert.equal(gateway.isAdapterEnabled("custom"), false);
     const adaptersOff = gateway.listAdapters();
-    const smtpOff = adaptersOff.find((adapter) => adapter.id === "smtp");
-    assert.ok(smtpOff !== undefined);
-    assert.equal(smtpOff.enabled, false);
-    assert.equal(smtpOff.locked, true);
-    assert.deepEqual(smtpOff.syncedTo, {
+    const customOff = adaptersOff.find((adapter) => adapter.id === "custom");
+    assert.ok(customOff !== undefined);
+    assert.equal(customOff.enabled, false);
+    assert.equal(customOff.locked, true);
+    assert.deepEqual(customOff.syncedTo, {
         gatewayId: "notify",
         adapterId: "smtp",
     });
 
-    smtpEnabled = true;
-    assert.equal(gateway.isAdapterEnabled("smtp"), true);
+    customEnabled = true;
+    assert.equal(gateway.isAdapterEnabled("custom"), true);
     const adaptersOn = gateway.listAdapters();
-    const smtpOn = adaptersOn.find((adapter) => adapter.id === "smtp");
-    assert.ok(smtpOn !== undefined);
-    assert.equal(smtpOn.enabled, true);
-    assert.equal(smtpOn.locked, true);
-    assert.deepEqual(smtpOn.syncedTo, {
+    const customOn = adaptersOn.find((adapter) => adapter.id === "custom");
+    assert.ok(customOn !== undefined);
+    assert.equal(customOn.enabled, true);
+    assert.equal(customOn.locked, true);
+    assert.deepEqual(customOn.syncedTo, {
         gatewayId: "notify",
         adapterId: "smtp",
     });

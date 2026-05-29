@@ -65,14 +65,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
-    if (typeof canSendVerificationEmail === "function") {
-        gateway.setAdapterAvailabilityCheck("smtp", canSendVerificationEmail);
-        gateway.setAdapterSyncTarget("smtp", {
-            gatewayId: "notify",
-            adapterId: "smtp",
-        });
-    }
-
     ctx.routeRegistry.register(
         createTfaRoutes(gateway, ctx.capabilities, ctx.log),
         "tfa",
