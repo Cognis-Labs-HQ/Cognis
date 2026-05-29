@@ -45,6 +45,7 @@
   <string name="gateway.calendar.next">Berikutnya</string>
   <string name="gateway.calendar.open_week_view">Buka Tampilan Mingguan</string>
   <string name="gateway.calendar.week_number_prefix">M</string>
+  <string name="gateway.calendar.week_short">Mgg</string>
   <string name="gateway.calendar.events_count_suffix">acara</string>
   <string name="gateway.calendar.event_composer">Komposer Acara</string>
   <string name="gateway.calendar.upcoming_events">Acara Mendatang</string>
