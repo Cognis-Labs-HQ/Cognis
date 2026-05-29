@@ -4,10 +4,12 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+import { encodeBasicHtmlEntities } from "./html-entities.js";
 import {
-    decodeBasicHtmlEntities,
-    encodeBasicHtmlEntities,
-} from "./html-entities.js";
+    buildAttachmentMimeParts,
+    type MimeAttachment,
+} from "./mime-attachments.js";
+import { dotStuff, isTemporaryCode, stripHtmlTags } from "./mime-utils.js";
 
 export interface SmtpConfig {
     host: string;
@@ -30,10 +32,6 @@ export class SmtpTemporaryError extends Error {
         super(message);
         this.name = "SmtpTemporaryError";
     }
-}
-
-function isTemporaryCode(code: number): boolean {
-    return code >= 400 && code < 500;
 }
 
 let cachedEmailTemplate: string | null = null;
@@ -251,35 +249,6 @@ function encodeQuotedPrintable(input: string): string {
     return wrapped.join("\r\n");
 }
 
-function stripHtmlTags(html: string): string {
-    let out = "";
-    for (let cursor = 0; cursor < html.length; cursor++) {
-        if (html[cursor] === "<") {
-            const tagEnd = html.indexOf(">", cursor + 1);
-            if (tagEnd === -1) break;
-            const tagContent = html
-                .slice(cursor + 1, tagEnd)
-                .trim()
-                .replace(/^\/+/, "")
-                .toLowerCase();
-            if (tagContent.startsWith("br")) {
-                out += "\n";
-            }
-            cursor = tagEnd;
-            continue;
-        }
-        out += html[cursor];
-    }
-    return decodeBasicHtmlEntities(out);
-}
-
-function dotStuff(message: string): string {
-    return normalizeNewlines(message)
-        .split("\n")
-        .map((line) => (line.startsWith(".") ? `.${line}` : line))
-        .join("\r\n");
-}
-
 async function buildMessage(
     from: string,
     to: string,
@@ -292,11 +261,7 @@ async function buildMessage(
         verifyButtonLabel?: string;
         senderName?: string;
         messageIdDomain?: string;
-        attachments?: Array<{
-            filename: string;
-            contentType?: string;
-            content: string;
-        }>;
+        attachments?: MimeAttachment[];
     } = {},
 ): Promise<string> {
     const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
@@ -413,36 +378,10 @@ async function buildMessage(
     ].join("\r\n");
 
     const attachmentBody = hasAttachments
-        ? (options.attachments ?? [])
-              .map((attachment) => {
-                  const safeFilename = String(attachment.filename ?? "file")
-                      .replace(/[^\w.\-]/g, "_")
-                      .slice(0, 128);
-                  const contentType =
-                      typeof attachment.contentType === "string" &&
-                      attachment.contentType.trim().length > 0
-                          ? attachment.contentType.trim()
-                          : "application/octet-stream";
-                  const encodedContent = Buffer.from(
-                      String(attachment.content ?? ""),
-                      "utf8",
-                  ).toString("base64");
-                  return [
-                      `--${mixedBoundary}`,
-                      foldHeader(
-                          "Content-Type",
-                          `${contentType}; name=\"${safeFilename}\"`,
-                      ),
-                      "Content-Transfer-Encoding: base64",
-                      foldHeader(
-                          "Content-Disposition",
-                          `attachment; filename=\"${safeFilename}\"`,
-                      ),
-                      "",
-                      encodedContent,
-                  ].join("\r\n");
-              })
-              .join("\r\n")
+        ? buildAttachmentMimeParts(
+              (options.attachments ?? []) as MimeAttachment[],
+              mixedBoundary,
+          )
         : "";
 
     const mimeBody = hasAttachments
@@ -458,10 +397,7 @@ async function buildMessage(
               `--${mixedBoundary}--`,
               "",
           ].join("\r\n")
-        : [
-              alternativeBody,
-              "",
-          ].join("\r\n");
+        : [alternativeBody, ""].join("\r\n");
 
     return `${dotStuff(`${headers.join("\r\n")}\r\n\r\n${mimeBody}`)}\r\n.\r\n`;
 }
@@ -586,11 +522,7 @@ async function sendMail(
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
-    attachments?: Array<{
-        filename: string;
-        contentType?: string;
-        content: string;
-    }>,
+    attachments?: MimeAttachment[],
 ): Promise<void> {
     let session = await openSession(
         config.host,
@@ -726,11 +658,7 @@ async function sendMailWithRetry(
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
-    attachments?: Array<{
-        filename: string;
-        contentType?: string;
-        content: string;
-    }>,
+    attachments?: MimeAttachment[],
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -991,7 +919,7 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             undefined,
             undefined,
-            Array.isArray(envelope.attachments) ? envelope.attachments : [],
+            envelope.attachments ?? [],
         );
     }
 }

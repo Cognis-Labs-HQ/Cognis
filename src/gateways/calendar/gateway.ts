@@ -254,10 +254,10 @@ export class CoreCalendarGateway {
         isDefault?: boolean;
     }): CalendarRecord {
         const now = new Date().toISOString();
-        const normalizedName =
-            typeof input.name === "string" && input.name.trim().length > 0
-                ? input.name.trim()
-                : "Default";
+        const normalizedName = String(input.name ?? "").trim();
+        if (!normalizedName) {
+            throw new Error("calendar_name_required");
+        }
         const record: CalendarRecord = {
             id: randomUUID(),
             ownerAccountId: input.ownerAccountId,
@@ -280,9 +280,8 @@ export class CoreCalendarGateway {
             this.calendarIdsByOwner.get(ownerAccountId) ?? [],
         )
             .map((calendarId) => this.calendarsById.get(calendarId))
-            .find(
-                (calendar): calendar is CalendarRecord =>
-                    Boolean(calendar?.isDefault),
+            .find((calendar): calendar is CalendarRecord =>
+                Boolean(calendar?.isDefault),
             );
         if (existingDefault) return existingDefault;
         return this.createCalendar({
@@ -302,9 +301,7 @@ export class CoreCalendarGateway {
         if (!effectiveIds) return [];
         return Array.from(effectiveIds)
             .map((id) => this.calendarsById.get(id))
-            .filter((calendar): calendar is CalendarRecord =>
-                Boolean(calendar),
-            )
+            .filter((calendar): calendar is CalendarRecord => Boolean(calendar))
             .sort((a, b) => {
                 if (a.isDefault && !b.isDefault) return -1;
                 if (!a.isDefault && b.isDefault) return 1;
@@ -326,7 +323,10 @@ export class CoreCalendarGateway {
         return calendar;
     }
 
-    deleteCalendar(input: { ownerAccountId: string; calendarId: string }): void {
+    deleteCalendar(input: {
+        ownerAccountId: string;
+        calendarId: string;
+    }): void {
         const calendar = this.getOwnedCalendar(
             input.ownerAccountId,
             input.calendarId,
@@ -494,9 +494,12 @@ export class CoreCalendarGateway {
             "PRODID:-//Cognis//Calendar Gateway//EN",
             `X-WR-CALNAME:${escapeIcsText(calendar.name)}`,
             ...events.flatMap((event) => {
-                const attendeeLines = [...event.attendees, ...event.inviteEmails]
+                const attendeeLines = [
+                    ...event.attendees,
+                    ...event.inviteEmails,
+                ]
                     .map((attendee) => attendee.trim())
-                    .filter(Boolean)
+                    .filter((attendee) => attendee.includes("@"))
                     .map(
                         (attendee) =>
                             `ATTENDEE;CN=${escapeIcsText(attendee)}:mailto:${escapeIcsText(attendee)}`,

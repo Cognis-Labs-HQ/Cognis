@@ -10,6 +10,7 @@ import {
     type RouteContext,
 } from "../../api/reuse/route-context.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
+import { sanitizeFilenameBase } from "../../api/reuse/sanitize-filename.js";
 import { CoreCalendarGateway, type CalendarVisibility } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 
@@ -23,11 +24,13 @@ function normalizeStringList(value: unknown): string[] {
     if (!Array.isArray(value)) return [];
     return Array.from(
         new Set(
-            value
-                .map((entry) => String(entry ?? "").trim())
-                .filter(Boolean),
+            value.map((entry) => String(entry ?? "").trim()).filter(Boolean),
         ),
     );
+}
+
+function buildIcsAttachmentFilename(eventTitle: string): string {
+    return `${sanitizeFilenameBase(eventTitle, "event")}.ics`;
 }
 
 function createCalendarCoreRoutes(
@@ -52,6 +55,9 @@ function createCalendarCoreRoutes(
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const externalHost =
+        process.env.EXTERNAL_HOST ??
+        (process.env.HOST ? `http://${process.env.HOST}` : "");
 
     return async (
         req: IncomingMessage,
@@ -213,6 +219,8 @@ function createCalendarCoreRoutes(
             const title = String(body?.title ?? "").trim();
             const startAt = String(body?.startAt ?? "").trim();
             const endAt = String(body?.endAt ?? "").trim();
+            const inviteEmails = normalizeStringList(body.inviteEmails);
+            const canInviteByEmail = hasMinRole(claims.role, "owner");
             if (!title || !startAt || !endAt) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -220,6 +228,21 @@ function createCalendarCoreRoutes(
                         error: {
                             code: "bad_request",
                             message: "title, startAt, and endAt are required.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (inviteEmails.length > 0 && !canInviteByEmail) {
+                res.writeHead(403, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Only founder users can send email invites.",
                         },
                     }),
                 );
@@ -237,7 +260,7 @@ function createCalendarCoreRoutes(
                     startAt,
                     endAt,
                     attendees: normalizeStringList(body.attendees),
-                    inviteEmails: normalizeStringList(body.inviteEmails),
+                    inviteEmails,
                     meetingUrl:
                         typeof body.meetingUrl === "string"
                             ? body.meetingUrl
@@ -245,25 +268,6 @@ function createCalendarCoreRoutes(
                 });
 
                 if (dispatchNotification) {
-                    const canInviteByEmail = hasMinRole(claims.role, "owner");
-                    if (
-                        createdEvent.inviteEmails.length > 0 &&
-                        !canInviteByEmail
-                    ) {
-                        res.writeHead(403, {
-                            "content-type": "application/json",
-                        });
-                        res.end(
-                            JSON.stringify({
-                                error: {
-                                    code: "forbidden",
-                                    message:
-                                        "Only founder users can send email invites.",
-                                },
-                            }),
-                        );
-                        return true;
-                    }
                     const actionUrl = `/calendar?calendarId=${encodeURIComponent(calendarId)}`;
                     await Promise.all(
                         createdEvent.attendees.map((attendee) =>
@@ -281,18 +285,24 @@ function createCalendarCoreRoutes(
                         ),
                     );
                     if (canInviteByEmail && createdEvent.inviteEmails.length) {
-                        const eventIcs = gateway.exportCalendarAsIcs(calendarId);
+                        const eventIcs =
+                            gateway.exportCalendarAsIcs(calendarId);
                         await Promise.all(
                             createdEvent.inviteEmails.map((email) => {
-                                const scopedAccessToken = createdEvent.meetingUrl
-                                    ? gateway.issueScopedMeetingAccessToken({
-                                          targetUrl: createdEvent.meetingUrl,
-                                          createdByAccountId: claims.sub,
-                                          eventId: createdEvent.id,
-                                      })
-                                    : null;
+                                const scopedAccessToken =
+                                    createdEvent.meetingUrl
+                                        ? gateway.issueScopedMeetingAccessToken(
+                                              {
+                                                  targetUrl:
+                                                      createdEvent.meetingUrl,
+                                                  createdByAccountId:
+                                                      claims.sub,
+                                                  eventId: createdEvent.id,
+                                              },
+                                          )
+                                        : null;
                                 const meetingAccessUrl = scopedAccessToken
-                                    ? `/api/v1/calendar/meeting-access/${encodeURIComponent(scopedAccessToken.token)}`
+                                    ? `${externalHost}/api/v1/calendar/meeting-access/${encodeURIComponent(scopedAccessToken.token)}`
                                     : null;
                                 return dispatchNotification({
                                     category: "calendar",
@@ -311,7 +321,10 @@ function createCalendarCoreRoutes(
                                     actionUrl: meetingAccessUrl ?? actionUrl,
                                     attachments: [
                                         {
-                                            filename: `${createdEvent.title.replace(/\s+/g, "-").toLowerCase() || "event"}.ics`,
+                                            filename:
+                                                buildIcsAttachmentFilename(
+                                                    createdEvent.title,
+                                                ),
                                             contentType:
                                                 "text/calendar; charset=UTF-8",
                                             content: eventIcs,
@@ -383,7 +396,8 @@ function createCalendarCoreRoutes(
                     JSON.stringify({
                         error: {
                             code: "not_found",
-                            message: "Meeting access link is invalid or expired.",
+                            message:
+                                "Meeting access link is invalid or expired.",
                         },
                     }),
                 );
@@ -549,24 +563,23 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     >("notify:registerCategory");
     registerNotificationCategory?.("calendar", "Calendar Events");
 
-    const dispatchNotification =
-        ctx.capabilities.get<
-            (envelope: {
-                category: string;
-                recipientUsername: string;
-                recipientEmail?: string;
-                subject: string;
-                body: string;
-                actionUrl?: string;
-                senderName?: string;
-                metadata?: Record<string, unknown>;
-                attachments?: Array<{
-                    filename: string;
-                    contentType?: string;
-                    content: string;
-                }>;
-            }) => Promise<{ dispatched: string[] }>
-        >("notify:dispatch");
+    const dispatchNotification = ctx.capabilities.get<
+        (envelope: {
+            category: string;
+            recipientUsername: string;
+            recipientEmail?: string;
+            subject: string;
+            body: string;
+            actionUrl?: string;
+            senderName?: string;
+            metadata?: Record<string, unknown>;
+            attachments?: Array<{
+                filename: string;
+                contentType?: string;
+                content: string;
+            }>;
+        }) => Promise<{ dispatched: string[] }>
+    >("notify:dispatch");
 
     ctx.capabilities.contribute(
         "calendar:createCalendar",

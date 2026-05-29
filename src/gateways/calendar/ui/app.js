@@ -47,17 +47,22 @@ async function probeJitsiAvailability() {
     const response = await apiFetch("/api/v1/modules/jitsi-meet/ping");
     if (!response.ok) return false;
     const payload = await response.json();
-    return Boolean(payload?.data?.ready) && Boolean(payload?.data?.configComplete);
+    return (
+        Boolean(payload?.data?.ready) && Boolean(payload?.data?.configComplete)
+    );
 }
 
 async function createJitsiMeeting(attendees) {
-    const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings/create", {
-        method: "POST",
-        headers: {
-            "content-type": "application/json",
+    const response = await apiFetch(
+        "/api/v1/modules/jitsi-meet/meetings/create",
+        {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({ participants: attendees }),
         },
-        body: JSON.stringify({ participants: attendees }),
-    });
+    );
     if (!response.ok) throw new Error("meeting_create_failed");
     const payload = await response.json();
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
@@ -106,12 +111,13 @@ function renderEventsList(events, i18n) {
 }
 
 function splitInviteEmails(value) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
     return Array.from(
         new Set(
             String(value ?? "")
                 .split(/[\n,]+/)
                 .map((entry) => entry.trim().toLowerCase())
-                .filter((entry) => entry.includes("@")),
+                .filter((entry) => emailPattern.test(entry)),
         ),
     );
 }
@@ -202,14 +208,17 @@ export async function mount(root, { signal } = {}) {
                         if (!selectedHost) return;
                         selectedHost.innerHTML = Array.from(selectedAttendees)
                             .map(
-                                (handle) => `<button type="button" class="calendar-attendee-chip" data-remove-attendee="${escapeHtml(handle)}">@${escapeHtml(handle)} ×</button>`,
+                                (handle) =>
+                                    `<button type="button" class="calendar-attendee-chip" data-remove-attendee="${escapeHtml(handle)}">@${escapeHtml(handle)} ×</button>`,
                             )
                             .join("");
                     }
 
                     async function renderAttendeeSuggestions() {
                         if (!attendeeSearchInput || !suggestionsHost) return;
-                        const query = String(attendeeSearchInput.value ?? "").trim();
+                        const query = String(
+                            attendeeSearchInput.value ?? "",
+                        ).trim();
                         if (query.length < 2) {
                             suggestionsHost.innerHTML = "";
                             return;
@@ -217,11 +226,14 @@ export async function mount(root, { signal } = {}) {
                         const matches = await lookupMessageParticipants(query);
                         const visibleMatches = matches
                             .filter((entry) => entry?.handle)
-                            .filter((entry) => !selectedAttendees.has(entry.handle))
+                            .filter(
+                                (entry) => !selectedAttendees.has(entry.handle),
+                            )
                             .slice(0, 6);
                         suggestionsHost.innerHTML = visibleMatches
                             .map(
-                                (entry) => `<button type="button" class="calendar-attendee-suggestion" data-attendee-handle="${escapeHtml(entry.handle)}">${escapeHtml(entry.displayName ?? entry.handle)} (@${escapeHtml(entry.handle)})</button>`,
+                                (entry) =>
+                                    `<button type="button" class="calendar-attendee-suggestion" data-attendee-handle="${escapeHtml(entry.handle)}">${escapeHtml(entry.displayName ?? entry.handle)} (@${escapeHtml(entry.handle)})</button>`,
                             )
                             .join("");
                     }
@@ -242,13 +254,15 @@ export async function mount(root, { signal } = {}) {
                             );
                             if (!button) return;
                             const handle = String(
-                                button.getAttribute("data-attendee-handle") ?? "",
+                                button.getAttribute("data-attendee-handle") ??
+                                    "",
                             )
                                 .trim()
                                 .toLowerCase();
                             if (!handle) return;
                             selectedAttendees.add(handle);
-                            if (attendeeSearchInput) attendeeSearchInput.value = "";
+                            if (attendeeSearchInput)
+                                attendeeSearchInput.value = "";
                             suggestionsHost.innerHTML = "";
                             renderSelectedAttendees();
                         },
@@ -263,7 +277,8 @@ export async function mount(root, { signal } = {}) {
                             );
                             if (!button) return;
                             const handle = String(
-                                button.getAttribute("data-remove-attendee") ?? "",
+                                button.getAttribute("data-remove-attendee") ??
+                                    "",
                             )
                                 .trim()
                                 .toLowerCase();
@@ -281,11 +296,12 @@ export async function mount(root, { signal } = {}) {
                         async (event) => {
                             event.preventDefault();
                             const name = String(
-                                root.querySelector("#calendar-name")?.value ?? "",
+                                root.querySelector("#calendar-name")?.value ??
+                                    "",
                             ).trim();
                             const visibility = String(
-                                root.querySelector("#calendar-visibility")?.value ??
-                                    "private",
+                                root.querySelector("#calendar-visibility")
+                                    ?.value ?? "private",
                             );
                             if (!name) return;
                             const response = await apiFetch(
@@ -327,8 +343,8 @@ export async function mount(root, { signal } = {}) {
                             event.preventDefault();
                             if (!selectedCalendarId) return;
                             const title = String(
-                                root.querySelector("#calendar-event-title")?.value ??
-                                    "",
+                                root.querySelector("#calendar-event-title")
+                                    ?.value ?? "",
                             ).trim();
                             const description = String(
                                 root.querySelector(
@@ -336,11 +352,12 @@ export async function mount(root, { signal } = {}) {
                                 )?.value ?? "",
                             ).trim();
                             const startAt = String(
-                                root.querySelector("#calendar-event-start")?.value ??
-                                    "",
+                                root.querySelector("#calendar-event-start")
+                                    ?.value ?? "",
                             ).trim();
                             const endAt = String(
-                                root.querySelector("#calendar-event-end")?.value ?? "",
+                                root.querySelector("#calendar-event-end")
+                                    ?.value ?? "",
                             ).trim();
                             const inviteEmails = canInviteExternal
                                 ? splitInviteEmails(
@@ -350,8 +367,9 @@ export async function mount(root, { signal } = {}) {
                                   )
                                 : [];
                             const createMeeting = Boolean(
-                                root.querySelector("#calendar-event-create-meeting")
-                                    ?.checked,
+                                root.querySelector(
+                                    "#calendar-event-create-meeting",
+                                )?.checked,
                             );
                             let meetingUrl = null;
                             if (createMeeting && jitsiAvailable) {
@@ -379,9 +397,12 @@ export async function mount(root, { signal } = {}) {
                                     body: JSON.stringify({
                                         title,
                                         description,
-                                        startAt: new Date(startAt).toISOString(),
+                                        startAt: new Date(
+                                            startAt,
+                                        ).toISOString(),
                                         endAt: new Date(endAt).toISOString(),
-                                        attendees: Array.from(selectedAttendees),
+                                        attendees:
+                                            Array.from(selectedAttendees),
                                         inviteEmails,
                                         meetingUrl,
                                     }),
