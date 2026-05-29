@@ -8,6 +8,7 @@ const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
 // Thursday offset used in ISO week number calculation (ISO 8601: week containing Thursday)
 const ISO_WEEK_THURSDAY_OFFSET = 4;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
@@ -70,15 +71,18 @@ function splitHandles(value) {
 }
 
 function splitInviteEmails(value) {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
     return Array.from(
         new Set(
             String(value ?? "")
                 .split(/[\n,]+/)
                 .map((entry) => entry.trim().toLowerCase())
-                .filter((entry) => emailPattern.test(entry)),
+                .filter((entry) => EMAIL_PATTERN.test(entry)),
         ),
     );
+}
+
+function isLikelyEmail(value) {
+    return EMAIL_PATTERN.test(String(value ?? "").trim());
 }
 
 function collectUpcomingEvents(
@@ -266,6 +270,10 @@ function renderSlotEvents(slotEvents, locale) {
         .join("");
 }
 
+function renderSlotCreateButton(start, end) {
+    return `<button type="button" class="calendar-timeslot-hover-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="+">+</button>`;
+}
+
 function getISOWeekNumber(date) {
     const thursday = new Date(date);
     thursday.setDate(
@@ -302,7 +310,7 @@ function renderDayView(events, day, i18n) {
             : "";
         slots.push(`<div class="calendar-timeslot-row">
       <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
-      <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>
+      <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end)}</div>
     </div>`);
     }
     return `<div class="calendar-day-view">
@@ -328,7 +336,7 @@ function renderWeekView(events, weekStart, i18n) {
         .map((day) => {
             const dayStart = startOfDay(day);
             const dayEnd = addDays(dayStart, 1);
-            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}"></div>`;
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${renderSlotCreateButton(dayStart, dayEnd)}</div>`;
         })
         .join("");
     const slotRows = [];
@@ -350,7 +358,7 @@ function renderWeekView(events, weekStart, i18n) {
                 const eventCells = slotEvents.length
                     ? renderSlotEvents(slotEvents, i18n?.locale)
                     : "";
-                return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>`;
+                return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end)}</div>`;
             })
             .join("");
         const timeLabel = new Date(
@@ -468,9 +476,15 @@ function renderCalendarView(events, selectedView, activeDate, i18n) {
 function createEventComposerBuilder({
     i18n,
     defaultValues = {},
-    canInviteExternal,
-    submitLabelKey,
+    calendars = [],
+    selectedCalendarId = "",
 }) {
+    const calendarOptions = Array.isArray(calendars)
+        ? calendars.map((calendar) => ({
+              value: String(calendar?.id ?? ""),
+              label: String(calendar?.name ?? ""),
+          }))
+        : [];
     const fields = [
         {
             name: "title",
@@ -518,29 +532,24 @@ function createEventComposerBuilder({
             ],
         },
         {
-            name: "attendees",
-            labelKey: "gateway.calendar.attendees_label",
-            type: "textarea",
-            value: String(defaultValues.attendees ?? ""),
-            attributes: {
-                placeholder: i18n.t("gateway.calendar.attendees_placeholder"),
-            },
+            name: "calendarId",
+            labelKey: "gateway.calendar.event_calendar",
+            type: "select",
+            required: true,
+            value: String(defaultValues.calendarId ?? selectedCalendarId ?? ""),
+            options:
+                calendarOptions.length > 0
+                    ? calendarOptions
+                    : [
+                          {
+                              value: "",
+                              label: i18n.t("gateway.calendar.no_calendars"),
+                              disabled: true,
+                          },
+                      ],
+            disabled: calendarOptions.length === 0,
         },
     ];
-
-    if (canInviteExternal) {
-        fields.push({
-            name: "inviteEmails",
-            labelKey: "gateway.calendar.invite_emails",
-            type: "textarea",
-            value: String(defaultValues.inviteEmails ?? ""),
-            attributes: {
-                placeholder: i18n.t(
-                    "gateway.calendar.invite_emails_placeholder",
-                ),
-            },
-        });
-    }
 
     return createFormBuilder(
         {
@@ -549,10 +558,10 @@ function createEventComposerBuilder({
         },
         {
             formId: "calendar-event-form",
-            submitLabelKey,
             fields,
             submitButtonClassName: "btn-confirm",
             formClassName: "calendar-event-form-builder",
+            includeSubmitButton: false,
         },
     );
 }
@@ -565,6 +574,7 @@ export {
     normalizeHexColor,
     splitHandles,
     splitInviteEmails,
+    isLikelyEmail,
     collectUpcomingEvents,
     fetchCalendarState,
     fetchEvents,

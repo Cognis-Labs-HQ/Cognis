@@ -18,8 +18,12 @@
   <string name="gateway.calendar.event_start">Mulai</string>
   <string name="gateway.calendar.event_end">Selesai</string>
   <string name="gateway.calendar.event_end_after_start">Waktu selesai harus setelah waktu mulai.</string>
+  <string name="gateway.calendar.event_calendar">Kalender</string>
   <string name="gateway.calendar.attendees_label">Peserta</string>
-  <string name="gateway.calendar.attendees_placeholder">Masukkan @handle (pisahkan koma atau baris baru)</string>
+  <string name="gateway.calendar.attendees_placeholder">Cari username, nama tampilan, atau email</string>
+  <string name="gateway.calendar.participant_select_required">Pilih salah satu saran peserta terlebih dahulu.</string>
+  <string name="gateway.calendar.send_to_email_prefix">Kirim ke</string>
+  <string name="gateway.calendar.remove_participant">Hapus peserta</string>
   <string name="gateway.calendar.invite_emails">Email Undangan</string>
   <string name="gateway.calendar.invite_emails_placeholder">Undang alamat email (dipisah koma atau baris baru)</string>
   <string name="gateway.calendar.create_meeting">Buat Meeting</string>

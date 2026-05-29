@@ -18,8 +18,12 @@
   <string name="gateway.calendar.event_start">Start</string>
   <string name="gateway.calendar.event_end">Ende</string>
   <string name="gateway.calendar.event_end_after_start">Das Ende muss nach dem Start liegen.</string>
+  <string name="gateway.calendar.event_calendar">Kalender</string>
   <string name="gateway.calendar.attendees_label">Teilnehmende</string>
-  <string name="gateway.calendar.attendees_placeholder">@Handles eingeben (Komma oder neue Zeile)</string>
+  <string name="gateway.calendar.attendees_placeholder">Nutzername, Anzeigename oder E-Mail suchen</string>
+  <string name="gateway.calendar.participant_select_required">Bitte eine vorgeschlagene Option auswählen.</string>
+  <string name="gateway.calendar.send_to_email_prefix">Senden an</string>
+  <string name="gateway.calendar.remove_participant">Teilnehmende entfernen</string>
   <string name="gateway.calendar.invite_emails">Einladungs-E-Mails</string>
   <string name="gateway.calendar.invite_emails_placeholder">E-Mail-Adressen einladen (Komma oder neue Zeile)</string>
   <string name="gateway.calendar.create_meeting">Meeting erstellen</string>

@@ -43,6 +43,10 @@
     gap: 0.4rem;
 }
 
+.calendar-calendars-list {
+    gap: 0.1rem;
+}
+
 .calendar-events-list li,
 .calendar-calendars-list li {
     border: 1px solid var(--field-border);
@@ -235,10 +239,37 @@
     min-height: 2.2rem;
     cursor: default;
     align-items: center;
+    position: relative;
 }
 
 .calendar-timeslot-events:hover {
     background: var(--surface, transparent);
+}
+
+.calendar-timeslot-hover-add {
+    position: absolute;
+    top: 50%;
+    right: 0.25rem;
+    transform: translateY(-50%);
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    width: 1.2rem;
+    height: 1.2rem;
+    min-width: 1.2rem;
+    min-height: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface, transparent);
+    color: inherit;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.calendar-timeslot-events:hover .calendar-timeslot-hover-add,
+.calendar-timeslot-events:focus-within .calendar-timeslot-hover-add {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .calendar-slot-event {
@@ -459,6 +490,62 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+}
+
+.calendar-checkbox-row--styled {
+    margin-top: 0.35rem;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    width: fit-content;
+}
+
+.calendar-checkbox-row--styled input {
+    margin: 0;
+}
+
+.calendar-participants-row {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+.calendar-participant-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.calendar-participant-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    padding: 0.15rem 0.45rem;
+    background: var(--surface, transparent);
+    font-size: 0.82rem;
+}
+
+.calendar-participant-chip button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.calendar-participant-options {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.calendar-participant-option {
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
 }
 
 @media (max-width: 900px) {

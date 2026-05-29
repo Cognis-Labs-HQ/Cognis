@@ -18,8 +18,12 @@
   <string name="gateway.calendar.event_start">開始</string>
   <string name="gateway.calendar.event_end">終了</string>
   <string name="gateway.calendar.event_end_after_start">終了時刻は開始時刻より後である必要があります。</string>
+  <string name="gateway.calendar.event_calendar">カレンダー</string>
   <string name="gateway.calendar.attendees_label">参加者</string>
-  <string name="gateway.calendar.attendees_placeholder">@ハンドルを入力（カンマまたは改行区切り）</string>
+  <string name="gateway.calendar.attendees_placeholder">ユーザー名・表示名・メールを検索</string>
+  <string name="gateway.calendar.participant_select_required">候補から有効な参加者を選択してください。</string>
+  <string name="gateway.calendar.send_to_email_prefix">送信先</string>
+  <string name="gateway.calendar.remove_participant">参加者を削除</string>
   <string name="gateway.calendar.invite_emails">招待メール</string>
   <string name="gateway.calendar.invite_emails_placeholder">メールアドレスを招待（カンマまたは改行区切り）</string>
   <string name="gateway.calendar.create_meeting">ミーティングを作成</string>

@@ -77,7 +77,7 @@ function createCalendarCoreRoutes(
                 JSON.stringify({
                     data: gateway.listCalendars(claims.sub),
                     meta: {
-                        canInviteExternal: hasMinRole(claims.role, "owner"),
+                        canInviteExternal: hasMinRole(claims.role, "admin"),
                     },
                 }),
             );
@@ -223,7 +223,7 @@ function createCalendarCoreRoutes(
             const startAt = String(body?.startAt ?? "").trim();
             const endAt = String(body?.endAt ?? "").trim();
             const inviteEmails = normalizeStringList(body.inviteEmails);
-            const canInviteByEmail = hasMinRole(claims.role, "owner");
+            const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (!title || !startAt || !endAt) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -245,7 +245,7 @@ function createCalendarCoreRoutes(
                         error: {
                             code: "forbidden",
                             message:
-                                "Only founder users can send email invites.",
+                                "Only founder or admin users can send email invites.",
                         },
                     }),
                 );

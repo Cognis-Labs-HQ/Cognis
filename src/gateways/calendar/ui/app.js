@@ -4,6 +4,7 @@ import { createPageComposer } from "/static/reuse/page-composer/init.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import * as calendarUi from "./calendar-ui-helpers.js";
 
 export async function mount(root, { signal } = {}) {
@@ -20,13 +21,35 @@ export async function mount(root, { signal } = {}) {
     let selectedView = "month";
     let activeDate = new Date();
 
+    function ensureSelectedCalendarId() {
+        const hasSelectedCalendar =
+            selectedCalendarId &&
+            calendars.some((calendar) => calendar.id === selectedCalendarId);
+        if (!hasSelectedCalendar) {
+            selectedCalendarId = calendars[0]?.id ?? "";
+        }
+    }
+
+    function normalizeDateTimeInputValue(value) {
+        const trimmed = String(value ?? "").trim();
+        if (!trimmed) return "";
+        if (
+            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(
+                trimmed,
+            )
+        ) {
+            return trimmed.slice(0, 16);
+        }
+        const parsed = new Date(trimmed);
+        if (Number.isNaN(parsed.getTime())) return "";
+        return calendarUi.toDateTimeLocalValue(parsed);
+    }
+
     async function reloadState() {
         const calendarState = await calendarUi.fetchCalendarState();
         calendars = calendarState.calendars;
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
-        if (!selectedCalendarId && calendars[0]) {
-            selectedCalendarId = calendars[0].id;
-        }
+        ensureSelectedCalendarId();
         const eventEntries = await Promise.all(
             calendars.map(async (calendar) => [
                 calendar.id,
@@ -63,6 +86,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function submitEvent({
+        calendarId,
         title,
         description,
         startAt,
@@ -71,7 +95,8 @@ export async function mount(root, { signal } = {}) {
         inviteEmails,
         createMeeting,
     }) {
-        if (!selectedCalendarId) return false;
+        const targetCalendarId = String(calendarId ?? "").trim();
+        if (!targetCalendarId) return false;
         let meetingUrl = null;
         if (createMeeting && jitsiAvailable) {
             try {
@@ -85,7 +110,7 @@ export async function mount(root, { signal } = {}) {
             }
         }
         const response = await apiFetch(
-            `/api/v1/calendar/calendars/${encodeURIComponent(selectedCalendarId)}/events`,
+            `/api/v1/calendar/calendars/${encodeURIComponent(targetCalendarId)}/events`,
             {
                 method: "POST",
                 headers: {
@@ -106,8 +131,8 @@ export async function mount(root, { signal } = {}) {
             showToast(i18n.t("gateway.calendar.create_event_failed"), "error");
             return false;
         }
-        eventsByCalendar[selectedCalendarId] =
-            await calendarUi.fetchEvents(selectedCalendarId);
+        eventsByCalendar[targetCalendarId] =
+            await calendarUi.fetchEvents(targetCalendarId);
         showToast(i18n.t("gateway.calendar.create_event_success"), "success");
         return true;
     }
@@ -390,11 +415,14 @@ export async function mount(root, { signal } = {}) {
             const createTrigger = root.querySelector(
                 "#calendar-create-trigger",
             );
-            createTrigger?.addEventListener(
-                "click",
-                () => openCreateCalendarPopup(),
-                { signal },
-            );
+            if (createTrigger && !createTrigger.dataset.calendarCreateBound) {
+                createTrigger.dataset.calendarCreateBound = "true";
+                createTrigger.addEventListener(
+                    "click",
+                    () => openCreateCalendarPopup(),
+                    { signal },
+                );
+            }
 
             const toolbarList = root.querySelector("#calendar-toolbar-list");
             if (toolbarList) {
@@ -438,16 +466,147 @@ export async function mount(root, { signal } = {}) {
     async function openEventComposerPopup({ startAt = "", endAt = "" } = {}) {
         const popupBuilder = calendarUi.createEventComposerBuilder({
             i18n,
-            canInviteExternal,
-            submitLabelKey: "gateway.calendar.create_event",
-            defaultValues: { startAt, endAt },
+            calendars,
+            selectedCalendarId,
+            defaultValues: {
+                startAt: normalizeDateTimeInputValue(startAt),
+                endAt: normalizeDateTimeInputValue(endAt),
+                calendarId: selectedCalendarId,
+            },
         });
+        let participantOptions = [];
+        let selectedParticipants = [];
+        let popupSearchAbortController = null;
         let popupController = null;
+
+        function participantKey(entry) {
+            return `${entry.type}:${entry.value}`;
+        }
+
+        function renderParticipants(overlay) {
+            const chips = overlay.querySelector("#calendar-popup-participant-chips");
+            if (!(chips instanceof HTMLElement)) return;
+            chips.innerHTML = selectedParticipants
+                .map(
+                    (entry) =>
+                        `<span class="calendar-participant-chip">${escapeHtml(entry.label)}<button type="button" data-participant-remove="${escapeHtml(participantKey(entry))}" aria-label="${escapeHtml(i18n.t("gateway.calendar.remove_participant"))}">×</button></span>`,
+                )
+                .join("");
+        }
+
+        function renderParticipantOptions(overlay) {
+            const optionsElement = overlay.querySelector(
+                "#calendar-popup-participant-options",
+            );
+            if (!(optionsElement instanceof HTMLElement)) return;
+            optionsElement.innerHTML = participantOptions
+                .map(
+                    (option, index) =>
+                        `<button type="button" class="calendar-participant-option${index === 0 ? " is-active" : ""}" data-participant-option="${String(index)}">${escapeHtml(option.label)}</button>`,
+                )
+                .join("");
+        }
+
+        async function refreshParticipantOptions(overlay) {
+            const searchInput = overlay.querySelector(
+                "#calendar-popup-participant-search",
+            );
+            if (!(searchInput instanceof HTMLInputElement)) return;
+            const query = searchInput.value.trim();
+            participantOptions = [];
+            if (!query) {
+                renderParticipantOptions(overlay);
+                return;
+            }
+            if (calendarUi.isLikelyEmail(query) && canInviteExternal) {
+                const email = query.toLowerCase();
+                participantOptions.push({
+                    type: "email",
+                    value: email,
+                    label: `${i18n.t("gateway.calendar.send_to_email_prefix")} ${email}`,
+                });
+            }
+            popupSearchAbortController?.abort();
+            popupSearchAbortController = new AbortController();
+            try {
+                const response = await apiFetch(
+                    `/api/v1/search?type=users&q=${encodeURIComponent(query)}`,
+                    {
+                        signal: popupSearchAbortController.signal,
+                    },
+                );
+                if (response.ok) {
+                    const payload = await response.json();
+                    const users = Array.isArray(payload?.data)
+                        ? payload.data
+                        : [];
+                    users.forEach((entry) => {
+                        const handle = String(
+                            entry?.handle ?? entry?.meta ?? entry?.id ?? "",
+                        )
+                            .trim()
+                            .replace(/^@/, "")
+                            .toLowerCase();
+                        if (!handle) return;
+                        const displayName = String(
+                            entry?.displayName ?? entry?.label ?? handle,
+                        ).trim();
+                        participantOptions.push({
+                            type: "user",
+                            value: handle,
+                            label:
+                                displayName && displayName !== handle
+                                    ? `${displayName} (@${handle})`
+                                    : `@${handle}`,
+                        });
+                    });
+                }
+            } catch {
+                // ignore suggestion failures
+            }
+            const existing = new Set(
+                selectedParticipants.map((entry) => participantKey(entry)),
+            );
+            participantOptions = participantOptions.filter(
+                (entry, index, array) =>
+                    !existing.has(participantKey(entry)) &&
+                    array.findIndex(
+                        (candidate) =>
+                            participantKey(candidate) === participantKey(entry),
+                    ) === index,
+            );
+            renderParticipantOptions(overlay);
+        }
+
+        function selectParticipant(overlay, index) {
+            const option = participantOptions[index];
+            if (!option) return;
+            selectedParticipants = [
+                ...selectedParticipants.filter(
+                    (entry) => participantKey(entry) !== participantKey(option),
+                ),
+                option,
+            ];
+            const searchInput = overlay.querySelector(
+                "#calendar-popup-participant-search",
+            );
+            if (searchInput instanceof HTMLInputElement) searchInput.value = "";
+            participantOptions = [];
+            renderParticipants(overlay);
+            renderParticipantOptions(overlay);
+        }
+
         await openPopup({
             title: i18n.t("gateway.calendar.event_composer"),
             body: () => `
         ${popupBuilder.render()}
-        ${jitsiAvailable ? `<label class="calendar-checkbox-row"><input id="calendar-popup-create-meeting" type="checkbox" /> ${i18n.t("gateway.calendar.create_meeting")}</label>` : ""}
+        <label class="calendar-participants-row">
+          <span>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</span>
+          <div id="calendar-popup-participant-chips" class="calendar-participant-chips"></div>
+          <input id="calendar-popup-participant-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
+          <div id="calendar-popup-participant-options" class="calendar-participant-options"></div>
+        </label>
+        ${jitsiAvailable ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-create-meeting" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.create_meeting"))}</span></label>` : ""}
       `,
             closeProtection: true,
             actions: [
@@ -471,24 +630,121 @@ export async function mount(root, { signal } = {}) {
                         signal,
                     });
                 }
+                const participantSearch = overlay.querySelector(
+                    "#calendar-popup-participant-search",
+                );
+                const participantOptionsElement = overlay.querySelector(
+                    "#calendar-popup-participant-options",
+                );
+                const participantChips = overlay.querySelector(
+                    "#calendar-popup-participant-chips",
+                );
+                if (participantSearch instanceof HTMLInputElement) {
+                    participantSearch.addEventListener(
+                        "input",
+                        () => refreshParticipantOptions(overlay),
+                        { signal },
+                    );
+                    participantSearch.addEventListener(
+                        "keydown",
+                        (event) => {
+                            if (event.key === "Enter") {
+                                event.preventDefault();
+                                selectParticipant(overlay, 0);
+                            }
+                            if (
+                                event.key === "Backspace" &&
+                                !participantSearch.value.trim() &&
+                                selectedParticipants.length > 0
+                            ) {
+                                selectedParticipants =
+                                    selectedParticipants.slice(0, -1);
+                                renderParticipants(overlay);
+                            }
+                        },
+                        { signal },
+                    );
+                }
+                if (participantOptionsElement instanceof HTMLElement) {
+                    participantOptionsElement.addEventListener(
+                        "click",
+                        (event) => {
+                            const button = event.target.closest(
+                                "[data-participant-option]",
+                            );
+                            if (!(button instanceof HTMLElement)) return;
+                            const optionIndex = Number.parseInt(
+                                String(
+                                    button.getAttribute(
+                                        "data-participant-option",
+                                    ) ?? "-1",
+                                ),
+                                10,
+                            );
+                            selectParticipant(overlay, optionIndex);
+                        },
+                        { signal },
+                    );
+                }
+                if (participantChips instanceof HTMLElement) {
+                    participantChips.addEventListener(
+                        "click",
+                        (event) => {
+                            const button = event.target.closest(
+                                "[data-participant-remove]",
+                            );
+                            if (!(button instanceof HTMLElement)) return;
+                            const key = String(
+                                button.getAttribute("data-participant-remove") ??
+                                    "",
+                            );
+                            selectedParticipants = selectedParticipants.filter(
+                                (entry) => participantKey(entry) !== key,
+                            );
+                            renderParticipants(overlay);
+                            refreshParticipantOptions(overlay);
+                        },
+                        { signal },
+                    );
+                }
             },
             onAction: async (actionId, overlay) => {
                 if (actionId !== "save") return true;
                 if (!popupController?.validateAll(true)) return false;
                 const values = popupController.getValues();
+                const participantSearch = overlay.querySelector(
+                    "#calendar-popup-participant-search",
+                );
+                if (
+                    participantSearch instanceof HTMLInputElement &&
+                    participantSearch.value.trim()
+                ) {
+                    showToast(
+                        i18n.t("gateway.calendar.participant_select_required"),
+                        "error",
+                    );
+                    return false;
+                }
                 const createMeeting = Boolean(
                     overlay.querySelector("#calendar-popup-create-meeting")
                         ?.checked,
                 );
+                const attendees = selectedParticipants
+                    .filter((entry) => entry.type === "user")
+                    .map((entry) => entry.value);
+                const inviteEmails = canInviteExternal
+                    ? selectedParticipants
+                          .filter((entry) => entry.type === "email")
+                          .map((entry) => entry.value)
+                    : [];
                 const created = await submitEvent({
+                    calendarId: values.calendarId,
                     title: values.title,
                     description: values.description,
                     startAt: values.startAt,
                     endAt: values.endAt,
-                    attendees: calendarUi.splitHandles(values.attendees),
-                    inviteEmails: canInviteExternal
-                        ? calendarUi.splitInviteEmails(values.inviteEmails)
-                        : [],
+                    attendees,
+                    inviteEmails,
                     createMeeting,
                 });
                 if (!created) return false;
