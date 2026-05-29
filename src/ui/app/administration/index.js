@@ -775,7 +775,7 @@ function bindDependencyLinks() {
         link.addEventListener("click", (e) => {
             e.preventDefault();
             if (link.closest(".adapter-inline-row")) {
-                // Adapter rows open config on click, so keep synced-pill clicks scoped to scroll-only behavior.
+                // Stop propagation so the adapter row's click handler (which opens its config panel) does not fire when clicking a synced-pill link.
                 e.stopPropagation();
             }
             let targetElement = null;

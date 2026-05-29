@@ -773,11 +773,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 (method) => method.id,
             );
             // Both arrays contain unique IDs: TFA methods are configured at most once per account.
+            // Use Set-based equality so result is independent of server-returned order.
+            const confirmedSet = new Set(confirmedPreferredIds);
             if (
                 confirmedPreferredIds.length !== workingPreferredIds.length ||
-                confirmedPreferredIds.some(
-                    (id, index) => id !== workingPreferredIds[index],
-                )
+                workingPreferredIds.some((id) => !confirmedSet.has(id))
             ) {
                 pendingPreferredIds = [...workingPreferredIds];
                 rerender();
