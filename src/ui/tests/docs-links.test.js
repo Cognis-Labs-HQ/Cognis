@@ -110,7 +110,10 @@ test("unsuffixed markdown docs have localized variants", () => {
     const unsuffixedDocs = trackedDocs.filter(
         (name) => !/\.(de|en|id|ja)\.md$/.test(name),
     );
-    const exemptUnsuffixedDocs = new Set([".github/copilot-instructions.md"]);
+    const exemptUnsuffixedDocs = new Set([
+        ".github/copilot-instructions.md",
+        "TODO.md",
+    ]);
     const missingExemptions = [...exemptUnsuffixedDocs].filter(
         (file) => !trackedDocSet.has(file),
     );

@@ -59,15 +59,11 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
 
-    private canSendEmailCode(): boolean {
-        return (
-            typeof this.context.sendVerificationEmail === "function" &&
-            this.context.canSendVerificationEmail?.() === true
-        );
-    }
-
     private assertEmailCodeAvailable(): void {
-        if (!this.canSendEmailCode()) {
+        if (typeof this.context.sendVerificationEmail !== "function") {
+            throw new Error("smtp_capability_missing");
+        }
+        if (this.context.canSendVerificationEmail?.() !== true) {
             throw new Error("smtp_unavailable");
         }
     }
@@ -221,7 +217,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!email) {
             return { ready: false, message: "primary_email_required" };
         }
-        if (!this.canSendEmailCode()) {
+        if (typeof this.context.sendVerificationEmail !== "function") {
+            return { ready: false, message: "smtp_capability_missing" };
+        }
+        if (this.context.canSendVerificationEmail?.() !== true) {
             return { ready: false, message: "smtp_unavailable" };
         }
         try {

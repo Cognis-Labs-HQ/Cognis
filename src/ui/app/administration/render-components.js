@@ -152,6 +152,12 @@ function renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml) {
     return renderDetailRows(pairs);
 }
 
+export function buildScrollTargetId(gatewayId, adapterId) {
+    return adapterId
+        ? `adapter-${gatewayId}:${adapterId}`
+        : `gateway-${gatewayId}`;
+}
+
 function renderInlineAdapters(
     adapters,
     gatewayId,
@@ -202,9 +208,10 @@ function renderInlineAdapters(
             const syncedPill =
                 syncTargetGatewayId && syncTargetName.length > 0
                     ? `<a class="state-pill pill-synced synced-pill-link" href="#" data-scroll-to="${escapeHtml(
-                          syncTargetAdapterId
-                              ? `adapter-${syncTargetGatewayId}:${syncTargetAdapterId}`
-                              : `gateway-${syncTargetGatewayId}`,
+                          buildScrollTargetId(
+                              syncTargetGatewayId,
+                              syncTargetAdapterId,
+                          ),
                       )}">${syncedPillLabel}</a>`
                     : "";
             return `

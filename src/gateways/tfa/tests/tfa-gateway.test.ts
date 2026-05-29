@@ -228,6 +228,20 @@ test("tfa gateway enableAdapter preserves existing adapter config", async () => 
     assert.equal(totpConfig.config.algorithm, "SHA512");
 });
 
+test("tfa gateway disableAdapter preserves existing adapter config", async () => {
+    const storeMock = createStoreMock();
+    await storeMock.saveAdapterConfig("totp", true, { algorithm: "SHA512" });
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.loadPersistedConfigs();
+    await gateway.disableAdapter("totp");
+    const configs = await storeMock.listAdapterConfigs();
+    const totpConfig = configs.find((entry) => entry.adapterId === "totp");
+    assert.ok(totpConfig !== undefined);
+    assert.equal(totpConfig.enabled, false);
+    assert.equal(totpConfig.config.algorithm, "SHA512");
+});
+
 test("tfa gateway auto-enables adapters with defaultEnabled on fresh install", async () => {
     const storeMock = createStoreMock();
     const adapter: TfaMethodAdapter = {

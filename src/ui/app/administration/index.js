@@ -27,6 +27,7 @@ import {
 import {
     renderComponentsContent,
     renderIntegrityContent,
+    buildScrollTargetId,
 } from "./render-components.js";
 import {
     getAdapterDisableContext,
@@ -787,18 +788,22 @@ function bindDependencyLinks() {
                     `[data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
                 );
             } else if (targetId.startsWith("adapter-")) {
-                const adapterRef = targetId.replace(/^adapter-/, "");
-                const separatorIndex = adapterRef.indexOf(":");
-                if (separatorIndex > 0) {
-                    const targetGatewayId = adapterRef.slice(0, separatorIndex);
-                    const targetAdapterId = adapterRef.slice(
-                        separatorIndex + 1,
-                    );
-                    targetElement = root.querySelector(
-                        `.adapter-inline-row[data-gateway-id="${CSS.escape(
-                            targetGatewayId,
-                        )}"][data-adapter-id="${CSS.escape(targetAdapterId)}"]`,
-                    );
+                const adapterRows = root.querySelectorAll(
+                    ".adapter-inline-row[data-gateway-id][data-adapter-id]",
+                );
+                for (const row of adapterRows) {
+                    if (!(row instanceof HTMLElement)) continue;
+                    const rowGatewayId = row.dataset.gatewayId;
+                    const rowAdapterId = row.dataset.adapterId;
+                    if (
+                        rowGatewayId &&
+                        rowAdapterId &&
+                        buildScrollTargetId(rowGatewayId, rowAdapterId) ===
+                            targetId
+                    ) {
+                        targetElement = row;
+                        break;
+                    }
                 }
             }
             if (!(targetElement instanceof HTMLElement)) return;

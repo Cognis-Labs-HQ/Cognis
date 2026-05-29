@@ -136,7 +136,7 @@ export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
     private readonly adapters = new Map<string, TfaMethodAdapter>();
     private readonly enabledAdapters = new Set<string>();
-    private readonly adapterAvailabilityChecks = new Map<
+    private readonly adapterEnabledStateProviders = new Map<
         string,
         () => boolean
     >();
@@ -174,7 +174,7 @@ export class CoreTfaGateway {
             id: adapter.id,
             name: adapter.name,
             enabled: this.isAdapterEnabled(adapter.id),
-            ...(this.adapterAvailabilityChecks.has(adapter.id)
+            ...(this.adapterEnabledStateProviders.has(adapter.id)
                 ? { locked: true }
                 : {}),
             ...(this.adapterSyncTargets.has(adapter.id)
@@ -255,7 +255,7 @@ export class CoreTfaGateway {
     }
 
     isAdapterEnabled(adapterId: string): boolean {
-        const check = this.adapterAvailabilityChecks.get(adapterId);
+        const check = this.adapterEnabledStateProviders.get(adapterId);
         if (check) {
             return check();
         }
@@ -263,7 +263,7 @@ export class CoreTfaGateway {
     }
 
     setAdapterAvailabilityCheck(adapterId: string, check: () => boolean): void {
-        this.adapterAvailabilityChecks.set(adapterId, check);
+        this.adapterEnabledStateProviders.set(adapterId, check);
     }
 
     setAdapterSyncTarget(

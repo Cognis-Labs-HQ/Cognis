@@ -1769,6 +1769,87 @@ test("login fails closed when TFA is required but no challenge methods are avail
     assert.equal(loginResult.res.headers["set-cookie"], undefined);
 });
 
+test("login fails closed when TFA is required but getLoginMethods capability is absent", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+            displayName,
+        }: {
+            username: string;
+            password: string;
+            displayName?: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    username: string,
+                    password: string,
+                    role?: "user" | "teacher" | "moderator" | "admin",
+                    displayName?: string,
+                ) => Promise<{
+                    username: string;
+                    role?: string;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(
+                username,
+                password,
+                "user",
+                displayName,
+            );
+        },
+    );
+    const db = new InMemoryTestExecutor();
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            username: "alice",
+            password: "pass123",
+            displayName: "Alice Liddell",
+        }),
+        "/api/v1/auth/register",
+    );
+    assert.ok(registerResult.handled);
+    assert.equal(registerResult.res.status, 201);
+
+    capabilities.contribute("tfa:getUserStatus", async () => ({
+        requiresSetup: false,
+        hasConfiguredMethod: true,
+    }));
+    // tfa:getLoginMethods is intentionally not contributed here
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 503);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        error: { code: string };
+    };
+    assert.equal(payload.error.code, "tfa_unavailable");
+    assert.equal(loginResult.res.headers["set-cookie"], undefined);
+});
+
 test("auth bootstrap contributes page script origin registration capability", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

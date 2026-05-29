@@ -74,6 +74,8 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             recovery_code_required: "ui.app.login.tfa.error_invalid",
             invalid_smtp_code: "ui.app.login.tfa.error_invalid",
             smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
+            smtp_capability_missing:
+                "ui.app.settings.emails_verify_unavailable",
             primary_email_required: "ui.app.settings.emails_verify_unavailable",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
@@ -739,21 +741,21 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         },
         isDirty: () => isDirtyTfa(),
         async save() {
-            const snapshotPreferredIds = [...pendingPreferredIds];
+            const workingPreferredIds = [...pendingPreferredIds];
             const currentStatus = await fetchTfaStatus();
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
             );
-            for (const id of [...snapshotPreferredIds]) {
+            for (const id of [...workingPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
                     const enabled = await enableMethod(id);
                     if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {
                             const preferredIndex =
-                                snapshotPreferredIds.indexOf(id);
+                                workingPreferredIds.indexOf(id);
                             if (preferredIndex >= 0) {
-                                snapshotPreferredIds.splice(preferredIndex, 1);
+                                workingPreferredIds.splice(preferredIndex, 1);
                             }
                             continue;
                         }
@@ -761,22 +763,23 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 }
             }
             for (const id of currentEnabledIds) {
-                if (!snapshotPreferredIds.includes(id)) {
+                if (!workingPreferredIds.includes(id)) {
                     await disableMethod(id);
                 }
             }
-            await savePreferred(snapshotPreferredIds);
+            await savePreferred(workingPreferredIds);
             tfaStatus = await fetchTfaStatus();
             const confirmedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
                 (method) => method.id,
             );
+            // Both arrays contain unique IDs: TFA methods are configured at most once per account.
             if (
-                confirmedPreferredIds.length !== snapshotPreferredIds.length ||
+                confirmedPreferredIds.length !== workingPreferredIds.length ||
                 confirmedPreferredIds.some(
-                    (id, index) => id !== snapshotPreferredIds[index],
+                    (id, index) => id !== workingPreferredIds[index],
                 )
             ) {
-                pendingPreferredIds = [...snapshotPreferredIds];
+                pendingPreferredIds = [...workingPreferredIds];
                 rerender();
                 markDirty?.("security-tfa", true);
                 throw new Error("tfa_preferences_not_confirmed");
