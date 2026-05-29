@@ -569,22 +569,17 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 row.onclick = async () => {
                     const methodId = row.getAttribute("data-tfa-method-row");
                     if (!methodId) return;
-                    const methodEntry = (
-                        tfaStatus?.availableMethods ?? []
-                    ).find((entry) => entry.id === methodId);
-                    if (!methodEntry?.configuredAt) {
+                    const enabled = await enableMethod(methodId);
+                    if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(methodId);
                         if (!setupCompleted) return;
-                        tfaStatus = await fetchTfaStatus();
-                        savedPreferredIds = (
-                            tfaStatus?.enabledMethods ?? []
-                        ).map((method) => method.id);
-                        pendingPreferredIds = [...savedPreferredIds];
-                        markDirty?.("security-tfa", false);
-                    } else {
-                        await openConfiguredMethodPopup(methodId);
-                        tfaStatus = await fetchTfaStatus();
                     }
+                    tfaStatus = await fetchTfaStatus();
+                    savedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
+                        (method) => method.id,
+                    );
+                    pendingPreferredIds = [...savedPreferredIds];
+                    markDirty?.("security-tfa", false);
                     rerender();
                 };
             });
@@ -734,28 +729,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
             );
-            const allMethods = [
-                ...(currentStatus.availableMethods ?? []),
-                ...(currentStatus.enabledMethods ?? []),
-            ];
-            const allMethodsById = new Map(
-                allMethods
-                    .filter(
-                        (method, index, arr) =>
-                            arr.findIndex((entry) => entry.id === method.id) ===
-                            index,
-                    )
-                    .map((method) => [method.id, method]),
-            );
             for (const id of [...requestedPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
-                    const method = allMethodsById.get(id);
-                    if (method?.configuredAt) {
-                        const enabled = await enableMethod(id);
-                        if (!enabled) {
-                            throw new Error("tfa_method_enable_failed");
-                        }
-                    } else {
+                    const enabled = await enableMethod(id);
+                    if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {
                             const preferredIndex =

@@ -88,6 +88,11 @@ test("configured method popup uses non-secret prompt when no QR data exists", ()
 
 test("tfa save removes canceled setup methods from preferred targets", () => {
     assert.match(SOURCE, /for \(const id of \[\.\.\.requestedPreferredIds\]\)/);
+    assert.match(SOURCE, /const enabled = await enableMethod\(id\);/);
+    assert.match(
+        SOURCE,
+        /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(id\);/,
+    );
     assert.match(
         SOURCE,
         /const preferredIndex =\s*requestedPreferredIds\.indexOf\(id\);/,
@@ -97,4 +102,12 @@ test("tfa save removes canceled setup methods from preferred targets", () => {
         /requestedPreferredIds\.splice\(preferredIndex,\s*1\)/,
     );
     assert.doesNotMatch(SOURCE, /tfa_method_setup_incomplete/);
+});
+
+test("available TFA rows try enabling before opening setup flow", () => {
+    assert.match(SOURCE, /const enabled = await enableMethod\(methodId\);/);
+    assert.match(
+        SOURCE,
+        /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(methodId\);/,
+    );
 });

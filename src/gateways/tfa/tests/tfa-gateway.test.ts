@@ -208,3 +208,42 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
         false,
     );
 });
+
+test("tfa gateway login methods follow configured preferred ordering", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        beginLoginChallenge: async () => ({ ready: true }),
+        verifyLogin: async () => ({ verified: true }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.enableAdapter("smtp");
+    await gateway.enableAdapter("totp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "totp",
+        enabled: true,
+        sortOrder: 1,
+        state: { secret: "abc" },
+        configuredAt: new Date().toISOString(),
+    });
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "smtp",
+        enabled: true,
+        sortOrder: 0,
+        state: { email: "alice@example.com" },
+        configuredAt: new Date().toISOString(),
+    });
+    const methods = await gateway.getLoginMethods("alice");
+    assert.deepEqual(
+        methods.map((method) => method.id).slice(0, 2),
+        ["smtp", "totp"],
+    );
+});
