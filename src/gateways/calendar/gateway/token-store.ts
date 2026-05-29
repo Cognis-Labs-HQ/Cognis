@@ -57,8 +57,7 @@ export class CalendarTokenStore {
     consumeScopedMeetingToken(
         tokenValue: string,
     ): ScopedMeetingAccessTokenRecord | null {
-        const token =
-            this.scopedMeetingTokensByValue.get(tokenValue) ?? null;
+        const token = this.scopedMeetingTokensByValue.get(tokenValue) ?? null;
         if (!token) return null;
         this.scopedMeetingTokensByValue.delete(tokenValue);
         if (new Date(token.expiresAt).getTime() <= Date.now()) {

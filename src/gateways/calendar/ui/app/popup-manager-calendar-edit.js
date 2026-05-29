@@ -13,12 +13,14 @@ export function createCalendarEditPopupHandler({
         await openPopup({
             title: i18n.t("gateway.calendar.edit_calendar"),
             body: () => {
-                const nameDisabledAttr = calendar.isDefault ? " disabled" : "";
+                const nameFieldDisabledAttr = calendar.isDefault
+                    ? " disabled"
+                    : "";
                 const isPrivate = calendar.visibility !== "public";
                 return `<div class="calendar-edit-popup">
           <div class="calendar-create-row">
             <input id="calendar-edit-color" type="color" value="${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}" class="calendar-color-picker-bare" />
-            <input id="calendar-edit-name" type="text" value="${escapeHtml(calendar.name)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameDisabledAttr} />
+            <input id="calendar-edit-name" type="text" value="${escapeHtml(calendar.name)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttr} />
             <select id="calendar-edit-visibility">
               <option value="private"${isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_private"))}</option>
               <option value="public"${!isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_public"))}</option>
@@ -117,7 +119,9 @@ export function createCalendarEditPopupHandler({
                         );
                     });
                 }
-                const deleteBtn = overlay.querySelector("#calendar-edit-delete");
+                const deleteBtn = overlay.querySelector(
+                    "#calendar-edit-delete",
+                );
                 if (deleteBtn) {
                     deleteBtn.addEventListener("click", async () => {
                         const res = await apiFetch(
@@ -126,7 +130,9 @@ export function createCalendarEditPopupHandler({
                         );
                         if (!res.ok) {
                             showToast(
-                                i18n.t("gateway.calendar.delete_calendar_failed"),
+                                i18n.t(
+                                    "gateway.calendar.delete_calendar_failed",
+                                ),
                                 "error",
                             );
                             return;

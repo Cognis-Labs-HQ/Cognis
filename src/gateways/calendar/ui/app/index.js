@@ -125,7 +125,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     function formatYearLabel(date) {
-        return String(new Date(date).getFullYear());
+        return String(date.getFullYear());
     }
 
     function getTodayNavLabel(view) {
@@ -161,8 +161,12 @@ export async function mount(root, { signal } = {}) {
         refreshComposer: () => composer?.refresh(),
     });
 
-    const { bindViewInteractions, openEventComposerPopup, openEventPopup, openCalendarEditPopup } =
-        popupManager;
+    const {
+        bindViewInteractions,
+        openEventComposerPopup,
+        openEventPopup,
+        openCalendarEditPopup,
+    } = popupManager;
 
     composer = createPageComposer(root, {
         allowCustomization: true,
@@ -473,7 +477,9 @@ export async function mount(root, { signal } = {}) {
                             );
                             if (editBtn instanceof HTMLElement) {
                                 const calendarId = String(
-                                    editBtn.getAttribute("data-calendar-edit") ?? "",
+                                    editBtn.getAttribute(
+                                        "data-calendar-edit",
+                                    ) ?? "",
                                 ).trim();
                                 const calendar = calendars.find(
                                     (c) => c.id === calendarId,

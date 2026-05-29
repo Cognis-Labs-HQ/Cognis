@@ -140,13 +140,18 @@ function createCalendarCoreRoutes({
                 const updated = gateway.updateCalendar({
                     ownerAccountId: claims.sub,
                     calendarId,
-                    name: body?.name !== undefined ? String(body.name) : undefined,
-                    visibility: body?.visibility !== undefined
-                        ? normalizeVisibility(body.visibility)
-                        : undefined,
-                    color: body?.color !== undefined
-                        ? normalizeCalendarColor(body.color)
-                        : undefined,
+                    name:
+                        body?.name !== undefined
+                            ? String(body.name)
+                            : undefined,
+                    visibility:
+                        body?.visibility !== undefined
+                            ? normalizeVisibility(body.visibility)
+                            : undefined,
+                    color:
+                        body?.color !== undefined
+                            ? normalizeCalendarColor(body.color)
+                            : undefined,
                 });
                 await gateway.flushStore();
                 sendJson(res, 200, { data: updated });
@@ -154,7 +159,12 @@ function createCalendarCoreRoutes({
                 const message =
                     error instanceof Error ? error.message : "calendar_error";
                 if (message === "calendar_not_found") {
-                    sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Calendar not found.",
+                        404,
+                    );
                     return true;
                 }
                 if (message === "calendar_default_name_locked") {
@@ -191,7 +201,10 @@ function createCalendarCoreRoutes({
             return true;
         }
 
-
+        const deleteCalendarMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/calendars\/([^/]+)$/,
+        );
+        if (deleteCalendarMatch && req.method === "DELETE") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(deleteCalendarMatch[1]);
