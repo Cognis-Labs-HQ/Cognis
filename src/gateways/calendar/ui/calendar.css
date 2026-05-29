@@ -1,6 +1,7 @@
 .calendar-section {
     display: grid;
     gap: 0.75rem;
+    align-content: start;
 }
 
 .calendar-create-row {
@@ -199,6 +200,7 @@
     display: grid;
     grid-template-columns: 5.5rem 1fr;
     align-items: stretch;
+    align-content: start;
     min-height: 2.2rem;
     border-bottom: 1px solid var(--field-border);
 }
@@ -272,8 +274,8 @@
 .calendar-timeslot-hover-add {
     position: absolute;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    right: 0.45rem;
+    transform: translateY(-50%);
     border: 1px solid var(--field-border);
     border-radius: 999px;
     width: 1.2rem;
@@ -285,21 +287,15 @@
     justify-content: center;
     background: var(--surface, transparent);
     color: inherit;
-    opacity: 0;
-    pointer-events: none;
+    opacity: 0.7;
     z-index: 1;
-}
-
-.calendar-timeslot-events:hover .calendar-timeslot-hover-add,
-.calendar-timeslot-events:focus-within .calendar-timeslot-hover-add {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 .calendar-slot-event {
     background: var(--calendar-event-stripe, var(--btn-confirm-bg, #1f8ceb));
     color: #fff;
-    border-radius: 4px;
+    border: 0;
+    border-radius: 6px;
     padding: 0.2rem 0.45rem;
     font-size: 0.75rem;
     white-space: nowrap;
@@ -309,6 +305,17 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
+    cursor: pointer;
+}
+
+.calendar-slot-event--free {
+    opacity: 0.78;
+}
+
+.calendar-slot-event-mark {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 .calendar-slot-event-time {
@@ -396,6 +403,22 @@
     grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
     min-height: 2rem;
     border-bottom: 1px solid var(--field-border);
+}
+
+.calendar-timeslot-row:hover,
+.calendar-week-timeslot-row:hover {
+    background: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 6%,
+        transparent
+    );
+    outline: 1px solid
+        color-mix(
+            in srgb,
+            var(--btn-confirm-bg, #1f8ceb) 35%,
+            var(--field-border)
+        );
+    outline-offset: -1px;
 }
 
 .calendar-week-timeslot-row:last-child {
@@ -518,7 +541,8 @@
     color: inherit;
     font-weight: 700;
     font-size: 0.9rem;
-    text-align: left;
+    text-align: center;
+    width: 100%;
     padding: 0;
 }
 
@@ -556,11 +580,23 @@
     min-height: 1.45rem;
     padding: 0;
     font-size: 0.7rem;
-    background: var(--surface, transparent);
+    background: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) calc(var(--calendar-density, 0) * 12%),
+        var(--surface, transparent)
+    );
     color: inherit;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.calendar-year-day-dot--active {
+    border-color: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 45%,
+        var(--field-border)
+    );
 }
 
 .calendar-year-day-dot--outside {
@@ -641,4 +677,92 @@
     .calendar-timeslot-row {
         grid-template-columns: 4.5rem 1fr;
     }
+}
+
+.calendar-upcoming-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    padding: 0;
+    display: grid;
+    gap: 0.15rem;
+}
+
+.calendar-month-event-preview {
+    display: grid;
+    gap: 0.2rem;
+    align-content: start;
+}
+
+.calendar-event-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.72rem;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+.calendar-event-detail-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.calendar-event-details {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.calendar-event-detail-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 0.75rem;
+    margin: 0;
+}
+
+.calendar-event-detail-list dt {
+    font-weight: 700;
+}
+
+.calendar-event-detail-list dd {
+    margin: 0;
+}
+
+.calendar-event-detail-description {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.calendar-event-detail-section {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.calendar-event-detail-section h4 {
+    margin: 0;
+}
+
+.calendar-inline-list,
+.calendar-response-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+}
+
+.calendar-inline-list li,
+.calendar-response-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border: 1px solid var(--field-border);
+    border-radius: 8px;
+    padding: 0.35rem 0.5rem;
 }

@@ -111,3 +111,93 @@ test("calendar gateway scoped meeting tokens are one-time and scoped", () => {
     assert.equal(firstRead?.targetUrl, "https://meet.example.com/room-1");
     assert.equal(secondRead, null);
 });
+
+test("calendar gateway ensures invited special calendars per owner", () => {
+    const gateway = new CoreCalendarGateway();
+    const invitedCalendar = gateway.ensureSpecialCalendar(
+        "bob",
+        "Invited",
+        "#8B5CF6",
+    );
+    const repeatedLookup = gateway.ensureSpecialCalendar(
+        "bob",
+        "Invited",
+        "#111111",
+    );
+
+    assert.equal(invitedCalendar.id, repeatedLookup.id);
+    assert.equal(invitedCalendar.color, "#8b5cf6");
+    assert.equal(gateway.listCalendars("bob").length, 2);
+});
+
+test("calendar gateway updates events with recurrence and status", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    const createdEvent = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Planning",
+        startAt: "2026-06-01T09:00:00.000Z",
+        endAt: "2026-06-01T10:00:00.000Z",
+        attendees: ["bob"],
+    });
+
+    const updatedEvent = gateway.updateEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        eventId: createdEvent.id,
+        title: "Weekly Planning",
+        status: "free",
+        recurrence: "weekly",
+        attendees: ["bob", "carol"],
+    });
+
+    assert.equal(updatedEvent.title, "Weekly Planning");
+    assert.equal(updatedEvent.status, "free");
+    assert.equal(updatedEvent.recurrence, "weekly");
+    assert.deepEqual(updatedEvent.attendees, ["bob", "carol"]);
+    assert.equal(gateway.getEventResponse(createdEvent.id, "carol"), "pending");
+});
+
+test("calendar gateway deletes mirrored invite copies with the source event", () => {
+    const gateway = new CoreCalendarGateway();
+    const ownerCalendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    const invitedCalendar = gateway.ensureSpecialCalendar(
+        "bob",
+        "Invited",
+        "#8b5cf6",
+    );
+    const sourceEvent = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: ownerCalendar.id,
+        title: "Review",
+        startAt: "2026-06-02T09:00:00.000Z",
+        endAt: "2026-06-02T10:00:00.000Z",
+        attendees: ["bob"],
+    });
+    const copyEvent = gateway.addEventToCalendar({
+        calendarId: invitedCalendar.id,
+        sourceEventId: sourceEvent.id,
+        title: sourceEvent.title,
+        startAt: sourceEvent.startAt,
+        endAt: sourceEvent.endAt,
+        createdBy: sourceEvent.createdBy,
+        attendees: sourceEvent.attendees,
+        recurrence: sourceEvent.recurrence,
+    });
+
+    gateway.deleteEvent({
+        ownerAccountId: "alice",
+        calendarId: ownerCalendar.id,
+        eventId: sourceEvent.id,
+    });
+
+    assert.equal(gateway.getEvent(ownerCalendar.id, sourceEvent.id), null);
+    assert.equal(gateway.getEvent(invitedCalendar.id, copyEvent.id), null);
+});

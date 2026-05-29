@@ -604,4 +604,6 @@
   <string name="ui.app.dashboard.element.student_classes.label">My Classes</string>
   <string name="ui.app.dashboard.element.student_classes.cta">View and manage the classes you are enrolled in.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Go to My Classes</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.label">Upcoming Calendar Events</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.empty">No upcoming calendar events.</string>
 </resources>

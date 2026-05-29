@@ -604,4 +604,6 @@
   <string name="ui.app.dashboard.element.student_classes.label">Meine Klassen</string>
   <string name="ui.app.dashboard.element.student_classes.cta">Sehen und verwalten Sie die Klassen, in denen Sie eingeschrieben sind.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Zu meinen Klassen</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.label">Bevorstehende Kalenderereignisse</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.empty">Keine bevorstehenden Kalenderereignisse.</string>
 </resources>

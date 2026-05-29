@@ -604,4 +604,6 @@
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>
   <string name="ui.app.dashboard.element.student_classes.cta">参加しているクラスを確認・管理できます。</string>
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.label">今後のカレンダー予定</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.empty">今後のカレンダー予定はありません。</string>
 </resources>

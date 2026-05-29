@@ -6,13 +6,26 @@ import { normalizeCalendarColor } from "/static/gateways/calendar/color.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
-// Thursday offset used in ISO week number calculation (ISO 8601: week containing Thursday)
+const EVENT_RESPONSE_OPTIONS = ["accepted", "tentative", "declined"];
+const EVENT_STATUS_OPTIONS = ["busy", "free"];
+const EVENT_RECURRENCE_OPTIONS = [
+    "none",
+    "daily",
+    "weekly",
+    "monthly",
+    "yearly",
+];
 const ISO_WEEK_THURSDAY_OFFSET = 4;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
     return query.get("calendarId");
+}
+
+function parseEventSelection() {
+    const query = new URLSearchParams(window.location.search);
+    return query.get("eventId");
 }
 
 function startOfDay(value) {
@@ -85,6 +98,16 @@ function matchesEmailPattern(value) {
     return EMAIL_PATTERN.test(String(value ?? "").trim());
 }
 
+function listEventsInWindow(events, startDate, endDate) {
+    const startTime = startDate.getTime();
+    const endTime = endDate.getTime();
+    return events.filter((event) => {
+        const eventStart = new Date(event.startAt).getTime();
+        const eventEnd = new Date(event.endAt).getTime();
+        return eventStart < endTime && eventEnd > startTime;
+    });
+}
+
 function collectUpcomingEvents(
     eventsByCalendar,
     calendars,
@@ -101,6 +124,7 @@ function collectUpcomingEvents(
                 calendarColor: normalizeHexColor(
                     calendarById.get(calendarId)?.color,
                 ),
+                calendarName: String(calendarById.get(calendarId)?.name ?? ""),
             })),
         )
         .sort((left, right) => left.startAt.localeCompare(right.startAt))
@@ -133,6 +157,51 @@ async function fetchEvents(calendarId) {
     return Array.isArray(payload?.data?.events) ? payload.data.events : [];
 }
 
+async function fetchEvent(calendarId, eventId) {
+    const response = await apiFetch(
+        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+    );
+    if (!response.ok) throw new Error("calendar_event_failed");
+    const payload = await response.json();
+    return payload?.data ?? null;
+}
+
+async function updateEvent(calendarId, eventId, payload) {
+    return apiFetch(
+        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+        {
+            method: "PATCH",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        },
+    );
+}
+
+async function deleteEvent(calendarId, eventId, { deleteAll = false } = {}) {
+    const query = deleteAll ? "?series=1" : "";
+    return apiFetch(
+        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}${query}`,
+        {
+            method: "DELETE",
+        },
+    );
+}
+
+async function respondToEvent(calendarId, eventId, response) {
+    return apiFetch(
+        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/respond`,
+        {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({ response }),
+        },
+    );
+}
+
 async function probeJitsiAvailability() {
     const response = await apiFetch("/api/v1/modules/jitsi-meet/ping");
     if (!response.ok) return false;
@@ -159,7 +228,21 @@ async function createJitsiMeeting(attendees) {
 }
 
 function visibilityIcon(visibility) {
-    return visibility === "public" ? "\uD83C\uDF10" : "\uD83D\uDD12";
+    return visibility === "public" ? "🌐" : "🔒";
+}
+
+function getStatusLabelKey(status) {
+    return status === "free"
+        ? "gateway.calendar.status_free"
+        : "gateway.calendar.status_busy";
+}
+
+function getRecurrenceLabelKey(recurrence) {
+    return `gateway.calendar.recurrence_${EVENT_RECURRENCE_OPTIONS.includes(recurrence) ? recurrence : "none"}`;
+}
+
+function getResponseLabelKey(response) {
+    return `gateway.calendar.response_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
 
 function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
@@ -179,6 +262,42 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
         .join("")}</ul>`;
 }
 
+function renderEventBadges(event, i18n) {
+    const badges = [
+        `<span class="calendar-event-badge calendar-event-badge--status">${escapeHtml(i18n.t(getStatusLabelKey(event.status)))}</span>`,
+    ];
+    if (event.recurrence && event.recurrence !== "none") {
+        badges.push(
+            `<span class="calendar-event-badge calendar-event-badge--recurrence">${escapeHtml(i18n.t(getRecurrenceLabelKey(event.recurrence)))}</span>`,
+        );
+    }
+    return badges.join("");
+}
+
+function renderResponseSummary(event, i18n) {
+    const responseEntries = Object.entries(event.responses ?? {});
+    if (!responseEntries.length) return "";
+    return `<ul class="calendar-response-list">${responseEntries
+        .map(
+            ([accountId, response]) => `<li>
+        <span>${escapeHtml(accountId)}</span>
+        <strong>${escapeHtml(i18n.t(getResponseLabelKey(response)))}</strong>
+      </li>`,
+        )
+        .join("")}</ul>`;
+}
+
+function renderEventButton(event, locale, i18n) {
+    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">
+      <span class="calendar-slot-event-time">${escapeHtml(
+          formatEventTimeRange(event.startAt, event.endAt, locale),
+      )}</span>
+      <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong>
+      ${event.recurrence && event.recurrence !== "none" ? `<span class="calendar-slot-event-mark">${escapeHtml(i18n.t("gateway.calendar.recurring_short"))}</span>` : ""}
+      ${event.status === "free" ? `<span class="calendar-slot-event-mark">${escapeHtml(i18n.t("gateway.calendar.free_short"))}</span>` : ""}
+    </button>`;
+}
+
 function renderToolbarSummary(summary, i18n) {
     if (!summary.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_events")}</p>`;
@@ -189,8 +308,10 @@ function renderToolbarSummary(summary, i18n) {
             (
                 event,
             ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-        <strong>${escapeHtml(event.title)}</strong>
-        <div>${formatDateTime(event.startAt)}</div>
+        <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
+          <strong>${escapeHtml(event.title)}</strong>
+          <div>${formatDateTime(event.startAt)}</div>
+        </button>
       </li>`,
         )
         .join("")}</ul>`;
@@ -205,8 +326,12 @@ function renderUpcomingEvents(events, i18n) {
             (
                 event,
             ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-        <strong>${escapeHtml(event.title)}</strong>
-        <div>${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}</div>
+        <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
+          <strong>${escapeHtml(event.title)}</strong>
+          <div>${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}</div>
+          <div>${renderEventBadges(event, i18n)}</div>
+          ${event.calendarName ? `<div>${escapeHtml(event.calendarName)}</div>` : ""}
+        </button>
         ${event.description ? `<div>${escapeHtml(event.description)}</div>` : ""}
         ${event.meetingUrl ? `<div><a href="${escapeHtml(event.meetingUrl)}" target="_blank" rel="noreferrer noopener">${i18n.t("gateway.calendar.event_meeting_link")}</a></div>` : ""}
       </li>`,
@@ -214,24 +339,6 @@ function renderUpcomingEvents(events, i18n) {
         .join("")}</ul>`;
 }
 
-function listEventsInWindow(events, startDate, endDate) {
-    const startTime = startDate.getTime();
-    const endTime = endDate.getTime();
-    return events.filter((event) => {
-        const eventStart = new Date(event.startAt).getTime();
-        const eventEnd = new Date(event.endAt).getTime();
-        return eventStart < endTime && eventEnd > startTime;
-    });
-}
-
-/**
- * Formats a start/end timestamp pair into a compact localized time range.
- *
- * @param {string} startAt
- * @param {string} endAt
- * @param {string | undefined} locale
- * @returns {string}
- */
 function formatEventTimeRange(startAt, endAt, locale) {
     const formatOptions = {
         hour: "numeric",
@@ -248,25 +355,9 @@ function formatEventTimeRange(startAt, endAt, locale) {
     return `${startText} - ${endText}`;
 }
 
-/**
- * Renders compact event chips for a calendar slot.
- *
- * @param {Array<{ title: string, startAt: string, endAt: string, calendarColor?: string }>} slotEvents
- * @param {string | undefined} locale
- * @returns {string}
- */
-function renderSlotEvents(slotEvents, locale) {
+function renderSlotEvents(slotEvents, locale, i18n) {
     return slotEvents
-        .map(
-            (event) =>
-                `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(
-                    event.calendarColor ?? "#1f8ceb",
-                )}"><span class="calendar-slot-event-time">${escapeHtml(
-                    formatEventTimeRange(event.startAt, event.endAt, locale),
-                )}</span> <strong class="calendar-slot-event-title">${escapeHtml(
-                    event.title,
-                )}</strong></span>`,
-        )
+        .map((event) => renderEventButton(event, locale, i18n))
         .join("");
 }
 
@@ -300,17 +391,13 @@ function renderDayView(events, day, i18n) {
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
         const start = new Date(day.getTime() + slotIndex * HALF_HOUR_MS);
         const end = new Date(start.getTime() + HALF_HOUR_MS);
-        const slotEvents = events.filter((event) => {
-            const eventStart = new Date(event.startAt).getTime();
-            const eventEnd = new Date(event.endAt).getTime();
-            return eventStart < end.getTime() && eventEnd > start.getTime();
-        });
+        const slotEvents = listEventsInWindow(events, start, end);
         const timeLabel = start.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
         });
         const eventCells = slotEvents.length
-            ? renderSlotEvents(slotEvents, i18n?.locale)
+            ? renderSlotEvents(slotEvents, i18n?.locale, i18n)
             : "";
         slots.push(`<div class="calendar-timeslot-row">
       <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
@@ -340,7 +427,8 @@ function renderWeekView(events, weekStart, i18n) {
         .map((day) => {
             const dayStart = startOfDay(day);
             const dayEnd = addDays(dayStart, 1);
-            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${renderSlotCreateButton(dayStart, dayEnd, i18n)}</div>`;
+            const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents.slice(0, 2), i18n?.locale, i18n) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</div>`;
         })
         .join("");
     const slotRows = [];
@@ -352,15 +440,9 @@ function renderWeekView(events, weekStart, i18n) {
                     dayStart.getTime() + slotIndex * HALF_HOUR_MS,
                 );
                 const end = new Date(start.getTime() + HALF_HOUR_MS);
-                const slotEvents = events.filter((event) => {
-                    const eventStart = new Date(event.startAt).getTime();
-                    const eventEnd = new Date(event.endAt).getTime();
-                    return (
-                        eventStart < end.getTime() && eventEnd > start.getTime()
-                    );
-                });
+                const slotEvents = listEventsInWindow(events, start, end);
                 const eventCells = slotEvents.length
-                    ? renderSlotEvents(slotEvents, i18n?.locale)
+                    ? renderSlotEvents(slotEvents, i18n?.locale, i18n)
                     : "";
                 return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</div>`;
             })
@@ -406,12 +488,17 @@ function renderMonthGrid(events, currentDate, i18n) {
           const dayStart = startOfDay(day);
           const dayEnd = addDays(dayStart, 1);
           const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
+          const previewMarkup = dayEvents
+              .slice(0, 3)
+              .map((event) => renderEventButton(event, i18n?.locale, i18n))
+              .join("");
           return `<article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}">
           <header>
             <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>
             <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">+</button>
           </header>
           <div class="calendar-month-event-count">${dayEvents.length > 0 ? `${dayEvents.length} ${escapeHtml(i18n.t("gateway.calendar.events_count_suffix"))}` : ""}</div>
+          <div class="calendar-month-event-preview">${previewMarkup}</div>
         </article>`;
       }).join("")}
     </div>`);
@@ -420,7 +507,7 @@ function renderMonthGrid(events, currentDate, i18n) {
     return `<div class="calendar-month-grid">${rows.join("")}</div>`;
 }
 
-function renderYearMonthMiniGrid(monthDate, i18n) {
+function renderYearMonthMiniGrid(monthDate, events, i18n) {
     const monthStart = startOfMonth(monthDate);
     const gridStart = startOfWeek(monthStart);
     const weekdayInitials = Array.from({ length: 7 }, (_, dayOffset) =>
@@ -441,9 +528,10 @@ function renderYearMonthMiniGrid(monthDate, i18n) {
           const dayLabel = day.toLocaleDateString(undefined, {
               dateStyle: "long",
           });
-          return `<button type="button" class="calendar-year-day-dot${
-              isOutsideMonth ? " calendar-year-day-dot--outside" : ""
-          }" data-day-dot-date="${startOfDay(day).toISOString()}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
+          const dayStart = startOfDay(day);
+          const dayEnd = addDays(dayStart, 1);
+          const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
+          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="--calendar-density:${Math.min(dayEvents.length, 4)}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
       }).join("")}
     </div>`);
         if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;
@@ -464,14 +552,14 @@ function renderYearMonthMiniGrid(monthDate, i18n) {
   </article>`;
 }
 
-function renderYearGrid(currentDate, i18n) {
+function renderYearGrid(events, currentDate, i18n) {
     const yearStart = startOfYear(currentDate);
     return `<div class="calendar-year-grid">${Array.from(
         { length: 12 },
         (_, monthIndex) => {
             const monthDate = new Date(yearStart);
             monthDate.setMonth(monthIndex);
-            return renderYearMonthMiniGrid(monthDate, i18n);
+            return renderYearMonthMiniGrid(monthDate, events, i18n);
         },
     ).join("")}</div>`;
 }
@@ -496,35 +584,17 @@ function renderCalendarView(events, selectedView, activeDate, i18n) {
         );
     }
     if (selectedView === "year") {
-        return renderYearGrid(activeDate, i18n);
+        return renderYearGrid(events, activeDate, i18n);
     }
     return renderMonthGrid(events, activeDate, i18n);
 }
 
-/**
- * Builds the reusable event composer form configuration for inline and popup flows.
- *
- * @param {{
- *   i18n: { t: (key: string) => string },
- *   defaultValues?: Record<string, string>,
- *   canInviteExternal: boolean,
- *   submitLabelKey: string,
- * }} input
- * @returns {{
- *   render: () => string,
- *   attach: (formElement: HTMLFormElement, attachOptions?: { signal?: AbortSignal }) => {
- *     validateField: (fieldName: string, forceTouched?: boolean) => boolean,
- *     validateAll: (forceTouched?: boolean) => boolean,
- *     getValues: () => Record<string, string>,
- *     detach: () => void,
- *   },
- * }}
- */
 function createEventComposerBuilder({
     i18n,
     defaultValues = {},
     calendars = [],
     selectedCalendarId = "",
+    readOnly = false,
 }) {
     const calendarOptions = Array.isArray(calendars)
         ? calendars.map((calendar) => ({
@@ -538,6 +608,7 @@ function createEventComposerBuilder({
             labelKey: "gateway.calendar.event_title",
             required: true,
             value: String(defaultValues.title ?? ""),
+            disabled: readOnly,
             criteria: [
                 {
                     id: "event-title-max",
@@ -552,6 +623,7 @@ function createEventComposerBuilder({
             labelKey: "gateway.calendar.event_description",
             type: "textarea",
             value: String(defaultValues.description ?? ""),
+            disabled: readOnly,
         },
         {
             name: "startAt",
@@ -559,6 +631,7 @@ function createEventComposerBuilder({
             type: "datetime-local",
             required: true,
             value: String(defaultValues.startAt ?? ""),
+            disabled: readOnly,
         },
         {
             name: "endAt",
@@ -566,6 +639,7 @@ function createEventComposerBuilder({
             type: "datetime-local",
             required: true,
             value: String(defaultValues.endAt ?? ""),
+            disabled: readOnly,
             criteria: [
                 {
                     id: "event-range",
@@ -577,6 +651,28 @@ function createEventComposerBuilder({
                     messageKey: "gateway.calendar.event_end_after_start",
                 },
             ],
+        },
+        {
+            name: "status",
+            labelKey: "gateway.calendar.event_status",
+            type: "select",
+            value: String(defaultValues.status ?? "busy"),
+            disabled: readOnly,
+            options: EVENT_STATUS_OPTIONS.map((status) => ({
+                value: status,
+                label: i18n.t(getStatusLabelKey(status)),
+            })),
+        },
+        {
+            name: "recurrence",
+            labelKey: "gateway.calendar.event_recurrence",
+            type: "select",
+            value: String(defaultValues.recurrence ?? "none"),
+            disabled: readOnly,
+            options: EVENT_RECURRENCE_OPTIONS.map((recurrence) => ({
+                value: recurrence,
+                label: i18n.t(getRecurrenceLabelKey(recurrence)),
+            })),
         },
         {
             name: "calendarId",
@@ -594,7 +690,7 @@ function createEventComposerBuilder({
                               disabled: true,
                           },
                       ],
-            disabled: calendarOptions.length === 0,
+            disabled: readOnly || calendarOptions.length === 0,
         },
     ];
 
@@ -615,18 +711,32 @@ function createEventComposerBuilder({
 
 export {
     CALENDAR_VIEWS,
+    EVENT_RECURRENCE_OPTIONS,
+    EVENT_RESPONSE_OPTIONS,
+    EVENT_STATUS_OPTIONS,
     parseCalendarSelection,
+    parseEventSelection,
     addDays,
     toDateTimeLocalValue,
     normalizeHexColor,
     splitHandles,
     splitInviteEmails,
     matchesEmailPattern,
+    listEventsInWindow,
     collectUpcomingEvents,
     fetchCalendarState,
     fetchEvents,
+    fetchEvent,
+    updateEvent,
+    deleteEvent,
+    respondToEvent,
     probeJitsiAvailability,
     createJitsiMeeting,
+    getStatusLabelKey,
+    getRecurrenceLabelKey,
+    getResponseLabelKey,
+    renderEventBadges,
+    renderResponseSummary,
     renderCalendarToolbarList,
     renderToolbarSummary,
     renderUpcomingEvents,
