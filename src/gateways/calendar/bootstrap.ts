@@ -20,6 +20,13 @@ function normalizeVisibility(value: unknown): CalendarVisibility {
     return value === "public" ? "public" : "private";
 }
 
+function normalizeCalendarColor(value: unknown): string {
+    const candidate = String(value ?? "").trim();
+    return /^#([0-9a-fA-F]{6})$/.test(candidate)
+        ? candidate.toLowerCase()
+        : "#1f8ceb";
+}
+
 function normalizeStringList(value: unknown): string[] {
     if (!Array.isArray(value)) return [];
     return Array.from(
@@ -92,6 +99,7 @@ function createCalendarCoreRoutes(
             const body = (await readJson(req)) as {
                 name?: unknown;
                 visibility?: unknown;
+                color?: unknown;
             };
             const name = String(body?.name ?? "").trim();
             if (!name) {
@@ -110,6 +118,7 @@ function createCalendarCoreRoutes(
                 ownerAccountId: claims.sub,
                 name,
                 visibility: normalizeVisibility(body?.visibility),
+                color: normalizeCalendarColor(body?.color),
             });
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: created }));
@@ -587,7 +596,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ownerAccountId: string,
             name: string,
             visibility?: CalendarVisibility,
-        ) => gateway.createCalendar({ ownerAccountId, name, visibility }),
+            color?: string,
+        ) =>
+            gateway.createCalendar({
+                ownerAccountId,
+                name,
+                visibility,
+                color: normalizeCalendarColor(color),
+            }),
     );
     ctx.capabilities.contribute(
         "calendar:listCalendars",

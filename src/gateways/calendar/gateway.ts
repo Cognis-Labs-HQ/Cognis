@@ -11,6 +11,7 @@ export interface CalendarRecord {
     ownerAccountId: string;
     name: string;
     visibility: CalendarVisibility;
+    color: string;
     isDefault: boolean;
     createdAt: string;
     updatedAt: string;
@@ -251,10 +252,16 @@ export class CoreCalendarGateway {
         ownerAccountId: string;
         name: string;
         visibility?: CalendarVisibility;
+        color?: string;
         isDefault?: boolean;
     }): CalendarRecord {
         const now = new Date().toISOString();
         const normalizedName = String(input.name ?? "").trim();
+        const normalizedColor = /^#([0-9a-fA-F]{6})$/.test(
+            String(input.color ?? "").trim(),
+        )
+            ? String(input.color).trim().toLowerCase()
+            : "#1f8ceb";
         if (!normalizedName) {
             throw new Error("calendar_name_required");
         }
@@ -263,6 +270,7 @@ export class CoreCalendarGateway {
             ownerAccountId: input.ownerAccountId,
             name: normalizedName,
             visibility: input.visibility ?? "private",
+            color: normalizedColor,
             isDefault: input.isDefault === true,
             createdAt: now,
             updatedAt: now,

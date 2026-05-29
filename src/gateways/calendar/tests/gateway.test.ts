@@ -19,8 +19,25 @@ test("calendar gateway supports multiple calendars per user", () => {
     assert.equal(calendars.length, 3);
     assert.equal(calendars[0]?.id, defaultCalendar.id);
     assert.equal(calendars[0]?.isDefault, true);
+    assert.equal(calendars[0]?.color, "#1f8ceb");
     assert.ok(calendars.some((calendar) => calendar.id === first.id));
     assert.ok(calendars.some((calendar) => calendar.id === second.id));
+});
+
+test("calendar gateway normalizes custom calendar colors", () => {
+    const gateway = new CoreCalendarGateway();
+    const custom = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Colorful",
+        color: "#FF44AA",
+    });
+    const fallback = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Fallback",
+        color: "invalid",
+    });
+    assert.equal(custom.color, "#ff44aa");
+    assert.equal(fallback.color, "#1f8ceb");
 });
 
 test("calendar gateway does not allow deleting the default calendar", () => {
