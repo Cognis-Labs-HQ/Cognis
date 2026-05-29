@@ -27,6 +27,7 @@ export interface TfaMethodSetupView {
 export interface TfaMethodAdapter {
     readonly id: string;
     readonly name: string;
+    readonly defaultEnabled?: boolean;
     beginSetup(input: {
         accountId: string;
         displayName: string;
@@ -66,6 +67,7 @@ export interface TfaAdapterInfo {
     id: string;
     name: string;
     enabled: boolean;
+    locked?: boolean;
     config: Record<string, unknown>;
     schema: TfaConfigField[];
 }
@@ -118,6 +120,10 @@ export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
     private readonly adapters = new Map<string, TfaMethodAdapter>();
     private readonly enabledAdapters = new Set<string>();
+    private readonly adapterAvailabilityChecks = new Map<
+        string,
+        () => boolean
+    >();
 
     constructor(
         private readonly store: DbTfaStore,
@@ -144,7 +150,10 @@ export class CoreTfaGateway {
         return Array.from(this.adapters.values()).map((adapter) => ({
             id: adapter.id,
             name: adapter.name,
-            enabled: this.enabledAdapters.has(adapter.id),
+            enabled: this.isAdapterEnabled(adapter.id),
+            ...(this.adapterAvailabilityChecks.has(adapter.id)
+                ? { locked: true }
+                : {}),
             config: {},
             schema: adapter.getConfigSchema(),
         }));
@@ -152,6 +161,7 @@ export class CoreTfaGateway {
 
     async loadPersistedConfigs(): Promise<void> {
         const configs = await this.store.listAdapterConfigs();
+        const configuredIds = new Set(configs.map((entry) => entry.adapterId));
         for (const entry of configs) {
             const adapter = this.adapters.get(entry.adapterId);
             if (!adapter) continue;
@@ -160,6 +170,14 @@ export class CoreTfaGateway {
                 this.enabledAdapters.add(entry.adapterId);
             } else {
                 this.enabledAdapters.delete(entry.adapterId);
+            }
+        }
+        for (const [adapterId, adapter] of this.adapters.entries()) {
+            if (
+                !configuredIds.has(adapterId) &&
+                adapter.defaultEnabled === true
+            ) {
+                this.enabledAdapters.add(adapterId);
             }
         }
     }
@@ -197,17 +215,29 @@ export class CoreTfaGateway {
     async enableAdapter(adapterId: string): Promise<void> {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return;
+        const existingConfig = await this.getAdapterConfig(adapterId);
         this.enabledAdapters.add(adapterId);
-        await this.store.saveAdapterConfig(adapterId, true, {});
+        await this.store.saveAdapterConfig(adapterId, true, existingConfig);
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) return;
+        const existingConfig = await this.getAdapterConfig(adapterId);
         this.enabledAdapters.delete(adapterId);
-        await this.store.saveAdapterConfig(adapterId, false, {});
+        await this.store.saveAdapterConfig(adapterId, false, existingConfig);
     }
 
     isAdapterEnabled(adapterId: string): boolean {
+        const check = this.adapterAvailabilityChecks.get(adapterId);
+        if (check) {
+            return check();
+        }
         return this.enabledAdapters.has(adapterId);
+    }
+
+    setAdapterAvailabilityCheck(adapterId: string, check: () => boolean): void {
+        this.adapterAvailabilityChecks.set(adapterId, check);
     }
 
     async getUserStatus(accountId: string): Promise<UserTfaStatus> {
@@ -228,7 +258,7 @@ export class CoreTfaGateway {
         );
 
         const availableMethods = Array.from(this.adapters.values())
-            .filter((adapter) => this.enabledAdapters.has(adapter.id))
+            .filter((adapter) => this.isAdapterEnabled(adapter.id))
             .map((adapter) => ({
                 id: adapter.id,
                 name: adapter.name,
@@ -272,7 +302,7 @@ export class CoreTfaGateway {
     }> {
         await this.store.pruneExpiredPendingSetups();
         const adapter = this.adapters.get(input.methodId);
-        if (!adapter || !this.enabledAdapters.has(input.methodId)) {
+        if (!adapter || !this.isAdapterEnabled(input.methodId)) {
             throw new Error("tfa_method_unavailable");
         }
 
@@ -316,7 +346,7 @@ export class CoreTfaGateway {
         }
 
         const adapter = this.adapters.get(pending.methodId);
-        if (!adapter || !this.enabledAdapters.has(pending.methodId)) {
+        if (!adapter || !this.isAdapterEnabled(pending.methodId)) {
             await this.store.deletePendingSetup(input.setupId);
             return { verified: false, message: "tfa_method_unavailable" };
         }
@@ -374,7 +404,7 @@ export class CoreTfaGateway {
         const existing = methods.find((method) => method.methodId === methodId);
         if (!existing) return false;
         const adapter = this.adapters.get(methodId);
-        if (!adapter || !this.enabledAdapters.has(methodId)) {
+        if (!adapter || !this.isAdapterEnabled(methodId)) {
             return false;
         }
         await this.store.upsertUserMethod({
@@ -398,7 +428,7 @@ export class CoreTfaGateway {
         const adapter = this.adapters.get(methodId);
         if (
             !adapter ||
-            !this.enabledAdapters.has(methodId) ||
+            !this.isAdapterEnabled(methodId) ||
             typeof adapter.renderMethodDetails !== "function"
         ) {
             return null;
@@ -496,7 +526,7 @@ export class CoreTfaGateway {
         }
 
         const adapter = this.adapters.get(methodId);
-        if (!adapter || !this.enabledAdapters.has(methodId)) {
+        if (!adapter || !this.isAdapterEnabled(methodId)) {
             return { verified: false, message: "tfa_method_unavailable" };
         }
 
@@ -517,7 +547,7 @@ export class CoreTfaGateway {
         const resolvedMethods = await Promise.all(
             enabledConfiguredMethods.map(async (method) => {
                 const adapter = this.adapters.get(method.methodId);
-                if (!adapter || !this.enabledAdapters.has(method.methodId)) {
+                if (!adapter || !this.isAdapterEnabled(method.methodId)) {
                     return null;
                 }
                 if (typeof adapter.beginLoginChallenge === "function") {

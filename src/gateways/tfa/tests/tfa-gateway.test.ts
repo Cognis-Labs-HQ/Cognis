@@ -33,7 +33,12 @@ function createStoreMock() {
             enabled: boolean,
             config: Record<string, unknown>,
         ) => {
-            state.adapterConfigs = [{ adapterId, enabled, config }];
+            state.adapterConfigs = [
+                ...state.adapterConfigs.filter(
+                    (entry) => entry.adapterId !== adapterId,
+                ),
+                { adapterId, enabled, config },
+            ];
         },
         listUserMethods: async (accountId: string) =>
             state.methods.filter((entry) => entry.accountId === accountId),
@@ -207,6 +212,70 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
         methods.some((method) => method.id === "smtp"),
         false,
     );
+});
+
+test("tfa gateway enableAdapter preserves existing adapter config", async () => {
+    const storeMock = createStoreMock();
+    await storeMock.saveAdapterConfig("totp", true, { algorithm: "SHA512" });
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.loadPersistedConfigs();
+    await gateway.disableAdapter("totp");
+    await gateway.enableAdapter("totp");
+    const configs = await storeMock.listAdapterConfigs();
+    const totpConfig = configs.find((entry) => entry.adapterId === "totp");
+    assert.ok(totpConfig !== undefined);
+    assert.equal(totpConfig.enabled, true);
+    assert.equal(totpConfig.config.algorithm, "SHA512");
+});
+
+test("tfa gateway auto-enables adapters with defaultEnabled on fresh install", async () => {
+    const storeMock = createStoreMock();
+    const adapter: TfaMethodAdapter = {
+        ...createAdapterMock(),
+        defaultEnabled: true,
+    };
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(adapter);
+    await gateway.loadPersistedConfigs();
+    assert.equal(gateway.isAdapterEnabled("totp"), true);
+    const status = await gateway.getUserStatus("alice");
+    const available = status.availableMethods.find(
+        (method) => method.id === "totp",
+    );
+    assert.ok(available !== undefined);
+});
+
+test("tfa gateway SMTP availability check tethers SMTP TFA to notification state", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        verifyLogin: async () => ({ verified: false }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    let smtpEnabled = false;
+    gateway.setAdapterAvailabilityCheck("smtp", () => smtpEnabled);
+    await gateway.loadPersistedConfigs();
+
+    assert.equal(gateway.isAdapterEnabled("smtp"), false);
+    const adaptersOff = gateway.listAdapters();
+    const smtpOff = adaptersOff.find((adapter) => adapter.id === "smtp");
+    assert.ok(smtpOff !== undefined);
+    assert.equal(smtpOff.enabled, false);
+    assert.equal(smtpOff.locked, true);
+
+    smtpEnabled = true;
+    assert.equal(gateway.isAdapterEnabled("smtp"), true);
+    const adaptersOn = gateway.listAdapters();
+    const smtpOn = adaptersOn.find((adapter) => adapter.id === "smtp");
+    assert.ok(smtpOn !== undefined);
+    assert.equal(smtpOn.enabled, true);
+    assert.equal(smtpOn.locked, true);
 });
 
 test("tfa gateway login methods follow configured preferred ordering", async () => {

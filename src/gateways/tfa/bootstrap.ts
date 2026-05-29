@@ -65,6 +65,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
+    if (typeof canSendVerificationEmail === "function") {
+        gateway.setAdapterAvailabilityCheck("smtp", canSendVerificationEmail);
+    }
 
     ctx.routeRegistry.register(
         createTfaRoutes(gateway, ctx.capabilities, ctx.log),
@@ -81,7 +84,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.0.5",
+        version: "1.0.6",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs HQ",
