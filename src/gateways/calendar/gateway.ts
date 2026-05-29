@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -11,6 +11,7 @@ export interface CalendarRecord {
     ownerAccountId: string;
     name: string;
     visibility: CalendarVisibility;
+    isDefault: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -24,6 +25,8 @@ export interface CalendarEventRecord {
     endAt: string;
     createdBy: string;
     attendees: string[];
+    inviteEmails: string[];
+    meetingUrl: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -32,6 +35,14 @@ export interface CaldavTokenRecord {
     token: string;
     ownerAccountId: string;
     calendarId: string;
+    expiresAt: string;
+}
+
+export interface ScopedMeetingAccessTokenRecord {
+    token: string;
+    targetUrl: string;
+    createdByAccountId: string;
+    eventId: string | null;
     expiresAt: string;
 }
 
@@ -155,6 +166,10 @@ export class CoreCalendarGateway {
         CalendarEventRecord[]
     >();
     private readonly tokensByValue = new Map<string, CaldavTokenRecord>();
+    private readonly scopedMeetingTokensByValue = new Map<
+        string,
+        ScopedMeetingAccessTokenRecord
+    >();
     private readonly registeredAdapters = new Map<string, CalendarAdapter>();
     private readonly adapterRequires = new Map<string, string[]>();
     private readonly disabledAdapters = new Set<string>();
@@ -236,13 +251,19 @@ export class CoreCalendarGateway {
         ownerAccountId: string;
         name: string;
         visibility?: CalendarVisibility;
+        isDefault?: boolean;
     }): CalendarRecord {
         const now = new Date().toISOString();
+        const normalizedName =
+            typeof input.name === "string" && input.name.trim().length > 0
+                ? input.name.trim()
+                : "Default";
         const record: CalendarRecord = {
             id: randomUUID(),
             ownerAccountId: input.ownerAccountId,
-            name: input.name,
+            name: normalizedName,
             visibility: input.visibility ?? "private",
+            isDefault: input.isDefault === true,
             createdAt: now,
             updatedAt: now,
         };
@@ -254,14 +275,41 @@ export class CoreCalendarGateway {
         return record;
     }
 
+    ensureDefaultCalendar(ownerAccountId: string): CalendarRecord {
+        const existingDefault = Array.from(
+            this.calendarIdsByOwner.get(ownerAccountId) ?? [],
+        )
+            .map((calendarId) => this.calendarsById.get(calendarId))
+            .find(
+                (calendar): calendar is CalendarRecord =>
+                    Boolean(calendar?.isDefault),
+            );
+        if (existingDefault) return existingDefault;
+        return this.createCalendar({
+            ownerAccountId,
+            name: "Default",
+            visibility: "private",
+            isDefault: true,
+        });
+    }
+
     listCalendars(ownerAccountId: string): CalendarRecord[] {
         const ids = this.calendarIdsByOwner.get(ownerAccountId);
-        if (!ids) return [];
-        return Array.from(ids)
+        if (!ids || ids.size === 0) {
+            this.ensureDefaultCalendar(ownerAccountId);
+        }
+        const effectiveIds = this.calendarIdsByOwner.get(ownerAccountId);
+        if (!effectiveIds) return [];
+        return Array.from(effectiveIds)
             .map((id) => this.calendarsById.get(id))
             .filter((calendar): calendar is CalendarRecord =>
                 Boolean(calendar),
-            );
+            )
+            .sort((a, b) => {
+                if (a.isDefault && !b.isDefault) return -1;
+                if (!a.isDefault && b.isDefault) return 1;
+                return a.createdAt.localeCompare(b.createdAt);
+            });
     }
 
     getCalendar(calendarId: string): CalendarRecord | null {
@@ -278,6 +326,20 @@ export class CoreCalendarGateway {
         return calendar;
     }
 
+    deleteCalendar(input: { ownerAccountId: string; calendarId: string }): void {
+        const calendar = this.getOwnedCalendar(
+            input.ownerAccountId,
+            input.calendarId,
+        );
+        if (!calendar) throw new Error("calendar_not_found");
+        if (calendar.isDefault) throw new Error("calendar_default_locked");
+        this.calendarsById.delete(calendar.id);
+        this.eventsByCalendar.delete(calendar.id);
+        const ids = this.calendarIdsByOwner.get(input.ownerAccountId);
+        ids?.delete(calendar.id);
+        this.ensureDefaultCalendar(input.ownerAccountId);
+    }
+
     listEvents(calendarId: string): CalendarEventRecord[] {
         return [...(this.eventsByCalendar.get(calendarId) ?? [])].sort((a, b) =>
             a.startAt.localeCompare(b.startAt),
@@ -292,6 +354,8 @@ export class CoreCalendarGateway {
         startAt: string;
         endAt: string;
         attendees?: string[];
+        inviteEmails?: string[];
+        meetingUrl?: string | null;
     }): CalendarEventRecord {
         const calendar = this.getOwnedCalendar(
             input.ownerAccountId,
@@ -309,6 +373,14 @@ export class CoreCalendarGateway {
         const normalizedAttendees = normalizeAttendeeList(
             input.attendees ?? [],
         );
+        const normalizedInviteEmails = normalizeAttendeeList(
+            input.inviteEmails ?? [],
+        );
+        const normalizedMeetingUrl =
+            typeof input.meetingUrl === "string" &&
+            /^https?:\/\//i.test(input.meetingUrl.trim())
+                ? input.meetingUrl.trim()
+                : null;
 
         const now = new Date().toISOString();
         const event: CalendarEventRecord = {
@@ -324,6 +396,8 @@ export class CoreCalendarGateway {
             endAt: endIso,
             createdBy: input.ownerAccountId,
             attendees: normalizedAttendees,
+            inviteEmails: normalizedInviteEmails,
+            meetingUrl: normalizedMeetingUrl,
             createdAt: now,
             updatedAt: now,
         };
@@ -369,6 +443,45 @@ export class CoreCalendarGateway {
         return record;
     }
 
+    issueScopedMeetingAccessToken(input: {
+        targetUrl: string;
+        createdByAccountId: string;
+        eventId?: string | null;
+        ttlSeconds?: number;
+    }): ScopedMeetingAccessTokenRecord {
+        const targetUrl = String(input.targetUrl ?? "").trim();
+        if (!/^https?:\/\//i.test(targetUrl)) {
+            throw new Error("meeting_url_invalid");
+        }
+        const ttlSeconds = Math.max(60, input.ttlSeconds ?? 60 * 60 * 24 * 3);
+        const token = randomBytes(24).toString("base64url");
+        const record: ScopedMeetingAccessTokenRecord = {
+            token,
+            targetUrl,
+            createdByAccountId: input.createdByAccountId,
+            eventId:
+                typeof input.eventId === "string" && input.eventId.trim().length
+                    ? input.eventId.trim()
+                    : null,
+            expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
+        };
+        this.scopedMeetingTokensByValue.set(token, record);
+        return record;
+    }
+
+    consumeScopedMeetingAccessToken(
+        token: string,
+    ): ScopedMeetingAccessTokenRecord | null {
+        const record = this.scopedMeetingTokensByValue.get(token) ?? null;
+        if (!record) return null;
+        if (new Date(record.expiresAt).getTime() <= Date.now()) {
+            this.scopedMeetingTokensByValue.delete(token);
+            return null;
+        }
+        this.scopedMeetingTokensByValue.delete(token);
+        return record;
+    }
+
     exportCalendarAsIcs(calendarId: string): string {
         const calendar = this.calendarsById.get(calendarId);
         if (!calendar) {
@@ -381,10 +494,13 @@ export class CoreCalendarGateway {
             "PRODID:-//Cognis//Calendar Gateway//EN",
             `X-WR-CALNAME:${escapeIcsText(calendar.name)}`,
             ...events.flatMap((event) => {
-                const attendeeLines = event.attendees.map(
-                    (attendee) =>
-                        `ATTENDEE;CN=${escapeIcsText(attendee)}:mailto:${escapeIcsText(attendee)}`,
-                );
+                const attendeeLines = [...event.attendees, ...event.inviteEmails]
+                    .map((attendee) => attendee.trim())
+                    .filter(Boolean)
+                    .map(
+                        (attendee) =>
+                            `ATTENDEE;CN=${escapeIcsText(attendee)}:mailto:${escapeIcsText(attendee)}`,
+                    );
                 return [
                     "BEGIN:VEVENT",
                     `UID:${event.id}`,
@@ -394,6 +510,9 @@ export class CoreCalendarGateway {
                     `SUMMARY:${escapeIcsText(event.title)}`,
                     ...(event.description
                         ? [`DESCRIPTION:${escapeIcsText(event.description)}`]
+                        : []),
+                    ...(event.meetingUrl
+                        ? [`URL:${escapeIcsText(event.meetingUrl)}`]
                         : []),
                     ...attendeeLines,
                     "END:VEVENT",

@@ -12,7 +12,13 @@
   <string name="gateway.calendar.create_calendar_success">Kalender dibuat.</string>
   <string name="gateway.calendar.create_calendar_failed">Kalender tidak dapat dibuat.</string>
   <string name="gateway.calendar.event_title_placeholder">Judul acara</string>
-  <string name="gateway.calendar.attendees_placeholder">Undangan (nama pengguna dipisah koma)</string>
+  <string name="gateway.calendar.event_description_placeholder">Deskripsi acara</string>
+  <string name="gateway.calendar.attendees_label">Peserta</string>
+  <string name="gateway.calendar.attendees_placeholder">Cari pengguna untuk diundang</string>
+  <string name="gateway.calendar.invite_emails_placeholder">Undang alamat email (dipisah koma atau baris baru)</string>
+  <string name="gateway.calendar.create_meeting">Buat Meeting</string>
+  <string name="gateway.calendar.create_meeting_failed">Tidak dapat membuat tautan meeting.</string>
+  <string name="gateway.calendar.event_meeting_link">Tautan Meeting</string>
   <string name="gateway.calendar.create_event">Buat Acara</string>
   <string name="gateway.calendar.create_event_success">Acara dibuat.</string>
   <string name="gateway.calendar.create_event_failed">Acara tidak dapat dibuat.</string>

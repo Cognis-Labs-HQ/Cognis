@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { fileURLToPath } from "node:url";
+import { hasMinRole } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../shared.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import {
@@ -18,17 +19,34 @@ function normalizeVisibility(value: unknown): CalendarVisibility {
     return value === "public" ? "public" : "private";
 }
 
+function normalizeStringList(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return Array.from(
+        new Set(
+            value
+                .map((entry) => String(entry ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
 function createCalendarCoreRoutes(
     gateway: CoreCalendarGateway,
     dispatchNotification:
         | ((envelope: {
               category: string;
               recipientUsername: string;
+              recipientEmail?: string;
               subject: string;
               body: string;
               actionUrl?: string;
               senderName?: string;
               metadata?: Record<string, unknown>;
+              attachments?: Array<{
+                  filename: string;
+                  contentType?: string;
+                  content: string;
+              }>;
           }) => Promise<{ dispatched: string[] }>)
         | null,
     routeContext?: RouteContext,
@@ -46,9 +64,15 @@ function createCalendarCoreRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
+            gateway.ensureDefaultCalendar(claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
-                JSON.stringify({ data: gateway.listCalendars(claims.sub) }),
+                JSON.stringify({
+                    data: gateway.listCalendars(claims.sub),
+                    meta: {
+                        canInviteExternal: hasMinRole(claims.role, "owner"),
+                    },
+                }),
             );
             return true;
         }
@@ -84,6 +108,61 @@ function createCalendarCoreRoutes(
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: created }));
             return true;
+        }
+
+        const deleteCalendarMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/calendars\/([^/]+)$/,
+        );
+        if (deleteCalendarMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const calendarId = decodeURIComponent(deleteCalendarMatch[1]);
+            try {
+                gateway.deleteCalendar({
+                    ownerAccountId: claims.sub,
+                    calendarId,
+                });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { deleted: true } }));
+                return true;
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : "calendar_error";
+                if (message === "calendar_not_found") {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "Calendar not found.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (message === "calendar_default_locked") {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "conflict",
+                                message: "Default calendar cannot be deleted.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                res.writeHead(500, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "internal_error",
+                            message: "Failed to delete calendar.",
+                        },
+                    }),
+                );
+                return true;
+            }
         }
 
         const eventsMatch = url.pathname.match(
@@ -128,6 +207,8 @@ function createCalendarCoreRoutes(
                 startAt?: unknown;
                 endAt?: unknown;
                 attendees?: unknown;
+                inviteEmails?: unknown;
+                meetingUrl?: unknown;
             };
             const title = String(body?.title ?? "").trim();
             const startAt = String(body?.startAt ?? "").trim();
@@ -155,14 +236,35 @@ function createCalendarCoreRoutes(
                             : null,
                     startAt,
                     endAt,
-                    attendees: Array.isArray(body.attendees)
-                        ? body.attendees.map((entry) =>
-                              String(entry ?? "").trim(),
-                          )
-                        : [],
+                    attendees: normalizeStringList(body.attendees),
+                    inviteEmails: normalizeStringList(body.inviteEmails),
+                    meetingUrl:
+                        typeof body.meetingUrl === "string"
+                            ? body.meetingUrl
+                            : null,
                 });
 
                 if (dispatchNotification) {
+                    const canInviteByEmail = hasMinRole(claims.role, "owner");
+                    if (
+                        createdEvent.inviteEmails.length > 0 &&
+                        !canInviteByEmail
+                    ) {
+                        res.writeHead(403, {
+                            "content-type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: {
+                                    code: "forbidden",
+                                    message:
+                                        "Only founder users can send email invites.",
+                                },
+                            }),
+                        );
+                        return true;
+                    }
+                    const actionUrl = `/calendar?calendarId=${encodeURIComponent(calendarId)}`;
                     await Promise.all(
                         createdEvent.attendees.map((attendee) =>
                             dispatchNotification({
@@ -170,7 +272,7 @@ function createCalendarCoreRoutes(
                                 recipientUsername: attendee,
                                 subject: `Calendar invite: ${createdEvent.title}`,
                                 body: `You were invited to ${createdEvent.title}`,
-                                actionUrl: `/calendar?calendarId=${encodeURIComponent(calendarId)}`,
+                                actionUrl,
                                 metadata: {
                                     eventId: createdEvent.id,
                                     calendarId,
@@ -178,6 +280,51 @@ function createCalendarCoreRoutes(
                             }).catch(() => ({ dispatched: [] })),
                         ),
                     );
+                    if (canInviteByEmail && createdEvent.inviteEmails.length) {
+                        const eventIcs = gateway.exportCalendarAsIcs(calendarId);
+                        await Promise.all(
+                            createdEvent.inviteEmails.map((email) => {
+                                const scopedAccessToken = createdEvent.meetingUrl
+                                    ? gateway.issueScopedMeetingAccessToken({
+                                          targetUrl: createdEvent.meetingUrl,
+                                          createdByAccountId: claims.sub,
+                                          eventId: createdEvent.id,
+                                      })
+                                    : null;
+                                const meetingAccessUrl = scopedAccessToken
+                                    ? `/api/v1/calendar/meeting-access/${encodeURIComponent(scopedAccessToken.token)}`
+                                    : null;
+                                return dispatchNotification({
+                                    category: "calendar",
+                                    recipientUsername: email,
+                                    recipientEmail: email,
+                                    subject: `Calendar invite: ${createdEvent.title}`,
+                                    body: `${claims.sub} invited you to ${createdEvent.title}.\n\nStarts: ${createdEvent.startAt}\nEnds: ${createdEvent.endAt}${
+                                        createdEvent.description
+                                            ? `\nDescription: ${createdEvent.description}`
+                                            : ""
+                                    }${
+                                        meetingAccessUrl
+                                            ? `\nMeeting link: ${meetingAccessUrl}`
+                                            : ""
+                                    }`,
+                                    actionUrl: meetingAccessUrl ?? actionUrl,
+                                    attachments: [
+                                        {
+                                            filename: `${createdEvent.title.replace(/\s+/g, "-").toLowerCase() || "event"}.ics`,
+                                            contentType:
+                                                "text/calendar; charset=UTF-8",
+                                            content: eventIcs,
+                                        },
+                                    ],
+                                    metadata: {
+                                        eventId: createdEvent.id,
+                                        calendarId,
+                                    },
+                                }).catch(() => ({ dispatched: [] }));
+                            }),
+                        );
+                    }
                 }
 
                 res.writeHead(201, { "content-type": "application/json" });
@@ -222,6 +369,29 @@ function createCalendarCoreRoutes(
                 );
                 return true;
             }
+        }
+
+        const meetingAccessMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/meeting-access\/([^/]+)$/,
+        );
+        if (meetingAccessMatch && req.method === "GET") {
+            const token = decodeURIComponent(meetingAccessMatch[1]);
+            const scopedToken = gateway.consumeScopedMeetingAccessToken(token);
+            if (!scopedToken) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Meeting access link is invalid or expired.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(302, { location: scopedToken.targetUrl });
+            res.end();
+            return true;
         }
 
         return false;
@@ -384,11 +554,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             (envelope: {
                 category: string;
                 recipientUsername: string;
+                recipientEmail?: string;
                 subject: string;
                 body: string;
                 actionUrl?: string;
                 senderName?: string;
                 metadata?: Record<string, unknown>;
+                attachments?: Array<{
+                    filename: string;
+                    contentType?: string;
+                    content: string;
+                }>;
             }) => Promise<{ dispatched: string[] }>
         >("notify:dispatch");
 
@@ -414,6 +590,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             startAt: string;
             endAt: string;
             attendees?: string[];
+            inviteEmails?: string[];
+            meetingUrl?: string | null;
         }) => gateway.addEvent(input),
     );
     ctx.capabilities.contribute("calendar:listEvents", (calendarId: string) =>

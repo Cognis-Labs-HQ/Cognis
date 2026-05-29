@@ -12,11 +12,17 @@ function parseCalendarSelection() {
     return query.get("calendarId");
 }
 
-async function fetchCalendars() {
+async function fetchCalendarState() {
     const response = await apiFetch("/api/v1/calendar/calendars");
     if (!response.ok) throw new Error("calendar_load_failed");
     const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
+    return {
+        calendars: Array.isArray(payload?.data) ? payload.data : [],
+        meta:
+            payload && typeof payload.meta === "object" && payload.meta
+                ? payload.meta
+                : {},
+    };
 }
 
 async function fetchEvents(calendarId) {
@@ -28,6 +34,35 @@ async function fetchEvents(calendarId) {
     return Array.isArray(payload?.data?.events) ? payload.data.events : [];
 }
 
+async function lookupMessageParticipants(query) {
+    const response = await apiFetch(
+        `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
+    );
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return Array.isArray(payload?.data) ? payload.data : [];
+}
+
+async function probeJitsiAvailability() {
+    const response = await apiFetch("/api/v1/modules/jitsi-meet/ping");
+    if (!response.ok) return false;
+    const payload = await response.json();
+    return Boolean(payload?.data?.ready) && Boolean(payload?.data?.configComplete);
+}
+
+async function createJitsiMeeting(attendees) {
+    const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings/create", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify({ participants: attendees }),
+    });
+    if (!response.ok) throw new Error("meeting_create_failed");
+    const payload = await response.json();
+    return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
+}
+
 function renderCalendarList(calendars, selectedId, i18n) {
     if (calendars.length === 0) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_calendars")}</p>`;
@@ -35,10 +70,15 @@ function renderCalendarList(calendars, selectedId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-                <a href="/calendar?calendarId=${encodeURIComponent(calendar.id)}"${
+                <a class="calendar-select-link" href="/calendar?calendarId=${encodeURIComponent(calendar.id)}"${
                     selectedId === calendar.id ? ' aria-current="page"' : ""
-                }>${escapeHtml(calendar.name)}</a>
-                <div>${i18n.t(
+                }>
+                    <span class="calendar-select-dot" aria-hidden="true">${
+                        selectedId === calendar.id ? "✓" : ""
+                    }</span>
+                    <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
+                </a>
+                <div class="calendar-visibility">${i18n.t(
                     calendar.visibility === "public"
                         ? "gateway.calendar.visibility_public"
                         : "gateway.calendar.visibility_private",
@@ -59,9 +99,21 @@ function renderEventsList(events, i18n) {
                 <div>${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}</div>
                 ${event.description ? `<div>${escapeHtml(event.description)}</div>` : ""}
                 ${event.attendees?.length ? `<div>${escapeHtml(event.attendees.join(", "))}</div>` : ""}
+                ${event.meetingUrl ? `<div><a href="${escapeHtml(event.meetingUrl)}" target="_blank" rel="noreferrer noopener">${i18n.t("gateway.calendar.event_meeting_link")}</a></div>` : ""}
             </li>`,
         )
         .join("")}</ul>`;
+}
+
+function splitInviteEmails(value) {
+    return Array.from(
+        new Set(
+            String(value ?? "")
+                .split(/[\n,]+/)
+                .map((entry) => entry.trim().toLowerCase())
+                .filter((entry) => entry.includes("@")),
+        ),
+    );
 }
 
 export async function mount(root, { signal } = {}) {
@@ -73,15 +125,20 @@ export async function mount(root, { signal } = {}) {
     let calendars = [];
     let selectedCalendarId = parseCalendarSelection();
     let events = [];
+    let canInviteExternal = false;
+    let jitsiAvailable = false;
 
     try {
-        calendars = await fetchCalendars();
+        const calendarState = await fetchCalendarState();
+        calendars = calendarState.calendars;
+        canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
         if (!selectedCalendarId && calendars[0]) {
             selectedCalendarId = calendars[0].id;
         }
         if (selectedCalendarId) {
             events = await fetchEvents(selectedCalendarId);
         }
+        jitsiAvailable = await probeJitsiAvailability();
     } catch {
         showToast(i18n.t("gateway.calendar.load_failed"), "error");
     }
@@ -110,11 +167,19 @@ export async function mount(root, { signal } = {}) {
                         </section>
                         <section class="calendar-section">
                             <h3>${i18n.t("gateway.calendar.events")}</h3>
-                            <form class="calendar-inline-form" id="calendar-event-form">
+                            <form class="calendar-inline-form calendar-event-form" id="calendar-event-form">
                                 <input id="calendar-event-title" type="text" placeholder="${i18n.t("gateway.calendar.event_title_placeholder")}" required />
+                                <textarea id="calendar-event-description" rows="3" placeholder="${i18n.t("gateway.calendar.event_description_placeholder")}"></textarea>
                                 <input id="calendar-event-start" type="datetime-local" required />
                                 <input id="calendar-event-end" type="datetime-local" required />
-                                <input id="calendar-event-attendees" type="text" placeholder="${i18n.t("gateway.calendar.attendees_placeholder")}" />
+                                <div class="calendar-attendee-picker">
+                                    <label for="calendar-event-attendee-search">${i18n.t("gateway.calendar.attendees_label")}</label>
+                                    <div class="calendar-attendee-selected" id="calendar-selected-attendees"></div>
+                                    <input id="calendar-event-attendee-search" type="text" placeholder="${i18n.t("gateway.calendar.attendees_placeholder")}" autocomplete="off" />
+                                    <div class="calendar-attendee-suggestions" id="calendar-attendee-suggestions"></div>
+                                </div>
+                                ${canInviteExternal ? `<textarea id="calendar-event-invite-emails" rows="2" placeholder="${i18n.t("gateway.calendar.invite_emails_placeholder")}"></textarea>` : ""}
+                                ${jitsiAvailable ? `<label class="calendar-checkbox-row"><input id="calendar-event-create-meeting" type="checkbox" /> ${i18n.t("gateway.calendar.create_meeting")}</label>` : ""}
                                 <button type="submit" class="btn-confirm" ${selectedCalendarId ? "" : "disabled"}>${i18n.t("gateway.calendar.create_event")}</button>
                             </form>
                             ${renderEventsList(events, i18n)}
@@ -122,6 +187,92 @@ export async function mount(root, { signal } = {}) {
                     </div>
                 `,
                 onRender: () => {
+                    const selectedAttendees = new Set();
+                    const selectedHost = root.querySelector(
+                        "#calendar-selected-attendees",
+                    );
+                    const suggestionsHost = root.querySelector(
+                        "#calendar-attendee-suggestions",
+                    );
+                    const attendeeSearchInput = root.querySelector(
+                        "#calendar-event-attendee-search",
+                    );
+
+                    function renderSelectedAttendees() {
+                        if (!selectedHost) return;
+                        selectedHost.innerHTML = Array.from(selectedAttendees)
+                            .map(
+                                (handle) => `<button type="button" class="calendar-attendee-chip" data-remove-attendee="${escapeHtml(handle)}">@${escapeHtml(handle)} ×</button>`,
+                            )
+                            .join("");
+                    }
+
+                    async function renderAttendeeSuggestions() {
+                        if (!attendeeSearchInput || !suggestionsHost) return;
+                        const query = String(attendeeSearchInput.value ?? "").trim();
+                        if (query.length < 2) {
+                            suggestionsHost.innerHTML = "";
+                            return;
+                        }
+                        const matches = await lookupMessageParticipants(query);
+                        const visibleMatches = matches
+                            .filter((entry) => entry?.handle)
+                            .filter((entry) => !selectedAttendees.has(entry.handle))
+                            .slice(0, 6);
+                        suggestionsHost.innerHTML = visibleMatches
+                            .map(
+                                (entry) => `<button type="button" class="calendar-attendee-suggestion" data-attendee-handle="${escapeHtml(entry.handle)}">${escapeHtml(entry.displayName ?? entry.handle)} (@${escapeHtml(entry.handle)})</button>`,
+                            )
+                            .join("");
+                    }
+
+                    attendeeSearchInput?.addEventListener(
+                        "input",
+                        () => {
+                            void renderAttendeeSuggestions();
+                        },
+                        { signal },
+                    );
+
+                    suggestionsHost?.addEventListener(
+                        "click",
+                        (event) => {
+                            const button = event.target.closest(
+                                "[data-attendee-handle]",
+                            );
+                            if (!button) return;
+                            const handle = String(
+                                button.getAttribute("data-attendee-handle") ?? "",
+                            )
+                                .trim()
+                                .toLowerCase();
+                            if (!handle) return;
+                            selectedAttendees.add(handle);
+                            if (attendeeSearchInput) attendeeSearchInput.value = "";
+                            suggestionsHost.innerHTML = "";
+                            renderSelectedAttendees();
+                        },
+                        { signal },
+                    );
+
+                    selectedHost?.addEventListener(
+                        "click",
+                        (event) => {
+                            const button = event.target.closest(
+                                "[data-remove-attendee]",
+                            );
+                            if (!button) return;
+                            const handle = String(
+                                button.getAttribute("data-remove-attendee") ?? "",
+                            )
+                                .trim()
+                                .toLowerCase();
+                            selectedAttendees.delete(handle);
+                            renderSelectedAttendees();
+                        },
+                        { signal },
+                    );
+
                     const createForm = root.querySelector(
                         "#calendar-create-form",
                     );
@@ -130,12 +281,11 @@ export async function mount(root, { signal } = {}) {
                         async (event) => {
                             event.preventDefault();
                             const name = String(
-                                root.querySelector("#calendar-name")?.value ??
-                                    "",
+                                root.querySelector("#calendar-name")?.value ?? "",
                             ).trim();
                             const visibility = String(
-                                root.querySelector("#calendar-visibility")
-                                    ?.value ?? "private",
+                                root.querySelector("#calendar-visibility")?.value ??
+                                    "private",
                             );
                             if (!name) return;
                             const response = await apiFetch(
@@ -177,27 +327,48 @@ export async function mount(root, { signal } = {}) {
                             event.preventDefault();
                             if (!selectedCalendarId) return;
                             const title = String(
-                                root.querySelector("#calendar-event-title")
-                                    ?.value ?? "",
+                                root.querySelector("#calendar-event-title")?.value ??
+                                    "",
+                            ).trim();
+                            const description = String(
+                                root.querySelector(
+                                    "#calendar-event-description",
+                                )?.value ?? "",
                             ).trim();
                             const startAt = String(
-                                root.querySelector("#calendar-event-start")
-                                    ?.value ?? "",
+                                root.querySelector("#calendar-event-start")?.value ??
+                                    "",
                             ).trim();
                             const endAt = String(
-                                root.querySelector("#calendar-event-end")
-                                    ?.value ?? "",
+                                root.querySelector("#calendar-event-end")?.value ?? "",
                             ).trim();
-                            const attendeesRaw = String(
-                                root.querySelector("#calendar-event-attendees")
-                                    ?.value ?? "",
-                            ).trim();
-                            const attendees = attendeesRaw
-                                ? attendeesRaw
-                                      .split(",")
-                                      .map((entry) => entry.trim())
-                                      .filter(Boolean)
+                            const inviteEmails = canInviteExternal
+                                ? splitInviteEmails(
+                                      root.querySelector(
+                                          "#calendar-event-invite-emails",
+                                      )?.value ?? "",
+                                  )
                                 : [];
+                            const createMeeting = Boolean(
+                                root.querySelector("#calendar-event-create-meeting")
+                                    ?.checked,
+                            );
+                            let meetingUrl = null;
+                            if (createMeeting && jitsiAvailable) {
+                                try {
+                                    meetingUrl = await createJitsiMeeting(
+                                        Array.from(selectedAttendees),
+                                    );
+                                } catch {
+                                    showToast(
+                                        i18n.t(
+                                            "gateway.calendar.create_meeting_failed",
+                                        ),
+                                        "error",
+                                    );
+                                    return;
+                                }
+                            }
                             const response = await apiFetch(
                                 `/api/v1/calendar/calendars/${encodeURIComponent(selectedCalendarId)}/events`,
                                 {
@@ -207,11 +378,12 @@ export async function mount(root, { signal } = {}) {
                                     },
                                     body: JSON.stringify({
                                         title,
-                                        startAt: new Date(
-                                            startAt,
-                                        ).toISOString(),
+                                        description,
+                                        startAt: new Date(startAt).toISOString(),
                                         endAt: new Date(endAt).toISOString(),
-                                        attendees,
+                                        attendees: Array.from(selectedAttendees),
+                                        inviteEmails,
+                                        meetingUrl,
                                     }),
                                 },
                             );

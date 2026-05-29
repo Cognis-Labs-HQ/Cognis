@@ -4,6 +4,7 @@ import { CoreCalendarGateway } from "../gateway.js";
 
 test("calendar gateway supports multiple calendars per user", () => {
     const gateway = new CoreCalendarGateway();
+    const defaultCalendar = gateway.ensureDefaultCalendar("alice");
     const first = gateway.createCalendar({
         ownerAccountId: "alice",
         name: "Personal",
@@ -15,9 +16,24 @@ test("calendar gateway supports multiple calendars per user", () => {
     });
 
     const calendars = gateway.listCalendars("alice");
-    assert.equal(calendars.length, 2);
+    assert.equal(calendars.length, 3);
+    assert.equal(calendars[0]?.id, defaultCalendar.id);
+    assert.equal(calendars[0]?.isDefault, true);
     assert.ok(calendars.some((calendar) => calendar.id === first.id));
     assert.ok(calendars.some((calendar) => calendar.id === second.id));
+});
+
+test("calendar gateway does not allow deleting the default calendar", () => {
+    const gateway = new CoreCalendarGateway();
+    const defaultCalendar = gateway.ensureDefaultCalendar("alice");
+    assert.throws(
+        () =>
+            gateway.deleteCalendar({
+                ownerAccountId: "alice",
+                calendarId: defaultCalendar.id,
+            }),
+        /calendar_default_locked/,
+    );
 });
 
 test("calendar gateway exports ICS and parses ICS imports", () => {
@@ -64,4 +80,17 @@ test("calendar gateway private export tokens expire and validate", () => {
     const resolved = gateway.resolvePrivateExportToken(token.token);
     assert.ok(resolved);
     assert.equal(resolved?.calendarId, calendar.id);
+});
+
+test("calendar gateway scoped meeting tokens are one-time and scoped", () => {
+    const gateway = new CoreCalendarGateway();
+    const token = gateway.issueScopedMeetingAccessToken({
+        targetUrl: "https://meet.example.com/room-1",
+        createdByAccountId: "alice",
+        eventId: "event-1",
+    });
+    const firstRead = gateway.consumeScopedMeetingAccessToken(token.token);
+    const secondRead = gateway.consumeScopedMeetingAccessToken(token.token);
+    assert.equal(firstRead?.targetUrl, "https://meet.example.com/room-1");
+    assert.equal(secondRead, null);
 });

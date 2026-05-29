@@ -35,6 +35,11 @@ export interface NotificationEnvelope {
     senderName?: string;
     actionUrl?: string;
     metadata?: Record<string, unknown>;
+    attachments?: Array<{
+        filename: string;
+        contentType?: string;
+        content: string;
+    }>;
 }
 
 export interface NotificationCategory {

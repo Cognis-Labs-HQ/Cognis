@@ -12,7 +12,13 @@
   <string name="gateway.calendar.create_calendar_success">カレンダーを作成しました。</string>
   <string name="gateway.calendar.create_calendar_failed">カレンダーを作成できませんでした。</string>
   <string name="gateway.calendar.event_title_placeholder">予定タイトル</string>
-  <string name="gateway.calendar.attendees_placeholder">招待先（ユーザー名をカンマ区切り）</string>
+  <string name="gateway.calendar.event_description_placeholder">予定の説明</string>
+  <string name="gateway.calendar.attendees_label">参加者</string>
+  <string name="gateway.calendar.attendees_placeholder">招待するユーザーを検索</string>
+  <string name="gateway.calendar.invite_emails_placeholder">メールアドレスを招待（カンマまたは改行区切り）</string>
+  <string name="gateway.calendar.create_meeting">ミーティングを作成</string>
+  <string name="gateway.calendar.create_meeting_failed">ミーティングリンクを作成できませんでした。</string>
+  <string name="gateway.calendar.event_meeting_link">ミーティングリンク</string>
   <string name="gateway.calendar.create_event">予定を作成</string>
   <string name="gateway.calendar.create_event_success">予定を作成しました。</string>
   <string name="gateway.calendar.create_event_failed">予定を作成できませんでした。</string>

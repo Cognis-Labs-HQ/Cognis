@@ -292,6 +292,11 @@ async function buildMessage(
         verifyButtonLabel?: string;
         senderName?: string;
         messageIdDomain?: string;
+        attachments?: Array<{
+            filename: string;
+            contentType?: string;
+            content: string;
+        }>;
     } = {},
 ): Promise<string> {
     const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
@@ -373,6 +378,9 @@ async function buildMessage(
         "Cognis automated notification. Please do not reply to this message.",
     ].join("\n");
     const boundary = `cognis-${randomUUID()}`;
+    const hasAttachments =
+        Array.isArray(options.attachments) && options.attachments.length > 0;
+    const mixedBoundary = hasAttachments ? `cognis-mixed-${randomUUID()}` : "";
     const headers = [
         foldHeader("From", formatAddressHeader(from, options.senderName)),
         foldHeader("To", formatAddressHeader(to)),
@@ -384,11 +392,13 @@ async function buildMessage(
         "X-Auto-Response-Suppress: All",
         foldHeader(
             "Content-Type",
-            `multipart/alternative; boundary="${boundary}"`,
+            hasAttachments
+                ? `multipart/mixed; boundary="${mixedBoundary}"`
+                : `multipart/alternative; boundary="${boundary}"`,
         ),
     ];
 
-    const mimeBody = [
+    const alternativeBody = [
         `--${boundary}`,
         "Content-Type: text/plain; charset=UTF-8",
         "Content-Transfer-Encoding: quoted-printable",
@@ -400,8 +410,58 @@ async function buildMessage(
         "",
         encodeQuotedPrintable(htmlBody),
         `--${boundary}--`,
-        "",
     ].join("\r\n");
+
+    const attachmentBody = hasAttachments
+        ? (options.attachments ?? [])
+              .map((attachment) => {
+                  const safeFilename = String(attachment.filename ?? "file")
+                      .replace(/[^\w.\-]/g, "_")
+                      .slice(0, 128);
+                  const contentType =
+                      typeof attachment.contentType === "string" &&
+                      attachment.contentType.trim().length > 0
+                          ? attachment.contentType.trim()
+                          : "application/octet-stream";
+                  const encodedContent = Buffer.from(
+                      String(attachment.content ?? ""),
+                      "utf8",
+                  ).toString("base64");
+                  return [
+                      `--${mixedBoundary}`,
+                      foldHeader(
+                          "Content-Type",
+                          `${contentType}; name=\"${safeFilename}\"`,
+                      ),
+                      "Content-Transfer-Encoding: base64",
+                      foldHeader(
+                          "Content-Disposition",
+                          `attachment; filename=\"${safeFilename}\"`,
+                      ),
+                      "",
+                      encodedContent,
+                  ].join("\r\n");
+              })
+              .join("\r\n")
+        : "";
+
+    const mimeBody = hasAttachments
+        ? [
+              `--${mixedBoundary}`,
+              foldHeader(
+                  "Content-Type",
+                  `multipart/alternative; boundary=\"${boundary}\"`,
+              ),
+              "",
+              alternativeBody,
+              attachmentBody,
+              `--${mixedBoundary}--`,
+              "",
+          ].join("\r\n")
+        : [
+              alternativeBody,
+              "",
+          ].join("\r\n");
 
     return `${dotStuff(`${headers.join("\r\n")}\r\n\r\n${mimeBody}`)}\r\n.\r\n`;
 }
@@ -526,6 +586,11 @@ async function sendMail(
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
+    attachments?: Array<{
+        filename: string;
+        contentType?: string;
+        content: string;
+    }>,
 ): Promise<void> {
     let session = await openSession(
         config.host,
@@ -608,6 +673,7 @@ async function sendMail(
                 verifyButtonLabel,
                 senderName: config.senderName,
                 messageIdDomain: config.ehloHostname ?? config.host,
+                attachments,
             }),
         );
         const sent = await session.read();
@@ -660,6 +726,11 @@ async function sendMailWithRetry(
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
+    attachments?: Array<{
+        filename: string;
+        contentType?: string;
+        content: string;
+    }>,
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -679,6 +750,7 @@ async function sendMailWithRetry(
                 theme,
                 verifyUrl,
                 verifyButtonLabel,
+                attachments,
             );
             return;
         } catch (err) {
@@ -918,6 +990,8 @@ export class SmtpNotificationSender implements NotificationSender {
             this.sleep,
             theme,
             undefined,
+            undefined,
+            Array.isArray(envelope.attachments) ? envelope.attachments : [],
         );
     }
 }

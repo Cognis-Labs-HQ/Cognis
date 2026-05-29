@@ -12,7 +12,13 @@
   <string name="gateway.calendar.create_calendar_success">Calendar created.</string>
   <string name="gateway.calendar.create_calendar_failed">Could not create calendar.</string>
   <string name="gateway.calendar.event_title_placeholder">Event title</string>
-  <string name="gateway.calendar.attendees_placeholder">Invitees (comma separated usernames)</string>
+  <string name="gateway.calendar.event_description_placeholder">Event description</string>
+  <string name="gateway.calendar.attendees_label">Participants</string>
+  <string name="gateway.calendar.attendees_placeholder">Search users to invite</string>
+  <string name="gateway.calendar.invite_emails_placeholder">Invite email addresses (comma or newline separated)</string>
+  <string name="gateway.calendar.create_meeting">Create Meeting</string>
+  <string name="gateway.calendar.create_meeting_failed">Could not create meeting link.</string>
+  <string name="gateway.calendar.event_meeting_link">Meeting Link</string>
   <string name="gateway.calendar.create_event">Create Event</string>
   <string name="gateway.calendar.create_event_success">Event created.</string>
   <string name="gateway.calendar.create_event_failed">Could not create event.</string>

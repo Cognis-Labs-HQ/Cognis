@@ -20,6 +20,12 @@
     flex: 1 1 180px;
 }
 
+.calendar-event-form textarea {
+    width: 100%;
+    min-height: 84px;
+    resize: vertical;
+}
+
 .calendar-events-list,
 .calendar-calendars-list {
     list-style: none;
@@ -34,6 +40,75 @@
     border: 1px solid var(--field-border);
     border-radius: 10px;
     padding: 0.65rem 0.75rem;
+}
+
+.calendar-select-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.calendar-select-dot {
+    display: inline-flex;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--field-border);
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.calendar-select-link[aria-current="page"] .calendar-select-dot {
+    background: var(--btn-confirm-bg, #1f8ceb);
+    border-color: var(--btn-confirm-bg, #1f8ceb);
+    color: #fff;
+}
+
+.calendar-visibility {
+    opacity: 0.7;
+    margin-top: 0.3rem;
+}
+
+.calendar-attendee-picker {
+    width: 100%;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.calendar-attendee-selected {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.calendar-attendee-chip {
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    background: var(--surface, transparent);
+    padding: 0.2rem 0.55rem;
+    font-size: 0.85rem;
+}
+
+.calendar-attendee-suggestions {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.calendar-attendee-suggestion {
+    text-align: left;
+    border: 1px solid var(--field-border);
+    border-radius: 8px;
+    background: var(--surface, transparent);
+    padding: 0.4rem 0.55rem;
+}
+
+.calendar-checkbox-row {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .calendar-empty {
