@@ -340,7 +340,10 @@ export class CoreCalendarGateway {
             startAt: input.startAt,
             endAt: input.endAt,
             createdBy: input.ownerAccountId,
-            attendees: input.attendees,
+            attendees: this.enforceOwnerAttendance(
+                input.ownerAccountId,
+                input.attendees,
+            ),
             inviteEmails: input.inviteEmails,
             meetingUrl: input.meetingUrl,
             status: input.status,
@@ -463,10 +466,10 @@ export class CoreCalendarGateway {
                     input.description.trim().length > 0
                   ? input.description
                   : null;
-        const nextAttendees =
-            input.attendees === undefined
-                ? [...event.attendees]
-                : normalizeAttendeeList(input.attendees);
+        const nextAttendees = this.enforceOwnerAttendance(
+            input.ownerAccountId,
+            input.attendees === undefined ? event.attendees : input.attendees,
+        );
         const nextInviteEmails =
             input.inviteEmails === undefined
                 ? [...event.inviteEmails]
@@ -572,7 +575,7 @@ export class CoreCalendarGateway {
         calendarId: string;
         eventId: string;
         deleteAll?: boolean;
-    }): void {
+    }): CalendarEventRecord[] {
         const event = this.getOwnedEvent(
             input.ownerAccountId,
             input.calendarId,
@@ -586,8 +589,14 @@ export class CoreCalendarGateway {
             event.recurrenceId &&
             event.sourceEventId === null
                 ? this.getEventsByRecurrenceId(event.recurrenceId)
+                      .filter(
+                          (seriesEvent) =>
+                              seriesEvent.startAt >= event.startAt,
+                      )
                 : [event];
+        const deletedEvents: CalendarEventRecord[] = [];
         for (const targetEvent of targetEvents) {
+            deletedEvents.push({ ...targetEvent });
             for (const mirroredEvent of this.listMirroredEvents(
                 targetEvent.id,
             )) {
@@ -607,6 +616,7 @@ export class CoreCalendarGateway {
                 this.store?.deleteEvent(targetEvent.id),
             );
         }
+        return deletedEvents;
     }
 
     getEventResponse(
@@ -632,6 +642,7 @@ export class CoreCalendarGateway {
         eventId: string;
         accountId: string;
         response: CalendarEventResponse;
+        respondAll?: boolean;
     }): CalendarEventResponseRecord {
         const event = Array.from(this.eventsByCalendar.values())
             .flatMap((events) => events)
@@ -647,21 +658,48 @@ export class CoreCalendarGateway {
             throw new Error("calendar_response_forbidden");
         }
         const rootEventId = this.getResponseRootEventId(event);
-        const existingRecord = this.responsesByRootEvent
-            .get(rootEventId)
-            ?.get(input.accountId);
+        const response = normalizeEventResponse(input.response);
+        const targetRootEventIds = new Set<string>();
+        if (input.respondAll === true && event.recurrenceId) {
+            for (const relatedEvent of this.getAllEventsByRecurrenceId(
+                event.recurrenceId,
+            )) {
+                if (!relatedEvent.attendees.includes(input.accountId)) continue;
+                targetRootEventIds.add(this.getResponseRootEventId(relatedEvent));
+            }
+        }
+        if (targetRootEventIds.size === 0) {
+            targetRootEventIds.add(rootEventId);
+        }
         const now = new Date().toISOString();
-        const record: CalendarEventResponseRecord = {
-            rootEventId,
-            accountId: input.accountId,
-            response: normalizeEventResponse(input.response),
-            createdAt: existingRecord?.createdAt ?? now,
-            updatedAt: now,
-        };
-        this.setResponseRecord(record);
-        this.refreshResponsesForRootEvent(rootEventId);
-        this.scheduleStoreWrite(() => this.store?.saveResponse(record));
-        return record;
+        let selectedRecord: CalendarEventResponseRecord | null = null;
+        for (const targetRootEventId of targetRootEventIds) {
+            const existingRecord = this.responsesByRootEvent
+                .get(targetRootEventId)
+                ?.get(input.accountId);
+            const record: CalendarEventResponseRecord = {
+                rootEventId: targetRootEventId,
+                accountId: input.accountId,
+                response,
+                createdAt: existingRecord?.createdAt ?? now,
+                updatedAt: now,
+            };
+            this.setResponseRecord(record);
+            this.refreshResponsesForRootEvent(targetRootEventId);
+            this.scheduleStoreWrite(() => this.store?.saveResponse(record));
+            if (targetRootEventId === rootEventId) {
+                selectedRecord = record;
+            }
+        }
+        return (
+            selectedRecord ?? {
+                rootEventId,
+                accountId: input.accountId,
+                response,
+                createdAt: now,
+                updatedAt: now,
+            }
+        );
     }
 
     issuePrivateExportToken(input: {
@@ -840,6 +878,17 @@ export class CoreCalendarGateway {
             );
     }
 
+    private getAllEventsByRecurrenceId(
+        recurrenceId: string,
+    ): CalendarEventRecord[] {
+        return Array.from(this.eventsByCalendar.values())
+            .flatMap((events) => events)
+            .filter((event) => event.recurrenceId === recurrenceId)
+            .sort((leftEvent, rightEvent) =>
+                leftEvent.startAt.localeCompare(rightEvent.startAt),
+            );
+    }
+
     private getResponseRootEventId(event: CalendarEventRecord): string {
         return event.sourceEventId ?? event.id;
     }
@@ -907,6 +956,13 @@ export class CoreCalendarGateway {
             this.responsesByRootEvent.delete(rootEventId);
         }
         this.refreshResponsesForRootEvent(rootEventId);
+    }
+
+    private enforceOwnerAttendance(
+        ownerAccountId: string,
+        attendees: string[] | undefined,
+    ): string[] {
+        return normalizeAttendeeList([...(attendees ?? []), ownerAccountId]);
     }
 
     private scheduleStoreWrite(

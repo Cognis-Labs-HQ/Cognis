@@ -64,7 +64,10 @@
   <string name="gateway.calendar.free_short">空き</string>
   <string name="gateway.calendar.edit_event">予定を編集</string>
   <string name="gateway.calendar.delete_event">予定を削除</string>
-  <string name="gateway.calendar.delete_event_prompt">この予定を削除しますか。繰り返し予定はシリーズ全体が削除されます。</string>
+  <string name="gateway.calendar.delete_event_prompt">この予定を削除しますか。</string>
+  <string name="gateway.calendar.delete_event_prompt_recurring">この予定のみ、またはシリーズの今後の予定をすべて削除しますか。</string>
+  <string name="gateway.calendar.delete_this_event">この予定のみ削除</string>
+  <string name="gateway.calendar.delete_future_events">この予定と今後の予定を削除</string>
   <string name="gateway.calendar.delete_event_success">予定を削除しました。</string>
   <string name="gateway.calendar.delete_event_failed">予定を削除できませんでした。</string>
   <string name="gateway.calendar.update_event_success">予定を保存しました。</string>
@@ -80,6 +83,10 @@
   <string name="gateway.calendar.response_declined">辞退</string>
   <string name="gateway.calendar.response_update_success">回答を更新しました。</string>
   <string name="gateway.calendar.response_update_failed">回答を更新できませんでした。</string>
+  <string name="gateway.calendar.response_scope_title">回答の適用範囲</string>
+  <string name="gateway.calendar.response_scope_prompt">この予定のみに回答しますか。それともシリーズのすべてに回答しますか。</string>
+  <string name="gateway.calendar.respond_this_event">この予定のみ</string>
+  <string name="gateway.calendar.respond_all_events">シリーズのすべて</string>
   <string name="gateway.calendar.load_event_failed">予定を読み込めませんでした。</string>
   <string name="gateway.calendar.overlap_warning">この時間は選択したカレンダー内の別の予定と重なっています。</string>
   <string name="gateway.calendar.update_series">シリーズ全体を更新</string>

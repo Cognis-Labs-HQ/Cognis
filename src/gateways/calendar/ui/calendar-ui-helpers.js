@@ -1,5 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import { formatDateTime, getEffectiveTimezone } from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { normalizeCalendarColor } from "/static/gateways/calendar/color.js";
@@ -189,9 +189,15 @@ async function deleteEvent(calendarId, eventId, { deleteAll = false } = {}) {
     );
 }
 
-async function respondToEvent(calendarId, eventId, response) {
+async function respondToEvent(
+    calendarId,
+    eventId,
+    response,
+    { respondAll = false } = {},
+) {
+    const query = respondAll ? "?series=1" : "";
     return apiFetch(
-        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/respond`,
+        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/respond${query}`,
         {
             method: "POST",
             headers: {
@@ -274,13 +280,19 @@ function renderEventBadges(event, i18n) {
     return badges.join("");
 }
 
-function renderResponseSummary(event, i18n) {
+function renderResponseSummary(event, i18n, participantDirectory = null) {
     const responseEntries = Object.entries(event.responses ?? {});
     if (!responseEntries.length) return "";
+    const resolveParticipantLabel = (participantId) => {
+        if (!participantDirectory) return participantId;
+        const profile = participantDirectory.get(participantId);
+        if (!profile) return participantId;
+        return profile.displayName || profile.username || participantId;
+    };
     return `<ul class="calendar-response-list">${responseEntries
         .map(
             ([accountId, response]) => `<li>
-        <span>${escapeHtml(accountId)}</span>
+        <span>${escapeHtml(resolveParticipantLabel(accountId))}</span>
         <strong>${escapeHtml(i18n.t(getResponseLabelKey(response)))}</strong>
       </li>`,
         )
@@ -388,6 +400,15 @@ function renderDayView(events, day, i18n) {
         day: "numeric",
     });
     const slots = [];
+    const timezone = getEffectiveTimezone();
+    const now = new Date();
+    const nowFormatter = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
+    const todayInTimezone = nowFormatter.format(now);
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
         const start = new Date(day.getTime() + slotIndex * HALF_HOUR_MS);
         const end = new Date(start.getTime() + HALF_HOUR_MS);
@@ -399,9 +420,13 @@ function renderDayView(events, day, i18n) {
         const eventCells = slotEvents.length
             ? renderSlotEvents(slotEvents, i18n?.locale, i18n)
             : "";
-        slots.push(`<div class="calendar-timeslot-row">
+        const isCurrentSlot =
+            nowFormatter.format(start) === todayInTimezone &&
+            now.getTime() >= start.getTime() &&
+            now.getTime() < end.getTime();
+        slots.push(`<div class="calendar-timeslot-row${isCurrentSlot ? " calendar-timeslot-row--current" : ""}">
       <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
-      <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</div>
+      <div class="calendar-timeslot-events${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</div>
     </div>`);
     }
     return `<div class="calendar-day-view">

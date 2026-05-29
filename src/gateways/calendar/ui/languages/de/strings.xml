@@ -64,7 +64,10 @@
   <string name="gateway.calendar.free_short">Frei</string>
   <string name="gateway.calendar.edit_event">Ereignis Bearbeiten</string>
   <string name="gateway.calendar.delete_event">Ereignis Löschen</string>
-  <string name="gateway.calendar.delete_event_prompt">Dieses Ereignis löschen? Wiederkehrende Ereignisse löschen die ganze Serie.</string>
+  <string name="gateway.calendar.delete_event_prompt">Dieses Ereignis löschen?</string>
+  <string name="gateway.calendar.delete_event_prompt_recurring">Dieses Ereignis oder alle zukünftigen Ereignisse der Serie löschen?</string>
+  <string name="gateway.calendar.delete_this_event">Nur Dieses Ereignis Löschen</string>
+  <string name="gateway.calendar.delete_future_events">Dieses und zukünftige Ereignisse löschen</string>
   <string name="gateway.calendar.delete_event_success">Ereignis gelöscht.</string>
   <string name="gateway.calendar.delete_event_failed">Ereignis konnte nicht gelöscht werden.</string>
   <string name="gateway.calendar.update_event_success">Ereignis gespeichert.</string>
@@ -80,6 +83,10 @@
   <string name="gateway.calendar.response_declined">Abgelehnt</string>
   <string name="gateway.calendar.response_update_success">Antwort aktualisiert.</string>
   <string name="gateway.calendar.response_update_failed">Antwort konnte nicht aktualisiert werden.</string>
+  <string name="gateway.calendar.response_scope_title">Antwort anwenden auf</string>
+  <string name="gateway.calendar.response_scope_prompt">Soll die Antwort nur für dieses Ereignis oder für alle Ereignisse der Serie gelten?</string>
+  <string name="gateway.calendar.respond_this_event">Nur dieses Ereignis</string>
+  <string name="gateway.calendar.respond_all_events">Alle Ereignisse der Serie</string>
   <string name="gateway.calendar.load_event_failed">Ereignis konnte nicht geladen werden.</string>
   <string name="gateway.calendar.overlap_warning">Diese Zeit überschneidet sich mit einem anderen Ereignis im ausgewählten Kalender.</string>
   <string name="gateway.calendar.update_series">Gesamte Serie Aktualisieren</string>

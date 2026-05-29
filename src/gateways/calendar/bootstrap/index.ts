@@ -11,7 +11,7 @@ import {
 } from "../../../api/reuse/route-context.js";
 import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import {
-    buildEventActionUrl,
+    dispatchCancellationNotifications,
     dispatchInviteNotifications,
     normalizeResponseValue,
     normalizeStringList,
@@ -58,6 +58,29 @@ function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
+    const normalizeAttendeesForOwner = async (
+        attendees: unknown,
+        ownerAccountId: string,
+    ): Promise<string[]> => {
+        const normalized = normalizeStringList(attendees);
+        const resolved = await Promise.all(
+            normalized.map(async (attendee) => {
+                if (!resolveAccountId) return attendee;
+                try {
+                    return (await resolveAccountId(attendee)) ?? attendee;
+                } catch {
+                    return attendee;
+                }
+            }),
+        );
+        return Array.from(
+            new Set(
+                [...resolved, ownerAccountId]
+                    .map((entry) => String(entry ?? "").trim())
+                    .filter(Boolean),
+            ),
+        );
+    };
 
     return async (
         req: IncomingMessage,
@@ -238,6 +261,10 @@ function createCalendarCoreRoutes({
                 return true;
             }
             try {
+                const attendees = await normalizeAttendeesForOwner(
+                    body.attendees,
+                    claims.sub,
+                );
                 const createdEvent = gateway.addEvent({
                     ownerAccountId: claims.sub,
                     calendarId,
@@ -248,7 +275,7 @@ function createCalendarCoreRoutes({
                             : null,
                     startAt,
                     endAt,
-                    attendees: normalizeStringList(body.attendees),
+                    attendees,
                     inviteEmails,
                     meetingUrl:
                         typeof body.meetingUrl === "string"
@@ -284,6 +311,7 @@ function createCalendarCoreRoutes({
                             externalHost,
                             inviterAccountId: claims.sub,
                             calendarId,
+                            resolveAccountId,
                             log,
                         }),
                     ),
@@ -395,6 +423,9 @@ function createCalendarCoreRoutes({
                 return true;
             }
             try {
+                const attendees = Array.isArray(body.attendees)
+                    ? await normalizeAttendeesForOwner(body.attendees, claims.sub)
+                    : undefined;
                 const updatedEvent = gateway.updateEvent({
                     ownerAccountId: claims.sub,
                     calendarId,
@@ -412,9 +443,7 @@ function createCalendarCoreRoutes({
                             : undefined,
                     endAt:
                         typeof body.endAt === "string" ? body.endAt : undefined,
-                    attendees: Array.isArray(body.attendees)
-                        ? normalizeStringList(body.attendees)
-                        : undefined,
+                    attendees,
                     inviteEmails: Array.isArray(body.inviteEmails)
                         ? inviteEmails
                         : undefined,
@@ -511,13 +540,33 @@ function createCalendarCoreRoutes({
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
             try {
-                gateway.deleteEvent({
+                const targetEvent = gateway.getOwnedEvent(
+                    claims.sub,
+                    calendarId,
+                    eventId,
+                );
+                if (!targetEvent) {
+                    sendCalendarError(res, "not_found", "Event not found.", 404);
+                    return true;
+                }
+                const deletedEvents = gateway.deleteEvent({
                     ownerAccountId: claims.sub,
                     calendarId,
                     eventId,
                     deleteAll: url.searchParams.get("series") === "1",
                 });
                 await gateway.flushStore();
+                await Promise.all(
+                    deletedEvents.map((deletedEvent) =>
+                        dispatchCancellationNotifications({
+                            dispatchNotification,
+                            event: deletedEvent,
+                            resolveAccountId,
+                            canInviteByEmail: hasMinRole(claims.role, "admin"),
+                            log,
+                        }),
+                    ),
+                );
                 sendJson(res, 200, { data: { deleted: true } });
             } catch (error) {
                 const message =
@@ -579,11 +628,13 @@ function createCalendarCoreRoutes({
                 return true;
             }
             const response = normalizeResponseValue(body.response);
+            const respondAll = url.searchParams.get("series") === "1";
             try {
                 const responseRecord = gateway.setEventResponse({
                     eventId,
                     accountId: claims.sub,
                     response,
+                    respondAll,
                 });
                 await gateway.flushStore();
                 if (dispatchNotification && event.createdBy !== claims.sub) {

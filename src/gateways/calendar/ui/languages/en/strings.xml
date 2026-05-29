@@ -64,7 +64,10 @@
   <string name="gateway.calendar.free_short">Free</string>
   <string name="gateway.calendar.edit_event">Edit Event</string>
   <string name="gateway.calendar.delete_event">Delete Event</string>
-  <string name="gateway.calendar.delete_event_prompt">Delete this event? Recurring events delete the whole series.</string>
+  <string name="gateway.calendar.delete_event_prompt">Delete this event?</string>
+  <string name="gateway.calendar.delete_event_prompt_recurring">Delete this event or all future events in the series?</string>
+  <string name="gateway.calendar.delete_this_event">Delete This Event</string>
+  <string name="gateway.calendar.delete_future_events">Delete This and Future Events</string>
   <string name="gateway.calendar.delete_event_success">Event deleted.</string>
   <string name="gateway.calendar.delete_event_failed">Could not delete event.</string>
   <string name="gateway.calendar.update_event_success">Event saved.</string>
@@ -80,6 +83,10 @@
   <string name="gateway.calendar.response_declined">Declined</string>
   <string name="gateway.calendar.response_update_success">Response updated.</string>
   <string name="gateway.calendar.response_update_failed">Could not update response.</string>
+  <string name="gateway.calendar.response_scope_title">Apply Response To</string>
+  <string name="gateway.calendar.response_scope_prompt">Apply your response to just this event or all events in the series?</string>
+  <string name="gateway.calendar.respond_this_event">This Event Only</string>
+  <string name="gateway.calendar.respond_all_events">All Events in Series</string>
   <string name="gateway.calendar.load_event_failed">Could not load event.</string>
   <string name="gateway.calendar.overlap_warning">This time overlaps another event in the selected calendar.</string>
   <string name="gateway.calendar.update_series">Update Entire Series</string>

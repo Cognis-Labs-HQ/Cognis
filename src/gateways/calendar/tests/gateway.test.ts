@@ -201,3 +201,96 @@ test("calendar gateway deletes mirrored invite copies with the source event", ()
     assert.equal(gateway.getEvent(ownerCalendar.id, sourceEvent.id), null);
     assert.equal(gateway.getEvent(invitedCalendar.id, copyEvent.id), null);
 });
+
+test("calendar gateway always keeps organizer in attendees", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    const event = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Owner Check-in",
+        startAt: "2026-06-03T09:00:00.000Z",
+        endAt: "2026-06-03T10:00:00.000Z",
+        attendees: ["bob"],
+    });
+    assert.deepEqual(event.attendees, ["bob", "alice"]);
+
+    const updated = gateway.updateEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        eventId: event.id,
+        attendees: ["bob"],
+    });
+    assert.deepEqual(updated.attendees, ["bob", "alice"]);
+});
+
+test("calendar gateway deletes recurring events from selected event forward", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Standup",
+        startAt: "2026-06-01T09:00:00.000Z",
+        endAt: "2026-06-01T09:30:00.000Z",
+        recurrence: "daily",
+    });
+    const series = gateway
+        .listEvents(calendar.id)
+        .filter((event) => event.recurrence === "daily");
+    const thirdOccurrence = series[2];
+    assert.ok(thirdOccurrence);
+
+    gateway.deleteEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        eventId: thirdOccurrence.id,
+        deleteAll: true,
+    });
+    const remaining = gateway
+        .listEvents(calendar.id)
+        .filter((event) => event.recurrence === "daily");
+    assert.equal(remaining.length, 2);
+    assert.ok(
+        remaining.every((event) => event.startAt < thirdOccurrence.startAt),
+    );
+});
+
+test("calendar gateway can apply attendee response to entire recurrence series", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Review",
+        startAt: "2026-06-10T09:00:00.000Z",
+        endAt: "2026-06-10T10:00:00.000Z",
+        attendees: ["bob"],
+        recurrence: "weekly",
+    });
+    const weeklyEvents = gateway
+        .listEvents(calendar.id)
+        .filter((event) => event.recurrence === "weekly");
+    assert.ok(weeklyEvents.length > 1);
+
+    gateway.setEventResponse({
+        eventId: weeklyEvents[0].id,
+        accountId: "bob",
+        response: "accepted",
+        respondAll: true,
+    });
+    assert.ok(
+        weeklyEvents.every(
+            (event) => gateway.getEventResponse(event.id, "bob") === "accepted",
+        ),
+    );
+});

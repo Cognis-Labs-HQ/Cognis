@@ -64,7 +64,10 @@
   <string name="gateway.calendar.free_short">Kosong</string>
   <string name="gateway.calendar.edit_event">Edit Acara</string>
   <string name="gateway.calendar.delete_event">Hapus Acara</string>
-  <string name="gateway.calendar.delete_event_prompt">Hapus acara ini? Acara berulang akan menghapus seluruh seri.</string>
+  <string name="gateway.calendar.delete_event_prompt">Hapus acara ini?</string>
+  <string name="gateway.calendar.delete_event_prompt_recurring">Hapus acara ini atau semua acara mendatang dalam seri?</string>
+  <string name="gateway.calendar.delete_this_event">Hapus Acara Ini</string>
+  <string name="gateway.calendar.delete_future_events">Hapus Acara Ini dan Acara Mendatang</string>
   <string name="gateway.calendar.delete_event_success">Acara dihapus.</string>
   <string name="gateway.calendar.delete_event_failed">Tidak dapat menghapus acara.</string>
   <string name="gateway.calendar.update_event_success">Acara disimpan.</string>
@@ -80,6 +83,10 @@
   <string name="gateway.calendar.response_declined">Ditolak</string>
   <string name="gateway.calendar.response_update_success">Tanggapan diperbarui.</string>
   <string name="gateway.calendar.response_update_failed">Tidak dapat memperbarui tanggapan.</string>
+  <string name="gateway.calendar.response_scope_title">Terapkan Tanggapan Ke</string>
+  <string name="gateway.calendar.response_scope_prompt">Terapkan tanggapan hanya untuk acara ini atau semua acara dalam seri?</string>
+  <string name="gateway.calendar.respond_this_event">Acara Ini Saja</string>
+  <string name="gateway.calendar.respond_all_events">Semua Acara Dalam Seri</string>
   <string name="gateway.calendar.load_event_failed">Tidak dapat memuat acara.</string>
   <string name="gateway.calendar.overlap_warning">Waktu ini bertumpang tindih dengan acara lain di kalender yang dipilih.</string>
   <string name="gateway.calendar.update_series">Perbarui Seluruh Seri</string>

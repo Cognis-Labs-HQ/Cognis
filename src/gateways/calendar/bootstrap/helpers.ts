@@ -137,6 +137,19 @@ export function buildResponseNotificationBody(
     ].join("\n");
 }
 
+export function buildCancellationNotificationBody(
+    event: CalendarEventRecord,
+): string {
+    return [
+        `${event.title} has been cancelled.`,
+        "",
+        `Starts: ${event.startAt}`,
+        `Ends: ${event.endAt}`,
+        ...(event.description ? [`Description: ${event.description}`] : []),
+        ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
+    ].join("\n");
+}
+
 export async function dispatchInviteNotifications({
     gateway,
     event,
@@ -145,6 +158,7 @@ export async function dispatchInviteNotifications({
     externalHost,
     inviterAccountId,
     calendarId,
+    resolveAccountId,
     log,
 }: {
     gateway: CoreCalendarGateway;
@@ -154,16 +168,21 @@ export async function dispatchInviteNotifications({
     externalHost: string;
     inviterAccountId: string;
     calendarId: string;
+    resolveAccountId: ResolveAccountId | null;
     log?: CalendarLogger;
 }): Promise<void> {
     if (!dispatchNotification) return;
     await Promise.all(
         event.attendees.map(async (attendee) => {
+            const resolvedAttendee = resolveAccountId
+                ? await resolveAccountId(attendee).catch(() => attendee)
+                : attendee;
+            const recipientUsername = resolvedAttendee ?? attendee;
             const invitedCopy = gateway
                 .listMirroredEvents(event.id)
                 .find((copy) => {
                     const copyCalendar = gateway.getCalendar(copy.calendarId);
-                    return copyCalendar?.ownerAccountId === attendee;
+                    return copyCalendar?.ownerAccountId === recipientUsername;
                 });
             const actionCalendarId = invitedCopy?.calendarId ?? calendarId;
             const actionEventId = invitedCopy?.id ?? event.id;
@@ -174,7 +193,7 @@ export async function dispatchInviteNotifications({
             try {
                 await dispatchNotification({
                     category: "calendar",
-                    recipientUsername: attendee,
+                    recipientUsername,
                     subject: `Calendar invite: ${event.title}`,
                     body: buildInternalInviteBody(event, actionUrl),
                     actionUrl,
@@ -186,7 +205,7 @@ export async function dispatchInviteNotifications({
             } catch (error) {
                 log?.("error", "Calendar invite notification failed.", {
                     component: "calendar-gateway",
-                    attendee,
+                    attendee: recipientUsername,
                     eventId: event.id,
                     error:
                         error instanceof Error ? error.message : String(error),
@@ -219,7 +238,7 @@ export async function dispatchInviteNotifications({
                         meetingAccessUrl,
                         inviterAccountId,
                     ),
-                    actionUrl: meetingAccessUrl ?? actionUrl,
+                    actionUrl: meetingAccessUrl ?? "/calendar",
                     attachments: [
                         {
                             filename: buildIcsAttachmentFilename(event.title),
@@ -240,6 +259,85 @@ export async function dispatchInviteNotifications({
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
+            }
+        }),
+    );
+}
+
+export async function dispatchCancellationNotifications({
+    dispatchNotification,
+    event,
+    resolveAccountId,
+    canInviteByEmail,
+    log,
+}: {
+    dispatchNotification: NotificationDispatcher | null;
+    event: CalendarEventRecord;
+    resolveAccountId: ResolveAccountId | null;
+    canInviteByEmail: boolean;
+    log?: CalendarLogger;
+}): Promise<void> {
+    if (!dispatchNotification) return;
+    await Promise.all(
+        event.attendees.map(async (attendee) => {
+            const resolvedAttendee = resolveAccountId
+                ? await resolveAccountId(attendee).catch(() => attendee)
+                : attendee;
+            const recipientUsername = resolvedAttendee ?? attendee;
+            try {
+                await dispatchNotification({
+                    category: "calendar",
+                    recipientUsername,
+                    subject: `Event cancelled: ${event.title}`,
+                    body: buildCancellationNotificationBody(event),
+                    actionUrl: "/calendar",
+                    metadata: {
+                        eventId: event.id,
+                        recurrenceId: event.recurrenceId,
+                        cancelled: true,
+                    },
+                });
+            } catch (error) {
+                log?.("error", "Calendar cancellation notification failed.", {
+                    component: "calendar-gateway",
+                    attendee: recipientUsername,
+                    eventId: event.id,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            }
+        }),
+    );
+    if (!canInviteByEmail || event.inviteEmails.length === 0) return;
+    await Promise.all(
+        event.inviteEmails.map(async (email) => {
+            try {
+                await dispatchNotification({
+                    category: "calendar",
+                    recipientUsername: email,
+                    recipientEmail: email,
+                    subject: `Event cancelled: ${event.title}`,
+                    body: buildCancellationNotificationBody(event),
+                    metadata: {
+                        eventId: event.id,
+                        recurrenceId: event.recurrenceId,
+                        cancelled: true,
+                    },
+                });
+            } catch (error) {
+                log?.(
+                    "error",
+                    "Calendar email cancellation notification failed.",
+                    {
+                        component: "calendar-gateway",
+                        email,
+                        eventId: event.id,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
             }
         }),
     );

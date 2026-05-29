@@ -38,16 +38,22 @@ export function createCalendarPopupManager({
     }
 
     function buildParticipantLabel(type, value) {
-        return type === "email" ? value : `@${value}`;
+        return value;
     }
 
-    function getEventParticipants(event) {
+    function getEventParticipants(event, participantDirectory = null) {
+        const resolveUserLabel = (identifier) => {
+            if (!participantDirectory) return buildParticipantLabel("user", identifier);
+            const profile = participantDirectory.get(identifier);
+            if (!profile) return buildParticipantLabel("user", identifier);
+            return profile.displayName || profile.username || identifier;
+        };
         return [
             ...(Array.isArray(event.attendees)
                 ? event.attendees.map((entry) => ({
                       type: "user",
                       value: entry,
-                      label: buildParticipantLabel("user", entry),
+                      label: resolveUserLabel(entry),
                   }))
                 : []),
             ...(Array.isArray(event.inviteEmails)
@@ -58,6 +64,62 @@ export function createCalendarPopupManager({
                   }))
                 : []),
         ];
+    }
+
+    async function resolveParticipantDirectory(identifiers) {
+        const normalizedIdentifiers = Array.from(
+            new Set(
+                (Array.isArray(identifiers) ? identifiers : [])
+                    .map((entry) => String(entry ?? "").trim())
+                    .filter(Boolean),
+            ),
+        );
+        const participantDirectory = new Map();
+        await Promise.all(
+            normalizedIdentifiers.map(async (identifier) => {
+                try {
+                    const response = await apiFetch(
+                        `/api/v1/search?type=users&q=${encodeURIComponent(identifier)}`,
+                    );
+                    if (!response.ok) return;
+                    const payload = await response.json();
+                    const users = Array.isArray(payload?.data) ? payload.data : [];
+                    const matchedUser =
+                        users.find((entry) => {
+                            const accountId = String(
+                                entry?.accountId ?? "",
+                            ).trim();
+                            const username = String(
+                                entry?.username ?? accountId ?? "",
+                            ).trim();
+                            const handle = String(entry?.handle ?? "").trim();
+                            return [accountId, username, handle].some(
+                                (value) =>
+                                    value &&
+                                    value.toLowerCase() ===
+                                        identifier.toLowerCase(),
+                            );
+                        }) ?? users[0];
+                    if (!matchedUser) return;
+                    const username = String(
+                        matchedUser?.accountId ??
+                            matchedUser?.username ??
+                            matchedUser?.id ??
+                            identifier,
+                    ).trim();
+                    const displayName = String(
+                        matchedUser?.displayName ?? matchedUser?.label ?? "",
+                    ).trim();
+                    participantDirectory.set(identifier, {
+                        username,
+                        displayName,
+                    });
+                } catch {
+                    // best-effort participant enrichment
+                }
+            }),
+        );
+        return participantDirectory;
     }
 
     async function submitEvent({
@@ -176,29 +238,53 @@ export function createCalendarPopupManager({
     }
 
     async function openDeleteEventPopup(eventData) {
+        const isRecurring = eventData.event.recurrence !== "none";
         await openPopup({
             title: i18n.t("gateway.calendar.delete_event"),
             body: () =>
-                `<p>${escapeHtml(i18n.t("gateway.calendar.delete_event_prompt"))}</p>`,
-            actions: [
-                {
-                    id: "delete",
-                    label: i18n.t("gateway.calendar.delete_event"),
-                    variant: "danger",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
+                `<p>${escapeHtml(i18n.t(isRecurring ? "gateway.calendar.delete_event_prompt_recurring" : "gateway.calendar.delete_event_prompt"))}</p>`,
+            actions: isRecurring
+                ? [
+                      {
+                          id: "delete-selected",
+                          label: i18n.t("gateway.calendar.delete_this_event"),
+                          variant: "cancel",
+                      },
+                      {
+                          id: "delete-future",
+                          label: i18n.t("gateway.calendar.delete_future_events"),
+                          variant: "cancel",
+                      },
+                      {
+                          id: "cancel",
+                          label: i18n.t("ui.reuse.cancel"),
+                          variant: "neutral",
+                      },
+                  ]
+                : [
+                      {
+                          id: "delete-selected",
+                          label: i18n.t("gateway.calendar.delete_event"),
+                          variant: "danger",
+                      },
+                      {
+                          id: "cancel",
+                          label: i18n.t("ui.reuse.cancel"),
+                          variant: "cancel",
+                      },
+                  ],
             onAction: async (actionId) => {
-                if (actionId !== "delete") return true;
+                if (
+                    actionId !== "delete-selected" &&
+                    actionId !== "delete-future"
+                ) {
+                    return true;
+                }
                 const deleteResponse = await calendarUi.deleteEvent(
                     eventData.calendar.id,
                     eventData.event.id,
                     {
-                        deleteAll: eventData.event.recurrence !== "none",
+                        deleteAll: actionId === "delete-future",
                     },
                 );
                 if (!deleteResponse.ok) {
@@ -234,6 +320,22 @@ export function createCalendarPopupManager({
             setSelectedCalendarId(eventData.calendar.id);
             setSelectedEventId(eventData.event.id);
             syncRouteSelection();
+            const participantIds = Array.from(
+                new Set([
+                    ...(Array.isArray(eventData.event.attendees)
+                        ? eventData.event.attendees
+                        : []),
+                    ...Object.keys(eventData.event.responses ?? {}),
+                ]),
+            );
+            const participantDirectory =
+                await resolveParticipantDirectory(participantIds);
+            const renderParticipantName = (identifier) => {
+                const profile = participantDirectory.get(identifier);
+                return (
+                    profile?.displayName || profile?.username || String(identifier)
+                );
+            };
             await openPopup({
                 title: eventData.event.title,
                 body: () => `
@@ -255,11 +357,11 @@ export function createCalendarPopupManager({
             ${eventData.event.meetingUrl ? `<p><a href="${escapeHtml(eventData.event.meetingUrl)}" target="_blank" rel="noreferrer noopener">${escapeHtml(i18n.t("gateway.calendar.event_meeting_link"))}</a></p>` : ""}
             <section class="calendar-event-detail-section">
               <h4>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</h4>
-              ${eventData.event.attendees?.length ? `<ul class="calendar-inline-list">${eventData.event.attendees.map((attendee) => `<li>${escapeHtml(`@${attendee}`)}</li>`).join("")}</ul>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`}
+              ${eventData.event.attendees?.length ? `<ul class="calendar-inline-list">${eventData.event.attendees.map((attendee) => `<li>${escapeHtml(renderParticipantName(attendee))}</li>`).join("")}</ul>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`}
             </section>
             <section class="calendar-event-detail-section">
               <h4>${escapeHtml(i18n.t("gateway.calendar.responses_title"))}</h4>
-              ${calendarUi.renderResponseSummary(eventData.event, i18n) || `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_responses"))}</p>`}
+              ${calendarUi.renderResponseSummary(eventData.event, i18n, participantDirectory) || `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_responses"))}</p>`}
             </section>
           </div>
         `,
@@ -274,10 +376,11 @@ export function createCalendarPopupManager({
                                       ),
                                   ),
                                   variant:
-                                      eventData.meta?.response ===
-                                      responseOption
+                                      responseOption === "accepted"
                                           ? "confirm"
-                                          : "secondary",
+                                          : responseOption === "declined"
+                                            ? "cancel"
+                                            : "neutral",
                               }),
                           )
                         : []),
@@ -323,10 +426,46 @@ export function createCalendarPopupManager({
                     }
                     if (actionId.startsWith("respond:")) {
                         const responseOption = actionId.split(":")[1] ?? "";
+                        let respondAll = false;
+                        if (eventData.event.recurrence !== "none") {
+                            const scopeAction = await openPopup({
+                                title: i18n.t(
+                                    "gateway.calendar.response_scope_title",
+                                ),
+                                body: () =>
+                                    `<p>${escapeHtml(i18n.t("gateway.calendar.response_scope_prompt"))}</p>`,
+                                actions: [
+                                    {
+                                        id: "single",
+                                        label: i18n.t(
+                                            "gateway.calendar.respond_this_event",
+                                        ),
+                                        variant: "neutral",
+                                    },
+                                    {
+                                        id: "series",
+                                        label: i18n.t(
+                                            "gateway.calendar.respond_all_events",
+                                        ),
+                                        variant: "confirm",
+                                    },
+                                    {
+                                        id: "cancel",
+                                        label: i18n.t("ui.reuse.cancel"),
+                                        variant: "cancel",
+                                    },
+                                ],
+                            });
+                            if (!scopeAction || scopeAction === "cancel") {
+                                return true;
+                            }
+                            respondAll = scopeAction === "series";
+                        }
                         const response = await calendarUi.respondToEvent(
                             eventData.calendar.id,
                             eventData.event.id,
                             responseOption,
+                            { respondAll },
                         );
                         if (!response.ok) {
                             showToast(
@@ -380,8 +519,11 @@ export function createCalendarPopupManager({
             },
         });
         let participantOptions = [];
+        const eventParticipantDirectory = eventData
+            ? await resolveParticipantDirectory(eventData.event.attendees ?? [])
+            : new Map();
         let selectedParticipants = eventData
-            ? getEventParticipants(eventData.event)
+            ? getEventParticipants(eventData.event, eventParticipantDirectory)
             : [];
         let popupSearchAbortController = null;
         let popupController = null;
@@ -451,23 +593,35 @@ export function createCalendarPopupManager({
                         ? payload.data
                         : [];
                     users.forEach((entry) => {
+                        const username = String(
+                            entry?.accountId ??
+                                entry?.username ??
+                                entry?.id ??
+                                "",
+                        )
+                            .trim()
+                            .replace(/^@/, "")
+                            .toLowerCase();
                         const handle = String(
                             entry?.handle ?? entry?.meta ?? entry?.id ?? "",
                         )
                             .trim()
                             .replace(/^@/, "")
                             .toLowerCase();
-                        if (!handle) return;
+                        const userIdentifier = username || handle;
+                        if (!userIdentifier) return;
                         const displayName = String(
-                            entry?.displayName ?? entry?.label ?? handle,
+                            entry?.displayName ?? entry?.label ?? "",
                         ).trim();
                         participantOptions.push({
                             type: "user",
-                            value: handle,
+                            value: userIdentifier,
                             label:
-                                displayName && displayName !== handle
-                                    ? `${displayName} (@${handle})`
-                                    : `@${handle}`,
+                                displayName &&
+                                displayName.toLowerCase() !==
+                                    userIdentifier.toLowerCase()
+                                    ? `${displayName} (${userIdentifier})`
+                                    : userIdentifier,
                         });
                     });
                 }
