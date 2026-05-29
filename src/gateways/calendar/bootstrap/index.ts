@@ -13,6 +13,7 @@ import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import {
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
+    normalizeAttendeesForOwner,
     normalizeResponseValue,
     normalizeStringList,
     normalizeVisibility,
@@ -58,30 +59,6 @@ function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
-    const normalizeAttendeesForOwner = async (
-        attendees: unknown,
-        ownerAccountId: string,
-    ): Promise<string[]> => {
-        const normalized = normalizeStringList(attendees);
-        const resolved = await Promise.all(
-            normalized.map(async (attendee) => {
-                if (!resolveAccountId) return attendee;
-                try {
-                    return (await resolveAccountId(attendee)) ?? attendee;
-                } catch {
-                    return attendee;
-                }
-            }),
-        );
-        return Array.from(
-            new Set(
-                [...resolved, ownerAccountId]
-                    .map((entry) => String(entry ?? "").trim())
-                    .filter(Boolean),
-            ),
-        );
-    };
-
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -264,6 +241,7 @@ function createCalendarCoreRoutes({
                 const attendees = await normalizeAttendeesForOwner(
                     body.attendees,
                     claims.sub,
+                    resolveAccountId,
                 );
                 const createdEvent = gateway.addEvent({
                     ownerAccountId: claims.sub,
@@ -424,7 +402,11 @@ function createCalendarCoreRoutes({
             }
             try {
                 const attendees = Array.isArray(body.attendees)
-                    ? await normalizeAttendeesForOwner(body.attendees, claims.sub)
+                    ? await normalizeAttendeesForOwner(
+                          body.attendees,
+                          claims.sub,
+                          resolveAccountId,
+                      )
                     : undefined;
                 const updatedEvent = gateway.updateEvent({
                     ownerAccountId: claims.sub,
@@ -546,7 +528,12 @@ function createCalendarCoreRoutes({
                     eventId,
                 );
                 if (!targetEvent) {
-                    sendCalendarError(res, "not_found", "Event not found.", 404);
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Event not found.",
+                        404,
+                    );
                     return true;
                 }
                 const deletedEvents = gateway.deleteEvent({

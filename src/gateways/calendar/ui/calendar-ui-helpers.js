@@ -1,5 +1,8 @@
 import { apiFetch } from "/static/reuse/api-client.js";
-import { formatDateTime, getEffectiveTimezone } from "/static/reuse/timestamp.js";
+import {
+    formatDateTime,
+    getEffectiveTimezone,
+} from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { normalizeCalendarColor } from "/static/gateways/calendar/color.js";

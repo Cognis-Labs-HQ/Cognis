@@ -47,6 +47,31 @@ export function normalizeStringList(value: unknown): string[] {
     );
 }
 
+export async function normalizeAttendeesForOwner(
+    attendees: unknown,
+    ownerAccountId: string,
+    resolveAccountId: ResolveAccountId | null,
+): Promise<string[]> {
+    const normalized = normalizeStringList(attendees);
+    const resolved = await Promise.all(
+        normalized.map(async (attendee) => {
+            if (!resolveAccountId) return attendee;
+            try {
+                return (await resolveAccountId(attendee)) ?? attendee;
+            } catch {
+                return attendee;
+            }
+        }),
+    );
+    return Array.from(
+        new Set(
+            [...resolved, ownerAccountId]
+                .map((entry) => String(entry ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
 export function normalizeResponseValue(value: unknown): CalendarEventResponse {
     return value === "accepted" || value === "tentative" || value === "declined"
         ? value
@@ -150,6 +175,18 @@ export function buildCancellationNotificationBody(
     ].join("\n");
 }
 
+async function resolveNotificationRecipientUsername(
+    attendee: string,
+    resolveAccountId: ResolveAccountId | null,
+): Promise<string> {
+    if (!resolveAccountId) return attendee;
+    try {
+        return (await resolveAccountId(attendee)) ?? attendee;
+    } catch {
+        return attendee;
+    }
+}
+
 export async function dispatchInviteNotifications({
     gateway,
     event,
@@ -174,10 +211,10 @@ export async function dispatchInviteNotifications({
     if (!dispatchNotification) return;
     await Promise.all(
         event.attendees.map(async (attendee) => {
-            const resolvedAttendee = resolveAccountId
-                ? await resolveAccountId(attendee).catch(() => attendee)
-                : attendee;
-            const recipientUsername = resolvedAttendee ?? attendee;
+            const recipientUsername = await resolveNotificationRecipientUsername(
+                attendee,
+                resolveAccountId,
+            );
             const invitedCopy = gateway
                 .listMirroredEvents(event.id)
                 .find((copy) => {
@@ -280,10 +317,10 @@ export async function dispatchCancellationNotifications({
     if (!dispatchNotification) return;
     await Promise.all(
         event.attendees.map(async (attendee) => {
-            const resolvedAttendee = resolveAccountId
-                ? await resolveAccountId(attendee).catch(() => attendee)
-                : attendee;
-            const recipientUsername = resolvedAttendee ?? attendee;
+            const recipientUsername = await resolveNotificationRecipientUsername(
+                attendee,
+                resolveAccountId,
+            );
             try {
                 await dispatchNotification({
                     category: "calendar",

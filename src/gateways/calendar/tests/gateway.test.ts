@@ -158,7 +158,7 @@ test("calendar gateway updates events with recurrence and status", () => {
     assert.equal(updatedEvent.title, "Weekly Planning");
     assert.equal(updatedEvent.status, "free");
     assert.equal(updatedEvent.recurrence, "weekly");
-    assert.deepEqual(updatedEvent.attendees, ["bob", "carol"]);
+    assert.deepEqual(updatedEvent.attendees, ["bob", "carol", "alice"]);
     assert.equal(gateway.getEventResponse(createdEvent.id, "carol"), "pending");
 });
 

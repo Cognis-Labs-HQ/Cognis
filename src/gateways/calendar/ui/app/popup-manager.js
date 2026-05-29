@@ -41,9 +41,20 @@ export function createCalendarPopupManager({
         return value;
     }
 
+    function normalizeUserIdentifier(entry) {
+        const accountId = String(entry?.accountId ?? "").trim();
+        const username = String(entry?.username ?? accountId ?? "").trim();
+        const id = String(entry?.id ?? "").trim();
+        return String(username || accountId || id)
+            .trim()
+            .replace(/^@/, "")
+            .toLowerCase();
+    }
+
     function getEventParticipants(event, participantDirectory = null) {
         const resolveUserLabel = (identifier) => {
-            if (!participantDirectory) return buildParticipantLabel("user", identifier);
+            if (!participantDirectory)
+                return buildParticipantLabel("user", identifier);
             const profile = participantDirectory.get(identifier);
             if (!profile) return buildParticipantLabel("user", identifier);
             return profile.displayName || profile.username || identifier;
@@ -66,7 +77,7 @@ export function createCalendarPopupManager({
         ];
     }
 
-    async function resolveParticipantDirectory(identifiers) {
+    async function createParticipantDirectory(identifiers) {
         const normalizedIdentifiers = Array.from(
             new Set(
                 (Array.isArray(identifiers) ? identifiers : [])
@@ -83,30 +94,24 @@ export function createCalendarPopupManager({
                     );
                     if (!response.ok) return;
                     const payload = await response.json();
-                    const users = Array.isArray(payload?.data) ? payload.data : [];
-                    const matchedUser =
-                        users.find((entry) => {
-                            const accountId = String(
-                                entry?.accountId ?? "",
-                            ).trim();
-                            const username = String(
-                                entry?.username ?? accountId ?? "",
-                            ).trim();
-                            const handle = String(entry?.handle ?? "").trim();
-                            return [accountId, username, handle].some(
-                                (value) =>
-                                    value &&
-                                    value.toLowerCase() ===
-                                        identifier.toLowerCase(),
-                            );
-                        }) ?? users[0];
+                    const users = Array.isArray(payload?.data)
+                        ? payload.data
+                        : [];
+                    const matchedUser = users.find((entry) => {
+                        const accountId = String(entry?.accountId ?? "").trim();
+                        const username = String(
+                            entry?.username ?? accountId ?? "",
+                        ).trim();
+                        const handle = String(entry?.handle ?? "").trim();
+                        return [accountId, username, handle].some(
+                            (value) =>
+                                value &&
+                                value.toLowerCase() === identifier.toLowerCase(),
+                        );
+                    });
                     if (!matchedUser) return;
-                    const username = String(
-                        matchedUser?.accountId ??
-                            matchedUser?.username ??
-                            matchedUser?.id ??
-                            identifier,
-                    ).trim();
+                    const username =
+                        normalizeUserIdentifier(matchedUser) || identifier;
                     const displayName = String(
                         matchedUser?.displayName ?? matchedUser?.label ?? "",
                     ).trim();
@@ -252,7 +257,9 @@ export function createCalendarPopupManager({
                       },
                       {
                           id: "delete-future",
-                          label: i18n.t("gateway.calendar.delete_future_events"),
+                          label: i18n.t(
+                              "gateway.calendar.delete_future_events",
+                          ),
                           variant: "cancel",
                       },
                       {
@@ -329,11 +336,13 @@ export function createCalendarPopupManager({
                 ]),
             );
             const participantDirectory =
-                await resolveParticipantDirectory(participantIds);
+                await createParticipantDirectory(participantIds);
             const renderParticipantName = (identifier) => {
                 const profile = participantDirectory.get(identifier);
                 return (
-                    profile?.displayName || profile?.username || String(identifier)
+                    profile?.displayName ||
+                    profile?.username ||
+                    String(identifier)
                 );
             };
             await openPopup({
@@ -520,7 +529,7 @@ export function createCalendarPopupManager({
         });
         let participantOptions = [];
         const eventParticipantDirectory = eventData
-            ? await resolveParticipantDirectory(eventData.event.attendees ?? [])
+            ? await createParticipantDirectory(eventData.event.attendees ?? [])
             : new Map();
         let selectedParticipants = eventData
             ? getEventParticipants(eventData.event, eventParticipantDirectory)
@@ -593,15 +602,7 @@ export function createCalendarPopupManager({
                         ? payload.data
                         : [];
                     users.forEach((entry) => {
-                        const username = String(
-                            entry?.accountId ??
-                                entry?.username ??
-                                entry?.id ??
-                                "",
-                        )
-                            .trim()
-                            .replace(/^@/, "")
-                            .toLowerCase();
+                        const username = normalizeUserIdentifier(entry);
                         const handle = String(
                             entry?.handle ?? entry?.meta ?? entry?.id ?? "",
                         )

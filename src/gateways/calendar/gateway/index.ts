@@ -588,11 +588,9 @@ export class CoreCalendarGateway {
             input.deleteAll === true &&
             event.recurrenceId &&
             event.sourceEventId === null
-                ? this.getEventsByRecurrenceId(event.recurrenceId)
-                      .filter(
-                          (seriesEvent) =>
-                              seriesEvent.startAt >= event.startAt,
-                      )
+                ? this.getEventsByRecurrenceId(event.recurrenceId).filter(
+                      (seriesEvent) => seriesEvent.startAt >= event.startAt,
+                  )
                 : [event];
         const deletedEvents: CalendarEventRecord[] = [];
         for (const targetEvent of targetEvents) {
@@ -661,11 +659,13 @@ export class CoreCalendarGateway {
         const response = normalizeEventResponse(input.response);
         const targetRootEventIds = new Set<string>();
         if (input.respondAll === true && event.recurrenceId) {
-            for (const relatedEvent of this.getAllEventsByRecurrenceId(
+            for (const relatedEvent of this.listEventsByRecurrenceIdIncludingMirrors(
                 event.recurrenceId,
             )) {
                 if (!relatedEvent.attendees.includes(input.accountId)) continue;
-                targetRootEventIds.add(this.getResponseRootEventId(relatedEvent));
+                targetRootEventIds.add(
+                    this.getResponseRootEventId(relatedEvent),
+                );
             }
         }
         if (targetRootEventIds.size === 0) {
@@ -878,7 +878,7 @@ export class CoreCalendarGateway {
             );
     }
 
-    private getAllEventsByRecurrenceId(
+    private listEventsByRecurrenceIdIncludingMirrors(
         recurrenceId: string,
     ): CalendarEventRecord[] {
         return Array.from(this.eventsByCalendar.values())
