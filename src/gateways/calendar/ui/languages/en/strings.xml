@@ -46,6 +46,6 @@
   <string name="gateway.calendar.event_composer">Event Composer</string>
   <string name="gateway.calendar.upcoming_events">Upcoming Events</string>
   <string name="gateway.calendar.upcoming_summary">Upcoming Summary</string>
-  <string name="gateway.calendar.quick_create">Quick Event</string>
+  <string name="gateway.calendar.quick_create">Quick Create</string>
   <string name="gateway.calendar.more_details">More Details</string>
 </resources>

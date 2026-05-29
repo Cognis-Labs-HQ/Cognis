@@ -12,19 +12,13 @@ import {
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import { sanitizeFilenameBase } from "../../api/reuse/sanitize-filename.js";
 import { CoreCalendarGateway, type CalendarVisibility } from "./gateway.js";
+import { normalizeCalendarColor } from "./color.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 function normalizeVisibility(value: unknown): CalendarVisibility {
     return value === "public" ? "public" : "private";
-}
-
-function normalizeCalendarColor(value: unknown): string {
-    const candidate = String(value ?? "").trim();
-    return /^#([0-9a-fA-F]{6})$/.test(candidate)
-        ? candidate.toLowerCase()
-        : "#1f8ceb";
 }
 
 function normalizeStringList(value: unknown): string[] {

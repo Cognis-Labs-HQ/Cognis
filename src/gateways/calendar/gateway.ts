@@ -3,6 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
+import { normalizeCalendarColor } from "./color.js";
 
 export type CalendarVisibility = "private" | "public";
 
@@ -257,11 +258,7 @@ export class CoreCalendarGateway {
     }): CalendarRecord {
         const now = new Date().toISOString();
         const normalizedName = String(input.name ?? "").trim();
-        const normalizedColor = /^#([0-9a-fA-F]{6})$/.test(
-            String(input.color ?? "").trim(),
-        )
-            ? String(input.color).trim().toLowerCase()
-            : "#1f8ceb";
+        const normalizedColor = normalizeCalendarColor(input.color);
         if (!normalizedName) {
             throw new Error("calendar_name_required");
         }
