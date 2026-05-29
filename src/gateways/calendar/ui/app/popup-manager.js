@@ -70,8 +70,7 @@ export function createCalendarPopupManager({
 
     function getEventParticipants(event, participantDirectory = null) {
         const resolveUserLabel = (identifier) => {
-            if (!participantDirectory)
-                return buildParticipantLabel(identifier);
+            if (!participantDirectory) return buildParticipantLabel(identifier);
             const profile = participantDirectory.get(identifier);
             if (!profile) return buildParticipantLabel(identifier);
             return profile.displayName || profile.username || identifier;

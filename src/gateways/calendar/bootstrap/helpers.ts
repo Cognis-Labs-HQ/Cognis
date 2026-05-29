@@ -272,7 +272,8 @@ export async function dispatchInviteNotifications({
                         inviterAccountId,
                     ),
                     actionUrl:
-                        meetingAccessUrl ?? buildEventActionUrl(calendarId, event.id),
+                        meetingAccessUrl ??
+                        buildEventActionUrl(calendarId, event.id),
                     attachments: [
                         {
                             filename: buildIcsAttachmentFilename(event.title),
