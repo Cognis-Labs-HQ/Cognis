@@ -22,6 +22,7 @@
   <string name="gateway.tfa.settings.method_moved_available">方式を利用可能リストへ移動しました。</string>
   <string name="gateway.tfa.settings.method_manage_title">二要素方式の管理</string>
   <string name="gateway.tfa.settings.method_manage_prompt">この方式はすでに設定済みです。QR とシークレットを確認するか、シークレットを再生成できます。</string>
+  <string name="gateway.tfa.settings.method_manage_prompt_no_secret">この方式はすでに設定済みです。方式の詳細を確認するか、設定をやり直せます。</string>
   <string name="gateway.tfa.settings.method_rotate">シークレットを再生成</string>
   <string name="gateway.tfa.settings.method_details_failed">この方式の QR 詳細を読み込めませんでした。</string>
   <string name="gateway.tfa.settings.recovery_codes_action">復旧コードを再発行</string>

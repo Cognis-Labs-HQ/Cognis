@@ -877,6 +877,19 @@ body[data-theme="light"] .slider::before {
     color: #ef4444;
 }
 
+.pill-synced {
+    background: rgba(249, 115, 22, 0.24);
+    color: #fb923c;
+}
+
+.synced-pill-link {
+    text-decoration: none;
+}
+
+.synced-pill-link:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 640px) {
     .module-row summary,
     .module-row-summary {

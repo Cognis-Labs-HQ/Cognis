@@ -13,11 +13,14 @@ function createStoreMock() {
             configuredAt: string | null;
             updatedAt: string;
         }>,
-        adapterConfigs: [] as Array<{
-            adapterId: string;
-            enabled: boolean;
-            config: Record<string, unknown>;
-        }>,
+        adapterConfigs: new Map<
+            string,
+            {
+                adapterId: string;
+                enabled: boolean;
+                config: Record<string, unknown>;
+            }
+        >(),
         recoveryCodes: [] as Array<{
             accountId: string;
             codeHash: string;
@@ -27,13 +30,14 @@ function createStoreMock() {
         }>,
     };
     return {
-        listAdapterConfigs: async () => state.adapterConfigs,
+        listAdapterConfigs: async () =>
+            Array.from(state.adapterConfigs.values()),
         saveAdapterConfig: async (
             adapterId: string,
             enabled: boolean,
             config: Record<string, unknown>,
         ) => {
-            state.adapterConfigs = [{ adapterId, enabled, config }];
+            state.adapterConfigs.set(adapterId, { adapterId, enabled, config });
         },
         listUserMethods: async (accountId: string) =>
             state.methods.filter((entry) => entry.accountId === accountId),
@@ -120,6 +124,7 @@ function createAdapterMock(): TfaMethodAdapter {
             message:
                 payload.code === "123456" ? undefined : "invalid_totp_code",
         }),
+        beginLoginChallenge: async () => ({ ready: true }),
         getConfigSchema: () => [],
         configure: () => undefined,
     };
@@ -174,4 +179,165 @@ test("tfa gateway dispatches low recovery-code notification after recovery login
     assert.equal(notifications.length, 1);
     assert.equal(notifications[0].category, "security");
     assert.equal(notifications[0].recipientUsername, "alice");
+});
+
+test("tfa gateway excludes methods when login challenge is not ready", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({
+            pendingPayload: {},
+            view: { prompt: "prompt" },
+        }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        beginLoginChallenge: async () => ({ ready: false }),
+        verifyLogin: async () => ({ verified: false }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    await gateway.enableAdapter("smtp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "smtp",
+        enabled: true,
+        sortOrder: 0,
+        state: { email: "alice@example.com" },
+        configuredAt: new Date().toISOString(),
+    });
+    const methods = await gateway.getLoginMethods("alice");
+    assert.equal(
+        methods.some((method) => method.id === "smtp"),
+        false,
+    );
+});
+
+test("tfa gateway enableAdapter preserves existing adapter config", async () => {
+    const storeMock = createStoreMock();
+    await storeMock.saveAdapterConfig("totp", true, { algorithm: "SHA512" });
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.loadPersistedConfigs();
+    await gateway.disableAdapter("totp");
+    await gateway.enableAdapter("totp");
+    const configs = await storeMock.listAdapterConfigs();
+    const totpConfig = configs.find((entry) => entry.adapterId === "totp");
+    assert.ok(totpConfig !== undefined);
+    assert.equal(totpConfig.enabled, true);
+    assert.equal(totpConfig.config.algorithm, "SHA512");
+});
+
+test("tfa gateway disableAdapter preserves existing adapter config", async () => {
+    const storeMock = createStoreMock();
+    await storeMock.saveAdapterConfig("totp", true, { algorithm: "SHA512" });
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.loadPersistedConfigs();
+    await gateway.disableAdapter("totp");
+    const configs = await storeMock.listAdapterConfigs();
+    const totpConfig = configs.find((entry) => entry.adapterId === "totp");
+    assert.ok(totpConfig !== undefined);
+    assert.equal(totpConfig.enabled, false);
+    assert.equal(totpConfig.config.algorithm, "SHA512");
+});
+
+test("tfa gateway auto-enables adapters with defaultEnabled on fresh install", async () => {
+    const storeMock = createStoreMock();
+    const adapter: TfaMethodAdapter = {
+        ...createAdapterMock(),
+        defaultEnabled: true,
+    };
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(adapter);
+    await gateway.loadPersistedConfigs();
+    assert.equal(gateway.isAdapterEnabled("totp"), true);
+    const status = await gateway.getUserStatus("alice");
+    const available = status.availableMethods.find(
+        (method) => method.id === "totp",
+    );
+    assert.ok(available !== undefined);
+});
+
+test("tfa gateway adapter availability check controls enabled state and exposes sync target", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "custom",
+        name: "Custom",
+        beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        verifyLogin: async () => ({ verified: false }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    let customEnabled = false;
+    gateway.setAdapterAvailabilityCheck("custom", () => customEnabled);
+    gateway.setAdapterSyncTarget("custom", {
+        gatewayId: "notify",
+        adapterId: "smtp",
+    });
+    await gateway.loadPersistedConfigs();
+
+    assert.equal(gateway.isAdapterEnabled("custom"), false);
+    const adaptersOff = gateway.listAdapters();
+    const customOff = adaptersOff.find((adapter) => adapter.id === "custom");
+    assert.ok(customOff !== undefined);
+    assert.equal(customOff.enabled, false);
+    assert.equal(customOff.locked, true);
+    assert.deepEqual(customOff.syncedTo, {
+        gatewayId: "notify",
+        adapterId: "smtp",
+    });
+
+    customEnabled = true;
+    assert.equal(gateway.isAdapterEnabled("custom"), true);
+    const adaptersOn = gateway.listAdapters();
+    const customOn = adaptersOn.find((adapter) => adapter.id === "custom");
+    assert.ok(customOn !== undefined);
+    assert.equal(customOn.enabled, true);
+    assert.equal(customOn.locked, true);
+    assert.deepEqual(customOn.syncedTo, {
+        gatewayId: "notify",
+        adapterId: "smtp",
+    });
+});
+
+test("tfa gateway login methods follow configured preferred ordering", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        beginLoginChallenge: async () => ({ ready: true }),
+        verifyLogin: async () => ({ verified: true }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.enableAdapter("smtp");
+    await gateway.enableAdapter("totp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "totp",
+        enabled: true,
+        sortOrder: 1,
+        state: { secret: "abc" },
+        configuredAt: new Date().toISOString(),
+    });
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "smtp",
+        enabled: true,
+        sortOrder: 0,
+        state: { email: "alice@example.com" },
+        configuredAt: new Date().toISOString(),
+    });
+    const methods = await gateway.getLoginMethods("alice");
+    assert.deepEqual(methods.map((method) => method.id).slice(0, 2), [
+        "smtp",
+        "totp",
+    ]);
 });

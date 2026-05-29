@@ -22,6 +22,7 @@
   <string name="gateway.tfa.settings.method_moved_available">Metode dipindahkan ke daftar tersedia.</string>
   <string name="gateway.tfa.settings.method_manage_title">Kelola Metode Dua Faktor</string>
   <string name="gateway.tfa.settings.method_manage_prompt">Metode ini sudah dikonfigurasi. Anda dapat meninjau kode QR dan rahasia, atau memutar rahasia baru.</string>
+  <string name="gateway.tfa.settings.method_manage_prompt_no_secret">Metode ini sudah dikonfigurasi. Anda dapat meninjau detail metode atau menjalankan penyiapan ulang.</string>
   <string name="gateway.tfa.settings.method_rotate">Putar Rahasia</string>
   <string name="gateway.tfa.settings.method_details_failed">Tidak dapat memuat detail QR untuk metode ini.</string>
   <string name="gateway.tfa.settings.recovery_codes_action">Putar Ulang Kode Pemulihan</string>

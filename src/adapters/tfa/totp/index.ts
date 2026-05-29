@@ -113,6 +113,7 @@ function toOtpAuthUri(input: {
 class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
     readonly name = "Authenticator App";
+    readonly defaultEnabled = true;
 
     private algorithm: TotpAlgorithm = "SHA256";
 

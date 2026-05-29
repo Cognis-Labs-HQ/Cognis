@@ -33,7 +33,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.3` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.0` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
@@ -51,8 +52,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.8` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.4` |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.5` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.7` |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.6` |
 | Social                | `src/gateways/social/`       | `1.2.4` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.8` |

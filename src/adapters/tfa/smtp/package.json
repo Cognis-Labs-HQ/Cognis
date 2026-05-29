@@ -1,0 +1,10 @@
+{
+    "name": "@cognis/adapter-tfa-smtp",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "index.ts",
+    "dependencies": {
+        "@cognis/core": "0.1.1"
+    }
+}
