@@ -2,13 +2,11 @@
   <string name="gateway.calendar.page_title">Kalender</string>
   <string name="gateway.calendar.page_subtitle">Kalender planen, Termine erstellen und kommende Zeitpläne verwalten.</string>
   <string name="gateway.calendar.my_calendars">Meine Kalender</string>
-  <string name="gateway.calendar.events">Termin-Editor</string>
   <string name="gateway.calendar.no_calendars">Du hast noch keine Kalender.</string>
   <string name="gateway.calendar.no_events">Für diesen Kalender sind keine Termine geplant.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
   <string name="gateway.calendar.visibility_public">Öffentlich</string>
   <string name="gateway.calendar.calendar_name_placeholder">Kalendername</string>
-  <string name="gateway.calendar.calendar_color">Farbe</string>
   <string name="gateway.calendar.create_calendar">Kalender erstellen</string>
   <string name="gateway.calendar.create_calendar_success">Kalender erstellt.</string>
   <string name="gateway.calendar.create_calendar_failed">Kalender konnte nicht erstellt werden.</string>
@@ -39,13 +37,10 @@
   <string name="gateway.calendar.previous">Zurück</string>
   <string name="gateway.calendar.today">Heute</string>
   <string name="gateway.calendar.next">Weiter</string>
-  <string name="gateway.calendar.slot_busy">Belegt</string>
   <string name="gateway.calendar.open_week_view">Wochenansicht öffnen</string>
-  <string name="gateway.calendar.create_all_day">Ganztägiges Ereignis erstellen</string>
+  <string name="gateway.calendar.week_number_prefix">KW</string>
   <string name="gateway.calendar.events_count_suffix">Termine</string>
   <string name="gateway.calendar.event_composer">Termin-Editor</string>
   <string name="gateway.calendar.upcoming_events">Bevorstehende Termine</string>
   <string name="gateway.calendar.upcoming_summary">Kurzübersicht</string>
-  <string name="gateway.calendar.quick_create">Schneller Termin</string>
-  <string name="gateway.calendar.more_details">Mehr Details</string>
 </resources>

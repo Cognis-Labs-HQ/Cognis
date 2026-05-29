@@ -2,13 +2,11 @@
   <string name="gateway.calendar.page_title">カレンダー</string>
   <string name="gateway.calendar.page_subtitle">カレンダーを計画し、イベントを作成して今後の予定を管理します。</string>
   <string name="gateway.calendar.my_calendars">マイカレンダー</string>
-  <string name="gateway.calendar.events">イベント作成</string>
   <string name="gateway.calendar.no_calendars">まだカレンダーがありません。</string>
   <string name="gateway.calendar.no_events">このカレンダーには予定がありません。</string>
   <string name="gateway.calendar.visibility_private">非公開</string>
   <string name="gateway.calendar.visibility_public">公開</string>
   <string name="gateway.calendar.calendar_name_placeholder">カレンダー名</string>
-  <string name="gateway.calendar.calendar_color">色</string>
   <string name="gateway.calendar.create_calendar">カレンダーを作成</string>
   <string name="gateway.calendar.create_calendar_success">カレンダーを作成しました。</string>
   <string name="gateway.calendar.create_calendar_failed">カレンダーを作成できませんでした。</string>
@@ -39,13 +37,10 @@
   <string name="gateway.calendar.previous">前へ</string>
   <string name="gateway.calendar.today">今日</string>
   <string name="gateway.calendar.next">次へ</string>
-  <string name="gateway.calendar.slot_busy">予定あり</string>
   <string name="gateway.calendar.open_week_view">週表示を開く</string>
-  <string name="gateway.calendar.create_all_day">終日イベントを作成</string>
+  <string name="gateway.calendar.week_number_prefix">第</string>
   <string name="gateway.calendar.events_count_suffix">件</string>
   <string name="gateway.calendar.event_composer">イベント作成</string>
   <string name="gateway.calendar.upcoming_events">今後のイベント</string>
   <string name="gateway.calendar.upcoming_summary">今後の概要</string>
-  <string name="gateway.calendar.quick_create">クイック作成</string>
-  <string name="gateway.calendar.more_details">詳細設定</string>
 </resources>

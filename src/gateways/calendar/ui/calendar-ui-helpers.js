@@ -6,6 +6,7 @@ import { normalizeCalendarColor } from "/static/gateways/calendar/color.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
+const WEEK_NUMBER_OFFSET = 4;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
@@ -152,6 +153,10 @@ async function createJitsiMeeting(attendees) {
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
 }
 
+function visibilityIcon(visibility) {
+    return visibility === "public" ? "\uD83C\uDF10" : "\uD83D\uDD12";
+}
+
 function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     if (!calendars.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_calendars")}</p>`;
@@ -159,11 +164,11 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-        <button type="button" class="calendar-select-link" data-calendar-select="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""}>
+        <button type="button" class="calendar-select-link" data-calendar-select="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""} title="${escapeHtml(i18n.t(calendar.visibility === "public" ? "gateway.calendar.visibility_public" : "gateway.calendar.visibility_private"))}">
           <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
           <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
+          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
         </button>
-        <div class="calendar-visibility">${i18n.t(calendar.visibility === "public" ? "gateway.calendar.visibility_public" : "gateway.calendar.visibility_private")}</div>
       </li>`,
         )
         .join("")}</ul>`;
@@ -214,39 +219,111 @@ function listEventsInWindow(events, startDate, endDate) {
     });
 }
 
-function renderDaySlots(events, day, i18n) {
+function getISOWeekNumber(date) {
+    const thursday = new Date(date);
+    thursday.setDate(
+        date.getDate() - ((date.getDay() + 6) % 7) + WEEK_NUMBER_OFFSET - 1,
+    );
+    const yearStart = new Date(thursday.getFullYear(), 0, 1);
+    return Math.ceil(((thursday - yearStart) / 86400000 + 1) / 7);
+}
+
+function renderDayView(events, day, i18n) {
+    const dayLabel = day.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+    });
     const slots = [];
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
         const start = new Date(day.getTime() + slotIndex * HALF_HOUR_MS);
         const end = new Date(start.getTime() + HALF_HOUR_MS);
-        const hasEvent = events.some((event) => {
+        const slotEvents = events.filter((event) => {
             const eventStart = new Date(event.startAt).getTime();
             const eventEnd = new Date(event.endAt).getTime();
             return eventStart < end.getTime() && eventEnd > start.getTime();
         });
-        slots.push(`<button type="button" class="calendar-slot-btn" data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">
-      <span>${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-      ${hasEvent ? `<span class="calendar-slot-indicator">${i18n.t("gateway.calendar.slot_busy")}</span>` : ""}
-    </button>`);
+        const timeLabel = start.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+        const eventCells = slotEvents.length
+            ? slotEvents
+                  .map(
+                      (event) =>
+                          `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">${escapeHtml(event.title)}</span>`,
+                  )
+                  .join("")
+            : "";
+        slots.push(`<div class="calendar-timeslot-row">
+      <button type="button" class="calendar-timeslot-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(timeLabel)} +" title="${escapeHtml(timeLabel)}">+</button>
+      <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
+      <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>
+    </div>`);
     }
-    return `<div class="calendar-slot-grid">${slots.join("")}</div>`;
+    return `<div class="calendar-day-view">
+  <h4 class="calendar-day-heading">${escapeHtml(dayLabel)}</h4>
+  <div class="calendar-timeslot-grid">${slots.join("")}</div>
+</div>`;
 }
 
-function renderWeekSlots(events, weekStart, i18n) {
+function renderWeekView(events, weekStart, i18n) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
-    return `<div class="calendar-week-grid">${days
+    const monthLabel = weekStart.toLocaleDateString(undefined, {
+        month: "long",
+        year: "numeric",
+    });
+    const dayColumns = days
         .map((day) => {
             const dayStart = startOfDay(day);
             const dayEnd = addDays(dayStart, 1);
             const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
+            const slots = [];
+            for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
+                const start = new Date(
+                    dayStart.getTime() + slotIndex * HALF_HOUR_MS,
+                );
+                const end = new Date(start.getTime() + HALF_HOUR_MS);
+                const slotEvents = dayEvents.filter((event) => {
+                    const eventStart = new Date(event.startAt).getTime();
+                    const eventEnd = new Date(event.endAt).getTime();
+                    return (
+                        eventStart < end.getTime() && eventEnd > start.getTime()
+                    );
+                });
+                const timeLabel = start.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
+                const eventCells = slotEvents.length
+                    ? slotEvents
+                          .map(
+                              (event) =>
+                                  `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">${escapeHtml(event.title)}</span>`,
+                          )
+                          .join("")
+                    : "";
+                slots.push(`<div class="calendar-timeslot-row">
+          <button type="button" class="calendar-timeslot-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(timeLabel)} +" title="${escapeHtml(timeLabel)}">+</button>
+          <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
+          <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>
+        </div>`);
+            }
             return `<section class="calendar-week-day">
-        <h4>${day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</h4>
-        ${renderDaySlots(dayEvents, dayStart, i18n)}
-      </section>`;
+      <button type="button" class="calendar-week-day-header" data-day-dot-date="${dayStart.toISOString()}">
+        <span class="calendar-week-day-name">${day.toLocaleDateString(undefined, { weekday: "short" })}</span>
+        <span class="calendar-week-day-date">${day.getDate()}</span>
+      </button>
+      <div class="calendar-timeslot-grid">${slots.join("")}</div>
+    </section>`;
         })
-        .join("")}</div>`;
+        .join("");
+    return `<div class="calendar-week-view">
+  <div class="calendar-week-month-label">${escapeHtml(monthLabel)}</div>
+  <div class="calendar-week-grid">${dayColumns}</div>
+</div>`;
 }
 
 function renderMonthGrid(events, currentDate, i18n) {
@@ -256,8 +333,9 @@ function renderMonthGrid(events, currentDate, i18n) {
     for (let weekIndex = 0; weekIndex < 6; weekIndex += 1) {
         const weekStart = addDays(gridStart, weekIndex * 7);
         const weekEnd = addDays(weekStart, 7);
+        const weekNumber = getISOWeekNumber(weekStart);
         rows.push(`<div class="calendar-month-row">
-      <button type="button" class="calendar-week-jump" data-week-row-date="${weekStart.toISOString()}">${i18n.t("gateway.calendar.open_week_view")}</button>
+      <button type="button" class="calendar-week-jump" data-week-row-date="${weekStart.toISOString()}" title="${escapeHtml(i18n.t("gateway.calendar.open_week_view"))}">${i18n.t("gateway.calendar.week_number_prefix")}${weekNumber}</button>
       ${Array.from({ length: 7 }, (_, dayIndex) => {
           const day = addDays(weekStart, dayIndex);
           const dayStart = startOfDay(day);
@@ -265,10 +343,9 @@ function renderMonthGrid(events, currentDate, i18n) {
           const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
           return `<article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}">
           <header>
-            <span>${day.getDate()}</span>
-            <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">•</button>
+            <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>
+            <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">+</button>
           </header>
-          <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">${i18n.t("gateway.calendar.create_all_day")}</button>
           <div class="calendar-month-event-count">${dayEvents.length > 0 ? `${dayEvents.length} ${escapeHtml(i18n.t("gateway.calendar.events_count_suffix"))}` : ""}</div>
         </article>`;
       }).join("")}
@@ -295,7 +372,7 @@ function renderCalendarView(events, selectedView, activeDate, i18n) {
     if (selectedView === "day") {
         const dayStart = startOfDay(activeDate);
         const dayEnd = addDays(dayStart, 1);
-        return renderDaySlots(
+        return renderDayView(
             listEventsInWindow(events, dayStart, dayEnd),
             dayStart,
             i18n,
@@ -304,7 +381,7 @@ function renderCalendarView(events, selectedView, activeDate, i18n) {
     if (selectedView === "week") {
         const weekStart = startOfWeek(activeDate);
         const weekEnd = addDays(weekStart, 7);
-        return renderWeekSlots(
+        return renderWeekView(
             listEventsInWindow(events, weekStart, weekEnd),
             weekStart,
             i18n,
@@ -427,21 +504,6 @@ function createEventComposerBuilder({
     );
 }
 
-function renderFloatingCreatorPanel(floatingCreator, i18n) {
-    if (!floatingCreator) return "";
-    return `<div class="calendar-floating-create">
-      <h4>${i18n.t("gateway.calendar.quick_create")}</h4>
-      <label><span>${i18n.t("gateway.calendar.event_title")}</span><input id="calendar-floating-title" type="text" required /></label>
-      <label><span>${i18n.t("gateway.calendar.event_start")}</span><input id="calendar-floating-start" type="datetime-local" value="${escapeHtml(toDateTimeLocalValue(floatingCreator.startAt))}" required /></label>
-      <label><span>${i18n.t("gateway.calendar.event_end")}</span><input id="calendar-floating-end" type="datetime-local" value="${escapeHtml(toDateTimeLocalValue(floatingCreator.endAt))}" required /></label>
-      <div class="calendar-floating-actions">
-        <button type="button" class="btn-confirm" data-floating-create="submit">${i18n.t("gateway.calendar.create_event")}</button>
-        <button type="button" data-floating-create="details">${i18n.t("gateway.calendar.more_details")}</button>
-        <button type="button" data-floating-create="close">${i18n.t("ui.reuse.cancel")}</button>
-      </div>
-    </div>`;
-}
-
 export {
     CALENDAR_VIEWS,
     parseCalendarSelection,
@@ -459,6 +521,5 @@ export {
     renderToolbarSummary,
     renderUpcomingEvents,
     renderCalendarView,
-    renderFloatingCreatorPanel,
     createEventComposerBuilder,
 };

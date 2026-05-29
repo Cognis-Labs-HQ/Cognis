@@ -2,13 +2,11 @@
   <string name="gateway.calendar.page_title">Kalender</string>
   <string name="gateway.calendar.page_subtitle">Rencanakan kalender, susun acara, dan kelola jadwal mendatang.</string>
   <string name="gateway.calendar.my_calendars">Kalender Saya</string>
-  <string name="gateway.calendar.events">Komposer Acara</string>
   <string name="gateway.calendar.no_calendars">Anda belum memiliki kalender.</string>
   <string name="gateway.calendar.no_events">Belum ada acara di kalender ini.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
   <string name="gateway.calendar.visibility_public">Publik</string>
   <string name="gateway.calendar.calendar_name_placeholder">Nama Kalender</string>
-  <string name="gateway.calendar.calendar_color">Warna</string>
   <string name="gateway.calendar.create_calendar">Buat Kalender</string>
   <string name="gateway.calendar.create_calendar_success">Kalender dibuat.</string>
   <string name="gateway.calendar.create_calendar_failed">Kalender tidak dapat dibuat.</string>
@@ -39,13 +37,10 @@
   <string name="gateway.calendar.previous">Sebelumnya</string>
   <string name="gateway.calendar.today">Hari Ini</string>
   <string name="gateway.calendar.next">Berikutnya</string>
-  <string name="gateway.calendar.slot_busy">Sibuk</string>
   <string name="gateway.calendar.open_week_view">Buka Tampilan Mingguan</string>
-  <string name="gateway.calendar.create_all_day">Buat Acara Sepanjang Hari</string>
+  <string name="gateway.calendar.week_number_prefix">M</string>
   <string name="gateway.calendar.events_count_suffix">acara</string>
   <string name="gateway.calendar.event_composer">Komposer Acara</string>
   <string name="gateway.calendar.upcoming_events">Acara Mendatang</string>
   <string name="gateway.calendar.upcoming_summary">Ringkasan Mendatang</string>
-  <string name="gateway.calendar.quick_create">Acara Cepat</string>
-  <string name="gateway.calendar.more_details">Detail Lainnya</string>
 </resources>

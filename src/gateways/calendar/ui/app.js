@@ -19,7 +19,6 @@ export async function mount(root, { signal } = {}) {
     let jitsiAvailable = false;
     let selectedView = "month";
     let activeDate = new Date();
-    let floatingCreator = null;
 
     async function reloadState() {
         const calendarState = await calendarUi.fetchCalendarState();
@@ -42,18 +41,6 @@ export async function mount(root, { signal } = {}) {
         jitsiAvailable = await calendarUi.probeJitsiAvailability();
     } catch {
         showToast(i18n.t("gateway.calendar.load_failed"), "error");
-    }
-
-    const eventComposerBuilder = calendarUi.createEventComposerBuilder({
-        i18n,
-        canInviteExternal,
-        submitLabelKey: "gateway.calendar.create_event",
-    });
-
-    function selectedEvents() {
-        return selectedCalendarId
-            ? (eventsByCalendar[selectedCalendarId] ?? [])
-            : [];
     }
 
     function allUpcomingEvents() {
@@ -147,7 +134,6 @@ export async function mount(root, { signal } = {}) {
               </div>
             </header>
             <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allUpcomingEvents(), selectedView, activeDate, i18n)}</div>
-            ${calendarUi.renderFloatingCreatorPanel(floatingCreator, i18n)}
           </section>
         `,
                 onRender: () => {
@@ -168,7 +154,6 @@ export async function mount(root, { signal } = {}) {
                                     )
                                         return;
                                     selectedView = nextView;
-                                    floatingCreator = null;
                                     composer.refresh();
                                 },
                                 { signal },
@@ -212,7 +197,6 @@ export async function mount(root, { signal } = {}) {
                                             1,
                                         );
                                     }
-                                    floatingCreator = null;
                                     composer.refresh();
                                 },
                                 { signal },
@@ -220,37 +204,46 @@ export async function mount(root, { signal } = {}) {
                         },
                     );
 
-                    root.querySelectorAll("[data-slot-start]").forEach(
+                    root.querySelectorAll("[data-timeslot-add]").forEach(
                         (button) => {
                             button.addEventListener(
                                 "click",
-                                () => {
-                                    if (
-                                        selectedView === "year" ||
-                                        selectedView === "month"
-                                    )
-                                        return;
-                                    const startAt = new Date(
-                                        String(
+                                () =>
+                                    openEventComposerPopup({
+                                        startAt: String(
                                             button.getAttribute(
                                                 "data-slot-start",
                                             ) ?? "",
                                         ),
-                                    );
-                                    const endAt = new Date(
-                                        String(
+                                        endAt: String(
                                             button.getAttribute(
                                                 "data-slot-end",
                                             ) ?? "",
                                         ),
-                                    );
-                                    if (
-                                        Number.isNaN(startAt.getTime()) ||
-                                        Number.isNaN(endAt.getTime())
-                                    )
-                                        return;
-                                    floatingCreator = { startAt, endAt };
-                                    composer.refresh();
+                                    }),
+                                { signal },
+                            );
+                        },
+                    );
+
+                    root.querySelectorAll("[data-timeslot-events]").forEach(
+                        (cell) => {
+                            cell.addEventListener(
+                                "click",
+                                (event) => {
+                                    if (event.target !== cell) return;
+                                    openEventComposerPopup({
+                                        startAt: String(
+                                            cell.getAttribute(
+                                                "data-slot-start",
+                                            ) ?? "",
+                                        ),
+                                        endAt: String(
+                                            cell.getAttribute(
+                                                "data-slot-end",
+                                            ) ?? "",
+                                        ),
+                                    });
                                 },
                                 { signal },
                             );
@@ -273,8 +266,15 @@ export async function mount(root, { signal } = {}) {
                                     const endAt = new Date(
                                         startAt.getTime() + 24 * 60 * 60 * 1000,
                                     );
-                                    floatingCreator = { startAt, endAt };
-                                    composer.refresh();
+                                    openEventComposerPopup({
+                                        startAt:
+                                            calendarUi.toDateTimeLocalValue(
+                                                startAt,
+                                            ),
+                                        endAt: calendarUi.toDateTimeLocalValue(
+                                            endAt,
+                                        ),
+                                    });
                                 },
                                 { signal },
                             );
@@ -346,199 +346,6 @@ export async function mount(root, { signal } = {}) {
                             );
                         },
                     );
-
-                    const floatingSubmit = root.querySelector(
-                        '[data-floating-create="submit"]',
-                    );
-                    floatingSubmit?.addEventListener(
-                        "click",
-                        async () => {
-                            const title = String(
-                                root.querySelector("#calendar-floating-title")
-                                    ?.value ?? "",
-                            ).trim();
-                            const startAt = String(
-                                root.querySelector("#calendar-floating-start")
-                                    ?.value ?? "",
-                            ).trim();
-                            const endAt = String(
-                                root.querySelector("#calendar-floating-end")
-                                    ?.value ?? "",
-                            ).trim();
-                            if (!title || !startAt || !endAt) return;
-                            const created = await submitEvent({
-                                title,
-                                description: "",
-                                startAt,
-                                endAt,
-                                attendees: [],
-                                inviteEmails: [],
-                                createMeeting: false,
-                            });
-                            if (!created) return;
-                            floatingCreator = null;
-                            composer.refresh();
-                        },
-                        { signal },
-                    );
-
-                    const floatingClose = root.querySelector(
-                        '[data-floating-create="close"]',
-                    );
-                    floatingClose?.addEventListener(
-                        "click",
-                        () => {
-                            floatingCreator = null;
-                            composer.refresh();
-                        },
-                        { signal },
-                    );
-
-                    const floatingDetails = root.querySelector(
-                        '[data-floating-create="details"]',
-                    );
-                    floatingDetails?.addEventListener(
-                        "click",
-                        async () => {
-                            if (!floatingCreator) return;
-                            const detailBuilder =
-                                calendarUi.createEventComposerBuilder({
-                                    i18n,
-                                    canInviteExternal,
-                                    submitLabelKey:
-                                        "gateway.calendar.create_event",
-                                    defaultValues: {
-                                        startAt:
-                                            calendarUi.toDateTimeLocalValue(
-                                                floatingCreator.startAt,
-                                            ),
-                                        endAt: calendarUi.toDateTimeLocalValue(
-                                            floatingCreator.endAt,
-                                        ),
-                                    },
-                                });
-                            let detailController = null;
-                            await openPopup({
-                                title: i18n.t(
-                                    "gateway.calendar.event_composer",
-                                ),
-                                body: () => `
-                  ${detailBuilder.render()}
-                  ${jitsiAvailable ? `<label class="calendar-checkbox-row"><input id="calendar-popup-create-meeting" type="checkbox" /> ${i18n.t("gateway.calendar.create_meeting")}</label>` : ""}
-                `,
-                                closeProtection: true,
-                                actions: [
-                                    {
-                                        id: "save",
-                                        label: i18n.t(
-                                            "gateway.calendar.create_event",
-                                        ),
-                                        variant: "confirm",
-                                    },
-                                    {
-                                        id: "cancel",
-                                        label: i18n.t("ui.reuse.cancel"),
-                                        variant: "cancel",
-                                    },
-                                ],
-                                onOpen: (overlay) => {
-                                    const formElement = overlay.querySelector(
-                                        "#calendar-event-form",
-                                    );
-                                    if (
-                                        formElement instanceof HTMLFormElement
-                                    ) {
-                                        detailController = detailBuilder.attach(
-                                            formElement,
-                                            { signal },
-                                        );
-                                    }
-                                },
-                                onAction: async (actionId, overlay) => {
-                                    if (actionId !== "save") return true;
-                                    if (!detailController?.validateAll(true))
-                                        return false;
-                                    const values = detailController.getValues();
-                                    const createMeeting = Boolean(
-                                        overlay.querySelector(
-                                            "#calendar-popup-create-meeting",
-                                        )?.checked,
-                                    );
-                                    const created = await submitEvent({
-                                        title: values.title,
-                                        description: values.description,
-                                        startAt: values.startAt,
-                                        endAt: values.endAt,
-                                        attendees: calendarUi.splitHandles(
-                                            values.attendees,
-                                        ),
-                                        inviteEmails: canInviteExternal
-                                            ? calendarUi.splitInviteEmails(
-                                                  values.inviteEmails,
-                                              )
-                                            : [],
-                                        createMeeting,
-                                    });
-                                    if (!created) return false;
-                                    floatingCreator = null;
-                                    composer.refresh();
-                                    return true;
-                                },
-                            });
-                        },
-                        { signal },
-                    );
-                },
-            },
-            {
-                id: "event-composer",
-                label: i18n.t("gateway.calendar.event_composer"),
-                gridSize: { default: [12, 5], min: [6, 4], max: "full" },
-                render: () => `
-          <section class="calendar-section">
-            <h3>${i18n.t("gateway.calendar.event_composer")}</h3>
-            ${eventComposerBuilder.render()}
-            ${jitsiAvailable ? `<label class="calendar-checkbox-row"><input id="calendar-event-create-meeting" type="checkbox" /> ${i18n.t("gateway.calendar.create_meeting")}</label>` : ""}
-          </section>
-        `,
-                onRender: () => {
-                    const eventForm = root.querySelector(
-                        "#calendar-event-form",
-                    );
-                    if (!(eventForm instanceof HTMLFormElement)) return;
-                    const controller = eventComposerBuilder.attach(eventForm, {
-                        signal,
-                    });
-                    eventForm.addEventListener(
-                        "submit",
-                        async (event) => {
-                            event.preventDefault();
-                            if (!controller.validateAll(true)) return;
-                            const values = controller.getValues();
-                            const created = await submitEvent({
-                                title: values.title,
-                                description: values.description,
-                                startAt: values.startAt,
-                                endAt: values.endAt,
-                                attendees: calendarUi.splitHandles(
-                                    values.attendees,
-                                ),
-                                inviteEmails: canInviteExternal
-                                    ? calendarUi.splitInviteEmails(
-                                          values.inviteEmails,
-                                      )
-                                    : [],
-                                createMeeting: Boolean(
-                                    root.querySelector(
-                                        "#calendar-event-create-meeting",
-                                    )?.checked,
-                                ),
-                            });
-                            if (!created) return;
-                            composer.refresh();
-                        },
-                        { signal },
-                    );
                 },
             },
             {
@@ -559,16 +366,10 @@ export async function mount(root, { signal } = {}) {
                 label: i18n.t("gateway.calendar.my_calendars"),
                 render: () => `
           <section class="toolbar-section calendar-toolbar-section">
-            <h3>${i18n.t("gateway.calendar.my_calendars")}</h3>
-            <form id="calendar-create-form" class="calendar-inline-form">
-              <input id="calendar-name" type="text" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" required />
-              <select id="calendar-visibility">
-                <option value="private">${i18n.t("gateway.calendar.visibility_private")}</option>
-                <option value="public">${i18n.t("gateway.calendar.visibility_public")}</option>
-              </select>
-              <label class="calendar-color-field"><span>${i18n.t("gateway.calendar.calendar_color")}</span><input id="calendar-color" type="color" value="#1f8ceb" /></label>
-              <button type="submit" class="btn-confirm">${i18n.t("gateway.calendar.create_calendar")}</button>
-            </form>
+            <header class="calendar-toolbar-heading">
+              <h3>${i18n.t("gateway.calendar.my_calendars")}</h3>
+              <button type="button" class="calendar-toolbar-add" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">+</button>
+            </header>
             <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
           </section>
           <section class="toolbar-section calendar-toolbar-section">
@@ -585,47 +386,12 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.calendar.page_subtitle"),
         },
         onRender: () => {
-            const createForm = root.querySelector("#calendar-create-form");
-            createForm?.addEventListener(
-                "submit",
-                async (event) => {
-                    event.preventDefault();
-                    const name = String(
-                        root.querySelector("#calendar-name")?.value ?? "",
-                    ).trim();
-                    const visibility = String(
-                        root.querySelector("#calendar-visibility")?.value ??
-                            "private",
-                    );
-                    const color = calendarUi.normalizeHexColor(
-                        root.querySelector("#calendar-color")?.value,
-                    );
-                    if (!name) return;
-                    const response = await apiFetch(
-                        "/api/v1/calendar/calendars",
-                        {
-                            method: "POST",
-                            headers: {
-                                "content-type": "application/json",
-                            },
-                            body: JSON.stringify({ name, visibility, color }),
-                        },
-                    );
-                    if (!response.ok) {
-                        showToast(
-                            i18n.t("gateway.calendar.create_calendar_failed"),
-                            "error",
-                        );
-                        return;
-                    }
-                    await reloadState();
-                    syncCalendarSelectionToUrl();
-                    showToast(
-                        i18n.t("gateway.calendar.create_calendar_success"),
-                        "success",
-                    );
-                    composer.refresh();
-                },
+            const createTrigger = root.querySelector(
+                "#calendar-create-trigger",
+            );
+            createTrigger?.addEventListener(
+                "click",
+                () => openCreateCalendarPopup(),
                 { signal },
             );
 
@@ -667,6 +433,137 @@ export async function mount(root, { signal } = {}) {
             }
         },
     });
+
+    async function openEventComposerPopup({ startAt = "", endAt = "" } = {}) {
+        const popupBuilder = calendarUi.createEventComposerBuilder({
+            i18n,
+            canInviteExternal,
+            submitLabelKey: "gateway.calendar.create_event",
+            defaultValues: { startAt, endAt },
+        });
+        let popupController = null;
+        await openPopup({
+            title: i18n.t("gateway.calendar.event_composer"),
+            body: () => `
+        ${popupBuilder.render()}
+        ${jitsiAvailable ? `<label class="calendar-checkbox-row"><input id="calendar-popup-create-meeting" type="checkbox" /> ${i18n.t("gateway.calendar.create_meeting")}</label>` : ""}
+      `,
+            closeProtection: true,
+            actions: [
+                {
+                    id: "save",
+                    label: i18n.t("gateway.calendar.create_event"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onOpen: (overlay) => {
+                const formElement = overlay.querySelector(
+                    "#calendar-event-form",
+                );
+                if (formElement instanceof HTMLFormElement) {
+                    popupController = popupBuilder.attach(formElement, {
+                        signal,
+                    });
+                }
+            },
+            onAction: async (actionId, overlay) => {
+                if (actionId !== "save") return true;
+                if (!popupController?.validateAll(true)) return false;
+                const values = popupController.getValues();
+                const createMeeting = Boolean(
+                    overlay.querySelector("#calendar-popup-create-meeting")
+                        ?.checked,
+                );
+                const created = await submitEvent({
+                    title: values.title,
+                    description: values.description,
+                    startAt: values.startAt,
+                    endAt: values.endAt,
+                    attendees: calendarUi.splitHandles(values.attendees),
+                    inviteEmails: canInviteExternal
+                        ? calendarUi.splitInviteEmails(values.inviteEmails)
+                        : [],
+                    createMeeting,
+                });
+                if (!created) return false;
+                composer.refresh();
+                return true;
+            },
+        });
+    }
+
+    async function openCreateCalendarPopup() {
+        let popupNameValue = "";
+        let popupVisibilityValue = "private";
+        let popupColorValue = "#1f8ceb";
+        await openPopup({
+            title: i18n.t("gateway.calendar.create_calendar"),
+            body: () => `
+        <form id="calendar-create-popup-form" class="calendar-inline-form">
+          <div class="calendar-create-row">
+            <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
+            <input id="calendar-popup-name" type="text" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
+            <select id="calendar-popup-visibility">
+              <option value="private"${popupVisibilityValue === "private" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_private")}</option>
+              <option value="public"${popupVisibilityValue === "public" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_public")}</option>
+            </select>
+          </div>
+        </form>
+      `,
+            closeProtection: false,
+            actions: [
+                {
+                    id: "save",
+                    label: i18n.t("gateway.calendar.create_calendar"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onAction: async (actionId, overlay) => {
+                if (actionId !== "save") return true;
+                const name = String(
+                    overlay.querySelector("#calendar-popup-name")?.value ?? "",
+                ).trim();
+                const visibility = String(
+                    overlay.querySelector("#calendar-popup-visibility")
+                        ?.value ?? "private",
+                );
+                const color = calendarUi.normalizeHexColor(
+                    overlay.querySelector("#calendar-popup-color")?.value,
+                );
+                if (!name) return false;
+                const response = await apiFetch("/api/v1/calendar/calendars", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ name, visibility, color }),
+                });
+                if (!response.ok) {
+                    showToast(
+                        i18n.t("gateway.calendar.create_calendar_failed"),
+                        "error",
+                    );
+                    return false;
+                }
+                await reloadState();
+                syncCalendarSelectionToUrl();
+                showToast(
+                    i18n.t("gateway.calendar.create_calendar_success"),
+                    "success",
+                );
+                composer.refresh();
+                return true;
+            },
+        });
+    }
 
     await composer.init();
 }

@@ -2,13 +2,11 @@
   <string name="gateway.calendar.page_title">Calendar</string>
   <string name="gateway.calendar.page_subtitle">Plan calendars, compose events, and manage upcoming schedules.</string>
   <string name="gateway.calendar.my_calendars">My Calendars</string>
-  <string name="gateway.calendar.events">Event Composer</string>
   <string name="gateway.calendar.no_calendars">You have no calendars yet.</string>
   <string name="gateway.calendar.no_events">No events scheduled for this calendar.</string>
   <string name="gateway.calendar.visibility_private">Private</string>
   <string name="gateway.calendar.visibility_public">Public</string>
   <string name="gateway.calendar.calendar_name_placeholder">Calendar Name</string>
-  <string name="gateway.calendar.calendar_color">Color</string>
   <string name="gateway.calendar.create_calendar">Create Calendar</string>
   <string name="gateway.calendar.create_calendar_success">Calendar created.</string>
   <string name="gateway.calendar.create_calendar_failed">Could not create calendar.</string>
@@ -39,13 +37,10 @@
   <string name="gateway.calendar.previous">Previous</string>
   <string name="gateway.calendar.today">Today</string>
   <string name="gateway.calendar.next">Next</string>
-  <string name="gateway.calendar.slot_busy">Busy</string>
   <string name="gateway.calendar.open_week_view">Open Weekly View</string>
-  <string name="gateway.calendar.create_all_day">Create All-Day Event</string>
+  <string name="gateway.calendar.week_number_prefix">W</string>
   <string name="gateway.calendar.events_count_suffix">events</string>
   <string name="gateway.calendar.event_composer">Event Composer</string>
   <string name="gateway.calendar.upcoming_events">Upcoming Events</string>
   <string name="gateway.calendar.upcoming_summary">Upcoming Summary</string>
-  <string name="gateway.calendar.quick_create">Quick Create</string>
-  <string name="gateway.calendar.more_details">More Details</string>
 </resources>
