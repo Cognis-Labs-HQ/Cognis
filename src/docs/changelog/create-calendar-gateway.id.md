@@ -25,3 +25,9 @@ implementasi popup mengubahnya menjadi `null` sebelum memanggil handler.
 Pemeriksaan kini dilakukan terhadap `null`, sehingga popup dapat ditutup dan
 indikator pemuatan halaman tidak lagi berputar tanpa henti saat membuka halaman
 melalui tautan langsung.
+
+## Klik kalender untuk mengedit
+
+Setiap kalender di bilah alat samping kini merupakan satu elemen interaktif: mengkliknya
+langsung membuka popup edit. Tombol pensil terpisah yang sebelumnya muncul di
+samping nama kalender telah dihapus.

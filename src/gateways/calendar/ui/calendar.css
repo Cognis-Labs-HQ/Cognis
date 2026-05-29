@@ -145,33 +145,6 @@
     flex-shrink: 0;
 }
 
-.calendar-list-row {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.calendar-edit-btn {
-    border: 0;
-    background: transparent;
-    color: inherit;
-    opacity: 0.6;
-    padding: 0.15rem 0.3rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-}
-
-.calendar-edit-btn:hover:not(:disabled) {
-    opacity: 1;
-    background: var(
-        --surface-2,
-        color-mix(in srgb, var(--field-border) 30%, transparent)
-    );
-}
-
 .calendar-select-link[aria-current="page"] .calendar-select-label {
     font-weight: 700;
 }

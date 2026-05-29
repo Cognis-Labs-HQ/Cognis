@@ -261,14 +261,11 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-        <div class="calendar-list-row">
-          <button type="button" class="calendar-select-link" data-calendar-select="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""} title="${escapeHtml(i18n.t(calendar.visibility === "public" ? "gateway.calendar.visibility_public" : "gateway.calendar.visibility_private"))}">
-            <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
-            <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
-            <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
-          </button>
-          <button type="button" class="calendar-edit-btn btn-no-animation" data-calendar-edit="${escapeHtml(calendar.id)}" aria-label="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">✏</button>
-        </div>
+        <button type="button" class="calendar-select-link" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'aria-current="page"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
+          <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
+          <span class="calendar-select-label">${escapeHtml(calendar.name)}</span>
+          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
+        </button>
       </li>`,
         )
         .join("")}</ul>`;

@@ -24,3 +24,9 @@ implementation converts the `"close"` action id to `null` before invoking
 `onAction`, but the handler was checking for the string `"close"`. The guard now
 checks for `null`, so the popup dismisses correctly and the page loading indicator
 no longer spins indefinitely after a direct-link page load.
+
+## Click calendar to edit
+
+Each calendar in the sidebar toolbar is now a single interactive element: clicking
+it opens the edit popup directly. The separate pencil edit button that previously
+appeared beside each calendar name has been removed.

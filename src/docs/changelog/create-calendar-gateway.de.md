@@ -25,3 +25,9 @@ lautlos verworfen, weil der `onAction`-Handler nach dem String `"close"` prüfte
 obwohl die Popup-Implementierung die Aktion bereits intern in `null` umwandelt.
 Die Prüfung erfolgt jetzt korrekt auf `null`, sodass das Popup geschlossen werden
 kann und der Seitenlade-Indikator beim Direktaufruf nicht mehr endlos dreht.
+
+## Kalender anklicken zum Bearbeiten
+
+Jeder Kalender in der Seitenleiste ist jetzt ein einzelnes interaktives Element:
+Ein Klick darauf öffnet direkt das Bearbeitungs-Popup. Der separate Stift-Button,
+der zuvor neben jedem Kalendernamen erschien, wurde entfernt.

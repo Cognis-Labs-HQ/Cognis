@@ -472,34 +472,19 @@ export async function mount(root, { signal } = {}) {
                     toolbarList.addEventListener(
                         "click",
                         (event) => {
-                            const editBtn = event.target.closest(
+                            const button = event.target.closest(
                                 "[data-calendar-edit]",
                             );
-                            if (editBtn instanceof HTMLElement) {
-                                const calendarId = String(
-                                    editBtn.getAttribute(
-                                        "data-calendar-edit",
-                                    ) ?? "",
-                                ).trim();
-                                const calendar = calendars.find(
-                                    (c) => c.id === calendarId,
-                                );
-                                if (calendar) {
-                                    openCalendarEditPopup(calendar);
-                                }
-                                return;
-                            }
-                            const button = event.target.closest(
-                                "[data-calendar-select]",
-                            );
                             if (!(button instanceof HTMLElement)) return;
-                            selectedCalendarId = String(
-                                button.getAttribute("data-calendar-select") ??
-                                    "",
+                            const calendarId = String(
+                                button.getAttribute("data-calendar-edit") ?? "",
                             ).trim();
-                            selectedEventId = "";
-                            syncRouteSelection();
-                            composer.refresh();
+                            const calendar = calendars.find(
+                                (c) => c.id === calendarId,
+                            );
+                            if (calendar) {
+                                openCalendarEditPopup(calendar);
+                            }
                         },
                         { signal },
                     );
