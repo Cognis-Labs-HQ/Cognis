@@ -54,14 +54,9 @@ export async function normalizeAttendeesForOwner(
 ): Promise<string[]> {
     const normalized = normalizeStringList(attendees);
     const resolved = await Promise.all(
-        normalized.map(async (attendee) => {
-            if (!resolveAccountId) return attendee;
-            try {
-                return (await resolveAccountId(attendee)) ?? attendee;
-            } catch {
-                return attendee;
-            }
-        }),
+        normalized.map((attendee) =>
+            resolveNotificationRecipientUsername(attendee, resolveAccountId),
+        ),
     );
     return Array.from(
         new Set(
@@ -276,7 +271,8 @@ export async function dispatchInviteNotifications({
                         meetingAccessUrl,
                         inviterAccountId,
                     ),
-                    actionUrl: meetingAccessUrl ?? "/calendar",
+                    actionUrl:
+                        meetingAccessUrl ?? buildEventActionUrl(calendarId, event.id),
                     attachments: [
                         {
                             filename: buildIcsAttachmentFilename(event.title),

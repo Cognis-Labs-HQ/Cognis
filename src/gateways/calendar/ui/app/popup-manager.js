@@ -37,7 +37,7 @@ export function createCalendarPopupManager({
         });
     }
 
-    function buildParticipantLabel(type, value) {
+    function buildParticipantLabel(value) {
         return value;
     }
 
@@ -51,12 +51,29 @@ export function createCalendarPopupManager({
             .toLowerCase();
     }
 
+    function isUserMatchByIdentifier(user, identifier) {
+        const normalizedIdentifier = String(identifier ?? "")
+            .trim()
+            .replace(/^@/, "")
+            .toLowerCase();
+        if (!normalizedIdentifier) return false;
+        const normalizedUserIdentifier = normalizeUserIdentifier(user);
+        const normalizedHandle = String(user?.handle ?? "")
+            .trim()
+            .replace(/^@/, "")
+            .toLowerCase();
+        return (
+            normalizedUserIdentifier === normalizedIdentifier ||
+            normalizedHandle === normalizedIdentifier
+        );
+    }
+
     function getEventParticipants(event, participantDirectory = null) {
         const resolveUserLabel = (identifier) => {
             if (!participantDirectory)
-                return buildParticipantLabel("user", identifier);
+                return buildParticipantLabel(identifier);
             const profile = participantDirectory.get(identifier);
-            if (!profile) return buildParticipantLabel("user", identifier);
+            if (!profile) return buildParticipantLabel(identifier);
             return profile.displayName || profile.username || identifier;
         };
         return [
@@ -71,7 +88,7 @@ export function createCalendarPopupManager({
                 ? event.inviteEmails.map((entry) => ({
                       type: "email",
                       value: entry,
-                      label: buildParticipantLabel("email", entry),
+                      label: buildParticipantLabel(entry),
                   }))
                 : []),
         ];
@@ -97,19 +114,9 @@ export function createCalendarPopupManager({
                     const users = Array.isArray(payload?.data)
                         ? payload.data
                         : [];
-                    const matchedUser = users.find((entry) => {
-                        const accountId = String(entry?.accountId ?? "").trim();
-                        const username = String(
-                            entry?.username ?? accountId ?? "",
-                        ).trim();
-                        const handle = String(entry?.handle ?? "").trim();
-                        return [accountId, username, handle].some(
-                            (value) =>
-                                value &&
-                                value.toLowerCase() ===
-                                    identifier.toLowerCase(),
-                        );
-                    });
+                    const matchedUser = users.find((entry) =>
+                        isUserMatchByIdentifier(entry, identifier),
+                    );
                     if (!matchedUser) return;
                     const username =
                         normalizeUserIdentifier(matchedUser) || identifier;
