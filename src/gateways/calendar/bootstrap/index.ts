@@ -9,7 +9,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
+import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import {
     buildEventActionUrl,
     dispatchInviteNotifications,

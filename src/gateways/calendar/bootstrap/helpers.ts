@@ -1,4 +1,4 @@
-import { sanitizeFilenameBase } from "../../api/reuse/sanitize-filename.js";
+import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
 import type { CoreCalendarGateway } from "../gateway.js";
 import type {
     CalendarEventRecord,
@@ -137,7 +137,7 @@ export function buildResponseNotificationBody(
     ].join("\n");
 }
 
-async function dispatchInviteNotifications({
+export async function dispatchInviteNotifications({
     gateway,
     event,
     dispatchNotification,
@@ -245,7 +245,7 @@ async function dispatchInviteNotifications({
     );
 }
 
-async function syncInvitedCopiesForEvents({
+export async function syncInvitedCopiesForEvents({
     gateway,
     events,
     resolveAccountId,
