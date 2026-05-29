@@ -73,7 +73,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             code_required: "ui.app.login.tfa.error_invalid",
             recovery_code_required: "ui.app.login.tfa.error_invalid",
             smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
-            primary_email_required: "ui.app.settings.notif_smtp_no_email_body",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
