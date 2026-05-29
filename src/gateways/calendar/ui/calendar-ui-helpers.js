@@ -286,6 +286,10 @@ function getISOWeekNumber(date) {
     return Math.ceil(((thursday - yearStart) / 86400000 + 1) / 7);
 }
 
+function shouldStopRenderingWeeks(weekEnd, monthStart) {
+    return weekEnd.getMonth() > monthStart.getMonth() && weekEnd.getDate() > 7;
+}
+
 function renderDayView(events, day, i18n) {
     const dayLabel = day.toLocaleDateString(undefined, {
         weekday: "long",
@@ -411,8 +415,7 @@ function renderMonthGrid(events, currentDate, i18n) {
         </article>`;
       }).join("")}
     </div>`);
-        if (weekEnd.getMonth() > monthStart.getMonth() && weekEnd.getDate() > 7)
-            break;
+        if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;
     }
     return `<div class="calendar-month-grid">${rows.join("")}</div>`;
 }
@@ -435,16 +438,20 @@ function renderYearMonthMiniGrid(monthDate, i18n) {
       ${Array.from({ length: 7 }, (_, dayIndex) => {
           const day = addDays(weekStart, dayIndex);
           const isOutsideMonth = day.getMonth() !== monthStart.getMonth();
+          const dayLabel = day.toLocaleDateString(undefined, {
+              dateStyle: "long",
+          });
           return `<button type="button" class="calendar-year-day-dot${
               isOutsideMonth ? " calendar-year-day-dot--outside" : ""
-          }" data-day-dot-date="${startOfDay(day).toISOString()}">${day.getDate()}</button>`;
+          }" data-day-dot-date="${startOfDay(day).toISOString()}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
       }).join("")}
     </div>`);
-        if (weekEnd.getMonth() > monthStart.getMonth() && weekEnd.getDate() > 7)
-            break;
+        if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;
     }
+    const monthLabel = monthStart.toLocaleDateString(undefined, { month: "long" });
+    const openMonthLabel = `${i18n.t("gateway.calendar.open_month_view")} ${monthLabel}`;
     return `<article class="calendar-year-month">
-    <button type="button" class="calendar-year-month-title" data-year-month-index="${monthStart.getMonth()}">${monthStart.toLocaleDateString(undefined, { month: "long" })}</button>
+    <button type="button" class="calendar-year-month-title" data-year-month-index="${monthStart.getMonth()}" aria-label="${escapeHtml(openMonthLabel)}">${escapeHtml(monthLabel)}</button>
     <div class="calendar-year-mini-grid">
       <div class="calendar-year-mini-header">
         <span class="calendar-year-mini-week-header">${escapeHtml(i18n.t("gateway.calendar.week_short"))}</span>
