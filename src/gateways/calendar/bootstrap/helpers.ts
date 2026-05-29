@@ -428,6 +428,7 @@ export async function syncInvitedCopiesForEvents({
                 ownerAccountId: copyCalendar.ownerAccountId,
                 calendarId: copy.calendarId,
                 eventId: copy.id,
+                allowMirroredEventMutation: true,
             });
         }
 
@@ -453,6 +454,7 @@ export async function syncInvitedCopiesForEvents({
                     status: event.status,
                     recurrence: event.recurrence,
                     targetCalendarId: invitedCalendar.id,
+                    allowMirroredEventMutation: true,
                 });
                 continue;
             }

@@ -202,6 +202,105 @@ test("calendar gateway deletes mirrored invite copies with the source event", ()
     assert.equal(gateway.getEvent(invitedCalendar.id, copyEvent.id), null);
 });
 
+test("calendar gateway blocks invited attendees from updating mirrored copies", () => {
+    const gateway = new CoreCalendarGateway();
+    const ownerCalendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    const invitedCalendar = gateway.ensureSpecialCalendar(
+        "bob",
+        "Invited",
+        "#8b5cf6",
+    );
+    const sourceEvent = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: ownerCalendar.id,
+        title: "Planning",
+        startAt: "2026-06-02T09:00:00.000Z",
+        endAt: "2026-06-02T10:00:00.000Z",
+        attendees: ["bob"],
+    });
+    const mirroredCopy = gateway.addEventToCalendar({
+        calendarId: invitedCalendar.id,
+        sourceEventId: sourceEvent.id,
+        title: sourceEvent.title,
+        startAt: sourceEvent.startAt,
+        endAt: sourceEvent.endAt,
+        createdBy: sourceEvent.createdBy,
+        attendees: sourceEvent.attendees,
+        recurrence: sourceEvent.recurrence,
+    });
+
+    assert.throws(
+        () =>
+            gateway.updateEvent({
+                ownerAccountId: "bob",
+                calendarId: invitedCalendar.id,
+                eventId: mirroredCopy.id,
+                title: "Compromised",
+            }),
+        /calendar_event_forbidden/,
+    );
+    assert.throws(
+        () =>
+            gateway.deleteEvent({
+                ownerAccountId: "bob",
+                calendarId: invitedCalendar.id,
+                eventId: mirroredCopy.id,
+            }),
+        /calendar_event_forbidden/,
+    );
+});
+
+test("calendar gateway allows internal mirror maintenance bypass", () => {
+    const gateway = new CoreCalendarGateway();
+    const ownerCalendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Work",
+    });
+    const invitedCalendar = gateway.ensureSpecialCalendar(
+        "bob",
+        "Invited",
+        "#8b5cf6",
+    );
+    const sourceEvent = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: ownerCalendar.id,
+        title: "Review",
+        startAt: "2026-06-02T09:00:00.000Z",
+        endAt: "2026-06-02T10:00:00.000Z",
+        attendees: ["bob"],
+    });
+    const mirroredCopy = gateway.addEventToCalendar({
+        calendarId: invitedCalendar.id,
+        sourceEventId: sourceEvent.id,
+        title: sourceEvent.title,
+        startAt: sourceEvent.startAt,
+        endAt: sourceEvent.endAt,
+        createdBy: sourceEvent.createdBy,
+        attendees: sourceEvent.attendees,
+        recurrence: sourceEvent.recurrence,
+    });
+
+    const updated = gateway.updateEvent({
+        ownerAccountId: "bob",
+        calendarId: invitedCalendar.id,
+        eventId: mirroredCopy.id,
+        title: "Organizer Updated Title",
+        allowMirroredEventMutation: true,
+    });
+    assert.equal(updated.title, "Organizer Updated Title");
+
+    gateway.deleteEvent({
+        ownerAccountId: "bob",
+        calendarId: invitedCalendar.id,
+        eventId: mirroredCopy.id,
+        allowMirroredEventMutation: true,
+    });
+    assert.equal(gateway.getEvent(invitedCalendar.id, mirroredCopy.id), null);
+});
+
 test("calendar gateway always keeps organizer in attendees", () => {
     const gateway = new CoreCalendarGateway();
     const calendar = gateway.createCalendar({

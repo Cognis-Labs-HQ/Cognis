@@ -564,6 +564,15 @@ function createCalendarCoreRoutes({
                     );
                     return true;
                 }
+                if (message === "calendar_event_forbidden") {
+                    sendCalendarError(
+                        res,
+                        "forbidden",
+                        "Only the event organizer can edit this event.",
+                        403,
+                    );
+                    return true;
+                }
                 if (message === "calendar_invalid_range") {
                     sendCalendarError(
                         res,
@@ -638,6 +647,15 @@ function createCalendarCoreRoutes({
                         "not_found",
                         "Event not found.",
                         404,
+                    );
+                    return true;
+                }
+                if (message === "calendar_event_forbidden") {
+                    sendCalendarError(
+                        res,
+                        "forbidden",
+                        "Only the event organizer can delete this event.",
+                        403,
                     );
                     return true;
                 }
