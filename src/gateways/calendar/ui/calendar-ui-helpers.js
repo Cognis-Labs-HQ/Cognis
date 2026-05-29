@@ -417,6 +417,42 @@ function renderMonthGrid(events, currentDate, i18n) {
     return `<div class="calendar-month-grid">${rows.join("")}</div>`;
 }
 
+function renderYearMonthMiniGrid(monthDate) {
+    const monthStart = startOfMonth(monthDate);
+    const gridStart = startOfWeek(monthStart);
+    const weekdayInitials = Array.from({ length: 7 }, (_, dayOffset) =>
+        addDays(gridStart, dayOffset).toLocaleDateString(undefined, {
+            weekday: "narrow",
+        }),
+    );
+    const rows = [];
+    for (let weekIndex = 0; weekIndex < 6; weekIndex += 1) {
+        const weekStart = addDays(gridStart, weekIndex * 7);
+        const weekEnd = addDays(weekStart, 7);
+        const weekNumber = getISOWeekNumber(weekStart);
+        rows.push(`<div class="calendar-year-month-mini-row">
+      <span class="calendar-year-mini-week">${weekNumber}</span>
+      ${Array.from({ length: 7 }, (_, dayIndex) => {
+          const day = addDays(weekStart, dayIndex);
+          const isOutsideMonth = day.getMonth() !== monthStart.getMonth();
+          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}" data-day-dot-date="${startOfDay(day).toISOString()}">${day.getDate()}</button>`;
+      }).join("")}
+    </div>`);
+        if (weekEnd.getMonth() > monthStart.getMonth() && weekEnd.getDate() > 7)
+            break;
+    }
+    return `<article class="calendar-year-month">
+    <button type="button" class="calendar-year-month-title" data-year-month-index="${monthStart.getMonth()}">${monthStart.toLocaleDateString(undefined, { month: "long" })}</button>
+    <div class="calendar-year-mini-grid">
+      <div class="calendar-year-mini-header">
+        <span class="calendar-year-mini-week-header">Wk</span>
+        ${weekdayInitials.map((label) => `<span class="calendar-year-mini-day-initial">${escapeHtml(label)}</span>`).join("")}
+      </div>
+      ${rows.join("")}
+    </div>
+  </article>`;
+}
+
 function renderYearGrid(currentDate) {
     const yearStart = startOfYear(currentDate);
     return `<div class="calendar-year-grid">${Array.from(
@@ -424,7 +460,7 @@ function renderYearGrid(currentDate) {
         (_, monthIndex) => {
             const monthDate = new Date(yearStart);
             monthDate.setMonth(monthIndex);
-            return `<button type="button" class="calendar-year-month" data-year-month-index="${monthIndex}">${monthDate.toLocaleDateString(undefined, { month: "long" })}</button>`;
+            return renderYearMonthMiniGrid(monthDate);
         },
     ).join("")}</div>`;
 }

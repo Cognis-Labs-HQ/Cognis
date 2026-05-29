@@ -74,6 +74,13 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    function formatMonthYearLabel(date) {
+        return new Date(date).toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric",
+        });
+    }
+
     function syncCalendarSelectionToUrl() {
         const query = new URLSearchParams(window.location.search);
         if (selectedCalendarId) {
@@ -153,10 +160,11 @@ export async function mount(root, { signal } = {}) {
                 ${calendarUi.CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${i18n.t(`gateway.calendar.view_${view}`)}</button>`).join("")}
               </div>
               <div class="calendar-view-nav">
-                <button type="button" data-calendar-nav="prev">${i18n.t("gateway.calendar.previous")}</button>
+                <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
                 <button type="button" data-calendar-nav="today">${i18n.t("gateway.calendar.today")}</button>
-                <button type="button" data-calendar-nav="next">${i18n.t("gateway.calendar.next")}</button>
+                <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
               </div>
+              ${selectedView === "month" ? `<p class="calendar-nav-month-label">${escapeHtml(formatMonthYearLabel(activeDate))}</p>` : ""}
             </header>
             <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allUpcomingEvents(), selectedView, activeDate, i18n)}</div>
           </section>

@@ -123,6 +123,12 @@
     color: #fff;
 }
 
+.calendar-nav-month-label {
+    margin: 0;
+    font-size: 0.92rem;
+    opacity: 0.8;
+}
+
 .calendar-toolbar-heading {
     display: flex;
     align-items: center;
@@ -244,13 +250,20 @@
 
 .calendar-timeslot-events:hover {
     background: var(--surface, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--btn-confirm-bg, #1f8ceb) 45%, var(--field-border));
+    border-radius: 6px;
+}
+
+.calendar-timeslot-events:focus-within {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--btn-confirm-bg, #1f8ceb) 45%, var(--field-border));
+    border-radius: 6px;
 }
 
 .calendar-timeslot-hover-add {
     position: absolute;
     top: 50%;
-    right: 0.25rem;
-    transform: translateY(-50%);
+    left: 50%;
+    transform: translate(-50%, -50%);
     border: 1px solid var(--field-border);
     border-radius: 999px;
     width: 1.2rem;
@@ -264,6 +277,7 @@
     color: inherit;
     opacity: 0;
     pointer-events: none;
+    z-index: 1;
 }
 
 .calendar-timeslot-events:hover .calendar-timeslot-hover-add,
@@ -319,11 +333,11 @@
     padding: 0.55rem 0.5rem;
     background: transparent;
     border: 0;
-    border-left: 1px solid var(--field-border);
+    border-left: 1px solid color-mix(in srgb, var(--field-border) 65%, transparent);
     color: inherit;
     text-align: center;
     width: 100%;
-    border-radius: 0;
+    border-radius: 6px 6px 0 0;
     min-width: 0;
     min-height: 0;
 }
@@ -474,15 +488,72 @@
 
 .calendar-year-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 0.6rem;
 }
 
 .calendar-year-month {
     border: 1px solid var(--field-border);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface, transparent);
     padding: 0.7rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.calendar-year-month-title {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: left;
+    padding: 0;
+}
+
+.calendar-year-mini-grid {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.calendar-year-mini-header,
+.calendar-year-month-mini-row {
+    display: grid;
+    grid-template-columns: 1.8rem repeat(7, minmax(1.5rem, 1fr));
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.calendar-year-mini-week-header,
+.calendar-year-mini-week {
+    font-size: 0.68rem;
+    opacity: 0.75;
+    text-align: center;
+}
+
+.calendar-year-mini-day-initial {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.calendar-year-day-dot {
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 1.45rem;
+    padding: 0;
+    font-size: 0.7rem;
+    background: var(--surface, transparent);
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-year-day-dot--outside {
+    opacity: 0.55;
 }
 
 .calendar-checkbox-row {
