@@ -242,8 +242,8 @@ test("tfa gateway login methods follow configured preferred ordering", async () 
         configuredAt: new Date().toISOString(),
     });
     const methods = await gateway.getLoginMethods("alice");
-    assert.deepEqual(
-        methods.map((method) => method.id).slice(0, 2),
-        ["smtp", "totp"],
-    );
+    assert.deepEqual(methods.map((method) => method.id).slice(0, 2), [
+        "smtp",
+        "totp",
+    ]);
 });
