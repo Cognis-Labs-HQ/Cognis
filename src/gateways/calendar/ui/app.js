@@ -484,7 +484,9 @@ export async function mount(root, { signal } = {}) {
         }
 
         function renderParticipants(overlay) {
-            const chips = overlay.querySelector("#calendar-popup-participant-chips");
+            const chips = overlay.querySelector(
+                "#calendar-popup-participant-chips",
+            );
             if (!(chips instanceof HTMLElement)) return;
             chips.innerHTML = selectedParticipants
                 .map(
@@ -695,8 +697,9 @@ export async function mount(root, { signal } = {}) {
                             );
                             if (!(button instanceof HTMLElement)) return;
                             const key = String(
-                                button.getAttribute("data-participant-remove") ??
-                                    "",
+                                button.getAttribute(
+                                    "data-participant-remove",
+                                ) ?? "",
                             );
                             selectedParticipants = selectedParticipants.filter(
                                 (entry) => participantKey(entry) !== key,
