@@ -34,6 +34,7 @@
   <string name="gateway.calendar.view_week">Woche</string>
   <string name="gateway.calendar.view_month">Monat</string>
   <string name="gateway.calendar.view_year">Jahr</string>
+  <string name="gateway.calendar.all_day">Ganztägig</string>
   <string name="gateway.calendar.previous">Zurück</string>
   <string name="gateway.calendar.today">Heute</string>
   <string name="gateway.calendar.next">Weiter</string>

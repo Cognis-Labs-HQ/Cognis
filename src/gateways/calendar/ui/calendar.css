@@ -123,29 +123,46 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.4rem;
+    gap: 0.6rem;
 }
 
 .calendar-toolbar-heading h3 {
     margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.calendar-toolbar-add {
+.toolbar .calendar-toolbar-add {
     border: 1px solid var(--field-border);
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
     color: inherit;
-    width: 1.6rem;
-    height: 1.6rem;
-    min-width: 1.6rem;
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
+    min-height: 2rem;
     padding: 0;
-    font-size: 1rem;
+    font-size: 1.1rem;
     line-height: 1;
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar .calendar-toolbar-add:hover {
+    border-color: var(--btn-confirm-bg, #1f8ceb);
 }
 
 .calendar-toolbar-section {
-    margin-bottom: 1rem;
+    margin-bottom: 0.9rem;
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: var(--surface, transparent);
 }
 
 .calendar-day-view {
@@ -161,15 +178,18 @@
 .calendar-timeslot-grid {
     display: grid;
     gap: 0;
-    max-height: 480px;
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 70vh;
     overflow-y: auto;
 }
 
 .calendar-timeslot-row {
     display: grid;
-    grid-template-columns: 1.6rem 5rem 1fr;
+    grid-template-columns: 5.5rem 1fr;
     align-items: stretch;
-    min-height: 1.75rem;
+    min-height: 2.2rem;
     border-bottom: 1px solid var(--field-border);
 }
 
@@ -197,9 +217,9 @@
 }
 
 .calendar-timeslot-label {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    padding: 0.2rem 0.4rem;
+    font-size: 0.78rem;
+    opacity: 0.8;
+    padding: 0.25rem 0.5rem;
     display: flex;
     align-items: center;
     border-right: 1px solid var(--field-border);
@@ -208,11 +228,13 @@
 
 .calendar-timeslot-events {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow: hidden;
     gap: 0.2rem;
-    padding: 0.15rem 0.3rem;
-    min-height: 1.75rem;
+    padding: 0.15rem 0.35rem;
+    min-height: 2.2rem;
     cursor: default;
+    align-items: center;
 }
 
 .calendar-timeslot-events:hover {
@@ -220,64 +242,123 @@
 }
 
 .calendar-slot-event {
-    border-left: 3px solid
-        var(--calendar-event-stripe, var(--btn-confirm-bg, #1f8ceb));
-    background: var(--surface, transparent);
+    background: var(--calendar-event-stripe, var(--btn-confirm-bg, #1f8ceb));
+    color: #fff;
     border-radius: 4px;
-    padding: 0.1rem 0.35rem;
-    font-size: 0.78rem;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.calendar-slot-event-time {
+    opacity: 0.95;
+}
+
+.calendar-slot-event-title {
+    font-weight: 700;
 }
 
 .calendar-week-view {
-    display: grid;
-    gap: 0.5rem;
-}
-
-.calendar-week-month-label {
-    font-size: 0.85rem;
-    opacity: 0.75;
-    font-weight: 600;
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface, transparent);
 }
 
 .calendar-week-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0.4rem;
+    grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
 }
 
-.calendar-week-day {
-    border: 1px solid var(--field-border);
-    border-radius: 10px;
-    overflow: hidden;
-    display: grid;
-    gap: 0;
+.calendar-week-grid--header {
+    border-bottom: 1px solid var(--field-border);
 }
 
 .calendar-week-day-header {
     display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.35rem 0.5rem;
-    background: var(--surface, transparent);
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.5rem;
+    background: transparent;
     border: 0;
-    border-bottom: 1px solid var(--field-border);
+    border-left: 1px solid var(--field-border);
     color: inherit;
-    text-align: left;
+    text-align: center;
     width: 100%;
+    border-radius: 0;
+    min-width: 0;
+    min-height: 0;
 }
 
 .calendar-week-day-name {
-    font-size: 0.8rem;
+    font-size: 0.95rem;
     opacity: 0.8;
 }
 
 .calendar-week-day-date {
-    font-weight: 700;
+    font-weight: 500;
     font-size: 0.95rem;
+    opacity: 0.8;
+}
+
+.calendar-week-axis-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.84rem;
+    opacity: 0.85;
+    border-right: 1px solid var(--field-border);
+    padding: 0.4rem;
+}
+
+.calendar-week-all-day-row {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
+    border-bottom: 1px solid var(--field-border);
+    min-height: 2rem;
+}
+
+.calendar-week-all-day-cell {
+    border-left: 1px solid var(--field-border);
+    border-bottom: 0;
+}
+
+.calendar-week-scroll-grid {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.calendar-week-timeslot-row {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
+    min-height: 2rem;
+    border-bottom: 1px solid var(--field-border);
+}
+
+.calendar-week-timeslot-row:last-child {
+    border-bottom: 0;
+}
+
+.calendar-week-timeslot-label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.15rem 0.6rem;
+    border-right: 1px solid var(--field-border);
+    font-size: 0.76rem;
+    opacity: 0.7;
+}
+
+.calendar-week-slot {
+    border-left: 1px solid var(--field-border);
+    border-bottom: 0;
 }
 
 .calendar-month-grid {
@@ -381,11 +462,14 @@
 }
 
 @media (max-width: 900px) {
-    .calendar-month-row {
+    .calendar-month-row,
+    .calendar-week-grid,
+    .calendar-week-all-day-row,
+    .calendar-week-timeslot-row {
         grid-template-columns: 1fr;
     }
 
     .calendar-timeslot-row {
-        grid-template-columns: 1.4rem 4rem 1fr;
+        grid-template-columns: 4.5rem 1fr;
     }
 }

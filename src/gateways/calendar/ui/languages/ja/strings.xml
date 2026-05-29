@@ -34,6 +34,7 @@
   <string name="gateway.calendar.view_week">週</string>
   <string name="gateway.calendar.view_month">月</string>
   <string name="gateway.calendar.view_year">年</string>
+  <string name="gateway.calendar.all_day">終日</string>
   <string name="gateway.calendar.previous">前へ</string>
   <string name="gateway.calendar.today">今日</string>
   <string name="gateway.calendar.next">次へ</string>

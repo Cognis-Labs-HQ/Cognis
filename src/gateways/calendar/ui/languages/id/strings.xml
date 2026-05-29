@@ -34,6 +34,7 @@
   <string name="gateway.calendar.view_week">Minggu</string>
   <string name="gateway.calendar.view_month">Bulan</string>
   <string name="gateway.calendar.view_year">Tahun</string>
+  <string name="gateway.calendar.all_day">Sehari penuh</string>
   <string name="gateway.calendar.previous">Sebelumnya</string>
   <string name="gateway.calendar.today">Hari Ini</string>
   <string name="gateway.calendar.next">Berikutnya</string>

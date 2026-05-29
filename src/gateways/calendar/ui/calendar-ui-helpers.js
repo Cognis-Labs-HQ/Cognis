@@ -220,6 +220,25 @@ function listEventsInWindow(events, startDate, endDate) {
     });
 }
 
+function formatEventTimeRange(startAt, endAt) {
+    const formatOptions = {
+        hour: "numeric",
+        minute: "2-digit",
+    };
+    const startText = new Date(startAt).toLocaleTimeString([], formatOptions);
+    const endText = new Date(endAt).toLocaleTimeString([], formatOptions);
+    return `${startText} - ${endText}`;
+}
+
+function renderSlotEvents(slotEvents) {
+    return slotEvents
+        .map(
+            (event) =>
+                `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}"><span class="calendar-slot-event-time">${escapeHtml(formatEventTimeRange(event.startAt, event.endAt))}</span> <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong></span>`,
+        )
+        .join("");
+}
+
 function getISOWeekNumber(date) {
     const thursday = new Date(date);
     thursday.setDate(
@@ -251,16 +270,8 @@ function renderDayView(events, day, i18n) {
             hour: "2-digit",
             minute: "2-digit",
         });
-        const eventCells = slotEvents.length
-            ? slotEvents
-                  .map(
-                      (event) =>
-                          `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">${escapeHtml(event.title)}</span>`,
-                  )
-                  .join("")
-            : "";
+        const eventCells = slotEvents.length ? renderSlotEvents(slotEvents) : "";
         slots.push(`<div class="calendar-timeslot-row">
-      <button type="button" class="calendar-timeslot-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(timeLabel)} +" title="${escapeHtml(timeLabel)}">+</button>
       <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
       <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>
     </div>`);
@@ -275,58 +286,67 @@ function renderWeekView(events, weekStart, i18n) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
-    const monthLabel = weekStart.toLocaleDateString(undefined, {
-        month: "long",
-        year: "numeric",
-    });
-    const dayColumns = days
+    const dayHeaders = days
+        .map((day) => {
+            const dayStart = startOfDay(day);
+            return `<button type="button" class="calendar-week-day-header" data-day-dot-date="${dayStart.toISOString()}">
+        <span class="calendar-week-day-name">${day.toLocaleDateString(undefined, { weekday: "short" })}</span>
+        <span class="calendar-week-day-date">${day.toLocaleDateString(undefined, { month: "numeric", day: "numeric" })}</span>
+      </button>`;
+        })
+        .join("");
+    const allDayCells = days
         .map((day) => {
             const dayStart = startOfDay(day);
             const dayEnd = addDays(dayStart, 1);
-            const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
-            const slots = [];
-            for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}"></div>`;
+        })
+        .join("");
+    const slotRows = [];
+    for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
+        const slotCells = days
+            .map((day) => {
+                const dayStart = startOfDay(day);
                 const start = new Date(
                     dayStart.getTime() + slotIndex * HALF_HOUR_MS,
                 );
                 const end = new Date(start.getTime() + HALF_HOUR_MS);
-                const slotEvents = dayEvents.filter((event) => {
+                const slotEvents = events.filter((event) => {
                     const eventStart = new Date(event.startAt).getTime();
                     const eventEnd = new Date(event.endAt).getTime();
                     return (
                         eventStart < end.getTime() && eventEnd > start.getTime()
                     );
                 });
-                const timeLabel = start.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                });
                 const eventCells = slotEvents.length
-                    ? slotEvents
-                          .map(
-                              (event) =>
-                                  `<span class="calendar-slot-event" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">${escapeHtml(event.title)}</span>`,
-                          )
-                          .join("")
+                    ? renderSlotEvents(slotEvents)
                     : "";
-                slots.push(`<div class="calendar-timeslot-row">
-          <button type="button" class="calendar-timeslot-add" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(timeLabel)} +" title="${escapeHtml(timeLabel)}">+</button>
-          <span class="calendar-timeslot-label">${escapeHtml(timeLabel)}</span>
-          <div class="calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>
-        </div>`);
-            }
-            return `<section class="calendar-week-day">
-      <button type="button" class="calendar-week-day-header" data-day-dot-date="${dayStart.toISOString()}">
-        <span class="calendar-week-day-name">${day.toLocaleDateString(undefined, { weekday: "short" })}</span>
-        <span class="calendar-week-day-date">${day.getDate()}</span>
-      </button>
-      <div class="calendar-timeslot-grid">${slots.join("")}</div>
-    </section>`;
-        })
-        .join("");
+                return `<div class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}</div>`;
+            })
+            .join("");
+        const timeLabel = new Date(
+            startOfDay(weekStart).getTime() + slotIndex * HALF_HOUR_MS,
+        ).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+        });
+        slotRows.push(`<div class="calendar-week-timeslot-row">
+      <span class="calendar-week-timeslot-label">${escapeHtml(timeLabel)}</span>
+      ${slotCells}
+    </div>`);
+    }
     return `<div class="calendar-week-view">
-  <div class="calendar-week-month-label">${escapeHtml(monthLabel)}</div>
-  <div class="calendar-week-grid">${dayColumns}</div>
+  <div class="calendar-week-grid calendar-week-grid--header">
+    <span class="calendar-week-axis-label">&nbsp;</span>
+    ${dayHeaders}
+  </div>
+  <div class="calendar-week-all-day-row">
+    <span class="calendar-week-axis-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</span>
+    ${allDayCells}
+  </div>
+  <div class="calendar-week-scroll-grid">
+    ${slotRows.join("")}
+  </div>
 </div>`;
 }
 
