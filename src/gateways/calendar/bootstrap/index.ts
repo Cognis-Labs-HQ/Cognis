@@ -10,6 +10,7 @@ import {
 } from "../../../api/reuse/route-context.js";
 import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import {
+    buildCalendarShareData,
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
     normalizeAttendeesForOwner,
@@ -36,7 +37,6 @@ import {
     type CalendarEventResponse,
     type CalendarVisibility,
 } from "../gateway.js";
-
 import { createCalendarAdapterRoutes } from "./adapter-routes.js";
 
 const GATEWAY_ROOT = path.resolve(
@@ -260,45 +260,23 @@ function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(shareCalendarMatch[1]);
-            const calendar = gateway.getOwnedCalendar(claims.sub, calendarId);
-            if (!calendar) {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
-                return true;
-            }
             const body = (await readJson(req)) as {
                 permission?: unknown;
                 expiresInHours?: unknown;
             };
-            const permission =
-                body.permission === "write" ? "write" : "read";
-            const sharePath =
-                calendar.visibility === "public"
-                    ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.id)}`
-                    : `/api/v1/calendar/caldav/private/${encodeURIComponent(
-                          gateway.issuePrivateExportToken({
-                              ownerAccountId: claims.sub,
-                              calendarId: calendar.id,
-                              ttlSeconds:
-                                  body.expiresInHours === null
-                                      ? null
-                                      : typeof body.expiresInHours ===
-                                              "number" &&
-                                          Number.isFinite(body.expiresInHours) &&
-                                          body.expiresInHours > 0
-                                        ? Math.round(
-                                              body.expiresInHours * 3600,
-                                          )
-                                        : 24 * 3600,
-                          }).token,
-                      )}`;
-            sendJson(res, 200, {
-                data: {
-                    permission,
-                    shareUrl: externalHost
-                        ? `${externalHost}${sharePath}`
-                        : sharePath,
-                },
+            const shareData = buildCalendarShareData({
+                gateway,
+                ownerAccountId: claims.sub,
+                calendarId,
+                permission: body.permission,
+                expiresInHours: body.expiresInHours,
+                externalHost,
             });
+            if (!shareData) {
+                sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                return true;
+            }
+            sendJson(res, 200, { data: shareData });
             return true;
         }
 

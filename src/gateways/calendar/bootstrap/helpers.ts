@@ -47,6 +47,45 @@ export function normalizeStringList(value: unknown): string[] {
     );
 }
 
+export function buildCalendarShareData(input: {
+    gateway: CoreCalendarGateway;
+    ownerAccountId: string;
+    calendarId: string;
+    permission: unknown;
+    expiresInHours: unknown;
+    externalHost: string;
+}): { permission: "read" | "write"; shareUrl: string } | null {
+    const calendar = input.gateway.getOwnedCalendar(
+        input.ownerAccountId,
+        input.calendarId,
+    );
+    if (!calendar) return null;
+    const permission = input.permission === "write" ? "write" : "read";
+    const sharePath =
+        calendar.visibility === "public"
+            ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.id)}`
+            : `/api/v1/calendar/caldav/private/${encodeURIComponent(
+                  input.gateway.issuePrivateExportToken({
+                      ownerAccountId: input.ownerAccountId,
+                      calendarId: calendar.id,
+                      ttlSeconds:
+                          input.expiresInHours === null
+                              ? null
+                              : typeof input.expiresInHours === "number" &&
+                                  Number.isFinite(input.expiresInHours) &&
+                                  input.expiresInHours > 0
+                                ? Math.round(input.expiresInHours * 3600)
+                                : 24 * 3600,
+                  }).token,
+              )}`;
+    return {
+        permission,
+        shareUrl: input.externalHost
+            ? `${input.externalHost}${sharePath}`
+            : sharePath,
+    };
+}
+
 export async function normalizeAttendeesForOwner(
     attendees: unknown,
     ownerAccountId: string,
