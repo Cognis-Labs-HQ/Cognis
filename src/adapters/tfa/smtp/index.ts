@@ -1,11 +1,11 @@
 import { randomInt } from "node:crypto";
+import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "../../notify/smtp/rate-limit.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const DEFAULT_CODE_LENGTH = 6;
 const MIN_CODE_LENGTH = 4;
 const MAX_CODE_LENGTH = 10;
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
-const SMTP_RATE_LIMIT_MS = 60_000;
 const NUMERIC_DIGITS = "0123456789";
 
 interface SmtpTfaAdapterContext {
@@ -245,7 +245,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 const lastSentAt =
                     this.loginChallengeLastSentAt.get(input.accountId) ?? now;
                 const retryMs = Math.max(
-                    SMTP_RATE_LIMIT_MS - (now - lastSentAt),
+                    SMTP_VERIFICATION_RATE_LIMIT_MS - (now - lastSentAt),
                     0,
                 );
                 return {

@@ -8,6 +8,7 @@ import {
     decodeBasicHtmlEntities,
     encodeBasicHtmlEntities,
 } from "./html-entities.js";
+import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
 
 export interface SmtpConfig {
     host: string;
@@ -626,7 +627,6 @@ async function sendMail(
 
 const DEFAULT_GREYLIST_RETRIES = 2;
 const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
-const DEFAULT_RATE_LIMIT_MS = 60_000;
 
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();
@@ -711,7 +711,7 @@ export class SmtpNotificationSender implements NotificationSender {
             sleep ??
             ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
         this.rateLimiter =
-            rateLimiter ?? new SmtpRateLimiter(DEFAULT_RATE_LIMIT_MS);
+            rateLimiter ?? new SmtpRateLimiter(SMTP_VERIFICATION_RATE_LIMIT_MS);
     }
 
     getEnvValues(): Record<string, string | undefined> {
