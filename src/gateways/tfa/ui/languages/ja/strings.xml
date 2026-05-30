@@ -11,7 +11,6 @@
   <string name="ui.app.login.tfa.smtp.resend_action">メールコードを再送信</string>
   <string name="ui.app.login.tfa.smtp.resend_rate_limited">{seconds}秒後にメールコードを再送信できます</string>
   <string name="ui.app.login.tfa.smtp.resend_sent">新しい確認コードがメールに送信されました。</string>
-  <string name="ui.app.login.tfa.smtp.rate_limited_notice">確認コードは最近送信されました。{seconds}秒後に新しいコードをリクエストできます。</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">すべてのユーザーに二要素認証を必須化</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">有効化すると、二要素方式が未設定のユーザーは設定完了まで設定ページへリダイレクトされます。</string>
   <string name="ui.app.users.reset_tfa">二要素認証をリセット</string>

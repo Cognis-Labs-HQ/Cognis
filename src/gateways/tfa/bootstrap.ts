@@ -102,7 +102,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.0.8",
+        version: "1.0.9",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs HQ",

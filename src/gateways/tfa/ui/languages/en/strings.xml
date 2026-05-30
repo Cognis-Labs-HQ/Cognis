@@ -11,7 +11,6 @@
   <string name="ui.app.login.tfa.smtp.resend_action">Resend email code</string>
   <string name="ui.app.login.tfa.smtp.resend_rate_limited">Resend email code in {seconds}s</string>
   <string name="ui.app.login.tfa.smtp.resend_sent">A new verification code has been sent to your email.</string>
-  <string name="ui.app.login.tfa.smtp.rate_limited_notice">A verification code was recently sent. You can request a new one in {seconds}s.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Require Two-Factor Authentication for All Users</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">When enabled, users without a configured two-factor method will be redirected to settings until setup is complete.</string>
   <string name="ui.app.users.reset_tfa">Reset Two-Factor Authentication</string>

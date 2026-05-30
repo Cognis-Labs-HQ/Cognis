@@ -32,6 +32,7 @@ saat ini tetap jelas.
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
 - `src/gateways/tfa/ui/login-flow.js`
+- `src/gateways/tfa/ui/languages/*/strings.xml`
 - `src/gateways/tfa/tests/login-flow-ui.test.js`
 - `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
