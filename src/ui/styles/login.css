@@ -130,9 +130,22 @@ p.auth-intro {
     display: inline;
 }
 
+.auth-text-action--stacked {
+    display: block;
+    margin-top: 8px;
+}
+
 .auth-text-action:hover,
 .auth-text-action:focus-visible {
     color: #bfdbfe;
+}
+
+.auth-text-action--disabled,
+.auth-text-action--disabled:hover,
+.auth-text-action--disabled:focus-visible {
+    color: #93c5fd;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .auth-link-unavailable-message {

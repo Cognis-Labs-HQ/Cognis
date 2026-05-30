@@ -683,11 +683,19 @@ export class CoreTfaGateway {
         const enabledConfiguredMethods = configuredMethods
             .filter((method) => method.enabled)
             .sort((left, right) => left.sortOrder - right.sortOrder);
+        const candidateMethods = enabledConfiguredMethods.filter((method) => {
+            const adapter = this.adapters.get(method.methodId);
+            return adapter != null && this.isAdapterEnabled(method.methodId);
+        });
+        const hasUnusedRecoveryCodes =
+            await this.store.hasUnusedRecoveryCodes(accountId);
+        const initiateChallenge =
+            candidateMethods.length === 1 && !hasUnusedRecoveryCodes;
         const resolvedMethods = await Promise.all(
-            enabledConfiguredMethods.map(async (method) => {
-                const adapter = this.adapters.get(method.methodId);
-                if (!adapter || !this.isAdapterEnabled(method.methodId)) {
-                    return null;
+            candidateMethods.map(async (method) => {
+                const adapter = this.adapters.get(method.methodId)!;
+                if (!initiateChallenge) {
+                    return { id: adapter.id, name: adapter.name };
                 }
                 try {
                     const challenge = await this.prepareLoginChallenge(
@@ -732,7 +740,7 @@ export class CoreTfaGateway {
         const methods = resolvedMethods.filter(
             (method): method is TfaLoginMethod => method != null,
         );
-        if (await this.store.hasUnusedRecoveryCodes(accountId)) {
+        if (hasUnusedRecoveryCodes) {
             methods.push({ id: "recovery_code", name: "Recovery Code" });
         }
         return methods;

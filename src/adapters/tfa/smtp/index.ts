@@ -6,6 +6,7 @@ const DEFAULT_CODE_LENGTH = 6;
 const MIN_CODE_LENGTH = 4;
 const MAX_CODE_LENGTH = 10;
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
+const MAX_CODE_GENERATION_ATTEMPTS = 10;
 const NUMERIC_DIGITS = "0123456789";
 
 interface SmtpTfaAdapterContext {
@@ -16,6 +17,20 @@ interface SmtpTfaAdapterContext {
         verifyUrl?: string,
         theme?: string,
     ) => Promise<void>;
+    queueVerificationEmail?: (
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ) => Promise<{
+        notificationId: string;
+        status: "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
+        createdAt: string;
+        updatedAt: string;
+        availableAt?: string;
+        error?: string;
+        recipientEmail?: string;
+    }>;
     getPrimaryEmail?: (accountId: string) => Promise<string | null>;
     log?: (
         level: string,
@@ -93,12 +108,32 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
 
     private issueCode(key: string): string {
         this.cleanupExpiredChallenges();
-        const code = generateNumericCode(this.codeLength);
+        const existingCode = this.getLiveChallenge(key)?.code;
+        let code = generateNumericCode(this.codeLength);
+        let generationAttempts = 1;
+        while (existingCode && code === existingCode) {
+            if (generationAttempts >= MAX_CODE_GENERATION_ATTEMPTS) {
+                throw new Error("smtp_code_generation_failed");
+            }
+            code = generateNumericCode(this.codeLength);
+            generationAttempts += 1;
+        }
         this.challenges.set(key, {
             code,
             expiresAt: Date.now() + CODE_EXPIRY_MS,
         });
         return code;
+    }
+
+    private rollbackChallenge(
+        key: string,
+        challenge: CodeChallenge | null,
+    ): void {
+        if (challenge) {
+            this.challenges.set(key, challenge);
+            return;
+        }
+        this.challenges.delete(key);
     }
 
     private verifyCode(key: string, code: string): boolean {
@@ -121,6 +156,53 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         const key = challengeKey(scope, input.accountId);
         const code = this.issueCode(key);
         await this.context.sendVerificationEmail?.(input.email, code);
+    }
+
+    private extractRetryMetadata(availableAt: string | undefined): {
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    } {
+        if (typeof availableAt !== "string") {
+            return {};
+        }
+        const resendAvailableAt = availableAt.trim();
+        if (!resendAvailableAt) {
+            return {};
+        }
+        const resendTimestamp = Date.parse(resendAvailableAt);
+        if (!Number.isFinite(resendTimestamp)) {
+            this.context.log?.(
+                "warn",
+                "Ignored invalid SMTP retry timestamp metadata.",
+                {
+                    component: "adapter-tfa-smtp",
+                    operation: "parse_retry_metadata",
+                    availableAt: resendAvailableAt,
+                },
+            );
+            return {};
+        }
+        return {
+            retryAfterSeconds: Math.max(
+                Math.ceil((resendTimestamp - Date.now()) / 1000),
+                0,
+            ),
+            resendAvailableAt,
+        };
+    }
+
+    private buildCooldownMetadata(sentAtMs = Date.now()): {
+        retryAfterSeconds: number;
+        resendAvailableAt: string;
+    } {
+        return {
+            retryAfterSeconds: Math.ceil(
+                SMTP_VERIFICATION_RATE_LIMIT_MS / 1000,
+            ),
+            resendAvailableAt: new Date(
+                sentAtMs + SMTP_VERIFICATION_RATE_LIMIT_MS,
+            ).toISOString(),
+        };
     }
 
     async beginSetup(input: {
@@ -224,19 +306,80 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!email) {
             return { ready: false, message: "primary_email_required" };
         }
-        if (typeof this.context.sendVerificationEmail !== "function") {
+        if (
+            typeof this.context.sendVerificationEmail !== "function" &&
+            typeof this.context.queueVerificationEmail !== "function"
+        ) {
             return { ready: false, message: "smtp_capability_missing" };
         }
         if (this.context.canSendVerificationEmail?.() !== true) {
             return { ready: false, message: "smtp_unavailable" };
         }
         try {
+            if (typeof this.context.queueVerificationEmail === "function") {
+                const challengeSentAt = Date.now();
+                const key = challengeKey("login", input.accountId);
+                const previousChallenge = this.getLiveChallenge(key);
+                const code = this.issueCode(key);
+                let queued;
+                try {
+                    queued = await this.context.queueVerificationEmail(
+                        email,
+                        code,
+                    );
+                } catch (error) {
+                    this.rollbackChallenge(key, previousChallenge);
+                    throw error;
+                }
+                if (
+                    queued.status === "waiting_rate_limit" ||
+                    queued.status === "failed"
+                ) {
+                    this.rollbackChallenge(key, previousChallenge);
+                }
+                if (queued.status === "waiting_rate_limit") {
+                    const retryMetadata = this.extractRetryMetadata(
+                        queued.availableAt,
+                    );
+                    return {
+                        ready: true,
+                        message: "smtp_rate_limited",
+                        retryAfterSeconds: retryMetadata.retryAfterSeconds,
+                        resendAvailableAt: retryMetadata.resendAvailableAt,
+                    };
+                }
+                if (queued.status === "failed") {
+                    this.context.log?.(
+                        "error",
+                        "Failed to queue SMTP TFA challenge code.",
+                        {
+                            component: "adapter-tfa-smtp",
+                            operation: "queue_login_code",
+                            accountId: input.accountId,
+                            error: queued.error ?? "queue_delivery_failed",
+                        },
+                    );
+                    return { ready: false, message: "smtp_unavailable" };
+                }
+                this.loginChallengeLastSentAt.set(
+                    input.accountId,
+                    challengeSentAt,
+                );
+                return {
+                    ready: true,
+                    ...this.buildCooldownMetadata(challengeSentAt),
+                };
+            }
+            const challengeSentAt = Date.now();
             await this.sendCode("login", {
                 accountId: input.accountId,
                 email,
             });
-            this.loginChallengeLastSentAt.set(input.accountId, Date.now());
-            return { ready: true };
+            this.loginChallengeLastSentAt.set(input.accountId, challengeSentAt);
+            return {
+                ready: true,
+                ...this.buildCooldownMetadata(challengeSentAt),
+            };
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : String(error);

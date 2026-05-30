@@ -46,6 +46,21 @@ test("login UI resets password reset mode on refresh re-render", () => {
     );
 });
 
+test("login UI handles TFA prompt restore failures by falling back to login methods", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /loadTfaLoginClient\(\)[\s\S]*?\.catch\(\(error\) => {/,
+    );
+    assert.match(
+        source,
+        /\.catch\(\(error\) => \{[\s\S]*console\.error\(error\);[\s\S]*loadLoginMethods\(\);[\s\S]*runTypingShowcase\(typingSamples\);[\s\S]*\}\)/,
+    );
+});
+
 test("notify required-email helper checks verified primary email", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/notify/ui/login-required-email-flow.js"),
