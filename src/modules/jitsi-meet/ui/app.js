@@ -55,6 +55,8 @@ const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
     reactionHelpersModuleUrl: null,
 });
 
+const MEETINGS_CHAT_REACTIONS_ENABLED = false;
+
 const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     destroy: () => undefined,
     hideReactionHoverPopup: () => undefined,
@@ -289,14 +291,15 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
-    const messageReactions =
-        (await loadMessageReactionsController(
-            messageUiResources,
-            i18n,
-            async () => {
-                await refreshNativeChat();
-            },
-        )) ?? NULL_MESSAGE_REACTIONS_CONTROLLER;
+    const messageReactions = MEETINGS_CHAT_REACTIONS_ENABLED
+        ? ((await loadMessageReactionsController(
+              messageUiResources,
+              i18n,
+              async () => {
+                  await refreshNativeChat();
+              },
+          )) ?? NULL_MESSAGE_REACTIONS_CONTROLLER)
+        : NULL_MESSAGE_REACTIONS_CONTROLLER;
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
     signal?.addEventListener(
         "abort",
