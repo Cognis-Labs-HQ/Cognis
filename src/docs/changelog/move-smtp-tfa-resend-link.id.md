@@ -26,14 +26,24 @@ bahwa kode sudah dikirim alih-alih memberi peringatan tentang hitung mundur
 kirim ulang. Tautan kirim ulang tetap menampilkan hitung mundur agar batas laju
 saat ini tetap jelas.
 
+Kode SMTP tidak lagi dikirim saat halaman dimuat jika beberapa metode TFA
+tersedia. Server kini hanya memulai challenge ketika pengguna memiliki tepat
+satu metode yang dikonfigurasi. Jika beberapa metode tersedia, tidak ada
+challenge yang dimulai hingga pengguna secara eksplisit memilih tab metode —
+saat itulah klien memicu challenge melalui endpoint resend. Perpindahan tab
+kembali ke SMTP tidak mengirim ulang kode selama challenge yang ada masih
+aktif.
+
 ## File/komponen yang diubah
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/gateway.ts`
 - `src/gateways/tfa/ui/login-flow.js`
 - `src/gateways/tfa/ui/languages/*/strings.xml`
 - `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/tests/tfa-gateway.test.ts`
 - `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`

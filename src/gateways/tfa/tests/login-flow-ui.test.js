@@ -40,7 +40,7 @@ test("tfa login resend success responses always show the resend success toast", 
     assert.match(SOURCE, /deliveryToastShownOnce = true;/);
     assert.match(
         SOURCE,
-        /setResendStateForMethod\(\s*resolveMethod\(selectedMethodId\),\s*\{ skipDeliveryToast: true \},\s*\);/,
+        /setResendStateForMethod\(\s*resolveMethod\(methodId\),\s*\{\s*skipDeliveryToast:\s*true,?\s*\}\s*\)/,
     );
 });
 

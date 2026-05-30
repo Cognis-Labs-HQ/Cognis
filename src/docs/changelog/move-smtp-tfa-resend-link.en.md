@@ -26,14 +26,24 @@ When the SMTP login flow sends a code automatically, the toast now confirms
 that the code was sent instead of warning about the resend cooldown. The resend
 link still shows the cooldown countdown so the current rate limit remains clear.
 
+SMTP codes are no longer sent on page load when multiple TFA methods are
+available. The login server now initiates a challenge only when the user has
+exactly one configured method. When multiple methods are present, no challenge
+is started until the user explicitly selects a method tab — at which point the
+client triggers a challenge via the resend endpoint. Subsequent tab switches
+back to SMTP do not re-send the code while the existing challenge is still
+active.
+
 ## Changed files/components
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/gateway.ts`
 - `src/gateways/tfa/ui/login-flow.js`
 - `src/gateways/tfa/ui/languages/*/strings.xml`
 - `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/tests/tfa-gateway.test.ts`
 - `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`

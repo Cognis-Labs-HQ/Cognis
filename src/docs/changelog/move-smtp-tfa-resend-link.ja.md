@@ -24,14 +24,23 @@ SMTP ログインフローがコードを自動送信した場合、トースト
 警告ではなく、コード送信完了を示す表示になりました。再送信リンクのカウントダウンは
 そのまま残るため、現在のレート制限は引き続き分かります。
 
+複数の TFA 方式が利用可能な場合、ページ読み込み時に SMTP コードが自動送信
+されなくなりました。サーバーは設定済み方式がちょうど 1 つのときのみ
+チャレンジを開始します。複数の方式がある場合、ユーザーが方式タブを明示的に
+選択するまでチャレンジは開始されず、選択時にクライアントが resend エンドポイントを
+通じてチャレンジを起動します。既存のチャレンジがアクティブな間は、
+SMTP タブに再び切り替えてもコードは再送信されません。
+
 ## 変更されたファイル/コンポーネント
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/gateway.ts`
 - `src/gateways/tfa/ui/login-flow.js`
 - `src/gateways/tfa/ui/languages/*/strings.xml`
 - `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/tests/tfa-gateway.test.ts`
 - `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`

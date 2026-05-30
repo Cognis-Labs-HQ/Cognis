@@ -53,6 +53,7 @@ export function renderTfaMethodTabs(
     methods,
     onMethodChanged,
     root = document,
+    onMethodActivated,
 ) {
     const tabsEl = root.querySelector("#login-tfa-method-nav");
     const methodInput = root.querySelector("#login-tfa-method");
@@ -77,6 +78,7 @@ export function renderTfaMethodTabs(
             });
             setActiveTfaInputPlaceholder(i18n, method.id, tfaCodeInput);
             onMethodChanged?.(method);
+            onMethodActivated?.(method);
         });
         if (index === 0) {
             tabLink.classList.add("active");
@@ -94,6 +96,7 @@ export function switchToTfaPrompt(
     payload,
     root = document,
     onMethodChanged,
+    onMethodActivated,
 ) {
     const credentialFields = root.querySelector("#login-credential-fields");
     const tfaFields = root.querySelector("#login-tfa-fields");
@@ -121,7 +124,13 @@ export function switchToTfaPrompt(
         tfaCodeInput.value = "";
         tfaCodeInput.focus();
     }
-    renderTfaMethodTabs(i18n, payload.methods ?? [], onMethodChanged, root);
+    renderTfaMethodTabs(
+        i18n,
+        payload.methods ?? [],
+        onMethodChanged,
+        root,
+        onMethodActivated,
+    );
     return payload.loginAttemptId ?? null;
 }
 
@@ -289,6 +298,57 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     challenge: challengeStateByMethodId.get(method.id) ?? null,
                 };
             };
+
+            const sendChallenge = async (methodId) => {
+                if (!methodId || !loginAttemptId || resendLocked) {
+                    return;
+                }
+                resendLocked = true;
+                syncDisabledResendState();
+                try {
+                    const { response, body } = await this.resendCode({
+                        loginAttemptId,
+                        methodId,
+                    });
+                    const resolvedMethod = resolveMethod(methodId);
+                    if (response.ok) {
+                        if (resolvedMethod) {
+                            challengeStateByMethodId.set(
+                                resolvedMethod.id,
+                                body?.data?.challenge ?? {},
+                            );
+                        }
+                        deliveryToastShownOnce = true;
+                        showToast(i18n.t("ui.app.login.tfa.smtp.resend_sent"), {
+                            variant: "success",
+                        });
+                        setResendStateForMethod(resolveMethod(methodId), {
+                            skipDeliveryToast: true,
+                        });
+                        return;
+                    }
+                    if (resolvedMethod) {
+                        challengeStateByMethodId.set(resolvedMethod.id, {
+                            message: body?.error?.code,
+                            retryAfterSeconds:
+                                body?.error?.retryAfterSeconds ??
+                                body?.error?.details?.retryAfterSeconds,
+                            resendAvailableAt:
+                                body?.error?.resendAvailableAt ??
+                                body?.error?.details?.resendAvailableAt,
+                        });
+                        setResendStateForMethod(resolveMethod(methodId));
+                    } else {
+                        resendLocked = false;
+                        syncDisabledResendState();
+                    }
+                } catch (error) {
+                    console.error(error);
+                    resendLocked = false;
+                    syncDisabledResendState();
+                }
+            };
+
             if (
                 fields instanceof HTMLElement &&
                 fields.childElementCount === 0
@@ -314,73 +374,26 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                             methodInput instanceof HTMLInputElement
                                 ? methodInput.value
                                 : "";
-                        if (
-                            !selectedMethodId ||
-                            !loginAttemptId ||
-                            resendLocked
-                        ) {
-                            return;
-                        }
-                        resendLocked = true;
-                        syncDisabledResendState();
-                        try {
-                            const { response, body } = await this.resendCode({
-                                loginAttemptId,
-                                methodId: selectedMethodId,
-                            });
-                            const selectedMethod =
-                                resolveMethod(selectedMethodId);
-                            if (response.ok) {
-                                if (selectedMethod) {
-                                    challengeStateByMethodId.set(
-                                        selectedMethod.id,
-                                        body?.data?.challenge ?? {},
-                                    );
-                                }
-                                deliveryToastShownOnce = true;
-                                showToast(
-                                    i18n.t("ui.app.login.tfa.smtp.resend_sent"),
-                                    { variant: "success" },
-                                );
-                                setResendStateForMethod(
-                                    resolveMethod(selectedMethodId),
-                                    { skipDeliveryToast: true },
-                                );
-                                return;
-                            }
-                            if (selectedMethod) {
-                                challengeStateByMethodId.set(
-                                    selectedMethod.id,
-                                    {
-                                        message: body?.error?.code,
-                                        retryAfterSeconds:
-                                            body?.error?.retryAfterSeconds ??
-                                            body?.error?.details
-                                                ?.retryAfterSeconds,
-                                        resendAvailableAt:
-                                            body?.error?.resendAvailableAt ??
-                                            body?.error?.details
-                                                ?.resendAvailableAt,
-                                    },
-                                );
-                                setResendStateForMethod(
-                                    resolveMethod(selectedMethodId),
-                                );
-                            } else {
-                                resendLocked = false;
-                                syncDisabledResendState();
-                            }
-                        } catch (error) {
-                            console.error(error);
-                            resendLocked = false;
-                            syncDisabledResendState();
-                        }
+                        await sendChallenge(selectedMethodId);
                     });
                 }
             }
-            return switchToTfaPrompt(i18n, payload, root, (method) => {
-                setResendStateForMethod(resolveMethod(method.id));
-            });
+            return switchToTfaPrompt(
+                i18n,
+                payload,
+                root,
+                (method) => {
+                    setResendStateForMethod(resolveMethod(method.id));
+                },
+                async (method) => {
+                    if (
+                        method.id === "smtp" &&
+                        !challengeStateByMethodId.has(method.id)
+                    ) {
+                        await sendChallenge(method.id);
+                    }
+                },
+            );
         },
         async resendCode(payload) {
             const response = await fetch("/api/v1/tfa/login/resend", {
