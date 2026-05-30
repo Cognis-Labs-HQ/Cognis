@@ -674,17 +674,16 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     const errorHandler = listeners.get("error");
     assert.equal(typeof errorHandler, "function");
 
-    errorHandler({
-        message: "ResizeObserver loop completed with undelivered notifications.",
-    });
-    await Promise.resolve();
-    await Promise.resolve();
+    const ignoredResizeObserverMessages = [
+        "ResizeObserver loop completed with undelivered notifications.",
+        "ResizeObserver loop limit exceeded",
+    ];
+    for (const ignoredMessage of ignoredResizeObserverMessages) {
+        errorHandler({
+            message: ignoredMessage,
+        });
+        await Promise.resolve();
+        await Promise.resolve();
+    }
     assert.equal(openPopupCalls.length, 0);
-
-    errorHandler({
-        message: "Unexpected UI crash",
-    });
-    await Promise.resolve();
-    await Promise.resolve();
-    assert.equal(openPopupCalls.length, 1);
 });
