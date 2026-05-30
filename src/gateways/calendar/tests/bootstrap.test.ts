@@ -257,3 +257,68 @@ test("calendar event update/delete endpoints forbid editing mirrored invite copi
     assert.equal(organizerDeleteResponse.statusCode, 200);
     assert.ok(cancellationDispatchCount > dispatchCountBeforeOrganizerDelete);
 });
+
+test("calendar share endpoint returns CalDAV links and supports never-expiring private links", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const adminToken = issueAccessToken("calendar-admin", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    } as any);
+
+    const dispatchJson = async (
+        method: string,
+        pathname: string,
+        body?: Record<string, unknown>,
+    ) => {
+        const request = new RequestRecorder({
+            method,
+            token: adminToken,
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        const response = new ResponseRecorder();
+        await dispatchRoute(
+            routeRegistry,
+            request,
+            response,
+            new URL(`http://localhost${pathname}`),
+        );
+        return {
+            statusCode: response.statusCode,
+            body:
+                response.payload.length > 0
+                    ? JSON.parse(response.payload)
+                    : null,
+        };
+    };
+
+    const calendarsResponse = await dispatchJson(
+        "GET",
+        "/api/v1/calendar/calendars",
+    );
+    const defaultCalendarId = calendarsResponse.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const shareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { permission: "read", expiresInHours: null },
+    );
+    assert.equal(shareResponse.statusCode, 200);
+    assert.match(
+        shareResponse.body.data.shareUrl,
+        /^\/api\/v1\/calendar\/caldav\/private\/[^/]+$/,
+    );
+});

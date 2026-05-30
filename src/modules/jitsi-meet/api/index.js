@@ -566,12 +566,12 @@ export function registerApiRoutes(router, ctx) {
                 creatorUsername: requesterUsername,
             });
 
-            if (normalizedInput.participantUsernames.length < 2) {
+            if (normalizedInput.participantUsernames.length < 1) {
                 sendError(
                     res,
                     400,
                     "bad_request",
-                    "At least two valid meeting participants are required.",
+                    "At least one valid meeting participant is required.",
                 );
                 return;
             }

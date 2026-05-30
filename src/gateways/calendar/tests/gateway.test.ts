@@ -99,6 +99,22 @@ test("calendar gateway private export tokens expire and validate", () => {
     assert.equal(resolved?.calendarId, calendar.id);
 });
 
+test("calendar gateway supports non-expiring private export tokens", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Secure",
+    });
+    const token = gateway.issuePrivateExportToken({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        ttlSeconds: null,
+    });
+    const resolved = gateway.resolvePrivateExportToken(token.token);
+    assert.ok(resolved);
+    assert.equal(resolved?.expiresAt, "");
+});
+
 test("calendar gateway scoped meeting tokens are one-time and scoped", () => {
     const gateway = new CoreCalendarGateway();
     const token = gateway.issueScopedMeetingAccessToken({

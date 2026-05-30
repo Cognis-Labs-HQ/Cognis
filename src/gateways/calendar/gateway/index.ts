@@ -737,7 +737,7 @@ export class CoreCalendarGateway {
     issuePrivateExportToken(input: {
         ownerAccountId: string;
         calendarId: string;
-        ttlSeconds?: number;
+        ttlSeconds?: number | null;
     }): CaldavTokenRecord {
         const calendar = this.getOwnedCalendar(
             input.ownerAccountId,

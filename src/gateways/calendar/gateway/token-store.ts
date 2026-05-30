@@ -13,15 +13,18 @@ export class CalendarTokenStore {
 
     issueCaldavToken(
         input: Omit<CaldavTokenRecord, "token">,
-        ttlSeconds?: number,
+        ttlSeconds?: number | null,
     ): CaldavTokenRecord {
         const token: CaldavTokenRecord = {
             token: randomBytes(24).toString("hex"),
             ownerAccountId: input.ownerAccountId,
             calendarId: input.calendarId,
-            expiresAt: new Date(
-                Date.now() + (ttlSeconds ?? 3600) * 1000,
-            ).toISOString(),
+            expiresAt:
+                ttlSeconds === null
+                    ? ""
+                    : new Date(
+                          Date.now() + (ttlSeconds ?? 3600) * 1000,
+                      ).toISOString(),
         };
         this.tokensByValue.set(token.token, token);
         return token;
@@ -30,7 +33,10 @@ export class CalendarTokenStore {
     resolveCaldavToken(tokenValue: string): CaldavTokenRecord | null {
         const token = this.tokensByValue.get(tokenValue) ?? null;
         if (!token) return null;
-        if (new Date(token.expiresAt).getTime() <= Date.now()) {
+        if (
+            token.expiresAt &&
+            new Date(token.expiresAt).getTime() <= Date.now()
+        ) {
             this.tokensByValue.delete(tokenValue);
             return null;
         }

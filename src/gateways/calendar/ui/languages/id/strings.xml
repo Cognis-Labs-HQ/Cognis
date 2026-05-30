@@ -106,6 +106,7 @@
   <string name="gateway.calendar.share_link_expiry_24h">Kedaluwarsa dalam 24 jam</string>
   <string name="gateway.calendar.share_link_expiry_7d">Kedaluwarsa dalam 7 hari</string>
   <string name="gateway.calendar.share_link_expiry_30d">Kedaluwarsa dalam 30 hari</string>
+  <string name="gateway.calendar.share_link_expiry_never">Tidak Pernah Kedaluwarsa</string>
   <string name="gateway.calendar.share_link_generate">Buat Tautan</string>
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>

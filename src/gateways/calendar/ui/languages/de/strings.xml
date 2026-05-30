@@ -106,6 +106,7 @@
   <string name="gateway.calendar.share_link_expiry_24h">Läuft in 24 Stunden ab</string>
   <string name="gateway.calendar.share_link_expiry_7d">Läuft in 7 Tagen ab</string>
   <string name="gateway.calendar.share_link_expiry_30d">Läuft in 30 Tagen ab</string>
+  <string name="gateway.calendar.share_link_expiry_never">Läuft nie ab</string>
   <string name="gateway.calendar.share_link_generate">Link Generieren</string>
   <string name="gateway.calendar.share_link_copy">Kopieren</string>
   <string name="gateway.calendar.share_link_copied">Link kopiert!</string>
