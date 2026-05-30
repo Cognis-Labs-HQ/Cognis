@@ -235,6 +235,16 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 }
             };
 
+            const showDeliveryToastOnce = ({ skipDeliveryToast = false } = {}) => {
+                if (deliveryToastShownOnce || skipDeliveryToast) {
+                    return;
+                }
+                deliveryToastShownOnce = true;
+                showToast(i18n.t("ui.app.login.tfa.smtp.resend_sent"), {
+                    variant: "success",
+                });
+            };
+
             const setResendStateForMethod = (
                 method,
                 { skipDeliveryToast = false } = {},
@@ -261,13 +271,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         ? Math.max(Math.ceil((resendAt - Date.now()) / 1000), 0)
                         : 0;
                     if (remainingSeconds > 0) {
-                        if (!deliveryToastShownOnce && !skipDeliveryToast) {
-                            deliveryToastShownOnce = true;
-                            showToast(
-                                i18n.t("ui.app.login.tfa.smtp.resend_sent"),
-                                { variant: "success" },
-                            );
-                        }
+                        showDeliveryToastOnce({ skipDeliveryToast });
                         resendLocked = true;
                         syncDisabledResendState();
                         resendLink.textContent = i18n
@@ -301,6 +305,16 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
 
             const sendChallenge = async (methodId) => {
                 if (!methodId || !loginAttemptId || resendLocked) {
+                    if (!methodId || !loginAttemptId) {
+                        console.warn(
+                            "Cannot resend TFA challenge without methodId and loginAttemptId.",
+                            {
+                                methodId,
+                                loginAttemptId,
+                                resendLocked,
+                            },
+                        );
+                    }
                     return;
                 }
                 resendLocked = true;

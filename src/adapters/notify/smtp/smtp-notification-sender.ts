@@ -812,6 +812,9 @@ export class SmtpNotificationSender implements NotificationSender {
             verifyUrl,
             theme,
         );
+        if (!queued.notificationId) {
+            throw new Error("smtp_queue_item_missing");
+        }
         await this.queue.waitForResult(queued.notificationId);
     }
 

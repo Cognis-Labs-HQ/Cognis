@@ -595,6 +595,7 @@ export async function mount(root) {
                 onRender: () => {
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
+                        // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).
                         loadTfaLoginClient()
                             .then((client) => {
                                 if (client) {

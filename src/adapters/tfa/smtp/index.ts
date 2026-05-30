@@ -110,13 +110,13 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         this.cleanupExpiredChallenges();
         const existingCode = this.getLiveChallenge(key)?.code;
         let code = generateNumericCode(this.codeLength);
-        let attempts = 0;
+        let generationAttempts = 1;
         while (existingCode && code === existingCode) {
-            code = generateNumericCode(this.codeLength);
-            attempts += 1;
-            if (attempts >= MAX_CODE_GENERATION_ATTEMPTS) {
+            if (generationAttempts >= MAX_CODE_GENERATION_ATTEMPTS) {
                 throw new Error("smtp_code_generation_failed");
             }
+            code = generateNumericCode(this.codeLength);
+            generationAttempts += 1;
         }
         this.challenges.set(key, {
             code,
@@ -322,8 +322,13 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     this.rollbackChallenge(key, previousChallenge);
                     throw error;
                 }
-                if (queued.status === "waiting_rate_limit") {
+                if (
+                    queued.status === "waiting_rate_limit" ||
+                    queued.status === "failed"
+                ) {
                     this.rollbackChallenge(key, previousChallenge);
+                }
+                if (queued.status === "waiting_rate_limit") {
                     const retryMetadata = this.extractRetryMetadata(
                         queued.availableAt,
                     );
@@ -335,7 +340,6 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     };
                 }
                 if (queued.status === "failed") {
-                    this.rollbackChallenge(key, previousChallenge);
                     this.context.log?.(
                         "error",
                         "Failed to queue SMTP TFA challenge code.",
