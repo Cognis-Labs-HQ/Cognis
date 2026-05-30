@@ -3,13 +3,22 @@ import tls from "node:tls";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
-import { encodeBasicHtmlEntities } from "./html-entities.js";
+import type {
+    NotificationEnvelope,
+    NotificationSender,
+    NotificationSenderQueueEntry,
+} from "@cognis/core";
+import { decodeBasicHtmlEntities, encodeBasicHtmlEntities } from "./html-entities.js";
 import {
     buildAttachmentMimeParts,
     type MimeAttachment,
 } from "./mime-attachments.js";
 import { dotStuff, isTemporaryCode, stripHtmlTags } from "./mime-utils.js";
+import {
+    SmtpNotificationQueue,
+    SmtpRateLimiter,
+} from "./smtp-notification-queue.js";
+import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
 
 export interface SmtpConfig {
     host: string;
@@ -624,30 +633,6 @@ async function sendMail(
 
 const DEFAULT_GREYLIST_RETRIES = 2;
 const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
-const DEFAULT_RATE_LIMIT_MS = 60_000;
-
-export class SmtpRateLimiter {
-    private readonly lastSent = new Map<string, number>();
-
-    constructor(
-        private readonly minIntervalMs: number,
-        private readonly now: () => number = () => Date.now(),
-    ) {}
-
-    /**
-     * Returns true if `recipient` is within the rate-limit window and
-     * a new email must not be sent. Returns false when a send is allowed.
-     */
-    isThrottled(recipient: string): boolean {
-        const last = this.lastSent.get(recipient);
-        if (last === undefined) return false;
-        return this.now() - last < this.minIntervalMs;
-    }
-
-    record(recipient: string): void {
-        this.lastSent.set(recipient, this.now());
-    }
-}
 
 async function sendMailWithRetry(
     config: SmtpConfig,
@@ -699,6 +684,7 @@ export class SmtpNotificationSender implements NotificationSender {
     private readonly envSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
     private readonly rateLimiter: SmtpRateLimiter;
+    private readonly queue: SmtpNotificationQueue;
 
     constructor(
         private config: SmtpConfig,
@@ -711,7 +697,23 @@ export class SmtpNotificationSender implements NotificationSender {
             sleep ??
             ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
         this.rateLimiter =
-            rateLimiter ?? new SmtpRateLimiter(DEFAULT_RATE_LIMIT_MS);
+            rateLimiter ?? new SmtpRateLimiter(SMTP_VERIFICATION_RATE_LIMIT_MS);
+        this.queue = new SmtpNotificationQueue(
+            this.rateLimiter,
+            this.sleep,
+            async (payload) => {
+                await sendMailWithRetry(
+                    this.config,
+                    payload.recipientEmail,
+                    payload.subject,
+                    payload.body,
+                    this.sleep,
+                    payload.theme,
+                    payload.verifyUrl,
+                    payload.verifyButtonLabel,
+                );
+            },
+        );
     }
 
     getEnvValues(): Record<string, string | undefined> {
@@ -771,6 +773,14 @@ export class SmtpNotificationSender implements NotificationSender {
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
     }
 
+    listQueue(): NotificationSenderQueueEntry[] {
+        return this.queue.listQueue();
+    }
+
+    getQueueItem(notificationId: string): NotificationSenderQueueEntry | null {
+        return this.queue.getQueueItem(notificationId);
+    }
+
     async sendVerificationEmail(
         to: string,
         code: string,
@@ -778,23 +788,18 @@ export class SmtpNotificationSender implements NotificationSender {
         theme?: string,
     ): Promise<void> {
         if (!to) throw new Error("smtp_requires_recipient");
-        if (this.rateLimiter.isThrottled(to)) {
-            throw new Error("smtp_rate_limited");
-        }
-        this.rateLimiter.record(to);
         const subject = "Verify your email address";
         const body = verifyUrl
             ? `Your verification code is: ${code}\n\nOr click the button below to verify your email address directly.\n\nBoth the code and the link expire in 15 minutes.`
             : `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
-        await sendMailWithRetry(
-            this.config,
-            to,
+        const queued = this.queue.enqueue({
+            recipientEmail: to,
             subject,
             body,
-            this.sleep,
             theme,
             verifyUrl,
-        );
+        });
+        await this.queue.waitForResult(queued.notificationId);
     }
 
     async sendRegistrationInviteEmail(
@@ -806,16 +811,15 @@ export class SmtpNotificationSender implements NotificationSender {
         if (!to) throw new Error("smtp_requires_recipient");
         const subject = `${inviterDisplayName} invited you to join Cognis`;
         const body = `🎁 ${inviterDisplayName} wants you to join Cognis.\n\nUse this secure invitation link to finish account creation:\n${inviteUrl}\n\nThis invitation expires in 24 hours and can only be used once.`;
-        await sendMailWithRetry(
-            this.config,
-            to,
+        const queued = this.queue.enqueue({
+            recipientEmail: to,
             subject,
             body,
-            this.sleep,
             theme,
-            inviteUrl,
-            "Sign Up",
-        );
+            verifyUrl: inviteUrl,
+            verifyButtonLabel: "Sign Up",
+        });
+        await this.queue.waitForResult(queued.notificationId);
     }
 
     async sendOneTimeLoginEmail(
@@ -830,10 +834,6 @@ export class SmtpNotificationSender implements NotificationSender {
     ): Promise<void> {
         if (!to) throw new Error("smtp_requires_recipient");
         if (!loginUrl) throw new Error("smtp_requires_login_url");
-        if (this.rateLimiter.isThrottled(to)) {
-            throw new Error("smtp_rate_limited");
-        }
-        this.rateLimiter.record(to);
         const theme = options?.theme;
         const subject = options?.subject?.trim();
         const body = options?.body?.trim();
@@ -842,16 +842,15 @@ export class SmtpNotificationSender implements NotificationSender {
                 "One-time login email subject and body are required.",
             );
         }
-        await sendMailWithRetry(
-            this.config,
-            to,
+        const queued = this.queue.enqueue({
+            recipientEmail: to,
             subject,
             body,
-            this.sleep,
             theme,
-            loginUrl,
-            options?.actionLabel,
-        );
+            verifyUrl: loginUrl,
+            verifyButtonLabel: options?.actionLabel,
+        });
+        await this.queue.waitForResult(queued.notificationId);
     }
 
     async sendTestEmail(
@@ -922,7 +921,29 @@ export class SmtpNotificationSender implements NotificationSender {
             envelope.attachments ?? [],
         );
     }
+
+    async sendTracked(
+        envelope: NotificationEnvelope,
+    ): Promise<{ notificationId: string }> {
+        if (!envelope.recipientEmail) {
+            throw new Error("smtp_sender_requires_recipient_email");
+        }
+        const theme =
+            typeof envelope.metadata?.theme === "string"
+                ? envelope.metadata.theme
+                : undefined;
+        return this.queue.enqueue({
+            recipientEmail: envelope.recipientEmail,
+            recipientUsername: envelope.recipientUsername,
+            category: envelope.category,
+            subject: envelope.subject,
+            body: envelope.body,
+            theme,
+        });
+    }
 }
+
+export { SmtpRateLimiter } from "./smtp-notification-queue.js";
 
 export function createNotificationSender(
     env: Record<string, string | undefined>,

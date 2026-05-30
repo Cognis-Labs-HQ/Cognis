@@ -1,6 +1,7 @@
 import { redirectToRequiredTfaSetup } from "/static/reuse/auth-setup-route.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { showToast } from "/static/reuse/toast.js";
 
 function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
@@ -19,7 +20,40 @@ function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
     tfaCodeInput.setAttribute("aria-label", placeholderText);
 }
 
-export function renderTfaMethodTabs(i18n, methods, root = document) {
+function getMethodById(methods, methodId) {
+    return (
+        (Array.isArray(methods) ? methods : []).find(
+            (method) => method?.id === methodId,
+        ) ?? null
+    );
+}
+
+function parseChallengeResendTimestamp(method) {
+    const resendAvailableAt = String(
+        method?.challenge?.resendAvailableAt ?? "",
+    ).trim();
+    if (resendAvailableAt) {
+        const parsedTime = Date.parse(resendAvailableAt);
+        if (Number.isFinite(parsedTime) && parsedTime > Date.now()) {
+            return parsedTime;
+        }
+    }
+    const retryAfterSeconds = Number.parseInt(
+        String(method?.challenge?.retryAfterSeconds ?? ""),
+        10,
+    );
+    if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+        return Date.now() + retryAfterSeconds * 1000;
+    }
+    return null;
+}
+
+export function renderTfaMethodTabs(
+    i18n,
+    methods,
+    onMethodChanged,
+    root = document,
+) {
     const tabsEl = root.querySelector("#login-tfa-method-nav");
     const methodInput = root.querySelector("#login-tfa-method");
     const tfaCodeInput = root.querySelector("#login-tfa-code");
@@ -42,18 +76,25 @@ export function renderTfaMethodTabs(i18n, methods, root = document) {
                 entry.classList.toggle("active", entry === tabLink);
             });
             setActiveTfaInputPlaceholder(i18n, method.id, tfaCodeInput);
+            onMethodChanged?.(method);
         });
         if (index === 0) {
             tabLink.classList.add("active");
             methodInput.value = method.id;
             setActiveTfaInputPlaceholder(i18n, method.id, tfaCodeInput);
+            onMethodChanged?.(method);
         }
         tabsEl.appendChild(tabLink);
     });
     tabsEl.hidden = normalizedMethods.length <= 1;
 }
 
-export function switchToTfaPrompt(i18n, payload, root = document) {
+export function switchToTfaPrompt(
+    i18n,
+    payload,
+    root = document,
+    onMethodChanged,
+) {
     const credentialFields = root.querySelector("#login-credential-fields");
     const tfaFields = root.querySelector("#login-tfa-fields");
     const usernameInput = root.querySelector("#login-username");
@@ -80,7 +121,7 @@ export function switchToTfaPrompt(i18n, payload, root = document) {
         tfaCodeInput.value = "";
         tfaCodeInput.focus();
     }
-    renderTfaMethodTabs(i18n, payload.methods ?? [], root);
+    renderTfaMethodTabs(i18n, payload.methods ?? [], onMethodChanged, root);
     return payload.loginAttemptId ?? null;
 }
 
@@ -129,6 +170,85 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
         i18n,
         switchToTfaPrompt(payload) {
             const fields = root.querySelector("#login-tfa-fields");
+            const methods = Array.isArray(payload?.methods)
+                ? payload.methods
+                : [];
+            const loginAttemptId = String(payload?.loginAttemptId ?? "").trim();
+            const challengeStateByMethodId = new Map(
+                methods
+                    .filter(
+                        (method) =>
+                            typeof method?.id === "string" && method.challenge,
+                    )
+                    .map((method) => [method.id, method.challenge]),
+            );
+            let countdownTimer = null;
+            let resendLocked = false;
+
+            const stopCountdown = () => {
+                if (countdownTimer != null) {
+                    window.clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+            };
+
+            const setResendStateForMethod = (method) => {
+                const resendLink = root.querySelector(
+                    "#login-tfa-resend-action",
+                );
+                if (!(resendLink instanceof HTMLAnchorElement)) {
+                    return;
+                }
+                stopCountdown();
+                const isSmtpMethod = method?.id === "smtp";
+                const resendAt = parseChallengeResendTimestamp(method);
+                resendLink.hidden = !isSmtpMethod;
+                if (!isSmtpMethod) {
+                    return;
+                }
+                const updateCountdown = () => {
+                    if (!resendLink.isConnected) {
+                        stopCountdown();
+                        return;
+                    }
+                    const remainingSeconds = resendAt
+                        ? Math.max(Math.ceil((resendAt - Date.now()) / 1000), 0)
+                        : 0;
+                    if (
+                        method?.challenge?.message === "smtp_rate_limited" &&
+                        remainingSeconds > 0
+                    ) {
+                        resendLocked = true;
+                        resendLink.textContent = i18n
+                            .t("ui.app.login.tfa.smtp.resend_rate_limited")
+                            .replace("{seconds}", String(remainingSeconds));
+                        return;
+                    }
+                    stopCountdown();
+                    resendLocked = false;
+                    resendLink.textContent = i18n.t(
+                        "ui.app.login.tfa.smtp.resend_action",
+                    );
+                };
+                updateCountdown();
+                if (
+                    method?.challenge?.message === "smtp_rate_limited" &&
+                    resendAt != null
+                ) {
+                    countdownTimer = window.setInterval(updateCountdown, 1000);
+                }
+            };
+
+            const resolveMethod = (methodId) => {
+                const method = getMethodById(methods, methodId);
+                if (!method) {
+                    return null;
+                }
+                return {
+                    ...method,
+                    challenge: challengeStateByMethodId.get(method.id) ?? null,
+                };
+            };
             if (
                 fields instanceof HTMLElement &&
                 fields.childElementCount === 0
@@ -140,9 +260,83 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                   <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
                   <input type="hidden" id="login-tfa-method" value="" />
                   <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${placeholderText}" aria-label="${placeholderText}" />
+                  <a href="#" id="login-tfa-resend-action" class="auth-text-action" hidden></a>
                 `;
+                const resendLink = fields.querySelector(
+                    "#login-tfa-resend-action",
+                );
+                if (resendLink instanceof HTMLAnchorElement) {
+                    resendLink.addEventListener("click", async (event) => {
+                        event.preventDefault();
+                        const methodInput =
+                            root.querySelector("#login-tfa-method");
+                        const selectedMethodId =
+                            methodInput instanceof HTMLInputElement
+                                ? methodInput.value
+                                : "";
+                        if (
+                            !selectedMethodId ||
+                            !loginAttemptId ||
+                            resendLocked
+                        ) {
+                            return;
+                        }
+                        resendLocked = true;
+                        try {
+                            const { response, body } = await this.resendCode({
+                                loginAttemptId,
+                                methodId: selectedMethodId,
+                            });
+                            const selectedMethod =
+                                resolveMethod(selectedMethodId);
+                            if (response.ok) {
+                                if (selectedMethod) {
+                                    challengeStateByMethodId.set(
+                                        selectedMethod.id,
+                                        body?.data?.challenge ?? {},
+                                    );
+                                }
+                                showToast(
+                                    i18n.t("ui.app.login.tfa.smtp.resend_sent"),
+                                    { variant: "success" },
+                                );
+                                setResendStateForMethod(
+                                    resolveMethod(selectedMethodId),
+                                );
+                                return;
+                            }
+                            if (selectedMethod) {
+                                challengeStateByMethodId.set(
+                                    selectedMethod.id,
+                                    {
+                                        message: body?.error?.code,
+                                    },
+                                );
+                                setResendStateForMethod(
+                                    resolveMethod(selectedMethodId),
+                                );
+                            } else {
+                                resendLocked = false;
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            resendLocked = false;
+                        }
+                    });
+                }
             }
-            return switchToTfaPrompt(i18n, payload, root);
+            return switchToTfaPrompt(i18n, payload, root, (method) => {
+                setResendStateForMethod(resolveMethod(method.id));
+            });
+        },
+        async resendCode(payload) {
+            const response = await fetch("/api/v1/tfa/login/resend", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const body = await response.json().catch(() => null);
+            return { response, body };
         },
         async verifyCode(payload) {
             const response = await fetch("/api/v1/tfa/login/verify", {

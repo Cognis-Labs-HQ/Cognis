@@ -213,6 +213,46 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
     );
 });
 
+test("tfa gateway includes rate-limited smtp method with challenge metadata", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({
+            pendingPayload: {},
+            view: { prompt: "prompt" },
+        }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        beginLoginChallenge: async () => ({
+            ready: true,
+            message: "smtp_rate_limited",
+            retryAfterSeconds: 45,
+            resendAvailableAt: "2026-01-01T00:00:45.000Z",
+        }),
+        verifyLogin: async () => ({ verified: false }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    await gateway.enableAdapter("smtp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "smtp",
+        enabled: true,
+        sortOrder: 0,
+        state: { email: "alice@example.com" },
+        configuredAt: new Date().toISOString(),
+    });
+    const methods = await gateway.getLoginMethods("alice");
+    assert.equal(methods[0]?.id, "smtp");
+    assert.equal(methods[0]?.challenge?.message, "smtp_rate_limited");
+    assert.equal(methods[0]?.challenge?.retryAfterSeconds, 45);
+    assert.equal(
+        methods[0]?.challenge?.resendAvailableAt,
+        "2026-01-01T00:00:45.000Z",
+    );
+});
+
 test("tfa gateway enableAdapter preserves existing adapter config", async () => {
     const storeMock = createStoreMock();
     await storeMock.saveAdapterConfig("totp", true, { algorithm: "SHA512" });

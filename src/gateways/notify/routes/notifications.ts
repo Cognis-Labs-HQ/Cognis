@@ -90,6 +90,11 @@ function resolveTrustedOrigin(requestOrigin: string): string {
     );
 }
 
+function isValidNotificationQueueId(value: string): boolean {
+    if (!value || value.length > 128) return false;
+    return !/[\s\x00-\x1f\x7f]/.test(value);
+}
+
 function validateBroadcastSchedule(
     startAt: number | null | undefined,
     endAt: number | null | undefined,
@@ -255,6 +260,52 @@ export function createNotificationRoutes(
             if (!ctx.requireAuth(req, res, "user")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listSenders() }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/notifications/queue" &&
+            req.method === "GET"
+        ) {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: gateway.listNotificationQueue() }));
+            return true;
+        }
+
+        const queueItemMatch = url.pathname.match(
+            /^\/api\/v1\/notifications\/queue\/([^/]+)$/,
+        );
+        if (queueItemMatch && req.method === "GET") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            const notificationId = decodeURIComponent(queueItemMatch[1]);
+            if (!isValidNotificationQueueId(notificationId)) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_notification_id",
+                            message: "Notification ID is invalid",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const queueItem = gateway.getNotificationQueueItem(notificationId);
+            if (!queueItem) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Notification queue item not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: queueItem }));
             return true;
         }
 

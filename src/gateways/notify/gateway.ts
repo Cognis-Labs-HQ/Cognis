@@ -57,24 +57,75 @@ export interface NotificationSenderInfo {
     requires?: string[];
 }
 
+export type NotificationQueueStatus =
+    | "queued"
+    | "waiting_rate_limit"
+    | "sending"
+    | "sent"
+    | "failed";
+
+export interface NotificationSenderQueueEntry {
+    notificationId: string;
+    status: NotificationQueueStatus;
+    createdAt: string;
+    updatedAt: string;
+    availableAt?: string;
+    error?: string;
+    recipientUsername?: string;
+    recipientEmail?: string;
+    category?: string;
+    subject?: string;
+}
+
+export interface NotificationQueueEntry extends NotificationSenderQueueEntry {
+    senderId: string;
+}
+
+export interface NotificationDispatchError {
+    senderId: string;
+    error: string;
+}
+
+export interface NotificationDispatchReceipt {
+    senderId: string;
+    notificationId: string;
+}
+
+export interface NotificationDispatchResult {
+    dispatched: string[];
+    notifications?: NotificationDispatchReceipt[];
+    errors?: NotificationDispatchError[];
+}
+
 export interface NotificationSender {
     readonly senderId: string;
     readonly senderName?: string;
     send(envelope: NotificationEnvelope): Promise<void>;
+    sendTracked?(envelope: NotificationEnvelope): Promise<{
+        notificationId: string;
+    }>;
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
     sendTestEmail?(to: string, config?: Record<string, unknown>): Promise<void>;
     isConfigured?(): boolean;
     getEnvValues?(): Record<string, string | undefined>;
     getRequiredFields?(): string[];
+    listQueue?(): NotificationSenderQueueEntry[];
+    getQueueItem?(notificationId: string): NotificationSenderQueueEntry | null;
 }
 
 export interface NotificationGateway {
     registerSender(sender: NotificationSender): void;
-    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
+    dispatch(
+        envelope: NotificationEnvelope,
+    ): Promise<NotificationDispatchResult>;
     registerCategory(id: string, label: string): void;
     listSenders(): NotificationSenderInfo[];
     listCategories(): NotificationCategory[];
+    listNotificationQueue(): NotificationQueueEntry[];
+    getNotificationQueueItem(
+        notificationId: string,
+    ): NotificationQueueEntry | null;
 }
 
 export interface NotificationPreferenceStore {
@@ -184,6 +235,20 @@ type SenderWithOneTimeLogin = {
     isConfigured?(): boolean;
 };
 
+type SenderWithTrackedSend = {
+    sendTracked(
+        envelope: NotificationEnvelope,
+    ): Promise<{ notificationId: string }>;
+};
+
+type SenderWithQueueList = {
+    listQueue(): NotificationSenderQueueEntry[];
+};
+
+type SenderWithQueueItem = {
+    getQueueItem(notificationId: string): NotificationSenderQueueEntry | null;
+};
+
 function isSenderWithVerification(
     sender: NotificationSender,
 ): sender is NotificationSender & SenderWithVerification {
@@ -208,6 +273,28 @@ function isSenderWithOneTimeLogin(
     return (
         typeof (sender as Record<string, unknown>).sendOneTimeLoginEmail ===
         "function"
+    );
+}
+
+function isSenderWithTrackedSend(
+    sender: NotificationSender,
+): sender is NotificationSender & SenderWithTrackedSend {
+    return (
+        typeof (sender as Record<string, unknown>).sendTracked === "function"
+    );
+}
+
+function isSenderWithQueueList(
+    sender: NotificationSender,
+): sender is NotificationSender & SenderWithQueueList {
+    return typeof (sender as Record<string, unknown>).listQueue === "function";
+}
+
+function isSenderWithQueueItem(
+    sender: NotificationSender,
+): sender is NotificationSender & SenderWithQueueItem {
+    return (
+        typeof (sender as Record<string, unknown>).getQueueItem === "function"
     );
 }
 
@@ -274,6 +361,36 @@ export class CoreNotificationGateway
             id,
             label,
         }));
+    }
+
+    listNotificationQueue(): NotificationQueueEntry[] {
+        const queueEntries: NotificationQueueEntry[] = [];
+        for (const [senderId, sender] of this.senders.entries()) {
+            if (!isSenderWithQueueList(sender)) continue;
+            for (const entry of sender.listQueue()) {
+                queueEntries.push({ senderId, ...entry });
+            }
+        }
+        return queueEntries.sort((a, b) => {
+            const updatedAtDelta =
+                Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+            if (updatedAtDelta !== 0) return updatedAtDelta;
+            return (
+                Date.parse(b.createdAt) - Date.parse(a.createdAt) ||
+                b.notificationId.localeCompare(a.notificationId)
+            );
+        });
+    }
+
+    getNotificationQueueItem(
+        notificationId: string,
+    ): NotificationQueueEntry | null {
+        for (const [senderId, sender] of this.senders.entries()) {
+            if (!isSenderWithQueueItem(sender)) continue;
+            const item = sender.getQueueItem(notificationId);
+            if (item) return { senderId, ...item };
+        }
+        return null;
     }
 
     getProviderConfig(senderId: string): Record<string, unknown> | null {
@@ -541,10 +658,9 @@ export class CoreNotificationGateway
         }
     }
 
-    async dispatch(envelope: NotificationEnvelope): Promise<{
-        dispatched: string[];
-        errors?: Array<{ senderId: string; error: string }>;
-    }> {
+    async dispatch(
+        envelope: NotificationEnvelope,
+    ): Promise<NotificationDispatchResult> {
         const prefSenderIds = await this.prefStore.getSenderIds(
             envelope.recipientUsername,
             envelope.category,
@@ -554,7 +670,8 @@ export class CoreNotificationGateway
             ...this.alwaysOnSenders,
         ]);
         const dispatched: string[] = [];
-        const errors: Array<{ senderId: string; error: string }> = [];
+        const notifications: NotificationDispatchReceipt[] = [];
+        const errors: NotificationDispatchError[] = [];
 
         const recipientEmail =
             envelope.recipientEmail ??
@@ -573,7 +690,15 @@ export class CoreNotificationGateway
             const sender = this.senders.get(id);
             if (!sender) continue;
             try {
-                await sender.send(resolvedEnvelope);
+                if (isSenderWithTrackedSend(sender)) {
+                    const receipt = await sender.sendTracked(resolvedEnvelope);
+                    notifications.push({
+                        senderId: id,
+                        notificationId: receipt.notificationId,
+                    });
+                } else {
+                    await sender.send(resolvedEnvelope);
+                }
                 dispatched.push(id);
             } catch (err) {
                 errors.push({
@@ -583,6 +708,10 @@ export class CoreNotificationGateway
             }
         }
 
-        return errors.length > 0 ? { dispatched, errors } : { dispatched };
+        return {
+            dispatched,
+            ...(notifications.length > 0 ? { notifications } : {}),
+            ...(errors.length > 0 ? { errors } : {}),
+        };
     }
 }
