@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import net from "node:net";
 import {
     SmtpNotificationSender,
+    SmtpRateLimiter,
     SmtpTemporaryError,
     createNotificationSender,
 } from "../smtp-notification-sender.js";
@@ -114,6 +115,31 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
         () => sender.sendTestEmail(""),
         /smtp_test_email_requires_recipient/,
     );
+});
+
+test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
+    const rateLimiter = new SmtpRateLimiter(60_000, () => 2_000);
+    rateLimiter.record("alice@example.com", 1_500);
+    const sender = new SmtpNotificationSender(
+        {
+            host: "smtp.example.com",
+            port: 587,
+            from: "no-reply@example.com",
+            secure: "starttls",
+        },
+        undefined,
+        async () => {},
+        rateLimiter,
+    );
+
+    const queued = await sender.queueVerificationEmail(
+        "alice@example.com",
+        "123456",
+    );
+
+    assert.equal(queued.status, "waiting_rate_limit");
+    assert.equal(queued.recipientEmail, "alice@example.com");
+    assert.equal(typeof queued.availableAt, "string");
 });
 
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {

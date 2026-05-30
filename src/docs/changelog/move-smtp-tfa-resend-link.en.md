@@ -10,11 +10,11 @@ The resend countdown that tracks the SMTP send rate limit is now restored
 correctly. The countdown begins as soon as the rate-limited state is detected,
 whether that is on the initial challenge or after a failed resend attempt.
 
-When the initial login challenge is rate-limited (meaning no verification email
-was sent), a warning toast is now displayed to inform the user that a code was
-recently sent and to indicate when a new one can be requested. This resolves a
-silent hang that occurred when the user was rate-limited before reaching the TFA
-screen.
+SMTP-backed login challenges now switch into the TFA prompt as soon as the
+verification email has been queued instead of waiting for SMTP delivery to
+finish. If the mail queue is still inside the recipient rate-limit window, the
+login UI receives the countdown immediately and keeps the last live code valid
+until the queued send can run.
 
 The TFA screen is now preserved when the browser viewport changes between mobile
 and desktop layout. Previously, resizing the viewport while at the TFA step
@@ -24,7 +24,11 @@ their place.
 
 ## Changed files/components
 
-- `src/gateways/tfa/ui/login-flow.js`
-- `src/ui/app/login/index.js`
-- `src/ui/styles/login.css`
-- `src/gateways/tfa/ui/languages/*/strings.xml`
+- `src/gateways/notify/gateway.ts`
+- `src/gateways/notify/bootstrap.ts`
+- `src/gateways/tfa/bootstrap.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender.ts`
+- `src/adapters/tfa/smtp/index.ts`
+- `src/gateways/notify/tests/notification-gateway.test.ts`
+- `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
+- `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`

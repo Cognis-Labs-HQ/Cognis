@@ -43,6 +43,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             theme?: string,
         ) => Promise<void>
     >("notify:sendVerificationEmail");
+    const queueVerificationEmail = ctx.capabilities.get<
+        (
+            to: string,
+            code: string,
+            verifyUrl?: string,
+            theme?: string,
+        ) => Promise<{
+            notificationId: string;
+            status: "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
+            createdAt: string;
+            updatedAt: string;
+            availableAt?: string;
+            error?: string;
+            recipientEmail?: string;
+        }>
+    >("notify:queueVerificationEmail");
     const getPrimaryEmail = ctx.capabilities.get<
         (accountId: string) => Promise<string | null>
     >("notify:getPrimaryEmail");
@@ -54,6 +70,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterFactoryContext: {
             canSendVerificationEmail,
             sendVerificationEmail,
+            queueVerificationEmail,
             getPrimaryEmail,
             log: ctx.log,
         },
@@ -80,7 +97,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.0.7",
+        version: "1.0.8",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs HQ",

@@ -10,11 +10,10 @@ SMTP 送信レート制限を追跡するカウントダウンが正しく復元
 レート制限状態が検出された時点、初回チャレンジ時またはリトライ失敗後、
 直ちにカウントダウンが開始されます。
 
-初回ログインチャレンジがレート制限された場合（確認メールが送信されなかった場合）、
-最近コードが送信済みであることと新しいコードをいつリクエストできるかを
-ユーザーに通知する警告トーストが表示されるようになりました。これにより、
-TFA 画面に到達する前にレート制限された際に発生していたサイレントハングが
-解消されます。
+SMTP ベースのログインチャレンジは、確認メールが配送待ちキューに入った時点で
+SMTP 配送完了を待たずに TFA プロンプトへ切り替わるようになりました。キューが
+受信者レート制限の待機中でも、ログイン UI は直ちにカウントダウンを受け取り、
+キュー送信が実行されるまで最後に有効だったコードをそのまま使えます。
 
 ブラウザのビューポートがモバイルとデスクトップのレイアウト間で切り替わっても、
 TFA 画面が維持されるようになりました。以前は TFA ステップ中にウィンドウ
@@ -23,7 +22,11 @@ TFA 画面が維持されるようになりました。以前は TFA ステッ�
 
 ## 変更されたファイル/コンポーネント
 
-- `src/gateways/tfa/ui/login-flow.js`
-- `src/ui/app/login/index.js`
-- `src/ui/styles/login.css`
-- `src/gateways/tfa/ui/languages/*/strings.xml`
+- `src/gateways/notify/gateway.ts`
+- `src/gateways/notify/bootstrap.ts`
+- `src/gateways/tfa/bootstrap.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender.ts`
+- `src/adapters/tfa/smtp/index.ts`
+- `src/gateways/notify/tests/notification-gateway.test.ts`
+- `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
+- `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`

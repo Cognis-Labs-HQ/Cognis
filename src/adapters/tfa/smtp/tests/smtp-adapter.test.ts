@@ -101,6 +101,54 @@ test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-li
     assert.equal(typeof challenge?.resendAvailableAt, "string");
 });
 
+test("smtp adapter login challenge surfaces queued rate limits without replacing a live code", async () => {
+    let queueCallCount = 0;
+    let firstIssuedCode = "";
+    let secondIssuedCode = "";
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        queueVerificationEmail: async (_to, code) => {
+            queueCallCount += 1;
+            if (queueCallCount === 1) {
+                firstIssuedCode = code;
+                return {
+                    notificationId: "first-send",
+                    status: "queued",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                };
+            }
+            secondIssuedCode = code;
+            return {
+                notificationId: "rate-limited-send",
+                status: "waiting_rate_limit",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                availableAt: new Date(Date.now() + 30_000).toISOString(),
+            };
+        },
+    });
+    const firstChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(firstChallenge?.ready, true);
+    const secondChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(secondChallenge?.ready, true);
+    assert.equal(secondChallenge?.message, "smtp_rate_limited");
+    assert.equal(typeof secondChallenge?.retryAfterSeconds, "number");
+    assert.equal(secondIssuedCode, firstIssuedCode);
+    const verified = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: firstIssuedCode },
+    });
+    assert.equal(verified.verified, true);
+});
+
 test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {
     const adapter = createAdapter();
     const details = await adapter.renderMethodDetails?.({

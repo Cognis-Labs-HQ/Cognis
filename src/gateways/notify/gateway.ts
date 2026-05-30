@@ -145,6 +145,12 @@ export interface NotificationEmailStore {
 
 export interface VerificationEmailSender {
     canSendVerificationEmail(): boolean;
+    queueVerificationEmail?(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ): Promise<NotificationSenderQueueEntry>;
     sendVerificationEmail(
         to: string,
         code: string,
@@ -197,6 +203,12 @@ export class VolatileNotificationPreferenceStore implements NotificationPreferen
 }
 
 type SenderWithVerification = {
+    queueVerificationEmail?(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ): Promise<NotificationSenderQueueEntry>;
     sendVerificationEmail(
         to: string,
         code: string,
@@ -492,6 +504,30 @@ export class CoreNotificationGateway
             if (!isSenderWithVerification(sender)) continue;
             await sender.sendVerificationEmail(to, code, verifyUrl, theme);
             return;
+        }
+        throw new Error("smtp_unavailable");
+    }
+
+    async queueVerificationEmail(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ): Promise<NotificationSenderQueueEntry> {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithVerification(sender)) continue;
+            if (typeof sender.queueVerificationEmail === "function") {
+                return sender.queueVerificationEmail(to, code, verifyUrl, theme);
+            }
+            await sender.sendVerificationEmail(to, code, verifyUrl, theme);
+            return {
+                notificationId: "",
+                status: "sent",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                recipientEmail: to,
+            };
         }
         throw new Error("smtp_unavailable");
     }

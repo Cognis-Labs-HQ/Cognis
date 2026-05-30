@@ -260,7 +260,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.6",
+        version: "1.4.7",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,
@@ -379,6 +379,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:sendVerificationEmail",
         async (to: string, code: string, verifyUrl?: string, theme?: string) =>
             gateway.sendVerificationEmail(to, code, verifyUrl, theme),
+    );
+    ctx.capabilities.contribute(
+        "notify:queueVerificationEmail",
+        async (to: string, code: string, verifyUrl?: string, theme?: string) =>
+            gateway.queueVerificationEmail(to, code, verifyUrl, theme),
     );
     ctx.capabilities.contribute("notify:canSendOneTimeLoginEmail", () =>
         gateway.canSendOneTimeLoginEmail(),

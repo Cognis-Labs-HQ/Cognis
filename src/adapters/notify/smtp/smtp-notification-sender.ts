@@ -787,6 +787,21 @@ export class SmtpNotificationSender implements NotificationSender {
         verifyUrl?: string,
         theme?: string,
     ): Promise<void> {
+        const queued = await this.queueVerificationEmail(
+            to,
+            code,
+            verifyUrl,
+            theme,
+        );
+        await this.queue.waitForResult(queued.notificationId);
+    }
+
+    async queueVerificationEmail(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ) {
         if (!to) throw new Error("smtp_requires_recipient");
         const subject = "Verify your email address";
         const body = verifyUrl
@@ -799,7 +814,11 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             verifyUrl,
         });
-        await this.queue.waitForResult(queued.notificationId);
+        const queueItem = this.queue.getQueueItem(queued.notificationId);
+        if (!queueItem) {
+            throw new Error("smtp_queue_item_missing");
+        }
+        return queueItem;
     }
 
     async sendRegistrationInviteEmail(

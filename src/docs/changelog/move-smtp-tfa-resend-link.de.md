@@ -10,10 +10,12 @@ Der Countdown zum SMTP-Ratenlimit wird nun korrekt wiederhergestellt und
 beginnt, sobald der ratenbegrenzte Zustand erkannt wird – ob beim ersten
 Anmeldeversuch oder nach einem fehlgeschlagenen Erneut-Senden.
 
-Wenn der erste Anmeldeversuch ratenbegrenzt ist (d. h. keine Bestätigungs-E-Mail
-versendet wurde), wird jetzt ein Warnhinweis angezeigt, der den Nutzer darüber
-informiert, dass kürzlich ein Code gesendet wurde und wann ein neuer angefordert
-werden kann.
+SMTP-basierte Login-Challenges wechseln jetzt sofort in die TFA-Abfrage, sobald
+die Bestätigungs-E-Mail in die Versandwarteschlange gestellt wurde, statt auf
+den Abschluss der SMTP-Zustellung zu warten. Befindet sich die Warteschlange
+noch im Empfänger-Ratenlimit, erhält die Login-Oberfläche den Countdown
+unmittelbar und lässt den zuletzt gültigen Code aktiv, bis der Versand erfolgen
+kann.
 
 Der TFA-Bildschirm bleibt jetzt erhalten, wenn der Browser-Viewport zwischen
 Mobil- und Desktop-Layout wechselt. Zuvor wurde die Seite beim Ändern der
@@ -23,7 +25,11 @@ wiederhergestellt.
 
 ## Geänderte Dateien/Komponenten
 
-- `src/gateways/tfa/ui/login-flow.js`
-- `src/ui/app/login/index.js`
-- `src/ui/styles/login.css`
-- `src/gateways/tfa/ui/languages/*/strings.xml`
+- `src/gateways/notify/gateway.ts`
+- `src/gateways/notify/bootstrap.ts`
+- `src/gateways/tfa/bootstrap.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender.ts`
+- `src/adapters/tfa/smtp/index.ts`
+- `src/gateways/notify/tests/notification-gateway.test.ts`
+- `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
+- `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`

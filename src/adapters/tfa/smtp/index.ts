@@ -16,6 +16,20 @@ interface SmtpTfaAdapterContext {
         verifyUrl?: string,
         theme?: string,
     ) => Promise<void>;
+    queueVerificationEmail?: (
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ) => Promise<{
+        notificationId: string;
+        status: "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
+        createdAt: string;
+        updatedAt: string;
+        availableAt?: string;
+        error?: string;
+        recipientEmail?: string;
+    }>;
     getPrimaryEmail?: (accountId: string) => Promise<string | null>;
     log?: (
         level: string,
@@ -101,6 +115,15 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         return code;
     }
 
+    private issueOrGetCode(key: string): string {
+        this.cleanupExpiredChallenges();
+        const liveChallenge = this.getLiveChallenge(key);
+        if (liveChallenge) {
+            return liveChallenge.code;
+        }
+        return this.issueCode(key);
+    }
+
     private verifyCode(key: string, code: string): boolean {
         const challenge = this.getLiveChallenge(key);
         if (!challenge || challenge.code !== code) {
@@ -121,6 +144,29 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         const key = challengeKey(scope, input.accountId);
         const code = this.issueCode(key);
         await this.context.sendVerificationEmail?.(input.email, code);
+    }
+
+    private resolveRetryMetadataFromAvailableAt(
+        availableAt: string | undefined,
+    ): {
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    } {
+        const resendAvailableAt = String(availableAt ?? "").trim();
+        if (!resendAvailableAt) {
+            return {};
+        }
+        const resendTimestamp = Date.parse(resendAvailableAt);
+        if (!Number.isFinite(resendTimestamp)) {
+            return {};
+        }
+        return {
+            retryAfterSeconds: Math.max(
+                Math.ceil((resendTimestamp - Date.now()) / 1000),
+                0,
+            ),
+            resendAvailableAt,
+        };
     }
 
     async beginSetup(input: {
@@ -231,6 +277,27 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             return { ready: false, message: "smtp_unavailable" };
         }
         try {
+            if (typeof this.context.queueVerificationEmail === "function") {
+                const key = challengeKey("login", input.accountId);
+                const code = this.issueOrGetCode(key);
+                const queued = await this.context.queueVerificationEmail(
+                    email,
+                    code,
+                );
+                if (queued.status === "waiting_rate_limit") {
+                    const retryMetadata =
+                        this.resolveRetryMetadataFromAvailableAt(
+                            queued.availableAt,
+                        );
+                    return {
+                        ready: true,
+                        message: "smtp_rate_limited",
+                        retryAfterSeconds: retryMetadata.retryAfterSeconds,
+                        resendAvailableAt: retryMetadata.resendAvailableAt,
+                    };
+                }
+                return { ready: true };
+            }
             await this.sendCode("login", {
                 accountId: input.accountId,
                 email,
