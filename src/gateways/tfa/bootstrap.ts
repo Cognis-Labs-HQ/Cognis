@@ -214,6 +214,102 @@ function createTfaRoutes(
         };
 
         if (
+            url.pathname === "/api/v1/tfa/login/resend" &&
+            req.method === "POST"
+        ) {
+            const body = await readJson(req);
+            const loginAttemptId = String(body.loginAttemptId ?? "").trim();
+            const methodId = String(body.methodId ?? "").trim();
+            if (!loginAttemptId || !methodId) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "loginAttemptId and methodId are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const getPendingLoginAttempt = capabilities.get<
+                (loginAttemptId: string) => {
+                    accountId: string;
+                } | null
+            >("tfa:getPendingLoginAttempt");
+            if (!getPendingLoginAttempt) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_unavailable",
+                            message: "Two-factor verification is unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const pendingAttempt = getPendingLoginAttempt(loginAttemptId);
+            if (!pendingAttempt) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_attempt_expired",
+                            message: "TFA login attempt expired",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const challenge = await gateway.beginLoginChallenge(
+                pendingAttempt.accountId,
+                methodId,
+            );
+            if (!challenge.ready) {
+                const unavailableCode =
+                    challenge.message === "method_not_configured"
+                        ? "method_not_configured"
+                        : "tfa_method_unavailable";
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: unavailableCode,
+                            message: unavailableCode,
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        challenge: {
+                            ...(challenge.message
+                                ? { message: challenge.message }
+                                : {}),
+                            ...(challenge.retryAfterSeconds != null
+                                ? {
+                                      retryAfterSeconds:
+                                          challenge.retryAfterSeconds,
+                                  }
+                                : {}),
+                            ...(challenge.resendAvailableAt
+                                ? {
+                                      resendAvailableAt:
+                                          challenge.resendAvailableAt,
+                                  }
+                                : {}),
+                        },
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/tfa/login/verify" &&
             req.method === "POST"
         ) {

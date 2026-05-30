@@ -84,6 +84,23 @@ test("smtp adapter login challenge reports unavailable when SMTP sender is missi
     assert.equal(challenge?.ready, false);
 });
 
+test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-limited", async () => {
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        sendVerificationEmail: async () => {
+            throw new Error("smtp_rate_limited");
+        },
+    });
+    const challenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(challenge?.ready, true);
+    assert.equal(challenge?.message, "smtp_rate_limited");
+    assert.equal(typeof challenge?.retryAfterSeconds, "number");
+    assert.equal(typeof challenge?.resendAvailableAt, "string");
+});
+
 test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {
     const adapter = createAdapter();
     const details = await adapter.renderMethodDetails?.({

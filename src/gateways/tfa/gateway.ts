@@ -53,7 +53,12 @@ export interface TfaMethodAdapter {
     beginLoginChallenge?(input: {
         accountId: string;
         state: Record<string, unknown>;
-    }): Promise<{ ready: boolean; message?: string }>;
+    }): Promise<{
+        ready: boolean;
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    }>;
     renderMethodDetails?(input: {
         accountId: string;
         state: Record<string, unknown>;
@@ -119,6 +124,16 @@ export interface TfaLoginVerificationResult {
     message?: string;
     usedRecoveryCode?: boolean;
     recoveryCodesRemaining?: number;
+}
+
+export interface TfaLoginMethod {
+    id: string;
+    name: string;
+    challenge?: {
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    };
 }
 
 type NotifyDispatch = (envelope: {
@@ -573,9 +588,97 @@ export class CoreTfaGateway {
         });
     }
 
-    async getLoginMethods(
+    private async prepareLoginChallenge(
         accountId: string,
-    ): Promise<Array<{ id: string; name: string }>> {
+        methodId: string,
+        state: Record<string, unknown>,
+    ): Promise<{
+        ready: boolean;
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    }> {
+        const adapter = this.adapters.get(methodId);
+        if (!adapter || !this.isAdapterEnabled(methodId)) {
+            return { ready: false, message: "tfa_method_unavailable" };
+        }
+        if (typeof adapter.beginLoginChallenge !== "function") {
+            return { ready: true };
+        }
+        return adapter.beginLoginChallenge({
+            accountId,
+            state,
+        });
+    }
+
+    private buildLoginMethodChallengeMetadata(challenge: {
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    }):
+        | {
+              message?: string;
+              retryAfterSeconds?: number;
+              resendAvailableAt?: string;
+          }
+        | undefined {
+        const metadata: {
+            message?: string;
+            retryAfterSeconds?: number;
+            resendAvailableAt?: string;
+        } = {};
+        if (challenge.message) {
+            metadata.message = challenge.message;
+        }
+        if (challenge.retryAfterSeconds != null) {
+            metadata.retryAfterSeconds = challenge.retryAfterSeconds;
+        }
+        if (challenge.resendAvailableAt) {
+            metadata.resendAvailableAt = challenge.resendAvailableAt;
+        }
+        return Object.keys(metadata).length > 0 ? metadata : undefined;
+    }
+
+    async beginLoginChallenge(
+        accountId: string,
+        methodId: string,
+    ): Promise<{
+        ready: boolean;
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    }> {
+        const methods = await this.store.listUserMethods(accountId);
+        const configuredMethod = methods.find(
+            (method) => method.methodId === methodId && method.enabled,
+        );
+        if (!configuredMethod) {
+            return { ready: false, message: "method_not_configured" };
+        }
+        try {
+            return await this.prepareLoginChallenge(
+                accountId,
+                methodId,
+                configuredMethod.state,
+            );
+        } catch (error) {
+            this.options.log?.(
+                "error",
+                "Failed to prepare TFA login challenge.",
+                {
+                    component: "tfa-gateway",
+                    operation: "prepare_login_challenge",
+                    accountId,
+                    methodId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+            return { ready: false, message: "tfa_method_unavailable" };
+        }
+    }
+
+    async getLoginMethods(accountId: string): Promise<TfaLoginMethod[]> {
         const configuredMethods = await this.store.listUserMethods(accountId);
         const enabledConfiguredMethods = configuredMethods
             .filter((method) => method.enabled)
@@ -586,41 +689,48 @@ export class CoreTfaGateway {
                 if (!adapter || !this.isAdapterEnabled(method.methodId)) {
                     return null;
                 }
-                if (typeof adapter.beginLoginChallenge === "function") {
-                    try {
-                        const challenge = await adapter.beginLoginChallenge({
-                            accountId,
-                            state: method.state,
-                        });
-                        if (!challenge.ready) {
-                            return null;
-                        }
-                    } catch (error) {
-                        this.options.log?.(
-                            "error",
-                            "Failed to prepare TFA login challenge.",
-                            {
-                                component: "tfa-gateway",
-                                operation: "prepare_login_challenge",
-                                accountId,
-                                methodId: method.methodId,
-                                error:
-                                    error instanceof Error
-                                        ? error.message
-                                        : String(error),
-                            },
-                        );
+                try {
+                    const challenge = await this.prepareLoginChallenge(
+                        accountId,
+                        method.methodId,
+                        method.state,
+                    );
+                    if (!challenge.ready) {
                         return null;
                     }
+                    return {
+                        id: adapter.id,
+                        name: adapter.name,
+                        ...(this.buildLoginMethodChallengeMetadata(challenge)
+                            ? {
+                                  challenge:
+                                      this.buildLoginMethodChallengeMetadata(
+                                          challenge,
+                                      ),
+                              }
+                            : {}),
+                    };
+                } catch (error) {
+                    this.options.log?.(
+                        "error",
+                        "Failed to prepare TFA login challenge.",
+                        {
+                            component: "tfa-gateway",
+                            operation: "prepare_login_challenge",
+                            accountId,
+                            methodId: method.methodId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    return null;
                 }
-                return {
-                    id: adapter.id,
-                    name: adapter.name,
-                };
             }),
         );
         const methods = resolvedMethods.filter(
-            (method): method is { id: string; name: string } => method != null,
+            (method): method is TfaLoginMethod => method != null,
         );
         if (await this.store.hasUnusedRecoveryCodes(accountId)) {
             methods.push({ id: "recovery_code", name: "Recovery Code" });

@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "../../notify/smtp/rate-limit.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const DEFAULT_CODE_LENGTH = 6;
@@ -55,6 +56,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     readonly name = "Email Code";
 
     private readonly challenges = new Map<string, CodeChallenge>();
+    private readonly loginChallengeLastSentAt = new Map<string, number>();
     private codeLength = DEFAULT_CODE_LENGTH;
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
@@ -212,7 +214,12 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     async beginLoginChallenge(input: {
         accountId: string;
         state: Record<string, unknown>;
-    }): Promise<{ ready: boolean; message?: string }> {
+    }): Promise<{
+        ready: boolean;
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    }> {
         const email = String(input.state.email ?? "").trim();
         if (!email) {
             return { ready: false, message: "primary_email_required" };
@@ -228,8 +235,26 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 accountId: input.accountId,
                 email,
             });
+            this.loginChallengeLastSentAt.set(input.accountId, Date.now());
             return { ready: true };
         } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            if (errorMessage === "smtp_rate_limited") {
+                const now = Date.now();
+                const lastSentAt =
+                    this.loginChallengeLastSentAt.get(input.accountId) ?? now;
+                const retryMs = Math.max(
+                    SMTP_VERIFICATION_RATE_LIMIT_MS - (now - lastSentAt),
+                    0,
+                );
+                return {
+                    ready: true,
+                    message: "smtp_rate_limited",
+                    retryAfterSeconds: Math.ceil(retryMs / 1000),
+                    resendAvailableAt: new Date(now + retryMs).toISOString(),
+                };
+            }
             this.context.log?.(
                 "error",
                 "Failed to send SMTP TFA challenge code.",
@@ -237,8 +262,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     component: "adapter-tfa-smtp",
                     operation: "send_login_code",
                     accountId: input.accountId,
-                    error:
-                        error instanceof Error ? error.message : String(error),
+                    error: errorMessage,
                 },
             );
             return { ready: false, message: "smtp_unavailable" };
