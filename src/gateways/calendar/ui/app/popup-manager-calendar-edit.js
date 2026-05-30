@@ -8,6 +8,8 @@ export function createCalendarEditPopupHandler({
     reloadState,
     refreshComposer,
 }) {
+    const DEFAULT_SHARE_EXPIRY_HOURS = "24";
+
     async function openCalendarEditPopup(calendar) {
         let generatedShareUrl = "";
         await openPopup({
@@ -35,7 +37,7 @@ export function createCalendarEditPopupHandler({
               </select>
               <select id="calendar-share-expiry">
                 <option value="1">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_1h"))}</option>
-                <option value="24" selected>${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_24h"))}</option>
+                <option value="${DEFAULT_SHARE_EXPIRY_HOURS}" selected>${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_24h"))}</option>
                 <option value="168">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_7d"))}</option>
                 <option value="720">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_30d"))}</option>
                 <option value="never">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_never"))}</option>
@@ -75,7 +77,7 @@ export function createCalendarEditPopupHandler({
                         );
                         const expiryValue = String(
                             overlay.querySelector("#calendar-share-expiry")
-                                ?.value ?? "24",
+                                ?.value ?? DEFAULT_SHARE_EXPIRY_HOURS,
                         ).trim();
                         const expiresInHours =
                             expiryValue === "never"
@@ -90,12 +92,7 @@ export function createCalendarEditPopupHandler({
                                 },
                                 body: JSON.stringify({
                                     permission,
-                                    expiresInHours:
-                                        expiresInHours !== null &&
-                                        Number.isFinite(expiresInHours) &&
-                                        expiresInHours > 0
-                                            ? expiresInHours
-                                            : null,
+                                    expiresInHours,
                                 }),
                             },
                         );
@@ -107,9 +104,7 @@ export function createCalendarEditPopupHandler({
                             return;
                         }
                         const data = await res.json();
-                        generatedShareUrl = String(
-                            data?.data?.shareUrl ?? data?.shareUrl ?? "",
-                        );
+                        generatedShareUrl = String(data?.data?.shareUrl ?? "");
                         const resultEl = overlay.querySelector(
                             "#calendar-share-result",
                         );

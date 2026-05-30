@@ -8,6 +8,7 @@ import type {
 
 export const INVITED_CALENDAR_NAME = "Invited";
 export const INVITED_CALENDAR_COLOR = "#8b5cf6";
+const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 
 export type NotificationDispatcher = (envelope: {
     category: string;
@@ -68,14 +69,7 @@ export function buildCalendarShareData(input: {
                   input.gateway.issuePrivateExportToken({
                       ownerAccountId: input.ownerAccountId,
                       calendarId: calendar.id,
-                      ttlSeconds:
-                          input.expiresInHours === null
-                              ? null
-                              : typeof input.expiresInHours === "number" &&
-                                  Number.isFinite(input.expiresInHours) &&
-                                  input.expiresInHours > 0
-                                ? Math.round(input.expiresInHours * 3600)
-                                : 24 * 3600,
+                      ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
                   }).token,
               )}`;
     return {
@@ -84,6 +78,18 @@ export function buildCalendarShareData(input: {
             ? `${input.externalHost}${sharePath}`
             : sharePath,
     };
+}
+
+function resolveShareTtlSeconds(expiresInHours: unknown): number | null {
+    if (expiresInHours === null) return null;
+    if (
+        typeof expiresInHours !== "number" ||
+        !Number.isFinite(expiresInHours)
+    ) {
+        return DEFAULT_SHARE_TTL_SECONDS;
+    }
+    if (expiresInHours <= 0) return DEFAULT_SHARE_TTL_SECONDS;
+    return Math.round(expiresInHours * 3600);
 }
 
 export async function normalizeAttendeesForOwner(

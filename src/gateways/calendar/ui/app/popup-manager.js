@@ -671,6 +671,9 @@ export function createCalendarPopupManager({
             renderParticipantOptions(overlay);
         }
 
+        // Meeting creation toggle is create-only and intentionally hidden for edits.
+        const showMeetingToggle = getJitsiAvailable() && !eventData;
+
         await openPopup({
             title: i18n.t(
                 eventData
@@ -685,7 +688,7 @@ export function createCalendarPopupManager({
           <input id="calendar-popup-participant-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
           <div id="calendar-popup-participant-options" class="calendar-participant-options"></div>
         </label>
-        ${getJitsiAvailable() && !eventData ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-create-meeting" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.create_meeting"))}</span></label>` : ""}
+        ${showMeetingToggle ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-create-meeting" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.create_meeting"))}</span></label>` : ""}
         ${eventData?.event?.recurrence && eventData.event.recurrence !== "none" ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-update-all" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.update_series"))}</span></label>` : ""}
       `,
             closeProtection: true,

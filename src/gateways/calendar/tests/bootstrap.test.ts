@@ -307,9 +307,11 @@ test("calendar share endpoint returns CalDAV links and supports never-expiring p
         "GET",
         "/api/v1/calendar/calendars",
     );
-    const defaultCalendarId = calendarsResponse.body.data.find(
+    const defaultCalendar = calendarsResponse.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
-    ).id;
+    );
+    assert.ok(defaultCalendar);
+    const defaultCalendarId = defaultCalendar.id;
 
     const shareResponse = await dispatchJson(
         "POST",
