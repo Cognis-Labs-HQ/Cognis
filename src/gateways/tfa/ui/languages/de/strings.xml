@@ -10,6 +10,7 @@
   <string name="ui.app.login.tfa.error_invalid">Ungültiger Zwei-Faktor-Code.</string>
   <string name="ui.app.login.tfa.smtp.resend_action">E-Mail-Code erneut senden</string>
   <string name="ui.app.login.tfa.smtp.resend_rate_limited">E-Mail-Code in {seconds}s erneut senden</string>
+  <string name="ui.app.login.tfa.smtp.resend_sent">Ein neuer Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Zwei-Faktor-Authentifizierung Für Alle Benutzer Erzwingen</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">Wenn aktiviert, werden Benutzer ohne konfigurierte Zwei-Faktor-Methode zu den Einstellungen umgeleitet, bis die Einrichtung abgeschlossen ist.</string>
   <string name="ui.app.users.reset_tfa">Zwei-Faktor-Authentifizierung Zurücksetzen</string>

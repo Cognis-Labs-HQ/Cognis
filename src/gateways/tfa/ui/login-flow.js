@@ -1,6 +1,7 @@
 import { redirectToRequiredTfaSetup } from "/static/reuse/auth-setup-route.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { showToast } from "/static/reuse/toast.js";
 
 function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
@@ -182,6 +183,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     .map((method) => [method.id, method.challenge]),
             );
             let countdownTimer = null;
+            let resendLocked = false;
 
             const stopCountdown = () => {
                 if (countdownTimer != null) {
@@ -191,21 +193,21 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             };
 
             const setResendStateForMethod = (method) => {
-                const resendButton = root.querySelector(
+                const resendLink = root.querySelector(
                     "#login-tfa-resend-action",
                 );
-                if (!(resendButton instanceof HTMLButtonElement)) {
+                if (!(resendLink instanceof HTMLAnchorElement)) {
                     return;
                 }
                 stopCountdown();
                 const isSmtpMethod = method?.id === "smtp";
                 const resendAt = parseChallengeResendTimestamp(method);
-                resendButton.hidden = !isSmtpMethod;
+                resendLink.hidden = !isSmtpMethod;
                 if (!isSmtpMethod) {
                     return;
                 }
                 const updateCountdown = () => {
-                    if (!resendButton.isConnected) {
+                    if (!resendLink.isConnected) {
                         stopCountdown();
                         return;
                     }
@@ -216,15 +218,15 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         method?.challenge?.message === "smtp_rate_limited" &&
                         remainingSeconds > 0
                     ) {
-                        resendButton.disabled = true;
-                        resendButton.textContent = i18n
+                        resendLocked = true;
+                        resendLink.textContent = i18n
                             .t("ui.app.login.tfa.smtp.resend_rate_limited")
                             .replace("{seconds}", String(remainingSeconds));
                         return;
                     }
                     stopCountdown();
-                    resendButton.disabled = false;
-                    resendButton.textContent = i18n.t(
+                    resendLocked = false;
+                    resendLink.textContent = i18n.t(
                         "ui.app.login.tfa.smtp.resend_action",
                     );
                 };
@@ -248,7 +250,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                   <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
                   <input type="hidden" id="login-tfa-method" value="" />
                   <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${placeholderText}" aria-label="${placeholderText}" />
-                  <button type="button" id="login-tfa-resend-action" class="auth-text-action" hidden></button>
+                  <a href="#" id="login-tfa-resend-action" class="auth-text-action" hidden></a>
                 `;
             }
             const resolveMethod = (methodId) => {
@@ -261,18 +263,19 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     challenge: challengeStateByMethodId.get(method.id) ?? null,
                 };
             };
-            const resendButton = root.querySelector("#login-tfa-resend-action");
-            if (resendButton instanceof HTMLButtonElement) {
-                resendButton.onclick = async () => {
+            const resendLink = root.querySelector("#login-tfa-resend-action");
+            if (resendLink instanceof HTMLAnchorElement) {
+                resendLink.addEventListener("click", async (event) => {
+                    event.preventDefault();
                     const methodInput = root.querySelector("#login-tfa-method");
                     const selectedMethodId =
                         methodInput instanceof HTMLInputElement
                             ? methodInput.value
                             : "";
-                    if (!selectedMethodId || !loginAttemptId) {
+                    if (!selectedMethodId || !loginAttemptId || resendLocked) {
                         return;
                     }
-                    resendButton.disabled = true;
+                    resendLocked = true;
                     try {
                         const { response, body } = await this.resendCode({
                             loginAttemptId,
@@ -286,6 +289,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                     body?.data?.challenge ?? {},
                                 );
                             }
+                            showToast(
+                                i18n.t("ui.app.login.tfa.smtp.resend_sent"),
+                                { variant: "success" },
+                            );
                             setResendStateForMethod(
                                 resolveMethod(selectedMethodId),
                             );
@@ -299,13 +306,13 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                 resolveMethod(selectedMethodId),
                             );
                         } else {
-                            resendButton.disabled = false;
+                            resendLocked = false;
                         }
                     } catch (error) {
                         console.error(error);
-                        resendButton.disabled = false;
+                        resendLocked = false;
                     }
-                };
+                });
             }
             return switchToTfaPrompt(i18n, payload, root, (method) => {
                 setResendStateForMethod(resolveMethod(method.id));

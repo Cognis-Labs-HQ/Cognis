@@ -10,6 +10,7 @@
   <string name="ui.app.login.tfa.error_invalid">Kode dua faktor tidak valid.</string>
   <string name="ui.app.login.tfa.smtp.resend_action">Kirim ulang kode email</string>
   <string name="ui.app.login.tfa.smtp.resend_rate_limited">Kirim ulang kode email dalam {seconds} dtk</string>
+  <string name="ui.app.login.tfa.smtp.resend_sent">Kode verifikasi baru telah dikirim ke email Anda.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Wajibkan Autentikasi Dua Faktor Untuk Semua Pengguna</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">Jika diaktifkan, pengguna tanpa metode dua faktor yang dikonfigurasi akan diarahkan ke pengaturan sampai penyiapan selesai.</string>
   <string name="ui.app.users.reset_tfa">Reset Autentikasi Dua Faktor</string>
