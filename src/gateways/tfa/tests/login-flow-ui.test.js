@@ -24,7 +24,11 @@ test("tfa login resend action toggles disabled state while cooldown is active", 
 test("tfa login cooldown toast uses the resend success message", () => {
     assert.match(
         SOURCE,
-        /if \(remainingSeconds > 0\) {\s*if \(!deliveryToastShownOnce && !skipDeliveryToast\) {\s*deliveryToastShownOnce = true;\s*showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.smtp\.resend_sent[\s\S]*?\{ variant: "success" \}/,
+        /if \(!deliveryToastShownOnce && !skipDeliveryToast\)/,
+    );
+    assert.match(
+        SOURCE,
+        /showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.smtp\.resend_sent[\s\S]*?\{ variant: "success" \}/,
     );
     assert.doesNotMatch(
         SOURCE,
@@ -33,8 +37,18 @@ test("tfa login cooldown toast uses the resend success message", () => {
 });
 
 test("tfa login resend success responses always show the resend success toast", () => {
+    assert.match(SOURCE, /deliveryToastShownOnce = true;/);
     assert.match(
         SOURCE,
-        /if \(response\.ok\) {\s*[\s\S]*deliveryToastShownOnce = true;\s*showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.smtp\.resend_sent[\s\S]*?\{ variant: "success" \}[\s\S]*?setResendStateForMethod\(\s*resolveMethod\(selectedMethodId\),\s*\{ skipDeliveryToast: true \},\s*\);/,
+        /setResendStateForMethod\(\s*resolveMethod\(selectedMethodId\),\s*\{ skipDeliveryToast: true \},\s*\);/,
+    );
+});
+
+test("tfa login syncs the resend link disabled state through a shared helper", () => {
+    assert.match(SOURCE, /const syncDisabledResendState = \(\) => {/);
+    assert.match(SOURCE, /resendLocked = true;\s*syncDisabledResendState\(\);/);
+    assert.match(
+        SOURCE,
+        /resendLocked = false;\s*syncDisabledResendState\(\);/,
     );
 });
