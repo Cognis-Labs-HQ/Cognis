@@ -14,6 +14,17 @@ export function createCalendarAdapter(): CalendarAdapter {
     };
 }
 
+const buildCalendarExportHeaders = (calendarName: string) => ({
+    "content-type": "text/calendar; charset=utf-8",
+    "x-cognis-calendar-name": sanitizeHeaderValue(calendarName),
+});
+
+function sanitizeHeaderValue(value: string): string {
+    return String(value ?? "")
+        .replace(/[\r\n]+/g, " ")
+        .trim();
+}
+
 function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
@@ -144,7 +155,3 @@ export async function bootstrapCalendarAdapter(
 ): Promise<void> {
     ctx.registerRoute(createCaldavRoutes(ctx), "calendar");
 }
-    const buildCalendarExportHeaders = (calendarName: string) => ({
-        "content-type": "text/calendar; charset=utf-8",
-        "x-cognis-calendar-name": calendarName,
-    });

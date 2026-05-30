@@ -55,14 +55,12 @@ export function buildCalendarShareData(input: {
     permission: unknown;
     expiresInHours: unknown;
     externalHost: string;
-}):
-    | {
-          permission: "read" | "write";
-          shareUrl: string;
-          caldavUrl: string;
-          icsUrl: string;
-      }
-    | null {
+}): {
+    permission: "read" | "write";
+    shareUrl: string;
+    caldavUrl: string;
+    icsUrl: string;
+} | null {
     const calendar = input.gateway.getOwnedCalendar(
         input.ownerAccountId,
         input.calendarId,
@@ -90,7 +88,9 @@ export function buildCalendarShareData(input: {
                   String(privateExportToken),
               )}`;
     const toAbsoluteOrPath = (relativePath: string) =>
-        input.externalHost ? `${input.externalHost}${relativePath}` : relativePath;
+        input.externalHost
+            ? `${input.externalHost}${relativePath}`
+            : relativePath;
     const caldavUrl = toAbsoluteOrPath(caldavPath);
     const icsUrl = toAbsoluteOrPath(icsPath);
     return {

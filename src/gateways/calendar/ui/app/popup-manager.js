@@ -43,6 +43,15 @@ export function createCalendarPopupManager({
         return value;
     }
 
+    function isSafeHttpUrl(value) {
+        try {
+            const parsed = new URL(String(value ?? ""));
+            return parsed.protocol === "https:" || parsed.protocol === "http:";
+        } catch {
+            return false;
+        }
+    }
+
     function normalizeUserIdentifier(entry) {
         const accountId = String(entry?.accountId ?? "").trim();
         const username = String(entry?.username ?? accountId ?? "").trim();
@@ -459,11 +468,16 @@ export function createCalendarPopupManager({
                         const meetingUrl = String(
                             eventData.event.meetingUrl ?? "",
                         ).trim();
-                        if (meetingUrl) {
+                        if (meetingUrl && isSafeHttpUrl(meetingUrl)) {
                             window.open(
                                 meetingUrl,
                                 "_blank",
                                 "noopener,noreferrer",
+                            );
+                        } else {
+                            showToast(
+                                i18n.t("gateway.calendar.load_event_failed"),
+                                "error",
                             );
                         }
                         return false;

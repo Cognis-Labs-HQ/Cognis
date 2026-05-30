@@ -22,7 +22,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
 
     const buildCalendarExportHeaders = (calendarName: string) => ({
         "content-type": "text/calendar; charset=utf-8",
-        "x-cognis-calendar-name": calendarName,
+        "x-cognis-calendar-name": sanitizeHeaderValue(calendarName),
     });
 
     return async (req, res, url): Promise<boolean> => {
@@ -43,6 +43,12 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     }),
                 );
                 return true;
+            }
+
+            function sanitizeHeaderValue(value: string): string {
+                return String(value ?? "")
+                    .replace(/[\r\n]+/g, " ")
+                    .trim();
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
             res.writeHead(200, buildCalendarExportHeaders(calendar.name));

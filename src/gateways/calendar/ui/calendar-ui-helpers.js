@@ -380,7 +380,8 @@ function shouldStopRenderingWeeks(weekEnd, monthStart) {
 function isAllDayEvent(event) {
     const start = new Date(event.startAt);
     const end = new Date(event.endAt);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return false;
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
+        return false;
     if (end.getTime() <= start.getTime()) return false;
     const startsAtMidnight =
         start.getHours() === 0 &&
@@ -396,7 +397,10 @@ function isAllDayEvent(event) {
 }
 
 function resolveRenderedEventSpan(event, dayStart, dayEnd) {
-    const start = Math.max(new Date(event.startAt).getTime(), dayStart.getTime());
+    const start = Math.max(
+        new Date(event.startAt).getTime(),
+        dayStart.getTime(),
+    );
     const end = Math.min(new Date(event.endAt).getTime(), dayEnd.getTime());
     const duration = Math.max(end - start, HALF_HOUR_MS);
     return Math.max(1, Math.ceil(duration / HALF_HOUR_MS));
@@ -503,9 +507,11 @@ function renderWeekView(events, weekStart, i18n) {
         .map((day) => {
             const dayStart = startOfDay(day);
             const dayEnd = addDays(dayStart, 1);
-            const dayEvents = listEventsInWindow(events, dayStart, dayEnd).filter(
-                (event) => isAllDayEvent(event),
-            );
+            const dayEvents = listEventsInWindow(
+                events,
+                dayStart,
+                dayEnd,
+            ).filter((event) => isAllDayEvent(event));
             return `<td class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents.slice(0, 2)) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>`;
         })
         .join("");
@@ -520,7 +526,9 @@ function renderWeekView(events, weekStart, i18n) {
                 );
                 const end = new Date(start.getTime() + HALF_HOUR_MS);
                 const slotEvents = listEventsInWindow(timedEvents, start, end);
-                const eventCells = slotEvents.length ? renderSlotEvents(slotEvents) : "";
+                const eventCells = slotEvents.length
+                    ? renderSlotEvents(slotEvents)
+                    : "";
                 return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</td>`;
             })
             .join("");

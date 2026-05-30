@@ -113,7 +113,7 @@ export async function mount(root, { signal } = {}) {
         return calendarUi.collectUpcomingEvents(
             eventsByCalendar,
             calendars,
-            "",
+            selectedCalendarId,
         );
     }
 
