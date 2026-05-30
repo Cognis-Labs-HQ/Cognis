@@ -68,7 +68,12 @@ export class SmtpNotificationQueue {
     >();
     private queueDraining = false;
     private sleepingUntil: number | null = null;
-    private wakeDrainSleep: (() => void) | null = null;
+    private wakeDrainSleep: {
+        sleepId: number;
+        resolve: () => void;
+    } | null = null;
+
+    private nextSleepId = 0;
 
     constructor(
         private readonly rateLimiter: SmtpRateLimiter,
@@ -264,25 +269,34 @@ export class SmtpNotificationQueue {
             return;
         }
 
-        const wake = this.wakeDrainSleep;
-        this.wakeDrainSleep = null;
         this.sleepingUntil = null;
-        wake?.();
+        const wake = this.wakeDrainSleep;
+        if (!wake) return;
+        if (this.wakeDrainSleep?.sleepId === wake.sleepId) {
+            this.wakeDrainSleep = null;
+        }
+        wake.resolve();
     }
 
     private async sleepWithWake(
         delayMs: number,
         sleepingUntil: number,
     ): Promise<void> {
+        const sleepId = this.nextSleepId + 1;
+        this.nextSleepId = sleepId;
         this.sleepingUntil = sleepingUntil;
         await Promise.race([
             this.sleep(delayMs),
             new Promise<void>((resolve) => {
-                this.wakeDrainSleep = resolve;
+                this.wakeDrainSleep = { sleepId, resolve };
             }),
         ]);
-        this.wakeDrainSleep = null;
-        this.sleepingUntil = null;
+        if (this.wakeDrainSleep?.sleepId === sleepId) {
+            this.wakeDrainSleep = null;
+        }
+        if (this.sleepingUntil === sleepingUntil) {
+            this.sleepingUntil = null;
+        }
     }
 
     async waitForResult(notificationId: string): Promise<void> {

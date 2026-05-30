@@ -155,7 +155,7 @@ test("SmtpNotificationSender queue applies recipient rate-limit spacing", async 
     }
 });
 
-test("SmtpNotificationQueue wakes while sleeping when a different recipient is ready", async () => {
+test("SmtpNotificationQueue wakes during rate-limit sleep when a different recipient is ready", async () => {
     const limiter = new SmtpRateLimiter(250);
     limiter.record("delayed@example.com", Date.now());
     const sentRecipients: string[] = [];
