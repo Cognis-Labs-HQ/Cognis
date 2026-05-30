@@ -16,6 +16,10 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./smtp-notification-queue.js";
+import {
+    buildRegistrationInviteEmailMessage,
+    buildVerificationEmailMessage,
+} from "./smtp-message-builders.js";
 import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
 
 export interface SmtpConfig {
@@ -803,10 +807,10 @@ export class SmtpNotificationSender implements NotificationSender {
         theme?: string,
     ) {
         if (!to) throw new Error("smtp_requires_recipient");
-        const subject = "Verify your email address";
-        const body = verifyUrl
-            ? `Your verification code is: ${code}\n\nOr click the button below to verify your email address directly.\n\nBoth the code and the link expire in 15 minutes.`
-            : `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
+        const { subject, body } = buildVerificationEmailMessage(
+            code,
+            verifyUrl,
+        );
         const queued = this.queue.enqueue({
             recipientEmail: to,
             subject,
@@ -828,8 +832,10 @@ export class SmtpNotificationSender implements NotificationSender {
         theme?: string,
     ): Promise<void> {
         if (!to) throw new Error("smtp_requires_recipient");
-        const subject = `${inviterDisplayName} invited you to join Cognis`;
-        const body = `🎁 ${inviterDisplayName} wants you to join Cognis.\n\nUse this secure invitation link to finish account creation:\n${inviteUrl}\n\nThis invitation expires in 24 hours and can only be used once.`;
+        const { subject, body } = buildRegistrationInviteEmailMessage(
+            inviterDisplayName,
+            inviteUrl,
+        );
         const queued = this.queue.enqueue({
             recipientEmail: to,
             subject,
@@ -961,54 +967,4 @@ export class SmtpNotificationSender implements NotificationSender {
 }
 
 export { SmtpRateLimiter } from "./smtp-notification-queue.js";
-
-export function createNotificationSender(
-    env: Record<string, string | undefined>,
-): SmtpNotificationSender {
-    const host = env["COGNIS_SMTP_HOST"] ?? "";
-    const port = Number.parseInt(env["COGNIS_SMTP_PORT"] ?? "587", 10);
-    const from = env["COGNIS_SMTP_FROM"] ?? (host ? `cognis@${host}` : "");
-    const senderName = env["COGNIS_SMTP_SENDER_NAME"];
-    const user = env["COGNIS_SMTP_USER"];
-    const password = env["COGNIS_SMTP_PASS"];
-    const rawSecure = env["COGNIS_SMTP_SECURE"] ?? "starttls";
-    const secure =
-        rawSecure === "tls"
-            ? "tls"
-            : rawSecure === "none"
-              ? "none"
-              : "starttls";
-    const allowSelfSigned = env["COGNIS_SMTP_ALLOW_SELF_SIGNED"] === "true";
-    const authDisabled = env["COGNIS_SMTP_AUTH_DISABLED"] === "true";
-    const ehloHostname = env["HOST"];
-    const externalHost =
-        env["EXTERNAL_HOST"] ?? (env["HOST"] ? `http://${env["HOST"]}` : "");
-
-    const envSnapshot: Record<string, string | undefined> = {
-        host: env["COGNIS_SMTP_HOST"],
-        port: env["COGNIS_SMTP_PORT"],
-        from: env["COGNIS_SMTP_FROM"],
-        senderName: env["COGNIS_SMTP_SENDER_NAME"],
-        user: env["COGNIS_SMTP_USER"],
-        secure: env["COGNIS_SMTP_SECURE"],
-        allowSelfSigned: env["COGNIS_SMTP_ALLOW_SELF_SIGNED"],
-        authDisabled: env["COGNIS_SMTP_AUTH_DISABLED"],
-    };
-
-    return new SmtpNotificationSender(
-        {
-            host,
-            port,
-            from,
-            senderName,
-            user,
-            password,
-            secure,
-            allowSelfSigned,
-            authDisabled,
-            ehloHostname,
-            externalHost,
-        },
-        envSnapshot,
-    );
-}
+export { createNotificationSender } from "./smtp-notification-sender-factory.js";

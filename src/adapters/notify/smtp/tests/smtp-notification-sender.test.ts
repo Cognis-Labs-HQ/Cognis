@@ -5,8 +5,8 @@ import {
     SmtpNotificationSender,
     SmtpRateLimiter,
     SmtpTemporaryError,
-    createNotificationSender,
 } from "../smtp-notification-sender.js";
+import { createNotificationSender } from "../smtp-notification-sender-factory.js";
 
 test("createNotificationSender always returns a sender instance", () => {
     const sender = createNotificationSender({});
@@ -118,8 +118,9 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
 });
 
 test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
-    const rateLimiter = new SmtpRateLimiter(60_000, () => 2_000);
-    rateLimiter.record("alice@example.com", 1_500);
+    const now = Date.now();
+    const rateLimiter = new SmtpRateLimiter(60_000, () => now);
+    rateLimiter.record("alice@example.com", now);
     const sender = new SmtpNotificationSender(
         {
             host: "smtp.example.com",
@@ -128,7 +129,7 @@ test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit
             secure: "starttls",
         },
         undefined,
-        async () => {},
+        async () => new Promise(() => {}),
         rateLimiter,
     );
 

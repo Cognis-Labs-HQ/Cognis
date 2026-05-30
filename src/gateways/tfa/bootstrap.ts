@@ -51,7 +51,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             theme?: string,
         ) => Promise<{
             notificationId: string;
-            status: "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
+            status:
+                | "queued"
+                | "waiting_rate_limit"
+                | "sending"
+                | "sent"
+                | "failed";
             createdAt: string;
             updatedAt: string;
             availableAt?: string;

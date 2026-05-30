@@ -518,7 +518,12 @@ export class CoreNotificationGateway
             if (this.disabledSenders.has(id)) continue;
             if (!isSenderWithVerification(sender)) continue;
             if (typeof sender.queueVerificationEmail === "function") {
-                return sender.queueVerificationEmail(to, code, verifyUrl, theme);
+                return sender.queueVerificationEmail(
+                    to,
+                    code,
+                    verifyUrl,
+                    theme,
+                );
             }
             await sender.sendVerificationEmail(to, code, verifyUrl, theme);
             return {

@@ -270,7 +270,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!email) {
             return { ready: false, message: "primary_email_required" };
         }
-        if (typeof this.context.sendVerificationEmail !== "function") {
+        if (
+            typeof this.context.sendVerificationEmail !== "function" &&
+            typeof this.context.queueVerificationEmail !== "function"
+        ) {
             return { ready: false, message: "smtp_capability_missing" };
         }
         if (this.context.canSendVerificationEmail?.() !== true) {
