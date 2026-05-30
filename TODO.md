@@ -53,3 +53,15 @@
 **Reviewer suggestion:** Extract the duplicated `challengeSentAt` / `key` / `code` preparation in `beginLoginChallenge` into a helper shared by both the queue and fallback branches.
 
 **Reason ignored:** This is a refactor suggestion for existing SMTP TFA adapter code rather than a correctness issue in the resend-toast flow. Folding it into this bug fix would expand the scope into unrelated adapter cleanup and require additional version/changelog churn for behavior that is already covered by the current adapter logic and tests.
+
+### login-flow.js resend-link helper naming — rename `getResendLink`
+
+**Reviewer suggestion:** Rename `getResendLink` to `getResendActionLink` so the helper name is more explicit.
+
+**Reason ignored:** The existing name is already specific within this file because the helper only resolves `#login-tfa-resend-action`, and the file has no other competing link helpers. Renaming it would be a no-behavior naming churn inside the just-updated TFA flow without improving correctness for the toast fix.
+
+### login-flow.js delivery toast extraction — create `showDeliveryToastOnce`
+
+**Reviewer suggestion:** Extract the delivery-toast gating from `updateCountdown` into a dedicated helper such as `showDeliveryToastOnce`.
+
+**Reason ignored:** The toast state depends entirely on the local `deliveryToastShownOnce` and `skipDeliveryToast` values that are already consumed at the single callsite where the countdown state is evaluated. Pulling that three-line guard into another helper would add indirection without materially improving readability, testing, or behavior for this targeted regression fix.
