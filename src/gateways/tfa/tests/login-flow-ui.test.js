@@ -21,13 +21,20 @@ test("tfa login resend action toggles disabled state while cooldown is active", 
     );
 });
 
-test("tfa login resend success toast is skipped for smtp_rate_limited responses", () => {
+test("tfa login cooldown toast uses the resend success message", () => {
     assert.match(
         SOURCE,
-        /if \(challengeMessage !== "smtp_rate_limited"\) {\s*showToast\(/,
+        /if \(!deliveryToastShownOnce && !skipDeliveryToast\) {\s*deliveryToastShownOnce = true;\s*showToast\(\s*i18n\.t\("ui\.app\.login\.tfa\.smtp\.resend_sent"\),\s*\{ variant: "success" \}\s*\);/,
     );
     assert.doesNotMatch(
         SOURCE,
-        /if \(response\.ok\) {\s*[\s\S]*showToast\(\s*i18n\.t\("ui\.app\.login\.tfa\.smtp\.resend_sent"\),/,
+        /showToast\(\s*i18n(?:\s*\n\s*)?\.t\("ui\.app\.login\.tfa\.smtp\.rate_limited_notice"\)/,
+    );
+});
+
+test("tfa login resend success responses always show the resend success toast", () => {
+    assert.match(
+        SOURCE,
+        /if \(response\.ok\) {\s*[\s\S]*deliveryToastShownOnce = true;\s*showToast\(\s*i18n\.t\("ui\.app\.login\.tfa\.smtp\.resend_sent"\),\s*\{ variant: "success" \}\s*\);[\s\S]*setResendStateForMethod\(\s*resolveMethod\(selectedMethodId\),\s*\{ skipDeliveryToast: true \},\s*\);/,
     );
 });

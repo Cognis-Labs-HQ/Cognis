@@ -23,13 +23,22 @@ Fenstergröße während des TFA-Schritts auf den Anmeldebildschirm zurückgesetz
 Der aktive TFA-Dialog wird nach jedem Layout-Re-Render automatisch
 wiederhergestellt.
 
+Wenn der SMTP-Login-Ablauf einen Code automatisch versendet, bestätigt der
+Toast jetzt den Versand, statt vor dem Erneut-Sende-Countdown zu warnen. Der
+Link zum erneuten Senden zeigt den Countdown weiterhin an, damit das aktuelle
+Ratenlimit klar bleibt.
+
 ## Geänderte Dateien/Komponenten
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/ui/login-flow.js`
+- `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`
 - `src/gateways/notify/tests/notification-gateway.test.ts`
 - `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
+- `src/docs/versions.en.md`

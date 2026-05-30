@@ -184,7 +184,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             );
             let countdownTimer = null;
             let resendLocked = false;
-            let rateLimitNoticeShownOnce = false;
+            let deliveryToastShownOnce = false;
 
             const stopCountdown = () => {
                 if (countdownTimer != null) {
@@ -193,7 +193,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 }
             };
 
-            const setResendStateForMethod = (method) => {
+            const setResendStateForMethod = (
+                method,
+                { skipDeliveryToast = false } = {},
+            ) => {
                 const resendLink = root.querySelector(
                     "#login-tfa-resend-action",
                 );
@@ -228,18 +231,11 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         ? Math.max(Math.ceil((resendAt - Date.now()) / 1000), 0)
                         : 0;
                     if (remainingSeconds > 0) {
-                        if (!rateLimitNoticeShownOnce) {
-                            rateLimitNoticeShownOnce = true;
+                        if (!deliveryToastShownOnce && !skipDeliveryToast) {
+                            deliveryToastShownOnce = true;
                             showToast(
-                                i18n
-                                    .t(
-                                        "ui.app.login.tfa.smtp.rate_limited_notice",
-                                    )
-                                    .replace(
-                                        "{seconds}",
-                                        String(remainingSeconds),
-                                    ),
-                                { variant: "warning" },
+                                i18n.t("ui.app.login.tfa.smtp.resend_sent"),
+                                { variant: "success" },
                             );
                         }
                         resendLocked = true;
@@ -321,19 +317,14 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                         body?.data?.challenge ?? {},
                                     );
                                 }
-                                const challengeMessage = String(
-                                    body?.data?.challenge?.message ?? "",
-                                ).trim();
-                                if (challengeMessage !== "smtp_rate_limited") {
-                                    showToast(
-                                        i18n.t(
-                                            "ui.app.login.tfa.smtp.resend_sent",
-                                        ),
-                                        { variant: "success" },
-                                    );
-                                }
+                                deliveryToastShownOnce = true;
+                                showToast(
+                                    i18n.t("ui.app.login.tfa.smtp.resend_sent"),
+                                    { variant: "success" },
+                                );
                                 setResendStateForMethod(
                                     resolveMethod(selectedMethodId),
+                                    { skipDeliveryToast: true },
                                 );
                                 return;
                             }

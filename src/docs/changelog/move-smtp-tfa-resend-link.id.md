@@ -21,13 +21,22 @@ tata letak mobile dan desktop. Sebelumnya, mengubah ukuran jendela saat
 berada di langkah TFA akan mereset halaman ke layar masuk. Prompt TFA yang
 aktif kini dipulihkan secara otomatis setelah render ulang tata letak.
 
+Saat alur login SMTP mengirim kode secara otomatis, toast kini mengonfirmasi
+bahwa kode sudah dikirim alih-alih memberi peringatan tentang hitung mundur
+kirim ulang. Tautan kirim ulang tetap menampilkan hitung mundur agar batas laju
+saat ini tetap jelas.
+
 ## File/komponen yang diubah
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/ui/login-flow.js`
+- `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`
 - `src/gateways/notify/tests/notification-gateway.test.ts`
 - `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
+- `src/docs/versions.en.md`

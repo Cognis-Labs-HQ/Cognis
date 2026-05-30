@@ -20,13 +20,21 @@ TFA 画面が維持されるようになりました。以前は TFA ステッ�
 サイズを変更すると、認証情報入力画面にリセットされていました。レイアウトの
 再レンダリング後、アクティブな TFA プロンプトが自動的に復元されます。
 
+SMTP ログインフローがコードを自動送信した場合、トーストは再送信クールダウンの
+警告ではなく、コード送信完了を示す表示になりました。再送信リンクのカウントダウンは
+そのまま残るため、現在のレート制限は引き続き分かります。
+
 ## 変更されたファイル/コンポーネント
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/ui/login-flow.js`
+- `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`
 - `src/gateways/notify/tests/notification-gateway.test.ts`
 - `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
+- `src/docs/versions.en.md`

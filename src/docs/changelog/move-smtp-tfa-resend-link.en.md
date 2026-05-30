@@ -22,13 +22,21 @@ would reset the page to the credential screen. The active TFA prompt is now
 restored automatically after any layout re-render so the user does not lose
 their place.
 
+When the SMTP login flow sends a code automatically, the toast now confirms
+that the code was sent instead of warning about the resend cooldown. The resend
+link still shows the cooldown countdown so the current rate limit remains clear.
+
 ## Changed files/components
 
 - `src/gateways/notify/gateway.ts`
 - `src/gateways/notify/bootstrap.ts`
 - `src/gateways/tfa/bootstrap.ts`
+- `src/gateways/tfa/ui/login-flow.js`
+- `src/gateways/tfa/tests/login-flow-ui.test.js`
+- `src/gateways/tfa/manifest.json`
 - `src/adapters/notify/smtp/smtp-notification-sender.ts`
 - `src/adapters/tfa/smtp/index.ts`
 - `src/gateways/notify/tests/notification-gateway.test.ts`
 - `src/adapters/notify/smtp/tests/smtp-notification-sender.test.ts`
 - `src/adapters/tfa/smtp/tests/smtp-adapter.test.ts`
+- `src/docs/versions.en.md`
