@@ -112,10 +112,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (existingCode && code === existingCode) {
             const trailingDigit = code.at(-1) ?? "0";
             const trailingDigitIndex = NUMERIC_DIGITS.indexOf(trailingDigit);
+            const safeTrailingDigitIndex = Math.max(trailingDigitIndex, 0);
             const rotatedDigit =
                 NUMERIC_DIGITS[
-                    ((trailingDigitIndex >= 0 ? trailingDigitIndex : 0) + 1) %
-                        NUMERIC_DIGITS.length
+                    (safeTrailingDigitIndex + 1) % NUMERIC_DIGITS.length
                 ];
             code = `${code.slice(0, -1)}${rotatedDigit}`;
         }
