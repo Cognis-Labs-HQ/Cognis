@@ -596,7 +596,7 @@ export async function mount(root) {
                     resetPasswordResetMode();
                     if (lastTfaPayload != null) {
                         loadTfaLoginClient().then((client) => {
-                            if (lastTfaPayload != null && client) {
+                            if (client) {
                                 currentTfaLoginAttemptId =
                                     client.switchToTfaPrompt(lastTfaPayload) ??
                                     null;
