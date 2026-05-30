@@ -494,6 +494,10 @@ function renderWeekView(events, weekStart, i18n) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
+    const columnMarkup = `<colgroup>
+    <col class="calendar-week-axis-column" />
+    ${days.map(() => '<col class="calendar-week-day-column" />').join("")}
+  </colgroup>`;
     const dayHeaders = days
         .map((day) => {
             const dayStart = startOfDay(day);
@@ -543,11 +547,12 @@ function renderWeekView(events, weekStart, i18n) {
       ${slotCells}
     </tr>`);
     }
-    return `<div class="calendar-week-view">
-  <table class="calendar-week-table" role="presentation">
+    return `<div class="calendar-week-view" data-calendar-week-view>
+  <table class="calendar-week-table calendar-week-table--header" data-calendar-week-header role="presentation">
+    ${columnMarkup}
     <thead>
       <tr class="calendar-week-grid calendar-week-grid--header">
-        <th class="calendar-week-axis-label" scope="col">&nbsp;</th>
+        <th class="calendar-week-axis-label calendar-week-axis-label--corner" scope="col" aria-hidden="true"></th>
         ${dayHeaders}
       </tr>
       <tr class="calendar-week-all-day-row">
@@ -556,8 +561,9 @@ function renderWeekView(events, weekStart, i18n) {
       </tr>
     </thead>
   </table>
-  <div class="calendar-week-scroll-grid">
-    <table class="calendar-week-table" role="presentation">
+  <div class="calendar-week-scroll-grid" data-calendar-week-scroll-grid>
+    <table class="calendar-week-table calendar-week-table--body" role="presentation">
+      ${columnMarkup}
       <tbody>${slotRows.join("")}</tbody>
     </table>
   </div>
@@ -572,7 +578,7 @@ function renderMonthGrid(events, currentDate, i18n) {
         const dayLabel = day.toLocaleDateString(undefined, {
             weekday: "short",
         });
-        return `<th scope="col"><span class="calendar-month-header-day">${escapeHtml(dayLabel)}</span><span class="calendar-month-header-index">x${dayIndex}</span></th>`;
+        return `<th scope="col"><span class="calendar-month-header-day">${escapeHtml(dayLabel)}</span></th>`;
     }).join("");
     const rows = [];
     for (let weekIndex = 0; weekIndex < 6; weekIndex += 1) {

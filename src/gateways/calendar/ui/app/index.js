@@ -135,6 +135,25 @@ export async function mount(root, { signal } = {}) {
         return i18n.t("gateway.calendar.today");
     }
 
+    function syncWeekViewLayout() {
+        root.querySelectorAll("[data-calendar-week-view]").forEach(
+            (weekView) => {
+                const scrollGrid = weekView.querySelector(
+                    "[data-calendar-week-scroll-grid]",
+                );
+                if (!(scrollGrid instanceof HTMLElement)) return;
+                const scrollbarWidth = Math.max(
+                    0,
+                    scrollGrid.offsetWidth - scrollGrid.clientWidth,
+                );
+                weekView.style.setProperty(
+                    "--calendar-week-scrollbar-width",
+                    `${scrollbarWidth}px`,
+                );
+            },
+        );
+    }
+
     const popupManager = createCalendarPopupManager({
         root,
         signal,
@@ -196,6 +215,11 @@ export async function mount(root, { signal } = {}) {
           </section>
         `,
                 onRender: () => {
+                    syncWeekViewLayout();
+                    window.addEventListener("resize", syncWeekViewLayout, {
+                        signal,
+                    });
+
                     root.querySelectorAll("[data-calendar-view]").forEach(
                         (button) => {
                             button.addEventListener(
