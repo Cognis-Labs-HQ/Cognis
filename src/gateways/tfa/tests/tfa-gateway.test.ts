@@ -436,3 +436,52 @@ test("tfa gateway does not initiate challenges when multiple methods are availab
         );
     }
 });
+
+test("tfa gateway does not initiate challenge when recovery codes are also available", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    let smtpChallengeCallCount = 0;
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        beginLoginChallenge: async () => {
+            smtpChallengeCallCount++;
+            return { ready: true };
+        },
+        verifyLogin: async () => ({ verified: true }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    await gateway.enableAdapter("smtp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "smtp",
+        enabled: true,
+        sortOrder: 0,
+        state: { email: "alice@example.com" },
+        configuredAt: new Date().toISOString(),
+    });
+    storeMock.recoveryCodes.push({
+        accountId: "alice",
+        codeHash: "code-1",
+        sortOrder: 0,
+        createdAt: new Date().toISOString(),
+        usedAt: null,
+    });
+    const methods = await gateway.getLoginMethods("alice");
+    assert.equal(
+        smtpChallengeCallCount,
+        0,
+        "beginLoginChallenge must not be called when recovery code is available",
+    );
+    assert.deepEqual(
+        methods.map((method) => method.id),
+        ["smtp", "recovery_code"],
+    );
+    assert.ok(
+        !("challenge" in methods[0]!) || methods[0]!.challenge == null,
+        "smtp method must not include challenge data when recovery code is available",
+    );
+});

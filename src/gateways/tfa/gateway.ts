@@ -687,7 +687,10 @@ export class CoreTfaGateway {
             const adapter = this.adapters.get(method.methodId);
             return adapter != null && this.isAdapterEnabled(method.methodId);
         });
-        const initiateChallenge = candidateMethods.length === 1;
+        const hasUnusedRecoveryCodes =
+            await this.store.hasUnusedRecoveryCodes(accountId);
+        const initiateChallenge =
+            candidateMethods.length === 1 && !hasUnusedRecoveryCodes;
         const resolvedMethods = await Promise.all(
             candidateMethods.map(async (method) => {
                 const adapter = this.adapters.get(method.methodId)!;
@@ -737,7 +740,7 @@ export class CoreTfaGateway {
         const methods = resolvedMethods.filter(
             (method): method is TfaLoginMethod => method != null,
         );
-        if (await this.store.hasUnusedRecoveryCodes(accountId)) {
+        if (hasUnusedRecoveryCodes) {
             methods.push({ id: "recovery_code", name: "Recovery Code" });
         }
         return methods;

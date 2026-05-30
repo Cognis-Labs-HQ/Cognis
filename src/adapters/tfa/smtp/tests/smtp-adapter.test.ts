@@ -190,6 +190,58 @@ test("smtp adapter login challenge surfaces queued rate limits without replacing
     assert.equal(secondCodeAttempt.verified, false);
 });
 
+test("smtp adapter login challenge rolls back on queued failed status", async () => {
+    let queueCallCount = 0;
+    let firstIssuedCode = "";
+    let failedAttemptCode = "";
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        queueVerificationEmail: async (_to, code) => {
+            queueCallCount += 1;
+            if (queueCallCount === 1) {
+                firstIssuedCode = code;
+                return {
+                    notificationId: "first-send",
+                    status: "queued",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                };
+            }
+            failedAttemptCode = code;
+            return {
+                notificationId: "failed-send",
+                status: "failed",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                error: "delivery_failed",
+            };
+        },
+    });
+    const firstChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(firstChallenge?.ready, true);
+    const failedChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(failedChallenge?.ready, false);
+    assert.equal(failedChallenge?.message, "smtp_unavailable");
+    const originalCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: firstIssuedCode },
+    });
+    assert.equal(originalCodeAttempt.verified, true);
+    const failedCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: failedAttemptCode },
+    });
+    assert.equal(failedCodeAttempt.verified, false);
+});
+
 test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {
     const adapter = createAdapter();
     const details = await adapter.renderMethodDetails?.({

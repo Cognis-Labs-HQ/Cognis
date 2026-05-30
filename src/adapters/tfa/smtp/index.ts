@@ -334,6 +334,20 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                         resendAvailableAt: retryMetadata.resendAvailableAt,
                     };
                 }
+                if (queued.status === "failed") {
+                    this.rollbackChallenge(key, previousChallenge);
+                    this.context.log?.(
+                        "error",
+                        "Failed to queue SMTP TFA challenge code.",
+                        {
+                            component: "adapter-tfa-smtp",
+                            operation: "queue_login_code",
+                            accountId: input.accountId,
+                            error: queued.error ?? "queue_delivery_failed",
+                        },
+                    );
+                    return { ready: false, message: "smtp_unavailable" };
+                }
                 this.loginChallengeLastSentAt.set(
                     input.accountId,
                     challengeSentAt,
