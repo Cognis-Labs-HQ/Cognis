@@ -808,10 +808,9 @@ export class CoreCalendarGateway {
 
     private insertEventIntoCalendar(event: CalendarEventRecord): void {
         this.upsertEventRecord(event);
-        this.syncResponsesForAttendees(
-            this.getResponseRootEventId(event),
-            event.attendees,
-        );
+        const responseRootEventId = this.getResponseRootEventId(event);
+        this.syncResponsesForAttendees(responseRootEventId, event.attendees);
+        this.ensureCreatorAcceptedResponse(responseRootEventId, event);
         this.refreshEventResponses(event);
         this.scheduleStoreWrite(async () => {
             await this.store?.saveEvent(event);
@@ -824,6 +823,29 @@ export class CoreCalendarGateway {
                 }
             }
         });
+    }
+
+    private ensureCreatorAcceptedResponse(
+        rootEventId: string,
+        event: CalendarEventRecord,
+    ): void {
+        if (!event.attendees.includes(event.createdBy)) return;
+        const responsesForRoot =
+            this.responsesByRootEvent.get(rootEventId) ?? new Map();
+        const existingResponse = responsesForRoot.get(event.createdBy);
+        if (existingResponse?.response === "accepted") return;
+        const now = new Date().toISOString();
+        const creatorResponse: CalendarEventResponseRecord = {
+            rootEventId,
+            accountId: event.createdBy,
+            response: "accepted",
+            createdAt: existingResponse?.createdAt ?? now,
+            updatedAt: now,
+        };
+        responsesForRoot.set(event.createdBy, creatorResponse);
+        this.responsesByRootEvent.set(rootEventId, responsesForRoot);
+        this.scheduleStoreWrite(() => this.store?.saveResponse(creatorResponse));
+        this.refreshResponsesForRootEvent(rootEventId);
     }
 
     private upsertCalendarRecord(calendar: CalendarRecord): void {

@@ -6,6 +6,7 @@
   <string name="gateway.calendar.no_events">このカレンダーには予定がありません。</string>
   <string name="gateway.calendar.visibility_private">非公開</string>
   <string name="gateway.calendar.visibility_public">公開</string>
+  <string name="gateway.calendar.visibility_heading">公開範囲</string>
   <string name="gateway.calendar.calendar_name_placeholder">カレンダー名</string>
   <string name="gateway.calendar.create_calendar">カレンダーを作成</string>
   <string name="gateway.calendar.create_calendar_success">カレンダーを作成しました。</string>
@@ -29,6 +30,7 @@
   <string name="gateway.calendar.create_meeting">ミーティングを作成</string>
   <string name="gateway.calendar.create_meeting_failed">ミーティングリンクを作成できませんでした。</string>
   <string name="gateway.calendar.event_meeting_link">ミーティングリンク</string>
+  <string name="gateway.calendar.go_to_meeting">ミーティングへ移動</string>
   <string name="gateway.calendar.create_event">イベントを作成</string>
   <string name="gateway.calendar.add_event">イベントを追加</string>
   <string name="gateway.calendar.create_event_success">イベントを作成しました。</string>
@@ -81,6 +83,10 @@
   <string name="gateway.calendar.response_accepted">承諾</string>
   <string name="gateway.calendar.response_tentative">仮承諾</string>
   <string name="gateway.calendar.response_declined">辞退</string>
+  <string name="gateway.calendar.response_action_pending">保留</string>
+  <string name="gateway.calendar.response_action_accepted">承諾する</string>
+  <string name="gateway.calendar.response_action_tentative">仮承諾</string>
+  <string name="gateway.calendar.response_action_declined">辞退する</string>
   <string name="gateway.calendar.response_update_success">回答を更新しました。</string>
   <string name="gateway.calendar.response_update_failed">回答を更新できませんでした。</string>
   <string name="gateway.calendar.response_scope_title">回答の適用範囲</string>
@@ -108,6 +114,7 @@
   <string name="gateway.calendar.share_link_expiry_30d">30日間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_never">期限なし</string>
   <string name="gateway.calendar.share_link_generate">リンクを生成</string>
+  <string name="gateway.calendar.share_links_details">カレンダークライアント用リンク</string>
   <string name="gateway.calendar.share_link_copy">コピー</string>
   <string name="gateway.calendar.share_link_copied">リンクをコピーしました！</string>
   <string name="gateway.calendar.share_link_failed">共有リンクを生成できませんでした。</string>

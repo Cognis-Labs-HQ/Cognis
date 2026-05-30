@@ -152,6 +152,24 @@ test("calendar gateway updates events with recurrence and status", () => {
         ownerAccountId: "alice",
         name: "Work",
     });
+
+    test("calendar gateway defaults organizer response to accepted", () => {
+        const gateway = new CoreCalendarGateway();
+        const calendar = gateway.createCalendar({
+            ownerAccountId: "alice",
+            name: "Team",
+        });
+        const event = gateway.addEvent({
+            ownerAccountId: "alice",
+            calendarId: calendar.id,
+            title: "Kickoff",
+            startAt: "2026-06-04T09:00:00.000Z",
+            endAt: "2026-06-04T10:00:00.000Z",
+            attendees: ["bob"],
+        });
+        assert.equal(gateway.getEventResponse(event.id, "alice"), "accepted");
+        assert.equal(gateway.getEventResponse(event.id, "bob"), "pending");
+    });
     const createdEvent = gateway.addEvent({
         ownerAccountId: "alice",
         calendarId: calendar.id,

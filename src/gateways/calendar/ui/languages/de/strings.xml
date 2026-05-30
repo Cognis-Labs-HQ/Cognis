@@ -6,6 +6,7 @@
   <string name="gateway.calendar.no_events">Für diesen Kalender sind keine Termine geplant.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
   <string name="gateway.calendar.visibility_public">Öffentlich</string>
+  <string name="gateway.calendar.visibility_heading">Sichtbarkeit</string>
   <string name="gateway.calendar.calendar_name_placeholder">Kalendername</string>
   <string name="gateway.calendar.create_calendar">Kalender erstellen</string>
   <string name="gateway.calendar.create_calendar_success">Kalender erstellt.</string>
@@ -29,6 +30,7 @@
   <string name="gateway.calendar.create_meeting">Meeting erstellen</string>
   <string name="gateway.calendar.create_meeting_failed">Meeting-Link konnte nicht erstellt werden.</string>
   <string name="gateway.calendar.event_meeting_link">Meeting-Link</string>
+  <string name="gateway.calendar.go_to_meeting">Zum Meeting</string>
   <string name="gateway.calendar.create_event">Termin erstellen</string>
   <string name="gateway.calendar.add_event">Termin hinzufügen</string>
   <string name="gateway.calendar.create_event_success">Termin erstellt.</string>
@@ -81,6 +83,10 @@
   <string name="gateway.calendar.response_accepted">Angenommen</string>
   <string name="gateway.calendar.response_tentative">Vorläufig</string>
   <string name="gateway.calendar.response_declined">Abgelehnt</string>
+  <string name="gateway.calendar.response_action_pending">Ausstehend</string>
+  <string name="gateway.calendar.response_action_accepted">Annehmen</string>
+  <string name="gateway.calendar.response_action_tentative">Vorläufig</string>
+  <string name="gateway.calendar.response_action_declined">Ablehnen</string>
   <string name="gateway.calendar.response_update_success">Antwort aktualisiert.</string>
   <string name="gateway.calendar.response_update_failed">Antwort konnte nicht aktualisiert werden.</string>
   <string name="gateway.calendar.response_scope_title">Antwort anwenden auf</string>
@@ -108,6 +114,7 @@
   <string name="gateway.calendar.share_link_expiry_30d">Läuft in 30 Tagen ab</string>
   <string name="gateway.calendar.share_link_expiry_never">Läuft nie ab</string>
   <string name="gateway.calendar.share_link_generate">Link Generieren</string>
+  <string name="gateway.calendar.share_links_details">Kalender-Client-Links</string>
   <string name="gateway.calendar.share_link_copy">Kopieren</string>
   <string name="gateway.calendar.share_link_copied">Link kopiert!</string>
   <string name="gateway.calendar.share_link_failed">Freigabelink konnte nicht erstellt werden.</string>

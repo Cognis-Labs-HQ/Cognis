@@ -391,7 +391,7 @@ export function createCalendarPopupManager({
                               (responseOption) => ({
                                   id: `respond:${responseOption}`,
                                   label: i18n.t(
-                                      calendarUi.getResponseLabelKey(
+                                      calendarUi.getResponseActionLabelKey(
                                           responseOption,
                                       ),
                                   ),
@@ -420,6 +420,17 @@ export function createCalendarPopupManager({
                               },
                           ]
                         : []),
+                    ...(eventData.event.meetingUrl
+                        ? [
+                              {
+                                  id: "join-meeting",
+                                  label: i18n.t(
+                                      "gateway.calendar.go_to_meeting",
+                                  ),
+                                  variant: "confirm",
+                              },
+                          ]
+                        : []),
                     {
                         id: "close",
                         label: i18n.t("ui.reuse.close"),
@@ -443,6 +454,19 @@ export function createCalendarPopupManager({
                             openDeleteEventPopup(eventData);
                         }, 0);
                         return true;
+                    }
+                    if (actionId === "join-meeting") {
+                        const meetingUrl = String(
+                            eventData.event.meetingUrl ?? "",
+                        ).trim();
+                        if (meetingUrl) {
+                            window.open(
+                                meetingUrl,
+                                "_blank",
+                                "noopener,noreferrer",
+                            );
+                        }
+                        return false;
                     }
                     if (actionId.startsWith("respond:")) {
                         const responseOption = actionId.split(":")[1] ?? "";

@@ -11,7 +11,7 @@ export function createCalendarEditPopupHandler({
     const DEFAULT_SHARE_EXPIRY_HOURS = "24";
 
     async function openCalendarEditPopup(calendar) {
-        let generatedShareUrl = "";
+        let generatedShareUrls = { caldav: "", ics: "" };
         await openPopup({
             title: i18n.t("gateway.calendar.edit_calendar"),
             body: () => {
@@ -23,6 +23,9 @@ export function createCalendarEditPopupHandler({
           <div class="calendar-create-row">
             <input id="calendar-edit-color" type="color" value="${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}" class="calendar-color-picker-bare" />
             <input id="calendar-edit-name" type="text" value="${escapeHtml(calendar.name)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttr} />
+          </div>
+          <div class="calendar-visibility-row">
+            <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>
             <select id="calendar-edit-visibility">
               <option value="private"${isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_private"))}</option>
               <option value="public"${!isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_public"))}</option>
@@ -45,8 +48,19 @@ export function createCalendarEditPopupHandler({
               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
             </div>
             <div id="calendar-share-result" class="calendar-share-result" style="display:none">
-              <input id="calendar-share-url" type="text" readonly class="calendar-share-url-field" value="" />
-              <button type="button" id="calendar-share-copy" class="btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+              <details class="calendar-share-details">
+                <summary>${escapeHtml(i18n.t("gateway.calendar.share_links_details"))}</summary>
+                <div class="calendar-share-result-row">
+                  <label for="calendar-share-caldav-url">CalDAV</label>
+                  <input id="calendar-share-caldav-url" type="text" readonly class="calendar-share-url-field" value="" />
+                  <button type="button" data-share-copy="caldav" class="popup-action-btn btn-no-animation" data-popup-action="copy">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+                </div>
+                <div class="calendar-share-result-row">
+                  <label for="calendar-share-ics-url">ICS</label>
+                  <input id="calendar-share-ics-url" type="text" readonly class="calendar-share-url-field" value="" />
+                  <button type="button" data-share-copy="ics" class="popup-action-btn btn-no-animation" data-popup-action="copy">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+                </div>
+              </details>
             </div>
           </div>
           ${!calendar.isDefault ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
@@ -104,28 +118,54 @@ export function createCalendarEditPopupHandler({
                             return;
                         }
                         const data = await res.json();
-                        generatedShareUrl = String(data?.data?.shareUrl ?? "");
+                        generatedShareUrls = {
+                            caldav: String(
+                                data?.data?.caldavUrl ??
+                                    data?.data?.shareUrl ??
+                                    "",
+                            ),
+                            ics: String(data?.data?.icsUrl ?? ""),
+                        };
                         const resultEl = overlay.querySelector(
                             "#calendar-share-result",
                         );
-                        const urlField = overlay.querySelector(
-                            "#calendar-share-url",
+                        const caldavField = overlay.querySelector(
+                            "#calendar-share-caldav-url",
+                        );
+                        const icsField = overlay.querySelector(
+                            "#calendar-share-ics-url",
                         );
                         if (resultEl) resultEl.style.display = "";
-                        if (urlField) urlField.value = generatedShareUrl;
+                        if (caldavField)
+                            caldavField.value = generatedShareUrls.caldav;
+                        if (icsField) icsField.value = generatedShareUrls.ics;
                     });
                 }
-                const copyBtn = overlay.querySelector("#calendar-share-copy");
-                if (copyBtn) {
-                    copyBtn.addEventListener("click", async () => {
-                        if (!generatedShareUrl) return;
-                        await navigator.clipboard.writeText(generatedShareUrl);
-                        showToast(
-                            i18n.t("gateway.calendar.share_link_copied"),
-                            "success",
-                        );
+                overlay
+                    .querySelectorAll("[data-share-copy]")
+                    .forEach((button) => {
+                        button.addEventListener("click", async () => {
+                            const target = String(
+                                button.getAttribute("data-share-copy") ?? "",
+                            );
+                            const shareLink =
+                                target === "ics"
+                                    ? generatedShareUrls.ics
+                                    : generatedShareUrls.caldav;
+                            if (!shareLink) return;
+                            await navigator.clipboard.writeText(shareLink);
+                            button.classList.add("popup-action-btn--copied");
+                            window.setTimeout(() => {
+                                button.classList.remove(
+                                    "popup-action-btn--copied",
+                                );
+                            }, 1500);
+                            showToast(
+                                i18n.t("gateway.calendar.share_link_copied"),
+                                "success",
+                            );
+                        });
                     });
-                }
                 const deleteBtn = overlay.querySelector(
                     "#calendar-edit-delete",
                 );

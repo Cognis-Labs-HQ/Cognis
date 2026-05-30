@@ -20,7 +20,75 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
 
+    const buildCalendarExportHeaders = (calendarName: string) => ({
+        "content-type": "text/calendar; charset=utf-8",
+        "x-cognis-calendar-name": calendarName,
+    });
+
     return async (req, res, url): Promise<boolean> => {
+        const publicMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/ics\/public\/([^/]+)$/,
+        );
+        if (publicMatch && req.method === "GET") {
+            const calendarId = decodeURIComponent(publicMatch[1]);
+            const calendar = ctx.gateway.getCalendar(calendarId);
+            if (!calendar || calendar.visibility !== "public") {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Calendar export not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
+            res.end(ics);
+            return true;
+        }
+
+        const privateMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/ics\/private\/([^/]+)$/,
+        );
+        if (privateMatch && req.method === "GET") {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const token = decodeURIComponent(privateMatch[1]);
+            const tokenRecord = ctx.gateway.resolvePrivateExportToken(token);
+            if (!tokenRecord) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Calendar export token not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const calendar = ctx.gateway.getCalendar(tokenRecord.calendarId);
+            if (!calendar) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Calendar export not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
+            res.end(ics);
+            return true;
+        }
+
         if (
             url.pathname === "/api/v1/calendar/ics/export" &&
             req.method === "GET"
@@ -47,9 +115,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            res.writeHead(200, {
-                "content-type": "text/calendar; charset=utf-8",
-            });
+            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
             res.end(ics);
             return true;
         }

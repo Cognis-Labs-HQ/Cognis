@@ -55,28 +55,49 @@ export function buildCalendarShareData(input: {
     permission: unknown;
     expiresInHours: unknown;
     externalHost: string;
-}): { permission: "read" | "write"; shareUrl: string } | null {
+}):
+    | {
+          permission: "read" | "write";
+          shareUrl: string;
+          caldavUrl: string;
+          icsUrl: string;
+      }
+    | null {
     const calendar = input.gateway.getOwnedCalendar(
         input.ownerAccountId,
         input.calendarId,
     );
     if (!calendar) return null;
     const permission = input.permission === "write" ? "write" : "read";
-    const sharePath =
+    const privateExportToken =
+        calendar.visibility === "public"
+            ? null
+            : input.gateway.issuePrivateExportToken({
+                  ownerAccountId: input.ownerAccountId,
+                  calendarId: calendar.id,
+                  ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
+              }).token;
+    const caldavPath =
         calendar.visibility === "public"
             ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.id)}`
             : `/api/v1/calendar/caldav/private/${encodeURIComponent(
-                  input.gateway.issuePrivateExportToken({
-                      ownerAccountId: input.ownerAccountId,
-                      calendarId: calendar.id,
-                      ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
-                  }).token,
+                  String(privateExportToken),
               )}`;
+    const icsPath =
+        calendar.visibility === "public"
+            ? `/api/v1/calendar/ics/public/${encodeURIComponent(calendar.id)}`
+            : `/api/v1/calendar/ics/private/${encodeURIComponent(
+                  String(privateExportToken),
+              )}`;
+    const toAbsoluteOrPath = (relativePath: string) =>
+        input.externalHost ? `${input.externalHost}${relativePath}` : relativePath;
+    const caldavUrl = toAbsoluteOrPath(caldavPath);
+    const icsUrl = toAbsoluteOrPath(icsPath);
     return {
         permission,
-        shareUrl: input.externalHost
-            ? `${input.externalHost}${sharePath}`
-            : sharePath,
+        shareUrl: caldavUrl,
+        caldavUrl,
+        icsUrl,
     };
 }
 

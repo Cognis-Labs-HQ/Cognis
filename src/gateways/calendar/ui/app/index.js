@@ -113,7 +113,7 @@ export async function mount(root, { signal } = {}) {
         return calendarUi.collectUpcomingEvents(
             eventsByCalendar,
             calendars,
-            selectedCalendarId,
+            "",
         );
     }
 
@@ -512,6 +512,9 @@ export async function mount(root, { signal } = {}) {
           <div class="calendar-create-row">
             <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
             <input id="calendar-popup-name" type="text" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
+          </div>
+          <div class="calendar-visibility-row">
+            <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>
             <select id="calendar-popup-visibility">
               <option value="private"${popupVisibilityValue === "private" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_private")}</option>
               <option value="public"${popupVisibilityValue === "public" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_public")}</option>

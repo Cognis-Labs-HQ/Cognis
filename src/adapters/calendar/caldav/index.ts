@@ -91,9 +91,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendarId);
-            res.writeHead(200, {
-                "content-type": "text/calendar; charset=utf-8",
-            });
+            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
             res.end(ics);
             return true;
         }
@@ -102,6 +100,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             /^\/api\/v1\/calendar\/caldav\/private\/([^/]+)$/,
         );
         if (privateMatch && req.method === "GET") {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
             const token = decodeURIComponent(privateMatch[1]);
             const tokenRecord = ctx.gateway.resolvePrivateExportToken(token);
             if (!tokenRecord) {
@@ -116,10 +116,21 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
+            const calendar = ctx.gateway.getCalendar(tokenRecord.calendarId);
+            if (!calendar) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Calendar export not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const ics = ctx.gateway.exportCalendarAsIcs(tokenRecord.calendarId);
-            res.writeHead(200, {
-                "content-type": "text/calendar; charset=utf-8",
-            });
+            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
             res.end(ics);
             return true;
         }
@@ -133,3 +144,7 @@ export async function bootstrapCalendarAdapter(
 ): Promise<void> {
     ctx.registerRoute(createCaldavRoutes(ctx), "calendar");
 }
+    const buildCalendarExportHeaders = (calendarName: string) => ({
+        "content-type": "text/calendar; charset=utf-8",
+        "x-cognis-calendar-name": calendarName,
+    });

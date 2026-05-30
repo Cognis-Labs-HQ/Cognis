@@ -258,7 +258,7 @@ test("calendar event update/delete endpoints forbid editing mirrored invite copi
     assert.ok(cancellationDispatchCount > dispatchCountBeforeOrganizerDelete);
 });
 
-test("calendar share endpoint returns CalDAV links and supports never-expiring private links", async () => {
+test("calendar share endpoint returns ICS and CalDAV links", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -320,7 +320,37 @@ test("calendar share endpoint returns CalDAV links and supports never-expiring p
     );
     assert.equal(shareResponse.statusCode, 200);
     assert.match(
-        shareResponse.body.data.shareUrl,
+        shareResponse.body.data.caldavUrl,
         /^\/api\/v1\/calendar\/caldav\/private\/[^/]+$/,
     );
+    assert.match(
+        shareResponse.body.data.icsUrl,
+        /^\/api\/v1\/calendar\/ics\/private\/[^/]+$/,
+    );
+    assert.equal(
+        shareResponse.body.data.shareUrl,
+        shareResponse.body.data.caldavUrl,
+    );
+
+    const privateCaldavPath = shareResponse.body.data.caldavUrl;
+    const privateIcsPath = shareResponse.body.data.icsUrl;
+    const unauthenticatedRequest = new RequestRecorder({ method: "GET" });
+    const unauthenticatedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        unauthenticatedRequest,
+        unauthenticatedResponse,
+        new URL(`http://localhost${privateCaldavPath}`),
+    );
+    assert.equal(unauthenticatedResponse.statusCode, 401);
+
+    const unauthenticatedIcsRequest = new RequestRecorder({ method: "GET" });
+    const unauthenticatedIcsResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        unauthenticatedIcsRequest,
+        unauthenticatedIcsResponse,
+        new URL(`http://localhost${privateIcsPath}`),
+    );
+    assert.equal(unauthenticatedIcsResponse.statusCode, 401);
 });

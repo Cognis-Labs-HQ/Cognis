@@ -41,6 +41,11 @@
     width: min(92vw, 40rem);
 }
 
+.calendar-visibility-row {
+    display: grid;
+    gap: 0.35rem;
+}
+
 .calendar-share-section {
     border-top: 1px solid var(--field-border);
     padding-top: 0.65rem;
@@ -62,12 +67,31 @@
 }
 
 .calendar-share-controls select {
-    flex: 1 1 140px;
-    min-width: 140px;
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+#calendar-share-permission {
+    width: 13ch;
+}
+
+#calendar-share-expiry {
+    width: 19ch;
 }
 
 .calendar-share-result {
-    display: flex;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.calendar-share-details {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.calendar-share-result-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     gap: 0.4rem;
     align-items: center;
 }
@@ -234,11 +258,7 @@
 }
 
 .calendar-day-all-day-row {
-    display: grid;
-    grid-template-columns: 5.5rem 1fr;
     border: 1px solid var(--field-border);
-    border-radius: 10px;
-    overflow: hidden;
     min-height: 2.2rem;
 }
 
@@ -250,6 +270,7 @@
     align-items: center;
     border-right: 1px solid var(--field-border);
     white-space: nowrap;
+    text-align: left;
 }
 
 .calendar-day-heading {
@@ -258,8 +279,6 @@
 }
 
 .calendar-timeslot-grid {
-    display: grid;
-    gap: 0;
     border: 1px solid var(--field-border);
     border-radius: 10px;
     overflow: hidden;
@@ -268,8 +287,6 @@
 }
 
 .calendar-timeslot-row {
-    display: grid;
-    grid-template-columns: 5.5rem 1fr;
     align-items: stretch;
     align-content: start;
     min-height: 2.2rem;
@@ -312,6 +329,8 @@
     align-items: center;
     border-right: 1px solid var(--field-border);
     white-space: nowrap;
+    text-align: left;
+    width: 5.5rem;
 }
 
 .calendar-timeslot-events {
@@ -409,12 +428,18 @@
     text-transform: uppercase;
 }
 
-.calendar-slot-event-time {
-    opacity: 0.95;
-}
-
 .calendar-slot-event-title {
     font-weight: 700;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-slot-event-overflow {
+    font-size: 0.72rem;
+    opacity: 0.85;
 }
 
 .calendar-week-view {
@@ -425,8 +450,7 @@
 }
 
 .calendar-week-grid {
-    display: grid;
-    grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
+    display: table-row;
 }
 
 .calendar-week-grid--header {
@@ -473,8 +497,6 @@
 }
 
 .calendar-week-all-day-row {
-    display: grid;
-    grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
     border-bottom: 1px solid var(--field-border);
     min-height: 2rem;
 }
@@ -490,8 +512,6 @@
 }
 
 .calendar-week-timeslot-row {
-    display: grid;
-    grid-template-columns: minmax(5.5rem, auto) repeat(7, minmax(120px, 1fr));
     min-height: 2rem;
     border-bottom: 1px solid var(--field-border);
 }
@@ -524,6 +544,7 @@
     border-right: 1px solid var(--field-border);
     font-size: 0.76rem;
     opacity: 0.7;
+    width: 5.5rem;
 }
 
 .calendar-week-slot {
@@ -532,14 +553,34 @@
 }
 
 .calendar-month-grid {
-    display: grid;
-    gap: 0.55rem;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.3rem;
+}
+
+.calendar-month-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.3rem;
+}
+
+.calendar-month-table th {
+    text-align: center;
+}
+
+.calendar-month-header-day {
+    display: block;
+    font-size: 0.82rem;
+}
+
+.calendar-month-header-index {
+    display: block;
+    font-size: 0.72rem;
+    opacity: 0.75;
 }
 
 .calendar-month-row {
-    display: grid;
-    grid-template-columns: 2.8rem repeat(7, minmax(80px, 1fr));
-    gap: 0.3rem;
+    vertical-align: top;
 }
 
 .calendar-week-jump {
@@ -688,6 +729,11 @@
 }
 
 .calendar-year-day-dot--active {
+    background: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 35%,
+        var(--surface, transparent)
+    );
     border-color: color-mix(
         in srgb,
         var(--btn-confirm-bg, #1f8ceb) 45%,
@@ -763,16 +809,25 @@
 }
 
 @media (max-width: 900px) {
-    .calendar-month-row,
-    .calendar-week-grid,
-    .calendar-week-all-day-row,
-    .calendar-week-timeslot-row {
+    .calendar-week-table tr,
+    .calendar-week-table td,
+    .calendar-week-table th,
+    .calendar-month-table tr,
+    .calendar-month-table td,
+    .calendar-month-table th {
         grid-template-columns: 1fr;
+        display: block;
     }
 
     .calendar-timeslot-row {
         grid-template-columns: 4.5rem 1fr;
     }
+}
+
+.calendar-timeslot-table,
+.calendar-week-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .calendar-upcoming-button {

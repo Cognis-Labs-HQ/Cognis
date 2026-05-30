@@ -6,6 +6,7 @@
   <string name="gateway.calendar.no_events">No events scheduled for this calendar.</string>
   <string name="gateway.calendar.visibility_private">Private</string>
   <string name="gateway.calendar.visibility_public">Public</string>
+  <string name="gateway.calendar.visibility_heading">Visibility</string>
   <string name="gateway.calendar.calendar_name_placeholder">Calendar Name</string>
   <string name="gateway.calendar.create_calendar">Create Calendar</string>
   <string name="gateway.calendar.create_calendar_success">Calendar created.</string>
@@ -29,6 +30,7 @@
   <string name="gateway.calendar.create_meeting">Create Meeting</string>
   <string name="gateway.calendar.create_meeting_failed">Could not create meeting link.</string>
   <string name="gateway.calendar.event_meeting_link">Meeting Link</string>
+  <string name="gateway.calendar.go_to_meeting">Go to meeting</string>
   <string name="gateway.calendar.create_event">Create Event</string>
   <string name="gateway.calendar.add_event">Add event</string>
   <string name="gateway.calendar.create_event_success">Event created.</string>
@@ -81,6 +83,10 @@
   <string name="gateway.calendar.response_accepted">Accepted</string>
   <string name="gateway.calendar.response_tentative">Tentative</string>
   <string name="gateway.calendar.response_declined">Declined</string>
+  <string name="gateway.calendar.response_action_pending">Pending</string>
+  <string name="gateway.calendar.response_action_accepted">Accept</string>
+  <string name="gateway.calendar.response_action_tentative">Tentative</string>
+  <string name="gateway.calendar.response_action_declined">Decline</string>
   <string name="gateway.calendar.response_update_success">Response updated.</string>
   <string name="gateway.calendar.response_update_failed">Could not update response.</string>
   <string name="gateway.calendar.response_scope_title">Apply Response To</string>
@@ -108,6 +114,7 @@
   <string name="gateway.calendar.share_link_expiry_30d">Expires in 30 days</string>
   <string name="gateway.calendar.share_link_expiry_never">Never Expires</string>
   <string name="gateway.calendar.share_link_generate">Generate Link</string>
+  <string name="gateway.calendar.share_links_details">Calendar client links</string>
   <string name="gateway.calendar.share_link_copy">Copy</string>
   <string name="gateway.calendar.share_link_copied">Link copied!</string>
   <string name="gateway.calendar.share_link_failed">Could not generate share link.</string>
