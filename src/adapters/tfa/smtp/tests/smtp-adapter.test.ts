@@ -56,6 +56,38 @@ test("smtp adapter login challenge sends a code and verifyLogin consumes it", as
     assert.equal(secondTry.verified, false);
 });
 
+test("smtp adapter resend invalidates the previous login code and issues a new one", async () => {
+    const sentCodes: string[] = [];
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        sendVerificationEmail: async (_to, code) => {
+            sentCodes.push(code);
+        },
+    });
+    await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(sentCodes.length, 2);
+    assert.notEqual(sentCodes[0], sentCodes[1]);
+    const firstCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: sentCodes[0] },
+    });
+    assert.equal(firstCodeAttempt.verified, false);
+    const secondCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: sentCodes[1] },
+    });
+    assert.equal(secondCodeAttempt.verified, true);
+});
+
 test("smtp adapter supports configurable code length", async () => {
     const sentCodes: string[] = [];
     const adapter = createAdapter({
@@ -144,13 +176,18 @@ test("smtp adapter login challenge surfaces queued rate limits without replacing
     assert.equal(secondChallenge?.ready, true);
     assert.equal(secondChallenge?.message, "smtp_rate_limited");
     assert.equal(typeof secondChallenge?.retryAfterSeconds, "number");
-    assert.equal(secondIssuedCode, firstIssuedCode);
     const verified = await adapter.verifyLogin({
         accountId: "alice",
         state: { email: "alice@example.com" },
         payload: { code: firstIssuedCode },
     });
     assert.equal(verified.verified, true);
+    const secondCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: secondIssuedCode },
+    });
+    assert.equal(secondCodeAttempt.verified, false);
 });
 
 test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {

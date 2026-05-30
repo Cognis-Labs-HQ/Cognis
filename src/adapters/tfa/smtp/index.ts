@@ -107,21 +107,23 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
 
     private issueCode(key: string): string {
         this.cleanupExpiredChallenges();
-        const code = generateNumericCode(this.codeLength);
+        const existingCode = this.getLiveChallenge(key)?.code;
+        let code = generateNumericCode(this.codeLength);
+        if (existingCode && code === existingCode) {
+            const trailingDigit = code.at(-1) ?? "0";
+            const trailingDigitIndex = NUMERIC_DIGITS.indexOf(trailingDigit);
+            const rotatedDigit =
+                NUMERIC_DIGITS[
+                    ((trailingDigitIndex >= 0 ? trailingDigitIndex : 0) + 1) %
+                        NUMERIC_DIGITS.length
+                ];
+            code = `${code.slice(0, -1)}${rotatedDigit}`;
+        }
         this.challenges.set(key, {
             code,
             expiresAt: Date.now() + CODE_EXPIRY_MS,
         });
         return code;
-    }
-
-    private issueOrGetCode(key: string): string {
-        this.cleanupExpiredChallenges();
-        const liveChallenge = this.getLiveChallenge(key);
-        if (liveChallenge) {
-            return liveChallenge.code;
-        }
-        return this.issueCode(key);
     }
 
     private verifyCode(key: string, code: string): boolean {
@@ -297,12 +299,28 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             if (typeof this.context.queueVerificationEmail === "function") {
                 const challengeSentAt = Date.now();
                 const key = challengeKey("login", input.accountId);
-                const code = this.issueOrGetCode(key);
-                const queued = await this.context.queueVerificationEmail(
-                    email,
-                    code,
-                );
+                const previousChallenge = this.getLiveChallenge(key);
+                const code = this.issueCode(key);
+                let queued;
+                try {
+                    queued = await this.context.queueVerificationEmail(
+                        email,
+                        code,
+                    );
+                } catch (error) {
+                    if (previousChallenge) {
+                        this.challenges.set(key, previousChallenge);
+                    } else {
+                        this.challenges.delete(key);
+                    }
+                    throw error;
+                }
                 if (queued.status === "waiting_rate_limit") {
+                    if (previousChallenge) {
+                        this.challenges.set(key, previousChallenge);
+                    } else {
+                        this.challenges.delete(key);
+                    }
                     const retryMetadata =
                         this.resolveRetryMetadataFromAvailableAt(
                             queued.availableAt,
