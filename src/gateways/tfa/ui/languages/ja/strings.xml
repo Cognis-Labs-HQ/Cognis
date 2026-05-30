@@ -8,6 +8,8 @@
   <string name="ui.app.login.tfa.recovery_code_open_security">セキュリティ設定を開く</string>
   <string name="ui.app.login.tfa.required_prompt">続行するには二要素認証が必要です。</string>
   <string name="ui.app.login.tfa.error_invalid">二要素コードが無効です。</string>
+  <string name="ui.app.login.tfa.smtp.resend_action">メールコードを再送信</string>
+  <string name="ui.app.login.tfa.smtp.resend_rate_limited">{seconds}秒後にメールコードを再送信できます</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">すべてのユーザーに二要素認証を必須化</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">有効化すると、二要素方式が未設定のユーザーは設定完了まで設定ページへリダイレクトされます。</string>
   <string name="ui.app.users.reset_tfa">二要素認証をリセット</string>

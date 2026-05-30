@@ -611,6 +611,34 @@ export class CoreTfaGateway {
         });
     }
 
+    private buildLoginMethodChallengeMetadata(challenge: {
+        message?: string;
+        retryAfterSeconds?: number;
+        resendAvailableAt?: string;
+    }):
+        | {
+              message?: string;
+              retryAfterSeconds?: number;
+              resendAvailableAt?: string;
+          }
+        | undefined {
+        const metadata: {
+            message?: string;
+            retryAfterSeconds?: number;
+            resendAvailableAt?: string;
+        } = {};
+        if (challenge.message) {
+            metadata.message = challenge.message;
+        }
+        if (challenge.retryAfterSeconds != null) {
+            metadata.retryAfterSeconds = challenge.retryAfterSeconds;
+        }
+        if (challenge.resendAvailableAt) {
+            metadata.resendAvailableAt = challenge.resendAvailableAt;
+        }
+        return Object.keys(metadata).length > 0 ? metadata : undefined;
+    }
+
     async beginLoginChallenge(
         accountId: string,
         methodId: string,
@@ -634,13 +662,18 @@ export class CoreTfaGateway {
                 configuredMethod.state,
             );
         } catch (error) {
-            this.options.log?.("error", "Failed to prepare TFA login challenge.", {
-                component: "tfa-gateway",
-                operation: "prepare_login_challenge",
-                accountId,
-                methodId,
-                error: error instanceof Error ? error.message : String(error),
-            });
+            this.options.log?.(
+                "error",
+                "Failed to prepare TFA login challenge.",
+                {
+                    component: "tfa-gateway",
+                    operation: "prepare_login_challenge",
+                    accountId,
+                    methodId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
             return { ready: false, message: "tfa_method_unavailable" };
         }
     }
@@ -668,27 +701,12 @@ export class CoreTfaGateway {
                     return {
                         id: adapter.id,
                         name: adapter.name,
-                        ...(challenge.message ||
-                        challenge.retryAfterSeconds != null ||
-                        challenge.resendAvailableAt
+                        ...(this.buildLoginMethodChallengeMetadata(challenge)
                             ? {
-                                  challenge: {
-                                      ...(challenge.message
-                                          ? { message: challenge.message }
-                                          : {}),
-                                      ...(challenge.retryAfterSeconds != null
-                                          ? {
-                                                retryAfterSeconds:
-                                                    challenge.retryAfterSeconds,
-                                            }
-                                          : {}),
-                                      ...(challenge.resendAvailableAt
-                                          ? {
-                                                resendAvailableAt:
-                                                    challenge.resendAvailableAt,
-                                            }
-                                          : {}),
-                                  },
+                                  challenge:
+                                      this.buildLoginMethodChallengeMetadata(
+                                          challenge,
+                                      ),
                               }
                             : {}),
                     };

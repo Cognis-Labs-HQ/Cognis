@@ -246,7 +246,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     this.loginChallengeLastSentAt.get(input.accountId) ?? now;
                 const retryMs = Math.max(
                     SMTP_RATE_LIMIT_MS - (now - lastSentAt),
-                    1_000,
+                    0,
                 );
                 return {
                     ready: true,
