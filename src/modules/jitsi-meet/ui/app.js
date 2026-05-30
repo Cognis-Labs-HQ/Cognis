@@ -55,7 +55,7 @@ const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
     reactionHelpersModuleUrl: null,
 });
 
-const MEETING_CHAT_REACTIONS_ENABLED = false;
+const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 
 const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     destroy: () => undefined,
@@ -292,7 +292,7 @@ export async function mount(root, { signal } = {}) {
         componentStringBaseUrls: messageUiResources.languageBaseUrls,
     });
     let messageReactions = NULL_MESSAGE_REACTIONS_CONTROLLER;
-    if (MEETING_CHAT_REACTIONS_ENABLED) {
+    if (JITSI_MEET_CHAT_REACTIONS_ENABLED) {
         messageReactions =
             (await loadMessageReactionsController(
                 messageUiResources,
