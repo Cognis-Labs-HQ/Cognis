@@ -8,7 +8,7 @@ import type {
     NotificationSender,
     NotificationSenderQueueEntry,
 } from "@cognis/core";
-import { decodeBasicHtmlEntities, encodeBasicHtmlEntities } from "./html-entities.js";
+import { encodeBasicHtmlEntities } from "./html-entities.js";
 import {
     buildAttachmentMimeParts,
     type MimeAttachment,
