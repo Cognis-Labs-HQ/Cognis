@@ -214,10 +214,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     const remainingSeconds = resendAt
                         ? Math.max(Math.ceil((resendAt - Date.now()) / 1000), 0)
                         : 0;
-                    if (
-                        method?.challenge?.message === "smtp_rate_limited" &&
-                        remainingSeconds > 0
-                    ) {
+                    if (remainingSeconds > 0) {
                         resendLocked = true;
                         resendLink.textContent = i18n
                             .t("ui.app.login.tfa.smtp.resend_rate_limited")
@@ -231,10 +228,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     );
                 };
                 updateCountdown();
-                if (
-                    method?.challenge?.message === "smtp_rate_limited" &&
-                    resendAt != null
-                ) {
+                if (resendAt != null) {
                     countdownTimer = window.setInterval(updateCountdown, 1000);
                 }
             };
@@ -260,7 +254,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                   <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
                   <input type="hidden" id="login-tfa-method" value="" />
                   <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${placeholderText}" aria-label="${placeholderText}" />
-                  <a href="#" id="login-tfa-resend-action" class="auth-text-action" hidden></a>
+                  <a href="#" id="login-tfa-resend-action" class="auth-text-action auth-text-action--stacked" hidden></a>
                 `;
                 const resendLink = fields.querySelector(
                     "#login-tfa-resend-action",
@@ -310,6 +304,14 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                     selectedMethod.id,
                                     {
                                         message: body?.error?.code,
+                                        retryAfterSeconds:
+                                            body?.error?.retryAfterSeconds ??
+                                            body?.error?.details
+                                                ?.retryAfterSeconds,
+                                        resendAvailableAt:
+                                            body?.error?.resendAvailableAt ??
+                                            body?.error?.details
+                                                ?.resendAvailableAt,
                                     },
                                 );
                                 setResendStateForMethod(

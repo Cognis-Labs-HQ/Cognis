@@ -130,6 +130,11 @@ p.auth-intro {
     display: inline;
 }
 
+.auth-text-action--stacked {
+    display: block;
+    margin-top: 8px;
+}
+
 .auth-text-action:hover,
 .auth-text-action:focus-visible {
     color: #bfdbfe;
