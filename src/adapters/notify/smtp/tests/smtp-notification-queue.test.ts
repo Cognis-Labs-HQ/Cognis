@@ -5,6 +5,7 @@ import {
     SmtpNotificationSender,
     SmtpRateLimiter,
 } from "../smtp-notification-sender.js";
+import { SmtpNotificationQueue } from "../smtp-notification-queue.js";
 
 type MockSmtpServer = {
     host: string;
@@ -152,4 +153,55 @@ test("SmtpNotificationSender queue applies recipient rate-limit spacing", async 
     } finally {
         await server.close();
     }
+});
+
+test("SmtpNotificationQueue wakes while sleeping when a different recipient is ready", async () => {
+    let now = 0;
+    const limiter = new SmtpRateLimiter(250, () => now);
+    limiter.record("delayed@example.com", now);
+    let resolveSleep: (() => void) | null = null;
+    const sleepCalls: number[] = [];
+    const sentRecipients: string[] = [];
+    const queue = new SmtpNotificationQueue(
+        limiter,
+        (ms) =>
+            new Promise<void>((resolve) => {
+                sleepCalls.push(ms);
+                resolveSleep = () => {
+                    now += ms;
+                    resolve();
+                };
+            }),
+        async (payload) => {
+            sentRecipients.push(payload.recipientEmail);
+        },
+    );
+
+    queue.enqueue({
+        category: "test",
+        recipientUsername: "delayed",
+        recipientEmail: "delayed@example.com",
+        subject: "Delayed",
+        body: "Delayed body",
+    });
+    await waitFor(() => sleepCalls.length > 0);
+
+    queue.enqueue({
+        category: "test",
+        recipientUsername: "ready",
+        recipientEmail: "ready@example.com",
+        subject: "Ready",
+        body: "Ready body",
+    });
+
+    await waitFor(() => sentRecipients.length > 0);
+    assert.deepEqual(sentRecipients, ["ready@example.com"]);
+
+    assert.ok(resolveSleep);
+    resolveSleep();
+    await waitFor(() => sentRecipients.length === 2);
+    assert.deepEqual(sentRecipients, [
+        "ready@example.com",
+        "delayed@example.com",
+    ]);
 });

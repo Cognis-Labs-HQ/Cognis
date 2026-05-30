@@ -67,6 +67,8 @@ export class SmtpNotificationQueue {
         }>
     >();
     private queueDraining = false;
+    private sleepingUntil: number | null = null;
+    private wakeDrainSleep: (() => void) | null = null;
 
     constructor(
         private readonly rateLimiter: SmtpRateLimiter,
@@ -170,7 +172,10 @@ export class SmtpNotificationQueue {
                             nextEntry.nextAttemptAt,
                         ).toISOString(),
                     });
-                    await this.sleep(nextEntry.nextAttemptAt - now);
+                    await this.sleepWithWake(
+                        nextEntry.nextAttemptAt - now,
+                        nextEntry.nextAttemptAt,
+                    );
                     continue;
                 }
                 this.touchQueueEntry(nextEntry, {
@@ -245,8 +250,39 @@ export class SmtpNotificationQueue {
                 : {}),
         };
         this.queueById.set(notificationId, entry);
+        this.wakeSleepingDrainer(nextAttemptAt);
         void this.ensureQueueDrained();
         return { notificationId };
+    }
+
+    private wakeSleepingDrainer(nextAttemptAt: number): void {
+        if (
+            !this.queueDraining ||
+            this.sleepingUntil === null ||
+            nextAttemptAt >= this.sleepingUntil
+        ) {
+            return;
+        }
+
+        const wake = this.wakeDrainSleep;
+        this.wakeDrainSleep = null;
+        this.sleepingUntil = null;
+        wake?.();
+    }
+
+    private async sleepWithWake(
+        delayMs: number,
+        sleepingUntil: number,
+    ): Promise<void> {
+        this.sleepingUntil = sleepingUntil;
+        await Promise.race([
+            this.sleep(delayMs),
+            new Promise<void>((resolve) => {
+                this.wakeDrainSleep = resolve;
+            }),
+        ]);
+        this.wakeDrainSleep = null;
+        this.sleepingUntil = null;
     }
 
     async waitForResult(notificationId: string): Promise<void> {
