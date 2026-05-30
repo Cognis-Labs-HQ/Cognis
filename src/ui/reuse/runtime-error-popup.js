@@ -46,6 +46,14 @@ import {
 
 const MAX_CONSOLE_ENTRY_COUNT = 30;
 const POPUP_DEDUPLICATION_WINDOW_MILLISECONDS = 1500;
+/**
+ * Benign browser-level ResizeObserver loop notifications that do not indicate
+ * actionable application crashes and should not trigger runtime crash popups.
+ */
+const IGNORED_RUNTIME_ERROR_PATTERNS = [
+    /ResizeObserver loop completed with undelivered notifications/i,
+    /ResizeObserver loop limit exceeded/i,
+];
 const consoleEntryBuffer = [];
 const originalConsoleMethods = new Map();
 
@@ -99,6 +107,20 @@ function normalizeErrorStack(value) {
     } catch {
         return String(value);
     }
+}
+
+/**
+ * Determines whether a runtime error value is a known benign browser message
+ * that should be suppressed from the crash reporting popup.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function shouldIgnoreRuntimeError(value) {
+    const normalizedMessage = normalizeErrorMessage(value);
+    return IGNORED_RUNTIME_ERROR_PATTERNS.some((pattern) =>
+        pattern.test(normalizedMessage),
+    );
 }
 
 function stringifyConsoleArgument(value) {
@@ -469,6 +491,9 @@ export function installRuntimeErrorHandlers() {
         (event) => {
             const resourceLoadError = buildResourceLoadError(event);
             const runtimeError = resourceLoadError ?? event.error;
+            if (shouldIgnoreRuntimeError(runtimeError ?? event.message)) {
+                return;
+            }
             openRuntimeErrorPopup({
                 error: runtimeError ?? event.message,
                 contextKey: resourceLoadError
@@ -480,6 +505,9 @@ export function installRuntimeErrorHandlers() {
     );
 
     window.addEventListener("unhandledrejection", (event) => {
+        if (shouldIgnoreRuntimeError(event.reason)) {
+            return;
+        }
         openRuntimeErrorPopup({
             error: event.reason,
             contextKey: "ui.reuse.runtime_error_context_unhandled_rejection",
