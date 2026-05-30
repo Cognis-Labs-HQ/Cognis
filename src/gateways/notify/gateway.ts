@@ -111,12 +111,16 @@ export interface NotificationSender {
 
 export interface NotificationGateway {
     registerSender(sender: NotificationSender): void;
-    dispatch(envelope: NotificationEnvelope): Promise<NotificationDispatchResult>;
+    dispatch(
+        envelope: NotificationEnvelope,
+    ): Promise<NotificationDispatchResult>;
     registerCategory(id: string, label: string): void;
     listSenders(): NotificationSenderInfo[];
     listCategories(): NotificationCategory[];
     listNotificationQueue(): NotificationQueueEntry[];
-    getNotificationQueueItem(notificationId: string): NotificationQueueEntry | null;
+    getNotificationQueueItem(
+        notificationId: string,
+    ): NotificationQueueEntry | null;
 }
 
 export interface NotificationPreferenceStore {
@@ -373,12 +377,12 @@ export class CoreNotificationGateway
         });
     }
 
-    getNotificationQueueItem(notificationId: string): NotificationQueueEntry | null {
-        const normalizedId = notificationId.trim();
-        if (!normalizedId) return null;
+    getNotificationQueueItem(
+        notificationId: string,
+    ): NotificationQueueEntry | null {
         for (const [senderId, sender] of this.senders.entries()) {
             if (!isSenderWithQueueItem(sender)) continue;
-            const item = sender.getQueueItem(normalizedId);
+            const item = sender.getQueueItem(notificationId);
             if (item) return { senderId, ...item };
         }
         return null;
@@ -649,7 +653,9 @@ export class CoreNotificationGateway
         }
     }
 
-    async dispatch(envelope: NotificationEnvelope): Promise<NotificationDispatchResult> {
+    async dispatch(
+        envelope: NotificationEnvelope,
+    ): Promise<NotificationDispatchResult> {
         const prefSenderIds = await this.prefStore.getSenderIds(
             envelope.recipientUsername,
             envelope.category,

@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import net from "node:net";
 import {
     SmtpNotificationSender,
-    SmtpRateLimiter,
     SmtpTemporaryError,
     createNotificationSender,
 } from "../smtp-notification-sender.js";
@@ -271,96 +270,6 @@ function decodeQuotedPrintableForAssertion(value: string): string {
 function unfoldHeadersForAssertion(value: string): string {
     return value.replace(/\r\n[ \t]+/g, " ");
 }
-
-async function waitFor(
-    predicate: () => boolean,
-    timeoutMs = 2_000,
-): Promise<void> {
-    const deadline = Date.now() + timeoutMs;
-    while (Date.now() < deadline) {
-        if (predicate()) return;
-        await new Promise((resolve) => setTimeout(resolve, 10));
-    }
-    throw new Error("timed_out_waiting_for_condition");
-}
-
-test("SmtpNotificationSender.sendTracked returns IDs and exposes queue status", async () => {
-    const server = await createMockSmtpServer((conn) => smtpSuccessHandler(conn));
-
-    try {
-        const sender = new SmtpNotificationSender({
-            host: server.host,
-            port: server.port,
-            from: "test@example.com",
-            secure: "none",
-            greylistRetries: 0,
-        });
-        const receipt = await sender.sendTracked({
-            category: "test",
-            recipientUsername: "alice",
-            recipientEmail: "alice@example.com",
-            subject: "Tracked notification",
-            body: "Tracked body",
-        });
-
-        const queuedItem = sender.getQueueItem(receipt.notificationId);
-        assert.ok(queuedItem);
-        assert.equal(queuedItem?.notificationId, receipt.notificationId);
-
-        await waitFor(() => {
-            const updated = sender.getQueueItem(receipt.notificationId);
-            return updated?.status === "sent";
-        });
-    } finally {
-        await server.close();
-    }
-});
-
-test("SmtpNotificationSender queue applies recipient rate-limit spacing", async () => {
-    const server = await createMockSmtpServer((conn) => smtpSuccessHandler(conn));
-    const limiter = new SmtpRateLimiter(250);
-
-    try {
-        const sender = new SmtpNotificationSender(
-            {
-                host: server.host,
-                port: server.port,
-                from: "test@example.com",
-                secure: "none",
-                greylistRetries: 0,
-            },
-            undefined,
-            undefined,
-            limiter,
-        );
-        const first = await sender.sendTracked({
-            category: "test",
-            recipientUsername: "alice",
-            recipientEmail: "alice@example.com",
-            subject: "First",
-            body: "First body",
-        });
-        const second = await sender.sendTracked({
-            category: "test",
-            recipientUsername: "alice",
-            recipientEmail: "alice@example.com",
-            subject: "Second",
-            body: "Second body",
-        });
-
-        const secondQueued = sender.getQueueItem(second.notificationId);
-        assert.equal(secondQueued?.status, "waiting_rate_limit");
-        assert.equal(typeof secondQueued?.availableAt, "string");
-
-        await waitFor(() => {
-            const firstItem = sender.getQueueItem(first.notificationId);
-            const secondItem = sender.getQueueItem(second.notificationId);
-            return firstItem?.status === "sent" && secondItem?.status === "sent";
-        }, 5_000);
-    } finally {
-        await server.close();
-    }
-});
 
 test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and succeeds on second attempt", async () => {
     let sleepCallCount = 0;

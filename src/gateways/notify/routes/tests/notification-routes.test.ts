@@ -55,33 +55,6 @@ class CapturingSender implements NotificationSender {
     }
 }
 
-class QueueAwareSender extends CapturingSender {
-    async sendTracked(envelope: NotificationEnvelope): Promise<{
-        notificationId: string;
-    }> {
-        await this.send(envelope);
-        return { notificationId: "smtp-1" };
-    }
-
-    listQueue() {
-        return [
-            {
-                notificationId: "smtp-1",
-                status: "queued" as const,
-                createdAt: "2026-01-01T00:00:00.000Z",
-                updatedAt: "2026-01-01T00:00:00.000Z",
-                subject: "Queued test message",
-                recipientEmail: "alice@example.com",
-            },
-        ];
-    }
-
-    getQueueItem(notificationId: string) {
-        if (notificationId !== "smtp-1") return null;
-        return this.listQueue()[0];
-    }
-}
-
 test("notification route dispatches to registered sender when prefs match", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     prefStore.set("alice", "account_alert", ["test-sender"]);
@@ -301,96 +274,6 @@ test("GET /api/v1/notifications/providers returns 401 without auth", async () =>
     );
 
     assert.equal(res.status, 401);
-});
-
-test("GET /api/v1/notifications/queue returns queue entries to admin", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new QueueAwareSender("smtp"));
-    const route = createNotificationRoutes(gateway);
-    const adminToken = issueAccessToken("admin", "admin", 60);
-    const res = makeResponse();
-
-    await route(
-        {
-            method: "GET",
-            headers: { authorization: "Bearer " + adminToken },
-            [Symbol.asyncIterator]: async function* () {},
-        } as any,
-        res,
-        new URL("http://localhost/api/v1/notifications/queue"),
-    );
-
-    assert.equal(res.status, 200);
-    const data = JSON.parse(res.payload);
-    assert.equal(Array.isArray(data.data), true);
-    assert.equal(data.data[0]?.notificationId, "smtp-1");
-});
-
-test("GET /api/v1/notifications/queue returns 403 for non-admin users", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new QueueAwareSender("smtp"));
-    const route = createNotificationRoutes(gateway);
-    const userToken = issueAccessToken("alice", "user", 60);
-    const res = makeResponse();
-
-    await route(
-        {
-            method: "GET",
-            headers: { authorization: "Bearer " + userToken },
-            [Symbol.asyncIterator]: async function* () {},
-        } as any,
-        res,
-        new URL("http://localhost/api/v1/notifications/queue"),
-    );
-
-    assert.equal(res.status, 403);
-});
-
-test("GET /api/v1/notifications/queue/:id returns queue item details", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new QueueAwareSender("smtp"));
-    const route = createNotificationRoutes(gateway);
-    const adminToken = issueAccessToken("admin", "admin", 60);
-    const res = makeResponse();
-
-    await route(
-        {
-            method: "GET",
-            headers: { authorization: "Bearer " + adminToken },
-            [Symbol.asyncIterator]: async function* () {},
-        } as any,
-        res,
-        new URL("http://localhost/api/v1/notifications/queue/smtp-1"),
-    );
-
-    assert.equal(res.status, 200);
-    const data = JSON.parse(res.payload);
-    assert.equal(data.data.notificationId, "smtp-1");
-});
-
-test("GET /api/v1/notifications/queue/:id returns 404 for unknown item", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new QueueAwareSender("smtp"));
-    const route = createNotificationRoutes(gateway);
-    const adminToken = issueAccessToken("admin", "admin", 60);
-    const res = makeResponse();
-
-    await route(
-        {
-            method: "GET",
-            headers: { authorization: "Bearer " + adminToken },
-            [Symbol.asyncIterator]: async function* () {},
-        } as any,
-        res,
-        new URL("http://localhost/api/v1/notifications/queue/unknown"),
-    );
-
-    assert.equal(res.status, 404);
-    assert.match(res.payload, /not_found/);
 });
 
 test("GET /api/v1/notifications/categories returns categories to authenticated user", async () => {

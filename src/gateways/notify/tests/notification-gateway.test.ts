@@ -43,7 +43,10 @@ class ConfigurableSender extends CapturingSender {
 }
 
 class TrackedQueueSender extends CapturingSender {
-    readonly queue = new Map<string, { notificationId: string; status: "queued" }>();
+    readonly queue = new Map<
+        string,
+        { notificationId: string; status: "queued" }
+    >();
     private receiptCounter = 0;
 
     async sendTracked(envelope: NotificationEnvelope): Promise<{
