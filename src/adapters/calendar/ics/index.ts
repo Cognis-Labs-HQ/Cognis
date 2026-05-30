@@ -15,6 +15,12 @@ export function createCalendarAdapter(): CalendarAdapter {
     };
 }
 
+function sanitizeHeaderValue(value: string): string {
+    return String(value ?? "")
+        .replace(/[\r\n]+/g, " ")
+        .trim();
+}
+
 function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
@@ -45,11 +51,6 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
 
-            function sanitizeHeaderValue(value: string): string {
-                return String(value ?? "")
-                    .replace(/[\r\n]+/g, " ")
-                    .trim();
-            }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
             res.writeHead(200, buildCalendarExportHeaders(calendar.name));
             res.end(ics);

@@ -37,7 +37,7 @@ function listTrackedDocFiles() {
                 pendingDirectories.push(absolutePath);
                 continue;
             }
-            if (!entry.isFile()) {
+            if (!entry.isFile() && !entry.isSymbolicLink()) {
                 continue;
             }
             if (!entry.name.endsWith(".md") && !entry.name.endsWith(".html")) {
