@@ -40,6 +40,8 @@ test("smtp adapter login challenge sends a code and verifyLogin consumes it", as
         state: { email: "alice@example.com" },
     });
     assert.equal(challenge?.ready, true);
+    assert.equal(typeof challenge?.retryAfterSeconds, "number");
+    assert.equal(typeof challenge?.resendAvailableAt, "string");
     const verified = await adapter.verifyLogin({
         accountId: "alice",
         state: { email: "alice@example.com" },
@@ -133,6 +135,8 @@ test("smtp adapter login challenge surfaces queued rate limits without replacing
         state: { email: "alice@example.com" },
     });
     assert.equal(firstChallenge?.ready, true);
+    assert.equal(typeof firstChallenge?.retryAfterSeconds, "number");
+    assert.equal(typeof firstChallenge?.resendAvailableAt, "string");
     const secondChallenge = await adapter.beginLoginChallenge?.({
         accountId: "alice",
         state: { email: "alice@example.com" },

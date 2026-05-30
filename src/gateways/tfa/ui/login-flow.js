@@ -200,11 +200,23 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 if (!(resendLink instanceof HTMLAnchorElement)) {
                     return;
                 }
+                const syncDisabledResendState = () => {
+                    resendLink.classList.toggle(
+                        "auth-text-action--disabled",
+                        resendLocked,
+                    );
+                    resendLink.setAttribute(
+                        "aria-disabled",
+                        resendLocked ? "true" : "false",
+                    );
+                };
                 stopCountdown();
                 const isSmtpMethod = method?.id === "smtp";
                 const resendAt = parseChallengeResendTimestamp(method);
                 resendLink.hidden = !isSmtpMethod;
                 if (!isSmtpMethod) {
+                    resendLocked = false;
+                    syncDisabledResendState();
                     return;
                 }
                 const updateCountdown = () => {
@@ -231,6 +243,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                             );
                         }
                         resendLocked = true;
+                        syncDisabledResendState();
                         resendLink.textContent = i18n
                             .t("ui.app.login.tfa.smtp.resend_rate_limited")
                             .replace("{seconds}", String(remainingSeconds));
@@ -238,6 +251,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     }
                     stopCountdown();
                     resendLocked = false;
+                    syncDisabledResendState();
                     resendLink.textContent = i18n.t(
                         "ui.app.login.tfa.smtp.resend_action",
                     );
@@ -291,6 +305,8 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                             return;
                         }
                         resendLocked = true;
+                        resendLink.classList.add("auth-text-action--disabled");
+                        resendLink.setAttribute("aria-disabled", "true");
                         try {
                             const { response, body } = await this.resendCode({
                                 loginAttemptId,
@@ -305,10 +321,17 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                         body?.data?.challenge ?? {},
                                     );
                                 }
-                                showToast(
-                                    i18n.t("ui.app.login.tfa.smtp.resend_sent"),
-                                    { variant: "success" },
-                                );
+                                const challengeMessage = String(
+                                    body?.data?.challenge?.message ?? "",
+                                ).trim();
+                                if (challengeMessage !== "smtp_rate_limited") {
+                                    showToast(
+                                        i18n.t(
+                                            "ui.app.login.tfa.smtp.resend_sent",
+                                        ),
+                                        { variant: "success" },
+                                    );
+                                }
                                 setResendStateForMethod(
                                     resolveMethod(selectedMethodId),
                                 );
@@ -338,6 +361,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         } catch (error) {
                             console.error(error);
                             resendLocked = false;
+                            resendLink.classList.remove(
+                                "auth-text-action--disabled",
+                            );
+                            resendLink.setAttribute("aria-disabled", "false");
                         }
                     });
                 }

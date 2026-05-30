@@ -140,6 +140,14 @@ p.auth-intro {
     color: #bfdbfe;
 }
 
+.auth-text-action--disabled,
+.auth-text-action--disabled:hover,
+.auth-text-action--disabled:focus-visible {
+    color: #93c5fd;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .auth-link-unavailable-message {
     margin: 0 0 8px;
     font-size: 0.98rem;

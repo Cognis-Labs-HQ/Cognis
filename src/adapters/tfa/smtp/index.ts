@@ -169,6 +169,18 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         };
     }
 
+    private buildCooldownMetadata(sentAtMs = Date.now()): {
+        retryAfterSeconds: number;
+        resendAvailableAt: string;
+    } {
+        return {
+            retryAfterSeconds: Math.ceil(SMTP_VERIFICATION_RATE_LIMIT_MS / 1000),
+            resendAvailableAt: new Date(
+                sentAtMs + SMTP_VERIFICATION_RATE_LIMIT_MS,
+            ).toISOString(),
+        };
+    }
+
     async beginSetup(input: {
         accountId: string;
         displayName: string;
@@ -281,6 +293,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         }
         try {
             if (typeof this.context.queueVerificationEmail === "function") {
+                const challengeSentAt = Date.now();
                 const key = challengeKey("login", input.accountId);
                 const code = this.issueOrGetCode(key);
                 const queued = await this.context.queueVerificationEmail(
@@ -299,14 +312,22 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                         resendAvailableAt: retryMetadata.resendAvailableAt,
                     };
                 }
-                return { ready: true };
+                this.loginChallengeLastSentAt.set(input.accountId, challengeSentAt);
+                return {
+                    ready: true,
+                    ...this.buildCooldownMetadata(challengeSentAt),
+                };
             }
+            const challengeSentAt = Date.now();
             await this.sendCode("login", {
                 accountId: input.accountId,
                 email,
             });
-            this.loginChallengeLastSentAt.set(input.accountId, Date.now());
-            return { ready: true };
+            this.loginChallengeLastSentAt.set(input.accountId, challengeSentAt);
+            return {
+                ready: true,
+                ...this.buildCooldownMetadata(challengeSentAt),
+            };
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
