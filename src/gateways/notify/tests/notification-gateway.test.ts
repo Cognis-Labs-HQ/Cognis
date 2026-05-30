@@ -42,6 +42,44 @@ class ConfigurableSender extends CapturingSender {
     }
 }
 
+class TrackedQueueSender extends CapturingSender {
+    readonly queue = new Map<string, { notificationId: string; status: "queued" }>();
+    private receiptCounter = 0;
+
+    async sendTracked(envelope: NotificationEnvelope): Promise<{
+        notificationId: string;
+    }> {
+        this.received.push(envelope);
+        this.receiptCounter++;
+        const notificationId = `tracked-${this.receiptCounter}`;
+        this.queue.set(notificationId, {
+            notificationId,
+            status: "queued",
+        });
+        return { notificationId };
+    }
+
+    listQueue() {
+        return Array.from(this.queue.values()).map((entry) => ({
+            ...entry,
+            createdAt: "2026-01-01T00:00:00.000Z",
+            updatedAt: "2026-01-01T00:00:00.000Z",
+            subject: "Tracked",
+        }));
+    }
+
+    getQueueItem(notificationId: string) {
+        const entry = this.queue.get(notificationId);
+        if (!entry) return null;
+        return {
+            ...entry,
+            createdAt: "2026-01-01T00:00:00.000Z",
+            updatedAt: "2026-01-01T00:00:00.000Z",
+            subject: "Tracked",
+        };
+    }
+}
+
 test("CoreNotificationGateway.registerCategory and listCategories", () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
@@ -401,6 +439,49 @@ test("CoreNotificationGateway.dispatch captures per-sender errors without throwi
         result.errors?.[0]?.error,
         "smtp_sender_requires_recipient_email",
     );
+});
+
+test("CoreNotificationGateway.dispatch includes receipts for tracked senders", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    prefStore.set("alice", "system", ["tracked"]);
+    const gateway = new CoreNotificationGateway(prefStore);
+    gateway.registerSender(new TrackedQueueSender("tracked", "Tracked"));
+
+    const result = await gateway.dispatch({
+        category: "system",
+        recipientUsername: "alice",
+        recipientEmail: "alice@example.com",
+        subject: "Hello",
+        body: "World",
+    });
+
+    assert.deepEqual(result.dispatched, ["tracked"]);
+    assert.equal(result.notifications?.[0]?.senderId, "tracked");
+    assert.equal(result.notifications?.[0]?.notificationId, "tracked-1");
+});
+
+test("CoreNotificationGateway exposes sender queue state", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    prefStore.set("alice", "system", ["tracked"]);
+    const gateway = new CoreNotificationGateway(prefStore);
+    gateway.registerSender(new TrackedQueueSender("tracked", "Tracked"));
+
+    await gateway.dispatch({
+        category: "system",
+        recipientUsername: "alice",
+        recipientEmail: "alice@example.com",
+        subject: "Hello",
+        body: "World",
+    });
+
+    const queue = gateway.listNotificationQueue();
+    assert.equal(queue.length, 1);
+    assert.equal(queue[0]?.senderId, "tracked");
+    assert.equal(queue[0]?.notificationId, "tracked-1");
+
+    const queueItem = gateway.getNotificationQueueItem("tracked-1");
+    assert.equal(queueItem?.senderId, "tracked");
+    assert.equal(queueItem?.notificationId, "tracked-1");
 });
 
 test("CoreNotificationGateway.loadPersistedConfigs restores disabled state", async () => {

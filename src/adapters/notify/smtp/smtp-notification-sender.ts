@@ -3,7 +3,11 @@ import tls from "node:tls";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+import type {
+    NotificationEnvelope,
+    NotificationSender,
+    NotificationSenderQueueEntry,
+} from "@cognis/core";
 import {
     decodeBasicHtmlEntities,
     encodeBasicHtmlEntities,
@@ -636,20 +640,43 @@ export class SmtpRateLimiter {
         private readonly now: () => number = () => Date.now(),
     ) {}
 
-    /**
-     * Returns true if `recipient` is within the rate-limit window and
-     * a new email must not be sent. Returns false when a send is allowed.
-     */
-    isThrottled(recipient: string): boolean {
+    nextAvailableAt(recipient: string): number {
         const last = this.lastSent.get(recipient);
-        if (last === undefined) return false;
-        return this.now() - last < this.minIntervalMs;
+        if (last === undefined) return this.now();
+        return last + this.minIntervalMs;
     }
 
-    record(recipient: string): void {
-        this.lastSent.set(recipient, this.now());
+    isThrottled(recipient: string): boolean {
+        return this.now() < this.nextAvailableAt(recipient);
+    }
+
+    getRetryDelayMs(recipient: string): number {
+        return Math.max(this.nextAvailableAt(recipient) - this.now(), 0);
+    }
+
+    record(recipient: string, sentAt: number = this.now()): void {
+        this.lastSent.set(recipient, sentAt);
     }
 }
+
+type SmtpQueueStatus =
+    | "queued"
+    | "waiting_rate_limit"
+    | "sending"
+    | "sent"
+    | "failed";
+
+interface SmtpQueueEntry extends NotificationSenderQueueEntry {
+    status: SmtpQueueStatus;
+    recipientEmail: string;
+    body: string;
+    theme?: string;
+    verifyUrl?: string;
+    verifyButtonLabel?: string;
+    nextAttemptAt: number;
+}
+
+const SMTP_QUEUE_HISTORY_LIMIT = 200;
 
 async function sendMailWithRetry(
     config: SmtpConfig,
@@ -699,6 +726,8 @@ export class SmtpNotificationSender implements NotificationSender {
     private readonly envSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
     private readonly rateLimiter: SmtpRateLimiter;
+    private readonly queueById = new Map<string, SmtpQueueEntry>();
+    private queueDraining = false;
 
     constructor(
         private config: SmtpConfig,
@@ -771,6 +800,189 @@ export class SmtpNotificationSender implements NotificationSender {
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
     }
 
+    private getRecipientNextAttemptAt(recipientEmail: string): number {
+        const now = Date.now();
+        let nextAttemptAt = Math.max(
+            now,
+            this.rateLimiter.nextAvailableAt(recipientEmail),
+        );
+        for (const queued of this.queueById.values()) {
+            if (queued.recipientEmail !== recipientEmail) continue;
+            if (queued.status === "sent" || queued.status === "failed") continue;
+            nextAttemptAt = Math.max(
+                nextAttemptAt,
+                queued.nextAttemptAt + SMTP_VERIFICATION_RATE_LIMIT_MS,
+            );
+        }
+        return nextAttemptAt;
+    }
+
+    private listActiveQueue(): SmtpQueueEntry[] {
+        return Array.from(this.queueById.values()).filter(
+            (entry) => entry.status !== "sent" && entry.status !== "failed",
+        );
+    }
+
+    private snapshotQueueEntry(entry: SmtpQueueEntry): NotificationSenderQueueEntry {
+        return {
+            notificationId: entry.notificationId,
+            status: entry.status,
+            createdAt: entry.createdAt,
+            updatedAt: entry.updatedAt,
+            ...(entry.availableAt ? { availableAt: entry.availableAt } : {}),
+            ...(entry.error ? { error: entry.error } : {}),
+            ...(entry.recipientUsername
+                ? { recipientUsername: entry.recipientUsername }
+                : {}),
+            recipientEmail: entry.recipientEmail,
+            ...(entry.category ? { category: entry.category } : {}),
+            subject: entry.subject,
+        };
+    }
+
+    private touchQueueEntry(
+        entry: SmtpQueueEntry,
+        update: Partial<Omit<SmtpQueueEntry, "notificationId" | "createdAt">>,
+    ): void {
+        Object.assign(entry, update, { updatedAt: new Date().toISOString() });
+    }
+
+    private pruneQueueHistory(): void {
+        const completed = Array.from(this.queueById.values())
+            .filter((entry) => entry.status === "sent" || entry.status === "failed")
+            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+        if (completed.length <= SMTP_QUEUE_HISTORY_LIMIT) return;
+        for (const entry of completed.slice(SMTP_QUEUE_HISTORY_LIMIT)) {
+            this.queueById.delete(entry.notificationId);
+        }
+    }
+
+    private async ensureQueueDrained(): Promise<void> {
+        if (this.queueDraining) return;
+        this.queueDraining = true;
+        try {
+            while (true) {
+                const activeQueue = this.listActiveQueue().sort(
+                    (a, b) => a.nextAttemptAt - b.nextAttemptAt,
+                );
+                const nextEntry = activeQueue[0];
+                if (!nextEntry) break;
+                const now = Date.now();
+                if (nextEntry.nextAttemptAt > now) {
+                    this.touchQueueEntry(nextEntry, {
+                        status: "waiting_rate_limit",
+                        availableAt: new Date(nextEntry.nextAttemptAt).toISOString(),
+                    });
+                    await this.sleep(nextEntry.nextAttemptAt - now);
+                    continue;
+                }
+                this.touchQueueEntry(nextEntry, {
+                    status: "sending",
+                    availableAt: undefined,
+                    error: undefined,
+                });
+                try {
+                    await sendMailWithRetry(
+                        this.config,
+                        nextEntry.recipientEmail,
+                        nextEntry.subject,
+                        nextEntry.body,
+                        this.sleep,
+                        nextEntry.theme,
+                        nextEntry.verifyUrl,
+                        nextEntry.verifyButtonLabel,
+                    );
+                    this.rateLimiter.record(nextEntry.recipientEmail, Date.now());
+                    this.touchQueueEntry(nextEntry, {
+                        status: "sent",
+                        availableAt: undefined,
+                        error: undefined,
+                    });
+                } catch (error) {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    this.touchQueueEntry(nextEntry, {
+                        status: "failed",
+                        availableAt: undefined,
+                        error: message,
+                    });
+                }
+                this.pruneQueueHistory();
+            }
+        } finally {
+            this.queueDraining = false;
+            if (this.listActiveQueue().length > 0) {
+                void this.ensureQueueDrained();
+            }
+        }
+    }
+
+    private enqueueNotification(
+        input: Pick<
+            SmtpQueueEntry,
+            | "recipientEmail"
+            | "subject"
+            | "body"
+            | "theme"
+            | "verifyUrl"
+            | "verifyButtonLabel"
+            | "recipientUsername"
+            | "category"
+        >,
+    ): { notificationId: string } {
+        const nextAttemptAt = this.getRecipientNextAttemptAt(input.recipientEmail);
+        const nowIso = new Date().toISOString();
+        const notificationId = randomUUID();
+        const entry: SmtpQueueEntry = {
+            notificationId,
+            recipientEmail: input.recipientEmail,
+            recipientUsername: input.recipientUsername,
+            category: input.category,
+            subject: input.subject,
+            body: input.body,
+            theme: input.theme,
+            verifyUrl: input.verifyUrl,
+            verifyButtonLabel: input.verifyButtonLabel,
+            createdAt: nowIso,
+            updatedAt: nowIso,
+            status:
+                nextAttemptAt > Date.now() ? "waiting_rate_limit" : "queued",
+            nextAttemptAt,
+            ...(nextAttemptAt > Date.now()
+                ? { availableAt: new Date(nextAttemptAt).toISOString() }
+                : {}),
+        };
+        this.queueById.set(notificationId, entry);
+        void this.ensureQueueDrained();
+        return { notificationId };
+    }
+
+    private async waitForQueueResult(notificationId: string): Promise<void> {
+        while (true) {
+            const item = this.queueById.get(notificationId);
+            if (!item) {
+                throw new Error("smtp_queue_item_missing");
+            }
+            if (item.status === "sent") return;
+            if (item.status === "failed") {
+                throw new Error(item.error ?? "smtp_send_failed");
+            }
+            await this.sleep(10);
+        }
+    }
+
+    listQueue(): NotificationSenderQueueEntry[] {
+        return Array.from(this.queueById.values())
+            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+            .map((entry) => this.snapshotQueueEntry(entry));
+    }
+
+    getQueueItem(notificationId: string): NotificationSenderQueueEntry | null {
+        const entry = this.queueById.get(notificationId);
+        if (!entry) return null;
+        return this.snapshotQueueEntry(entry);
+    }
+
     async sendVerificationEmail(
         to: string,
         code: string,
@@ -778,23 +990,18 @@ export class SmtpNotificationSender implements NotificationSender {
         theme?: string,
     ): Promise<void> {
         if (!to) throw new Error("smtp_requires_recipient");
-        if (this.rateLimiter.isThrottled(to)) {
-            throw new Error("smtp_rate_limited");
-        }
-        this.rateLimiter.record(to);
         const subject = "Verify your email address";
         const body = verifyUrl
             ? `Your verification code is: ${code}\n\nOr click the button below to verify your email address directly.\n\nBoth the code and the link expire in 15 minutes.`
             : `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
-        await sendMailWithRetry(
-            this.config,
-            to,
+        const queued = this.enqueueNotification({
+            recipientEmail: to,
             subject,
             body,
-            this.sleep,
             theme,
             verifyUrl,
-        );
+        });
+        await this.waitForQueueResult(queued.notificationId);
     }
 
     async sendRegistrationInviteEmail(
@@ -806,16 +1013,15 @@ export class SmtpNotificationSender implements NotificationSender {
         if (!to) throw new Error("smtp_requires_recipient");
         const subject = `${inviterDisplayName} invited you to join Cognis`;
         const body = `🎁 ${inviterDisplayName} wants you to join Cognis.\n\nUse this secure invitation link to finish account creation:\n${inviteUrl}\n\nThis invitation expires in 24 hours and can only be used once.`;
-        await sendMailWithRetry(
-            this.config,
-            to,
+        const queued = this.enqueueNotification({
+            recipientEmail: to,
             subject,
             body,
-            this.sleep,
             theme,
-            inviteUrl,
-            "Sign Up",
-        );
+            verifyUrl: inviteUrl,
+            verifyButtonLabel: "Sign Up",
+        });
+        await this.waitForQueueResult(queued.notificationId);
     }
 
     async sendOneTimeLoginEmail(
@@ -830,10 +1036,6 @@ export class SmtpNotificationSender implements NotificationSender {
     ): Promise<void> {
         if (!to) throw new Error("smtp_requires_recipient");
         if (!loginUrl) throw new Error("smtp_requires_login_url");
-        if (this.rateLimiter.isThrottled(to)) {
-            throw new Error("smtp_rate_limited");
-        }
-        this.rateLimiter.record(to);
         const theme = options?.theme;
         const subject = options?.subject?.trim();
         const body = options?.body?.trim();
@@ -842,16 +1044,15 @@ export class SmtpNotificationSender implements NotificationSender {
                 "One-time login email subject and body are required.",
             );
         }
-        await sendMailWithRetry(
-            this.config,
-            to,
+        const queued = this.enqueueNotification({
+            recipientEmail: to,
             subject,
             body,
-            this.sleep,
             theme,
-            loginUrl,
-            options?.actionLabel,
-        );
+            verifyUrl: loginUrl,
+            verifyButtonLabel: options?.actionLabel,
+        });
+        await this.waitForQueueResult(queued.notificationId);
     }
 
     async sendTestEmail(
@@ -919,6 +1120,26 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             undefined,
         );
+    }
+
+    async sendTracked(
+        envelope: NotificationEnvelope,
+    ): Promise<{ notificationId: string }> {
+        if (!envelope.recipientEmail) {
+            throw new Error("smtp_sender_requires_recipient_email");
+        }
+        const theme =
+            typeof envelope.metadata?.theme === "string"
+                ? envelope.metadata.theme
+                : undefined;
+        return this.enqueueNotification({
+            recipientEmail: envelope.recipientEmail,
+            recipientUsername: envelope.recipientUsername,
+            category: envelope.category,
+            envelope.subject,
+            envelope.body,
+            theme,
+        });
     }
 }
 
