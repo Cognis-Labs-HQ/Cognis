@@ -239,6 +239,16 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 }
             };
 
+            const resolveMethod = (methodId) => {
+                const method = getMethodById(methods, methodId);
+                if (!method) {
+                    return null;
+                }
+                return {
+                    ...method,
+                    challenge: challengeStateByMethodId.get(method.id) ?? null,
+                };
+            };
             if (
                 fields instanceof HTMLElement &&
                 fields.childElementCount === 0
@@ -252,67 +262,68 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                   <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${placeholderText}" aria-label="${placeholderText}" />
                   <a href="#" id="login-tfa-resend-action" class="auth-text-action" hidden></a>
                 `;
-            }
-            const resolveMethod = (methodId) => {
-                const method = getMethodById(methods, methodId);
-                if (!method) {
-                    return null;
-                }
-                return {
-                    ...method,
-                    challenge: challengeStateByMethodId.get(method.id) ?? null,
-                };
-            };
-            const resendLink = root.querySelector("#login-tfa-resend-action");
-            if (resendLink instanceof HTMLAnchorElement) {
-                resendLink.addEventListener("click", async (event) => {
-                    event.preventDefault();
-                    const methodInput = root.querySelector("#login-tfa-method");
-                    const selectedMethodId =
-                        methodInput instanceof HTMLInputElement
-                            ? methodInput.value
-                            : "";
-                    if (!selectedMethodId || !loginAttemptId || resendLocked) {
-                        return;
-                    }
-                    resendLocked = true;
-                    try {
-                        const { response, body } = await this.resendCode({
-                            loginAttemptId,
-                            methodId: selectedMethodId,
-                        });
-                        const selectedMethod = resolveMethod(selectedMethodId);
-                        if (response.ok) {
+                const resendLink = fields.querySelector(
+                    "#login-tfa-resend-action",
+                );
+                if (resendLink instanceof HTMLAnchorElement) {
+                    resendLink.addEventListener("click", async (event) => {
+                        event.preventDefault();
+                        const methodInput =
+                            root.querySelector("#login-tfa-method");
+                        const selectedMethodId =
+                            methodInput instanceof HTMLInputElement
+                                ? methodInput.value
+                                : "";
+                        if (
+                            !selectedMethodId ||
+                            !loginAttemptId ||
+                            resendLocked
+                        ) {
+                            return;
+                        }
+                        resendLocked = true;
+                        try {
+                            const { response, body } = await this.resendCode({
+                                loginAttemptId,
+                                methodId: selectedMethodId,
+                            });
+                            const selectedMethod =
+                                resolveMethod(selectedMethodId);
+                            if (response.ok) {
+                                if (selectedMethod) {
+                                    challengeStateByMethodId.set(
+                                        selectedMethod.id,
+                                        body?.data?.challenge ?? {},
+                                    );
+                                }
+                                showToast(
+                                    i18n.t("ui.app.login.tfa.smtp.resend_sent"),
+                                    { variant: "success" },
+                                );
+                                setResendStateForMethod(
+                                    resolveMethod(selectedMethodId),
+                                );
+                                return;
+                            }
                             if (selectedMethod) {
                                 challengeStateByMethodId.set(
                                     selectedMethod.id,
-                                    body?.data?.challenge ?? {},
+                                    {
+                                        message: body?.error?.code,
+                                    },
                                 );
+                                setResendStateForMethod(
+                                    resolveMethod(selectedMethodId),
+                                );
+                            } else {
+                                resendLocked = false;
                             }
-                            showToast(
-                                i18n.t("ui.app.login.tfa.smtp.resend_sent"),
-                                { variant: "success" },
-                            );
-                            setResendStateForMethod(
-                                resolveMethod(selectedMethodId),
-                            );
-                            return;
-                        }
-                        if (selectedMethod) {
-                            challengeStateByMethodId.set(selectedMethod.id, {
-                                message: body?.error?.code,
-                            });
-                            setResendStateForMethod(
-                                resolveMethod(selectedMethodId),
-                            );
-                        } else {
+                        } catch (error) {
+                            console.error(error);
                             resendLocked = false;
                         }
-                    } catch (error) {
-                        console.error(error);
-                        resendLocked = false;
-                    }
-                });
+                    });
+                }
             }
             return switchToTfaPrompt(i18n, payload, root, (method) => {
                 setResendStateForMethod(resolveMethod(method.id));
