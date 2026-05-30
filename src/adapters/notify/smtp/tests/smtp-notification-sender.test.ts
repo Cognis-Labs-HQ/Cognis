@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import net from "node:net";
 import {
     SmtpNotificationSender,
+    SmtpRateLimiter,
     SmtpTemporaryError,
-    createNotificationSender,
 } from "../smtp-notification-sender.js";
+import { createNotificationSender } from "../smtp-notification-sender-factory.js";
 
 test("createNotificationSender always returns a sender instance", () => {
     const sender = createNotificationSender({});
@@ -114,6 +115,69 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
         () => sender.sendTestEmail(""),
         /smtp_test_email_requires_recipient/,
     );
+});
+
+test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
+    const now = Date.now();
+    const rateLimiter = new SmtpRateLimiter(60_000, () => now);
+    rateLimiter.record("alice@example.com", now);
+    const sender = new SmtpNotificationSender(
+        {
+            host: "smtp.example.com",
+            port: 587,
+            from: "no-reply@example.com",
+            secure: "starttls",
+        },
+        undefined,
+        async () => new Promise(() => {}),
+        rateLimiter,
+    );
+
+    const queued = await sender.queueVerificationEmail(
+        "alice@example.com",
+        "123456",
+    );
+
+    assert.equal(queued.status, "waiting_rate_limit");
+    assert.equal(queued.recipientEmail, "alice@example.com");
+    assert.equal(typeof queued.availableAt, "string");
+});
+
+test("SmtpNotificationSender.queueVerificationEmail retries queue lookup before failing", async () => {
+    const sender = new SmtpNotificationSender({
+        host: "smtp.example.com",
+        port: 587,
+        from: "no-reply@example.com",
+        secure: "starttls",
+    });
+    const senderWithInternals = sender as unknown as {
+        queue: {
+            getQueueItem: (notificationId: string) => {
+                notificationId: string;
+                status: string;
+                createdAt: string;
+                updatedAt: string;
+            } | null;
+        };
+    };
+    const originalGetQueueItemMethod =
+        senderWithInternals.queue.getQueueItem.bind(senderWithInternals.queue);
+    let lookupCount = 0;
+    senderWithInternals.queue.getQueueItem = (notificationId: string) => {
+        lookupCount += 1;
+        if (lookupCount === 1) {
+            return null;
+        }
+        return originalGetQueueItemMethod(notificationId);
+    };
+
+    const queued = await sender.queueVerificationEmail(
+        "alice@example.com",
+        "123456",
+    );
+
+    assert.equal(queued.notificationId.length > 0, true);
+    assert.ok(lookupCount >= 2);
 });
 
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {

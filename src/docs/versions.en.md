@@ -26,14 +26,14 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.1` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.5` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.3` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.0` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.1` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
@@ -52,8 +52,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.8` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.0.7` |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.6` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.0` |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.7` |
 | Social                | `src/gateways/social/`       | `1.2.4` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.8` |

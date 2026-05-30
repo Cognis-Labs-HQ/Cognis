@@ -575,3 +575,67 @@ test("CoreNotificationGateway.sendVerificationEmail throws when no capable sende
         { message: "smtp_unavailable" },
     );
 });
+
+test("CoreNotificationGateway.queueVerificationEmail delegates to queue-capable sender", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+
+    const calls: Array<{ to: string; code: string }> = [];
+
+    class VerifyCapableSender extends CapturingSender {
+        isConfigured() {
+            return true;
+        }
+        async queueVerificationEmail(to: string, code: string) {
+            calls.push({ to, code });
+            return {
+                notificationId: "queued-verification",
+                status: "waiting_rate_limit" as const,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                availableAt: new Date(Date.now() + 30_000).toISOString(),
+                recipientEmail: to,
+            };
+        }
+        async sendVerificationEmail() {}
+    }
+
+    gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
+
+    const queued = await gateway.queueVerificationEmail(
+        "user@example.com",
+        "123456",
+    );
+
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].to, "user@example.com");
+    assert.equal(calls[0].code, "123456");
+    assert.equal(queued.status, "waiting_rate_limit");
+});
+
+test("CoreNotificationGateway.queueVerificationEmail falls back to sendVerificationEmail", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+
+    const calls: Array<{ to: string; code: string }> = [];
+
+    class VerifyCapableSender extends CapturingSender {
+        isConfigured() {
+            return true;
+        }
+        async sendVerificationEmail(to: string, code: string) {
+            calls.push({ to, code });
+        }
+    }
+
+    gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
+
+    const queued = await gateway.queueVerificationEmail(
+        "user@example.com",
+        "123456",
+    );
+
+    assert.equal(calls.length, 1);
+    assert.equal(queued.status, "sent");
+    assert.equal(queued.recipientEmail, "user@example.com");
+});

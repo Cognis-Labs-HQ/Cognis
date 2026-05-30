@@ -24,6 +24,7 @@ export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
     let currentTfaLoginAttemptId = null;
+    let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
     let passwordResetTokenHandled = false;
@@ -217,6 +218,7 @@ export async function mount(root) {
         if (data.tfaRequired === true || data.tfaSetupRequired === true) {
             const tfaLoginClient = await loadTfaLoginClient();
             if (data.tfaRequired === true) {
+                lastTfaPayload = data;
                 currentTfaLoginAttemptId =
                     tfaLoginClient?.switchToTfaPrompt(data) ?? null;
             } else {
@@ -592,8 +594,26 @@ export async function mount(root) {
                 render: () => renderLoginShell(),
                 onRender: () => {
                     resetPasswordResetMode();
-                    loadLoginMethods();
-                    runTypingShowcase(typingSamples);
+                    if (lastTfaPayload !== null) {
+                        // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).
+                        loadTfaLoginClient()
+                            .then((client) => {
+                                if (client) {
+                                    currentTfaLoginAttemptId =
+                                        client.switchToTfaPrompt(
+                                            lastTfaPayload,
+                                        ) ?? null;
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                                loadLoginMethods();
+                                runTypingShowcase(typingSamples);
+                            });
+                    } else {
+                        loadLoginMethods();
+                        runTypingShowcase(typingSamples);
+                    }
                     renderLoginReasonToast();
                     document
                         .querySelector("#login-request-link")

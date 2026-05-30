@@ -15,6 +15,7 @@ Gateway auth tidak mengetahui detail TOTP atau metode lain di masa depan. Gatewa
 - Menegakkan setup wajib saat kebijakan global TFA aktif untuk semua pengguna.
 - Memverifikasi challenge login dan mengonsumsi kode pemulihan secara atomik.
 - Mendaftarkan UI settings/admin dan aset statis milik TFA.
+- Menunda pemicuan challenge (misalnya pengiriman email SMTP) hingga pengguna memilih metode secara eksplisit saat beberapa metode tersedia.
 
 Bukan tanggung jawab gateway ini: validasi kredensial utama, kebijakan kata sandi, atau pembuatan akun.
 
@@ -45,6 +46,8 @@ Gateway ini mendaftarkan capability berikut melalui `ctx.capabilities`:
 - `tfa:setEnforceAllUsers(required)`
 
 Capability ini adalah permukaan integrasi yang didukung. Komponen lain tidak boleh mengimpor internal adapter TFA secara langsung.
+
+`tfa:getLoginMethods(accountId)` hanya memicu challenge login (misalnya mengirim email SMTP) saat tepat satu metode dikonfigurasi untuk pengguna. Saat beberapa metode tersedia, respons hanya berisi identitas metode tanpa data challenge. UI login memicu challenge secara on-demand melalui `POST /api/v1/tfa/login/resend` ketika pengguna secara eksplisit memilih sebuah metode.
 
 ## Route API
 

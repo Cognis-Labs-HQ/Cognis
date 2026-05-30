@@ -15,6 +15,7 @@ Das Auth-Gateway kennt keine TOTP- oder zukünftigen Methodendetails. Es prüft 
 - Verpflichtende Einrichtung erzwingen, wenn globale TFA-Pflicht aktiv ist.
 - Login-Challenges prüfen und Recovery-Codes atomar verbrauchen.
 - Eigene Settings-/Admin-UI und statische Assets registrieren.
+- Challenge-Auslösung (z. B. SMTP-E-Mail-Versand) verzögern, bis der Nutzer bei mehreren verfügbaren Methoden eine explizit auswählt.
 
 Nicht zuständig für: Passwortregeln, Primäranmeldung oder Kontoerstellung.
 
@@ -45,6 +46,8 @@ Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 - `tfa:setEnforceAllUsers(required)`
 
 Diese Oberfläche ist der unterstützte Integrationspunkt. Andere Komponenten dürfen keine TFA-Adapter-Interna direkt importieren.
+
+`tfa:getLoginMethods(accountId)` löst eine Login-Challenge (z. B. SMTP-E-Mail) nur aus, wenn genau eine Methode für den Nutzer konfiguriert ist. Bei mehreren Methoden enthält die Antwort nur Methodenidentitäten ohne Challenge-Daten. Die Login-UI löst die Challenge über `POST /api/v1/tfa/login/resend` on-demand aus, sobald der Nutzer eine Methode explizit auswählt.
 
 ## API-Routen
 

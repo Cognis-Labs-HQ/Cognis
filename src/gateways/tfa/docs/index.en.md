@@ -15,6 +15,7 @@ The auth gateway does not know how TOTP or any future method works. It only auth
 - Enforce setup requirements for accounts when global TFA enforcement is enabled.
 - Verify login challenges and consume recovery codes atomically.
 - Register TFA-owned settings/admin UI modules and static assets.
+- Defer challenge initiation (e.g. sending SMTP codes) until the user explicitly selects a method when multiple methods are available.
 
 Not responsible for: primary credential validation, password policy, or account creation. Those remain auth-gateway concerns.
 
@@ -45,6 +46,8 @@ The gateway contributes these capabilities through `ctx.capabilities`:
 - `tfa:setEnforceAllUsers(required)`
 
 These capabilities are the supported integration surface for auth and UI code. Other components must not import TFA adapter internals directly.
+
+`tfa:getLoginMethods(accountId)` only initiates a login challenge (e.g. sends an SMTP email) when exactly one method is configured for the user. When multiple methods are available, the response includes method identity only — no challenge data. The login UI triggers challenge initiation on demand via `POST /api/v1/tfa/login/resend` when the user explicitly selects a method.
 
 ## API Routes
 

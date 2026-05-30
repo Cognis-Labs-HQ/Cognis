@@ -40,6 +40,8 @@ test("smtp adapter login challenge sends a code and verifyLogin consumes it", as
         state: { email: "alice@example.com" },
     });
     assert.equal(challenge?.ready, true);
+    assert.equal(typeof challenge?.retryAfterSeconds, "number");
+    assert.equal(typeof challenge?.resendAvailableAt, "string");
     const verified = await adapter.verifyLogin({
         accountId: "alice",
         state: { email: "alice@example.com" },
@@ -52,6 +54,38 @@ test("smtp adapter login challenge sends a code and verifyLogin consumes it", as
         payload: { code: sentCodes[0] },
     });
     assert.equal(secondTry.verified, false);
+});
+
+test("smtp adapter resend invalidates the previous login code and issues a new one", async () => {
+    const sentCodes: string[] = [];
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        sendVerificationEmail: async (_to, code) => {
+            sentCodes.push(code);
+        },
+    });
+    await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(sentCodes.length, 2);
+    assert.notEqual(sentCodes[0], sentCodes[1]);
+    const firstCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: sentCodes[0] },
+    });
+    assert.equal(firstCodeAttempt.verified, false);
+    const secondCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: sentCodes[1] },
+    });
+    assert.equal(secondCodeAttempt.verified, true);
 });
 
 test("smtp adapter supports configurable code length", async () => {
@@ -99,6 +133,113 @@ test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-li
     assert.equal(challenge?.message, "smtp_rate_limited");
     assert.equal(typeof challenge?.retryAfterSeconds, "number");
     assert.equal(typeof challenge?.resendAvailableAt, "string");
+});
+
+test("smtp adapter login challenge surfaces queued rate limits without replacing a live code", async () => {
+    let queueCallCount = 0;
+    let firstIssuedCode = "";
+    let secondIssuedCode = "";
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        queueVerificationEmail: async (_to, code) => {
+            queueCallCount += 1;
+            if (queueCallCount === 1) {
+                firstIssuedCode = code;
+                return {
+                    notificationId: "first-send",
+                    status: "queued",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                };
+            }
+            secondIssuedCode = code;
+            return {
+                notificationId: "rate-limited-send",
+                status: "waiting_rate_limit",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                availableAt: new Date(Date.now() + 30_000).toISOString(),
+            };
+        },
+    });
+    const firstChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(firstChallenge?.ready, true);
+    assert.equal(typeof firstChallenge?.retryAfterSeconds, "number");
+    assert.equal(typeof firstChallenge?.resendAvailableAt, "string");
+    const secondChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(secondChallenge?.ready, true);
+    assert.equal(secondChallenge?.message, "smtp_rate_limited");
+    assert.equal(typeof secondChallenge?.retryAfterSeconds, "number");
+    const verified = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: firstIssuedCode },
+    });
+    assert.equal(verified.verified, true);
+    const secondCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: secondIssuedCode },
+    });
+    assert.equal(secondCodeAttempt.verified, false);
+});
+
+test("smtp adapter login challenge rolls back on queued failed status", async () => {
+    let queueCallCount = 0;
+    let firstIssuedCode = "";
+    let failedAttemptCode = "";
+    const adapter = createAdapter({
+        canSendVerificationEmail: () => true,
+        queueVerificationEmail: async (_to, code) => {
+            queueCallCount += 1;
+            if (queueCallCount === 1) {
+                firstIssuedCode = code;
+                return {
+                    notificationId: "first-send",
+                    status: "queued",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                };
+            }
+            failedAttemptCode = code;
+            return {
+                notificationId: "failed-send",
+                status: "failed",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                error: "delivery_failed",
+            };
+        },
+    });
+    const firstChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(firstChallenge?.ready, true);
+    const failedChallenge = await adapter.beginLoginChallenge?.({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+    });
+    assert.equal(failedChallenge?.ready, false);
+    assert.equal(failedChallenge?.message, "smtp_unavailable");
+    const originalCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: firstIssuedCode },
+    });
+    assert.equal(originalCodeAttempt.verified, true);
+    const failedCodeAttempt = await adapter.verifyLogin({
+        accountId: "alice",
+        state: { email: "alice@example.com" },
+        payload: { code: failedAttemptCode },
+    });
+    assert.equal(failedCodeAttempt.verified, false);
 });
 
 test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {
