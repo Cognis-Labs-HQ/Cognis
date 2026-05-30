@@ -494,7 +494,7 @@ function renderWeekView(events, weekStart, i18n) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
-    const columnMarkup = `<colgroup>
+    const weekColumnGroup = `<colgroup>
     <col class="calendar-week-axis-column" />
     ${days.map(() => '<col class="calendar-week-day-column" />').join("")}
   </colgroup>`;
@@ -549,7 +549,7 @@ function renderWeekView(events, weekStart, i18n) {
     }
     return `<div class="calendar-week-view" data-calendar-week-view>
   <table class="calendar-week-table calendar-week-table--header" data-calendar-week-header role="presentation">
-    ${columnMarkup}
+    ${weekColumnGroup}
     <thead>
       <tr class="calendar-week-grid calendar-week-grid--header">
         <th class="calendar-week-axis-label calendar-week-axis-label--corner" scope="col" aria-hidden="true"></th>
@@ -563,7 +563,7 @@ function renderWeekView(events, weekStart, i18n) {
   </table>
   <div class="calendar-week-scroll-grid" data-calendar-week-scroll-grid>
     <table class="calendar-week-table calendar-week-table--body" role="presentation">
-      ${columnMarkup}
+      ${weekColumnGroup}
       <tbody>${slotRows.join("")}</tbody>
     </table>
   </div>

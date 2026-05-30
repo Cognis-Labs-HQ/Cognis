@@ -136,22 +136,28 @@ export async function mount(root, { signal } = {}) {
     }
 
     function syncWeekViewLayout() {
-        root.querySelectorAll("[data-calendar-week-view]").forEach(
-            (weekView) => {
+        const weekLayouts = Array.from(
+            root.querySelectorAll("[data-calendar-week-view]"),
+        )
+            .map((weekView) => {
                 const scrollGrid = weekView.querySelector(
                     "[data-calendar-week-scroll-grid]",
                 );
-                if (!(scrollGrid instanceof HTMLElement)) return;
-                const scrollbarWidth = Math.max(
-                    0,
-                    scrollGrid.offsetWidth - scrollGrid.clientWidth,
-                );
-                weekView.style.setProperty(
-                    "--calendar-week-scrollbar-width",
-                    `${scrollbarWidth}px`,
-                );
-            },
-        );
+                if (!(scrollGrid instanceof HTMLElement)) return null;
+                const measuredScrollbarWidth =
+                    scrollGrid.offsetWidth - scrollGrid.clientWidth;
+                return {
+                    weekView,
+                    scrollbarWidth: Math.max(0, measuredScrollbarWidth),
+                };
+            })
+            .filter(Boolean);
+        weekLayouts.forEach(({ weekView, scrollbarWidth }) => {
+            weekView.style.setProperty(
+                "--calendar-week-scrollbar-width",
+                `${scrollbarWidth}px`,
+            );
+        });
     }
 
     const popupManager = createCalendarPopupManager({
