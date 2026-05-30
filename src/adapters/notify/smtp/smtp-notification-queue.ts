@@ -280,16 +280,16 @@ export class SmtpNotificationQueue {
         delayMs: number,
         sleepingUntil: number,
     ): Promise<void> {
-        const sleepId = ++this.nextSleepId;
+        const sleepId = this.nextSleepId++;
         this.sleepingUntil = sleepingUntil;
-        await Promise.race([
-            this.sleep(delayMs),
-            new Promise<void>((resolve) => {
-                this.wakeDrainSleep = { sleepId, resolve };
-            }),
-        ]);
+        const wakePromise = new Promise<void>((resolve) => {
+            this.wakeDrainSleep = { sleepId, resolve };
+        });
+        await Promise.race([this.sleep(delayMs), wakePromise]);
         if (this.wakeDrainSleep?.sleepId === sleepId) {
             this.wakeDrainSleep = null;
+            this.sleepingUntil = null;
+            return;
         }
         if (this.sleepingUntil === sleepingUntil) {
             this.sleepingUntil = null;
