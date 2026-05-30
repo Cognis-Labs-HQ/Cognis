@@ -174,7 +174,9 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         resendAvailableAt: string;
     } {
         return {
-            retryAfterSeconds: Math.ceil(SMTP_VERIFICATION_RATE_LIMIT_MS / 1000),
+            retryAfterSeconds: Math.ceil(
+                SMTP_VERIFICATION_RATE_LIMIT_MS / 1000,
+            ),
             resendAvailableAt: new Date(
                 sentAtMs + SMTP_VERIFICATION_RATE_LIMIT_MS,
             ).toISOString(),
@@ -312,7 +314,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                         resendAvailableAt: retryMetadata.resendAvailableAt,
                     };
                 }
-                this.loginChallengeLastSentAt.set(input.accountId, challengeSentAt);
+                this.loginChallengeLastSentAt.set(
+                    input.accountId,
+                    challengeSentAt,
+                );
                 return {
                     ready: true,
                     ...this.buildCooldownMetadata(challengeSentAt),
