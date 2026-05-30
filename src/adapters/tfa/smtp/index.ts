@@ -6,6 +6,7 @@ const DEFAULT_CODE_LENGTH = 6;
 const MIN_CODE_LENGTH = 4;
 const MAX_CODE_LENGTH = 10;
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
+const MAX_CODE_GENERATION_ATTEMPTS = 10;
 const NUMERIC_DIGITS = "0123456789";
 
 interface SmtpTfaAdapterContext {
@@ -109,21 +110,30 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         this.cleanupExpiredChallenges();
         const existingCode = this.getLiveChallenge(key)?.code;
         let code = generateNumericCode(this.codeLength);
-        if (existingCode && code === existingCode) {
-            const trailingDigit = code.at(-1) ?? "0";
-            const trailingDigitIndex = NUMERIC_DIGITS.indexOf(trailingDigit);
-            const safeTrailingDigitIndex = Math.max(trailingDigitIndex, 0);
-            const rotatedDigit =
-                NUMERIC_DIGITS[
-                    (safeTrailingDigitIndex + 1) % NUMERIC_DIGITS.length
-                ];
-            code = `${code.slice(0, -1)}${rotatedDigit}`;
+        let attempts = 0;
+        while (existingCode && code === existingCode) {
+            code = generateNumericCode(this.codeLength);
+            attempts += 1;
+            if (attempts >= MAX_CODE_GENERATION_ATTEMPTS) {
+                throw new Error("smtp_code_generation_failed");
+            }
         }
         this.challenges.set(key, {
             code,
             expiresAt: Date.now() + CODE_EXPIRY_MS,
         });
         return code;
+    }
+
+    private rollbackChallenge(
+        key: string,
+        challenge: CodeChallenge | null,
+    ): void {
+        if (challenge) {
+            this.challenges.set(key, challenge);
+            return;
+        }
+        this.challenges.delete(key);
     }
 
     private verifyCode(key: string, code: string): boolean {
@@ -148,13 +158,14 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         await this.context.sendVerificationEmail?.(input.email, code);
     }
 
-    private resolveRetryMetadataFromAvailableAt(
-        availableAt: string | undefined,
-    ): {
+    private extractRetryMetadata(availableAt: string | undefined): {
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
     } {
-        const resendAvailableAt = String(availableAt ?? "").trim();
+        if (typeof availableAt !== "string") {
+            return {};
+        }
+        const resendAvailableAt = availableAt.trim();
         if (!resendAvailableAt) {
             return {};
         }
@@ -308,23 +319,14 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                         code,
                     );
                 } catch (error) {
-                    if (previousChallenge) {
-                        this.challenges.set(key, previousChallenge);
-                    } else {
-                        this.challenges.delete(key);
-                    }
+                    this.rollbackChallenge(key, previousChallenge);
                     throw error;
                 }
                 if (queued.status === "waiting_rate_limit") {
-                    if (previousChallenge) {
-                        this.challenges.set(key, previousChallenge);
-                    } else {
-                        this.challenges.delete(key);
-                    }
-                    const retryMetadata =
-                        this.resolveRetryMetadataFromAvailableAt(
-                            queued.availableAt,
-                        );
+                    this.rollbackChallenge(key, previousChallenge);
+                    const retryMetadata = this.extractRetryMetadata(
+                        queued.availableAt,
+                    );
                     return {
                         ready: true,
                         message: "smtp_rate_limited",

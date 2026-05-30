@@ -52,3 +52,10 @@ test("tfa login syncs the resend link disabled state through a shared helper", (
         /resendLocked = false;\s*syncDisabledResendState\(\);/,
     );
 });
+
+test("tfa login warns when resend action element exists with an unexpected type", () => {
+    assert.match(
+        SOURCE,
+        /Expected #login-tfa-resend-action to be an anchor element\./,
+    );
+});

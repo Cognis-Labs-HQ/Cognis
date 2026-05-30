@@ -185,12 +185,19 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             let countdownTimer = null;
             let resendLocked = false;
             let deliveryToastShownOnce = false;
+            let invalidResendLinkTypeWarned = false;
 
             const getResendLink = () => {
                 const resendLink = root.querySelector(
                     "#login-tfa-resend-action",
                 );
-                if (!(resendLink instanceof HTMLAnchorElement)) {
+                if (resendLink && !(resendLink instanceof HTMLAnchorElement)) {
+                    if (!invalidResendLinkTypeWarned) {
+                        invalidResendLinkTypeWarned = true;
+                        console.warn(
+                            "Expected #login-tfa-resend-action to be an anchor element.",
+                        );
+                    }
                     return null;
                 }
                 return resendLink;

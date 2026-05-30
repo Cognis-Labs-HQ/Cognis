@@ -785,6 +785,21 @@ export class SmtpNotificationSender implements NotificationSender {
         return this.queue.getQueueItem(notificationId);
     }
 
+    private async getQueueItemWithRetry(
+        notificationId: string,
+        retries = 1,
+        delayMs = 10,
+    ): Promise<NotificationSenderQueueEntry | null> {
+        let queueItem = this.queue.getQueueItem(notificationId);
+        let attemptsLeft = retries;
+        while (!queueItem && attemptsLeft > 0) {
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+            queueItem = this.queue.getQueueItem(notificationId);
+            attemptsLeft -= 1;
+        }
+        return queueItem;
+    }
+
     async sendVerificationEmail(
         to: string,
         code: string,
@@ -818,7 +833,9 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             verifyUrl,
         });
-        const queueItem = this.queue.getQueueItem(queued.notificationId);
+        const queueItem = await this.getQueueItemWithRetry(
+            queued.notificationId,
+        );
         if (!queueItem) {
             throw new Error("smtp_queue_item_missing");
         }

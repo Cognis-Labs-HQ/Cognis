@@ -594,14 +594,21 @@ export async function mount(root) {
                 render: () => renderLoginShell(),
                 onRender: () => {
                     resetPasswordResetMode();
-                    if (lastTfaPayload != null) {
-                        loadTfaLoginClient().then((client) => {
-                            if (client) {
-                                currentTfaLoginAttemptId =
-                                    client.switchToTfaPrompt(lastTfaPayload) ??
-                                    null;
-                            }
-                        });
+                    if (lastTfaPayload !== null) {
+                        loadTfaLoginClient()
+                            .then((client) => {
+                                if (client) {
+                                    currentTfaLoginAttemptId =
+                                        client.switchToTfaPrompt(
+                                            lastTfaPayload,
+                                        ) ?? null;
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                                loadLoginMethods();
+                                runTypingShowcase(typingSamples);
+                            });
                     } else {
                         loadLoginMethods();
                         runTypingShowcase(typingSamples);
