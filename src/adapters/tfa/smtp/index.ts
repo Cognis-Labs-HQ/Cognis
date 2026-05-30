@@ -171,6 +171,15 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         }
         const resendTimestamp = Date.parse(resendAvailableAt);
         if (!Number.isFinite(resendTimestamp)) {
+            this.context.log?.(
+                "warn",
+                "Ignored invalid SMTP retry timestamp metadata.",
+                {
+                    component: "adapter-tfa-smtp",
+                    operation: "parse_retry_metadata",
+                    availableAt: resendAvailableAt,
+                },
+            );
             return {};
         }
         return {

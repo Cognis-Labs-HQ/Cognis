@@ -24,11 +24,11 @@ test("tfa login resend action toggles disabled state while cooldown is active", 
 test("tfa login cooldown toast uses the resend success message", () => {
     assert.match(
         SOURCE,
-        /if \(!deliveryToastShownOnce && !skipDeliveryToast\)/,
+        /if \(deliveryToastShownOnce \|\| skipDeliveryToast\)/,
     );
     assert.match(
         SOURCE,
-        /showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.smtp\.resend_sent[\s\S]*?\{ variant: "success" \}/,
+        /showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.smtp\.resend_sent[\s\S]*?\{\s*variant:\s*"success",?\s*\}/,
     );
     assert.doesNotMatch(
         SOURCE,
