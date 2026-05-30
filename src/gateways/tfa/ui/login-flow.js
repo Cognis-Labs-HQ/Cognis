@@ -184,6 +184,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             );
             let countdownTimer = null;
             let resendLocked = false;
+            let rateLimitNoticeShownOnce = false;
 
             const stopCountdown = () => {
                 if (countdownTimer != null) {
@@ -215,6 +216,20 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         ? Math.max(Math.ceil((resendAt - Date.now()) / 1000), 0)
                         : 0;
                     if (remainingSeconds > 0) {
+                        if (!rateLimitNoticeShownOnce) {
+                            rateLimitNoticeShownOnce = true;
+                            showToast(
+                                i18n
+                                    .t(
+                                        "ui.app.login.tfa.smtp.rate_limited_notice",
+                                    )
+                                    .replace(
+                                        "{seconds}",
+                                        String(remainingSeconds),
+                                    ),
+                                { variant: "warning" },
+                            );
+                        }
                         resendLocked = true;
                         resendLink.textContent = i18n
                             .t("ui.app.login.tfa.smtp.resend_rate_limited")
