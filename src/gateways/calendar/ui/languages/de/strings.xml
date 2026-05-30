@@ -118,4 +118,5 @@
   <string name="gateway.calendar.share_link_copy">Kopieren</string>
   <string name="gateway.calendar.share_link_copied">Link kopiert!</string>
   <string name="gateway.calendar.share_link_failed">Freigabelink konnte nicht erstellt werden.</string>
+  <string name="gateway.calendar.share_link_name_placeholder">Linkname (optional)</string>
 </resources>

@@ -54,6 +54,7 @@ export function buildCalendarShareData(input: {
     calendarId: string;
     permission: unknown;
     expiresInHours: unknown;
+    name?: string;
     externalHost: string;
 }): {
     permission: "read" | "write";
@@ -74,6 +75,7 @@ export function buildCalendarShareData(input: {
                   ownerAccountId: input.ownerAccountId,
                   calendarId: calendar.id,
                   ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
+                  ...(input.name ? { name: input.name } : {}),
               }).token;
     const caldavPath =
         calendar.visibility === "public"
@@ -597,4 +599,8 @@ export function resolveEventMeta(
         response,
         responseOptions: ["accepted", "tentative", "declined"],
     };
+}
+
+export function errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : "calendar_error";
 }

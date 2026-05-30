@@ -60,6 +60,7 @@ export interface CaldavTokenRecord {
     ownerAccountId: string;
     calendarId: string;
     expiresAt: string;
+    name?: string;
 }
 
 export interface ScopedMeetingAccessTokenRecord {

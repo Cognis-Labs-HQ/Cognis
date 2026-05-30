@@ -8,12 +8,11 @@ export function createCalendarEditPopupHandler({
     reloadState,
     refreshComposer,
 }) {
-    const DEFAULT_SHARE_EXPIRY_HOURS = "24";
-
     async function openCalendarEditPopup(calendar) {
-        let generatedShareUrls = { caldav: "", ics: "" };
+        const generatedShareLinks = [];
         await openPopup({
             title: i18n.t("gateway.calendar.edit_calendar"),
+            maxWidth: "560px",
             body: () => {
                 const nameFieldDisabledAttr = calendar.isDefault
                     ? " disabled"
@@ -34,13 +33,14 @@ export function createCalendarEditPopupHandler({
           <div class="calendar-share-section">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.share_calendar"))}</p>
             <div class="calendar-share-controls">
+              <input type="text" id="calendar-share-link-name" class="calendar-share-name-input" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
               <select id="calendar-share-permission">
                 <option value="read">${escapeHtml(i18n.t("gateway.calendar.share_link_permission_read"))}</option>
                 <option value="write">${escapeHtml(i18n.t("gateway.calendar.share_link_permission_write"))}</option>
               </select>
               <select id="calendar-share-expiry">
                 <option value="1">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_1h"))}</option>
-                <option value="${DEFAULT_SHARE_EXPIRY_HOURS}" selected>${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_24h"))}</option>
+                <option value="24" selected>${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_24h"))}</option>
                 <option value="168">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_7d"))}</option>
                 <option value="720">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_30d"))}</option>
                 <option value="never">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_never"))}</option>
@@ -48,19 +48,7 @@ export function createCalendarEditPopupHandler({
               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
             </div>
             <div id="calendar-share-result" class="calendar-share-result" style="display:none">
-              <details class="calendar-share-details">
-                <summary>${escapeHtml(i18n.t("gateway.calendar.share_links_details"))}</summary>
-                <div class="calendar-share-result-row">
-                  <label for="calendar-share-caldav-url">CalDAV</label>
-                  <input id="calendar-share-caldav-url" type="text" readonly class="calendar-share-url-field" value="" />
-                  <button type="button" data-share-copy="caldav" class="popup-action-btn btn-no-animation" data-popup-action="copy">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
-                </div>
-                <div class="calendar-share-result-row">
-                  <label for="calendar-share-ics-url">ICS</label>
-                  <input id="calendar-share-ics-url" type="text" readonly class="calendar-share-url-field" value="" />
-                  <button type="button" data-share-copy="ics" class="popup-action-btn btn-no-animation" data-popup-action="copy">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
-                </div>
-              </details>
+              <div id="calendar-share-links-list" class="calendar-share-links-list"></div>
             </div>
           </div>
           ${!calendar.isDefault ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
@@ -80,18 +68,71 @@ export function createCalendarEditPopupHandler({
                 },
             ],
             onOpen: (overlay) => {
+                const resultEl = overlay.querySelector(
+                    "#calendar-share-result",
+                );
+                const linksList = overlay.querySelector(
+                    "#calendar-share-links-list",
+                );
+
+                function renderShareLink(entry) {
+                    const index = generatedShareLinks.indexOf(entry);
+                    const summary = escapeHtml(entry.label);
+                    const caldavId = `calendar-share-caldav-url-${index}`;
+                    const icsId = `calendar-share-ics-url-${index}`;
+                    return `<details class="calendar-share-details">
+                      <summary>${summary}</summary>
+                      <div class="calendar-share-result-row">
+                        <label for="${caldavId}">CalDAV</label>
+                        <input id="${caldavId}" type="text" readonly class="calendar-share-url-field" value="${escapeHtml(entry.caldav)}" />
+                        <button type="button" class="popup-action-btn btn-no-animation" data-share-copy-url="${escapeHtml(entry.caldav)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+                      </div>
+                      <div class="calendar-share-result-row">
+                        <label for="${icsId}">ICS</label>
+                        <input id="${icsId}" type="text" readonly class="calendar-share-url-field" value="${escapeHtml(entry.ics)}" />
+                        <button type="button" class="popup-action-btn btn-no-animation" data-share-copy-url="${escapeHtml(entry.ics)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+                      </div>
+                    </details>`;
+                }
+
+                if (resultEl) {
+                    resultEl.addEventListener("click", async (event) => {
+                        const button = event.target.closest(
+                            "[data-share-copy-url]",
+                        );
+                        if (!button) return;
+                        const url = String(
+                            button.getAttribute("data-share-copy-url") ?? "",
+                        );
+                        if (!url) return;
+                        await navigator.clipboard.writeText(url);
+                        button.classList.add("popup-action-btn--copied");
+                        window.setTimeout(() => {
+                            button.classList.remove("popup-action-btn--copied");
+                        }, 1500);
+                        showToast(
+                            i18n.t("gateway.calendar.share_link_copied"),
+                            "success",
+                        );
+                    });
+                }
+
                 const generateBtn = overlay.querySelector(
                     "#calendar-share-generate",
                 );
                 if (generateBtn) {
                     generateBtn.addEventListener("click", async () => {
+                        const name = String(
+                            overlay.querySelector("#calendar-share-link-name")
+                                ?.value ?? "",
+                        ).trim();
                         const permission = String(
                             overlay.querySelector("#calendar-share-permission")
                                 ?.value ?? "read",
                         );
                         const expiryValue = String(
                             overlay.querySelector("#calendar-share-expiry")
-                                ?.value ?? DEFAULT_SHARE_EXPIRY_HOURS,
+                                ?.value ?? "24",
                         ).trim();
                         const expiresInHours =
                             expiryValue === "never"
@@ -107,6 +148,7 @@ export function createCalendarEditPopupHandler({
                                 body: JSON.stringify({
                                     permission,
                                     expiresInHours,
+                                    ...(name ? { name } : {}),
                                 }),
                             },
                         );
@@ -118,7 +160,14 @@ export function createCalendarEditPopupHandler({
                             return;
                         }
                         const data = await res.json();
-                        generatedShareUrls = {
+                        const entry = {
+                            label:
+                                name ||
+                                escapeHtml(
+                                    i18n.t(
+                                        "gateway.calendar.share_links_details",
+                                    ),
+                                ),
                             caldav: String(
                                 data?.data?.caldavUrl ??
                                     data?.data?.shareUrl ??
@@ -126,46 +175,15 @@ export function createCalendarEditPopupHandler({
                             ),
                             ics: String(data?.data?.icsUrl ?? ""),
                         };
-                        const resultEl = overlay.querySelector(
-                            "#calendar-share-result",
-                        );
-                        const caldavField = overlay.querySelector(
-                            "#calendar-share-caldav-url",
-                        );
-                        const icsField = overlay.querySelector(
-                            "#calendar-share-ics-url",
-                        );
+                        generatedShareLinks.push(entry);
                         if (resultEl) resultEl.style.display = "";
-                        if (caldavField)
-                            caldavField.value = generatedShareUrls.caldav;
-                        if (icsField) icsField.value = generatedShareUrls.ics;
+                        if (linksList)
+                            linksList.insertAdjacentHTML(
+                                "beforeend",
+                                renderShareLink(entry),
+                            );
                     });
                 }
-                overlay
-                    .querySelectorAll("[data-share-copy]")
-                    .forEach((button) => {
-                        button.addEventListener("click", async () => {
-                            const target = String(
-                                button.getAttribute("data-share-copy") ?? "",
-                            );
-                            const shareLink =
-                                target === "ics"
-                                    ? generatedShareUrls.ics
-                                    : generatedShareUrls.caldav;
-                            if (!shareLink) return;
-                            await navigator.clipboard.writeText(shareLink);
-                            button.classList.add("popup-action-btn--copied");
-                            window.setTimeout(() => {
-                                button.classList.remove(
-                                    "popup-action-btn--copied",
-                                );
-                            }, 1500);
-                            showToast(
-                                i18n.t("gateway.calendar.share_link_copied"),
-                                "success",
-                            );
-                        });
-                    });
                 const deleteBtn = overlay.querySelector(
                     "#calendar-edit-delete",
                 );

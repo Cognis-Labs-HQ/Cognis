@@ -31,3 +31,22 @@ melalui tautan langsung.
 Setiap kalender di bilah alat samping kini merupakan satu elemen interaktif: mengkliknya
 langsung membuka popup edit. Tombol pensil terpisah yang sebelumnya muncul di
 samping nama kalender telah dihapus.
+
+## Penyempurnaan antarmuka kalender
+
+Kontrol tampilan kalender kini berupa bilah alat satu baris — tombol navigasi dan
+label periode saat ini berada di sisi kiri, sedangkan tombol pemilih tampilan
+(Hari / Minggu / Bulan / Tahun) berada di sisi kanan. Tampilan minggu menampilkan
+nomor minggu ISO setelah bulan dan tahun. Di tampilan bulan, penghitung acara per
+hari dihapus; hingga tiga acara ditampilkan langsung, dan "…" muncul jika ada lebih
+banyak. Di tampilan tahun, hari dengan acara kini diarsir dengan warna yang lebih
+kontras. Sudut sumbu minggu kini menggunakan warna latar yang sama dengan label
+slot waktu agar terlihat menyambung. Kartu bulan Februari di tampilan tahun tidak
+lagi lebih tinggi dari bulan-bulan lainnya.
+
+## Tautan berbagi dengan nama dan tanpa batas
+
+UI berbagi kalender kini menerima nama opsional untuk setiap tautan yang dibuat,
+memudahkan identifikasi saat ada beberapa tautan. Tidak ada lagi batas jumlah
+tautan yang dapat dibuat — setiap tautan baru ditampilkan di popup dan tetap dapat
+diakses hingga kedaluwarsa.

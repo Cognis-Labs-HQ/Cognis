@@ -71,17 +71,28 @@
     min-width: 0;
 }
 
+.calendar-share-name-input {
+    flex: 1 1 8rem;
+    min-width: 0;
+    font-size: 0.85rem;
+}
+
 #calendar-share-permission {
-    width: 13ch;
+    width: 10ch;
 }
 
 #calendar-share-expiry {
-    width: 19ch;
+    width: 14ch;
 }
 
 .calendar-share-result {
     display: grid;
     gap: 0.4rem;
+}
+
+.calendar-share-links-list {
+    display: grid;
+    gap: 0.45rem;
 }
 
 .calendar-share-details {
@@ -184,8 +195,10 @@
 }
 
 .calendar-view-header {
-    display: grid;
+    display: flex;
+    align-items: center;
     gap: 0.6rem;
+    flex-wrap: wrap;
 }
 
 .calendar-view-switcher,
@@ -193,6 +206,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.45rem;
+    align-items: center;
+}
+
+.calendar-view-nav {
+    flex: 1;
 }
 
 .calendar-view-switcher button.active {
@@ -509,7 +527,7 @@
     opacity: 0.85;
     border-right: 1px solid var(--field-border);
     padding: 0.4rem;
-    background: color-mix(in srgb, var(--surface, transparent) 92%, black 8%);
+    background: color-mix(in srgb, var(--surface, transparent) 94%, black 6%);
 }
 
 .calendar-week-axis-label--corner {
@@ -662,10 +680,10 @@
     background: var(--surface, transparent);
 }
 
-.calendar-month-event-count {
-    min-height: 1rem;
+.calendar-month-event-overflow {
     font-size: 0.75rem;
     opacity: 0.75;
+    padding: 0.1rem 0.3rem;
 }
 
 .calendar-year-grid {
@@ -681,6 +699,7 @@
     padding: 0.7rem;
     display: grid;
     gap: 0.5rem;
+    align-content: start;
 }
 
 .calendar-year-month-title {
@@ -693,10 +712,6 @@
     text-align: center;
     width: 100%;
     padding: 0;
-    /* Explicit height/display prevents February's shorter content from
-     * producing a taller border than other months in the year grid. */
-    height: auto;
-    display: block;
 }
 
 .calendar-year-mini-grid {
@@ -747,12 +762,12 @@
 .calendar-year-day-dot--active {
     background: color-mix(
         in srgb,
-        var(--btn-confirm-bg, #1f8ceb) 35%,
+        var(--btn-confirm-bg, #1f8ceb) 55%,
         var(--surface, transparent)
     );
     border-color: color-mix(
         in srgb,
-        var(--btn-confirm-bg, #1f8ceb) 45%,
+        var(--btn-confirm-bg, #1f8ceb) 65%,
         var(--field-border)
     );
 }

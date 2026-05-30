@@ -30,3 +30,22 @@ no longer spins indefinitely after a direct-link page load.
 Each calendar in the sidebar toolbar is now a single interactive element: clicking
 it opens the edit popup directly. The separate pencil edit button that previously
 appeared beside each calendar name has been removed.
+
+## Calendar UI refinements
+
+The calendar view controls are now a single-line toolbar — navigation buttons and the
+current period label sit on the left, and the view switcher (Day / Week / Month / Year)
+is aligned to the right. The week view adds an ISO week number after the month and year
+label. In month view the per-day event counter is gone; up to three events are shown
+inline and a "…" indicator appears when more events are present. In the year view,
+days with events are now shaded with a stronger contrasting colour for easier scanning.
+The week-axis corner cell now uses the same background as the time-slot labels so the
+axis looks continuous. February's year-view month card no longer stretches taller than
+the other months.
+
+## Named share links with no limit
+
+The calendar share UI now accepts an optional name for each generated link, making it
+easy to tell links apart when multiple are created. There is no longer any artificial
+limit on the number of share links that can be generated for a calendar — every new link
+is shown in the popup and remains accessible until it expires.

@@ -31,3 +31,22 @@ kann und der Seitenlade-Indikator beim Direktaufruf nicht mehr endlos dreht.
 Jeder Kalender in der Seitenleiste ist jetzt ein einzelnes interaktives Element:
 Ein Klick darauf öffnet direkt das Bearbeitungs-Popup. Der separate Stift-Button,
 der zuvor neben jedem Kalendernamen erschien, wurde entfernt.
+
+## Kalender-UI-Verbesserungen
+
+Die Kalenderansicht-Steuerung ist jetzt eine einzeilige Werkzeugleiste – links befinden
+sich die Navigationsschaltflächen mit der aktuellen Periodenbezeichnung, rechts der
+Ansichts-Umschalter (Tag / Woche / Monat / Jahr). In der Wochenansicht wird die
+ISO-Wochennummer nach Monat und Jahr angezeigt. In der Monatsansicht entfällt die
+Ereigniszählung pro Tag; bis zu drei Ereignisse werden direkt angezeigt, und bei
+weiteren erscheint ein „…"-Hinweis. In der Jahresansicht werden Tage mit Ereignissen
+stärker farblich hervorgehoben. Die Ecke der Wochenachse hat nun dieselbe Hintergrundfarbe
+wie die Zeitbeschriftungen, sodass die Achse durchgehend wirkt. Februars Monatskarte in
+der Jahresansicht ist nicht mehr höher als die übrigen Monate.
+
+## Benannte Freigabelinks ohne Mengenbegrenzung
+
+Das Kalender-Freigabe-UI akzeptiert jetzt einen optionalen Namen für jeden generierten
+Link, der die Unterscheidung mehrerer Links erleichtert. Es gibt keine künstliche
+Begrenzung mehr – jeder neue Link wird im Popup angezeigt und bleibt abrufbar, bis
+er abläuft.

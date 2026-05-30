@@ -13,6 +13,7 @@ import {
     buildCalendarShareData,
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
+    errorMessage,
     normalizeAttendeesForOwner,
     normalizeResponseValue,
     normalizeStringList,
@@ -157,8 +158,7 @@ function createCalendarCoreRoutes({
                 await gateway.flushStore();
                 sendJson(res, 200, { data: updated });
             } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : "calendar_error";
+                const message = errorMessage(error);
                 if (message === "calendar_not_found") {
                     sendCalendarError(
                         res,
@@ -217,8 +217,7 @@ function createCalendarCoreRoutes({
                 await gateway.flushStore();
                 sendJson(res, 200, { data: { deleted: true } });
             } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : "calendar_error";
+                const message = errorMessage(error);
                 if (message === "calendar_not_found") {
                     sendCalendarError(
                         res,
@@ -263,6 +262,7 @@ function createCalendarCoreRoutes({
             const body = (await readJson(req)) as {
                 permission?: unknown;
                 expiresInHours?: unknown;
+                name?: unknown;
             };
             const shareData = buildCalendarShareData({
                 gateway,
@@ -270,6 +270,7 @@ function createCalendarCoreRoutes({
                 calendarId,
                 permission: body.permission,
                 expiresInHours: body.expiresInHours,
+                name: typeof body.name === "string" ? body.name : undefined,
                 externalHost,
             });
             if (!shareData) {
@@ -398,8 +399,7 @@ function createCalendarCoreRoutes({
                 );
                 sendJson(res, 201, { data: createdEvent });
             } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : "calendar_error";
+                const message = errorMessage(error);
                 if (message === "calendar_not_found") {
                     sendCalendarError(
                         res,
@@ -584,8 +584,7 @@ function createCalendarCoreRoutes({
                 await gateway.flushStore();
                 sendJson(res, 200, { data: updatedEvent });
             } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : "calendar_error";
+                const message = errorMessage(error);
                 if (message === "calendar_not_found") {
                     sendCalendarError(
                         res,
@@ -668,8 +667,7 @@ function createCalendarCoreRoutes({
                 );
                 sendJson(res, 200, { data: { deleted: true } });
             } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : "calendar_error";
+                const message = errorMessage(error);
                 if (message === "calendar_event_not_found") {
                     sendCalendarError(
                         res,
@@ -772,8 +770,7 @@ function createCalendarCoreRoutes({
                 }
                 sendJson(res, 200, { data: responseRecord });
             } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : "calendar_error";
+                const message = errorMessage(error);
                 if (message === "calendar_response_forbidden") {
                     sendCalendarError(
                         res,

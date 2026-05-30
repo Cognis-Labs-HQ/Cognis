@@ -736,12 +736,9 @@ export class CoreCalendarGateway {
         ownerAccountId: string;
         calendarId: string;
         ttlSeconds?: number | null;
+        name?: string;
     }): CaldavTokenRecord {
-        const calendar = this.getOwnedCalendar(
-            input.ownerAccountId,
-            input.calendarId,
-        );
-        if (!calendar) {
+        if (!this.getOwnedCalendar(input.ownerAccountId, input.calendarId)) {
             throw new Error("calendar_not_found");
         }
         return this.tokenStore.issueCaldavToken(
@@ -749,6 +746,7 @@ export class CoreCalendarGateway {
                 ownerAccountId: input.ownerAccountId,
                 calendarId: input.calendarId,
                 expiresAt: "",
+                ...(input.name ? { name: input.name } : {}),
             },
             input.ttlSeconds,
         );

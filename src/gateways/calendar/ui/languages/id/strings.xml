@@ -118,4 +118,5 @@
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>
   <string name="gateway.calendar.share_link_failed">Tidak dapat membuat tautan berbagi.</string>
+  <string name="gateway.calendar.share_link_name_placeholder">Nama Tautan (opsional)</string>
 </resources>

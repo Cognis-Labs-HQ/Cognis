@@ -25,6 +25,7 @@ export class CalendarTokenStore {
                     : new Date(
                           Date.now() + (ttlSeconds ?? 3600) * 1000,
                       ).toISOString(),
+            ...(input.name ? { name: input.name } : {}),
         };
         this.tokensByValue.set(token.token, token);
         return token;

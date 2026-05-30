@@ -596,13 +596,13 @@ function renderMonthGrid(events, currentDate, i18n) {
               .slice(0, 3)
               .map((event) => renderEventButton(event))
               .join("");
+          const overflowCount = dayEvents.length - 3;
           return `<td><article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}">
           <header>
             <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>
             <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">+</button>
           </header>
-          <div class="calendar-month-event-count">${dayEvents.length > 0 ? `${dayEvents.length} ${escapeHtml(i18n.t("gateway.calendar.events_count_suffix"))}` : ""}</div>
-          <div class="calendar-month-event-preview">${previewMarkup}</div>
+          <div class="calendar-month-event-preview">${previewMarkup}${overflowCount > 0 ? `<div class="calendar-month-event-overflow">…</div>` : ""}</div>
         </article></td>`;
       }).join("")}
     </tr>`);
@@ -854,5 +854,6 @@ export {
     renderToolbarSummary,
     renderUpcomingEvents,
     renderCalendarView,
+    getISOWeekNumber,
     createEventComposerBuilder,
 };

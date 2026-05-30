@@ -59,6 +59,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration          | `src/gateways/registration/` | `1.1.8` |
 | Logging               | `src/gateways/logging/`      | `1.5.1` |
 | Study                 | `src/gateways/study/`        | `1.5.6` |
+| Calendar              | `src/gateways/calendar/`     | `1.1.0` |
 
 ## Core contracts
 

@@ -201,25 +201,32 @@ export async function mount(root, { signal } = {}) {
                 label: i18n.t("gateway.calendar.calendar_view"),
                 pinned: true,
                 gridSize: { default: [12, 9], min: [6, 6], max: "full" },
-                render: () => `
+                render: () => {
+                    const weekLabel =
+                        selectedView === "week"
+                            ? ` · ${i18n.t("gateway.calendar.week_number_prefix")}${calendarUi.getISOWeekNumber(activeDate)}`
+                            : "";
+                    const periodLabel =
+                        selectedView === "year"
+                            ? escapeHtml(formatYearLabel(activeDate))
+                            : `${escapeHtml(formatMonthYearLabel(activeDate))}${escapeHtml(weekLabel)}`;
+                    return `
           <section class="calendar-section">
             <header class="calendar-view-header">
-              <h3>${i18n.t("gateway.calendar.calendar_view")}</h3>
-              <div class="calendar-view-switcher">
-                ${calendarUi.CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${i18n.t(`gateway.calendar.view_${view}`)}</button>`).join("")}
-              </div>
               <div class="calendar-view-nav">
                 <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
                 <button type="button" data-calendar-nav="today">${escapeHtml(getTodayNavLabel(selectedView))}</button>
                 <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
+                <span class="calendar-nav-month-label">${periodLabel}</span>
               </div>
-              ${selectedView === "month" ? `<p class="calendar-nav-month-label">${escapeHtml(formatMonthYearLabel(activeDate))}</p>` : ""}
-              ${selectedView === "week" ? `<p class="calendar-nav-month-label">${escapeHtml(formatMonthYearLabel(activeDate))}</p>` : ""}
-              ${selectedView === "year" ? `<p class="calendar-nav-month-label">${escapeHtml(formatYearLabel(activeDate))}</p>` : ""}
+              <div class="calendar-view-switcher">
+                ${calendarUi.CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${i18n.t(`gateway.calendar.view_${view}`)}</button>`).join("")}
+              </div>
             </header>
             <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n)}</div>
           </section>
-        `,
+        `;
+                },
                 onRender: () => {
                     syncWeekViewLayout();
                     window.addEventListener("resize", syncWeekViewLayout, {
