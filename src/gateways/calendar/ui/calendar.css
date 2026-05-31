@@ -352,15 +352,20 @@
 }
 
 .calendar-timeslot-events {
-    display: flex;
-    flex-wrap: nowrap;
     overflow: hidden;
-    gap: 0.2rem;
     padding: 0.15rem 0.35rem;
     min-height: 2.2rem;
-    cursor: default;
-    align-items: center;
     position: relative;
+    vertical-align: top;
+}
+
+.calendar-timeslot-events > .calendar-slot-event {
+    margin-right: 0.2rem;
+    margin-bottom: 0.2rem;
+}
+
+.calendar-timeslot-events--click-add {
+    cursor: pointer;
 }
 
 .calendar-timeslot-events:hover {
@@ -794,6 +799,17 @@
 
 .calendar-checkbox-row--styled input {
     margin: 0;
+}
+
+.calendar-all-day-toggle {
+    margin-top: 0.35rem;
+}
+
+.calendar-all-day-range {
+    display: grid;
+    gap: 0.45rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.35rem;
 }
 
 .calendar-participants-row {

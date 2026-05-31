@@ -2,6 +2,8 @@ export function registerMeetingRoutes({
     router,
     store,
     profileStore,
+    listCalendarsByOwner,
+    listCalendarEvents,
     listClassroomParticipantHandles,
     resolveMeetingPayloadOrReject,
     createMeetingPayload,
@@ -14,6 +16,234 @@ export function registerMeetingRoutes({
     checkHttpLiveness,
     LIVELINESS_TIMEOUT_MS,
 }) {
+    const parseDateTime = (value) => {
+        const parsed = new Date(String(value ?? ""));
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+    const parseDateOnly = (value) => {
+        const normalized = String(value ?? "").trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return null;
+        const parsed = new Date(`${normalized}T00:00:00`);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+    const parseTimeMinutes = (value) => {
+        const normalized = String(value ?? "").trim();
+        const match = normalized.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+        if (!match) return null;
+        return Number(match[1]) * 60 + Number(match[2]);
+    };
+    const overlapsWindow = (startAt, endAt, windowStart, windowEnd) =>
+        startAt < windowEnd && endAt > windowStart;
+
+    router.get(
+        "/api/v1/modules/jitsi-meet/events/current",
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            if (
+                typeof listCalendarsByOwner !== "function" ||
+                typeof listCalendarEvents !== "function"
+            ) {
+                sendError(
+                    res,
+                    503,
+                    "service_unavailable",
+                    "Calendar capabilities are unavailable.",
+                );
+                return;
+            }
+
+            const requestUrl = new URL(req.url ?? "", "http://localhost");
+            const startAtQuery = requestUrl.searchParams.get("startAt");
+            const endAtQuery = requestUrl.searchParams.get("endAt");
+            const dateQuery = requestUrl.searchParams.get("date");
+            const timeStartQuery = requestUrl.searchParams.get("timeStart");
+            const timeEndQuery = requestUrl.searchParams.get("timeEnd");
+            const ownership = String(
+                requestUrl.searchParams.get("ownership") ?? "all",
+            )
+                .trim()
+                .toLowerCase();
+            const meetingFilter = String(
+                requestUrl.searchParams.get("hasMeeting") ?? "all",
+            )
+                .trim()
+                .toLowerCase();
+
+            if (!["all", "own", "invited"].includes(ownership)) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "ownership must be one of all, own, or invited.",
+                );
+                return;
+            }
+            if (
+                !["all", "1", "0", "true", "false", "yes", "no"].includes(
+                    meetingFilter,
+                )
+            ) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "hasMeeting must be all, true/false, yes/no, or 1/0.",
+                );
+                return;
+            }
+            if ((timeStartQuery || timeEndQuery) && !dateQuery) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "date is required when filtering by timeStart/timeEnd.",
+                );
+                return;
+            }
+
+            let windowStart = null;
+            let windowEnd = null;
+            if (startAtQuery || endAtQuery) {
+                if (!startAtQuery || !endAtQuery) {
+                    sendError(
+                        res,
+                        400,
+                        "bad_request",
+                        "startAt and endAt must be provided together.",
+                    );
+                    return;
+                }
+                windowStart = parseDateTime(startAtQuery);
+                windowEnd = parseDateTime(endAtQuery);
+                if (!windowStart || !windowEnd || windowEnd <= windowStart) {
+                    sendError(
+                        res,
+                        400,
+                        "bad_request",
+                        "Invalid startAt/endAt range.",
+                    );
+                    return;
+                }
+            } else if (dateQuery) {
+                const dateStart = parseDateOnly(dateQuery);
+                if (!dateStart) {
+                    sendError(res, 400, "bad_request", "Invalid date.");
+                    return;
+                }
+                const startMinutes = timeStartQuery
+                    ? parseTimeMinutes(timeStartQuery)
+                    : 0;
+                const endMinutes = timeEndQuery
+                    ? parseTimeMinutes(timeEndQuery)
+                    : 24 * 60;
+                if (
+                    startMinutes === null ||
+                    endMinutes === null ||
+                    endMinutes <= startMinutes
+                ) {
+                    sendError(res, 400, "bad_request", "Invalid time range.");
+                    return;
+                }
+                windowStart = new Date(dateStart);
+                windowStart.setMinutes(
+                    windowStart.getMinutes() + startMinutes,
+                );
+                windowEnd = new Date(dateStart);
+                windowEnd.setMinutes(windowEnd.getMinutes() + endMinutes);
+            }
+
+            const calendars = await listCalendarsByOwner(claims.sub);
+            const eventRows = (
+                await Promise.all(
+                    calendars.map(async (calendar) => {
+                        const events = await listCalendarEvents(calendar.id);
+                        return events.map((event) => {
+                            const isOwner = event.createdBy === claims.sub;
+                            const isInvited = Array.isArray(event.attendees)
+                                ? event.attendees.includes(claims.sub)
+                                : false;
+                            return {
+                                id: event.id,
+                                calendarId: calendar.id,
+                                calendarName: calendar.name,
+                                title: event.title,
+                                description: event.description ?? null,
+                                startAt: event.startAt,
+                                endAt: event.endAt,
+                                status: event.status,
+                                recurrence: event.recurrence,
+                                meetingUrl: event.meetingUrl ?? null,
+                                createdBy: event.createdBy,
+                                isOwner,
+                                isInvited,
+                            };
+                        });
+                    }),
+                )
+            )
+                .flat()
+                .filter((event) => event.isOwner || event.isInvited);
+
+            const now = new Date();
+            const filteredRows = eventRows
+                .filter((event) => {
+                    if (
+                        ownership === "own" &&
+                        !event.isOwner
+                    ) {
+                        return false;
+                    }
+                    if (
+                        ownership === "invited" &&
+                        !event.isInvited
+                    ) {
+                        return false;
+                    }
+                    const hasMeeting = Boolean(
+                        String(event.meetingUrl ?? "").trim(),
+                    );
+                    if (
+                        ["1", "true", "yes"].includes(meetingFilter) &&
+                        !hasMeeting
+                    ) {
+                        return false;
+                    }
+                    if (
+                        ["0", "false", "no"].includes(meetingFilter) &&
+                        hasMeeting
+                    ) {
+                        return false;
+                    }
+                    const eventStart = parseDateTime(event.startAt);
+                    const eventEnd = parseDateTime(event.endAt);
+                    if (!eventStart || !eventEnd || eventEnd <= eventStart) {
+                        return false;
+                    }
+                    if (
+                        windowStart &&
+                        windowEnd &&
+                        !overlapsWindow(
+                            eventStart,
+                            eventEnd,
+                            windowStart,
+                            windowEnd,
+                        )
+                    ) {
+                        return false;
+                    }
+                    if (!windowStart && eventEnd < now) {
+                        return false;
+                    }
+                    return true;
+                })
+                .sort((left, right) => left.startAt.localeCompare(right.startAt));
+
+            sendJson(res, 200, { data: filteredRows });
+        },
+        { access: { minRole: "user" } },
+    );
+
     router.get(
         "/api/v1/modules/jitsi-meet/meetings/active",
         async (req, res) => {

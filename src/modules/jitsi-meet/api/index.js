@@ -277,6 +277,8 @@ export function registerApiRoutes(router, ctx) {
         "notify:registerCategory",
     );
     const accountStore = ctx.getCapability("auth:accountStore");
+    const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
+    const listCalendarEvents = ctx.getCapability("calendar:listEvents");
 
     if (typeof registerNotificationCategory === "function") {
         registerNotificationCategory("meetings", "Meetings");
@@ -763,6 +765,8 @@ export function registerApiRoutes(router, ctx) {
         router,
         store,
         profileStore,
+        listCalendarsByOwner,
+        listCalendarEvents,
         listClassroomParticipantHandles,
         resolveMeetingPayloadOrReject,
         createMeetingPayload,

@@ -593,9 +593,13 @@ export function resolveEventMeta(
     accountId: string,
     response: CalendarEventResponse | null,
 ): Record<string, unknown> {
+    const hasResponded =
+        response === "accepted" ||
+        response === "tentative" ||
+        response === "declined";
     return {
         canEdit: event.createdBy === accountId,
-        canRespond: event.attendees.includes(accountId),
+        canRespond: event.attendees.includes(accountId) && !hasResponded,
         response,
         responseOptions: ["accepted", "tentative", "declined"],
     };

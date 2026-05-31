@@ -432,7 +432,7 @@ function renderDayView(events, day, i18n) {
     );
     const allDayRow = `<tr class="calendar-day-all-day-row">
   <th scope="row" class="calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</th>
-  <td class="calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents.slice(0, 3)) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>
+  <td class="calendar-timeslot-events calendar-timeslot-events--click-add" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents.slice(0, 3)) : ""}</td>
 </tr>`;
     let occupiedRowsRemaining = 0;
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
@@ -461,13 +461,12 @@ function renderDayView(events, day, i18n) {
                 );
                 occupiedRowsRemaining = Math.max(0, spanRows - 1);
                 const overflowCount = Math.max(0, slotEvents.length - 1);
-                eventsCellMarkup = `<td class="calendar-timeslot-events${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">
+                eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">
       ${renderEventButton(firstSpanningEvent)}
       ${overflowCount > 0 ? `<span class="calendar-slot-event-overflow">+${overflowCount}</span>` : ""}
-      ${renderSlotCreateButton(start, end, i18n)}
     </td>`;
             } else {
-                eventsCellMarkup = `<td class="calendar-timeslot-events${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${renderSlotCreateButton(start, end, i18n)}</td>`;
+                eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}"></td>`;
             }
         }
         slots.push(`<tr class="calendar-timeslot-row${isCurrentSlot ? " calendar-timeslot-row--current" : ""}">
@@ -494,10 +493,6 @@ function renderWeekView(events, weekStart, i18n) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
-    const weekColumnGroup = `<colgroup>
-    <col class="calendar-week-axis-column" />
-    ${days.map(() => '<col class="calendar-week-day-column" />').join("")}
-  </colgroup>`;
     const dayHeaders = days
         .map((day) => {
             const dayStart = startOfDay(day);
@@ -549,7 +544,6 @@ function renderWeekView(events, weekStart, i18n) {
     }
     return `<div class="calendar-week-view" data-calendar-week-view>
   <table class="calendar-week-table calendar-week-table--header" data-calendar-week-header role="presentation">
-    ${weekColumnGroup}
     <thead>
       <tr class="calendar-week-grid calendar-week-grid--header">
         <th class="calendar-week-axis-label calendar-week-axis-label--corner" scope="col" aria-hidden="true"></th>
@@ -563,7 +557,6 @@ function renderWeekView(events, weekStart, i18n) {
   </table>
   <div class="calendar-week-scroll-grid" data-calendar-week-scroll-grid>
     <table class="calendar-week-table calendar-week-table--body" role="presentation">
-      ${weekColumnGroup}
       <tbody>${slotRows.join("")}</tbody>
     </table>
   </div>
@@ -719,14 +712,15 @@ function createEventComposerBuilder({
             name: "title",
             labelKey: "gateway.calendar.event_title",
             required: true,
+            maxCharacters: 120,
             value: String(defaultValues.title ?? ""),
             disabled: readOnly,
             criteria: [
                 {
-                    id: "event-title-max",
-                    type: "maxLength",
-                    value: 120,
-                    messageKey: "gateway.calendar.event_title_max",
+                    id: "event-title-required",
+                    type: "custom",
+                    test: (value) => String(value ?? "").trim().length > 0,
+                    messageKey: "ui.reuse.field_required_notice",
                 },
             ],
         },
