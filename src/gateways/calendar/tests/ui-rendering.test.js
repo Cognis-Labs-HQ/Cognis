@@ -152,10 +152,7 @@ test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
         POPUP_MANAGER_ALL_DAY_SOURCE,
         /insertAdjacentElement\("afterend", allDayToggleRow\)/,
     );
-    assert.match(
-        POPUP_MANAGER_ALL_DAY_SOURCE,
-        /startInput\.type = "date"/,
-    );
+    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startInput\.type = "date"/);
     assert.match(
         POPUP_MANAGER_ALL_DAY_SOURCE,
         /startInput\.type = "datetime-local"/,

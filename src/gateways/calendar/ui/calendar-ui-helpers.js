@@ -759,10 +759,7 @@ function createEventComposerBuilder({
                         const startValue = String(fieldValues.startAt ?? "");
                         const endTime = new Date(endValue).getTime();
                         const startTime = new Date(startValue).getTime();
-                        if (
-                            Number.isNaN(endTime) ||
-                            Number.isNaN(startTime)
-                        ) {
+                        if (Number.isNaN(endTime) || Number.isNaN(startTime)) {
                             return false;
                         }
                         if (endTime > startTime) return true;

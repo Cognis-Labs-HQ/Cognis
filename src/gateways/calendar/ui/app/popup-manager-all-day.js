@@ -198,7 +198,10 @@ export function bindAllDayComposerControls({ overlay, signal }) {
         startInput.addEventListener(
             "input",
             () => {
-                if (allDayToggle instanceof HTMLInputElement && allDayToggle.checked) {
+                if (
+                    allDayToggle instanceof HTMLInputElement &&
+                    allDayToggle.checked
+                ) {
                     syncDateInputsInAllDayMode();
                 }
             },
@@ -210,7 +213,10 @@ export function bindAllDayComposerControls({ overlay, signal }) {
         endInput.addEventListener(
             "input",
             () => {
-                if (allDayToggle instanceof HTMLInputElement && allDayToggle.checked) {
+                if (
+                    allDayToggle instanceof HTMLInputElement &&
+                    allDayToggle.checked
+                ) {
                     syncDateInputsInAllDayMode();
                 }
             },
