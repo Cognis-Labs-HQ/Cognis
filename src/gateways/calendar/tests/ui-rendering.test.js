@@ -13,39 +13,59 @@ const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
     "utf8",
 );
+const POPUP_MANAGER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager.js"),
+    "utf8",
+);
 const CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar.css"),
     "utf8",
 );
 
-test("calendar week view renders stacked event cards with row spans", () => {
-    assert.match(HELPERS_SOURCE, /calendar-slot-event-stack/);
-    assert.match(
-        HELPERS_SOURCE,
-        /occupiedRowsRemaining = days\.map\(\(\) => 0\)/,
-    );
-    assert.match(HELPERS_SOURCE, /rowspan="\$\{spanRows\}"/);
-    assert.match(HELPERS_SOURCE, /showTime:\s*true/);
+test("calendar timed views render positioned event cards instead of row spans", () => {
+    assert.match(HELPERS_SOURCE, /buildTimedEventLayout/);
+    assert.match(HELPERS_SOURCE, /calendar-timed-event-layer/);
+    assert.match(HELPERS_SOURCE, /calendar-timed-event-card/);
+    assert.match(HELPERS_SOURCE, /calendar-week-day-columns/);
+    assert.match(HELPERS_SOURCE, /calendar-day-timed-lane/);
+    assert.doesNotMatch(HELPERS_SOURCE, /rowspan="\$\{spanRows\}"/);
 });
 
-test("calendar slot clicks create events outside event buttons and add buttons", () => {
+test("calendar composer keeps title counter without title criteria list", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /name:\s*"title"[\s\S]*required:\s*true[\s\S]*maxCharacters:\s*120/,
+    );
+    assert.doesNotMatch(HELPERS_SOURCE, /event-title-required/);
+    assert.doesNotMatch(HELPERS_SOURCE, /event-title-max/);
+});
+
+test("calendar slot clicks create events outside event buttons and empty slots omit add buttons", () => {
     assert.match(
         APP_SOURCE,
         /event\.target\.closest\(\s*"\[data-calendar-event\], \[data-timeslot-add\]"/,
     );
+    assert.doesNotMatch(HELPERS_SOURCE, /data-timeslot-add/);
 });
 
-test("calendar CSS fixes week-slot height and anchors the add button", () => {
+test("calendar conflict warning requires a second save to create anyway", () => {
+    assert.match(POPUP_MANAGER_SOURCE, /overlap_warning_confirm/);
+    assert.match(POPUP_MANAGER_SOURCE, /confirmedConflictCreateKey/);
+    assert.match(POPUP_MANAGER_SOURCE, /allowConflict:/);
+    assert.match(POPUP_MANAGER_SOURCE, /created === "conflict"/);
+});
+
+test("calendar CSS styles timed event lanes and current week highlights", () => {
     assert.match(
         CSS_SOURCE,
-        /\.calendar-week-timeslot-row\s*\{[^}]*height:\s*4\.8rem;/s,
+        /\.calendar-timed-event-layer\s*\{/s,
     );
     assert.match(
         CSS_SOURCE,
-        /\.calendar-week-slot\s*\{[^}]*height:\s*4\.8rem;/s,
+        /\.calendar-week-day-header--current\s*\{/s,
     );
     assert.match(
         CSS_SOURCE,
-        /\.calendar-timeslot-hover-add\s*\{[^}]*right:\s*0\.35rem;[^}]*bottom:\s*0\.35rem;/s,
+        /\.calendar-week-slot--current-time\s*\{/s,
     );
 });

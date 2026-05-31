@@ -137,6 +137,7 @@ export function createCalendarPopupManager({
         createMeeting,
         status,
         recurrence,
+        allowConflict = false,
     }) {
         const targetCalendarId = String(calendarId ?? "").trim();
         if (!targetCalendarId) return false;
@@ -157,8 +158,12 @@ export function createCalendarPopupManager({
             startAt: new Date(startAt).toISOString(),
             endAt: new Date(endAt).toISOString(),
         });
-        if (overlaps.length > 0) {
-            showToast(i18n.t("gateway.calendar.overlap_warning"), "warning");
+        if (overlaps.length > 0 && !allowConflict) {
+            showToast(
+                i18n.t("gateway.calendar.overlap_warning_confirm"),
+                "warning",
+            );
+            return "conflict";
         }
         const response = await apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(targetCalendarId)}/events`,
@@ -571,9 +576,18 @@ export function createCalendarPopupManager({
             : [];
         let popupSearchAbortController = null;
         let popupController = null;
+        let confirmedConflictCreateKey = "";
 
         function participantKey(entry) {
             return JSON.stringify([entry.type, entry.value]);
+        }
+
+        function buildConflictCreateKey(values) {
+            return JSON.stringify([
+                String(values.calendarId ?? "").trim(),
+                String(values.startAt ?? "").trim(),
+                String(values.endAt ?? "").trim(),
+            ]);
         }
 
         function renderParticipants(overlay) {
@@ -754,6 +768,20 @@ export function createCalendarPopupManager({
                     popupController = popupBuilder.attach(formElement, {
                         signal,
                     });
+                    formElement.addEventListener(
+                        "input",
+                        () => {
+                            confirmedConflictCreateKey = "";
+                        },
+                        { signal },
+                    );
+                    formElement.addEventListener(
+                        "change",
+                        () => {
+                            confirmedConflictCreateKey = "";
+                        },
+                        { signal },
+                    );
                 }
                 bindAllDayComposerControls({ overlay, signal });
                 renderParticipants(overlay);
@@ -918,8 +946,16 @@ export function createCalendarPopupManager({
                     createMeeting,
                     status: values.status,
                     recurrence: values.recurrence,
+                    allowConflict:
+                        confirmedConflictCreateKey ===
+                        buildConflictCreateKey(values),
                 });
+                if (created === "conflict") {
+                    confirmedConflictCreateKey = buildConflictCreateKey(values);
+                    return false;
+                }
                 if (!created) return false;
+                confirmedConflictCreateKey = "";
                 refreshComposer();
                 return true;
             },

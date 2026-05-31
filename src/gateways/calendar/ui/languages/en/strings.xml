@@ -95,6 +95,7 @@
   <string name="gateway.calendar.respond_all_events">All Events in Series</string>
   <string name="gateway.calendar.load_event_failed">Could not load event.</string>
   <string name="gateway.calendar.overlap_warning">This time overlaps another event in the selected calendar.</string>
+  <string name="gateway.calendar.overlap_warning_confirm">This time overlaps another event in the selected calendar. Save again to create it anyway.</string>
   <string name="gateway.calendar.this_week">This Week</string>
   <string name="gateway.calendar.this_month">This Month</string>
   <string name="gateway.calendar.this_year">This Year</string>

@@ -95,6 +95,7 @@
   <string name="gateway.calendar.respond_all_events">Alle Ereignisse der Serie</string>
   <string name="gateway.calendar.load_event_failed">Ereignis konnte nicht geladen werden.</string>
   <string name="gateway.calendar.overlap_warning">Diese Zeit überschneidet sich mit einem anderen Ereignis im ausgewählten Kalender.</string>
+  <string name="gateway.calendar.overlap_warning_confirm">Diese Zeit überschneidet sich mit einem anderen Ereignis im ausgewählten Kalender. Speichere erneut, um es trotzdem zu erstellen.</string>
   <string name="gateway.calendar.this_week">Diese Woche</string>
   <string name="gateway.calendar.this_month">Diesen Monat</string>
   <string name="gateway.calendar.this_year">Dieses Jahr</string>

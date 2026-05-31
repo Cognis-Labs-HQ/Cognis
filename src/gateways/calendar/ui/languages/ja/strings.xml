@@ -95,6 +95,7 @@
   <string name="gateway.calendar.respond_all_events">シリーズのすべて</string>
   <string name="gateway.calendar.load_event_failed">予定を読み込めませんでした。</string>
   <string name="gateway.calendar.overlap_warning">この時間は選択したカレンダー内の別の予定と重なっています。</string>
+  <string name="gateway.calendar.overlap_warning_confirm">この時間は選択したカレンダー内の別の予定と重なっています。それでも作成するには、もう一度保存してください。</string>
   <string name="gateway.calendar.this_week">今週</string>
   <string name="gateway.calendar.this_month">今月</string>
   <string name="gateway.calendar.this_year">今年</string>

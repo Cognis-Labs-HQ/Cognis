@@ -261,8 +261,10 @@ function getResponseActionLabelKey(response) {
     return `gateway.calendar.response_action_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
 
-function formatEventTimeLabel(event) {
-    if (isAllDayEvent(event)) return "";
+function formatEventTimeLabel(event, i18n) {
+    if (isAllDayEvent(event)) {
+        return i18n ? i18n.t("gateway.calendar.all_day") : "";
+    }
     const startLabel = formatTime(event.startAt, "");
     const endLabel = formatTime(event.endAt, "");
     if (!startLabel) return "";
@@ -320,8 +322,11 @@ function renderResponseSummary(event, i18n, participantDirectory = null) {
         .join("")}</ul>`;
 }
 
-function renderEventButton(event, { compact = false, showTime = false } = {}) {
-    const timeLabel = showTime ? formatEventTimeLabel(event) : "";
+function renderEventButton(
+    event,
+    { compact = false, showTime = false, i18n = null } = {},
+) {
+    const timeLabel = showTime ? formatEventTimeLabel(event, i18n) : "";
     return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}">
       ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
       <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong>
@@ -375,6 +380,7 @@ function renderSlotEvents(
         previewLimit = TIMESLOT_EVENT_PREVIEW_LIMIT,
         compact = false,
         showTime = false,
+        i18n = null,
     } = {},
 ) {
     if (!slotEvents.length) return "";
@@ -382,14 +388,10 @@ function renderSlotEvents(
     const overflowCount = Math.max(0, slotEvents.length - visibleEvents.length);
     return `<div class="calendar-slot-event-stack${compact ? " calendar-slot-event-stack--compact" : ""}">
       ${visibleEvents
-          .map((event) => renderEventButton(event, { compact, showTime }))
+          .map((event) => renderEventButton(event, { compact, showTime, i18n }))
           .join("")}
       ${overflowCount > 0 ? `<span class="calendar-slot-event-overflow-badge">+${overflowCount}</span>` : ""}
     </div>`;
-}
-
-function renderSlotCreateButton(start, end, i18n) {
-    return `<button type="button" class="calendar-timeslot-hover-add btn-no-animation" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" aria-label="${escapeHtml(i18n.t("gateway.calendar.add_event"))}">+</button>`;
 }
 
 function getISOWeekNumber(date) {
@@ -437,22 +439,169 @@ function resolveRenderedEventSpan(event, rangeStart, dayEnd) {
     return Math.max(1, Math.ceil(duration / HALF_HOUR_MS));
 }
 
+function resolveRenderedEventRange(event, rangeStart, rangeEnd) {
+    const startTime = Math.max(
+        new Date(event.startAt).getTime(),
+        rangeStart.getTime(),
+    );
+    const endTime = Math.min(new Date(event.endAt).getTime(), rangeEnd.getTime());
+    if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return null;
+    if (endTime <= startTime) return null;
+    return {
+        startTime,
+        endTime,
+    };
+}
+
+function buildTimedEventLayout(events, rangeStart, rangeEnd) {
+    const laidOutEvents = events
+        .map((event) => {
+            const renderedRange = resolveRenderedEventRange(
+                event,
+                rangeStart,
+                rangeEnd,
+            );
+            if (!renderedRange) return null;
+            return {
+                event,
+                ...renderedRange,
+                columnIndex: 0,
+                columnCount: 1,
+            };
+        })
+        .filter(Boolean)
+        .sort(
+            (left, right) =>
+                left.startTime - right.startTime || left.endTime - right.endTime,
+        );
+    const groups = [];
+    let activeEntries = [];
+    let currentGroup = [];
+    const finalizeGroup = () => {
+        if (!currentGroup.length) return;
+        const columnCount =
+            Math.max(...currentGroup.map((entry) => entry.columnIndex)) + 1;
+        currentGroup.forEach((entry) => {
+            entry.columnCount = columnCount;
+        });
+        groups.push(...currentGroup);
+        currentGroup = [];
+    };
+    laidOutEvents.forEach((entry) => {
+        activeEntries = activeEntries.filter(
+            (activeEntry) => activeEntry.endTime > entry.startTime,
+        );
+        if (activeEntries.length === 0) {
+            finalizeGroup();
+        }
+        const occupiedColumns = new Set(
+            activeEntries.map((activeEntry) => activeEntry.columnIndex),
+        );
+        let nextColumnIndex = 0;
+        while (occupiedColumns.has(nextColumnIndex)) {
+            nextColumnIndex += 1;
+        }
+        entry.columnIndex = nextColumnIndex;
+        activeEntries.push(entry);
+        currentGroup.push(entry);
+    });
+    finalizeGroup();
+    return groups;
+}
+
+function renderTimedEventLayer(
+    events,
+    rangeStart,
+    rangeEnd,
+    { i18n, slotCount = 48, compact = false } = {},
+) {
+    const laidOutEvents = buildTimedEventLayout(events, rangeStart, rangeEnd);
+    if (!laidOutEvents.length) return "";
+    return `<div class="calendar-timed-event-layer">${laidOutEvents
+        .map((entry) => {
+            const offsetSlots =
+                (entry.startTime - rangeStart.getTime()) / HALF_HOUR_MS;
+            const spanSlots = Math.max(
+                1,
+                (entry.endTime - entry.startTime) / HALF_HOUR_MS,
+            );
+            const topPercent = (offsetSlots / slotCount) * 100;
+            const heightPercent = (spanSlots / slotCount) * 100;
+            const widthPercent = 100 / entry.columnCount;
+            const leftPercent = widthPercent * entry.columnIndex;
+            return `<div class="calendar-timed-event-card" style="top:${topPercent}%;height:${heightPercent}%;left:${leftPercent}%;width:${widthPercent}%;">${renderEventButton(
+                entry.event,
+                {
+                    compact,
+                    showTime: true,
+                    i18n,
+                },
+            )}</div>`;
+        })
+        .join("")}</div>`;
+}
+
+function renderTimeAxisRows(
+    rangeStart,
+    {
+        slotClassName,
+        labelClassName,
+        currentSlotClassName = "",
+        currentLabelClassName = "",
+        includeDayData = false,
+    },
+) {
+    const timezone = getEffectiveTimezone();
+    const now = new Date();
+    const dateFormatter = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
+    const todayInTimezone = dateFormatter.format(now);
+    return Array.from({ length: 48 }, (_, slotIndex) => {
+        const start = new Date(rangeStart.getTime() + slotIndex * HALF_HOUR_MS);
+        const end = new Date(start.getTime() + HALF_HOUR_MS);
+        const timeLabel = formatTime(start.toISOString(), "", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+        const isCurrentSlot =
+            dateFormatter.format(start) === todayInTimezone &&
+            now.getTime() >= start.getTime() &&
+            now.getTime() < end.getTime();
+        const slotClassNames = [
+            slotClassName,
+            isCurrentSlot ? currentSlotClassName : "",
+        ]
+            .filter(Boolean)
+            .join(" ");
+        const labelClassNames = [
+            labelClassName,
+            isCurrentSlot ? currentLabelClassName : "",
+        ]
+            .filter(Boolean)
+            .join(" ");
+        const dataAttributes = includeDayData
+            ? ` data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" data-timeslot-events`
+            : "";
+        return {
+            slotMarkup: `<div class="${slotClassNames}"${dataAttributes}></div>`,
+            labelMarkup: `<div class="${labelClassNames}">${escapeHtml(timeLabel)}</div>`,
+            start,
+            end,
+            isCurrentSlot,
+        };
+    });
+}
+
 function renderDayView(events, day, i18n) {
     const dayLabel = day.toLocaleDateString(undefined, {
         weekday: "long",
         month: "long",
         day: "numeric",
     });
-    const slots = [];
-    const timezone = getEffectiveTimezone();
-    const now = new Date();
-    const nowFormatter = new Intl.DateTimeFormat("sv-SE", {
-        timeZone: timezone,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-    });
-    const todayInTimezone = nowFormatter.format(now);
     const dayStart = startOfDay(day);
     const dayEnd = addDays(dayStart, 1);
     const allDayEvents = listEventsInWindow(events, dayStart, dayEnd).filter(
@@ -463,47 +612,16 @@ function renderDayView(events, day, i18n) {
     );
     const allDayRow = `<tr class="calendar-day-all-day-row">
   <th scope="row" class="calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</th>
-  <td class="calendar-timeslot-events calendar-timeslot-events--click-add" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true }) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>
+  <td class="calendar-timeslot-events calendar-timeslot-events--click-add" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true, i18n }) : ""}</td>
 </tr>`;
-    let occupiedRowsRemaining = 0;
-    for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
-        const start = new Date(dayStart.getTime() + slotIndex * HALF_HOUR_MS);
-        const end = new Date(start.getTime() + HALF_HOUR_MS);
-        const slotEvents = listEventsInWindow(timedEvents, start, end);
-        const timeLabel = formatTime(start.toISOString(), "", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-        const isCurrentSlot =
-            nowFormatter.format(start) === todayInTimezone &&
-            now.getTime() >= start.getTime() &&
-            now.getTime() < end.getTime();
-        let eventsCellMarkup = "";
-        if (occupiedRowsRemaining > 0) {
-            occupiedRowsRemaining -= 1;
-        } else {
-            const firstSpanningEvent = slotEvents[0] ?? null;
-            if (firstSpanningEvent) {
-                const dayEndBoundary = addDays(dayStart, 1);
-                const spanRows = resolveRenderedEventSpan(
-                    firstSpanningEvent,
-                    start,
-                    dayEndBoundary,
-                );
-                occupiedRowsRemaining = Math.max(0, spanRows - 1);
-                eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">
-      ${renderSlotEvents(slotEvents, { previewLimit: 1, showTime: true })}
-      ${renderSlotCreateButton(start, end, i18n)}
-    </td>`;
-            } else {
-                eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${renderSlotCreateButton(start, end, i18n)}</td>`;
-            }
-        }
-        slots.push(`<tr class="calendar-timeslot-row${isCurrentSlot ? " calendar-timeslot-row--current" : ""}">
-      <th scope="row" class="calendar-timeslot-label">${escapeHtml(timeLabel)}</th>
-      ${eventsCellMarkup}
-    </tr>`);
-    }
+    const timedRows = renderTimeAxisRows(dayStart, {
+        slotClassName:
+            "calendar-day-timed-slot calendar-timeslot-events calendar-timeslot-events--click-add",
+        labelClassName: "calendar-timeslot-label",
+        currentSlotClassName: "calendar-timeslot-events--current",
+        currentLabelClassName: "calendar-timeslot-row--current",
+        includeDayData: true,
+    });
     return `<div class="calendar-day-view">
   <h4 class="calendar-day-heading">${escapeHtml(dayLabel)}</h4>
   <table class="calendar-timeslot-table" role="presentation">
@@ -511,10 +629,18 @@ function renderDayView(events, day, i18n) {
       ${allDayRow}
     </tbody>
   </table>
-  <div class="calendar-timeslot-grid">
-    <table class="calendar-timeslot-table" role="presentation">
-      <tbody>${slots.join("")}</tbody>
-    </table>
+  <div class="calendar-timeslot-grid calendar-day-timed-grid">
+    <div class="calendar-day-timed-axis">${timedRows
+        .map((row) => row.labelMarkup)
+        .join("")}</div>
+    <div class="calendar-day-timed-lane">
+      <div class="calendar-day-timed-slots">${timedRows
+          .map((row) => row.slotMarkup)
+          .join("")}</div>
+      ${renderTimedEventLayer(timedEvents, dayStart, dayEnd, {
+          i18n,
+      })}
+    </div>
   </div>
 </div>`;
 }
@@ -523,13 +649,15 @@ function renderWeekView(events, weekStart, i18n) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
+    const todayStart = startOfDay(new Date()).getTime();
     const dayHeaders = days
         .map((day) => {
             const dayStart = startOfDay(day);
-            return `<th scope="col"><button type="button" class="calendar-week-day-header" data-day-dot-date="${dayStart.toISOString()}">
+            const isCurrentDay = dayStart.getTime() === todayStart;
+            return `<button type="button" class="calendar-week-day-header${isCurrentDay ? " calendar-week-day-header--current" : ""}" data-day-dot-date="${dayStart.toISOString()}">
         <span class="calendar-week-day-name">${day.toLocaleDateString(undefined, { weekday: "short" })}</span>
         <span class="calendar-week-day-date">${day.toLocaleDateString(undefined, { month: "numeric", day: "numeric" })}</span>
-      </button></th>`;
+      </button>`;
         })
         .join("");
     const allDayCells = days
@@ -541,82 +669,67 @@ function renderWeekView(events, weekStart, i18n) {
                 dayStart,
                 dayEnd,
             ).filter((event) => isAllDayEvent(event));
-            return `<td class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true }) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>`;
+            const isCurrentDay = dayStart.getTime() === todayStart;
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events${isCurrentDay ? " calendar-week-slot--current-day" : ""}" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true, i18n }) : ""}</div>`;
         })
         .join("");
-    const slotRows = [];
     const timedEvents = events.filter((event) => !isAllDayEvent(event));
-    const occupiedRowsRemaining = days.map(() => 0);
-    const dayBoundaries = days.map((day) => {
-        const dayStart = startOfDay(day);
-        return {
-            dayStart,
-            dayEnd: addDays(dayStart, 1),
-        };
+    const axisRows = renderTimeAxisRows(startOfDay(weekStart), {
+        slotClassName: "calendar-week-time-axis-spacer",
+        labelClassName: "calendar-week-timeslot-label",
+        currentLabelClassName: "calendar-week-timeslot-label--current",
     });
-    for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
-        const slotCells = days
-            .map((day, dayIndex) => {
-                const { dayStart, dayEnd } = dayBoundaries[dayIndex];
-                const start = new Date(
-                    dayStart.getTime() + slotIndex * HALF_HOUR_MS,
-                );
-                const end = new Date(start.getTime() + HALF_HOUR_MS);
-                if (occupiedRowsRemaining[dayIndex] > 0) {
-                    occupiedRowsRemaining[dayIndex] -= 1;
-                    return "";
-                }
-                const slotEvents = listEventsInWindow(timedEvents, start, end);
-                const firstSpanningEvent = slotEvents[0] ?? null;
-                if (firstSpanningEvent) {
-                    const spanRows = resolveRenderedEventSpan(
-                        firstSpanningEvent,
-                        start,
-                        dayEnd,
-                    );
-                    occupiedRowsRemaining[dayIndex] = Math.max(0, spanRows - 1);
-                    return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">${renderSlotEvents(
-                        slotEvents,
-                        {
-                            showTime: true,
-                        },
-                    )}${renderSlotCreateButton(start, end, i18n)}</td>`;
-                }
-                return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${renderSlotCreateButton(start, end, i18n)}</td>`;
-            })
-            .join("");
-        const timeLabel = formatTime(
-            new Date(
-                startOfDay(weekStart).getTime() + slotIndex * HALF_HOUR_MS,
-            ).toISOString(),
-            "",
-            {
-                hour: "numeric",
-                minute: "2-digit",
-            },
-        );
-        slotRows.push(`<tr class="calendar-week-timeslot-row">
-      <th scope="row" class="calendar-week-timeslot-label">${escapeHtml(timeLabel)}</th>
-      ${slotCells}
-    </tr>`);
-    }
     return `<div class="calendar-week-view" data-calendar-week-view>
-  <table class="calendar-week-table calendar-week-table--header" data-calendar-week-header role="presentation">
-    <thead>
-      <tr class="calendar-week-grid calendar-week-grid--header">
-        <th class="calendar-week-axis-label calendar-week-axis-label--corner" scope="col" aria-hidden="true"></th>
-        ${dayHeaders}
-      </tr>
-      <tr class="calendar-week-all-day-row">
-        <th class="calendar-week-axis-label" scope="row">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</th>
-        ${allDayCells}
-      </tr>
-    </thead>
-  </table>
+  <div class="calendar-week-header-grid" data-calendar-week-header>
+    <div class="calendar-week-axis-label calendar-week-axis-label--corner" aria-hidden="true"></div>
+    ${dayHeaders}
+  </div>
+  <div class="calendar-week-all-day-grid">
+    <div class="calendar-week-axis-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</div>
+    ${allDayCells}
+  </div>
   <div class="calendar-week-scroll-grid" data-calendar-week-scroll-grid>
-    <table class="calendar-week-table calendar-week-table--body" role="presentation">
-      <tbody>${slotRows.join("")}</tbody>
-    </table>
+    <div class="calendar-week-timed-grid">
+      <div class="calendar-week-time-axis">${axisRows
+          .map((row) => row.labelMarkup)
+          .join("")}</div>
+      <div class="calendar-week-day-columns">${days
+          .map((day) => {
+              const dayStart = startOfDay(day);
+              const dayEnd = addDays(dayStart, 1);
+              const isCurrentDay = dayStart.getTime() === todayStart;
+              const timedRows = renderTimeAxisRows(dayStart, {
+                  slotClassName:
+                      "calendar-week-slot calendar-timeslot-events",
+                  labelClassName: "calendar-week-timeslot-label",
+                  currentSlotClassName: "calendar-week-slot--current-time",
+                  includeDayData: true,
+              });
+              const timedSlotMarkup = timedRows
+                  .map((row) => {
+                      const hasEvents =
+                          listEventsInWindow(timedEvents, row.start, row.end)
+                              .length > 0;
+                      return row.slotMarkup.replace(
+                          "calendar-week-slot calendar-timeslot-events",
+                          `calendar-week-slot calendar-timeslot-events${!hasEvents ? " calendar-timeslot-events--click-add" : ""}${isCurrentDay ? " calendar-week-slot--current-day" : ""}`,
+                      );
+                  })
+                  .join("");
+              const dayTimedEvents = listEventsInWindow(
+                  timedEvents,
+                  dayStart,
+                  dayEnd,
+              );
+              return `<div class="calendar-week-day-lane${isCurrentDay ? " calendar-week-day-lane--current" : ""}">
+            <div class="calendar-week-day-slots">${timedSlotMarkup}</div>
+            ${renderTimedEventLayer(dayTimedEvents, dayStart, dayEnd, {
+                i18n,
+            })}
+          </div>`;
+          })
+          .join("")}</div>
+    </div>
   </div>
 </div>`;
 }
@@ -649,6 +762,7 @@ function renderMonthGrid(events, currentDate, i18n) {
                   renderEventButton(event, {
                       compact: true,
                       showTime: !isAllDayEvent(event),
+                      i18n,
                   }),
               )
               .join("");
@@ -774,23 +888,10 @@ function createEventComposerBuilder({
         {
             name: "title",
             labelKey: "gateway.calendar.event_title",
+            required: true,
             maxCharacters: 120,
             value: String(defaultValues.title ?? ""),
             disabled: readOnly,
-            criteria: [
-                {
-                    id: "event-title-max",
-                    type: "maxLength",
-                    value: 120,
-                    messageKey: "gateway.calendar.event_title_max",
-                },
-                {
-                    id: "event-title-required",
-                    type: "custom",
-                    test: (value) => String(value ?? "").trim().length > 0,
-                    messageKey: "ui.reuse.field_required_notice",
-                },
-            ],
         },
         {
             name: "description",

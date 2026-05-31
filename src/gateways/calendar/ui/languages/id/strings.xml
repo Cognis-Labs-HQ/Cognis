@@ -95,6 +95,7 @@
   <string name="gateway.calendar.respond_all_events">Semua Acara Dalam Seri</string>
   <string name="gateway.calendar.load_event_failed">Tidak dapat memuat acara.</string>
   <string name="gateway.calendar.overlap_warning">Waktu ini bertumpang tindih dengan acara lain di kalender yang dipilih.</string>
+  <string name="gateway.calendar.overlap_warning_confirm">Waktu ini bertumpang tindih dengan acara lain di kalender yang dipilih. Simpan lagi untuk tetap membuatnya.</string>
   <string name="gateway.calendar.this_week">Minggu Ini</string>
   <string name="gateway.calendar.this_month">Bulan Ini</string>
   <string name="gateway.calendar.this_year">Tahun Ini</string>
