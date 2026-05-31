@@ -226,7 +226,7 @@
     justify-items: start;
     text-align: left;
     cursor: pointer;
-    overflow: hidden;
+    overflow: clip;
 }
 
 .calendar-slot-event--free {

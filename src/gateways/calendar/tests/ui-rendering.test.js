@@ -101,6 +101,10 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
+        /\.calendar-slot-event\s*\{[\s\S]*overflow:\s*clip;/s,
+    );
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
         /\.calendar-day-view\s*\{[\s\S]*height:\s*100%;/s,
     );
 });
