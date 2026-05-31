@@ -199,6 +199,10 @@ test("messages templates are opened from sidebar in a popup", () => {
         ),
         "utf8",
     );
+    const mobileCssSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages-mobile.css"),
+        "utf8",
+    );
     const sidebarCssSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/messages-sidebar.css"),
         "utf8",
@@ -265,9 +269,9 @@ test("messages templates are opened from sidebar in a popup", () => {
     assert.match(appSource, /data-template-action="edit"/);
     assert.match(appSource, /data-template-action="delete"/);
     assert.match(messagesCssSource, /\.messages-composer-mode-toggle\s*\{/);
-    assert.match(messagesCssSource, /\.messages-composer-format-row\s*\{/);
-    assert.match(messagesCssSource, /\.messages-composer-format-btn\s*\{/);
-    assert.match(messagesCssSource, /\.messages-message-body table\s*\{/);
+    assert.match(mobileCssSource, /\.messages-composer-format-row\s*\{/);
+    assert.match(mobileCssSource, /\.messages-composer-format-btn\s*\{/);
+    assert.match(mobileCssSource, /\.messages-message-body table\s*\{/);
     assert.match(
         messagesCssSource,
         /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
@@ -294,6 +298,10 @@ test("messages templates are opened from sidebar in a popup", () => {
     assert.match(
         messagesCssSource,
         /@import url\("\/static\/adapters\/social\/messages\/messages-sidebar\.css"\);/,
+    );
+    assert.match(
+        messagesCssSource,
+        /@import url\("\/static\/adapters\/social\/messages\/messages-mobile\.css"\);/,
     );
     assert.match(
         templatesCssSource,

@@ -177,7 +177,8 @@ function prefixComposerLines(input, prefix) {
     if (!(input instanceof HTMLTextAreaElement)) return;
     const start = input.selectionStart ?? 0;
     const end = input.selectionEnd ?? start;
-    const blockStart = input.value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+    const blockStart =
+        input.value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
     const nextLineBreak = input.value.indexOf("\n", end);
     const blockEnd = nextLineBreak >= 0 ? nextLineBreak : input.value.length;
     const selectedBlock = input.value.slice(blockStart, blockEnd);
@@ -1633,7 +1634,7 @@ export async function mount(root, { signal } = {}) {
             "messages-composer-preview-toggle",
         );
         const composerActionButtons = document.querySelectorAll(
-            '[data-composer-format-action], #messages-composer-templates-btn, #messages-composer-new-template-btn',
+            "[data-composer-format-action], #messages-composer-templates-btn, #messages-composer-new-template-btn",
         );
         const canSend =
             Boolean(room) &&
@@ -3124,7 +3125,10 @@ export async function mount(root, { signal } = {}) {
                     async (clickEvent) => {
                         clickEvent.preventDefault();
                         if (
-                            !(composerTemplatesButton instanceof HTMLButtonElement)
+                            !(
+                                composerTemplatesButton instanceof
+                                HTMLButtonElement
+                            )
                         ) {
                             return;
                         }
@@ -3139,10 +3143,12 @@ export async function mount(root, { signal } = {}) {
                         const selectedTemplate = await openHamburgerMenu(
                             composerTemplatesButton,
                             {
-                                items: savedMessageTemplates.map((template) => ({
-                                    id: template.id,
-                                    label: template.title,
-                                })),
+                                items: savedMessageTemplates.map(
+                                    (template) => ({
+                                        id: template.id,
+                                        label: template.title,
+                                    }),
+                                ),
                             },
                         );
                         if (!selectedTemplate) return;
@@ -3271,10 +3277,15 @@ export async function mount(root, { signal } = {}) {
                 const templateRecord = savedMessageTemplates.find(
                     (entry) => String(entry.id) === String(templateId),
                 );
-                if (!(composerInput instanceof HTMLTextAreaElement) || !templateRecord)
+                if (
+                    !(composerInput instanceof HTMLTextAreaElement) ||
+                    !templateRecord
+                )
                     return;
                 composerInput.value = templateRecord.content;
-                composerInput.dispatchEvent(new Event("input", { bubbles: true }));
+                composerInput.dispatchEvent(
+                    new Event("input", { bubbles: true }),
+                );
                 return;
             }
             if (action === "edit") {

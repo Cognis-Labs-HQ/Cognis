@@ -3814,11 +3814,6 @@ export function createPageComposer(
                 const mobileMedia = window.matchMedia(
                     `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
                 );
-                const mainWindow = root.querySelector(".main-window");
-                const shell = root.querySelector(".app-shell");
-                mainWindow?.querySelector(".toolbar-mobile-toggle")?.remove();
-                mainWindow?.querySelector(".toolbar-mobile-backdrop")?.remove();
-                shell?.querySelector(".toolbar-mobile-backdrop")?.remove();
                 const syncMobileToolbarMode = () => {
                     toolbarEl.classList.toggle(
                         "toolbar--mobile-scroll",

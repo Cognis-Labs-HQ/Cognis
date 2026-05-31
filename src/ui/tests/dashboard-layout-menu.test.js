@@ -163,7 +163,9 @@ test("dashboard compact navigation keeps visible links and moves overflow into t
     );
 
     assert.ok(
-        layoutSource.includes('const navLinks = Array.from(topnav.querySelectorAll(":scope > a"))'),
+        layoutSource.includes(
+            "const navLinks = Array.from(topnav.children).filter(",
+        ),
         "compact navigation should work from the inline topnav links",
     );
     assert.ok(
@@ -175,7 +177,9 @@ test("dashboard compact navigation keeps visible links and moves overflow into t
         "compact navigation should hide only the overflowing links",
     );
     assert.ok(
-        layoutSource.includes('filter((link) => !link.classList.contains("active"))'),
+        layoutSource.includes(
+            'filter((link) => !link.classList.contains("active"))',
+        ),
         "compact navigation should prefer keeping the active link visible",
     );
     assert.ok(

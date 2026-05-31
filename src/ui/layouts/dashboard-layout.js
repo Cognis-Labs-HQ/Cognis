@@ -359,7 +359,9 @@ function applyCompactNav(root) {
     if (navrow.dataset.compactNavBound === "true") return;
     navrow.dataset.compactNavBound = "true";
 
-    const navLinks = Array.from(topnav.querySelectorAll(":scope > a"));
+    const navLinks = Array.from(topnav.children).filter(
+        (element) => element instanceof HTMLAnchorElement,
+    );
 
     function getOverflowLinks() {
         return navLinks.filter((link) => link.hidden);
@@ -405,9 +407,7 @@ function applyCompactNav(root) {
             items: overflowLinks.map((link, index) => ({
                 id: String(index),
                 label:
-                    link.textContent?.trim() ??
-                    link.getAttribute("href") ??
-                    "",
+                    link.textContent?.trim() ?? link.getAttribute("href") ?? "",
             })),
         });
         compactToggle.setAttribute("aria-expanded", "false");
