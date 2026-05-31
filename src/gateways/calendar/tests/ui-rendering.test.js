@@ -146,17 +146,18 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
 });
 
-test("calendar all-day toggle hides duplicate datetime rows", () => {
+test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
+    assert.doesNotMatch(POPUP_MANAGER_SOURCE, /calendar-popup-all-day-range/);
     assert.match(
         POPUP_MANAGER_ALL_DAY_SOURCE,
-        /resolveFieldWrapper\(startInput,\s*"startAt"\)/,
+        /insertAdjacentElement\("afterend", allDayToggleRow\)/,
     );
     assert.match(
         POPUP_MANAGER_ALL_DAY_SOURCE,
-        /startField\.style\.display = "none"/,
+        /startInput\.type = "date"/,
     );
     assert.match(
         POPUP_MANAGER_ALL_DAY_SOURCE,
-        /startField\.style\.removeProperty\("display"\)/,
+        /startInput\.type = "datetime-local"/,
     );
 });

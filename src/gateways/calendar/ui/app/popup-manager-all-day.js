@@ -36,6 +36,22 @@ function addDaysToDateInputValue(dateValue, daysToAdd) {
     return `${year}-${month}-${day}`;
 }
 
+export function buildAllDayDateRangeValues(startDateValue, endDateValue) {
+    const normalizedStartDate = String(startDateValue ?? "").trim();
+    const normalizedEndDate = String(endDateValue ?? "").trim();
+    if (!normalizedStartDate || !normalizedEndDate) return null;
+    const clampedEndDate =
+        normalizedEndDate < normalizedStartDate
+            ? normalizedStartDate
+            : normalizedEndDate;
+    const endExclusiveDate = addDaysToDateInputValue(clampedEndDate, 1);
+    if (!endExclusiveDate) return null;
+    return {
+        startAt: `${normalizedStartDate}T00:00`,
+        endAt: `${endExclusiveDate}T00:00`,
+    };
+}
+
 /**
  * Determines whether start/end values represent an all-day event range.
  *
@@ -60,24 +76,17 @@ export function isAllDayRange(startAt, endAt) {
  * @returns {void}
  */
 export function bindAllDayComposerControls({ overlay, signal }) {
-    const resolveFieldWrapper = (input, fieldName) =>
-        input instanceof HTMLElement
-            ? input.closest(".form-builder-field")
-            : overlay.querySelector(`[data-form-builder-field="${fieldName}"]`);
     const startInput = overlay.querySelector("#form-builder-startAt");
     const endInput = overlay.querySelector("#form-builder-endAt");
-    // Prefer the input's nearest wrapper so hide/show still works even if
-    // form-builder data attributes are changed by template composition.
-    const startField = resolveFieldWrapper(startInput, "startAt");
-    const endField = resolveFieldWrapper(endInput, "endAt");
+    const endField =
+        endInput instanceof HTMLElement
+            ? endInput.closest(".form-builder-field")
+            : overlay.querySelector(`[data-form-builder-field="endAt"]`);
     const allDayToggle = overlay.querySelector("#calendar-popup-all-day");
-    const allDayRange = overlay.querySelector("#calendar-popup-all-day-range");
-    const allDayStartDateInput = overlay.querySelector(
-        "#calendar-popup-all-day-start-date",
-    );
-    const allDayEndDateInput = overlay.querySelector(
-        "#calendar-popup-all-day-end-date",
-    );
+    const allDayToggleRow =
+        allDayToggle instanceof HTMLElement
+            ? allDayToggle.closest(".calendar-all-day-toggle")
+            : null;
     let timedStartValue =
         startInput instanceof HTMLInputElement
             ? String(startInput.value ?? "")
@@ -87,12 +96,21 @@ export function bindAllDayComposerControls({ overlay, signal }) {
             ? String(endInput.value ?? "")
             : "";
 
-    const syncDateRangeFromTimeInputs = () => {
+    const dispatchFieldUpdates = () => {
         if (
             !(startInput instanceof HTMLInputElement) ||
-            !(endInput instanceof HTMLInputElement) ||
-            !(allDayStartDateInput instanceof HTMLInputElement) ||
-            !(allDayEndDateInput instanceof HTMLInputElement)
+            !(endInput instanceof HTMLInputElement)
+        ) {
+            return;
+        }
+        startInput.dispatchEvent(new Event("input", { bubbles: true }));
+        endInput.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+
+    const syncDateInputsFromTimeInputs = () => {
+        if (
+            !(startInput instanceof HTMLInputElement) ||
+            !(endInput instanceof HTMLInputElement)
         ) {
             return;
         }
@@ -106,43 +124,35 @@ export function bindAllDayComposerControls({ overlay, signal }) {
             !Number.isNaN(parsedStart.getTime()) &&
             parsedEnd.getTime() > parsedStart.getTime() &&
             isMidnightDate(parsedEnd);
-        allDayStartDateInput.value = startDateValue;
-        allDayEndDateInput.value = endsAtMidnight
+        startInput.type = "date";
+        endInput.type = "date";
+        startInput.value = startDateValue;
+        endInput.value = endsAtMidnight
             ? addDaysToDateInputValue(endDateValue, -1)
             : endDateValue || startDateValue;
+        endInput.min = startInput.value;
+        dispatchFieldUpdates();
     };
 
-    const syncTimeInputsFromDateRange = () => {
+    const syncDateInputsInAllDayMode = () => {
         if (
             !(startInput instanceof HTMLInputElement) ||
-            !(endInput instanceof HTMLInputElement) ||
-            !(allDayStartDateInput instanceof HTMLInputElement) ||
-            !(allDayEndDateInput instanceof HTMLInputElement)
+            !(endInput instanceof HTMLInputElement)
         ) {
             return;
         }
-        const startDateValue = String(allDayStartDateInput.value ?? "").trim();
-        const endDateValue = String(allDayEndDateInput.value ?? "").trim();
+        const startDateValue = String(startInput.value ?? "").trim();
+        const endDateValue = String(endInput.value ?? "").trim();
         if (!startDateValue || !endDateValue) return;
         const normalizedEndDate =
             endDateValue < startDateValue ? startDateValue : endDateValue;
         if (normalizedEndDate !== endDateValue) {
-            allDayEndDateInput.value = normalizedEndDate;
+            endInput.value = normalizedEndDate;
         }
-        startInput.value = `${startDateValue}T00:00`;
-        endInput.value = `${addDaysToDateInputValue(normalizedEndDate, 1)}T00:00`;
-        startInput.dispatchEvent(new Event("input", { bubbles: true }));
-        endInput.dispatchEvent(new Event("input", { bubbles: true }));
+        endInput.min = startDateValue;
     };
 
     const setAllDayMode = (enabled) => {
-        if (
-            !(allDayRange instanceof HTMLElement) ||
-            !(startField instanceof HTMLElement) ||
-            !(endField instanceof HTMLElement)
-        ) {
-            return;
-        }
         if (enabled) {
             if (
                 startInput instanceof HTMLInputElement &&
@@ -151,53 +161,60 @@ export function bindAllDayComposerControls({ overlay, signal }) {
                 timedStartValue = String(startInput.value ?? "");
                 timedEndValue = String(endInput.value ?? "");
             }
-            syncDateRangeFromTimeInputs();
-            syncTimeInputsFromDateRange();
+            syncDateInputsFromTimeInputs();
         } else if (
             startInput instanceof HTMLInputElement &&
-            endInput instanceof HTMLInputElement &&
-            timedStartValue &&
-            timedEndValue
+            endInput instanceof HTMLInputElement
         ) {
-            startInput.value = timedStartValue;
-            endInput.value = timedEndValue;
-            startInput.dispatchEvent(new Event("input", { bubbles: true }));
-            endInput.dispatchEvent(new Event("input", { bubbles: true }));
+            startInput.type = "datetime-local";
+            endInput.type = "datetime-local";
+            endInput.removeAttribute("min");
+            if (timedStartValue && timedEndValue) {
+                startInput.value = timedStartValue;
+                endInput.value = timedEndValue;
+            }
+            dispatchFieldUpdates();
         }
-        if (enabled) {
-            startField.style.display = "none";
-            endField.style.display = "none";
-        } else {
-            startField.style.removeProperty("display");
-            endField.style.removeProperty("display");
-        }
-        allDayRange.hidden = !enabled;
     };
 
     if (
-        allDayToggle instanceof HTMLInputElement &&
-        allDayStartDateInput instanceof HTMLInputElement &&
-        allDayEndDateInput instanceof HTMLInputElement
+        allDayToggleRow instanceof HTMLElement &&
+        endField instanceof HTMLElement &&
+        allDayToggleRow.previousElementSibling !== endField
     ) {
+        endField.insertAdjacentElement("afterend", allDayToggleRow);
+    }
+
+    if (allDayToggle instanceof HTMLInputElement) {
         setAllDayMode(allDayToggle.checked);
         allDayToggle.addEventListener(
             "change",
             () => setAllDayMode(allDayToggle.checked),
             { signal },
         );
-        allDayStartDateInput.addEventListener(
+    }
+
+    if (startInput instanceof HTMLInputElement) {
+        startInput.addEventListener(
             "input",
-            syncTimeInputsFromDateRange,
-            {
-                signal,
+            () => {
+                if (allDayToggle instanceof HTMLInputElement && allDayToggle.checked) {
+                    syncDateInputsInAllDayMode();
+                }
             },
+            { signal },
         );
-        allDayEndDateInput.addEventListener(
+    }
+
+    if (endInput instanceof HTMLInputElement) {
+        endInput.addEventListener(
             "input",
-            syncTimeInputsFromDateRange,
-            {
-                signal,
+            () => {
+                if (allDayToggle instanceof HTMLInputElement && allDayToggle.checked) {
+                    syncDateInputsInAllDayMode();
+                }
             },
+            { signal },
         );
     }
 }

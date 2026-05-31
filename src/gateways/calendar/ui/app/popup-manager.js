@@ -1,6 +1,7 @@
 import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
 import {
     bindAllDayComposerControls,
+    buildAllDayDateRangeValues,
     isAllDayRange,
 } from "./popup-manager-all-day.js";
 import {
@@ -688,16 +689,6 @@ export function createCalendarPopupManager({
           <input id="calendar-popup-all-day" type="checkbox"${startsAsAllDay ? " checked" : ""} />
           <span>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</span>
         </label>
-        <div class="calendar-all-day-range" id="calendar-popup-all-day-range"${startsAsAllDay ? "" : " hidden"}>
-          <label class="form-builder-field">
-            <span class="form-builder-label-text">${escapeHtml(i18n.t("gateway.calendar.event_start"))}</span>
-            <input id="calendar-popup-all-day-start-date" type="date" class="form-builder-input" />
-          </label>
-          <label class="form-builder-field">
-            <span class="form-builder-label-text">${escapeHtml(i18n.t("gateway.calendar.event_end"))}</span>
-            <input id="calendar-popup-all-day-end-date" type="date" class="form-builder-input" />
-          </label>
-        </div>
         <label class="calendar-participants-row">
           <span>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</span>
           <input id="calendar-popup-participant-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
@@ -839,6 +830,23 @@ export function createCalendarPopupManager({
                 if (actionId !== "save") return true;
                 if (!popupController?.validateAll(true)) return false;
                 const values = popupController.getValues();
+                const allDayToggle = overlay.querySelector(
+                    "#calendar-popup-all-day",
+                );
+                const isAllDay =
+                    allDayToggle instanceof HTMLInputElement &&
+                    allDayToggle.checked;
+                const dateRangeValues = isAllDay
+                    ? buildAllDayDateRangeValues(values.startAt, values.endAt)
+                    : null;
+                if (isAllDay && !dateRangeValues) return false;
+                const normalizedValues = dateRangeValues
+                    ? {
+                          ...values,
+                          startAt: dateRangeValues.startAt,
+                          endAt: dateRangeValues.endAt,
+                      }
+                    : values;
                 const participantSearch = overlay.querySelector(
                     "#calendar-popup-participant-search",
                 );
@@ -889,16 +897,16 @@ export function createCalendarPopupManager({
                     const updated = await updateExistingEvent({
                         sourceCalendarId: eventData.calendar.id,
                         sourceEventId: eventData.event.id,
-                        calendarId: values.calendarId,
-                        title: values.title,
-                        description: values.description,
-                        startAt: values.startAt,
-                        endAt: values.endAt,
+                        calendarId: normalizedValues.calendarId,
+                        title: normalizedValues.title,
+                        description: normalizedValues.description,
+                        startAt: normalizedValues.startAt,
+                        endAt: normalizedValues.endAt,
                         attendees,
                         inviteEmails,
                         reminderOffsetsMinutes,
-                        status: values.status,
-                        recurrence: values.recurrence,
+                        status: normalizedValues.status,
+                        recurrence: normalizedValues.recurrence,
                         meetingUrl,
                         updateAll,
                     });
@@ -909,23 +917,24 @@ export function createCalendarPopupManager({
                     return true;
                 }
                 const created = await submitEvent({
-                    calendarId: values.calendarId,
-                    title: values.title,
-                    description: values.description,
-                    startAt: values.startAt,
-                    endAt: values.endAt,
+                    calendarId: normalizedValues.calendarId,
+                    title: normalizedValues.title,
+                    description: normalizedValues.description,
+                    startAt: normalizedValues.startAt,
+                    endAt: normalizedValues.endAt,
                     attendees,
                     inviteEmails,
                     reminderOffsetsMinutes,
                     createMeeting,
-                    status: values.status,
-                    recurrence: values.recurrence,
+                    status: normalizedValues.status,
+                    recurrence: normalizedValues.recurrence,
                     allowConflict:
                         confirmedConflictCreateKey ===
-                        buildConflictCreateKey(values),
+                        buildConflictCreateKey(normalizedValues),
                 });
                 if (created === "conflict") {
-                    confirmedConflictCreateKey = buildConflictCreateKey(values);
+                    confirmedConflictCreateKey =
+                        buildConflictCreateKey(normalizedValues);
                     return false;
                 }
                 if (!created) return false;

@@ -754,9 +754,23 @@ function createEventComposerBuilder({
                     id: "event-range",
                     type: "custom",
                     mode: "submit",
-                    test: (value, fieldValues) =>
-                        new Date(value).getTime() >
-                        new Date(fieldValues.startAt ?? "").getTime(),
+                    test: (value, fieldValues) => {
+                        const endValue = String(value ?? "");
+                        const startValue = String(fieldValues.startAt ?? "");
+                        const endTime = new Date(endValue).getTime();
+                        const startTime = new Date(startValue).getTime();
+                        if (
+                            Number.isNaN(endTime) ||
+                            Number.isNaN(startTime)
+                        ) {
+                            return false;
+                        }
+                        if (endTime > startTime) return true;
+                        const isDateOnlyRange =
+                            !startValue.includes("T") &&
+                            !endValue.includes("T");
+                        return isDateOnlyRange && endTime === startTime;
+                    },
                     messageKey: "gateway.calendar.event_end_after_start",
                 },
             ],
