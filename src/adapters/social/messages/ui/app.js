@@ -24,6 +24,7 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
+import { openHamburgerMenu } from "/static/reuse/hamburger-menu.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
@@ -152,6 +153,45 @@ function createMessageTemplateId() {
         value.toString(16).padStart(2, "0"),
     ).join("");
     return `template-${Date.now().toString(36)}-${randomSuffix}`;
+}
+
+function wrapComposerSelection(input, before, after = before) {
+    if (!(input instanceof HTMLTextAreaElement)) return;
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? start;
+    const selectedText = input.value.slice(start, end);
+    const insertedText = selectedText
+        ? `${before}${selectedText}${after}`
+        : `${before}${after}`;
+    input.setRangeText(insertedText, start, end, "end");
+    const nextSelectionStart = start + before.length;
+    const nextSelectionEnd = selectedText
+        ? nextSelectionStart + selectedText.length
+        : nextSelectionStart;
+    input.setSelectionRange(nextSelectionStart, nextSelectionEnd);
+    input.focus();
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function prefixComposerLines(input, prefix) {
+    if (!(input instanceof HTMLTextAreaElement)) return;
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? start;
+    const blockStart = input.value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+    const nextLineBreak = input.value.indexOf("\n", end);
+    const blockEnd = nextLineBreak >= 0 ? nextLineBreak : input.value.length;
+    const selectedBlock = input.value.slice(blockStart, blockEnd);
+    const prefixedBlock = selectedBlock
+        .split("\n")
+        .map((line) => `${prefix}${line}`)
+        .join("\n");
+    input.setRangeText(prefixedBlock, blockStart, blockEnd, "end");
+    input.setSelectionRange(
+        blockStart + prefix.length,
+        blockStart + prefixedBlock.length,
+    );
+    input.focus();
+    input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
@@ -1592,6 +1632,9 @@ export async function mount(root, { signal } = {}) {
         const previewToggle = document.getElementById(
             "messages-composer-preview-toggle",
         );
+        const composerActionButtons = document.querySelectorAll(
+            '[data-composer-format-action], #messages-composer-templates-btn, #messages-composer-new-template-btn',
+        );
         const canSend =
             Boolean(room) &&
             room?.canSend !== false &&
@@ -1611,6 +1654,11 @@ export async function mount(root, { signal } = {}) {
         if (composeToggle instanceof HTMLButtonElement) {
             composeToggle.disabled = !canSend;
         }
+        composerActionButtons.forEach((button) => {
+            if (button instanceof HTMLButtonElement) {
+                button.disabled = !canSend;
+            }
+        });
     }
 
     async function openRoom(roomId) {
@@ -2267,16 +2315,32 @@ export async function mount(root, { signal } = {}) {
                                 class="messages-composer-pane messages-composer-pane--compose"
                                 id="messages-composer-compose-pane"
                             >
-                                <textarea
-                                    id="messages-composer-input"
-                                    class="messages-composer-input"
-                                    placeholder="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
-                                    aria-label="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
-                                    rows="2"
-                                ></textarea>
-                                <button type="submit" class="messages-composer-send">
-                                    ${escapeHtml(i18n.t("module.social.messages.send"))}
-                                </button>
+                                <div class="messages-composer-format-row">
+                                    <div class="messages-composer-format-tools">
+                                        <button type="button" class="messages-composer-format-btn" data-composer-format-action="bold" aria-label="${escapeHtml(i18n.t("module.social.messages.format_bold"))}" title="${escapeHtml(i18n.t("module.social.messages.format_bold"))}"><span aria-hidden="true"><strong>B</strong></span></button>
+                                        <button type="button" class="messages-composer-format-btn" data-composer-format-action="italic" aria-label="${escapeHtml(i18n.t("module.social.messages.format_italic"))}" title="${escapeHtml(i18n.t("module.social.messages.format_italic"))}"><span aria-hidden="true"><em>I</em></span></button>
+                                        <button type="button" class="messages-composer-format-btn" data-composer-format-action="strikethrough" aria-label="${escapeHtml(i18n.t("module.social.messages.format_strikethrough"))}" title="${escapeHtml(i18n.t("module.social.messages.format_strikethrough"))}"><span aria-hidden="true"><s>S</s></span></button>
+                                        <button type="button" class="messages-composer-format-btn" data-composer-format-action="code" aria-label="${escapeHtml(i18n.t("module.social.messages.format_code"))}" title="${escapeHtml(i18n.t("module.social.messages.format_code"))}"><span aria-hidden="true">&lt;/&gt;</span></button>
+                                        <button type="button" class="messages-composer-format-btn" data-composer-format-action="quote" aria-label="${escapeHtml(i18n.t("module.social.messages.format_quote"))}" title="${escapeHtml(i18n.t("module.social.messages.format_quote"))}"><span aria-hidden="true">❝</span></button>
+                                        <button type="button" class="messages-composer-format-btn" data-composer-format-action="list" aria-label="${escapeHtml(i18n.t("module.social.messages.format_list"))}" title="${escapeHtml(i18n.t("module.social.messages.format_list"))}"><span aria-hidden="true">•</span></button>
+                                    </div>
+                                    <div class="messages-composer-template-tools">
+                                        <button type="button" class="messages-composer-format-btn messages-composer-template-btn" id="messages-composer-templates-btn" aria-label="${escapeHtml(i18n.t("module.social.messages.templates"))}" title="${escapeHtml(i18n.t("module.social.messages.templates"))}"><span aria-hidden="true">T</span></button>
+                                        <button type="button" class="messages-composer-format-btn messages-composer-template-btn" id="messages-composer-new-template-btn" aria-label="${escapeHtml(i18n.t("module.social.messages.template_new"))}" title="${escapeHtml(i18n.t("module.social.messages.template_new"))}"><span aria-hidden="true">+</span></button>
+                                    </div>
+                                </div>
+                                <div class="messages-composer-input-row">
+                                    <textarea
+                                        id="messages-composer-input"
+                                        class="messages-composer-input"
+                                        placeholder="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
+                                        aria-label="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"
+                                        rows="2"
+                                    ></textarea>
+                                    <button type="submit" class="messages-composer-send">
+                                        ${escapeHtml(i18n.t("module.social.messages.send"))}
+                                    </button>
+                                </div>
                             </div>
                             <div
                                 id="messages-composer-preview-pane"
@@ -2317,6 +2381,12 @@ export async function mount(root, { signal } = {}) {
                 );
                 const composerPreviewToggle = document.getElementById(
                     "messages-composer-preview-toggle",
+                );
+                const composerTemplatesButton = document.getElementById(
+                    "messages-composer-templates-btn",
+                );
+                const composerNewTemplateButton = document.getElementById(
+                    "messages-composer-new-template-btn",
                 );
                 let composerMode = "compose";
                 let activeTemplateId = null;
@@ -2399,6 +2469,19 @@ export async function mount(root, { signal } = {}) {
                             <button type="submit" class="btn-confirm btn-animated">${escapeHtml(isEditing ? i18n.t("ui.reuse.save") : i18n.t("ui.reuse.create"))}</button>
                         </div>
                     </form>`;
+                const applyTemplateToComposer = (templateId) => {
+                    const templateRecord = savedMessageTemplates.find(
+                        (entry) => String(entry.id) === String(templateId),
+                    );
+                    if (!templateRecord) return;
+                    if (composerInput instanceof HTMLTextAreaElement) {
+                        composerInput.value = templateRecord.content;
+                        composerInput.dispatchEvent(
+                            new Event("input", { bubbles: true }),
+                        );
+                        composerInput.focus();
+                    }
+                };
                 const editTemplateById = (templateId) => {
                     const templateRecord = savedMessageTemplates.find(
                         (entry) => String(entry.id) === String(templateId),
@@ -2997,6 +3080,78 @@ export async function mount(root, { signal } = {}) {
                     syncComposerMode();
                     renderComposerPreview();
                 });
+                form?.addEventListener("click", async (clickEvent) => {
+                    const clickTarget = clickEvent.target;
+                    if (!(clickTarget instanceof Element)) return;
+                    const formatButton = clickTarget.closest(
+                        "[data-composer-format-action]",
+                    );
+                    if (!(formatButton instanceof HTMLButtonElement)) return;
+                    clickEvent.preventDefault();
+                    if (
+                        !(composerInput instanceof HTMLTextAreaElement) ||
+                        composerInput.disabled
+                    ) {
+                        return;
+                    }
+                    const action = formatButton.dataset.composerFormatAction;
+                    if (action === "bold") {
+                        wrapComposerSelection(composerInput, "**");
+                        return;
+                    }
+                    if (action === "italic") {
+                        wrapComposerSelection(composerInput, "_");
+                        return;
+                    }
+                    if (action === "strikethrough") {
+                        wrapComposerSelection(composerInput, "~~");
+                        return;
+                    }
+                    if (action === "code") {
+                        wrapComposerSelection(composerInput, "`");
+                        return;
+                    }
+                    if (action === "quote") {
+                        prefixComposerLines(composerInput, "> ");
+                        return;
+                    }
+                    if (action === "list") {
+                        prefixComposerLines(composerInput, "- ");
+                    }
+                });
+                composerTemplatesButton?.addEventListener(
+                    "click",
+                    async (clickEvent) => {
+                        clickEvent.preventDefault();
+                        if (
+                            !(composerTemplatesButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        if (savedMessageTemplates.length === 0) {
+                            showToast(
+                                i18n.t(
+                                    "module.social.messages.templates_empty",
+                                ),
+                            );
+                            return;
+                        }
+                        const selectedTemplate = await openHamburgerMenu(
+                            composerTemplatesButton,
+                            {
+                                items: savedMessageTemplates.map((template) => ({
+                                    id: template.id,
+                                    label: template.title,
+                                })),
+                            },
+                        );
+                        if (!selectedTemplate) return;
+                        applyTemplateToComposer(selectedTemplate);
+                    },
+                );
+                composerNewTemplateButton?.addEventListener("click", () => {
+                    void openTemplatesPopupFromSidebar?.();
+                });
 
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
@@ -3110,17 +3265,16 @@ export async function mount(root, { signal } = {}) {
             if (!templateId) return;
             const action = actionButton.dataset.templateAction;
             if (action === "use") {
-                const templateRecord = savedMessageTemplates.find(
-                    (entry) => String(entry.id) === String(templateId),
-                );
-                if (!templateRecord) return;
                 const composerInput = document.getElementById(
                     "messages-composer-input",
                 );
-                if (composerInput instanceof HTMLTextAreaElement) {
-                    composerInput.value = templateRecord.content;
-                    composerInput.dispatchEvent(new Event("input"));
-                }
+                const templateRecord = savedMessageTemplates.find(
+                    (entry) => String(entry.id) === String(templateId),
+                );
+                if (!(composerInput instanceof HTMLTextAreaElement) || !templateRecord)
+                    return;
+                composerInput.value = templateRecord.content;
+                composerInput.dispatchEvent(new Event("input", { bubbles: true }));
                 return;
             }
             if (action === "edit") {

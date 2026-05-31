@@ -151,3 +151,35 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
         "dashboard layout should unhide the existing theme toggle when the page enables it",
     );
 });
+
+test("dashboard compact navigation keeps visible links and moves overflow into the ellipsis menu", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const template = readFileSync(
+        resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
+        "utf8",
+    );
+
+    assert.ok(
+        layoutSource.includes('const navLinks = Array.from(topnav.querySelectorAll(":scope > a"))'),
+        "compact navigation should work from the inline topnav links",
+    );
+    assert.ok(
+        layoutSource.includes("openHamburgerMenu(compactToggle"),
+        "overflow navigation should open from the compact toggle button",
+    );
+    assert.ok(
+        layoutSource.includes("link.hidden = true"),
+        "compact navigation should hide only the overflowing links",
+    );
+    assert.ok(
+        layoutSource.includes('filter((link) => !link.classList.contains("active"))'),
+        "compact navigation should prefer keeping the active link visible",
+    );
+    assert.ok(
+        template.includes('<span aria-hidden="true">...</span>'),
+        "compact toggle should render as a trailing ellipsis button",
+    );
+});

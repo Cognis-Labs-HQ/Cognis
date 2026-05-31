@@ -116,12 +116,6 @@ import {
     snapGridRound,
 } from "./grid-math.js";
 
-const TOOLBAR_TOGGLE_OPEN_SVG =
-    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-
-const TOOLBAR_TOGGLE_CLOSED_SVG =
-    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 8H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 12H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-
 export function createPageComposer(
     root,
     {
@@ -3820,101 +3814,21 @@ export function createPageComposer(
                 const mobileMedia = window.matchMedia(
                     `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
                 );
-                let mobileDrawerOpen = false;
                 const mainWindow = root.querySelector(".main-window");
                 const shell = root.querySelector(".app-shell");
                 mainWindow?.querySelector(".toolbar-mobile-toggle")?.remove();
                 mainWindow?.querySelector(".toolbar-mobile-backdrop")?.remove();
                 shell?.querySelector(".toolbar-mobile-backdrop")?.remove();
-                const mobileToggleBtn = document.createElement("button");
-                mobileToggleBtn.type = "button";
-                mobileToggleBtn.className = "toolbar-mobile-toggle";
-                const mobileBackdrop = document.createElement("div");
-                mobileBackdrop.className = "toolbar-mobile-backdrop";
-                if (mainWindow) {
-                    mainWindow.insertBefore(
-                        mobileToggleBtn,
-                        toolbarEl.nextSibling,
+                const syncMobileToolbarMode = () => {
+                    toolbarEl.classList.toggle(
+                        "toolbar--mobile-scroll",
+                        mobileMedia.matches,
                     );
-                }
-                if (mainWindow) {
-                    mainWindow.appendChild(mobileBackdrop);
-                } else if (shell) {
-                    shell.appendChild(mobileBackdrop);
-                }
-
-                function isMobileDrawerMode() {
-                    return mobileMedia.matches;
-                }
-
-                closeMobileDrawerIfNeeded = () => {
-                    if (isMobileDrawerMode() && mobileDrawerOpen) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
                 };
 
-                function setMobileDrawerOpen(
-                    nextOpen,
-                    { restoreFocus = true } = {},
-                ) {
-                    const open = isMobileDrawerMode() && nextOpen;
-                    mobileDrawerOpen = open;
-                    toolbarEl.classList.toggle("toolbar--mobile-open", open);
-                    mobileBackdrop.classList.toggle(
-                        "toolbar-mobile-backdrop--open",
-                        open,
-                    );
-                    mobileBackdrop.hidden = !open;
-                    if (!open && restoreFocus && mobileToggleBtn.isConnected) {
-                        mobileToggleBtn.focus();
-                    }
-                    mobileToggleBtn.setAttribute("aria-expanded", String(open));
-                    mobileToggleBtn.classList.toggle(
-                        "toolbar-mobile-toggle--drawer-open",
-                        open,
-                    );
-                    mobileToggleBtn.innerHTML = open
-                        ? TOOLBAR_TOGGLE_OPEN_SVG
-                        : TOOLBAR_TOGGLE_CLOSED_SVG;
-                    mobileToggleBtn.setAttribute(
-                        "aria-label",
-                        open
-                            ? i18n.t("ui.layout.toolbar.collapse")
-                            : i18n.t("ui.layout.toolbar.expand"),
-                    );
-                }
-
-                mobileToggleBtn.setAttribute("aria-expanded", "false");
-                mobileToggleBtn.innerHTML = TOOLBAR_TOGGLE_CLOSED_SVG;
-                mobileToggleBtn.setAttribute(
-                    "aria-label",
-                    i18n.t("ui.layout.toolbar.expand"),
-                );
-                setMobileDrawerOpen(false, { restoreFocus: false });
-
-                mobileToggleBtn.addEventListener("click", () => {
-                    setMobileDrawerOpen(!mobileDrawerOpen);
-                });
-                toolbarEl.addEventListener("click", (event) => {
-                    if (!isMobileDrawerMode() || !mobileDrawerOpen) return;
-                    const target = event.target;
-                    if (!(target instanceof Element)) return;
-                    if (target.closest(".toolbar-mobile-toggle")) return;
-                    if (
-                        target.closest("a[href]") ||
-                        target.closest("button:not(.toolbar-mobile-toggle)")
-                    ) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                });
-                mobileBackdrop.addEventListener("click", () => {
-                    setMobileDrawerOpen(false);
-                });
-                mobileMedia.addEventListener("change", () => {
-                    if (!isMobileDrawerMode()) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                });
+                closeMobileDrawerIfNeeded = () => {};
+                mobileMedia.addEventListener("change", syncMobileToolbarMode);
+                syncMobileToolbarMode();
 
                 if (toolbarScrollable) {
                     toolbarEl.classList.add("toolbar--scrollable");

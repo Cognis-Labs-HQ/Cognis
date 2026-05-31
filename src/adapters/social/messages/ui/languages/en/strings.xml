@@ -69,4 +69,10 @@
   <string name="module.social.messages.member_summary_empty">No members found for this conversation.</string>
   <string name="module.social.messages.emoji_more">More Reactions</string>
   <string name="module.social.messages.emoji_search_placeholder">Search emojis…</string>
+  <string name="module.social.messages.format_bold">Bold</string>
+  <string name="module.social.messages.format_italic">Italic</string>
+  <string name="module.social.messages.format_strikethrough">Strikethrough</string>
+  <string name="module.social.messages.format_code">Inline code</string>
+  <string name="module.social.messages.format_quote">Quote</string>
+  <string name="module.social.messages.format_list">Bullet list</string>
 </resources>

@@ -207,10 +207,10 @@ function renderUsersTable() {
                           `;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
-                <td>${escapeHtml(user.username)}</td>
-                <td>${roleCellHtml}</td>
-                <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
-                <td class="users-actions-cell">${actionsHtml}</td>
+                <td data-label="${escapeHtml(i18n.t("ui.app.users.username"))}">${escapeHtml(user.username)}</td>
+                <td data-label="${escapeHtml(i18n.t("ui.app.users.role"))}">${roleCellHtml}</td>
+                <td data-label="${escapeHtml(i18n.t("ui.app.users.status"))}">${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
+                <td class="users-actions-cell" data-label="${escapeHtml(i18n.t("ui.reuse.actions"))}">${actionsHtml}</td>
               </tr>
             `;
               })

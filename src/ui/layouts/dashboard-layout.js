@@ -21,6 +21,7 @@ import {
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-bar.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
+import { openHamburgerMenu } from "../reuse/hamburger-menu.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -353,71 +354,68 @@ function applyCompactNav(root) {
     const navrow = root.querySelector(".global-navrow");
     const topnav = navrow?.querySelector(".topnav");
     const compactToggle = navrow?.querySelector("#nav-compact-toggle");
-    const drawer = root.querySelector("#nav-drawer");
-    const drawerClose = root.querySelector("#nav-drawer-close");
-    const drawerNav = drawer?.querySelector(".nav-drawer-nav");
-    const backdrop = root.querySelector("#nav-drawer-backdrop");
-    if (!navrow || !topnav || !compactToggle || !drawer || !backdrop) return;
+    if (!navrow || !topnav || !compactToggle) return;
 
     if (navrow.dataset.compactNavBound === "true") return;
     navrow.dataset.compactNavBound = "true";
 
-    let drawerOpen = false;
+    const navLinks = Array.from(topnav.querySelectorAll(":scope > a"));
+
+    function getOverflowLinks() {
+        return navLinks.filter((link) => link.hidden);
+    }
 
     function syncCompactState() {
-        const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
-        navrow.classList.toggle("global-navrow--compact", overflows);
-        compactToggle.hidden = !overflows;
-        if (!overflows && drawerOpen) closeDrawer();
-    }
-
-    function openDrawer() {
-        if (drawerOpen) return;
-        drawerOpen = true;
-        if (drawerNav) {
-            drawerNav.innerHTML = topnav.innerHTML;
-            drawerNav.querySelectorAll("a").forEach((link) => {
-                const isActive = isNavigationLinkActive(
-                    window.location.pathname,
-                    link.getAttribute("href"),
-                );
-                link.classList.toggle("active", isActive);
-                if (isActive) link.setAttribute("aria-current", "page");
-                else link.removeAttribute("aria-current");
-            });
-        }
-        drawer.classList.add("nav-drawer--open");
-        drawer.setAttribute("aria-hidden", "false");
-        compactToggle.setAttribute("aria-expanded", "true");
-        backdrop.removeAttribute("hidden");
-        (drawerNav?.querySelector("a") ?? drawerClose ?? compactToggle).focus();
-    }
-
-    function closeDrawer() {
-        if (!drawerOpen) return;
-        drawerOpen = false;
-        drawer.classList.remove("nav-drawer--open");
-        drawer.setAttribute("aria-hidden", "true");
+        navLinks.forEach((link) => {
+            link.hidden = false;
+        });
+        compactToggle.hidden = true;
         compactToggle.setAttribute("aria-expanded", "false");
-        backdrop.setAttribute("hidden", "");
-        compactToggle.focus();
+        navrow.classList.remove("global-navrow--compact");
+        if (topnav.scrollWidth <= topnav.clientWidth + 2) return;
+
+        compactToggle.hidden = false;
+        navrow.classList.add("global-navrow--compact");
+
+        const preferredHiddenLinks = [...navLinks]
+            .filter((link) => !link.classList.contains("active"))
+            .reverse();
+        const remainingHiddenLinks = [...navLinks].reverse();
+        const hideUntilFits = (links) => {
+            links.forEach((link) => {
+                if (topnav.scrollWidth <= topnav.clientWidth + 2) return;
+                link.hidden = true;
+            });
+        };
+
+        hideUntilFits(preferredHiddenLinks);
+        hideUntilFits(remainingHiddenLinks);
+
+        if (getOverflowLinks().length === 0) {
+            compactToggle.hidden = true;
+            navrow.classList.remove("global-navrow--compact");
+        }
     }
 
-    compactToggle.addEventListener("click", () => {
-        if (drawerOpen) closeDrawer();
-        else openDrawer();
-    });
-
-    drawerClose?.addEventListener("click", closeDrawer);
-
-    backdrop.addEventListener("click", closeDrawer);
-
-    drawerNav?.addEventListener("click", (e) => {
-        if (e.target.closest("a")) closeDrawer();
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && drawerOpen) closeDrawer();
+    compactToggle.addEventListener("click", async () => {
+        const overflowLinks = getOverflowLinks();
+        if (overflowLinks.length === 0) return;
+        compactToggle.setAttribute("aria-expanded", "true");
+        const selectedAction = await openHamburgerMenu(compactToggle, {
+            items: overflowLinks.map((link, index) => ({
+                id: String(index),
+                label:
+                    link.textContent?.trim() ??
+                    link.getAttribute("href") ??
+                    "",
+            })),
+        });
+        compactToggle.setAttribute("aria-expanded", "false");
+        if (selectedAction === null) return;
+        const selectedLink = overflowLinks[Number(selectedAction)];
+        if (selectedLink instanceof HTMLAnchorElement) {
+            selectedLink.click();
+        }
     });
 
     const resizeObserver = new ResizeObserver(syncCompactState);

@@ -211,6 +211,14 @@ test("messages templates are opened from sidebar in a popup", () => {
         /id="messages-composer" data-composer-exclude-form-memory="true"/,
     );
     assert.match(appSource, /id="messages-open-templates-btn"/);
+    assert.match(appSource, /id="messages-composer-templates-btn"/);
+    assert.match(appSource, /id="messages-composer-new-template-btn"/);
+    assert.match(appSource, /data-composer-format-action="bold"/);
+    assert.match(appSource, /data-composer-format-action="italic"/);
+    assert.match(appSource, /data-composer-format-action="strikethrough"/);
+    assert.match(appSource, /data-composer-format-action="code"/);
+    assert.match(appSource, /data-composer-format-action="quote"/);
+    assert.match(appSource, /data-composer-format-action="list"/);
     assert.match(appSource, /id="messages-composer-preview-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
     assert.match(
@@ -241,6 +249,15 @@ test("messages templates are opened from sidebar in a popup", () => {
     );
     assert.match(
         appSource,
+        /composerTemplatesButton\?\.addEventListener\([\s\S]*openHamburgerMenu/,
+    );
+    assert.match(
+        appSource,
+        /function wrapComposerSelection\(input, before, after = before\)/,
+    );
+    assert.match(appSource, /function prefixComposerLines\(input, prefix\)/);
+    assert.match(
+        appSource,
         /resolveMessageTemplateVariables\([\s\S]*currentRoom[\s\S]*currentAccountId/,
     );
     assert.match(appSource, /id="messages-sidebar-template-list"/);
@@ -248,6 +265,9 @@ test("messages templates are opened from sidebar in a popup", () => {
     assert.match(appSource, /data-template-action="edit"/);
     assert.match(appSource, /data-template-action="delete"/);
     assert.match(messagesCssSource, /\.messages-composer-mode-toggle\s*\{/);
+    assert.match(messagesCssSource, /\.messages-composer-format-row\s*\{/);
+    assert.match(messagesCssSource, /\.messages-composer-format-btn\s*\{/);
+    assert.match(messagesCssSource, /\.messages-message-body table\s*\{/);
     assert.match(
         messagesCssSource,
         /\.messages-composer-mode-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
@@ -261,6 +281,10 @@ test("messages templates are opened from sidebar in a popup", () => {
     assert.match(
         sidebarCssSource,
         /\.messages-sidebar-template-load-btn\s*\{[\s\S]*flex:\s*1;/,
+    );
+    assert.match(
+        sidebarCssSource,
+        /@media \(max-width:\s*900px\)\s*\{[\s\S]*\.messages-sidebar-template-list\s*\{/,
     );
     assert.match(messagesCssSource, /\.messages-composer-preview\s*\{/);
     assert.match(

@@ -69,4 +69,10 @@
   <string name="module.social.messages.member_summary_empty">この会話にはメンバーが見つかりませんでした。</string>
   <string name="module.social.messages.emoji_more">リアクションを追加</string>
   <string name="module.social.messages.emoji_search_placeholder">絵文字を検索…</string>
+  <string name="module.social.messages.format_bold">太字</string>
+  <string name="module.social.messages.format_italic">斜体</string>
+  <string name="module.social.messages.format_strikethrough">取り消し線</string>
+  <string name="module.social.messages.format_code">インラインコード</string>
+  <string name="module.social.messages.format_quote">引用</string>
+  <string name="module.social.messages.format_list">箇条書き</string>
 </resources>

@@ -153,3 +153,23 @@ button.messages-sidebar-template-load-btn:hover:not(:disabled):not(
 .messages-sidebar-menu-btn:hover {
     filter: brightness(1.1);
 }
+
+@media (max-width: 900px) {
+    .messages-sidebar-section {
+        padding: 0.45rem 0 0;
+    }
+
+    .messages-sidebar-template-list {
+        display: flex;
+        gap: 0.45rem;
+        max-height: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-top: 0.1rem;
+    }
+
+    .messages-sidebar-template-list .messages-template-card,
+    .messages-template-list-empty {
+        flex: 0 0 min(260px, calc(100vw - 72px));
+    }
+}

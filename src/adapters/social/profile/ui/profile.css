@@ -903,6 +903,16 @@
     gap: 10px;
 }
 
+.new-post-form-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+}
+
 .profile-compose-preview-switcher {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1116,6 +1126,61 @@
 
     .profile-hero-bio-wrap {
         max-width: 100%;
+        border-left: 0;
+        border-top: 1px solid var(--border);
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-hero-stats {
+        gap: 16px;
+        padding: 10px 12px;
+    }
+
+    .profile-stat-number {
+        font-size: 1.35rem;
+    }
+
+    .profile-stat-label {
+        letter-spacing: 0.06em;
+    }
+
+    .profile-user-card-grid {
+        gap: 6px;
+    }
+
+    .profile-user-card {
+        gap: 1px;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+
+    .profile-user-card-name {
+        max-width: 120px;
+        font-size: 0.84rem;
+    }
+
+    .profile-user-card-handle {
+        font-size: 0.72rem;
+    }
+
+    .profile-user-card-icons {
+        margin-top: 0;
+    }
+
+    .new-post-form-wrap {
+        min-height: 14rem;
+        padding: 12px;
+    }
+
+    .new-post-form {
+        flex: 1;
+        gap: 12px;
+    }
+
+    .new-post-form .form-builder-input,
+    .profile-compose-preview {
+        min-height: 7rem;
     }
 }
 

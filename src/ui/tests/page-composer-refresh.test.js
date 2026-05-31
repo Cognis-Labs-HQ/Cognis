@@ -47,7 +47,7 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
-test("page composer includes mobile toolbar drawer behavior", () => {
+test("page composer includes mobile toolbar scroll behavior", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
@@ -56,18 +56,12 @@ test("page composer includes mobile toolbar drawer behavior", () => {
     assert.match(source, /MOBILE_TOOLBAR_BREAKPOINT = 900/);
     assert.match(source, /window\.matchMedia\(/);
     assert.match(source, /\(max-width: \$\{MOBILE_TOOLBAR_BREAKPOINT\}px\)/);
-    assert.match(source, /toolbar--mobile-open/);
-    assert.match(source, /toolbar-mobile-backdrop--open/);
-    assert.match(source, /target\.closest\("a\[href\]"\)/);
+    assert.match(source, /toolbar--mobile-scroll/);
+    assert.match(source, /syncMobileToolbarMode/);
     assert.match(
         source,
-        /target\.closest\("button:not\(\.toolbar-mobile-toggle\)"\)/,
+        /toolbarEl\.classList\.toggle\(\s*"toolbar--mobile-scroll",\s*mobileMedia\.matches,\s*\)/m,
     );
-    assert.match(
-        source,
-        /mobileToggleBtn\.classList\.toggle\(\s*"toolbar-mobile-toggle--drawer-open",\s*open,\s*\)/m,
-    );
-    assert.match(source, /mobileToggleBtn\.innerHTML = open/);
     assert.match(
         source,
         /if \(didSwitch\) \{\s*closeMobileDrawerIfNeeded\(\);\s*\}/m,
