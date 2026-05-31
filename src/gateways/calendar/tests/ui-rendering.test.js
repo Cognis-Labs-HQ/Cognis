@@ -36,7 +36,10 @@ test("calendar timed views render positioned event cards instead of row spans", 
     assert.match(TIMED_GRID_SOURCE, /calendar-timed-event-card/);
     assert.match(HELPERS_SOURCE, /calendar-week-day-columns/);
     assert.match(HELPERS_SOURCE, /calendar-day-timed-lane/);
-    assert.match(TIMED_GRID_CSS_SOURCE, /\.calendar-timed-event-card\s*\{[\s\S]*z-index:\s*1;/);
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /\.calendar-timed-event-card\s*\{[\s\S]*z-index:\s*1;/,
+    );
     assert.doesNotMatch(HELPERS_SOURCE, /rowspan="\$\{spanRows\}"/);
 });
 
