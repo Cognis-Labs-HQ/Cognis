@@ -48,10 +48,6 @@ export function isUserMatchByIdentifier(user, identifier) {
     );
 }
 
-function buildParticipantLabel(value) {
-    return value;
-}
-
 export async function createParticipantDirectory(apiFetch, identifiers) {
     const normalizedIdentifiers = Array.from(
         new Set(
@@ -86,7 +82,7 @@ export async function createParticipantDirectory(apiFetch, identifiers) {
             } catch {
                 participantDirectory.set(identifier, {
                     username: identifier,
-                    displayName: buildParticipantLabel(identifier),
+                    displayName: identifier,
                 });
             }
         }),
