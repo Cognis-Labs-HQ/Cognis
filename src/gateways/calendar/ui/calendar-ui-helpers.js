@@ -263,7 +263,7 @@ function getResponseActionLabelKey(response) {
 
 function formatEventTimeLabel(event, i18n) {
     if (isAllDayEvent(event)) {
-        return i18n ? i18n.t("gateway.calendar.all_day") : "";
+        return i18n.t("gateway.calendar.all_day");
     }
     const startLabel = formatTime(event.startAt, "");
     const endLabel = formatTime(event.endAt, "");

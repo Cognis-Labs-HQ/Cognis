@@ -59,10 +59,13 @@ export function createCalendarPopupManager({
 
     function getEventParticipants(event, participantDirectory = null) {
         const resolveUserLabel = (identifier) => {
-            if (!participantDirectory) return identifier;
+            const fallbackIdentifier = identifier;
+            if (!participantDirectory) return fallbackIdentifier;
             const profile = participantDirectory.get(identifier);
-            if (!profile) return identifier;
-            return profile.displayName || profile.username || identifier;
+            if (!profile) return fallbackIdentifier;
+            return (
+                profile.displayName || profile.username || fallbackIdentifier
+            );
         };
         return [
             ...(Array.isArray(event.attendees)

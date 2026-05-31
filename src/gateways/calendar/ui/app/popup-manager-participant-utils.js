@@ -80,10 +80,7 @@ export async function createParticipantDirectory(apiFetch, identifiers) {
                     displayName,
                 });
             } catch {
-                participantDirectory.set(identifier, {
-                    username: identifier,
-                    displayName: identifier,
-                });
+                // best-effort participant enrichment
             }
         }),
     );
