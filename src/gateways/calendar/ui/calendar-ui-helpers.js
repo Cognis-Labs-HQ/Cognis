@@ -575,9 +575,12 @@ function renderWeekView(events, weekStart, i18n) {
                         dayEnd,
                     );
                     occupiedRowsRemaining[dayIndex] = Math.max(0, spanRows - 1);
-                    return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">${renderSlotEvents(slotEvents, {
-                        showTime: true,
-                    })}${renderSlotCreateButton(start, end, i18n)}</td>`;
+                    return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">${renderSlotEvents(
+                        slotEvents,
+                        {
+                            showTime: true,
+                        },
+                    )}${renderSlotCreateButton(start, end, i18n)}</td>`;
                 }
                 return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${renderSlotCreateButton(start, end, i18n)}</td>`;
             })
@@ -591,7 +594,7 @@ function renderWeekView(events, weekStart, i18n) {
                 hour: "numeric",
                 minute: "2-digit",
             },
-        });
+        );
         slotRows.push(`<tr class="calendar-week-timeslot-row">
       <th scope="row" class="calendar-week-timeslot-label">${escapeHtml(timeLabel)}</th>
       ${slotCells}

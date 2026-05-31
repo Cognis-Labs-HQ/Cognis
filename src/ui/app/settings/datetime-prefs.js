@@ -1,4 +1,4 @@
-import { getBrowserDetectedTimezone } from '../../reuse/timestamp.js';
+import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
 
 /**
  * Date and time preferences sub-module for the Settings page.
@@ -25,9 +25,9 @@ export function initDateTimePrefs(
     root,
     { existingPrefs, i18n, onDirtyChange },
 ) {
-    let savedTimezone = existingPrefs?.timezone ?? 'auto';
+    let savedTimezone = existingPrefs?.timezone ?? "auto";
     let currentTimezone = savedTimezone;
-    let savedTimeFormat = existingPrefs?.timeFormat ?? 'auto';
+    let savedTimeFormat = existingPrefs?.timeFormat ?? "auto";
     let currentTimeFormat = savedTimeFormat;
 
     function notifyDirty() {
@@ -50,23 +50,23 @@ export function initDateTimePrefs(
     function buildTimezoneOptions({ detectedTimezone, selectedTimezone }) {
         let zones = [];
         try {
-            if (typeof Intl.supportedValuesOf === 'function') {
-                zones = Intl.supportedValuesOf('timeZone');
+            if (typeof Intl.supportedValuesOf === "function") {
+                zones = Intl.supportedValuesOf("timeZone");
             }
         } catch {
             zones = [];
         }
 
         if (!zones.length) {
-            const fallback = [selectedTimezone, detectedTimezone, 'UTC'].filter(
-                (zone) => zone && zone !== 'auto',
+            const fallback = [selectedTimezone, detectedTimezone, "UTC"].filter(
+                (zone) => zone && zone !== "auto",
             );
             return [...new Set(fallback)];
         }
 
         if (
             selectedTimezone &&
-            selectedTimezone !== 'auto' &&
+            selectedTimezone !== "auto" &&
             !zones.includes(selectedTimezone)
         ) {
             zones = [...zones, selectedTimezone];
@@ -76,17 +76,17 @@ export function initDateTimePrefs(
     }
 
     function init() {
-        const timezoneSelect = root.querySelector('#pref-timezone-select');
-        const timeFormatSelect = root.querySelector('#pref-time-format-select');
+        const timezoneSelect = root.querySelector("#pref-timezone-select");
+        const timeFormatSelect = root.querySelector("#pref-time-format-select");
         if (!timezoneSelect || !timeFormatSelect) return;
 
         const effectiveTz = getBrowserDetectedTimezone();
         const autoLabel = i18n
-            .t('ui.app.settings.datetime_tz_auto')
-            .replace('{tz}', effectiveTz);
+            .t("ui.app.settings.datetime_tz_auto")
+            .replace("{tz}", effectiveTz);
 
-        const autoOption = document.createElement('option');
-        autoOption.value = 'auto';
+        const autoOption = document.createElement("option");
+        autoOption.value = "auto";
         autoOption.textContent = autoLabel;
         timezoneSelect.append(autoOption);
 
@@ -95,7 +95,7 @@ export function initDateTimePrefs(
             selectedTimezone: currentTimezone,
         });
         zones.forEach((timeZone) => {
-            const opt = document.createElement('option');
+            const opt = document.createElement("option");
             opt.value = timeZone;
             opt.textContent = timeZone;
             timezoneSelect.append(opt);
@@ -103,22 +103,22 @@ export function initDateTimePrefs(
 
         timezoneSelect.value = currentTimezone;
         [
-            ['auto', i18n.t('ui.app.settings.datetime_time_format_auto')],
-            ['12h', i18n.t('ui.app.settings.datetime_time_format_12h')],
-            ['24h', i18n.t('ui.app.settings.datetime_time_format_24h')],
+            ["auto", i18n.t("ui.app.settings.datetime_time_format_auto")],
+            ["12h", i18n.t("ui.app.settings.datetime_time_format_12h")],
+            ["24h", i18n.t("ui.app.settings.datetime_time_format_24h")],
         ].forEach(([value, label]) => {
-            const option = document.createElement('option');
+            const option = document.createElement("option");
             option.value = value;
             option.textContent = label;
             timeFormatSelect.append(option);
         });
         timeFormatSelect.value = currentTimeFormat;
 
-        timezoneSelect.addEventListener('change', () => {
+        timezoneSelect.addEventListener("change", () => {
             currentTimezone = timezoneSelect.value;
             notifyDirty();
         });
-        timeFormatSelect.addEventListener('change', () => {
+        timeFormatSelect.addEventListener("change", () => {
             currentTimeFormat = timeFormatSelect.value;
             notifyDirty();
         });
@@ -132,8 +132,8 @@ export function initDateTimePrefs(
     function discard() {
         currentTimezone = savedTimezone;
         currentTimeFormat = savedTimeFormat;
-        const timezoneSelect = root.querySelector('#pref-timezone-select');
-        const timeFormatSelect = root.querySelector('#pref-time-format-select');
+        const timezoneSelect = root.querySelector("#pref-timezone-select");
+        const timeFormatSelect = root.querySelector("#pref-time-format-select");
         if (timezoneSelect) timezoneSelect.value = savedTimezone;
         if (timeFormatSelect) timeFormatSelect.value = savedTimeFormat;
         notifyDirty();

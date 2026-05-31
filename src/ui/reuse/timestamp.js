@@ -40,15 +40,15 @@
  * @param {{ includeSeconds?: boolean }} options — optional formatting flags.
  * @returns {string}
  */
-import { loadUiPreferences, saveUiPreferences } from './ui-preferences.js';
+import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
 
-const TIMEZONE_STORAGE_KEY = 'cognis_timezone';
-const TIME_FORMAT_STORAGE_KEY = 'cognis_time_format';
+const TIMEZONE_STORAGE_KEY = "cognis_timezone";
+const TIME_FORMAT_STORAGE_KEY = "cognis_time_format";
 
 function resolveHour12Preference() {
     const timeFormat = getEffectiveTimeFormat();
-    if (timeFormat === '12h') return true;
-    if (timeFormat === '24h') return false;
+    if (timeFormat === "12h") return true;
+    if (timeFormat === "24h") return false;
     return undefined;
 }
 
@@ -60,9 +60,9 @@ function buildTimeFormatOptions(options = {}) {
     } = options;
     const hour12 = resolveHour12Preference();
     return {
-        hour: 'numeric',
-        minute: '2-digit',
-        ...(includeSeconds ? { second: '2-digit' } : {}),
+        hour: "numeric",
+        minute: "2-digit",
+        ...(includeSeconds ? { second: "2-digit" } : {}),
         ...rest,
         ...(hour12 == null ? {} : { hour12 }),
         timeZone,
@@ -71,14 +71,14 @@ function buildTimeFormatOptions(options = {}) {
 
 function detectBrowserTimezone() {
     try {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     } catch {
-        return 'UTC';
+        return "UTC";
     }
 }
 
 export function applyTimezoneToLocalStorage(savedTz, detectedTz) {
-    if (savedTz && savedTz !== 'auto') {
+    if (savedTz && savedTz !== "auto") {
         localStorage.setItem(TIMEZONE_STORAGE_KEY, savedTz);
     } else if (detectedTz) {
         localStorage.setItem(TIMEZONE_STORAGE_KEY, detectedTz);
@@ -88,7 +88,7 @@ export function applyTimezoneToLocalStorage(savedTz, detectedTz) {
 }
 
 export function applyTimeFormatToLocalStorage(value) {
-    if (value === '12h' || value === '24h') {
+    if (value === "12h" || value === "24h") {
         localStorage.setItem(TIME_FORMAT_STORAGE_KEY, value);
         return;
     }
@@ -103,23 +103,23 @@ export function getEffectiveTimezone() {
 
 export function getEffectiveTimeFormat() {
     const stored = localStorage.getItem(TIME_FORMAT_STORAGE_KEY);
-    if (stored === '12h' || stored === '24h') {
+    if (stored === "12h" || stored === "24h") {
         return stored;
     }
-    return 'auto';
+    return "auto";
 }
 
 export function getBrowserDetectedTimezone() {
     return detectBrowserTimezone();
 }
 
-export function formatDate(iso, fallback = '') {
+export function formatDate(iso, fallback = "") {
     if (!iso) return fallback;
     try {
         return new Date(iso).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
+            year: "numeric",
+            month: "long",
+            day: "numeric",
             timeZone: getEffectiveTimezone(),
         });
     } catch {
@@ -127,7 +127,7 @@ export function formatDate(iso, fallback = '') {
     }
 }
 
-export function formatTime(iso, fallback = '', options = {}) {
+export function formatTime(iso, fallback = "", options = {}) {
     if (!iso) return fallback;
     try {
         return new Date(iso).toLocaleTimeString(
@@ -139,13 +139,13 @@ export function formatTime(iso, fallback = '', options = {}) {
     }
 }
 
-export function formatDateTime(iso, fallback = '', options = {}) {
+export function formatDateTime(iso, fallback = "", options = {}) {
     if (!iso) return fallback;
     try {
         const hour12 = resolveHour12Preference();
         return new Date(iso).toLocaleString(undefined, {
-            dateStyle: 'medium',
-            timeStyle: options.includeSeconds ? 'medium' : 'short',
+            dateStyle: "medium",
+            timeStyle: options.includeSeconds ? "medium" : "short",
             ...(hour12 == null ? {} : { hour12 }),
             timeZone: getEffectiveTimezone(),
         });
@@ -166,47 +166,47 @@ export function formatDateTime(iso, fallback = '', options = {}) {
  * @returns {string}
  */
 let cachedRelativeTimeFormatter;
-export function formatRelativeTime(epochMs, fallback = '') {
+export function formatRelativeTime(epochMs, fallback = "") {
     if (!epochMs) return fallback;
     try {
         cachedRelativeTimeFormatter ??= new Intl.RelativeTimeFormat(undefined, {
-            numeric: 'auto',
+            numeric: "auto",
         });
         const diffMs = epochMs - Date.now();
         const absDiff = Math.abs(diffMs);
         if (absDiff < 60_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 1000),
-                'second',
+                "second",
             );
         }
         if (absDiff < 3_600_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 60_000),
-                'minute',
+                "minute",
             );
         }
         if (absDiff < 86_400_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 3_600_000),
-                'hour',
+                "hour",
             );
         }
         if (absDiff < 30 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 86_400_000),
-                'day',
+                "day",
             );
         }
         if (absDiff < 365 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / (30 * 86_400_000)),
-                'month',
+                "month",
             );
         }
         return cachedRelativeTimeFormatter.format(
             Math.round(diffMs / (365 * 86_400_000)),
-            'year',
+            "year",
         );
     } catch {
         return fallback;
@@ -221,7 +221,7 @@ export async function syncTimezoneOnLogin(username) {
 
         applyTimeFormatToLocalStorage(prefs?.timeFormat);
 
-        if (savedTz && savedTz !== 'auto') {
+        if (savedTz && savedTz !== "auto") {
             applyTimezoneToLocalStorage(savedTz, null);
             return;
         }

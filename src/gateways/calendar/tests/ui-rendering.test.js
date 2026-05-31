@@ -20,7 +20,10 @@ const CSS_SOURCE = readFileSync(
 
 test("calendar week view renders stacked event cards with row spans", () => {
     assert.match(HELPERS_SOURCE, /calendar-slot-event-stack/);
-    assert.match(HELPERS_SOURCE, /occupiedRowsRemaining = days\.map\(\(\) => 0\)/);
+    assert.match(
+        HELPERS_SOURCE,
+        /occupiedRowsRemaining = days\.map\(\(\) => 0\)/,
+    );
     assert.match(HELPERS_SOURCE, /rowspan="\$\{spanRows\}"/);
     assert.match(HELPERS_SOURCE, /showTime:\s*true/);
 });
@@ -33,7 +36,16 @@ test("calendar slot clicks create events outside event buttons and add buttons",
 });
 
 test("calendar CSS fixes week-slot height and anchors the add button", () => {
-    assert.match(CSS_SOURCE, /\.calendar-week-timeslot-row\s*\{[^}]*height:\s*4\.8rem;/s);
-    assert.match(CSS_SOURCE, /\.calendar-week-slot\s*\{[^}]*height:\s*4\.8rem;/s);
-    assert.match(CSS_SOURCE, /\.calendar-timeslot-hover-add\s*\{[^}]*right:\s*0\.35rem;[^}]*bottom:\s*0\.35rem;/s);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-week-timeslot-row\s*\{[^}]*height:\s*4\.8rem;/s,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-week-slot\s*\{[^}]*height:\s*4\.8rem;/s,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-timeslot-hover-add\s*\{[^}]*right:\s*0\.35rem;[^}]*bottom:\s*0\.35rem;/s,
+    );
 });

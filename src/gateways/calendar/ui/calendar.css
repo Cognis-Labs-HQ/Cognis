@@ -522,7 +522,6 @@
 .calendar-week-grid--header {
     border-bottom: 1px solid var(--field-border);
 }
-
 .calendar-week-day-header {
     display: flex;
     align-items: baseline;
@@ -545,20 +544,16 @@
     width: calc(100% - var(--calendar-week-scrollbar-width));
     table-layout: fixed;
 }
-
 .calendar-week-table--body {
     table-layout: fixed;
 }
-
 .calendar-week-axis-column {
     width: var(--calendar-week-axis-width);
 }
-
 .calendar-week-day-name {
     font-size: 0.95rem;
     opacity: 0.8;
 }
-
 .calendar-week-day-date {
     font-weight: 500;
     font-size: 0.95rem;
@@ -575,32 +570,26 @@
     padding: 0.4rem;
     background: color-mix(in srgb, var(--surface, transparent) 94%, black 6%);
 }
-
 .calendar-week-axis-label--corner {
     min-height: 2.6rem;
     border-bottom: 1px solid var(--field-border);
 }
-
 .calendar-week-all-day-row {
     border-bottom: 1px solid var(--field-border);
     min-height: 4.4rem;
 }
-
 .calendar-week-all-day-cell {
     border-left: 1px solid var(--field-border);
     border-bottom: 0;
 }
-
 .calendar-week-scroll-grid {
     max-height: 70vh;
     overflow: auto;
 }
-
 .calendar-week-timeslot-row {
     height: 4.8rem;
     border-bottom: 1px solid var(--field-border);
 }
-
 .calendar-timeslot-row:hover,
 .calendar-week-timeslot-row:hover {
     background: color-mix(
@@ -616,11 +605,9 @@
         );
     outline-offset: -1px;
 }
-
 .calendar-week-timeslot-row:last-child {
     border-bottom: 0;
 }
-
 .calendar-week-timeslot-label {
     display: flex;
     align-items: center;
@@ -632,7 +619,6 @@
     width: var(--calendar-week-axis-width);
     background: color-mix(in srgb, var(--surface, transparent) 94%, black 6%);
 }
-
 .calendar-week-slot {
     border-left: 1px solid var(--field-border);
     border-bottom: 0;

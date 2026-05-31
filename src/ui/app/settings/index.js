@@ -28,7 +28,7 @@ import {
 import {
     applyTimeFormatToLocalStorage,
     applyTimezoneToLocalStorage,
-} from '../../reuse/timestamp.js';
+} from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -168,7 +168,7 @@ export async function mount(root, { signal } = {}) {
         loadedPrefs?.timezone ?? null,
         loadedPrefs?.detectedTimezone ?? null,
     );
-    applyTimeFormatToLocalStorage(loadedPrefs?.timeFormat ?? 'auto');
+    applyTimeFormatToLocalStorage(loadedPrefs?.timeFormat ?? "auto");
     const sectionDescriptors = await loadSettingsSections();
 
     let savedMode = getStoredTheme();
@@ -637,7 +637,7 @@ export async function mount(root, { signal } = {}) {
                 timeFormat:
                     datetimePrefs?.getTimeFormat() ??
                     loadedPrefs?.timeFormat ??
-                    'auto',
+                    "auto",
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
@@ -657,7 +657,7 @@ export async function mount(root, { signal } = {}) {
                 mode: prefs.languagePriorityMode,
             });
             applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
-            applyTimeFormatToLocalStorage(prefs.timeFormat ?? 'auto');
+            applyTimeFormatToLocalStorage(prefs.timeFormat ?? "auto");
             localStorage.setItem(
                 "cognis_ui_preferences",
                 JSON.stringify(prefs),
