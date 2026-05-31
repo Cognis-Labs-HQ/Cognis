@@ -447,10 +447,10 @@ function renderDayView(events, day, i18n) {
     const timedEvents = listEventsInWindow(events, dayStart, dayEnd).filter(
         (event) => !isAllDayEvent(event),
     );
-    const allDayRow = `<tr class="calendar-day-all-day-row">
-  <th scope="row" class="calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</th>
-  <td class="calendar-timeslot-events calendar-timeslot-events--click-add" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true, i18n }) : ""}</td>
-</tr>`;
+    const allDayRow = `<div class="calendar-day-all-day-row">
+  <div class="calendar-timeslot-label calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</div>
+  <div class="calendar-timeslot-events calendar-timeslot-events--click-add calendar-day-all-day-slot" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true, i18n }) : ""}</div>
+</div>`;
     const timedRows = renderTimeAxisRows(dayStart, {
         slotClassName:
             "calendar-day-timed-slot calendar-timeslot-events calendar-timeslot-events--click-add",
@@ -461,11 +461,7 @@ function renderDayView(events, day, i18n) {
     });
     return `<div class="calendar-day-view">
   <h4 class="calendar-day-heading">${escapeHtml(dayLabel)}</h4>
-  <table class="calendar-timeslot-table" role="presentation">
-    <tbody>
-      ${allDayRow}
-    </tbody>
-  </table>
+  ${allDayRow}
   <div class="calendar-timeslot-grid calendar-day-timed-grid">
     <div class="calendar-day-timed-axis">${timedRows
         .map((row) => row.labelMarkup)

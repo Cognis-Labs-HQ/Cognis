@@ -36,6 +36,7 @@ test("calendar timed views render positioned event cards instead of row spans", 
     assert.match(TIMED_GRID_SOURCE, /calendar-timed-event-card/);
     assert.match(HELPERS_SOURCE, /calendar-week-day-columns/);
     assert.match(HELPERS_SOURCE, /calendar-day-timed-lane/);
+    assert.match(TIMED_GRID_CSS_SOURCE, /\.calendar-timed-event-card\s*\{[\s\S]*z-index:\s*1;/);
     assert.doesNotMatch(HELPERS_SOURCE, /rowspan="\$\{spanRows\}"/);
 });
 
@@ -54,6 +55,11 @@ test("calendar slot clicks create events outside event buttons and empty slots o
         /event\.target\.closest\(\s*"\[data-calendar-event\], \[data-timeslot-add\]"/,
     );
     assert.doesNotMatch(HELPERS_SOURCE, /data-timeslot-add/);
+    assert.match(HELPERS_SOURCE, /calendar-day-all-day-slot/);
+    assert.doesNotMatch(
+        HELPERS_SOURCE,
+        /<table class="calendar-timeslot-table" role="presentation">/,
+    );
 });
 
 test("calendar conflict warning requires a second save to create anyway", () => {
@@ -72,6 +78,18 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
-        /\.calendar-week-slot--current-time\s*\{/s,
+        /\.calendar-week-slot--current-time::after\s*\{[\s\S]*z-index:\s*3;/s,
+    );
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /\.calendar-timeslot-events--click-add:hover\s*\{/s,
+    );
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /\.calendar-slot-event-title\s*\{[\s\S]*position:\s*sticky;[\s\S]*inset-block-start:\s*0\.24rem;[\s\S]*inset-block-end:\s*0\.24rem;/s,
+    );
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /\.calendar-day-view\s*\{[\s\S]*height:\s*100%;/s,
     );
 });
