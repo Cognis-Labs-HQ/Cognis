@@ -60,12 +60,16 @@ export function isAllDayRange(startAt, endAt) {
  * @returns {void}
  */
 export function bindAllDayComposerControls({ overlay, signal }) {
-    const startField = overlay.querySelector(
-        '[data-form-builder-field="startAt"]',
-    );
-    const endField = overlay.querySelector('[data-form-builder-field="endAt"]');
     const startInput = overlay.querySelector("#form-builder-startAt");
     const endInput = overlay.querySelector("#form-builder-endAt");
+    const startField =
+        startInput instanceof HTMLElement
+            ? startInput.closest(".form-builder-field")
+            : overlay.querySelector('[data-form-builder-field="startAt"]');
+    const endField =
+        endInput instanceof HTMLElement
+            ? endInput.closest(".form-builder-field")
+            : overlay.querySelector('[data-form-builder-field="endAt"]');
     const allDayToggle = overlay.querySelector("#calendar-popup-all-day");
     const allDayRange = overlay.querySelector("#calendar-popup-all-day-range");
     const allDayStartDateInput = overlay.querySelector(
@@ -162,6 +166,13 @@ export function bindAllDayComposerControls({ overlay, signal }) {
         }
         startField.hidden = enabled;
         endField.hidden = enabled;
+        if (enabled) {
+            startField.style.display = "none";
+            endField.style.display = "none";
+        } else {
+            startField.style.removeProperty("display");
+            endField.style.removeProperty("display");
+        }
         allDayRange.hidden = !enabled;
     };
 

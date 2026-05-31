@@ -21,6 +21,10 @@ const POPUP_MANAGER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager.js"),
     "utf8",
 );
+const POPUP_MANAGER_ALL_DAY_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-all-day.js"),
+    "utf8",
+);
 const POPUP_REMINDERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-reminders.js"),
     "utf8",
@@ -131,4 +135,13 @@ test("calendar composer supports multiple reminders and remembers selected view"
     assert.match(APP_SOURCE, /SELECTED_VIEW_STORAGE_KEY/);
     assert.match(APP_SOURCE, /loadSelectedViewPreference/);
     assert.match(APP_SOURCE, /window\.localStorage\.setItem/);
+});
+
+test("calendar timed views auto-scroll to the current timeslot and all-day toggle hides duplicate datetime rows", () => {
+    assert.match(APP_SOURCE, /scrollTimedViewsToCurrentSlot/);
+    assert.match(APP_SOURCE, /requestAnimationFrame\(scrollTimedViewsToCurrentSlot\)/);
+    assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
+    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startInput\.closest\("\.form-builder-field"\)/);
+    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startField\.style\.display = "none"/);
+    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startField\.style\.removeProperty\("display"\)/);
 });
