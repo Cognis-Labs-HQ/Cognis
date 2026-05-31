@@ -552,6 +552,11 @@
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
+  <string name="ui.app.settings.datetime_time_format_heading">時刻形式</string>
+  <string name="ui.app.settings.datetime_time_format_label">時計表示</string>
+  <string name="ui.app.settings.datetime_time_format_auto">地域の既定値を使う</string>
+  <string name="ui.app.settings.datetime_time_format_12h">12時間表示</string>
+  <string name="ui.app.settings.datetime_time_format_24h">24時間表示</string>
   <string name="ui.reuse.classes">マイクラス</string>
   <string name="module.study.classes.page_title">クラス</string>
   <string name="module.study.classes.page_subtitle">担当する語学クラスを管理します。</string>

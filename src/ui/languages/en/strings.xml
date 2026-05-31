@@ -552,6 +552,11 @@
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
   <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
+  <string name="ui.app.settings.datetime_time_format_heading">Time Format</string>
+  <string name="ui.app.settings.datetime_time_format_label">Clock Style</string>
+  <string name="ui.app.settings.datetime_time_format_auto">Use Locale Default</string>
+  <string name="ui.app.settings.datetime_time_format_12h">12-Hour Clock</string>
+  <string name="ui.app.settings.datetime_time_format_24h">24-Hour Clock</string>
   <string name="ui.reuse.classes">My Classes</string>
   <string name="module.study.classes.page_title">Classes</string>
   <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>

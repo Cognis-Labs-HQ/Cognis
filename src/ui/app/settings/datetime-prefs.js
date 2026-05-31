@@ -1,4 +1,4 @@
-import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
+import { getBrowserDetectedTimezone } from '../../reuse/timestamp.js';
 
 /**
  * Date and time preferences sub-module for the Settings page.
@@ -15,20 +15,26 @@ import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
  *   const dtPrefs = initDateTimePrefs(root, { existingPrefs, i18n, onDirtyChange });
  *   await dtPrefs.init();
  *   const tz = dtPrefs.getTimezone();  // 'auto' | IANA string
+ *   const timeFormat = dtPrefs.getTimeFormat(); // 'auto' | '12h' | '24h'
  *
  * @param {Element} root
  * @param {{ existingPrefs: object|null, i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
- * @returns {{ init: () => void, getTimezone: () => string, isDirty: () => boolean, commit: () => void, discard: () => void }}
+ * @returns {{ init: () => void, getTimezone: () => string, getTimeFormat: () => string, isDirty: () => boolean, commit: () => void, discard: () => void }}
  */
 export function initDateTimePrefs(
     root,
     { existingPrefs, i18n, onDirtyChange },
 ) {
-    let savedTimezone = existingPrefs?.timezone ?? "auto";
+    let savedTimezone = existingPrefs?.timezone ?? 'auto';
     let currentTimezone = savedTimezone;
+    let savedTimeFormat = existingPrefs?.timeFormat ?? 'auto';
+    let currentTimeFormat = savedTimeFormat;
 
     function notifyDirty() {
-        onDirtyChange?.(currentTimezone !== savedTimezone);
+        onDirtyChange?.(
+            currentTimezone !== savedTimezone ||
+                currentTimeFormat !== savedTimeFormat,
+        );
     }
 
     /**
@@ -44,23 +50,23 @@ export function initDateTimePrefs(
     function buildTimezoneOptions({ detectedTimezone, selectedTimezone }) {
         let zones = [];
         try {
-            if (typeof Intl.supportedValuesOf === "function") {
-                zones = Intl.supportedValuesOf("timeZone");
+            if (typeof Intl.supportedValuesOf === 'function') {
+                zones = Intl.supportedValuesOf('timeZone');
             }
         } catch {
             zones = [];
         }
 
         if (!zones.length) {
-            const fallback = [selectedTimezone, detectedTimezone, "UTC"].filter(
-                (zone) => zone && zone !== "auto",
+            const fallback = [selectedTimezone, detectedTimezone, 'UTC'].filter(
+                (zone) => zone && zone !== 'auto',
             );
             return [...new Set(fallback)];
         }
 
         if (
             selectedTimezone &&
-            selectedTimezone !== "auto" &&
+            selectedTimezone !== 'auto' &&
             !zones.includes(selectedTimezone)
         ) {
             zones = [...zones, selectedTimezone];
@@ -70,53 +76,76 @@ export function initDateTimePrefs(
     }
 
     function init() {
-        const selectEl = root.querySelector("#pref-timezone-select");
-        if (!selectEl) return;
+        const timezoneSelect = root.querySelector('#pref-timezone-select');
+        const timeFormatSelect = root.querySelector('#pref-time-format-select');
+        if (!timezoneSelect || !timeFormatSelect) return;
 
         const effectiveTz = getBrowserDetectedTimezone();
         const autoLabel = i18n
-            .t("ui.app.settings.datetime_tz_auto")
-            .replace("{tz}", effectiveTz);
+            .t('ui.app.settings.datetime_tz_auto')
+            .replace('{tz}', effectiveTz);
 
-        const autoOption = document.createElement("option");
-        autoOption.value = "auto";
+        const autoOption = document.createElement('option');
+        autoOption.value = 'auto';
         autoOption.textContent = autoLabel;
-        selectEl.append(autoOption);
+        timezoneSelect.append(autoOption);
 
         const zones = buildTimezoneOptions({
             detectedTimezone: effectiveTz,
             selectedTimezone: currentTimezone,
         });
-        zones.forEach((tz) => {
-            const opt = document.createElement("option");
-            opt.value = tz;
-            opt.textContent = tz;
-            selectEl.append(opt);
+        zones.forEach((timeZone) => {
+            const opt = document.createElement('option');
+            opt.value = timeZone;
+            opt.textContent = timeZone;
+            timezoneSelect.append(opt);
         });
 
-        selectEl.value = currentTimezone;
+        timezoneSelect.value = currentTimezone;
+        [
+            ['auto', i18n.t('ui.app.settings.datetime_time_format_auto')],
+            ['12h', i18n.t('ui.app.settings.datetime_time_format_12h')],
+            ['24h', i18n.t('ui.app.settings.datetime_time_format_24h')],
+        ].forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            timeFormatSelect.append(option);
+        });
+        timeFormatSelect.value = currentTimeFormat;
 
-        selectEl.addEventListener("change", () => {
-            currentTimezone = selectEl.value;
+        timezoneSelect.addEventListener('change', () => {
+            currentTimezone = timezoneSelect.value;
+            notifyDirty();
+        });
+        timeFormatSelect.addEventListener('change', () => {
+            currentTimeFormat = timeFormatSelect.value;
             notifyDirty();
         });
     }
 
     function commit() {
         savedTimezone = currentTimezone;
+        savedTimeFormat = currentTimeFormat;
     }
 
     function discard() {
         currentTimezone = savedTimezone;
-        const selectEl = root.querySelector("#pref-timezone-select");
-        if (selectEl) selectEl.value = savedTimezone;
+        currentTimeFormat = savedTimeFormat;
+        const timezoneSelect = root.querySelector('#pref-timezone-select');
+        const timeFormatSelect = root.querySelector('#pref-time-format-select');
+        if (timezoneSelect) timezoneSelect.value = savedTimezone;
+        if (timeFormatSelect) timeFormatSelect.value = savedTimeFormat;
         notifyDirty();
     }
 
     return {
         init,
         getTimezone: () => currentTimezone,
-        isDirty: () => currentTimezone !== savedTimezone,
+        getTimeFormat: () => currentTimeFormat,
+        isDirty: () =>
+            currentTimezone !== savedTimezone ||
+            currentTimeFormat !== savedTimeFormat,
         commit,
         discard,
     };

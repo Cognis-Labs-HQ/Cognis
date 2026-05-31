@@ -25,7 +25,10 @@ import {
     initReleaseChangelogPrefs,
     shouldShowReleaseChangelog,
 } from "./release-changelog-prefs.js";
-import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
+import {
+    applyTimeFormatToLocalStorage,
+    applyTimezoneToLocalStorage,
+} from '../../reuse/timestamp.js';
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -165,6 +168,7 @@ export async function mount(root, { signal } = {}) {
         loadedPrefs?.timezone ?? null,
         loadedPrefs?.detectedTimezone ?? null,
     );
+    applyTimeFormatToLocalStorage(loadedPrefs?.timeFormat ?? 'auto');
     const sectionDescriptors = await loadSettingsSections();
 
     let savedMode = getStoredTheme();
@@ -501,6 +505,11 @@ export async function mount(root, { signal } = {}) {
               ${i18n.t("ui.app.settings.datetime_tz_label")}
               <select id="pref-timezone-select" class="theme-select"></select>
             </label>
+            <h3>${i18n.t("ui.app.settings.datetime_time_format_heading")}</h3>
+            <label class="timezone-label">
+              ${i18n.t("ui.app.settings.datetime_time_format_label")}
+              <select id="pref-time-format-select" class="theme-select"></select>
+            </label>
           `,
                     },
                 ],
@@ -625,6 +634,10 @@ export async function mount(root, { signal } = {}) {
                     datetimePrefs?.getTimezone() ??
                     loadedPrefs?.timezone ??
                     "auto",
+                timeFormat:
+                    datetimePrefs?.getTimeFormat() ??
+                    loadedPrefs?.timeFormat ??
+                    'auto',
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
@@ -644,6 +657,7 @@ export async function mount(root, { signal } = {}) {
                 mode: prefs.languagePriorityMode,
             });
             applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
+            applyTimeFormatToLocalStorage(prefs.timeFormat ?? 'auto');
             localStorage.setItem(
                 "cognis_ui_preferences",
                 JSON.stringify(prefs),

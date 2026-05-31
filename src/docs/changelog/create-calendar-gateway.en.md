@@ -49,3 +49,16 @@ The calendar share UI now accepts an optional name for each generated link, maki
 easy to tell links apart when multiple are created. There is no longer any artificial
 limit on the number of share links that can be generated for a calendar — every new link
 is shown in the popup and remains accessible until it expires.
+
+## Time format preference
+
+Settings now include a 12-hour / 24-hour clock preference under Date & Time. Shared
+timestamp formatting uses that setting so calendar times, message timestamps, clocks,
+and other time-of-day labels stay consistent with the user's chosen format.
+
+## Sleeker calendar slots
+
+Week and day slots now keep consistent spacing while rendering events as stacked cards
+with anchored add buttons instead of expanding unevenly. Slot clicks now create events
+anywhere that is not already occupied by an event button or add button, which removes
+the dead zones that made event creation unreliable.

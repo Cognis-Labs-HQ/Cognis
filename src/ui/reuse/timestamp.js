@@ -10,17 +10,21 @@
  *   3. Live browser detection via Intl.DateTimeFormat().
  *
  * Public exports:
- *   formatDate(iso, fallback)            — formats an ISO string as a localised date (no time).
- *   formatDateTime(iso, fallback, opts)  — formats an ISO string as a localised date + time.
+ *   formatDate(iso, fallback)             — formats an ISO string as a localised date (no time).
+ *   formatTime(iso, fallback, opts)       — formats an ISO string as a localised time while
+ *                                           respecting the user's 12/24-hour preference.
+ *   formatDateTime(iso, fallback, opts)   — formats an ISO string as a localised date + time.
  *   formatRelativeTime(epochMs, fallback) — formats a past epoch timestamp as a relative
- *                                          locale-aware string, e.g. "5 minutes ago".
- *   getBrowserDetectedTimezone()         — returns the browser-detected IANA timezone string.
- *   getEffectiveTimezone()               — returns the IANA timezone string currently in use.
- *   applyTimezoneToLocalStorage(tz, det) — writes the effective timezone to cognis_timezone;
- *                                          pass the saved preference and the detected fallback.
- *   syncTimezoneOnLogin(username)        — reads saved preferences after login; when timezone is
- *                                          "auto" (or unset), detects the browser timezone,
- *                                          persists it, and writes cognis_timezone to localStorage.
+ *                                           locale-aware string, e.g. "5 minutes ago".
+ *   getBrowserDetectedTimezone()          — returns the browser-detected IANA timezone string.
+ *   getEffectiveTimezone()                — returns the IANA timezone string currently in use.
+ *   getEffectiveTimeFormat()              — returns 'auto', '12h', or '24h'.
+ *   applyTimezoneToLocalStorage(tz, det)  — writes the effective timezone to cognis_timezone;
+ *                                           pass the saved preference and the detected fallback.
+ *   applyTimeFormatToLocalStorage(value)  — persists the active 12/24-hour preference.
+ *   syncTimezoneOnLogin(username)         — reads saved preferences after login; when timezone is
+ *                                           "auto" (or unset), detects the browser timezone,
+ *                                           persists it, and writes cognis_timezone to localStorage.
  *
  * Usage:
  *   import { formatDate, formatDateTime, formatRelativeTime, syncTimezoneOnLogin } from '../reuse/timestamp.js';
@@ -36,45 +40,86 @@
  * @param {{ includeSeconds?: boolean }} options — optional formatting flags.
  * @returns {string}
  */
-import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
+import { loadUiPreferences, saveUiPreferences } from './ui-preferences.js';
 
-const STORAGE_KEY = "cognis_timezone";
+const TIMEZONE_STORAGE_KEY = 'cognis_timezone';
+const TIME_FORMAT_STORAGE_KEY = 'cognis_time_format';
+
+function resolveHour12Preference() {
+    const timeFormat = getEffectiveTimeFormat();
+    if (timeFormat === '12h') return true;
+    if (timeFormat === '24h') return false;
+    return undefined;
+}
+
+function buildTimeFormatOptions(options = {}) {
+    const {
+        includeSeconds = false,
+        timeZone = getEffectiveTimezone(),
+        ...rest
+    } = options;
+    const hour12 = resolveHour12Preference();
+    return {
+        hour: 'numeric',
+        minute: '2-digit',
+        ...(includeSeconds ? { second: '2-digit' } : {}),
+        ...rest,
+        ...(hour12 == null ? {} : { hour12 }),
+        timeZone,
+    };
+}
 
 function detectBrowserTimezone() {
     try {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     } catch {
-        return "UTC";
+        return 'UTC';
     }
 }
 
 export function applyTimezoneToLocalStorage(savedTz, detectedTz) {
-    if (savedTz && savedTz !== "auto") {
-        localStorage.setItem(STORAGE_KEY, savedTz);
+    if (savedTz && savedTz !== 'auto') {
+        localStorage.setItem(TIMEZONE_STORAGE_KEY, savedTz);
     } else if (detectedTz) {
-        localStorage.setItem(STORAGE_KEY, detectedTz);
+        localStorage.setItem(TIMEZONE_STORAGE_KEY, detectedTz);
     } else {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(TIMEZONE_STORAGE_KEY);
     }
 }
 
+export function applyTimeFormatToLocalStorage(value) {
+    if (value === '12h' || value === '24h') {
+        localStorage.setItem(TIME_FORMAT_STORAGE_KEY, value);
+        return;
+    }
+    localStorage.removeItem(TIME_FORMAT_STORAGE_KEY);
+}
+
 export function getEffectiveTimezone() {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(TIMEZONE_STORAGE_KEY);
     if (stored) return stored;
     return detectBrowserTimezone();
+}
+
+export function getEffectiveTimeFormat() {
+    const stored = localStorage.getItem(TIME_FORMAT_STORAGE_KEY);
+    if (stored === '12h' || stored === '24h') {
+        return stored;
+    }
+    return 'auto';
 }
 
 export function getBrowserDetectedTimezone() {
     return detectBrowserTimezone();
 }
 
-export function formatDate(iso, fallback = "") {
+export function formatDate(iso, fallback = '') {
     if (!iso) return fallback;
     try {
         return new Date(iso).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
             timeZone: getEffectiveTimezone(),
         });
     } catch {
@@ -82,12 +127,26 @@ export function formatDate(iso, fallback = "") {
     }
 }
 
-export function formatDateTime(iso, fallback = "", options = {}) {
+export function formatTime(iso, fallback = '', options = {}) {
     if (!iso) return fallback;
     try {
+        return new Date(iso).toLocaleTimeString(
+            undefined,
+            buildTimeFormatOptions(options),
+        );
+    } catch {
+        return iso;
+    }
+}
+
+export function formatDateTime(iso, fallback = '', options = {}) {
+    if (!iso) return fallback;
+    try {
+        const hour12 = resolveHour12Preference();
         return new Date(iso).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: options.includeSeconds ? "medium" : "short",
+            dateStyle: 'medium',
+            timeStyle: options.includeSeconds ? 'medium' : 'short',
+            ...(hour12 == null ? {} : { hour12 }),
             timeZone: getEffectiveTimezone(),
         });
     } catch {
@@ -107,47 +166,47 @@ export function formatDateTime(iso, fallback = "", options = {}) {
  * @returns {string}
  */
 let cachedRelativeTimeFormatter;
-export function formatRelativeTime(epochMs, fallback = "") {
+export function formatRelativeTime(epochMs, fallback = '') {
     if (!epochMs) return fallback;
     try {
         cachedRelativeTimeFormatter ??= new Intl.RelativeTimeFormat(undefined, {
-            numeric: "auto",
+            numeric: 'auto',
         });
         const diffMs = epochMs - Date.now();
         const absDiff = Math.abs(diffMs);
         if (absDiff < 60_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 1000),
-                "second",
+                'second',
             );
         }
         if (absDiff < 3_600_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 60_000),
-                "minute",
+                'minute',
             );
         }
         if (absDiff < 86_400_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 3_600_000),
-                "hour",
+                'hour',
             );
         }
         if (absDiff < 30 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / 86_400_000),
-                "day",
+                'day',
             );
         }
         if (absDiff < 365 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
                 Math.round(diffMs / (30 * 86_400_000)),
-                "month",
+                'month',
             );
         }
         return cachedRelativeTimeFormatter.format(
             Math.round(diffMs / (365 * 86_400_000)),
-            "year",
+            'year',
         );
     } catch {
         return fallback;
@@ -160,7 +219,9 @@ export async function syncTimezoneOnLogin(username) {
         const prefs = await loadUiPreferences();
         const savedTz = prefs?.timezone;
 
-        if (savedTz && savedTz !== "auto") {
+        applyTimeFormatToLocalStorage(prefs?.timeFormat);
+
+        if (savedTz && savedTz !== 'auto') {
             applyTimezoneToLocalStorage(savedTz, null);
             return;
         }

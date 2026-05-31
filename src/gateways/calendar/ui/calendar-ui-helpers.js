@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
     formatDateTime,
+    formatTime,
     getEffectiveTimezone,
 } from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -20,6 +21,8 @@ const EVENT_RECURRENCE_OPTIONS = [
 ];
 const ISO_WEEK_THURSDAY_OFFSET = 4;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
+const TIMESLOT_EVENT_PREVIEW_LIMIT = 2;
+const MONTH_EVENT_PREVIEW_LIMIT = 3;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
@@ -258,6 +261,17 @@ function getResponseActionLabelKey(response) {
     return `gateway.calendar.response_action_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
 
+function formatEventTimeLabel(event) {
+    if (isAllDayEvent(event)) return "";
+    const startLabel = formatTime(event.startAt, "");
+    const endLabel = formatTime(event.endAt, "");
+    if (!startLabel) return "";
+    if (!endLabel || startLabel === endLabel) {
+        return startLabel;
+    }
+    return `${startLabel} – ${endLabel}`;
+}
+
 function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     if (!calendars.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_calendars")}</p>`;
@@ -306,8 +320,10 @@ function renderResponseSummary(event, i18n, participantDirectory = null) {
         .join("")}</ul>`;
 }
 
-function renderEventButton(event) {
-    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}">
+function renderEventButton(event, { compact = false, showTime = false } = {}) {
+    const timeLabel = showTime ? formatEventTimeLabel(event) : "";
+    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}">
+      ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
       <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong>
     </button>`;
 }
@@ -353,8 +369,23 @@ function renderUpcomingEvents(events, i18n) {
         .join("")}</ul>`;
 }
 
-function renderSlotEvents(slotEvents) {
-    return slotEvents.map((event) => renderEventButton(event)).join("");
+function renderSlotEvents(
+    slotEvents,
+    {
+        previewLimit = TIMESLOT_EVENT_PREVIEW_LIMIT,
+        compact = false,
+        showTime = false,
+    } = {},
+) {
+    if (!slotEvents.length) return "";
+    const visibleEvents = slotEvents.slice(0, previewLimit);
+    const overflowCount = Math.max(0, slotEvents.length - visibleEvents.length);
+    return `<div class="calendar-slot-event-stack${compact ? " calendar-slot-event-stack--compact" : ""}">
+      ${visibleEvents
+          .map((event) => renderEventButton(event, { compact, showTime }))
+          .join("")}
+      ${overflowCount > 0 ? `<span class="calendar-slot-event-overflow-badge">+${overflowCount}</span>` : ""}
+    </div>`;
 }
 
 function renderSlotCreateButton(start, end, i18n) {
@@ -396,10 +427,10 @@ function isAllDayEvent(event) {
     return startsAtMidnight && endsAtMidnight;
 }
 
-function resolveRenderedEventSpan(event, dayStart, dayEnd) {
+function resolveRenderedEventSpan(event, rangeStart, dayEnd) {
     const start = Math.max(
         new Date(event.startAt).getTime(),
-        dayStart.getTime(),
+        rangeStart.getTime(),
     );
     const end = Math.min(new Date(event.endAt).getTime(), dayEnd.getTime());
     const duration = Math.max(end - start, HALF_HOUR_MS);
@@ -432,14 +463,14 @@ function renderDayView(events, day, i18n) {
     );
     const allDayRow = `<tr class="calendar-day-all-day-row">
   <th scope="row" class="calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</th>
-  <td class="calendar-timeslot-events calendar-timeslot-events--click-add" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents.slice(0, 3)) : ""}</td>
+  <td class="calendar-timeslot-events calendar-timeslot-events--click-add" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true }) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>
 </tr>`;
     let occupiedRowsRemaining = 0;
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
         const start = new Date(dayStart.getTime() + slotIndex * HALF_HOUR_MS);
         const end = new Date(start.getTime() + HALF_HOUR_MS);
         const slotEvents = listEventsInWindow(timedEvents, start, end);
-        const timeLabel = start.toLocaleTimeString([], {
+        const timeLabel = formatTime(start.toISOString(), "", {
             hour: "2-digit",
             minute: "2-digit",
         });
@@ -456,17 +487,16 @@ function renderDayView(events, day, i18n) {
                 const dayEndBoundary = addDays(dayStart, 1);
                 const spanRows = resolveRenderedEventSpan(
                     firstSpanningEvent,
-                    dayStart,
+                    start,
                     dayEndBoundary,
                 );
                 occupiedRowsRemaining = Math.max(0, spanRows - 1);
-                const overflowCount = Math.max(0, slotEvents.length - 1);
                 eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">
-      ${renderEventButton(firstSpanningEvent)}
-      ${overflowCount > 0 ? `<span class="calendar-slot-event-overflow">+${overflowCount}</span>` : ""}
+      ${renderSlotEvents(slotEvents, { previewLimit: 1, showTime: true })}
+      ${renderSlotCreateButton(start, end, i18n)}
     </td>`;
             } else {
-                eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}"></td>`;
+                eventsCellMarkup = `<td class="calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentSlot ? " calendar-timeslot-events--current" : ""}" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${renderSlotCreateButton(start, end, i18n)}</td>`;
             }
         }
         slots.push(`<tr class="calendar-timeslot-row${isCurrentSlot ? " calendar-timeslot-row--current" : ""}">
@@ -511,31 +541,56 @@ function renderWeekView(events, weekStart, i18n) {
                 dayStart,
                 dayEnd,
             ).filter((event) => isAllDayEvent(event));
-            return `<td class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents.slice(0, 2)) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>`;
+            return `<td class="calendar-week-all-day-cell calendar-timeslot-events" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true }) : ""}${renderSlotCreateButton(dayStart, dayEnd, i18n)}</td>`;
         })
         .join("");
     const slotRows = [];
     const timedEvents = events.filter((event) => !isAllDayEvent(event));
+    const occupiedRowsRemaining = days.map(() => 0);
+    const dayBoundaries = days.map((day) => {
+        const dayStart = startOfDay(day);
+        return {
+            dayStart,
+            dayEnd: addDays(dayStart, 1),
+        };
+    });
     for (let slotIndex = 0; slotIndex < 48; slotIndex += 1) {
         const slotCells = days
-            .map((day) => {
-                const dayStart = startOfDay(day);
+            .map((day, dayIndex) => {
+                const { dayStart, dayEnd } = dayBoundaries[dayIndex];
                 const start = new Date(
                     dayStart.getTime() + slotIndex * HALF_HOUR_MS,
                 );
                 const end = new Date(start.getTime() + HALF_HOUR_MS);
+                if (occupiedRowsRemaining[dayIndex] > 0) {
+                    occupiedRowsRemaining[dayIndex] -= 1;
+                    return "";
+                }
                 const slotEvents = listEventsInWindow(timedEvents, start, end);
-                const eventCells = slotEvents.length
-                    ? renderSlotEvents(slotEvents)
-                    : "";
-                return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${eventCells}${renderSlotCreateButton(start, end, i18n)}</td>`;
+                const firstSpanningEvent = slotEvents[0] ?? null;
+                if (firstSpanningEvent) {
+                    const spanRows = resolveRenderedEventSpan(
+                        firstSpanningEvent,
+                        start,
+                        dayEnd,
+                    );
+                    occupiedRowsRemaining[dayIndex] = Math.max(0, spanRows - 1);
+                    return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}" rowspan="${spanRows}">${renderSlotEvents(slotEvents, {
+                        showTime: true,
+                    })}${renderSlotCreateButton(start, end, i18n)}</td>`;
+                }
+                return `<td class="calendar-week-slot calendar-timeslot-events" data-timeslot-events data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${renderSlotCreateButton(start, end, i18n)}</td>`;
             })
             .join("");
-        const timeLabel = new Date(
-            startOfDay(weekStart).getTime() + slotIndex * HALF_HOUR_MS,
-        ).toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit",
+        const timeLabel = formatTime(
+            new Date(
+                startOfDay(weekStart).getTime() + slotIndex * HALF_HOUR_MS,
+            ).toISOString(),
+            "",
+            {
+                hour: "numeric",
+                minute: "2-digit",
+            },
         });
         slotRows.push(`<tr class="calendar-week-timeslot-row">
       <th scope="row" class="calendar-week-timeslot-label">${escapeHtml(timeLabel)}</th>
@@ -586,10 +641,15 @@ function renderMonthGrid(events, currentDate, i18n) {
           const dayEnd = addDays(dayStart, 1);
           const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
           const previewMarkup = dayEvents
-              .slice(0, 3)
-              .map((event) => renderEventButton(event))
+              .slice(0, MONTH_EVENT_PREVIEW_LIMIT)
+              .map((event) =>
+                  renderEventButton(event, {
+                      compact: true,
+                      showTime: !isAllDayEvent(event),
+                  }),
+              )
               .join("");
-          const overflowCount = dayEvents.length - 3;
+          const overflowCount = dayEvents.length - MONTH_EVENT_PREVIEW_LIMIT;
           return `<td><article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}">
           <header>
             <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>

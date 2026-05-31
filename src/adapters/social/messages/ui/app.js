@@ -27,7 +27,7 @@ import { formatTemplate } from "/static/reuse/format-template.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
-import { formatDate, getEffectiveTimezone } from "/static/reuse/timestamp.js";
+import { formatDate, formatTime } from "/static/reuse/timestamp.js";
 import { normalizeMessageStyle } from "/static/reuse/message-style-options.js";
 import {
     hexToBytes,
@@ -1177,17 +1177,7 @@ function formatMessageBubbleAvatar(message) {
 }
 
 function formatMessageTime(iso) {
-    if (!iso) return "";
-    try {
-        return new Intl.DateTimeFormat(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-            timeZone: getEffectiveTimezone(),
-        }).format(new Date(iso));
-    } catch {
-        return "";
-    }
+    return formatTime(iso, "");
 }
 
 async function renderThread(

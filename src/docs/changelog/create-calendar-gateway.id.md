@@ -50,3 +50,16 @@ UI berbagi kalender kini menerima nama opsional untuk setiap tautan yang dibuat,
 memudahkan identifikasi saat ada beberapa tautan. Tidak ada lagi batas jumlah
 tautan yang dapat dibuat — setiap tautan baru ditampilkan di popup dan tetap dapat
 diakses hingga kedaluwarsa.
+
+## Preferensi format waktu
+
+Pengaturan sekarang memiliki preferensi jam 12/24 di bagian Tanggal &amp; Waktu. Format
+waktu bersama memakai pilihan itu agar waktu pada kalender, cap waktu pesan, jam, dan
+label waktu lainnya tetap konsisten dengan format yang dipilih pengguna.
+
+## Slot kalender yang lebih rapi
+
+Slot mingguan dan harian kini mempertahankan jarak yang konsisten sambil menampilkan
+acara sebagai kartu bertumpuk dengan tombol tambah yang menempel di tempatnya, jadi
+baris tidak lagi melebar tidak merata. Klik pada area kosong slot sekarang juga selalu
+membuka pembuatan acara sehingga dead zone hilang.

@@ -328,7 +328,14 @@ export async function mount(root, { signal } = {}) {
                             cell.addEventListener(
                                 "click",
                                 (event) => {
-                                    if (event.target !== cell) return;
+                                    if (
+                                        event.target instanceof Element &&
+                                        event.target.closest(
+                                            "[data-calendar-event], [data-timeslot-add]",
+                                        )
+                                    ) {
+                                        return;
+                                    }
                                     openEventComposerPopup({
                                         startAt: String(
                                             cell.getAttribute(

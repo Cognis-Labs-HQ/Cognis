@@ -50,3 +50,16 @@ Das Kalender-Freigabe-UI akzeptiert jetzt einen optionalen Namen für jeden gene
 Link, der die Unterscheidung mehrerer Links erleichtert. Es gibt keine künstliche
 Begrenzung mehr – jeder neue Link wird im Popup angezeigt und bleibt abrufbar, bis
 er abläuft.
+
+## Zeitformat als Einstellung
+
+Unter Datum &amp; Uhrzeit gibt es jetzt eine 12-/24-Stunden-Einstellung. Die gemeinsame
+Zeitstempelformatierung nutzt diese Vorgabe, damit Kalenderzeiten, Nachrichtenzeiten,
+Uhren und andere Uhrzeitangaben einheitlich im gewählten Format erscheinen.
+
+## Schlankere Kalender-Slots
+
+Tages- und Wochen-Slots behalten jetzt eine gleichmäßige Höhe und zeigen Termine als
+gestapelte Karten mit fest verankertem Hinzufügen-Button statt ungleichmäßig zu wachsen.
+Ein Klick in freie Bereiche eines Slots erstellt nun zuverlässig Termine und beseitigt
+die bisherigen Dead Zones.

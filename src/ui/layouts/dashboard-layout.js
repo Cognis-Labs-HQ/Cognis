@@ -12,6 +12,10 @@ import {
     applyUiPreferences,
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
+import {
+    applyTimeFormatToLocalStorage,
+    applyTimezoneToLocalStorage,
+} from "../reuse/timestamp.js";
 import { maybeShowReleaseChangelogPopup } from "./release-changelog/popup.js";
 import { initRouter, navigateTo } from "../reuse/app-router.js";
 import {
@@ -98,6 +102,11 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
 
     const prefs = await loadUiPreferences();
     applyUiPreferences(prefs);
+    applyTimezoneToLocalStorage(
+        prefs?.timezone ?? null,
+        prefs?.detectedTimezone ?? null,
+    );
+    applyTimeFormatToLocalStorage(prefs?.timeFormat ?? "auto");
     const storedMode = getStoredTheme();
     const initialMode = storedMode || prefs?.mode || "dark";
     if (prefs?.mode !== initialMode) {
