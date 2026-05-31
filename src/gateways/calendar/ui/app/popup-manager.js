@@ -4,10 +4,13 @@ import {
     isAllDayRange,
 } from "./popup-manager-all-day.js";
 import {
+    buildParticipantCardHtml,
     createParticipantDirectory,
+    hydrateProfileAvatars,
     isUserMatchByIdentifier,
     normalizeUserIdentifier,
 } from "./popup-manager-participant-utils.js";
+import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 
 export function createCalendarPopupManager({
     root,
@@ -561,16 +564,20 @@ export function createCalendarPopupManager({
         }
 
         function renderParticipants(overlay) {
-            const chips = overlay.querySelector(
+            const list = overlay.querySelector(
                 "#calendar-popup-participant-chips",
             );
-            if (!(chips instanceof HTMLElement)) return;
-            chips.innerHTML = selectedParticipants
-                .map(
-                    (entry) =>
-                        `<span class="calendar-participant-chip">${escapeHtml(entry.label)}<button type="button" data-participant-remove="${escapeHtml(participantKey(entry))}" aria-label="${escapeHtml(i18n.t("gateway.calendar.remove_participant"))}">×</button></span>`,
+            if (!(list instanceof HTMLElement)) return;
+            list.innerHTML = selectedParticipants
+                .map((entry) =>
+                    buildParticipantCardHtml(entry, {
+                        escapeHtml,
+                        i18n,
+                        participantKey,
+                    }),
                 )
                 .join("");
+            hydrateProfileAvatars(list);
         }
 
         function renderParticipantOptions(overlay) {
@@ -694,7 +701,7 @@ export function createCalendarPopupManager({
           <input id="calendar-popup-all-day" type="checkbox"${startsAsAllDay ? " checked" : ""} />
           <span>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</span>
         </label>
-        <div class="calendar-all-day-range" id="calendar-popup-all-day-range" hidden>
+        <div class="calendar-all-day-range" id="calendar-popup-all-day-range"${startsAsAllDay ? "" : " hidden"}>
           <label class="form-builder-field">
             <span class="form-builder-label-text">${escapeHtml(i18n.t("gateway.calendar.event_start"))}</span>
             <input id="calendar-popup-all-day-start-date" type="date" class="form-builder-input" />
@@ -706,9 +713,9 @@ export function createCalendarPopupManager({
         </div>
         <label class="calendar-participants-row">
           <span>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</span>
-          <div id="calendar-popup-participant-chips" class="calendar-participant-chips"></div>
           <input id="calendar-popup-participant-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
           <div id="calendar-popup-participant-options" class="calendar-participant-options"></div>
+          <div id="calendar-popup-participant-chips" class="calendar-participant-list"></div>
         </label>
         ${showMeetingToggle ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-create-meeting" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.create_meeting"))}</span></label>` : ""}
         ${eventData?.event?.recurrence && eventData.event.recurrence !== "none" ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-update-all" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.update_series"))}</span></label>` : ""}
@@ -754,6 +761,7 @@ export function createCalendarPopupManager({
                     );
                 }
                 bindAllDayComposerControls({ overlay, signal });
+                bindProfilePreviews(i18n);
                 renderParticipants(overlay);
                 renderParticipantOptions(overlay);
                 const participantSearch = overlay.querySelector(

@@ -1,3 +1,8 @@
+import {
+    buildProfileAvatarMarkup,
+    hydrateProfileAvatars,
+} from "/static/gateways/social/reuse/profile-avatar.js";
+
 /**
  * Participant identifier normalization helpers for calendar popup search.
  *
@@ -86,3 +91,33 @@ export async function createParticipantDirectory(apiFetch, identifiers) {
     );
     return participantDirectory;
 }
+
+/**
+ * Renders a single participant mini-card HTML string.
+ *
+ * @param {{ type: string, value: string | null | undefined, label: string | null | undefined }} entry
+ * @param {{ escapeHtml: Function, i18n: object, participantKey: Function }} opts
+ * @returns {string}
+ */
+export function buildParticipantCardHtml(
+    entry,
+    { escapeHtml, i18n, participantKey },
+) {
+    const key = escapeHtml(participantKey(entry));
+    const removeLabel = escapeHtml(
+        i18n.t("gateway.calendar.remove_participant"),
+    );
+    const removeButton = `<button type="button" class="calendar-participant-card-remove" data-participant-remove="${key}" aria-label="${removeLabel}">×</button>`;
+    if (entry.type === "user") {
+        const handle = String(entry.value ?? "").trim();
+        const displayName = String(entry.label ?? handle).trim();
+        const avatarMarkup = buildProfileAvatarMarkup(displayName, handle);
+        return `<div class="calendar-participant-card"><a href="/profile/${escapeHtml(handle)}" class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></a>${removeButton}</div>`;
+    }
+    const email = String(entry.value ?? "").trim();
+    const displayLabel = String(entry.label ?? email).trim();
+    const avatarMarkup = buildProfileAvatarMarkup(displayLabel, email);
+    return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayLabel)}</span></span></div>${removeButton}</div>`;
+}
+
+export { hydrateProfileAvatars };

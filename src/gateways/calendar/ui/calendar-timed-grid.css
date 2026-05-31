@@ -153,7 +153,7 @@
     width: 100%;
     background: color-mix(
         in srgb,
-        var(--calendar-event-stripe, var(--btn-confirm-bg, #1f8ceb)) 14%,
+        var(--calendar-event-stripe, var(--btn-confirm-bg, #1f8ceb)) 22%,
         var(--surface, transparent)
     );
     color: inherit;
@@ -183,6 +183,8 @@
 .calendar-slot-event--compact {
     padding: 0.22rem 0.38rem;
     border-radius: 8px;
+    width: fit-content;
+    max-width: 100%;
 }
 
 .calendar-slot-event-time {
@@ -204,6 +206,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    position: sticky;
+    top: 0.3rem;
 }
 
 .calendar-slot-event-overflow-badge {
