@@ -32,6 +32,22 @@ function parseJsonStringArray(value: unknown): string[] {
     }
 }
 
+function parseJsonNumberArray(value: unknown): number[] {
+    if (typeof value !== "string" || !value.trim()) return [];
+    try {
+        const parsed = JSON.parse(value) as unknown;
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .map((entry) =>
+                typeof entry === "number" ? Math.trunc(entry) : Number(entry),
+            )
+            .filter((entry) => Number.isFinite(entry) && entry > 0)
+            .map((entry) => Math.trunc(entry));
+    } catch {
+        return [];
+    }
+}
+
 export class DbCalendarStore implements CalendarStore {
     constructor(private readonly db: DbExecutor) {}
 
@@ -76,6 +92,12 @@ export class DbCalendarStore implements CalendarStore {
                 { name: "recurrence_id", type: "text" },
                 { name: "attendees_json", type: "text", notNull: true },
                 { name: "invite_emails_json", type: "text", notNull: true },
+                {
+                    name: "reminder_offsets_json",
+                    type: "text",
+                    notNull: true,
+                    default: "'[]'",
+                },
                 { name: "meeting_url", type: "text" },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
@@ -201,6 +223,7 @@ export class DbCalendarStore implements CalendarStore {
                 "recurrence_id",
                 "attendees_json",
                 "invite_emails_json",
+                "reminder_offsets_json",
                 "meeting_url",
                 "created_at",
                 "updated_at",
@@ -235,6 +258,9 @@ export class DbCalendarStore implements CalendarStore {
                 row.recurrence_id == null ? null : String(row.recurrence_id),
             attendees: parseJsonStringArray(row.attendees_json),
             inviteEmails: parseJsonStringArray(row.invite_emails_json),
+            reminderOffsetsMinutes: parseJsonNumberArray(
+                row.reminder_offsets_json,
+            ),
             meetingUrl:
                 row.meeting_url == null ? null : String(row.meeting_url),
             responses: {},
@@ -261,6 +287,9 @@ export class DbCalendarStore implements CalendarStore {
                 recurrence_id: event.recurrenceId,
                 attendees_json: JSON.stringify(event.attendees),
                 invite_emails_json: JSON.stringify(event.inviteEmails),
+                reminder_offsets_json: JSON.stringify(
+                    event.reminderOffsetsMinutes,
+                ),
                 meeting_url: event.meetingUrl,
                 created_at: event.createdAt,
                 updated_at: event.updatedAt,
@@ -281,6 +310,9 @@ export class DbCalendarStore implements CalendarStore {
                     recurrence_id: event.recurrenceId,
                     attendees_json: JSON.stringify(event.attendees),
                     invite_emails_json: JSON.stringify(event.inviteEmails),
+                    reminder_offsets_json: JSON.stringify(
+                        event.reminderOffsetsMinutes,
+                    ),
                     meeting_url: event.meetingUrl,
                     created_at: event.createdAt,
                     updated_at: event.updatedAt,

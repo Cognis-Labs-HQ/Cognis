@@ -21,6 +21,10 @@ const POPUP_MANAGER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager.js"),
     "utf8",
 );
+const POPUP_REMINDERS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-reminders.js"),
+    "utf8",
+);
 const CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar.css"),
     "utf8",
@@ -107,4 +111,24 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
         TIMED_GRID_CSS_SOURCE,
         /\.calendar-day-view\s*\{[\s\S]*height:\s*100%;/s,
     );
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /\.calendar-slot-event--compact\s*\{[\s\S]*width:\s*100%;/s,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-month-table\s*\{[\s\S]*table-layout:\s*fixed;/s,
+    );
+});
+
+test("calendar composer supports multiple reminders and remembers selected view", () => {
+    assert.match(POPUP_REMINDERS_SOURCE, /REMINDER_OFFSET_OPTIONS/);
+    assert.match(
+        POPUP_REMINDERS_SOURCE,
+        /id="calendar-popup-reminder-offsets"[\s\S]*multiple/s,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /reminderOffsetsMinutes/);
+    assert.match(APP_SOURCE, /SELECTED_VIEW_STORAGE_KEY/);
+    assert.match(APP_SOURCE, /loadSelectedViewPreference/);
+    assert.match(APP_SOURCE, /window\.localStorage\.setItem/);
 });

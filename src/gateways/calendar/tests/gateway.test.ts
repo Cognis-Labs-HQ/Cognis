@@ -159,6 +159,7 @@ test("calendar gateway updates events with recurrence and status", () => {
         startAt: "2026-06-01T09:00:00.000Z",
         endAt: "2026-06-01T10:00:00.000Z",
         attendees: ["bob"],
+        reminderOffsetsMinutes: [60],
     });
 
     const updatedEvent = gateway.updateEvent({
@@ -169,12 +170,14 @@ test("calendar gateway updates events with recurrence and status", () => {
         status: "free",
         recurrence: "weekly",
         attendees: ["bob", "carol"],
+        reminderOffsetsMinutes: [5, 10, 60],
     });
 
     assert.equal(updatedEvent.title, "Weekly Planning");
     assert.equal(updatedEvent.status, "free");
     assert.equal(updatedEvent.recurrence, "weekly");
     assert.deepEqual(updatedEvent.attendees, ["bob", "carol", "alice"]);
+    assert.deepEqual(updatedEvent.reminderOffsetsMinutes, [5, 10, 60]);
     assert.equal(gateway.getEventResponse(createdEvent.id, "carol"), "pending");
 });
 

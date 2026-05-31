@@ -5,6 +5,7 @@ import {
     normalizeEventRecurrence,
     normalizeEventStatus,
     normalizeInviteEmails,
+    normalizeReminderOffsets,
     shiftDateByRecurrence,
     type CalendarEventRecord,
     type CalendarEventRecurrence,
@@ -21,6 +22,7 @@ export function createEventSeries(input: {
     createdBy: string;
     attendees?: string[];
     inviteEmails?: string[];
+    reminderOffsetsMinutes?: number[];
     meetingUrl?: string | null;
     status?: CalendarEventStatus;
     recurrence?: CalendarEventRecurrence;
@@ -39,6 +41,9 @@ export function createEventSeries(input: {
     const normalizedAttendees = normalizeAttendeeList(input.attendees ?? []);
     const normalizedInviteEmails = normalizeInviteEmails(
         input.inviteEmails ?? [],
+    );
+    const normalizedReminderOffsets = normalizeReminderOffsets(
+        input.reminderOffsetsMinutes,
     );
     const normalizedMeetingUrl =
         typeof input.meetingUrl === "string" &&
@@ -94,6 +99,7 @@ export function createEventSeries(input: {
             recurrenceId,
             attendees: [...normalizedAttendees],
             inviteEmails: [...normalizedInviteEmails],
+            reminderOffsetsMinutes: [...normalizedReminderOffsets],
             meetingUrl: normalizedMeetingUrl,
             responses: {},
             createdAt: now,

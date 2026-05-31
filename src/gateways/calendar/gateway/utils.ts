@@ -41,6 +41,7 @@ export interface CalendarEventRecord {
     recurrenceId: string | null;
     attendees: string[];
     inviteEmails: string[];
+    reminderOffsetsMinutes: number[];
     meetingUrl: string | null;
     responses: Record<string, CalendarEventResponse>;
     createdAt: string;
@@ -195,6 +196,28 @@ export function normalizeInviteEmails(inviteEmails: string[]): string[] {
     );
 }
 
+// Approximately one year in minutes; prevents unrealistic reminder offsets.
+const MAX_REMINDER_OFFSET_MINUTES = 7 * 24 * 60 * 52;
+
+export function normalizeReminderOffsets(value: unknown): number[] {
+    const entries = Array.isArray(value) ? value : [];
+    return Array.from(
+        new Set(
+            entries
+                .map((entry) =>
+                    typeof entry === "number" ? entry : Number(entry),
+                )
+                .filter(
+                    (entry) =>
+                        Number.isFinite(entry) &&
+                        entry > 0 &&
+                        entry <= MAX_REMINDER_OFFSET_MINUTES,
+                )
+                .map((entry) => Math.trunc(entry)),
+        ),
+    ).sort((left, right) => left - right);
+}
+
 export function normalizeEventStatus(value: unknown): CalendarEventStatus {
     return value === "free" ? "free" : "busy";
 }
@@ -214,6 +237,26 @@ export function normalizeEventResponse(value: unknown): CalendarEventResponse {
     return value === "accepted" || value === "tentative" || value === "declined"
         ? value
         : "pending";
+}
+
+export function applyEventFieldsFromSource(
+    targetEvent: CalendarEventRecord,
+    sourceEvent: CalendarEventRecord,
+): void {
+    targetEvent.title = sourceEvent.title;
+    targetEvent.description = sourceEvent.description;
+    targetEvent.startAt = sourceEvent.startAt;
+    targetEvent.endAt = sourceEvent.endAt;
+    targetEvent.attendees = [...sourceEvent.attendees];
+    targetEvent.inviteEmails = [...sourceEvent.inviteEmails];
+    targetEvent.reminderOffsetsMinutes = [
+        ...sourceEvent.reminderOffsetsMinutes,
+    ];
+    targetEvent.meetingUrl = sourceEvent.meetingUrl;
+    targetEvent.status = sourceEvent.status;
+    targetEvent.recurrence = sourceEvent.recurrence;
+    targetEvent.recurrenceId = sourceEvent.recurrenceId;
+    targetEvent.updatedAt = sourceEvent.updatedAt;
 }
 
 export function getSeriesLength(recurrence: CalendarEventRecurrence): number {

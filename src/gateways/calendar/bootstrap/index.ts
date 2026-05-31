@@ -15,6 +15,7 @@ import {
     dispatchInviteNotifications,
     errorMessage,
     normalizeAttendeesForOwner,
+    normalizeReminderOffsets,
     normalizeResponseValue,
     normalizeStringList,
     normalizeVisibility,
@@ -306,21 +307,14 @@ function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventsMatch[1]);
-            const body = (await readJson(req)) as {
-                title?: unknown;
-                description?: unknown;
-                startAt?: unknown;
-                endAt?: unknown;
-                attendees?: unknown;
-                inviteEmails?: unknown;
-                meetingUrl?: unknown;
-                status?: unknown;
-                recurrence?: unknown;
-            };
+            const body = (await readJson(req)) as Record<string, unknown>;
             const title = String(body?.title ?? "").trim();
             const startAt = String(body?.startAt ?? "").trim();
             const endAt = String(body?.endAt ?? "").trim();
             const inviteEmails = normalizeStringList(body.inviteEmails);
+            const reminderOffsetsMinutes = normalizeReminderOffsets(
+                body.reminderOffsetsMinutes,
+            );
             const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (!title || !startAt || !endAt) {
                 sendCalendarError(
@@ -358,6 +352,7 @@ function createCalendarCoreRoutes({
                     endAt,
                     attendees,
                     inviteEmails,
+                    reminderOffsetsMinutes,
                     meetingUrl:
                         typeof body.meetingUrl === "string"
                             ? body.meetingUrl
@@ -478,19 +473,7 @@ function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
-            const body = (await readJson(req)) as {
-                title?: unknown;
-                description?: unknown;
-                startAt?: unknown;
-                endAt?: unknown;
-                attendees?: unknown;
-                inviteEmails?: unknown;
-                meetingUrl?: unknown;
-                status?: unknown;
-                recurrence?: unknown;
-                calendarId?: unknown;
-                updateAll?: unknown;
-            };
+            const body = (await readJson(req)) as Record<string, unknown>;
             const inviteEmails = normalizeStringList(body.inviteEmails);
             const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (inviteEmails.length > 0 && !canInviteByEmail) {
@@ -542,6 +525,11 @@ function createCalendarCoreRoutes({
                     attendees,
                     inviteEmails: Array.isArray(body.inviteEmails)
                         ? inviteEmails
+                        : undefined,
+                    reminderOffsetsMinutes: Array.isArray(
+                        body.reminderOffsetsMinutes,
+                    )
+                        ? normalizeReminderOffsets(body.reminderOffsetsMinutes)
                         : undefined,
                     meetingUrl:
                         typeof body.meetingUrl === "string" ||
@@ -893,6 +881,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             endAt: string;
             attendees?: string[];
             inviteEmails?: string[];
+            reminderOffsetsMinutes?: number[];
             meetingUrl?: string | null;
             status?: "busy" | "free";
             recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";

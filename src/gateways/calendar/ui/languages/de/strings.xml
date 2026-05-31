@@ -55,6 +55,14 @@
   <string name="gateway.calendar.upcoming_summary">Kurzübersicht</string>
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Wiederholung</string>
+  <string name="gateway.calendar.event_reminders">Erinnerungen</string>
+  <string name="gateway.calendar.reminder_5m">5 Minuten vorher</string>
+  <string name="gateway.calendar.reminder_10m">10 Minuten vorher</string>
+  <string name="gateway.calendar.reminder_15m">15 Minuten vorher</string>
+  <string name="gateway.calendar.reminder_30m">30 Minuten vorher</string>
+  <string name="gateway.calendar.reminder_1h">1 Stunde vorher</string>
+  <string name="gateway.calendar.reminder_1d">1 Tag vorher</string>
+  <string name="gateway.calendar.reminder_1w">1 Woche vorher</string>
   <string name="gateway.calendar.status_busy">Belegt</string>
   <string name="gateway.calendar.status_free">Frei</string>
   <string name="gateway.calendar.recurrence_none">Keine Wiederholung</string>

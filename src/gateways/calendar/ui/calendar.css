@@ -294,6 +294,12 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0.3rem;
+    table-layout: fixed;
+}
+
+.calendar-month-table th,
+.calendar-month-table td {
+    min-width: 0;
 }
 
 .calendar-month-table th {
@@ -346,6 +352,7 @@
     display: grid;
     gap: 0.35rem;
     min-height: 8.5rem;
+    min-width: 0;
 }
 
 .calendar-month-day--outside {
@@ -491,6 +498,16 @@
 
 .calendar-all-day-toggle {
     margin-top: 0.35rem;
+}
+
+.calendar-reminder-field {
+    margin-top: 0.35rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.calendar-reminder-field select {
+    min-height: 7rem;
 }
 
 .calendar-all-day-range {

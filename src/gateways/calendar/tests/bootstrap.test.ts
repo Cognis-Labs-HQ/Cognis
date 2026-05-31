@@ -201,9 +201,14 @@ test("calendar event update/delete endpoints forbid editing mirrored invite copi
             startAt: "2026-06-02T09:00:00.000Z",
             endAt: "2026-06-02T10:00:00.000Z",
             attendees: ["bob"],
+            reminderOffsetsMinutes: [10, 60],
         },
     );
     assert.equal(createEventResponse.statusCode, 201);
+    assert.deepEqual(
+        createEventResponse.body.data.reminderOffsetsMinutes,
+        [10, 60],
+    );
     const sourceEventId = createEventResponse.body.data.id;
 
     const bobCalendars = await dispatchJson(
@@ -219,6 +224,10 @@ test("calendar event update/delete endpoints forbid editing mirrored invite copi
         "GET",
         bobToken,
         `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
+    );
+    assert.deepEqual(
+        invitedEventsResponse.body.data.events[0].reminderOffsetsMinutes,
+        [10, 60],
     );
     const mirroredEventId = invitedEventsResponse.body.data.events[0].id;
 

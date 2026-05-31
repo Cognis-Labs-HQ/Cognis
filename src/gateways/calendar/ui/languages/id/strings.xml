@@ -55,6 +55,14 @@
   <string name="gateway.calendar.upcoming_summary">Ringkasan Mendatang</string>
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Pengulangan</string>
+  <string name="gateway.calendar.event_reminders">Pengingat</string>
+  <string name="gateway.calendar.reminder_5m">5 menit sebelumnya</string>
+  <string name="gateway.calendar.reminder_10m">10 menit sebelumnya</string>
+  <string name="gateway.calendar.reminder_15m">15 menit sebelumnya</string>
+  <string name="gateway.calendar.reminder_30m">30 menit sebelumnya</string>
+  <string name="gateway.calendar.reminder_1h">1 jam sebelumnya</string>
+  <string name="gateway.calendar.reminder_1d">1 hari sebelumnya</string>
+  <string name="gateway.calendar.reminder_1w">1 minggu sebelumnya</string>
   <string name="gateway.calendar.status_busy">Sibuk</string>
   <string name="gateway.calendar.status_free">Kosong</string>
   <string name="gateway.calendar.recurrence_none">Tidak Berulang</string>

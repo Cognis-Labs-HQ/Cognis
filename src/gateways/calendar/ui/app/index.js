@@ -7,6 +7,8 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createCalendarPopupManager } from "./popup-manager.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
+const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
+
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
@@ -22,6 +24,31 @@ export async function mount(root, { signal } = {}) {
     let selectedView = "month";
     let activeDate = new Date();
     let composer = null;
+
+    function loadSelectedViewPreference() {
+        try {
+            const stored = window.localStorage.getItem(
+                SELECTED_VIEW_STORAGE_KEY,
+            );
+            if (
+                stored &&
+                calendarUi.CALENDAR_VIEWS.includes(String(stored).trim())
+            ) {
+                return String(stored).trim();
+            }
+        } catch {}
+        return "month";
+    }
+
+    function setSelectedView(nextView) {
+        if (!calendarUi.CALENDAR_VIEWS.includes(nextView)) return;
+        selectedView = nextView;
+        try {
+            window.localStorage.setItem(SELECTED_VIEW_STORAGE_KEY, nextView);
+        } catch {}
+    }
+
+    selectedView = loadSelectedViewPreference();
 
     function ensureSelectedCalendarId() {
         const hasSelectedCalendar =
@@ -250,7 +277,7 @@ export async function mount(root, { signal } = {}) {
                                     ) {
                                         return;
                                     }
-                                    selectedView = nextView;
+                                    setSelectedView(nextView);
                                     composer.refresh();
                                 },
                                 { signal },
@@ -403,7 +430,7 @@ export async function mount(root, { signal } = {}) {
                                         monthIndex,
                                         1,
                                     );
-                                    selectedView = "month";
+                                    setSelectedView("month");
                                     composer.refresh();
                                 },
                                 { signal },
@@ -423,7 +450,7 @@ export async function mount(root, { signal } = {}) {
                                             ) ?? "",
                                         ),
                                     );
-                                    selectedView = "week";
+                                    setSelectedView("week");
                                     composer.refresh();
                                 },
                                 { signal },
@@ -443,7 +470,7 @@ export async function mount(root, { signal } = {}) {
                                             ) ?? "",
                                         ),
                                     );
-                                    selectedView = "day";
+                                    setSelectedView("day");
                                     composer.refresh();
                                 },
                                 { signal },

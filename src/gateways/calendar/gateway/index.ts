@@ -3,11 +3,13 @@ import { normalizeCalendarColor } from "../color.js";
 import type { CalendarStore } from "../calendar-store.js";
 import { CalendarTokenStore } from "./token-store.js";
 import {
+    applyEventFieldsFromSource,
     normalizeAttendeeList,
     normalizeEventRecurrence,
     normalizeEventResponse,
     normalizeEventStatus,
     normalizeInviteEmails,
+    normalizeReminderOffsets,
     shiftDateByRecurrence,
     type CaldavTokenRecord,
     type CalendarAdapter,
@@ -354,6 +356,7 @@ export class CoreCalendarGateway {
         endAt: string;
         attendees?: string[];
         inviteEmails?: string[];
+        reminderOffsetsMinutes?: number[];
         meetingUrl?: string | null;
         status?: CalendarEventStatus;
         recurrence?: CalendarEventRecurrence;
@@ -377,6 +380,7 @@ export class CoreCalendarGateway {
                 input.attendees,
             ),
             inviteEmails: input.inviteEmails,
+            reminderOffsetsMinutes: input.reminderOffsetsMinutes,
             meetingUrl: input.meetingUrl,
             status: input.status,
             recurrence: input.recurrence,
@@ -393,6 +397,7 @@ export class CoreCalendarGateway {
         createdBy: string;
         attendees?: string[];
         inviteEmails?: string[];
+        reminderOffsetsMinutes?: number[];
         meetingUrl?: string | null;
         status?: CalendarEventStatus;
         recurrence?: CalendarEventRecurrence;
@@ -454,6 +459,7 @@ export class CoreCalendarGateway {
         endAt?: string;
         attendees?: string[];
         inviteEmails?: string[];
+        reminderOffsetsMinutes?: number[];
         meetingUrl?: string | null;
         status?: CalendarEventStatus;
         recurrence?: CalendarEventRecurrence;
@@ -506,6 +512,10 @@ export class CoreCalendarGateway {
             input.inviteEmails === undefined
                 ? [...event.inviteEmails]
                 : normalizeInviteEmails(input.inviteEmails);
+        const nextReminderOffsets =
+            input.reminderOffsetsMinutes === undefined
+                ? [...event.reminderOffsetsMinutes]
+                : normalizeReminderOffsets(input.reminderOffsetsMinutes);
         const nextMeetingUrl =
             input.meetingUrl === undefined
                 ? event.meetingUrl
@@ -566,6 +576,7 @@ export class CoreCalendarGateway {
                       : targetEvent.endAt;
             targetEvent.attendees = [...nextAttendees];
             targetEvent.inviteEmails = [...nextInviteEmails];
+            targetEvent.reminderOffsetsMinutes = [...nextReminderOffsets];
             targetEvent.meetingUrl = nextMeetingUrl;
             targetEvent.status = nextStatus;
             targetEvent.recurrence = nextRecurrence;
@@ -582,17 +593,7 @@ export class CoreCalendarGateway {
             for (const mirroredEvent of this.listMirroredEvents(
                 targetEvent.id,
             )) {
-                mirroredEvent.title = targetEvent.title;
-                mirroredEvent.description = targetEvent.description;
-                mirroredEvent.startAt = targetEvent.startAt;
-                mirroredEvent.endAt = targetEvent.endAt;
-                mirroredEvent.attendees = [...targetEvent.attendees];
-                mirroredEvent.inviteEmails = [...targetEvent.inviteEmails];
-                mirroredEvent.meetingUrl = targetEvent.meetingUrl;
-                mirroredEvent.status = targetEvent.status;
-                mirroredEvent.recurrence = targetEvent.recurrence;
-                mirroredEvent.recurrenceId = targetEvent.recurrenceId;
-                mirroredEvent.updatedAt = targetEvent.updatedAt;
+                applyEventFieldsFromSource(mirroredEvent, targetEvent);
                 this.refreshEventResponses(mirroredEvent);
                 this.scheduleStoreWrite(() =>
                     this.store?.saveEvent(mirroredEvent),

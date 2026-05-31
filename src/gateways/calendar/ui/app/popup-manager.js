@@ -10,6 +10,14 @@ import {
     isUserMatchByIdentifier,
     normalizeUserIdentifier,
 } from "./popup-manager-participant-utils.js";
+import {
+    getSelectedReminderOffsets,
+    renderReminderField,
+} from "./popup-manager-reminders.js";
+import {
+    findOverlappingEvents,
+    isSafeHttpUrl,
+} from "./popup-manager-event-utils.js";
 import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 
 export function createCalendarPopupManager({
@@ -33,33 +41,6 @@ export function createCalendarPopupManager({
     syncRouteSelection,
     refreshComposer,
 }) {
-    function findOverlappingEvents({
-        calendarId,
-        startAt,
-        endAt,
-        excludedEventId = null,
-    }) {
-        return (getEventsByCalendar()[calendarId] ?? []).filter((event) => {
-            if (excludedEventId && event.id === excludedEventId) {
-                return false;
-            }
-            const existingStart = new Date(event.startAt).getTime();
-            const existingEnd = new Date(event.endAt).getTime();
-            const nextStart = new Date(startAt).getTime();
-            const nextEnd = new Date(endAt).getTime();
-            return existingStart < nextEnd && existingEnd > nextStart;
-        });
-    }
-
-    function isSafeHttpUrl(value) {
-        try {
-            const parsed = new URL(String(value ?? ""));
-            return parsed.protocol === "https:" || parsed.protocol === "http:";
-        } catch {
-            return false;
-        }
-    }
-
     function getEventParticipants(event, participantDirectory = null) {
         const resolveUserLabel = (identifier) => {
             const fallbackIdentifier = identifier;
@@ -96,6 +77,7 @@ export function createCalendarPopupManager({
         endAt,
         attendees,
         inviteEmails,
+        reminderOffsetsMinutes,
         createMeeting,
         status,
         recurrence,
@@ -115,7 +97,7 @@ export function createCalendarPopupManager({
                 return false;
             }
         }
-        const overlaps = findOverlappingEvents({
+        const overlaps = findOverlappingEvents(getEventsByCalendar(), {
             calendarId: targetCalendarId,
             startAt: new Date(startAt).toISOString(),
             endAt: new Date(endAt).toISOString(),
@@ -141,6 +123,7 @@ export function createCalendarPopupManager({
                     endAt: new Date(endAt).toISOString(),
                     attendees,
                     inviteEmails,
+                    reminderOffsetsMinutes,
                     meetingUrl,
                     status,
                     recurrence,
@@ -168,13 +151,14 @@ export function createCalendarPopupManager({
         endAt,
         attendees,
         inviteEmails,
+        reminderOffsetsMinutes,
         status,
         recurrence,
         meetingUrl,
         updateAll,
     }) {
         const targetCalendarId = String(calendarId ?? "").trim();
-        const overlaps = findOverlappingEvents({
+        const overlaps = findOverlappingEvents(getEventsByCalendar(), {
             calendarId: targetCalendarId,
             startAt: new Date(startAt).toISOString(),
             endAt: new Date(endAt).toISOString(),
@@ -193,6 +177,7 @@ export function createCalendarPopupManager({
                 endAt: new Date(endAt).toISOString(),
                 attendees,
                 inviteEmails,
+                reminderOffsetsMinutes,
                 meetingUrl,
                 status,
                 recurrence,
@@ -525,6 +510,8 @@ export function createCalendarPopupManager({
                 status: eventData?.event?.status ?? "busy",
                 recurrence: eventData?.event?.recurrence ?? "none",
                 calendarId: eventData?.calendar?.id ?? getSelectedCalendarId(),
+                reminderOffsetsMinutes:
+                    eventData?.event?.reminderOffsetsMinutes ?? [],
             },
         });
         let participantOptions = [];
@@ -718,6 +705,11 @@ export function createCalendarPopupManager({
           <div id="calendar-popup-participant-chips" class="calendar-participant-list"></div>
         </label>
         ${showMeetingToggle ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-create-meeting" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.create_meeting"))}</span></label>` : ""}
+        ${renderReminderField({
+            i18n,
+            escapeHtml,
+            selectedOffsets: eventData?.event?.reminderOffsetsMinutes ?? [],
+        })}
         ${eventData?.event?.recurrence && eventData.event.recurrence !== "none" ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-update-all" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.update_series"))}</span></label>` : ""}
       `,
             closeProtection: true,
@@ -876,6 +868,8 @@ export function createCalendarPopupManager({
                           .filter((entry) => entry.type === "email")
                           .map((entry) => entry.value)
                     : [];
+                const reminderOffsetsMinutes =
+                    getSelectedReminderOffsets(overlay);
                 if (eventData) {
                     let meetingUrl = eventData.event.meetingUrl ?? null;
                     if (!meetingUrl && createMeeting && getJitsiAvailable()) {
@@ -902,6 +896,7 @@ export function createCalendarPopupManager({
                         endAt: values.endAt,
                         attendees,
                         inviteEmails,
+                        reminderOffsetsMinutes,
                         status: values.status,
                         recurrence: values.recurrence,
                         meetingUrl,
@@ -921,6 +916,7 @@ export function createCalendarPopupManager({
                     endAt: values.endAt,
                     attendees,
                     inviteEmails,
+                    reminderOffsetsMinutes,
                     createMeeting,
                     status: values.status,
                     recurrence: values.recurrence,

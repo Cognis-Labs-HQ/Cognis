@@ -236,8 +236,9 @@
 .calendar-slot-event--compact {
     padding: 0.22rem 0.38rem;
     border-radius: 8px;
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
+    justify-items: stretch;
 }
 
 .calendar-slot-event-time {

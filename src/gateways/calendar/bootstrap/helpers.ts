@@ -48,6 +48,26 @@ export function normalizeStringList(value: unknown): string[] {
     );
 }
 
+export function normalizeReminderOffsets(value: unknown): number[] {
+    const maxReminderOffsetMinutes = 7 * 24 * 60 * 52;
+    if (!Array.isArray(value)) return [];
+    return Array.from(
+        new Set(
+            value
+                .map((entry) =>
+                    typeof entry === "number" ? entry : Number(entry),
+                )
+                .filter(
+                    (entry) =>
+                        Number.isFinite(entry) &&
+                        entry > 0 &&
+                        entry <= maxReminderOffsetMinutes,
+                )
+                .map((entry) => Math.trunc(entry)),
+        ),
+    ).sort((left, right) => left - right);
+}
+
 export function buildCalendarShareData(input: {
     gateway: CoreCalendarGateway;
     ownerAccountId: string;
@@ -549,6 +569,7 @@ export async function syncInvitedCopiesForEvents({
                     endAt: event.endAt,
                     attendees: event.attendees,
                     inviteEmails: event.inviteEmails,
+                    reminderOffsetsMinutes: event.reminderOffsetsMinutes,
                     meetingUrl: event.meetingUrl,
                     status: event.status,
                     recurrence: event.recurrence,
@@ -566,6 +587,7 @@ export async function syncInvitedCopiesForEvents({
                 createdBy: event.createdBy,
                 attendees: event.attendees,
                 inviteEmails: event.inviteEmails,
+                reminderOffsetsMinutes: event.reminderOffsetsMinutes,
                 meetingUrl: event.meetingUrl,
                 status: event.status,
                 recurrence: event.recurrence,
