@@ -4,6 +4,7 @@ import {
     isAllDayRange,
 } from "./popup-manager-all-day.js";
 import {
+    createParticipantDirectory,
     isUserMatchByIdentifier,
     normalizeUserIdentifier,
 } from "./popup-manager-participant-utils.js";
@@ -47,10 +48,6 @@ export function createCalendarPopupManager({
         });
     }
 
-    function buildParticipantLabel(value) {
-        return value;
-    }
-
     function isSafeHttpUrl(value) {
         try {
             const parsed = new URL(String(value ?? ""));
@@ -62,9 +59,9 @@ export function createCalendarPopupManager({
 
     function getEventParticipants(event, participantDirectory = null) {
         const resolveUserLabel = (identifier) => {
-            if (!participantDirectory) return buildParticipantLabel(identifier);
+            if (!participantDirectory) return identifier;
             const profile = participantDirectory.get(identifier);
-            if (!profile) return buildParticipantLabel(identifier);
+            if (!profile) return identifier;
             return profile.displayName || profile.username || identifier;
         };
         return [
@@ -79,51 +76,10 @@ export function createCalendarPopupManager({
                 ? event.inviteEmails.map((entry) => ({
                       type: "email",
                       value: entry,
-                      label: buildParticipantLabel(entry),
+                      label: entry,
                   }))
                 : []),
         ];
-    }
-
-    async function createParticipantDirectory(identifiers) {
-        const normalizedIdentifiers = Array.from(
-            new Set(
-                (Array.isArray(identifiers) ? identifiers : [])
-                    .map((entry) => String(entry ?? "").trim())
-                    .filter(Boolean),
-            ),
-        );
-        const participantDirectory = new Map();
-        await Promise.all(
-            normalizedIdentifiers.map(async (identifier) => {
-                try {
-                    const response = await apiFetch(
-                        `/api/v1/search?type=users&q=${encodeURIComponent(identifier)}`,
-                    );
-                    if (!response.ok) return;
-                    const payload = await response.json();
-                    const users = Array.isArray(payload?.data)
-                        ? payload.data
-                        : [];
-                    const matchedUser = users.find((entry) =>
-                        isUserMatchByIdentifier(entry, identifier),
-                    );
-                    if (!matchedUser) return;
-                    const username =
-                        normalizeUserIdentifier(matchedUser) || identifier;
-                    const displayName = String(
-                        matchedUser?.displayName ?? matchedUser?.label ?? "",
-                    ).trim();
-                    participantDirectory.set(identifier, {
-                        username,
-                        displayName,
-                    });
-                } catch {
-                    // best-effort participant enrichment
-                }
-            }),
-        );
-        return participantDirectory;
     }
 
     async function submitEvent({
@@ -341,8 +297,10 @@ export function createCalendarPopupManager({
                     ...Object.keys(eventData.event.responses ?? {}),
                 ]),
             );
-            const participantDirectory =
-                await createParticipantDirectory(participantIds);
+            const participantDirectory = await createParticipantDirectory(
+                apiFetch,
+                participantIds,
+            );
             const renderParticipantName = (identifier) => {
                 const profile = participantDirectory.get(identifier);
                 return (
@@ -565,7 +523,10 @@ export function createCalendarPopupManager({
         });
         let participantOptions = [];
         const eventParticipantDirectory = eventData
-            ? await createParticipantDirectory(eventData.event.attendees ?? [])
+            ? await createParticipantDirectory(
+                  apiFetch,
+                  eventData.event.attendees ?? [],
+              )
             : new Map();
         const startsAsAllDay = isAllDayRange(
             eventData?.event?.startAt ?? startAt,

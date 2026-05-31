@@ -13,6 +13,10 @@ const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
     "utf8",
 );
+const TIMED_GRID_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.js"),
+    "utf8",
+);
 const POPUP_MANAGER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager.js"),
     "utf8",
@@ -21,11 +25,15 @@ const CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar.css"),
     "utf8",
 );
+const TIMED_GRID_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.css"),
+    "utf8",
+);
 
 test("calendar timed views render positioned event cards instead of row spans", () => {
-    assert.match(HELPERS_SOURCE, /buildTimedEventLayout/);
-    assert.match(HELPERS_SOURCE, /calendar-timed-event-layer/);
-    assert.match(HELPERS_SOURCE, /calendar-timed-event-card/);
+    assert.match(TIMED_GRID_SOURCE, /buildTimedEventLayout/);
+    assert.match(TIMED_GRID_SOURCE, /calendar-timed-event-layer/);
+    assert.match(TIMED_GRID_SOURCE, /calendar-timed-event-card/);
     assert.match(HELPERS_SOURCE, /calendar-week-day-columns/);
     assert.match(HELPERS_SOURCE, /calendar-day-timed-lane/);
     assert.doesNotMatch(HELPERS_SOURCE, /rowspan="\$\{spanRows\}"/);
@@ -56,16 +64,14 @@ test("calendar conflict warning requires a second save to create anyway", () => 
 });
 
 test("calendar CSS styles timed event lanes and current week highlights", () => {
+    assert.match(CSS_SOURCE, /@import "\.\/calendar-timed-grid\.css";/);
+    assert.match(TIMED_GRID_CSS_SOURCE, /\.calendar-timed-event-layer\s*\{/s);
     assert.match(
-        CSS_SOURCE,
-        /\.calendar-timed-event-layer\s*\{/s,
-    );
-    assert.match(
-        CSS_SOURCE,
+        TIMED_GRID_CSS_SOURCE,
         /\.calendar-week-day-header--current\s*\{/s,
     );
     assert.match(
-        CSS_SOURCE,
+        TIMED_GRID_CSS_SOURCE,
         /\.calendar-week-slot--current-time\s*\{/s,
     );
 });
