@@ -23,14 +23,6 @@ const LIVELINESS_TIMEOUT_MS = 5000;
 
 const storeByExecutor = new WeakMap();
 
-/**
- * Sends a JSON response with a fixed content-type header.
- *
- * @param {import("node:http").ServerResponse} res - HTTP response object.
- * @param {number} status - HTTP status code.
- * @param {unknown} payload - Serializable JSON payload.
- * @returns {void}
- */
 function sendJson(res, status, payload) {
     res.writeHead(status, { "content-type": "application/json" });
     res.end(JSON.stringify(payload));

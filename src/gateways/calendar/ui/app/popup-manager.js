@@ -1,4 +1,12 @@
 import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
+import {
+    bindAllDayComposerControls,
+    isAllDayRange,
+} from "./popup-manager-all-day.js";
+import {
+    isUserMatchByIdentifier,
+    normalizeUserIdentifier,
+} from "./popup-manager-participant-utils.js";
 
 export function createCalendarPopupManager({
     root,
@@ -50,71 +58,6 @@ export function createCalendarPopupManager({
         } catch {
             return false;
         }
-    }
-
-    function isMidnightDate(dateValue) {
-        return (
-            dateValue.getHours() === 0 &&
-            dateValue.getMinutes() === 0 &&
-            dateValue.getSeconds() === 0 &&
-            dateValue.getMilliseconds() === 0
-        );
-    }
-
-    function toDateInputValue(value) {
-        const parsed = new Date(String(value ?? ""));
-        if (Number.isNaN(parsed.getTime())) return "";
-        const year = String(parsed.getFullYear()).padStart(4, "0");
-        const month = String(parsed.getMonth() + 1).padStart(2, "0");
-        const day = String(parsed.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-    }
-
-    function addDaysToDateInputValue(dateValue, daysToAdd) {
-        const parsed = new Date(`${dateValue}T00:00`);
-        if (Number.isNaN(parsed.getTime())) return "";
-        parsed.setDate(parsed.getDate() + daysToAdd);
-        const year = String(parsed.getFullYear()).padStart(4, "0");
-        const month = String(parsed.getMonth() + 1).padStart(2, "0");
-        const day = String(parsed.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-    }
-
-    function isAllDayRange(startAt, endAt) {
-        const start = new Date(String(startAt ?? ""));
-        const end = new Date(String(endAt ?? ""));
-        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-            return false;
-        }
-        if (end.getTime() <= start.getTime()) return false;
-        return isMidnightDate(start) && isMidnightDate(end);
-    }
-
-    function normalizeUserIdentifier(entry) {
-        const accountId = String(entry?.accountId ?? "").trim();
-        const username = String(entry?.username ?? accountId ?? "").trim();
-        const id = String(entry?.id ?? "").trim();
-        return String(username || accountId || id)
-            .trim()
-            .replace(/^@/, "")
-            .toLowerCase();
-    }
-
-    function isUserMatchByIdentifier(user, identifier) {
-        const normalizedIdentifier = String(identifier ?? "")
-            .trim()
-            .replace(/^@/, "")
-            .toLowerCase();
-        if (!normalizedIdentifier) return false;
-        const normalizedUserIdentifier = normalizeUserIdentifier(user);
-        const normalizedHandle = String(user?.handle ?? "")
-            .trim()
-            .replace(/^@/, "")
-            .toLowerCase();
-        return (
-            normalizedUserIdentifier === normalizedIdentifier ||
-            normalizedHandle === normalizedIdentifier
-        );
     }
 
     function getEventParticipants(event, participantDirectory = null) {
@@ -403,12 +346,7 @@ export function createCalendarPopupManager({
                     String(identifier)
                 );
             };
-            const responseValue = String(eventData.meta?.response ?? "")
-                .trim()
-                .toLowerCase();
-            const canRespond =
-                eventData.meta?.canRespond === true &&
-                !calendarUi.EVENT_RESPONSE_OPTIONS.includes(responseValue);
+            const canRespond = eventData.meta?.canRespond === true;
             await openPopup({
                 title: eventData.event.title,
                 body: () => `
@@ -817,141 +755,7 @@ export function createCalendarPopupManager({
                         signal,
                     });
                 }
-                const startField = overlay.querySelector(
-                    '[data-form-builder-field="startAt"]',
-                );
-                const endField = overlay.querySelector(
-                    '[data-form-builder-field="endAt"]',
-                );
-                const startInput = overlay.querySelector("#form-builder-startAt");
-                const endInput = overlay.querySelector("#form-builder-endAt");
-                const allDayToggle = overlay.querySelector(
-                    "#calendar-popup-all-day",
-                );
-                const allDayRange = overlay.querySelector(
-                    "#calendar-popup-all-day-range",
-                );
-                const allDayStartDateInput = overlay.querySelector(
-                    "#calendar-popup-all-day-start-date",
-                );
-                const allDayEndDateInput = overlay.querySelector(
-                    "#calendar-popup-all-day-end-date",
-                );
-                let timedStartValue =
-                    startInput instanceof HTMLInputElement
-                        ? String(startInput.value ?? "")
-                        : "";
-                let timedEndValue =
-                    endInput instanceof HTMLInputElement
-                        ? String(endInput.value ?? "")
-                        : "";
-                const syncDateRangeFromTimeInputs = () => {
-                    if (
-                        !(startInput instanceof HTMLInputElement) ||
-                        !(endInput instanceof HTMLInputElement) ||
-                        !(allDayStartDateInput instanceof HTMLInputElement) ||
-                        !(allDayEndDateInput instanceof HTMLInputElement)
-                    ) {
-                        return;
-                    }
-                    const startDateValue = toDateInputValue(startInput.value);
-                    const endDateValue = toDateInputValue(endInput.value);
-                    if (!startDateValue) return;
-                    const parsedEnd = new Date(endInput.value);
-                    const parsedStart = new Date(startInput.value);
-                    const endsAtMidnight =
-                        !Number.isNaN(parsedEnd.getTime()) &&
-                        !Number.isNaN(parsedStart.getTime()) &&
-                        parsedEnd.getTime() > parsedStart.getTime() &&
-                        isMidnightDate(parsedEnd);
-                    allDayStartDateInput.value = startDateValue;
-                    allDayEndDateInput.value = endsAtMidnight
-                        ? addDaysToDateInputValue(endDateValue, -1)
-                        : endDateValue || startDateValue;
-                };
-                const syncTimeInputsFromDateRange = () => {
-                    if (
-                        !(startInput instanceof HTMLInputElement) ||
-                        !(endInput instanceof HTMLInputElement) ||
-                        !(allDayStartDateInput instanceof HTMLInputElement) ||
-                        !(allDayEndDateInput instanceof HTMLInputElement)
-                    ) {
-                        return;
-                    }
-                    const startDateValue = String(
-                        allDayStartDateInput.value ?? "",
-                    ).trim();
-                    const endDateValue = String(
-                        allDayEndDateInput.value ?? "",
-                    ).trim();
-                    if (!startDateValue || !endDateValue) return;
-                    const normalizedEndDate =
-                        endDateValue < startDateValue
-                            ? startDateValue
-                            : endDateValue;
-                    if (normalizedEndDate !== endDateValue) {
-                        allDayEndDateInput.value = normalizedEndDate;
-                    }
-                    startInput.value = `${startDateValue}T00:00`;
-                    endInput.value = `${addDaysToDateInputValue(normalizedEndDate, 1)}T00:00`;
-                    startInput.dispatchEvent(new Event("input", { bubbles: true }));
-                    endInput.dispatchEvent(new Event("input", { bubbles: true }));
-                };
-                const setAllDayMode = (enabled) => {
-                    if (
-                        !(allDayRange instanceof HTMLElement) ||
-                        !(startField instanceof HTMLElement) ||
-                        !(endField instanceof HTMLElement)
-                    ) {
-                        return;
-                    }
-                    if (enabled) {
-                        if (
-                            startInput instanceof HTMLInputElement &&
-                            endInput instanceof HTMLInputElement
-                        ) {
-                            timedStartValue = String(startInput.value ?? "");
-                            timedEndValue = String(endInput.value ?? "");
-                        }
-                        syncDateRangeFromTimeInputs();
-                        syncTimeInputsFromDateRange();
-                    } else if (
-                        startInput instanceof HTMLInputElement &&
-                        endInput instanceof HTMLInputElement &&
-                        timedStartValue &&
-                        timedEndValue
-                    ) {
-                        startInput.value = timedStartValue;
-                        endInput.value = timedEndValue;
-                        startInput.dispatchEvent(new Event("input", { bubbles: true }));
-                        endInput.dispatchEvent(new Event("input", { bubbles: true }));
-                    }
-                    startField.hidden = enabled;
-                    endField.hidden = enabled;
-                    allDayRange.hidden = !enabled;
-                };
-                if (
-                    allDayToggle instanceof HTMLInputElement &&
-                    allDayStartDateInput instanceof HTMLInputElement &&
-                    allDayEndDateInput instanceof HTMLInputElement
-                ) {
-                    setAllDayMode(allDayToggle.checked);
-                    allDayToggle.addEventListener(
-                        "change",
-                        () => setAllDayMode(allDayToggle.checked),
-                        { signal },
-                    );
-                    allDayStartDateInput.addEventListener(
-                        "input",
-                        syncTimeInputsFromDateRange,
-                        { signal },
-                    );
-                    allDayEndDateInput.addEventListener(
-                        "input",
-                        syncTimeInputsFromDateRange,
-                        { signal },
-                    );
-                }
+                bindAllDayComposerControls({ overlay, signal });
                 renderParticipants(overlay);
                 renderParticipantOptions(overlay);
                 const participantSearch = overlay.querySelector(

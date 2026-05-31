@@ -711,11 +711,16 @@ function createEventComposerBuilder({
         {
             name: "title",
             labelKey: "gateway.calendar.event_title",
-            required: true,
             maxCharacters: 120,
             value: String(defaultValues.title ?? ""),
             disabled: readOnly,
             criteria: [
+                {
+                    id: "event-title-max",
+                    type: "maxLength",
+                    value: 120,
+                    messageKey: "gateway.calendar.event_title_max",
+                },
                 {
                     id: "event-title-required",
                     type: "custom",

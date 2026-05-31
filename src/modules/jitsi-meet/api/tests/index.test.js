@@ -75,6 +75,9 @@ test("jitsi meetings API exposes current events query endpoint", () => {
 
     assert.match(apiSource, /calendar:listCalendars/);
     assert.match(apiSource, /calendar:listEvents/);
-    assert.match(routesSource, /\/api\/v1\/modules\/jitsi-meet\/events\/current/);
+    assert.match(
+        routesSource,
+        /\/api\/v1\/modules\/jitsi-meet\/events\/current/,
+    );
     assert.match(routesSource, /ownership must be one of all, own, or invited/);
 });

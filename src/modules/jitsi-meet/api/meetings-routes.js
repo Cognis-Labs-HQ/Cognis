@@ -146,9 +146,7 @@ export function registerMeetingRoutes({
                     return;
                 }
                 windowStart = new Date(dateStart);
-                windowStart.setMinutes(
-                    windowStart.getMinutes() + startMinutes,
-                );
+                windowStart.setMinutes(windowStart.getMinutes() + startMinutes);
                 windowEnd = new Date(dateStart);
                 windowEnd.setMinutes(windowEnd.getMinutes() + endMinutes);
             }
@@ -188,16 +186,10 @@ export function registerMeetingRoutes({
             const now = new Date();
             const filteredRows = eventRows
                 .filter((event) => {
-                    if (
-                        ownership === "own" &&
-                        !event.isOwner
-                    ) {
+                    if (ownership === "own" && !event.isOwner) {
                         return false;
                     }
-                    if (
-                        ownership === "invited" &&
-                        !event.isInvited
-                    ) {
+                    if (ownership === "invited" && !event.isInvited) {
                         return false;
                     }
                     const hasMeeting = Boolean(
@@ -237,7 +229,11 @@ export function registerMeetingRoutes({
                     }
                     return true;
                 })
-                .sort((left, right) => left.startAt.localeCompare(right.startAt));
+                .sort(
+                    (left, right) =>
+                        new Date(left.startAt).getTime() -
+                        new Date(right.startAt).getTime(),
+                );
 
             sendJson(res, 200, { data: filteredRows });
         },
