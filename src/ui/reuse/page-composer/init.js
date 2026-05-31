@@ -3797,8 +3797,6 @@ export function createPageComposer(
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
-        let closeMobileDrawerIfNeeded = () => {};
-
         if (frameless) {
             root.querySelector(".app-shell")?.classList.add(
                 "app-shell--frameless",
@@ -3821,7 +3819,6 @@ export function createPageComposer(
                     );
                 };
 
-                closeMobileDrawerIfNeeded = () => {};
                 mobileMedia.addEventListener("change", syncMobileToolbarMode);
                 syncMobileToolbarMode();
 
@@ -3878,12 +3875,7 @@ export function createPageComposer(
                     btn.dataset.composerScroll === activeSubPageId,
                 );
                 btn.addEventListener("click", async () => {
-                    const didSwitch = await switchSubPage(
-                        btn.dataset.composerScroll,
-                    );
-                    if (didSwitch) {
-                        closeMobileDrawerIfNeeded();
-                    }
+                    await switchSubPage(btn.dataset.composerScroll);
                 });
             } else {
                 btn.addEventListener("click", () => {
@@ -3896,7 +3888,6 @@ export function createPageComposer(
                         (b) => b.classList.remove("active"),
                     );
                     btn.classList.add("active");
-                    closeMobileDrawerIfNeeded();
                 });
             }
         });

@@ -62,10 +62,7 @@ test("page composer includes mobile toolbar scroll behavior", () => {
         source,
         /toolbarEl\.classList\.toggle\(\s*"toolbar--mobile-scroll",\s*mobileMedia\.matches,\s*\)/m,
     );
-    assert.match(
-        source,
-        /if \(didSwitch\) \{\s*closeMobileDrawerIfNeeded\(\);\s*\}/m,
-    );
+    assert.doesNotMatch(source, /closeMobileDrawerIfNeeded/);
 });
 
 test("page composer resolves edit toggle from the active page root", () => {

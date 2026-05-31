@@ -155,6 +155,13 @@ function createMessageTemplateId() {
     return `template-${Date.now().toString(36)}-${randomSuffix}`;
 }
 
+/**
+ * Wrap the current composer selection with markdown delimiters.
+ * @param {HTMLTextAreaElement | null | undefined} input
+ * @param {string} before
+ * @param {string} [after]
+ * @returns {void}
+ */
 function wrapComposerSelection(input, before, after = before) {
     if (!(input instanceof HTMLTextAreaElement)) return;
     const start = input.selectionStart ?? 0;
@@ -173,6 +180,12 @@ function wrapComposerSelection(input, before, after = before) {
     input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+/**
+ * Prefix each selected composer line with markdown syntax.
+ * @param {HTMLTextAreaElement | null | undefined} input
+ * @param {string} prefix
+ * @returns {void}
+ */
 function prefixComposerLines(input, prefix) {
     if (!(input instanceof HTMLTextAreaElement)) return;
     const start = input.selectionStart ?? 0;

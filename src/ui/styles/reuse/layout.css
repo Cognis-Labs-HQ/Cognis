@@ -209,10 +209,6 @@
     display: flex;
 }
 
-.global-navrow--compact .topnav {
-    min-width: 0;
-}
-
 .topnav {
     display: flex;
     grid-column: 1;
