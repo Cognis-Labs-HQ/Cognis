@@ -137,11 +137,26 @@ test("calendar composer supports multiple reminders and remembers selected view"
     assert.match(APP_SOURCE, /window\.localStorage\.setItem/);
 });
 
-test("calendar timed views auto-scroll to the current timeslot and all-day toggle hides duplicate datetime rows", () => {
+test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /scrollTimedViewsToCurrentSlot/);
-    assert.match(APP_SOURCE, /requestAnimationFrame\(scrollTimedViewsToCurrentSlot\)/);
+    assert.match(
+        APP_SOURCE,
+        /requestAnimationFrame\(scrollTimedViewsToCurrentSlot\)/,
+    );
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
-    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startInput\.closest\("\.form-builder-field"\)/);
-    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startField\.style\.display = "none"/);
-    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startField\.style\.removeProperty\("display"\)/);
+});
+
+test("calendar all-day toggle hides duplicate datetime rows", () => {
+    assert.match(
+        POPUP_MANAGER_ALL_DAY_SOURCE,
+        /resolveFieldWrapper\(startInput,\s*"startAt"\)/,
+    );
+    assert.match(
+        POPUP_MANAGER_ALL_DAY_SOURCE,
+        /startField\.style\.display = "none"/,
+    );
+    assert.match(
+        POPUP_MANAGER_ALL_DAY_SOURCE,
+        /startField\.style\.removeProperty\("display"\)/,
+    );
 });

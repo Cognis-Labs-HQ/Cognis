@@ -60,16 +60,16 @@ export function isAllDayRange(startAt, endAt) {
  * @returns {void}
  */
 export function bindAllDayComposerControls({ overlay, signal }) {
+    const resolveFieldWrapper = (input, fieldName) =>
+        input instanceof HTMLElement
+            ? input.closest(".form-builder-field")
+            : overlay.querySelector(`[data-form-builder-field="${fieldName}"]`);
     const startInput = overlay.querySelector("#form-builder-startAt");
     const endInput = overlay.querySelector("#form-builder-endAt");
-    const startField =
-        startInput instanceof HTMLElement
-            ? startInput.closest(".form-builder-field")
-            : overlay.querySelector('[data-form-builder-field="startAt"]');
-    const endField =
-        endInput instanceof HTMLElement
-            ? endInput.closest(".form-builder-field")
-            : overlay.querySelector('[data-form-builder-field="endAt"]');
+    // Prefer the input's nearest wrapper so hide/show still works even if
+    // form-builder data attributes are changed by template composition.
+    const startField = resolveFieldWrapper(startInput, "startAt");
+    const endField = resolveFieldWrapper(endInput, "endAt");
     const allDayToggle = overlay.querySelector("#calendar-popup-all-day");
     const allDayRange = overlay.querySelector("#calendar-popup-all-day-range");
     const allDayStartDateInput = overlay.querySelector(
@@ -164,8 +164,6 @@ export function bindAllDayComposerControls({ overlay, signal }) {
             startInput.dispatchEvent(new Event("input", { bubbles: true }));
             endInput.dispatchEvent(new Event("input", { bubbles: true }));
         }
-        startField.hidden = enabled;
-        endField.hidden = enabled;
         if (enabled) {
             startField.style.display = "none";
             endField.style.display = "none";
