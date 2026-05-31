@@ -546,6 +546,12 @@ export function createCalendarPopupManager({
             return JSON.stringify([entry.type, entry.value]);
         }
 
+        /**
+         * Tracks whether the composer values still match the last conflict warning.
+         *
+         * @param {{ calendarId: string, startAt: string, endAt: string }} values
+         * @returns {string}
+         */
         function buildConflictCreateKey(values) {
             return JSON.stringify([
                 String(values.calendarId ?? "").trim(),

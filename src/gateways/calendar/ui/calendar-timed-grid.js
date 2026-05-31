@@ -3,6 +3,14 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 
+/**
+ * Clamps an event's rendered span to a visible range.
+ *
+ * @param {{ startAt: string, endAt: string }} event
+ * @param {Date} rangeStart
+ * @param {Date} rangeEnd
+ * @returns {{ startTime: number, endTime: number } | null}
+ */
 function resolveRenderedEventRange(event, rangeStart, rangeEnd) {
     const startTime = Math.max(
         new Date(event.startAt).getTime(),
@@ -20,6 +28,14 @@ function resolveRenderedEventRange(event, rangeStart, rangeEnd) {
     };
 }
 
+/**
+ * Assigns overlapping timed events into parallel columns within each overlap group.
+ *
+ * @param {Array<{ startAt: string, endAt: string }>} events
+ * @param {Date} rangeStart
+ * @param {Date} rangeEnd
+ * @returns {Array<{ event: object, startTime: number, endTime: number, columnIndex: number, columnCount: number }>}
+ */
 export function buildTimedEventLayout(events, rangeStart, rangeEnd) {
     const laidOutEvents = events
         .map((event) => {

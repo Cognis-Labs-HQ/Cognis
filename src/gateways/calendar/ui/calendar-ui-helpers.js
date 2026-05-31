@@ -261,9 +261,9 @@ function getResponseActionLabelKey(response) {
     return `gateway.calendar.response_action_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
 
-function formatEventTimeLabel(event, i18n) {
+function formatEventTimeLabel(event, { allDayLabel = "" } = {}) {
     if (isAllDayEvent(event)) {
-        return i18n.t("gateway.calendar.all_day");
+        return allDayLabel;
     }
     const startLabel = formatTime(event.startAt, "");
     const endLabel = formatTime(event.endAt, "");
@@ -326,7 +326,11 @@ function renderEventButton(
     event,
     { compact = false, showTime = false, i18n = null } = {},
 ) {
-    const timeLabel = showTime ? formatEventTimeLabel(event, i18n) : "";
+    const timeLabel = showTime
+        ? formatEventTimeLabel(event, {
+              allDayLabel: i18n?.t("gateway.calendar.all_day") ?? "",
+          })
+        : "";
     return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}">
       ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
       <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong>
