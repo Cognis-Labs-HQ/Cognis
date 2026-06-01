@@ -120,7 +120,7 @@ export function createCalendarPopupManager({
         setSelectedCalendarId(targetCalendarId);
         syncRouteSelection();
         showToast(i18n.t("gateway.calendar.create_event_success"), "success");
-        return createdEventId || true;
+        return createdEventId !== "" ? createdEventId : true;
     }
 
     async function updateExistingEvent({
