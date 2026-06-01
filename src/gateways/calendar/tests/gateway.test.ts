@@ -40,6 +40,24 @@ test("calendar gateway normalizes custom calendar colors", () => {
     assert.equal(fallback.color, "#1f8ceb");
 });
 
+test("calendar gateway applies calendar default reminders when event reminders are missing", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Default reminders",
+        defaultReminderOffsetsMinutes: [10, 60],
+    });
+    const event = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Standup",
+        startAt: "2026-06-10T09:00:00.000Z",
+        endAt: "2026-06-10T09:30:00.000Z",
+        reminderOffsetsMinutes: [],
+    });
+    assert.deepEqual(event.reminderOffsetsMinutes, [10, 60]);
+});
+
 test("calendar gateway does not allow deleting the default calendar", () => {
     const gateway = new CoreCalendarGateway();
     const defaultCalendar = gateway.ensureDefaultCalendar("alice");

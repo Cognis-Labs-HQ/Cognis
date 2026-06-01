@@ -94,6 +94,7 @@ function createCalendarCoreRoutes({
                 name?: unknown;
                 visibility?: unknown;
                 color?: unknown;
+                defaultReminderOffsetsMinutes?: unknown;
             };
             const name = String(body?.name ?? "").trim();
             if (!name) {
@@ -111,6 +112,9 @@ function createCalendarCoreRoutes({
                     name,
                     visibility: normalizeVisibility(body?.visibility),
                     color: normalizeCalendarColor(body?.color),
+                    defaultReminderOffsetsMinutes: normalizeReminderOffsets(
+                        body?.defaultReminderOffsetsMinutes,
+                    ),
                 });
                 await gateway.flushStore();
                 sendJson(res, 201, { data: created });
@@ -154,6 +158,12 @@ function createCalendarCoreRoutes({
                     color:
                         body?.color !== undefined
                             ? normalizeCalendarColor(body.color)
+                            : undefined,
+                    defaultReminderOffsetsMinutes:
+                        body?.defaultReminderOffsetsMinutes !== undefined
+                            ? normalizeReminderOffsets(
+                                  body.defaultReminderOffsetsMinutes,
+                              )
                             : undefined,
                 });
                 await gateway.flushStore();
@@ -858,12 +868,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             name: string,
             visibility?: CalendarVisibility,
             color?: string,
+            defaultReminderOffsetsMinutes?: number[],
         ) =>
             gateway.createCalendar({
                 ownerAccountId,
                 name,
                 visibility,
                 color: normalizeCalendarColor(color),
+                defaultReminderOffsetsMinutes,
             }),
     );
     ctx.capabilities.contribute(

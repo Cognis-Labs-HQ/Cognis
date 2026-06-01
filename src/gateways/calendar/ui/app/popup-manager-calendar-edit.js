@@ -1,3 +1,8 @@
+import {
+    getSelectedReminderOffsets,
+    renderReminderField,
+} from "./popup-manager-reminders.js";
+
 export function createCalendarEditPopupHandler({
     i18n,
     apiFetch,
@@ -30,6 +35,11 @@ export function createCalendarEditPopupHandler({
               <option value="public"${!isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_public"))}</option>
             </select>
           </div>
+          ${renderReminderField({
+              i18n,
+              escapeHtml,
+              selectedOffsets: calendar.defaultReminderOffsetsMinutes ?? [],
+          })}
           <div class="calendar-share-section">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.share_calendar"))}</p>
             <div class="calendar-share-controls">
@@ -228,12 +238,19 @@ export function createCalendarEditPopupHandler({
                     overlay.querySelector("#calendar-edit-visibility")?.value ??
                         "private",
                 );
+                const defaultReminderOffsetsMinutes =
+                    getSelectedReminderOffsets(overlay);
                 const res = await apiFetch(
                     `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,
                     {
                         method: "PATCH",
                         headers: { "content-type": "application/json" },
-                        body: JSON.stringify({ name, color, visibility }),
+                        body: JSON.stringify({
+                            name,
+                            color,
+                            visibility,
+                            defaultReminderOffsetsMinutes,
+                        }),
                     },
                 );
                 if (!res.ok) {

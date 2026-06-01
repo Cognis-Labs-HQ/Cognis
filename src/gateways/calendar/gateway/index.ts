@@ -171,6 +171,7 @@ export class CoreCalendarGateway {
         name: string;
         visibility?: CalendarVisibility;
         color?: string;
+        defaultReminderOffsetsMinutes?: number[];
         isDefault?: boolean;
     }): CalendarRecord {
         const now = new Date().toISOString();
@@ -198,6 +199,9 @@ export class CoreCalendarGateway {
             name: normalizedName,
             visibility: input.visibility ?? "private",
             color: normalizeCalendarColor(input.color),
+            defaultReminderOffsetsMinutes: normalizeReminderOffsets(
+                input.defaultReminderOffsetsMinutes,
+            ),
             isDefault: input.isDefault === true,
             createdAt: now,
             updatedAt: now,
@@ -317,6 +321,7 @@ export class CoreCalendarGateway {
         name?: string;
         visibility?: CalendarVisibility;
         color?: string;
+        defaultReminderOffsetsMinutes?: number[];
     }): CalendarRecord {
         const calendar = this.getOwnedCalendar(
             input.ownerAccountId,
@@ -340,6 +345,11 @@ export class CoreCalendarGateway {
         }
         if (input.color !== undefined) {
             calendar.color = normalizeCalendarColor(input.color);
+        }
+        if (input.defaultReminderOffsetsMinutes !== undefined) {
+            calendar.defaultReminderOffsetsMinutes = normalizeReminderOffsets(
+                input.defaultReminderOffsetsMinutes,
+            );
         }
         calendar.updatedAt = new Date().toISOString();
         this.upsertCalendarRecord(calendar);
@@ -380,7 +390,10 @@ export class CoreCalendarGateway {
                 input.attendees,
             ),
             inviteEmails: input.inviteEmails,
-            reminderOffsetsMinutes: input.reminderOffsetsMinutes,
+            reminderOffsetsMinutes:
+                normalizeReminderOffsets(input.reminderOffsetsMinutes).length > 0
+                    ? input.reminderOffsetsMinutes
+                    : calendar.defaultReminderOffsetsMinutes,
             meetingUrl: input.meetingUrl,
             status: input.status,
             recurrence: input.recurrence,
@@ -516,6 +529,10 @@ export class CoreCalendarGateway {
             input.reminderOffsetsMinutes === undefined
                 ? [...event.reminderOffsetsMinutes]
                 : normalizeReminderOffsets(input.reminderOffsetsMinutes);
+        const resolvedReminderOffsets =
+            nextReminderOffsets.length > 0
+                ? nextReminderOffsets
+                : [...targetCalendar.defaultReminderOffsetsMinutes];
         const nextMeetingUrl =
             input.meetingUrl === undefined
                 ? event.meetingUrl
@@ -576,7 +593,7 @@ export class CoreCalendarGateway {
                       : targetEvent.endAt;
             targetEvent.attendees = [...nextAttendees];
             targetEvent.inviteEmails = [...nextInviteEmails];
-            targetEvent.reminderOffsetsMinutes = [...nextReminderOffsets];
+            targetEvent.reminderOffsetsMinutes = [...resolvedReminderOffsets];
             targetEvent.meetingUrl = nextMeetingUrl;
             targetEvent.status = nextStatus;
             targetEvent.recurrence = nextRecurrence;

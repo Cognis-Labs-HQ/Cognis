@@ -80,9 +80,13 @@ export async function createParticipantDirectory(apiFetch, identifiers) {
                 const displayName = String(
                     matchedUser?.displayName ?? matchedUser?.label ?? "",
                 ).trim();
+                const avatarKey = String(
+                    matchedUser?.avatarKey ?? matchedUser?.avatar ?? "",
+                ).trim();
                 participantDirectory.set(identifier, {
                     username,
                     displayName,
+                    avatarKey,
                 });
             } catch {
                 // best-effort participant enrichment
@@ -101,22 +105,43 @@ export async function createParticipantDirectory(apiFetch, identifiers) {
  */
 export function buildParticipantCardHtml(
     entry,
-    { escapeHtml, i18n, participantKey },
+    { escapeHtml, i18n, participantKey, removable = true },
 ) {
     const key = escapeHtml(participantKey(entry));
     const removeLabel = escapeHtml(
         i18n.t("gateway.calendar.remove_participant"),
     );
-    const removeButton = `<button type="button" class="calendar-participant-card-remove" data-participant-remove="${key}" aria-label="${removeLabel}">×</button>`;
+    const removeButton = removable
+        ? `<button type="button" class="calendar-participant-card-remove" data-participant-remove="${key}" aria-label="${removeLabel}">×</button>`
+        : "";
     if (entry.type === "user") {
         const handle = String(entry.value ?? "").trim();
         const displayName = String(entry.label ?? handle).trim();
-        const avatarMarkup = buildProfileAvatarMarkup(displayName, handle);
+        const avatarMarkup = buildProfileAvatarMarkup({
+            avatarKey:
+                typeof entry.avatarKey === "string" && entry.avatarKey.trim()
+                    ? entry.avatarKey.trim()
+                    : null,
+            label: displayName || handle,
+            colorSeed: handle,
+            avatarClass: "calendar-participant-card-avatar-profile",
+            imageClass: "calendar-participant-card-avatar-image",
+            fallbackClass: "calendar-participant-card-avatar-fallback",
+            profileHandle: null,
+        });
         return `<div class="calendar-participant-card"><a href="/profile/${escapeHtml(handle)}" class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></a>${removeButton}</div>`;
     }
     const email = String(entry.value ?? "").trim();
     const displayLabel = String(entry.label ?? email).trim();
-    const avatarMarkup = buildProfileAvatarMarkup(displayLabel, email);
+    const avatarMarkup = buildProfileAvatarMarkup({
+        avatarKey: null,
+        label: displayLabel || email,
+        colorSeed: email,
+        avatarClass: "calendar-participant-card-avatar-profile",
+        imageClass: "calendar-participant-card-avatar-image",
+        fallbackClass: "calendar-participant-card-avatar-fallback",
+        profileHandle: null,
+    });
     return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayLabel)}</span></span></div>${removeButton}</div>`;
 }
 

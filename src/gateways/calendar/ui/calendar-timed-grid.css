@@ -254,7 +254,9 @@
 }
 
 .calendar-slot-event-title {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     font-weight: 700;
     min-width: 0;
     max-width: 100%;
@@ -265,14 +267,15 @@
     inset-block-start: var(--calendar-title-sticky-offset);
     margin-top: auto;
     z-index: 1;
-    background: color-mix(
-        in srgb,
-        var(--surface, transparent) var(--calendar-title-sticky-surface-mix),
-        var(--calendar-event-stripe, var(--calendar-accent))
-            var(--calendar-title-sticky-stripe-mix)
-    );
-    border-radius: 0.4rem;
-    padding-inline: 0.18rem;
+    background: transparent;
+    border-radius: 0;
+    padding-inline: 0;
+}
+
+.calendar-slot-event-video-icon {
+    font-size: 0.76rem;
+    line-height: 1;
+    flex: 0 0 auto;
 }
 
 .calendar-slot-event-overflow-badge {

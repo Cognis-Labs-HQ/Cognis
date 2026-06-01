@@ -55,6 +55,11 @@ export function createCalendarPopupManager({
         return [
             ...(Array.isArray(event.attendees)
                 ? event.attendees.map((entry) => ({
+                      avatarKey:
+                          participantDirectory
+                              ?.get(entry)
+                              ?.avatarKey?.toString()
+                              .trim() || "",
                       type: "user",
                       value: entry,
                       label: resolveUserLabel(entry),
@@ -200,26 +205,27 @@ export function createCalendarPopupManager({
         const isRecurring = eventData.event.recurrence !== "none";
         await openPopup({
             title: i18n.t("gateway.calendar.delete_event"),
+            className: "calendar-delete-event-popup",
             body: () =>
                 `<p>${escapeHtml(i18n.t(isRecurring ? "gateway.calendar.delete_event_prompt_recurring" : "gateway.calendar.delete_event_prompt"))}</p>`,
             actions: isRecurring
                 ? [
                       {
+                          id: "cancel",
+                          label: i18n.t("ui.reuse.cancel"),
+                          variant: "neutral",
+                      },
+                      {
                           id: "delete-selected",
                           label: i18n.t("gateway.calendar.delete_this_event"),
-                          variant: "cancel",
+                          variant: "danger",
                       },
                       {
                           id: "delete-future",
                           label: i18n.t(
                               "gateway.calendar.delete_future_events",
                           ),
-                          variant: "cancel",
-                      },
-                      {
-                          id: "cancel",
-                          label: i18n.t("ui.reuse.cancel"),
-                          variant: "neutral",
+                          variant: "danger",
                       },
                   ]
                 : [
@@ -302,6 +308,10 @@ export function createCalendarPopupManager({
                 );
             };
             const canRespond = eventData.meta?.canRespond === true;
+            const isAllDay = isAllDayRange(
+                eventData.event.startAt,
+                eventData.event.endAt,
+            );
             await openPopup({
                 title: eventData.event.title,
                 body: () => `
@@ -309,10 +319,10 @@ export function createCalendarPopupManager({
             <dl class="calendar-event-detail-list">
               <dt>${escapeHtml(i18n.t("gateway.calendar.event_calendar"))}</dt>
               <dd>${escapeHtml(eventData.calendar.name)}</dd>
-              <dt>${escapeHtml(i18n.t("gateway.calendar.event_start"))}</dt>
+              ${isAllDay ? `<dt>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</dt><dd>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</dd>` : `<dt>${escapeHtml(i18n.t("gateway.calendar.event_start"))}</dt>
               <dd>${escapeHtml(new Date(eventData.event.startAt).toLocaleString())}</dd>
               <dt>${escapeHtml(i18n.t("gateway.calendar.event_end"))}</dt>
-              <dd>${escapeHtml(new Date(eventData.event.endAt).toLocaleString())}</dd>
+              <dd>${escapeHtml(new Date(eventData.event.endAt).toLocaleString())}</dd>`}
               <dt>${escapeHtml(i18n.t("gateway.calendar.event_status"))}</dt>
               <dd>${escapeHtml(i18n.t(calendarUi.getStatusLabelKey(eventData.event.status)))}</dd>
               <dt>${escapeHtml(i18n.t("gateway.calendar.event_recurrence"))}</dt>
@@ -320,10 +330,9 @@ export function createCalendarPopupManager({
             </dl>
             <div class="calendar-event-detail-badges">${calendarUi.renderEventBadges(eventData.event, i18n)}</div>
             ${eventData.event.description ? `<p class="calendar-event-detail-description">${escapeHtml(eventData.event.description)}</p>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_description"))}</p>`}
-            ${eventData.event.meetingUrl ? `<p><a href="${escapeHtml(eventData.event.meetingUrl)}" target="_blank" rel="noreferrer noopener">${escapeHtml(i18n.t("gateway.calendar.event_meeting_link"))}</a></p>` : ""}
             <section class="calendar-event-detail-section">
               <h4>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</h4>
-              ${eventData.event.attendees?.length ? `<ul class="calendar-inline-list">${eventData.event.attendees.map((attendee) => `<li>${escapeHtml(renderParticipantName(attendee))}</li>`).join("")}</ul>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`}
+              ${eventData.event.attendees?.length ? `<div class="calendar-participant-list">${eventData.event.attendees.map((attendee) => buildParticipantCardHtml({ type: "user", value: attendee, label: renderParticipantName(attendee), avatarKey: participantDirectory.get(attendee)?.avatarKey ?? "" }, { escapeHtml, i18n, removable: false, participantKey: () => attendee })).join("")}</div>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`}
             </section>
             <section class="calendar-event-detail-section">
               <h4>${escapeHtml(i18n.t("gateway.calendar.responses_title"))}</h4>
@@ -383,6 +392,15 @@ export function createCalendarPopupManager({
                         variant: "cancel",
                     },
                 ],
+                onOpen: (overlay) => {
+                    bindProfilePreviews(i18n);
+                    const attendeeList = overlay.querySelector(
+                        ".calendar-participant-list",
+                    );
+                    if (attendeeList instanceof HTMLElement) {
+                        hydrateProfileAvatars(attendeeList);
+                    }
+                },
                 onAction: async (actionId) => {
                     if (actionId === null) {
                         setSelectedEventId("");
@@ -628,9 +646,13 @@ export function createCalendarPopupManager({
                         const displayName = String(
                             entry?.displayName ?? entry?.label ?? "",
                         ).trim();
+                        const avatarKey = String(
+                            entry?.avatarKey ?? entry?.avatar ?? "",
+                        ).trim();
                         participantOptions.push({
                             type: "user",
                             value: userIdentifier,
+                            avatarKey,
                             label:
                                 displayName &&
                                 displayName.toLowerCase() !==
@@ -699,7 +721,13 @@ export function createCalendarPopupManager({
         ${renderReminderField({
             i18n,
             escapeHtml,
-            selectedOffsets: eventData?.event?.reminderOffsetsMinutes ?? [],
+            selectedOffsets:
+                eventData?.event?.reminderOffsetsMinutes ??
+                (getCalendars().find(
+                    (calendar) =>
+                        calendar.id ===
+                        (eventData?.calendar?.id ?? getSelectedCalendarId()),
+                )?.defaultReminderOffsetsMinutes ?? []),
         })}
         ${eventData?.event?.recurrence && eventData.event.recurrence !== "none" ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-update-all" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.update_series"))}</span></label>` : ""}
       `,
@@ -878,6 +906,23 @@ export function createCalendarPopupManager({
                     : [];
                 const reminderOffsetsMinutes =
                     getSelectedReminderOffsets(overlay);
+                const resolvedReminderOffsets =
+                    reminderOffsetsMinutes.length > 0
+                        ? reminderOffsetsMinutes
+                        : (() => {
+                              const selectedCalendar =
+                                  getCalendars().find(
+                                      (calendar) =>
+                                          calendar.id ===
+                                          normalizedValues.calendarId,
+                                  ) ?? null;
+                              return Array.isArray(
+                                  selectedCalendar
+                                      ?.defaultReminderOffsetsMinutes,
+                              )
+                                  ? selectedCalendar.defaultReminderOffsetsMinutes
+                                  : [];
+                          })();
                 if (eventData) {
                     let meetingUrl = eventData.event.meetingUrl ?? null;
                     if (!meetingUrl && createMeeting && getJitsiAvailable()) {
@@ -904,7 +949,7 @@ export function createCalendarPopupManager({
                         endAt: normalizedValues.endAt,
                         attendees,
                         inviteEmails,
-                        reminderOffsetsMinutes,
+                        reminderOffsetsMinutes: resolvedReminderOffsets,
                         status: normalizedValues.status,
                         recurrence: normalizedValues.recurrence,
                         meetingUrl,
@@ -924,7 +969,7 @@ export function createCalendarPopupManager({
                     endAt: normalizedValues.endAt,
                     attendees,
                     inviteEmails,
-                    reminderOffsetsMinutes,
+                    reminderOffsetsMinutes: resolvedReminderOffsets,
                     createMeeting,
                     status: normalizedValues.status,
                     recurrence: normalizedValues.recurrence,

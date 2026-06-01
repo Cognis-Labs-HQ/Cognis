@@ -236,6 +236,10 @@ async function createJitsiMeeting(attendees) {
     );
     if (!response.ok) throw new Error("meeting_create_failed");
     const payload = await response.json();
+    const meetingId = String(payload?.data?.id ?? "").trim();
+    if (meetingId) {
+        return `${window.location.origin}/meetings?meetingId=${encodeURIComponent(meetingId)}`;
+    }
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
 }
 
@@ -326,14 +330,20 @@ function renderEventButton(
     event,
     { compact = false, showTime = false, i18n = null } = {},
 ) {
-    const timeLabel = showTime
-        ? formatEventTimeLabel(event, {
-              allDayLabel: i18n?.t("gateway.calendar.all_day") ?? "",
-          })
+    const allDayLabel = i18n?.t("gateway.calendar.all_day") ?? "";
+    const timeLabel = isAllDayEvent(event)
+        ? allDayLabel
+        : showTime
+          ? formatEventTimeLabel(event, {
+                allDayLabel,
+            })
+          : "";
+    const meetingIcon = event.meetingUrl
+        ? `<span class="calendar-slot-event-video-icon" title="${escapeHtml(i18n?.t("gateway.calendar.event_meeting_link") ?? "Meeting")}" aria-hidden="true">🎥</span>`
         : "";
     return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}">
       ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
-      <strong class="calendar-slot-event-title">${escapeHtml(event.title)}</strong>
+      <strong class="calendar-slot-event-title">${meetingIcon}${escapeHtml(event.title)}</strong>
     </button>`;
 }
 
@@ -366,13 +376,12 @@ function renderUpcomingEvents(events, i18n) {
                 event,
             ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
         <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
-          <strong>${escapeHtml(event.title)}</strong>
+          <strong>${event.meetingUrl ? `<span class="calendar-slot-event-video-icon" title="${escapeHtml(i18n.t("gateway.calendar.event_meeting_link"))}" aria-hidden="true">🎥</span>` : ""}${escapeHtml(event.title)}</strong>
           <div>${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}</div>
           <div>${renderEventBadges(event, i18n)}</div>
           ${event.calendarName ? `<div>${escapeHtml(event.calendarName)}</div>` : ""}
         </button>
         ${event.description ? `<div>${escapeHtml(event.description)}</div>` : ""}
-        ${event.meetingUrl ? `<div><a href="${escapeHtml(event.meetingUrl)}" target="_blank" rel="noreferrer noopener">${i18n.t("gateway.calendar.event_meeting_link")}</a></div>` : ""}
       </li>`,
         )
         .join("")}</ul>`;
@@ -600,13 +609,22 @@ function renderMonthGrid(events, currentDate, i18n) {
                   }),
               )
               .join("");
+          const placeholderCount = Math.max(
+              0,
+              MONTH_EVENT_PREVIEW_LIMIT -
+                  Math.min(dayEvents.length, MONTH_EVENT_PREVIEW_LIMIT),
+          );
+          const placeholders = Array.from(
+              { length: placeholderCount },
+              () => '<span class="calendar-month-event-placeholder" aria-hidden="true"></span>',
+          ).join("");
           const overflowCount = dayEvents.length - MONTH_EVENT_PREVIEW_LIMIT;
           return `<td><article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}">
           <header>
             <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>
             <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">+</button>
           </header>
-          <div class="calendar-month-event-preview">${previewMarkup}${overflowCount > 0 ? `<div class="calendar-month-event-overflow">…</div>` : ""}</div>
+          <div class="calendar-month-event-preview">${previewMarkup}${placeholders}${overflowCount > 0 ? `<div class="calendar-month-event-overflow">…</div>` : ""}</div>
         </article></td>`;
       }).join("")}
     </tr>`);
@@ -637,7 +655,7 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
         const weekEnd = addDays(weekStart, 7);
         const weekNumber = getISOWeekNumber(weekStart);
         rows.push(`<div class="calendar-year-month-mini-row">
-      <span class="calendar-year-mini-week">${weekNumber}</span>
+      <button type="button" class="calendar-year-mini-week-jump" data-week-row-date="${weekStart.toISOString()}" title="${escapeHtml(i18n.t("gateway.calendar.open_week_view"))}">${weekNumber}</button>
       ${Array.from({ length: 7 }, (_, dayIndex) => {
           const day = addDays(weekStart, dayIndex);
           const isOutsideMonth = day.getMonth() !== monthStart.getMonth();

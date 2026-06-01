@@ -22,6 +22,7 @@ export interface CalendarRecord {
     name: string;
     visibility: CalendarVisibility;
     color: string;
+    defaultReminderOffsetsMinutes: number[];
     isDefault: boolean;
     createdAt: string;
     updatedAt: string;

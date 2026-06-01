@@ -59,6 +59,14 @@ export class DbCalendarStore implements CalendarStore {
         );
     }
 
+    private async ensureCalendarTableColumns(): Promise<void> {
+        const rawDb = this.db as Partial<RawDbExecutor>;
+        if (typeof rawDb.execute !== "function") return;
+        await rawDb.execute(
+            "ALTER TABLE calendar_calendars ADD COLUMN IF NOT EXISTS default_reminder_offsets_json TEXT NOT NULL DEFAULT '[]'",
+        );
+    }
+
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
             name: "calendar_calendars",
@@ -74,6 +82,12 @@ export class DbCalendarStore implements CalendarStore {
                     notNull: true,
                     default: "false",
                 },
+                {
+                    name: "default_reminder_offsets_json",
+                    type: "text",
+                    notNull: true,
+                    default: "'[]'",
+                },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
             ],
@@ -84,6 +98,7 @@ export class DbCalendarStore implements CalendarStore {
                 },
             ],
         });
+        await this.ensureCalendarTableColumns();
         await this.db.ensureTable({
             name: "calendar_events",
             columns: [
@@ -156,6 +171,7 @@ export class DbCalendarStore implements CalendarStore {
                 "visibility",
                 "color",
                 "is_default",
+                "default_reminder_offsets_json",
                 "created_at",
                 "updated_at",
             ],
@@ -171,6 +187,9 @@ export class DbCalendarStore implements CalendarStore {
             visibility: row.visibility === "public" ? "public" : "private",
             color: String(row.color ?? "#1f8ceb"),
             isDefault: Boolean(row.is_default),
+            defaultReminderOffsetsMinutes: parseJsonNumberArray(
+                row.default_reminder_offsets_json,
+            ),
             createdAt: String(row.created_at ?? ""),
             updatedAt: String(row.updated_at ?? ""),
         }));
@@ -187,6 +206,9 @@ export class DbCalendarStore implements CalendarStore {
                 visibility: calendar.visibility,
                 color: calendar.color,
                 is_default: calendar.isDefault,
+                default_reminder_offsets_json: JSON.stringify(
+                    calendar.defaultReminderOffsetsMinutes,
+                ),
                 created_at: calendar.createdAt,
                 updated_at: calendar.updatedAt,
             },
@@ -199,6 +221,9 @@ export class DbCalendarStore implements CalendarStore {
                     visibility: calendar.visibility,
                     color: calendar.color,
                     is_default: calendar.isDefault,
+                    default_reminder_offsets_json: JSON.stringify(
+                        calendar.defaultReminderOffsetsMinutes,
+                    ),
                     created_at: calendar.createdAt,
                     updated_at: calendar.updatedAt,
                 },
