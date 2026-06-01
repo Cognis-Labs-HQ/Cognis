@@ -11,10 +11,17 @@ import {
     isUserMatchByIdentifier,
     normalizeUserIdentifier,
 } from "./popup-manager-participant-utils.js";
+import { getEventParticipants } from "./popup-manager-participant-mappers.js";
 import {
     getSelectedReminderOffsets,
     renderReminderField,
 } from "./popup-manager-reminders.js";
+import { renderReadOnlyEventPopupBody } from "./popup-manager-read-only-render.js";
+import {
+    buildConflictCreateKey,
+    buildParticipantEntryKey,
+    resolveReminderOffsetsForCalendar,
+} from "./popup-manager-composer-helpers.js";
 import {
     findOverlappingEvents,
     isSafeHttpUrl,
@@ -42,39 +49,6 @@ export function createCalendarPopupManager({
     syncRouteSelection,
     refreshComposer,
 }) {
-    function getEventParticipants(event, participantDirectory = null) {
-        const resolveUserLabel = (identifier) => {
-            const fallbackIdentifier = identifier;
-            if (!participantDirectory) return fallbackIdentifier;
-            const profile = participantDirectory.get(identifier);
-            if (!profile) return fallbackIdentifier;
-            return (
-                profile.displayName || profile.username || fallbackIdentifier
-            );
-        };
-        return [
-            ...(Array.isArray(event.attendees)
-                ? event.attendees.map((entry) => ({
-                      avatarKey:
-                          participantDirectory
-                              ?.get(entry)
-                              ?.avatarKey?.toString()
-                              .trim() || "",
-                      type: "user",
-                      value: entry,
-                      label: resolveUserLabel(entry),
-                  }))
-                : []),
-            ...(Array.isArray(event.inviteEmails)
-                ? event.inviteEmails.map((entry) => ({
-                      type: "email",
-                      value: entry,
-                      label: entry,
-                  }))
-                : []),
-        ];
-    }
-
     async function submitEvent({
         calendarId,
         title,
@@ -314,32 +288,17 @@ export function createCalendarPopupManager({
             );
             await openPopup({
                 title: eventData.event.title,
-                body: () => `
-          <div class="calendar-event-details">
-            <dl class="calendar-event-detail-list">
-              <dt>${escapeHtml(i18n.t("gateway.calendar.event_calendar"))}</dt>
-              <dd>${escapeHtml(eventData.calendar.name)}</dd>
-              ${isAllDay ? `<dt>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</dt><dd>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</dd>` : `<dt>${escapeHtml(i18n.t("gateway.calendar.event_start"))}</dt>
-              <dd>${escapeHtml(new Date(eventData.event.startAt).toLocaleString())}</dd>
-              <dt>${escapeHtml(i18n.t("gateway.calendar.event_end"))}</dt>
-              <dd>${escapeHtml(new Date(eventData.event.endAt).toLocaleString())}</dd>`}
-              <dt>${escapeHtml(i18n.t("gateway.calendar.event_status"))}</dt>
-              <dd>${escapeHtml(i18n.t(calendarUi.getStatusLabelKey(eventData.event.status)))}</dd>
-              <dt>${escapeHtml(i18n.t("gateway.calendar.event_recurrence"))}</dt>
-              <dd>${escapeHtml(i18n.t(calendarUi.getRecurrenceLabelKey(eventData.event.recurrence)))}</dd>
-            </dl>
-            <div class="calendar-event-detail-badges">${calendarUi.renderEventBadges(eventData.event, i18n)}</div>
-            ${eventData.event.description ? `<p class="calendar-event-detail-description">${escapeHtml(eventData.event.description)}</p>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_description"))}</p>`}
-            <section class="calendar-event-detail-section">
-              <h4>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</h4>
-              ${eventData.event.attendees?.length ? `<div class="calendar-participant-list">${eventData.event.attendees.map((attendee) => buildParticipantCardHtml({ type: "user", value: attendee, label: renderParticipantName(attendee), avatarKey: participantDirectory.get(attendee)?.avatarKey ?? "" }, { escapeHtml, i18n, removable: false, participantKey: () => attendee })).join("")}</div>` : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`}
-            </section>
-            <section class="calendar-event-detail-section">
-              <h4>${escapeHtml(i18n.t("gateway.calendar.responses_title"))}</h4>
-              ${calendarUi.renderResponseSummary(eventData.event, i18n, participantDirectory) || `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_responses"))}</p>`}
-            </section>
-          </div>
-        `,
+                body: () =>
+                    renderReadOnlyEventPopupBody({
+                        eventData,
+                        i18n,
+                        escapeHtml,
+                        calendarUi,
+                        participantDirectory,
+                        renderParticipantName,
+                        buildParticipantCardHtml,
+                        isAllDay,
+                    }),
                 actions: [
                     ...(canRespond
                         ? calendarUi.EVENT_RESPONSE_OPTIONS.map(
@@ -551,23 +510,7 @@ export function createCalendarPopupManager({
         let popupController = null;
         let confirmedConflictCreateKey = "";
 
-        function participantKey(entry) {
-            return JSON.stringify([entry.type, entry.value]);
-        }
-
-        /**
-         * Tracks whether the composer values still match the last conflict warning.
-         *
-         * @param {{ calendarId: string, startAt: string, endAt: string }} values
-         * @returns {string}
-         */
-        function buildConflictCreateKey(values) {
-            return JSON.stringify([
-                String(values.calendarId ?? "").trim(),
-                String(values.startAt ?? "").trim(),
-                String(values.endAt ?? "").trim(),
-            ]);
-        }
+        const participantKey = buildParticipantEntryKey;
 
         function renderParticipants(overlay) {
             const list = overlay.querySelector(
@@ -723,11 +666,12 @@ export function createCalendarPopupManager({
             escapeHtml,
             selectedOffsets:
                 eventData?.event?.reminderOffsetsMinutes ??
-                (getCalendars().find(
+                getCalendars().find(
                     (calendar) =>
                         calendar.id ===
                         (eventData?.calendar?.id ?? getSelectedCalendarId()),
-                )?.defaultReminderOffsetsMinutes ?? []),
+                )?.defaultReminderOffsetsMinutes ??
+                [],
         })}
         ${eventData?.event?.recurrence && eventData.event.recurrence !== "none" ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-update-all" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.update_series"))}</span></label>` : ""}
       `,
@@ -907,22 +851,11 @@ export function createCalendarPopupManager({
                 const reminderOffsetsMinutes =
                     getSelectedReminderOffsets(overlay);
                 const resolvedReminderOffsets =
-                    reminderOffsetsMinutes.length > 0
-                        ? reminderOffsetsMinutes
-                        : (() => {
-                              const selectedCalendar =
-                                  getCalendars().find(
-                                      (calendar) =>
-                                          calendar.id ===
-                                          normalizedValues.calendarId,
-                                  ) ?? null;
-                              return Array.isArray(
-                                  selectedCalendar
-                                      ?.defaultReminderOffsetsMinutes,
-                              )
-                                  ? selectedCalendar.defaultReminderOffsetsMinutes
-                                  : [];
-                          })();
+                    resolveReminderOffsetsForCalendar(
+                        reminderOffsetsMinutes,
+                        getCalendars(),
+                        normalizedValues.calendarId,
+                    );
                 if (eventData) {
                     let meetingUrl = eventData.event.meetingUrl ?? null;
                     if (!meetingUrl && createMeeting && getJitsiAvailable()) {

@@ -219,6 +219,15 @@ export function normalizeReminderOffsets(value: unknown): number[] {
     ).sort((left, right) => left - right);
 }
 
+export function resolveReminderOffsets(
+    value: unknown,
+    fallback: unknown = [],
+): number[] {
+    const normalized = normalizeReminderOffsets(value);
+    if (normalized.length > 0) return normalized;
+    return normalizeReminderOffsets(fallback);
+}
+
 export function normalizeEventStatus(value: unknown): CalendarEventStatus {
     return value === "free" ? "free" : "busy";
 }

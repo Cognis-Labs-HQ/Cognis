@@ -117,11 +117,9 @@ export function buildParticipantCardHtml(
     if (entry.type === "user") {
         const handle = String(entry.value ?? "").trim();
         const displayName = String(entry.label ?? handle).trim();
+        const avatarKey = String(entry.avatarKey ?? "").trim();
         const avatarMarkup = buildProfileAvatarMarkup({
-            avatarKey:
-                typeof entry.avatarKey === "string" && entry.avatarKey.trim()
-                    ? entry.avatarKey.trim()
-                    : null,
+            avatarKey: avatarKey || null,
             label: displayName || handle,
             colorSeed: handle,
             avatarClass: "calendar-participant-card-avatar-profile",

@@ -34,9 +34,7 @@ export function getSelectedReminderOffsets(overlay) {
             overlay.querySelectorAll(
                 'input[name="calendar-popup-reminder-offset"]:checked',
             ),
-        ).map((input) =>
-            input instanceof HTMLInputElement ? input.value : "",
-        ),
+        ).map((input) => input.value),
     );
 }
 
