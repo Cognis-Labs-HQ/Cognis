@@ -63,3 +63,17 @@ Tages- und Wochen-Slots behalten jetzt eine gleichmäßige Höhe und zeigen Term
 gestapelte Karten mit fest verankertem Hinzufügen-Button statt ungleichmäßig zu wachsen.
 Ein Klick in freie Bereiche eines Slots erstellt nun zuverlässig Termine und beseitigt
 die bisherigen Dead Zones.
+
+## Kalender-Popup nach Erstellung
+
+Neu erstellte Kalendertermine öffnen ihr Detail-Popup jetzt unmittelbar nach dem
+Speichern, ohne dass ein Seitenaktualisierung erforderlich ist. Die Teilnehmer-
+chips in der Wochenansicht werden nun als vertikale Avatar-Symbole angezeigt, die
+dem Jitsi-Teilnehmerstil entsprechen.
+
+## Jitsi Meet – Geplante Meetings im Adminbereich
+
+Die Jitsi-Meet-Verwaltungsseite zeigt jetzt eine zweite Tabelle „Geplante Meetings",
+in der Meetings aufgelistet sind, die für zukünftige Kalendertermine erstellt wurden,
+aber noch nicht gestartet oder beendet wurden. Der Ersteller des Termins wird immer
+als Teilnehmer hinzugefügt, wenn ein Meeting aus einem Kalenderereignis generiert wird.

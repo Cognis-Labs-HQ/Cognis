@@ -63,3 +63,16 @@ Slot mingguan dan harian kini mempertahankan jarak yang konsisten sambil menampi
 acara sebagai kartu bertumpuk dengan tombol tambah yang menempel di tempatnya, jadi
 baris tidak lagi melebar tidak merata. Klik pada area kosong slot sekarang juga selalu
 membuka pembuatan acara sehingga dead zone hilang.
+
+## Popup acara kalender saat pembuatan
+
+Acara kalender yang baru dibuat kini langsung membuka popup detailnya setelah
+disimpan, tanpa perlu me-refresh halaman. Chip peserta di tampilan minggu kini
+ditampilkan sebagai bubble avatar vertikal yang sesuai dengan gaya peserta Jitsi.
+
+## Jitsi Meet – Bagian Rapat Terjadwal di admin
+
+Halaman administrasi Jitsi Meet kini menampilkan tabel kedua "Rapat Terjadwal"
+yang berisi rapat yang dibuat untuk acara kalender mendatang tetapi belum dimulai
+atau diakhiri. Pembuat acara selalu disertakan sebagai peserta saat rapat
+dibuat dari acara kalender.

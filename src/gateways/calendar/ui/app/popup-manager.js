@@ -114,11 +114,13 @@ export function createCalendarPopupManager({
             showToast(i18n.t("gateway.calendar.create_event_failed"), "error");
             return false;
         }
+        const payload = await response.json().catch(() => ({}));
+        const createdEventId = String(payload?.data?.id ?? "");
         await reloadState();
         setSelectedCalendarId(targetCalendarId);
         syncRouteSelection();
         showToast(i18n.t("gateway.calendar.create_event_success"), "success");
-        return true;
+        return createdEventId || true;
     }
 
     async function updateExistingEvent({
@@ -509,6 +511,8 @@ export function createCalendarPopupManager({
         let popupSearchAbortController = null;
         let popupController = null;
         let confirmedConflictCreateKey = "";
+        let pendingCreatedEventId = null;
+        let pendingCreatedCalendarId = null;
 
         const participantKey = buildParticipantEntryKey;
 
@@ -916,11 +920,22 @@ export function createCalendarPopupManager({
                     return false;
                 }
                 if (!created) return false;
+                pendingCreatedEventId =
+                    typeof created === "string" ? created : null;
+                pendingCreatedCalendarId = pendingCreatedEventId
+                    ? normalizedValues.calendarId
+                    : null;
                 confirmedConflictCreateKey = "";
                 refreshComposer();
                 return true;
             },
         });
+        if (pendingCreatedEventId && pendingCreatedCalendarId) {
+            void openEventPopup(
+                pendingCreatedCalendarId,
+                pendingCreatedEventId,
+            );
+        }
     }
 
     function bindViewInteractions() {

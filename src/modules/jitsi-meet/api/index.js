@@ -1,6 +1,7 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
 import { registerMeetingRoutes } from "./meetings-routes.js";
+import { registerAdminMeetingRoutes } from "./admin-meetings-routes.js";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
@@ -289,6 +290,12 @@ export function registerApiRoutes(router, ctx) {
         });
         router.get(
             "/api/v1/modules/jitsi-meet/admin/meetings",
+            async (_req, res) => {
+                unavailablePayload(res);
+            },
+        );
+        router.get(
+            "/api/v1/modules/jitsi-meet/admin/meetings/upcoming",
             async (_req, res) => {
                 unavailablePayload(res);
             },
@@ -978,17 +985,5 @@ export function registerApiRoutes(router, ctx) {
         { access: { minRole: "user" } },
     );
 
-    router.get(
-        "/api/v1/modules/jitsi-meet/admin/meetings",
-        async (req, res) => {
-            await store.ensureSchema();
-            const claims = requireAuth(req, res, "admin");
-            if (!claims) return;
-            const meetings = await store.listActiveMeetings();
-            sendJson(res, 200, {
-                data: meetings,
-            });
-        },
-        { access: { minRole: "admin" } },
-    );
+    registerAdminMeetingRoutes({ router, store, requireAuth, sendJson });
 }

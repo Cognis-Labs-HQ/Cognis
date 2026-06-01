@@ -62,3 +62,16 @@ Week and day slots now keep consistent spacing while rendering events as stacked
 with anchored add buttons instead of expanding unevenly. Slot clicks now create events
 anywhere that is not already occupied by an event button or add button, which removes
 the dead zones that made event creation unreliable.
+
+## Calendar event popup on creation
+
+Newly created calendar events now open their detail popup immediately after save,
+without requiring a page refresh. The week view participant chips now display as
+vertical avatar bubbles matching the Jitsi meeting participant style.
+
+## Jitsi Meet – Scheduled Meetings admin section
+
+The Jitsi Meet administration page now shows a second table, "Scheduled Meetings",
+listing meetings that have been created for upcoming calendar events but have not
+yet been started or ended. The event creator is always included as a participant
+when a meeting is generated from a calendar event.

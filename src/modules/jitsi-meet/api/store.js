@@ -674,6 +674,48 @@ export class JitsiMeetStore {
         };
     }
 
+    async listUpcomingMeetings() {
+        const meetingsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "jitsi_meetings",
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit: 100,
+        });
+        const rows = meetingsResult.rows ?? [];
+        const mappedMeetings = await Promise.all(
+            rows.map(async (row) => {
+                if (!row.meeting_url) {
+                    return null;
+                }
+                const meeting = {
+                    id: String(row.id),
+                    meetingUrl: String(row.meeting_url),
+                    meetingName: String(row.meeting_name ?? "Cognis Classroom"),
+                    createdBy: String(row.created_by),
+                    createdAt: String(row.created_at),
+                };
+                const [presence, participants, state] = await Promise.all([
+                    this.listPresence(meeting.id),
+                    this.listParticipants(meeting.id),
+                    this.getMeetingState(meeting.id),
+                ]);
+                const activePresence =
+                    this.filterCurrentPresenceEntries(presence);
+                if (activePresence.length > 0) return null;
+                if (state.endedAt) return null;
+                return {
+                    id: meeting.id,
+                    meetingUrl: meeting.meetingUrl,
+                    meetingName: meeting.meetingName,
+                    createdBy: meeting.createdBy,
+                    createdAt: meeting.createdAt,
+                    participantCount: participants.length,
+                };
+            }),
+        );
+        return mappedMeetings.filter(Boolean);
+    }
+
     /**
      * Normalizes meeting-creation input into a deduplicated participant list
      * that always includes the creator, plus a sanitized classroomId value.
