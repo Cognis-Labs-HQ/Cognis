@@ -102,7 +102,7 @@
   <string name="gateway.calendar.response_scope_prompt">Soll die Antwort nur für dieses Ereignis oder für alle Ereignisse der Serie gelten?</string>
   <string name="gateway.calendar.respond_this_event">Nur dieses Ereignis</string>
   <string name="gateway.calendar.respond_all_events">Alle Ereignisse der Serie</string>
-  <string name="gateway.calendar.accept_calendar_title">Angenommenen Termin Hinzufügen Zu</string>
+  <string name="gateway.calendar.accept_calendar_title">Angenommenen Termin hinzufügen zu</string>
   <string name="gateway.calendar.accept_calendar_prompt">Wähle den Kalender, in den dieser angenommene Termin eingetragen werden soll.</string>
   <string name="gateway.calendar.load_event_failed">Ereignis konnte nicht geladen werden.</string>
   <string name="gateway.calendar.overlap_warning">Diese Zeit überschneidet sich mit einem anderen Ereignis im ausgewählten Kalender.</string>

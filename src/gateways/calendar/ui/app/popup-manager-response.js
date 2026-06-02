@@ -43,12 +43,7 @@ export function createCalendarResponseHandler({
     }
 
     async function promptAcceptedCalendar(eventData) {
-        const availableCalendars = getCalendars().filter(
-            (calendar) => calendar.id !== eventData.calendar.id,
-        );
-        if (!availableCalendars.length) {
-            return eventData.calendar.id;
-        }
+        const availableCalendars = getCalendars();
         let targetCalendarId = null;
         let confirmed = false;
         await openPopup({
@@ -61,7 +56,7 @@ export function createCalendarResponseHandler({
             ${availableCalendars
                 .map(
                     (calendar) =>
-                        `<option value="${escapeHtml(calendar.id)}">${escapeHtml(calendar.name)}</option>`,
+                        `<option value="${escapeHtml(calendar.id)}"${calendar.id === eventData.calendar.id ? " selected" : ""}>${escapeHtml(calendar.name)}</option>`,
                 )
                 .join("")}
           </select>

@@ -141,6 +141,11 @@ function collectUpcomingEvents(
         );
 }
 
+/**
+ * Returns upcoming events for the signed-in attendee whose response is still pending.
+ * Missing account ids intentionally produce no quick-response entries until auth-backed
+ * calendar metadata is available.
+ */
 function collectPendingEvents(
     eventsByCalendar,
     calendars,
