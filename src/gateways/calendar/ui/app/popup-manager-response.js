@@ -49,7 +49,7 @@ export function createCalendarResponseHandler({
         if (!availableCalendars.length) {
             return eventData.calendar.id;
         }
-        let targetCalendarId = availableCalendars[0].id;
+        let targetCalendarId = null;
         let confirmed = false;
         await openPopup({
             title: i18n.t("gateway.calendar.accept_calendar_title"),

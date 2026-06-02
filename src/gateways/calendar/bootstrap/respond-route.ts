@@ -58,6 +58,13 @@ export async function handleCalendarResponseRoute(input: {
     const response = normalizeResponseValue(body.response);
     const respondAll = input.url.searchParams.get("series") === "1";
     try {
+        if (
+            response === "accepted" &&
+            targetCalendarId &&
+            !input.gateway.getOwnedCalendar(input.claims.sub, targetCalendarId)
+        ) {
+            throw new Error("calendar_not_found");
+        }
         const responseRecord = input.gateway.setEventResponse({
             eventId: input.eventId,
             accountId: input.claims.sub,

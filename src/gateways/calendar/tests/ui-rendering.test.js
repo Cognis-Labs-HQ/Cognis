@@ -169,7 +169,7 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
 test("calendar toolbar includes pending quick responses and accept calendar picker", () => {
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
     assert.match(HELPERS_SOURCE, /data-calendar-pending-response/);
-    assert.match(APP_SOURCE, /respondToEventSelection/);
+    assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /accept_calendar_title/);
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
     assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);

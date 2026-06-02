@@ -252,7 +252,6 @@ export async function mount(root, { signal } = {}) {
 
     const {
         bindViewInteractions,
-        respondToEventSelection,
         openEventComposerPopup,
         openEventPopup,
         openCalendarEditPopup,
@@ -608,44 +607,6 @@ export async function mount(root, { signal } = {}) {
                     allPendingEvents(),
                     i18n,
                 );
-                if (!toolbarSummary.dataset.calendarPendingBound) {
-                    toolbarSummary.dataset.calendarPendingBound = "true";
-                    toolbarSummary.addEventListener(
-                        "click",
-                        (event) => {
-                            if (!(event.target instanceof Element)) return;
-                            const responseButton = event.target.closest(
-                                "[data-calendar-pending-response]",
-                            );
-                            if (!(responseButton instanceof HTMLElement))
-                                return;
-                            const responseOption = String(
-                                responseButton.getAttribute(
-                                    "data-calendar-pending-response",
-                                ) ?? "",
-                            ).trim();
-                            const calendarId = String(
-                                responseButton.getAttribute(
-                                    "data-calendar-id",
-                                ) ?? "",
-                            ).trim();
-                            const eventId = String(
-                                responseButton.getAttribute(
-                                    "data-calendar-event",
-                                ) ?? "",
-                            ).trim();
-                            if (!calendarId || !eventId || !responseOption) {
-                                return;
-                            }
-                            void respondToEventSelection(
-                                calendarId,
-                                eventId,
-                                responseOption,
-                            );
-                        },
-                        { signal },
-                    );
-                }
             }
         },
     });

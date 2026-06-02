@@ -4,16 +4,18 @@ export function getEventsByRecurrenceId(
     eventsByCalendar: Map<string, CalendarEventRecord[]>,
     recurrenceId: string,
 ): CalendarEventRecord[] {
-    return Array.from(eventsByCalendar.values())
-        .flatMap((events) => events)
-        .filter(
-            (event) =>
-                event.recurrenceId === recurrenceId &&
-                event.sourceEventId === null,
-        )
-        .sort((leftEvent, rightEvent) =>
-            leftEvent.startAt.localeCompare(rightEvent.startAt),
-        );
+    const matchingEvents = [];
+    for (const events of eventsByCalendar.values()) {
+        for (const event of events) {
+            if (event.recurrenceId !== recurrenceId) continue;
+            if (event.sourceEventId !== null) continue;
+            matchingEvents.push(event);
+        }
+    }
+    matchingEvents.sort((leftEvent, rightEvent) =>
+        leftEvent.startAt.localeCompare(rightEvent.startAt),
+    );
+    return matchingEvents;
 }
 
 export function listOwnedEventsByRecurrenceId(
@@ -22,28 +24,36 @@ export function listOwnedEventsByRecurrenceId(
     ownerAccountId: string,
     recurrenceId: string,
 ): CalendarEventRecord[] {
-    return Array.from(eventsByCalendar.values())
-        .flatMap((events) => events)
-        .filter((event) => {
-            if (event.recurrenceId !== recurrenceId) return false;
+    const matchingEvents = [];
+    for (const events of eventsByCalendar.values()) {
+        for (const event of events) {
+            if (event.recurrenceId !== recurrenceId) continue;
             const calendar = getCalendar(event.calendarId);
-            return calendar?.ownerAccountId === ownerAccountId;
-        })
-        .sort((leftEvent, rightEvent) =>
-            leftEvent.startAt.localeCompare(rightEvent.startAt),
-        );
+            if (calendar?.ownerAccountId !== ownerAccountId) continue;
+            matchingEvents.push(event);
+        }
+    }
+    matchingEvents.sort((leftEvent, rightEvent) =>
+        leftEvent.startAt.localeCompare(rightEvent.startAt),
+    );
+    return matchingEvents;
 }
 
 export function listEventsByRecurrenceIdIncludingMirrors(
     eventsByCalendar: Map<string, CalendarEventRecord[]>,
     recurrenceId: string,
 ): CalendarEventRecord[] {
-    return Array.from(eventsByCalendar.values())
-        .flatMap((events) => events)
-        .filter((event) => event.recurrenceId === recurrenceId)
-        .sort((leftEvent, rightEvent) =>
-            leftEvent.startAt.localeCompare(rightEvent.startAt),
-        );
+    const matchingEvents = [];
+    for (const events of eventsByCalendar.values()) {
+        for (const event of events) {
+            if (event.recurrenceId !== recurrenceId) continue;
+            matchingEvents.push(event);
+        }
+    }
+    matchingEvents.sort((leftEvent, rightEvent) =>
+        leftEvent.startAt.localeCompare(rightEvent.startAt),
+    );
+    return matchingEvents;
 }
 
 export function getResponseRootEventId(event: CalendarEventRecord): string {

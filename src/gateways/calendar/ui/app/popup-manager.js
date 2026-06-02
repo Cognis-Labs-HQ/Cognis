@@ -909,6 +909,25 @@ export function createCalendarPopupManager({
                     "[data-calendar-pending-response]",
                 );
                 if (responseButton instanceof HTMLElement) {
+                    const responseOption = String(
+                        responseButton.getAttribute(
+                            "data-calendar-pending-response",
+                        ) ?? "",
+                    ).trim();
+                    const calendarId = String(
+                        responseButton.getAttribute("data-calendar-id") ?? "",
+                    ).trim();
+                    const eventId = String(
+                        responseButton.getAttribute("data-calendar-event") ??
+                            "",
+                    ).trim();
+                    if (calendarId && eventId && responseOption) {
+                        void respondToEventSelection(
+                            calendarId,
+                            eventId,
+                            responseOption,
+                        );
+                    }
                     return;
                 }
                 const eventButton = event.target.closest(
