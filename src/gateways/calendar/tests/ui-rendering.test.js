@@ -155,6 +155,17 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
 });
 
+test("calendar deep-link event popup does not block mount completion", () => {
+    assert.match(
+        APP_SOURCE,
+        /if \(selectedCalendarId && selectedEventId\)\s*\{\s*void openEventPopup\(selectedCalendarId, selectedEventId\);/s,
+    );
+    assert.doesNotMatch(
+        APP_SOURCE,
+        /if \(selectedCalendarId && selectedEventId\)\s*\{\s*await openEventPopup\(selectedCalendarId, selectedEventId\);/s,
+    );
+});
+
 test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
     assert.doesNotMatch(POPUP_MANAGER_SOURCE, /calendar-popup-all-day-range/);
     assert.match(

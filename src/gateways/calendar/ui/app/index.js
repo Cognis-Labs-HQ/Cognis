@@ -673,6 +673,6 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     syncRouteSelection();
     if (selectedCalendarId && selectedEventId) {
-        await openEventPopup(selectedCalendarId, selectedEventId);
+        void openEventPopup(selectedCalendarId, selectedEventId);
     }
 }
