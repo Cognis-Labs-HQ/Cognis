@@ -383,7 +383,8 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
         uiRegistry,
     } as any);
 
-    const dispatched: Array<{ recipientUsername: string; subject: string }> = [];
+    const dispatched: Array<{ recipientUsername: string; subject: string }> =
+        [];
     capabilities.contribute("notify:dispatch", async (envelope: any) => {
         dispatched.push({
             recipientUsername: String(envelope.recipientUsername ?? ""),
@@ -432,6 +433,10 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
             recipientUsername: "bob",
             subject: "Calendar invite: Planning",
         },
+        {
+            recipientUsername: "alice",
+            subject: "Calendar invite: Planning",
+        },
     ]);
 });
 
@@ -449,7 +454,8 @@ test("calendar accept response can move invited events into a chosen calendar", 
         ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
-    const dispatched: Array<{ recipientUsername: string; subject: string }> = [];
+    const dispatched: Array<{ recipientUsername: string; subject: string }> =
+        [];
     capabilities.contribute("notify:dispatch", async (envelope: any) => {
         dispatched.push({
             recipientUsername: String(envelope.recipientUsername ?? ""),

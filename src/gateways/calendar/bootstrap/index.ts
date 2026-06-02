@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { hasMinRole, type CapabilityStore } from "@cognis/core";
+import { hasMinRole } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
     resolveRouteContext,
@@ -16,7 +16,6 @@ import {
     errorMessage,
     normalizeAttendeesForOwner,
     normalizeReminderOffsets,
-    normalizeResponseValue,
     normalizeStringList,
     normalizeVisibility,
     requireOrganizerOwnedSourceEvent,
@@ -40,6 +39,8 @@ import {
     type CalendarVisibility,
 } from "../gateway.js";
 import { createCalendarAdapterRoutes } from "./adapter-routes.js";
+import { createCalendarNotificationResolver } from "./notification-capabilities.js";
+import { handleCalendarResponseRoute } from "./respond-route.js";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -51,36 +52,27 @@ function createCalendarCoreRoutes({
     routeContext,
     resolveAccountId,
     log,
-    capabilities,
+    getDispatchNotification,
+    ensureNotificationCategory,
 }: {
     gateway: CoreCalendarGateway;
     routeContext?: RouteContext;
     resolveAccountId: ResolveAccountId | null;
     log?: CalendarLogger;
-    capabilities: CapabilityStore;
+    getDispatchNotification: () => NotificationDispatcher | null;
+    ensureNotificationCategory: () => void;
 }) {
     const ctx = resolveRouteContext(routeContext);
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
-    let notificationCategoryRegistered = false;
-    function ensureNotificationCategory(): void {
-        if (notificationCategoryRegistered) return;
-        const registerNotificationCategory = capabilities.get<
-            (id: string, label: string) => void
-        >("notify:registerCategory");
-        if (!registerNotificationCategory) return;
-        registerNotificationCategory("calendar", "Calendar Events");
-        notificationCategoryRegistered = true;
-    }
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         ensureNotificationCategory();
-        const dispatchNotification =
-            capabilities.get<NotificationDispatcher>("notify:dispatch") ?? null;
+        const dispatchNotification = getDispatchNotification();
         if (
             url.pathname === "/api/v1/calendar/calendars" &&
             req.method === "GET"
@@ -712,134 +704,17 @@ function createCalendarCoreRoutes({
         if (respondMatch && req.method === "POST") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const calendarId = decodeURIComponent(respondMatch[1]);
-            const eventId = decodeURIComponent(respondMatch[2]);
-            const calendar = gateway.getOwnedCalendar(claims.sub, calendarId);
-            const event = calendar
-                ? gateway.getEvent(calendarId, eventId)
-                : null;
-            if (!calendar || !event) {
-                sendCalendarError(res, "not_found", "Event not found.", 404);
-                return true;
-            }
-            const body = (await readJson(req)) as {
-                response?: unknown;
-                targetCalendarId?: unknown;
-            };
-            const targetCalendarId =
-                typeof body.targetCalendarId === "string" &&
-                body.targetCalendarId.trim()
-                    ? body.targetCalendarId.trim()
-                    : null;
-            if (
-                body.response !== "accepted" &&
-                body.response !== "tentative" &&
-                body.response !== "declined"
-            ) {
-                sendCalendarError(
-                    res,
-                    "bad_request",
-                    "Response must be accepted, tentative, or declined.",
-                    400,
-                );
-                return true;
-            }
-            const response = normalizeResponseValue(body.response);
-            const respondAll = url.searchParams.get("series") === "1";
-            try {
-                const responseRecord = gateway.setEventResponse({
-                    eventId,
-                    accountId: claims.sub,
-                    response,
-                    respondAll,
-                });
-                if (response === "accepted" && targetCalendarId) {
-                    gateway.moveOwnedEvent({
-                        ownerAccountId: claims.sub,
-                        calendarId,
-                        eventId,
-                        targetCalendarId,
-                        moveAll: respondAll,
-                    });
-                }
-                await gateway.flushStore();
-                if (dispatchNotification && event.createdBy !== claims.sub) {
-                    try {
-                        await dispatchNotification({
-                            category: "calendar",
-                            recipientUsername: event.createdBy,
-                            subject: `Calendar response: ${event.title}`,
-                            body: buildResponseNotificationBody(
-                                event,
-                                claims.sub,
-                                response,
-                            ),
-                            actionUrl: "/calendar",
-                            metadata: {
-                                eventId: event.id,
-                                response,
-                                attendee: claims.sub,
-                            },
-                        });
-                    } catch (error) {
-                        log?.(
-                            "error",
-                            "Calendar response notification failed.",
-                            {
-                                component: "calendar-gateway",
-                                eventId,
-                                accountId: claims.sub,
-                                error:
-                                    error instanceof Error
-                                        ? error.message
-                                        : String(error),
-                            },
-                        );
-                    }
-                }
-                sendJson(res, 200, { data: responseRecord });
-            } catch (error) {
-                const message = errorMessage(error);
-                if (message === "calendar_response_forbidden") {
-                    sendCalendarError(
-                        res,
-                        "forbidden",
-                        "Only invited attendees can respond to this event.",
-                        403,
-                    );
-                    return true;
-                }
-                if (message === "calendar_event_not_found") {
-                    sendCalendarError(
-                        res,
-                        "not_found",
-                        "Event not found.",
-                        404,
-                    );
-                    return true;
-                }
-                if (message === "calendar_not_found") {
-                    sendCalendarError(
-                        res,
-                        "not_found",
-                        "Calendar not found.",
-                        404,
-                    );
-                    return true;
-                }
-                log?.("error", "Failed to update event response.", {
-                    component: "calendar-gateway",
-                    eventId,
-                    accountId: claims.sub,
-                    error: message,
-                });
-                sendCalendarError(
-                    res,
-                    "internal_error",
-                    "Failed to update event response.",
-                    500,
-                );
-            }
+            await handleCalendarResponseRoute({
+                req,
+                res,
+                url,
+                claims,
+                calendarId: decodeURIComponent(respondMatch[1]),
+                eventId: decodeURIComponent(respondMatch[2]),
+                gateway,
+                dispatchNotification,
+                log,
+            });
             return true;
         }
 
@@ -872,6 +747,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const routeHelpers = resolveRouteContext(routeContext);
     const gateway = new CoreCalendarGateway();
+    const notificationResolver = createCalendarNotificationResolver(
+        ctx.capabilities,
+    );
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const resolveAccountId = ctx.capabilities.get<ResolveAccountId>(
@@ -960,7 +838,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             routeContext,
             resolveAccountId: resolveAccountId ?? null,
             log: ctx.log,
-            capabilities: ctx.capabilities,
+            getDispatchNotification: () =>
+                notificationResolver.getDispatchNotification(),
+            ensureNotificationCategory: () =>
+                notificationResolver.ensureCategory(),
         }),
         "calendar",
     );

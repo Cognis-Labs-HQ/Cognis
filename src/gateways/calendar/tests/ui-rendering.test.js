@@ -26,7 +26,14 @@ const POPUP_MANAGER_ALL_DAY_SOURCE = readFileSync(
     "utf8",
 );
 const POPUP_MANAGER_CALENDAR_EDIT_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-calendar-edit.js"),
+    resolve(
+        ROOT,
+        "src/gateways/calendar/ui/app/popup-manager-calendar-edit.js",
+    ),
+    "utf8",
+);
+const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-response.js"),
     "utf8",
 );
 const POPUP_REMINDERS_SOURCE = readFileSync(
@@ -163,8 +170,8 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
     assert.match(HELPERS_SOURCE, /data-calendar-pending-response/);
     assert.match(APP_SOURCE, /respondToEventSelection/);
-    assert.match(POPUP_MANAGER_SOURCE, /accept_calendar_title/);
-    assert.match(POPUP_MANAGER_SOURCE, /targetCalendarId/);
+    assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /accept_calendar_title/);
+    assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
     assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);
     assert.doesNotMatch(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,

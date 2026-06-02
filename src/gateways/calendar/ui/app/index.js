@@ -617,7 +617,8 @@ export async function mount(root, { signal } = {}) {
                             const responseButton = event.target.closest(
                                 "[data-calendar-pending-response]",
                             );
-                            if (!(responseButton instanceof HTMLElement)) return;
+                            if (!(responseButton instanceof HTMLElement))
+                                return;
                             const responseOption = String(
                                 responseButton.getAttribute(
                                     "data-calendar-pending-response",

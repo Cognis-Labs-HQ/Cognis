@@ -148,7 +148,11 @@ function collectPendingEvents(
     currentAccountId,
 ) {
     if (!currentAccountId) return [];
-    return collectUpcomingEvents(eventsByCalendar, calendars, selectedCalendarId)
+    return collectUpcomingEvents(
+        eventsByCalendar,
+        calendars,
+        selectedCalendarId,
+    )
         .filter((event) => Array.isArray(event.attendees))
         .filter((event) => event.attendees.includes(currentAccountId))
         .filter(
