@@ -226,7 +226,6 @@
     justify-items: start;
     text-align: left;
     cursor: pointer;
-    overflow: clip;
 }
 
 .calendar-slot-event--free {
@@ -267,7 +266,12 @@
     inset-block-start: var(--calendar-title-sticky-offset);
     margin-top: auto;
     z-index: 1;
-    background: transparent;
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent))
+            var(--calendar-title-sticky-stripe-mix),
+        var(--surface, transparent)
+    );
     border-radius: 0;
     padding-inline: 0;
 }
