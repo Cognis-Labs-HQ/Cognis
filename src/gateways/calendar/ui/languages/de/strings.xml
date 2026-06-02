@@ -53,6 +53,7 @@
   <string name="gateway.calendar.event_composer">Termin-Editor</string>
   <string name="gateway.calendar.upcoming_events">Bevorstehende Termine</string>
   <string name="gateway.calendar.upcoming_summary">Kurzübersicht</string>
+  <string name="gateway.calendar.pending_events">Ausstehende Termine</string>
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Wiederholung</string>
   <string name="gateway.calendar.event_reminders">Erinnerungen</string>
@@ -101,6 +102,8 @@
   <string name="gateway.calendar.response_scope_prompt">Soll die Antwort nur für dieses Ereignis oder für alle Ereignisse der Serie gelten?</string>
   <string name="gateway.calendar.respond_this_event">Nur dieses Ereignis</string>
   <string name="gateway.calendar.respond_all_events">Alle Ereignisse der Serie</string>
+  <string name="gateway.calendar.accept_calendar_title">Angenommenen Termin Hinzufügen Zu</string>
+  <string name="gateway.calendar.accept_calendar_prompt">Wähle den Kalender, in den dieser angenommene Termin eingetragen werden soll.</string>
   <string name="gateway.calendar.load_event_failed">Ereignis konnte nicht geladen werden.</string>
   <string name="gateway.calendar.overlap_warning">Diese Zeit überschneidet sich mit einem anderen Ereignis im ausgewählten Kalender.</string>
   <string name="gateway.calendar.overlap_warning_confirm">Diese Zeit überschneidet sich mit einem anderen Ereignis im ausgewählten Kalender. Speichere erneut, um es trotzdem zu erstellen.</string>

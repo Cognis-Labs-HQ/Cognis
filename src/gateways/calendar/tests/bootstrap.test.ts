@@ -363,3 +363,213 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     );
     assert.equal(unauthenticatedIcsResponse.statusCode, 401);
 });
+
+test("calendar invite dispatch resolves notify capability after bootstrap", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([[aliceToken, { sub: "alice", role: "admin" }]]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    } as any);
+
+    const dispatched: Array<{ recipientUsername: string; subject: string }> = [];
+    capabilities.contribute("notify:dispatch", async (envelope: any) => {
+        dispatched.push({
+            recipientUsername: String(envelope.recipientUsername ?? ""),
+            subject: String(envelope.subject ?? ""),
+        });
+        return { dispatched: ["internal"] };
+    });
+
+    const calendarsRequest = new RequestRecorder({
+        method: "GET",
+        token: aliceToken,
+    });
+    const calendarsResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        calendarsRequest,
+        calendarsResponse,
+        new URL("http://localhost/api/v1/calendar/calendars"),
+    );
+    const defaultCalendarId = JSON.parse(calendarsResponse.payload).data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const createRequest = new RequestRecorder({
+        method: "POST",
+        token: aliceToken,
+        body: JSON.stringify({
+            title: "Planning",
+            startAt: "2026-06-02T09:00:00.000Z",
+            endAt: "2026-06-02T10:00:00.000Z",
+            attendees: ["bob"],
+        }),
+    });
+    const createResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        createRequest,
+        createResponse,
+        new URL(
+            `http://localhost/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/events`,
+        ),
+    );
+    assert.equal(createResponse.statusCode, 201);
+    assert.deepEqual(dispatched, [
+        {
+            recipientUsername: "bob",
+            subject: "Calendar invite: Planning",
+        },
+    ]);
+});
+
+test("calendar accept response can move invited events into a chosen calendar", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+    const dispatched: Array<{ recipientUsername: string; subject: string }> = [];
+    capabilities.contribute("notify:dispatch", async (envelope: any) => {
+        dispatched.push({
+            recipientUsername: String(envelope.recipientUsername ?? ""),
+            subject: String(envelope.subject ?? ""),
+        });
+        return { dispatched: ["internal"] };
+    });
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    } as any);
+
+    const dispatchJson = async (
+        method: string,
+        token: string,
+        pathname: string,
+        body?: Record<string, unknown>,
+    ) => {
+        const request = new RequestRecorder({
+            method,
+            token,
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        const response = new ResponseRecorder();
+        await dispatchRoute(
+            routeRegistry,
+            request,
+            response,
+            new URL(`http://localhost${pathname}`),
+        );
+        return {
+            statusCode: response.statusCode,
+            body:
+                response.payload.length > 0
+                    ? JSON.parse(response.payload)
+                    : null,
+        };
+    };
+
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const aliceCalendarId = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+    const createEventResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
+        {
+            title: "Planning",
+            startAt: "2026-06-02T09:00:00.000Z",
+            endAt: "2026-06-02T10:00:00.000Z",
+            attendees: ["bob"],
+        },
+    );
+    assert.equal(createEventResponse.statusCode, 201);
+
+    const bobCalendars = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/calendars",
+    );
+    const bobDefaultCalendarId = bobCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+    const invitedCalendarId = bobCalendars.body.data.find(
+        (calendar: { name: string }) => calendar.name === "Invited",
+    ).id;
+
+    const invitedEvents = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
+    );
+    const invitedEventId = invitedEvents.body.data.events[0].id;
+
+    const respondResponse = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events/${encodeURIComponent(invitedEventId)}/respond`,
+        {
+            response: "accepted",
+            targetCalendarId: bobDefaultCalendarId,
+        },
+    );
+    assert.equal(respondResponse.statusCode, 200);
+
+    const invitedEventsAfter = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
+    );
+    assert.equal(invitedEventsAfter.body.data.events.length, 0);
+
+    const bobDefaultEvents = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(bobDefaultCalendarId)}/events`,
+    );
+    assert.equal(bobDefaultEvents.body.data.events.length, 1);
+    assert.equal(
+        bobDefaultEvents.body.data.events[0].responses.bob,
+        "accepted",
+    );
+    assert.equal(
+        bobDefaultEvents.body.data.events[0].sourceEventId,
+        createEventResponse.body.data.id,
+    );
+    assert.ok(
+        dispatched.some(
+            (entry) =>
+                entry.recipientUsername === "alice" &&
+                entry.subject === "Calendar response: Planning",
+        ),
+    );
+});

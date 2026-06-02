@@ -53,6 +53,7 @@
   <string name="gateway.calendar.event_composer">イベント作成</string>
   <string name="gateway.calendar.upcoming_events">今後のイベント</string>
   <string name="gateway.calendar.upcoming_summary">今後の概要</string>
+  <string name="gateway.calendar.pending_events">回答待ちの予定</string>
   <string name="gateway.calendar.event_status">状態</string>
   <string name="gateway.calendar.event_recurrence">繰り返し</string>
   <string name="gateway.calendar.event_reminders">リマインダー</string>
@@ -101,6 +102,8 @@
   <string name="gateway.calendar.response_scope_prompt">この予定のみに回答しますか。それともシリーズのすべてに回答しますか。</string>
   <string name="gateway.calendar.respond_this_event">この予定のみ</string>
   <string name="gateway.calendar.respond_all_events">シリーズのすべて</string>
+  <string name="gateway.calendar.accept_calendar_title">承諾した予定の追加先</string>
+  <string name="gateway.calendar.accept_calendar_prompt">この承諾した予定を追加するカレンダーを選択してください。</string>
   <string name="gateway.calendar.load_event_failed">予定を読み込めませんでした。</string>
   <string name="gateway.calendar.overlap_warning">この時間は選択したカレンダー内の別の予定と重なっています。</string>
   <string name="gateway.calendar.overlap_warning_confirm">この時間は選択したカレンダー内の別の予定と重なっています。それでも作成するには、もう一度保存してください。</string>

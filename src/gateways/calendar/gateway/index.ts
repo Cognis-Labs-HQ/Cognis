@@ -596,6 +596,45 @@ export class CoreCalendarGateway {
         return this.getEvent(targetCalendar.id, event.id) ?? event;
     }
 
+    moveOwnedEvent(input: {
+        ownerAccountId: string;
+        calendarId: string;
+        eventId: string;
+        targetCalendarId: string;
+        moveAll?: boolean;
+    }): CalendarEventRecord[] {
+        const event = this.getOwnedEvent(
+            input.ownerAccountId,
+            input.calendarId,
+            input.eventId,
+        );
+        if (!event) {
+            throw new Error("calendar_event_not_found");
+        }
+        const targetCalendar = this.getOwnedCalendar(
+            input.ownerAccountId,
+            input.targetCalendarId,
+        );
+        if (!targetCalendar) {
+            throw new Error("calendar_not_found");
+        }
+        const targetEvents =
+            input.moveAll === true && event.recurrenceId
+                ? this.listOwnedEventsByRecurrenceId(
+                      input.ownerAccountId,
+                      event.recurrenceId,
+                  )
+                : [event];
+        for (const targetEvent of targetEvents) {
+            const previousCalendarId = targetEvent.calendarId;
+            targetEvent.calendarId = targetCalendar.id;
+            targetEvent.updatedAt = new Date().toISOString();
+            this.moveEventRecord(previousCalendarId, targetEvent);
+            this.scheduleStoreWrite(() => this.store?.saveEvent(targetEvent));
+        }
+        return targetEvents;
+    }
+
     deleteEvent(input: {
         ownerAccountId: string;
         calendarId: string;
@@ -880,6 +919,22 @@ export class CoreCalendarGateway {
                     event.recurrenceId === recurrenceId &&
                     event.sourceEventId === null,
             )
+            .sort((leftEvent, rightEvent) =>
+                leftEvent.startAt.localeCompare(rightEvent.startAt),
+            );
+    }
+
+    private listOwnedEventsByRecurrenceId(
+        ownerAccountId: string,
+        recurrenceId: string,
+    ): CalendarEventRecord[] {
+        return Array.from(this.eventsByCalendar.values())
+            .flatMap((events) => events)
+            .filter((event) => {
+                if (event.recurrenceId !== recurrenceId) return false;
+                const calendar = this.getCalendar(event.calendarId);
+                return calendar?.ownerAccountId === ownerAccountId;
+            })
             .sort((leftEvent, rightEvent) =>
                 leftEvent.startAt.localeCompare(rightEvent.startAt),
             );

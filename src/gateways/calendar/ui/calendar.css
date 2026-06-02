@@ -60,71 +60,10 @@
     gap: 0.35rem;
 }
 
-.calendar-share-section {
-    border-top: 1px solid var(--field-border);
-    padding-top: 0.65rem;
-    display: grid;
-    gap: 0.45rem;
-}
-
 .calendar-share-label {
     margin: 0;
     font-size: 0.85rem;
     font-weight: 600;
-}
-
-.calendar-share-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
-}
-
-.calendar-share-controls select {
-    flex: 0 0 auto;
-    min-width: 0;
-}
-
-.calendar-share-name-input {
-    flex: 1 1 8rem;
-    min-width: 0;
-    font-size: 0.85rem;
-}
-
-#calendar-share-permission {
-    width: 10ch;
-}
-
-#calendar-share-expiry {
-    width: 14ch;
-}
-
-.calendar-share-result {
-    display: grid;
-    gap: 0.4rem;
-}
-
-.calendar-share-links-list {
-    display: grid;
-    gap: 0.45rem;
-}
-
-.calendar-share-details {
-    display: grid;
-    gap: 0.45rem;
-}
-
-.calendar-share-result-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 0.4rem;
-    align-items: center;
-}
-
-.calendar-share-url-field {
-    flex: 1;
-    min-width: 0;
-    font-size: 0.8rem;
 }
 
 .calendar-delete-zone {
@@ -702,6 +641,53 @@
     padding: 0;
     display: grid;
     gap: 0.15rem;
+}
+
+.calendar-toolbar-subsection {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+}
+
+.calendar-toolbar-subsection h4 {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.calendar-pending-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+}
+
+.toolbar .calendar-pending-action {
+    min-width: 0;
+    min-height: 0;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font-size: 0.72rem;
+    line-height: 1.2;
+}
+
+.calendar-pending-action--accepted {
+    border-color: var(--btn-confirm-bg, #1f8ceb);
+}
+
+.calendar-pending-action--declined {
+    border-color: var(--btn-cancel-bg, #d34a4a);
+}
+
+.calendar-response-calendar-picker {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.calendar-response-calendar-picker p {
+    margin: 0;
 }
 
 .calendar-month-event-preview {

@@ -25,6 +25,10 @@ const POPUP_MANAGER_ALL_DAY_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-all-day.js"),
     "utf8",
 );
+const POPUP_MANAGER_CALENDAR_EDIT_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-calendar-edit.js"),
+    "utf8",
+);
 const POPUP_REMINDERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-reminders.js"),
     "utf8",
@@ -153,6 +157,19 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
         /requestAnimationFrame\(scrollTimedViewsToCurrentSlot\)/,
     );
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
+});
+
+test("calendar toolbar includes pending quick responses and accept calendar picker", () => {
+    assert.match(HELPERS_SOURCE, /collectPendingEvents/);
+    assert.match(HELPERS_SOURCE, /data-calendar-pending-response/);
+    assert.match(APP_SOURCE, /respondToEventSelection/);
+    assert.match(POPUP_MANAGER_SOURCE, /accept_calendar_title/);
+    assert.match(POPUP_MANAGER_SOURCE, /targetCalendarId/);
+    assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);
+    assert.doesNotMatch(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-generate/,
+    );
 });
 
 test("calendar deep-link event popup does not block mount completion", () => {

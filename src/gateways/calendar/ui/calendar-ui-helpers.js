@@ -141,6 +141,23 @@ function collectUpcomingEvents(
         );
 }
 
+function collectPendingEvents(
+    eventsByCalendar,
+    calendars,
+    selectedCalendarId,
+    currentAccountId,
+) {
+    if (!currentAccountId) return [];
+    return collectUpcomingEvents(eventsByCalendar, calendars, selectedCalendarId)
+        .filter((event) => Array.isArray(event.attendees))
+        .filter((event) => event.attendees.includes(currentAccountId))
+        .filter(
+            (event) =>
+                String(event.responses?.[currentAccountId] ?? "pending") ===
+                "pending",
+        );
+}
+
 async function fetchCalendarState() {
     const response = await apiFetch("/api/v1/calendar/calendars");
     if (!response.ok) throw new Error("calendar_load_failed");
@@ -199,7 +216,7 @@ async function respondToEvent(
     calendarId,
     eventId,
     response,
-    { respondAll = false } = {},
+    { respondAll = false, targetCalendarId = null } = {},
 ) {
     const query = respondAll ? "?series=1" : "";
     return apiFetch(
@@ -209,7 +226,10 @@ async function respondToEvent(
             headers: {
                 "content-type": "application/json",
             },
-            body: JSON.stringify({ response }),
+            body: JSON.stringify({
+                response,
+                ...(targetCalendarId ? { targetCalendarId } : {}),
+            }),
         },
     );
 }
@@ -351,23 +371,53 @@ function renderEventButton(
     </button>`;
 }
 
-function renderToolbarSummary(summary, i18n) {
-    if (!summary.length) {
+function renderPendingEvents(events, i18n) {
+    if (!events.length) {
+        return "";
+    }
+    return `<section class="calendar-toolbar-subsection">
+      <h4>${escapeHtml(i18n.t("gateway.calendar.pending_events"))}</h4>
+      <ul class="calendar-events-list calendar-events-list--compact">${events
+          .map(
+              (
+                  event,
+              ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
+            <strong>${escapeHtml(event.title)}</strong>
+            <div>${formatDateTime(event.startAt)}</div>
+          </button>
+          <div class="calendar-pending-actions">
+            ${EVENT_RESPONSE_OPTIONS.map(
+                (responseOption) =>
+                    `<button type="button" class="calendar-pending-action calendar-pending-action--${escapeHtml(responseOption)}" data-calendar-pending-response="${escapeHtml(responseOption)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}</button>`,
+            ).join("")}
+          </div>
+        </li>`,
+          )
+          .join("")}</ul>
+    </section>`;
+}
+
+function renderToolbarSummary(summary, pendingEvents, i18n) {
+    if (!summary.length && !pendingEvents.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_events")}</p>`;
     }
-    return `<ul class="calendar-events-list calendar-events-list--compact">${summary
-        .slice(0, 5)
-        .map(
-            (
-                event,
-            ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-        <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
-          <strong>${escapeHtml(event.title)}</strong>
-          <div>${formatDateTime(event.startAt)}</div>
-        </button>
-      </li>`,
-        )
-        .join("")}</ul>`;
+    const upcomingMarkup = summary.length
+        ? `<ul class="calendar-events-list calendar-events-list--compact">${summary
+              .slice(0, 5)
+              .map(
+                  (
+                      event,
+                  ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
+            <strong>${escapeHtml(event.title)}</strong>
+            <div>${formatDateTime(event.startAt)}</div>
+          </button>
+        </li>`,
+              )
+              .join("")}</ul>`
+        : `<p class="calendar-empty">${i18n.t("gateway.calendar.no_events")}</p>`;
+    return `${upcomingMarkup}${renderPendingEvents(pendingEvents, i18n)}`;
 }
 
 function renderUpcomingEvents(events, i18n) {
@@ -878,6 +928,7 @@ export {
     matchesEmailPattern,
     listEventsInWindow,
     collectUpcomingEvents,
+    collectPendingEvents,
     fetchCalendarState,
     fetchEvents,
     fetchEvent,
@@ -893,6 +944,7 @@ export {
     renderEventBadges,
     renderResponseSummary,
     renderCalendarToolbarList,
+    renderPendingEvents,
     renderToolbarSummary,
     renderUpcomingEvents,
     renderCalendarView,

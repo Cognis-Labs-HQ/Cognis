@@ -53,6 +53,7 @@
   <string name="gateway.calendar.event_composer">Komposer Acara</string>
   <string name="gateway.calendar.upcoming_events">Acara Mendatang</string>
   <string name="gateway.calendar.upcoming_summary">Ringkasan Mendatang</string>
+  <string name="gateway.calendar.pending_events">Acara Menunggu Respons</string>
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Pengulangan</string>
   <string name="gateway.calendar.event_reminders">Pengingat</string>
@@ -101,6 +102,8 @@
   <string name="gateway.calendar.response_scope_prompt">Terapkan tanggapan hanya untuk acara ini atau semua acara dalam seri?</string>
   <string name="gateway.calendar.respond_this_event">Acara Ini Saja</string>
   <string name="gateway.calendar.respond_all_events">Semua Acara Dalam Seri</string>
+  <string name="gateway.calendar.accept_calendar_title">Tambahkan Acara Yang Diterima Ke</string>
+  <string name="gateway.calendar.accept_calendar_prompt">Pilih kalender yang harus menerima acara yang sudah kamu terima ini.</string>
   <string name="gateway.calendar.load_event_failed">Tidak dapat memuat acara.</string>
   <string name="gateway.calendar.overlap_warning">Waktu ini bertumpang tindih dengan acara lain di kalender yang dipilih.</string>
   <string name="gateway.calendar.overlap_warning_confirm">Waktu ini bertumpang tindih dengan acara lain di kalender yang dipilih. Simpan lagi untuk tetap membuatnya.</string>

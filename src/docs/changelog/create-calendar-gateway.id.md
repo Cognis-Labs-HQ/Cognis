@@ -1,5 +1,19 @@
 # Peningkatan Kalender
 
+## Undangan tertunda di Ringkasan Mendatang
+
+Ringkasan Mendatang sekarang memiliki bagian Acara Menunggu Respons dengan aksi
+cepat Terima, Sementara, dan Tolak. Saat undangan diterima, pengguna sekarang
+diminta memilih kalender tujuan, dan generator tautan berbagi lama tidak lagi
+muncul di popup edit kalender.
+
+## Notifikasi undangan kalender dipulihkan
+
+Notifikasi undangan dan respons kalender sekarang menyelesaikan capability
+notify saat permintaan diproses, bukan hanya saat bootstrap gateway kalender.
+Ini mencegah urutan bootstrap mematikan pengiriman secara diam-diam ketika
+gateway notify dimuat setelah kalender.
+
 ## Penyimpanan kalender persisten
 
 Gateway kalender kini menyimpan kalender, acara, dan respons peserta melalui

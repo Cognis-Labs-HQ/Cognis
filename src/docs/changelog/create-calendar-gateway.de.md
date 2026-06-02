@@ -1,5 +1,20 @@
 # Kalender-Upgrade
 
+## Ausstehende Einladungen in der Kurzübersicht
+
+Die Kurzübersicht enthält jetzt einen Abschnitt für ausstehende Termine mit
+schnellen Aktionen für Annehmen, Vorläufig und Ablehnen. Beim Annehmen einer
+Einladung wird nun gefragt, in welchen Kalender der Termin eingetragen werden
+soll, und der bisherige Freigabelink-Generator erscheint nicht mehr im
+Kalender-Bearbeitungs-Popup.
+
+## Benachrichtigungen für Kalendereinladungen wiederhergestellt
+
+Kalendereinladungs- und Antwortbenachrichtigungen lösen die Notify-Fähigkeit
+jetzt erst zur Anfragezeit auf, statt nur beim Bootstrap des Kalender-Gateways.
+Dadurch verhindert die Lade-Reihenfolge nicht mehr stillschweigend die
+Zustellung, wenn das Notify-Gateway nach dem Kalender geladen wird.
+
 ## Persistente Kalenderdaten
 
 Das Kalender-Gateway speichert Kalender, Termine und Teilnehmerantworten jetzt

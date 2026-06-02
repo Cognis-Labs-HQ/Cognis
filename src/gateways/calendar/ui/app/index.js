@@ -20,6 +20,7 @@ export async function mount(root, { signal } = {}) {
     let selectedEventId = calendarUi.parseEventSelection();
     let eventsByCalendar = {};
     let canInviteExternal = false;
+    let currentAccountId = "";
     let jitsiAvailable = false;
     let selectedView = "month";
     let activeDate = new Date();
@@ -94,6 +95,7 @@ export async function mount(root, { signal } = {}) {
         const calendarState = await calendarUi.fetchCalendarState();
         calendars = calendarState.calendars;
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
+        currentAccountId = String(calendarState.meta?.currentAccountId ?? "");
         ensureSelectedCalendarId();
         const eventEntries = await Promise.all(
             calendars.map(async (calendar) => [
@@ -141,6 +143,15 @@ export async function mount(root, { signal } = {}) {
             eventsByCalendar,
             calendars,
             selectedCalendarId,
+        );
+    }
+
+    function allPendingEvents() {
+        return calendarUi.collectPendingEvents(
+            eventsByCalendar,
+            calendars,
+            selectedCalendarId,
+            currentAccountId,
         );
     }
 
@@ -241,6 +252,7 @@ export async function mount(root, { signal } = {}) {
 
     const {
         bindViewInteractions,
+        respondToEventSelection,
         openEventComposerPopup,
         openEventPopup,
         openCalendarEditPopup,
@@ -533,7 +545,7 @@ export async function mount(root, { signal } = {}) {
           </section>
           <section class="toolbar-section calendar-toolbar-section">
             <h3>${i18n.t("gateway.calendar.upcoming_summary")}</h3>
-            <div id="calendar-toolbar-summary">${calendarUi.renderToolbarSummary(allUpcomingEvents(), i18n)}</div>
+            <div id="calendar-toolbar-summary">${calendarUi.renderToolbarSummary(allUpcomingEvents(), allPendingEvents(), i18n)}</div>
           </section>
         `,
             },
@@ -593,8 +605,46 @@ export async function mount(root, { signal } = {}) {
             if (toolbarSummary) {
                 toolbarSummary.innerHTML = calendarUi.renderToolbarSummary(
                     allUpcomingEvents(),
+                    allPendingEvents(),
                     i18n,
                 );
+                if (!toolbarSummary.dataset.calendarPendingBound) {
+                    toolbarSummary.dataset.calendarPendingBound = "true";
+                    toolbarSummary.addEventListener(
+                        "click",
+                        (event) => {
+                            if (!(event.target instanceof Element)) return;
+                            const responseButton = event.target.closest(
+                                "[data-calendar-pending-response]",
+                            );
+                            if (!(responseButton instanceof HTMLElement)) return;
+                            const responseOption = String(
+                                responseButton.getAttribute(
+                                    "data-calendar-pending-response",
+                                ) ?? "",
+                            ).trim();
+                            const calendarId = String(
+                                responseButton.getAttribute(
+                                    "data-calendar-id",
+                                ) ?? "",
+                            ).trim();
+                            const eventId = String(
+                                responseButton.getAttribute(
+                                    "data-calendar-event",
+                                ) ?? "",
+                            ).trim();
+                            if (!calendarId || !eventId || !responseOption) {
+                                return;
+                            }
+                            void respondToEventSelection(
+                                calendarId,
+                                eventId,
+                                responseOption,
+                            );
+                        },
+                        { signal },
+                    );
+                }
             }
         },
     });

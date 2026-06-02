@@ -1,5 +1,19 @@
 # Calendar Upgrade
 
+## Pending invites in Upcoming Summary
+
+Upcoming Summary now includes a Pending Events subsection with quick Accept,
+Tentative, and Decline actions. Accepting an invite now asks which calendar
+should receive the event, and the old share-link generator no longer appears in
+the calendar edit popup.
+
+## Calendar invite notifications restored
+
+Calendar invite and response notifications now resolve the notify capability at
+request time instead of only during calendar gateway bootstrap. This prevents
+boot order from silently disabling deliveries when the notify gateway loads
+after calendar.
+
 ## Persistent calendar storage
 
 The calendar gateway now persists calendars, events, and attendee responses through

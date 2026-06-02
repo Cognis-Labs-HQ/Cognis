@@ -53,6 +53,7 @@
   <string name="gateway.calendar.event_composer">Event Composer</string>
   <string name="gateway.calendar.upcoming_events">Upcoming Events</string>
   <string name="gateway.calendar.upcoming_summary">Upcoming Summary</string>
+  <string name="gateway.calendar.pending_events">Pending Events</string>
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Recurrence</string>
   <string name="gateway.calendar.event_reminders">Reminders</string>
@@ -101,6 +102,8 @@
   <string name="gateway.calendar.response_scope_prompt">Apply your response to just this event or all events in the series?</string>
   <string name="gateway.calendar.respond_this_event">This Event Only</string>
   <string name="gateway.calendar.respond_all_events">All Events in Series</string>
+  <string name="gateway.calendar.accept_calendar_title">Add Accepted Event To</string>
+  <string name="gateway.calendar.accept_calendar_prompt">Choose which calendar should receive this accepted event.</string>
   <string name="gateway.calendar.load_event_failed">Could not load event.</string>
   <string name="gateway.calendar.overlap_warning">This time overlaps another event in the selected calendar.</string>
   <string name="gateway.calendar.overlap_warning_confirm">This time overlaps another event in the selected calendar. Save again to create it anyway.</string>

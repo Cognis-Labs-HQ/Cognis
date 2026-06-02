@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { hasMinRole } from "@cognis/core";
+import { hasMinRole, type CapabilityStore } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
     resolveRouteContext,
@@ -48,26 +48,39 @@ const GATEWAY_ROOT = path.resolve(
 
 function createCalendarCoreRoutes({
     gateway,
-    dispatchNotification,
     routeContext,
     resolveAccountId,
     log,
+    capabilities,
 }: {
     gateway: CoreCalendarGateway;
-    dispatchNotification: NotificationDispatcher | null;
     routeContext?: RouteContext;
     resolveAccountId: ResolveAccountId | null;
     log?: CalendarLogger;
+    capabilities: CapabilityStore;
 }) {
     const ctx = resolveRouteContext(routeContext);
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
+    let notificationCategoryRegistered = false;
+    function ensureNotificationCategory(): void {
+        if (notificationCategoryRegistered) return;
+        const registerNotificationCategory = capabilities.get<
+            (id: string, label: string) => void
+        >("notify:registerCategory");
+        if (!registerNotificationCategory) return;
+        registerNotificationCategory("calendar", "Calendar Events");
+        notificationCategoryRegistered = true;
+    }
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        ensureNotificationCategory();
+        const dispatchNotification =
+            capabilities.get<NotificationDispatcher>("notify:dispatch") ?? null;
         if (
             url.pathname === "/api/v1/calendar/calendars" &&
             req.method === "GET"
@@ -79,6 +92,7 @@ function createCalendarCoreRoutes({
                 data: gateway.listCalendars(claims.sub),
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
+                    currentAccountId: claims.sub,
                 },
             });
             return true;
@@ -708,7 +722,15 @@ function createCalendarCoreRoutes({
                 sendCalendarError(res, "not_found", "Event not found.", 404);
                 return true;
             }
-            const body = (await readJson(req)) as { response?: unknown };
+            const body = (await readJson(req)) as {
+                response?: unknown;
+                targetCalendarId?: unknown;
+            };
+            const targetCalendarId =
+                typeof body.targetCalendarId === "string" &&
+                body.targetCalendarId.trim()
+                    ? body.targetCalendarId.trim()
+                    : null;
             if (
                 body.response !== "accepted" &&
                 body.response !== "tentative" &&
@@ -731,6 +753,15 @@ function createCalendarCoreRoutes({
                     response,
                     respondAll,
                 });
+                if (response === "accepted" && targetCalendarId) {
+                    gateway.moveOwnedEvent({
+                        ownerAccountId: claims.sub,
+                        calendarId,
+                        eventId,
+                        targetCalendarId,
+                        moveAll: respondAll,
+                    });
+                }
                 await gateway.flushStore();
                 if (dispatchNotification && event.createdBy !== claims.sub) {
                     try {
@@ -783,6 +814,15 @@ function createCalendarCoreRoutes({
                         res,
                         "not_found",
                         "Event not found.",
+                        404,
+                    );
+                    return true;
+                }
+                if (message === "calendar_not_found") {
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Calendar not found.",
                         404,
                     );
                     return true;
@@ -853,14 +893,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     await gateway.discoverAdapters(adaptersRoot);
 
-    const registerNotificationCategory = ctx.capabilities.get<
-        (id: string, label: string) => void
-    >("notify:registerCategory");
-    registerNotificationCategory?.("calendar", "Calendar Events");
-
-    const dispatchNotification =
-        ctx.capabilities.get<NotificationDispatcher>("notify:dispatch");
-
     ctx.capabilities.contribute(
         "calendar:createCalendar",
         (
@@ -925,10 +957,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.register(
         createCalendarCoreRoutes({
             gateway,
-            dispatchNotification: dispatchNotification ?? null,
             routeContext,
             resolveAccountId: resolveAccountId ?? null,
             log: ctx.log,
+            capabilities: ctx.capabilities,
         }),
         "calendar",
     );
