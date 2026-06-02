@@ -26,6 +26,7 @@ test("global search includes hidden profiles for admins", async () => {
                       accountId: "hidden-user-id",
                       handle: "hidden-user",
                       displayName: "Hidden User",
+                      avatarKey: "avatars/hidden-user.png",
                   },
               ]
             : [];
@@ -53,6 +54,7 @@ test("global search includes hidden profiles for admins", async () => {
     const parsed = JSON.parse(body);
     assert.equal(parsed.data.length, 1);
     assert.equal(parsed.data[0].handle, "hidden-user");
+    assert.equal(parsed.data[0].avatarKey, "avatars/hidden-user.png");
 });
 
 test("global search excludes hidden profiles for regular users", async () => {
@@ -70,6 +72,7 @@ test("global search excludes hidden profiles for regular users", async () => {
                       accountId: "hidden-user-id",
                       handle: "hidden-user",
                       displayName: "Hidden User",
+                      avatarKey: "avatars/hidden-user.png",
                   },
               ]
             : [];

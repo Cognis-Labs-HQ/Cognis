@@ -34,7 +34,12 @@ type ProfileSearchFn = (
     limit: number,
     options?: { includeHidden?: boolean },
 ) => Promise<
-    Array<{ accountId?: string; handle?: string; displayName?: string }>
+    Array<{
+        accountId?: string;
+        handle?: string;
+        displayName?: string;
+        avatarKey?: string | null;
+    }>
 >;
 
 export function createSearchRoutes(
@@ -90,10 +95,12 @@ export function createSearchRoutes(
                                 accountId: profile.accountId,
                                 handle: profile.handle,
                                 displayName: profile.displayName,
+                                avatarKey: profile.avatarKey ?? null,
                             }) as SearchResultItem & {
                                 accountId?: string;
                                 handle?: string;
                                 displayName?: string;
+                                avatarKey?: string | null;
                             },
                     );
                 } catch {
