@@ -3,7 +3,8 @@ import type { CalendarEventRecord, CalendarRecord } from "./utils.js";
 /**
  * Returns only source events for a recurrence series.
  * Mirrored invite copies are excluded so organizer-side series operations do not
- * duplicate work across invited calendars.
+ * duplicate work across invited calendars. In this gateway, source events are the
+ * organizer-owned records whose `sourceEventId === null`.
  */
 export function getEventsByRecurrenceId(
     eventsByCalendar: Map<string, CalendarEventRecord[]>,

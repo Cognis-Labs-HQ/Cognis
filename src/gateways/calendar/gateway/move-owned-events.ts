@@ -23,7 +23,7 @@ export function moveOwnedEvents(input: {
         previousCalendarId: string,
         event: CalendarEventRecord,
     ) => void;
-    scheduleStoreWrite: (cb: () => Promise<void> | void) => void;
+    scheduleStoreWrite: (persistenceTask: () => Promise<void> | void) => void;
     saveEvent: (event: CalendarEventRecord) => Promise<void> | void;
 }): CalendarEventRecord[] {
     const event = input.getOwnedEvent(

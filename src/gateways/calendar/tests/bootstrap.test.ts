@@ -93,6 +93,35 @@ async function dispatchRoute(
     return false;
 }
 
+function createJsonDispatcher(routeRegistry: RouteRegistry) {
+    return async (
+        method: string,
+        token: string,
+        pathname: string,
+        body?: Record<string, unknown>,
+    ) => {
+        const request = new RequestRecorder({
+            method,
+            token,
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        const response = new ResponseRecorder();
+        await dispatchRoute(
+            routeRegistry,
+            request,
+            response,
+            new URL(`http://localhost${pathname}`),
+        );
+        return {
+            statusCode: response.statusCode,
+            body:
+                response.payload.length > 0
+                    ? JSON.parse(response.payload)
+                    : null,
+        };
+    };
+}
+
 test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -156,32 +185,7 @@ test("calendar event update/delete endpoints forbid editing mirrored invite copi
         uiRegistry,
     } as any);
 
-    const dispatchJson = async (
-        method: string,
-        token: string,
-        pathname: string,
-        body?: Record<string, unknown>,
-    ) => {
-        const request = new RequestRecorder({
-            method,
-            token,
-            body: body ? JSON.stringify(body) : undefined,
-        });
-        const response = new ResponseRecorder();
-        await dispatchRoute(
-            routeRegistry,
-            request,
-            response,
-            new URL(`http://localhost${pathname}`),
-        );
-        return {
-            statusCode: response.statusCode,
-            body:
-                response.payload.length > 0
-                    ? JSON.parse(response.payload)
-                    : null,
-        };
-    };
+    const dispatchJson = createJsonDispatcher(routeRegistry);
 
     const aliceCalendars = await dispatchJson(
         "GET",
@@ -286,31 +290,12 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
         uiRegistry,
     } as any);
 
-    const dispatchJson = async (
+    const dispatchJson = (
         method: string,
         pathname: string,
         body?: Record<string, unknown>,
-    ) => {
-        const request = new RequestRecorder({
-            method,
-            token: adminToken,
-            body: body ? JSON.stringify(body) : undefined,
-        });
-        const response = new ResponseRecorder();
-        await dispatchRoute(
-            routeRegistry,
-            request,
-            response,
-            new URL(`http://localhost${pathname}`),
-        );
-        return {
-            statusCode: response.statusCode,
-            body:
-                response.payload.length > 0
-                    ? JSON.parse(response.payload)
-                    : null,
-        };
-    };
+    ) =>
+        createJsonDispatcher(routeRegistry)(method, adminToken, pathname, body);
 
     const calendarsResponse = await dispatchJson(
         "GET",
@@ -472,32 +457,7 @@ test("calendar accept response can move invited events into a chosen calendar", 
         uiRegistry,
     } as any);
 
-    const dispatchJson = async (
-        method: string,
-        token: string,
-        pathname: string,
-        body?: Record<string, unknown>,
-    ) => {
-        const request = new RequestRecorder({
-            method,
-            token,
-            body: body ? JSON.stringify(body) : undefined,
-        });
-        const response = new ResponseRecorder();
-        await dispatchRoute(
-            routeRegistry,
-            request,
-            response,
-            new URL(`http://localhost${pathname}`),
-        );
-        return {
-            statusCode: response.statusCode,
-            body:
-                response.payload.length > 0
-                    ? JSON.parse(response.payload)
-                    : null,
-        };
-    };
+    const dispatchJson = createJsonDispatcher(routeRegistry);
 
     const aliceCalendars = await dispatchJson(
         "GET",
