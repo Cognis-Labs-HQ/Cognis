@@ -139,10 +139,7 @@ test("calendar composer supports multiple reminders and remembers selected view"
 
 test("calendar year view day dots inherit calendar event colors", () => {
     assert.match(HELPERS_SOURCE, /--calendar-day-color:/);
-    assert.match(
-        HELPERS_SOURCE,
-        /dayEvents\[0\]\?\.calendarColor/,
-    );
+    assert.match(HELPERS_SOURCE, /dayEvents\[0\]\?\.calendarColor/);
     assert.match(
         CSS_SOURCE,
         /var\(--calendar-day-color,\s*var\(--btn-confirm-bg,\s*#1f8ceb\)\)/,
