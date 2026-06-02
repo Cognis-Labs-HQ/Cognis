@@ -670,7 +670,18 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
           const dayStart = startOfDay(day);
           const dayEnd = addDays(dayStart, 1);
           const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
-          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="--calendar-density:${Math.min(dayEvents.length, 4)}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
+          const styleProperties = [
+              `--calendar-density:${Math.min(dayEvents.length, 4)}`,
+          ];
+          const dayHighlightColor = normalizeHexColor(
+              dayEvents[0]?.calendarColor,
+          );
+          if (dayHighlightColor) {
+              styleProperties.push(
+                  `--calendar-day-color:${escapeHtml(dayHighlightColor)}`,
+              );
+          }
+          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="${styleProperties.join(";")}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
       }).join("")}
     </div>`);
         if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;

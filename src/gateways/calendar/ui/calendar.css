@@ -461,7 +461,8 @@
     font-size: 0.7rem;
     background: color-mix(
         in srgb,
-        var(--btn-confirm-bg, #1f8ceb) calc(var(--calendar-density, 0) * 12%),
+        var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb))
+            calc(var(--calendar-density, 0) * 12%),
         var(--surface, transparent)
     );
     color: inherit;
@@ -473,12 +474,12 @@
 .calendar-year-day-dot--active {
     background: color-mix(
         in srgb,
-        var(--btn-confirm-bg, #1f8ceb) 55%,
+        var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb)) 55%,
         var(--surface, transparent)
     );
     border-color: color-mix(
         in srgb,
-        var(--btn-confirm-bg, #1f8ceb) 65%,
+        var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb)) 65%,
         var(--field-border)
     );
 }
