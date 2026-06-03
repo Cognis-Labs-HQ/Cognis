@@ -112,3 +112,9 @@ Termineinladungen wurden in den Bereich „Meine Kalender" der Seitenleiste
 verschoben und entfernen so das doppelte Label „Bevorstehende Termine". Terminkar-
 ten zeigen in allen Ansichten jetzt korrekt einen gefärbten Hintergrund in der
 Kalenderfarbe, auch bei kompakten Karten in der Monatsansicht.
+
+## Termin-Popup berücksichtigt 24-Stunden-Einstellung
+
+Das Termin-Detailpopup berücksichtigt jetzt korrekt die 12/24-Stunden-Uhrzeiteinstellung
+aus den Einstellungen. Zuvor wurden Start- und Endzeiten im Popup immer im 12-Stunden-Format
+dargestellt, unabhängig vom gewählten Zeitformat.

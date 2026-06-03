@@ -110,3 +110,9 @@ toolbar Kalender Saya, sehingga label "Acara Mendatang" yang duplikat tidak lagi
 muncul di bilah sisi. Kartu acara di semua tampilan kini menampilkan latar
 belakang berwarna sesuai warna kalender dengan benar, termasuk kartu kompak di
 tampilan bulan.
+
+## Popup acara menghormati pengaturan 24 jam
+
+Popup detail acara kini dengan benar mengikuti preferensi jam 12/24 jam dari
+Pengaturan. Sebelumnya waktu mulai dan akhir di popup selalu ditampilkan dalam
+format 12 jam, terlepas dari format waktu yang dipilih pengguna.

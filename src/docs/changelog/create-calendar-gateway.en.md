@@ -107,3 +107,9 @@ been moved into the My Calendars toolbar section, removing the duplicate
 "Upcoming Events" label from the sidebar. Event cards in all views now correctly
 show a tinted background in the calendar colour, including month-grid compact
 cards.
+
+## Event popup respects 24-hour setting
+
+The event detail popup now correctly honours the 12/24-hour clock preference from
+Settings. Previously the start and end times in the popup were always rendered in
+12-hour format regardless of the user's chosen time format.

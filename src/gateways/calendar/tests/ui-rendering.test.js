@@ -297,7 +297,7 @@ test("calendar participant picker renders user cards and excludes current user",
 });
 
 test("calendar read-only all-day details keep start and end date fields", () => {
-    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /toLocaleDateString/);
+    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /formatDate/);
     assert.match(
         POPUP_MANAGER_READ_ONLY_SOURCE,
         /gateway\.calendar\.event_start/,
