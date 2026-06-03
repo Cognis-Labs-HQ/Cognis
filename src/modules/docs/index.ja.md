@@ -140,18 +140,45 @@ export function registerApiRoutes(router) {
 4. Runtime が必須ファイル契約に従った drop-in モジュールディレクトリとしてインストールします。
 5. 管理者が通常の `/enable` フローで有効化します。
 
-## 新規モジュールの必須ファイル
+## 新規モジュールの標準レイアウト
 
-すべてのランタイム拡張モジュールは次を含めます:
+新規または再編成されたモジュールは、次のルートレイアウトに収束させます:
 
-- `manifest.json`（識別情報、機能、エントリポイント、依存関係）
+```text
+src/modules/my-module/
+  manifest.json
+  routes.json
+  bootstrap.ts
+  docs/
+    index.en.md
+    index.de.md
+    index.ja.md
+    index.id.md
+  api/
+    index.ts
+  ui/
+  cli/
+    index.js
+  db/
+```
+
+必須:
+
+- `manifest.json`（識別情報、機能、エントリポイント、依存関係メタデータ）
 - `routes.json`（安全性チェックに使う API/UI ルート宣言）
-- `bootstrap.js` または `bootstrap.ts`（モジュール機能を ctx に注入する唯一のゲートウェイ）
-- `ui/` ディレクトリ（UI エントリポイント未公開でも必須）
+- `bootstrap.js` または `bootstrap.ts`（モジュールをランタイム機能へ接続する薄い ctx ブリッジ）
+- `docs/index.<lang>.md`（標準コンポーネントエントリーファイル名を使うモジュールドキュメント）
+- `ui/` ディレクトリ（最初のリリースがシェルフックや未使用ページだけでも必須）
 
-必要に応じて推奨:
+モジュールがバックエンドコードを提供する場合の標準:
 
-- `api/index.js` または `api/index.ts`
-- `cli/index.js`
-- `db/*.sql`
-- `docs/standard.<lang>.md`
+- `api/index.js` または `api/index.ts`（モジュール所有のサーバーハンドラーと補助。`bootstrap.*` はロジック置き場ではなく薄い委譲役に保つ）
+
+必要に応じた任意の兄弟ディレクトリ:
+
+- `cli/index.js`（CLI コマンド登録）
+- `db/`（スキーマ初期化またはマイグレーション）
+- `tests/`（モジュールローカルの自動テスト）
+- `content/`（モジュール所有の静的コンテンツ束）
+
+補助ディレクトリは `docs/`、`api/`、`ui/` の横に置けますが、これらの安定した名前を独自の代替名で置き換えてはいけません。

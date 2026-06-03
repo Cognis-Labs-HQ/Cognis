@@ -11,12 +11,26 @@ Documentation lives alongside the code it describes. Gateway docs go in `src/gat
 ## Responsibilities
 
 - Define the canonical section structure for all component documentation.
+- Define the canonical root layout for modules, gateways, adapters, and core-facing surfaces.
 - Define file naming conventions and language requirements.
 - Define depth tiers so authors know how detailed each doc should be.
 
 Not responsible for: enforcing docs exist (that is a code review concern), automated spell checking, or link validation.
 
 ## Architecture
+
+### Canonical component root layout
+
+New or reorganised components should converge on the same top-level concern names so contributors do not have to relearn each directory tree. When a component exposes a documentation, server, or browser surface, reserve the matching `docs/`, `api/`, or `ui/` directory name at that component root and keep the entry file predictable.
+
+| Family                | Root                           | Canonical roots        | Notes                                                                                                                                                              |
+| --------------------- | ------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Platform / core layer | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` holds developer docs, `src/api/` HTTP/server code, and `src/ui/` browser assets. `src/core/` remains the provider-agnostic contract and service layer. |
+| Gateway               | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Keep gateway-owned server handlers, route registration, and bootstrap helpers under `api/`; keep admin/browser assets under `ui/`.                                 |
+| Adapter               | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | Use `api/` for adapter-owned bootstrap or server helpers and `ui/` for adapter-owned browser assets when the adapter exposes them.                                 |
+| Module                | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` and `ui/` are the stable homes for module docs and browser assets. `api/` is the stable home for module-owned server code.                                 |
+
+Support directories such as `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/`, and `reuse/` may live beside those roots, but they complement them and must not replace them. For new or reorganised components, prefer `api/routes/` over a top-level `routes/` sibling and `docs/index.<lang>.md` over custom documentation entry filenames.
 
 ### Section structure
 
@@ -42,11 +56,12 @@ Every doc file is a Markdown file. Sections appear in this order; omit a section
 
 Different component types warrant different depth:
 
-| Tier            | Components                     | Required sections                                        |
-| --------------- | ------------------------------ | -------------------------------------------------------- |
-| Platform / core | `src/docs/` platform docs      | All sections fully                                       |
-| Gateway         | `src/gateways/<id>/docs/`      | Lighter Architecture; include Configuration + API Routes |
-| Adapter         | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections)                  |
+| Tier            | Components                     | Required sections                                             |
+| --------------- | ------------------------------ | ------------------------------------------------------------- |
+| Platform / core | `src/docs/` platform docs      | All sections fully                                            |
+| Gateway         | `src/gateways/<id>/docs/`      | Lighter Architecture; include Configuration + API Routes      |
+| Adapter         | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections)                       |
+| Module          | `src/modules/<id>/docs/`       | Full standard; include API Routes when the module serves them |
 
 ### Code snippets
 

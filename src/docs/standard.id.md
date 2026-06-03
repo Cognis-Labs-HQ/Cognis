@@ -11,12 +11,26 @@ Dokumentasi berada berdampingan dengan kode yang dijelaskannya. Dokumen gateway 
 ## Tanggung Jawab
 
 - Mendefinisikan struktur bagian kanonik untuk semua dokumentasi komponen.
+- Mendefinisikan tata letak root kanonik untuk modul, gateway, adapter, dan permukaan inti.
 - Mendefinisikan konvensi penamaan file dan persyaratan bahasa.
 - Mendefinisikan tingkat kedalaman agar penulis mengetahui seberapa detail setiap dokumen seharusnya.
 
 Tidak bertanggung jawab atas: memaksakan keberadaan dokumen (itu adalah urusan code review), pemeriksaan ejaan otomatis, atau validasi tautan.
 
 ## Arsitektur
+
+### Tata letak root komponen kanonik
+
+Komponen baru atau yang ditata ulang harus mengerucut ke nama concern tingkat atas yang sama agar kontributor tidak perlu mempelajari ulang setiap pohon direktori. Saat sebuah komponen mengekspos permukaan dokumentasi, server, atau browser, sediakan nama direktori `docs/`, `api/`, atau `ui/` yang cocok di root komponen dan jaga file entrypoint-nya tetap mudah ditebak.
+
+| Keluarga                | Root                           | Root kanonik           | Catatan                                                                                                                                                                              |
+| ----------------------- | ------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Platform / lapisan inti | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` menampung dokumentasi pengembang, `src/api/` kode HTTP/server, dan `src/ui/` aset browser. `src/core/` tetap menjadi lapisan kontrak dan layanan yang agnostik penyedia. |
+| Gateway                 | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Handler server, registrasi rute, dan helper bootstrap milik gateway ditempatkan di `api/`; aset admin/browser ditempatkan di `ui/`.                                                  |
+| Adapter                 | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | Gunakan `api/` untuk helper bootstrap atau server milik adapter dan `ui/` untuk aset browser milik adapter saat adapter mengeksposnya.                                               |
+| Modul                   | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` dan `ui/` adalah rumah stabil untuk dokumentasi modul dan aset browser. `api/` adalah rumah stabil untuk kode server milik modul.                                            |
+
+Direktori pendukung seperti `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/`, dan `reuse/` boleh hidup berdampingan dengan root tersebut, tetapi hanya melengkapinya dan tidak boleh menggantikannya. Untuk komponen baru atau yang ditata ulang, utamakan `api/routes/` daripada direktori saudara `routes/` di level atas, dan gunakan `docs/index.<lang>.md` alih-alih nama entry dokumentasi khusus.
 
 ### Struktur bagian
 
@@ -42,11 +56,12 @@ Setiap file dokumen adalah file Markdown. Bagian-bagian muncul dalam urutan ini;
 
 Berbagai jenis komponen membutuhkan kedalaman yang berbeda:
 
-| Tingkat         | Komponen                       | Bagian yang diperlukan                                   |
-| --------------- | ------------------------------ | -------------------------------------------------------- |
-| Platform / inti | Dokumen platform `src/docs/`   | Semua bagian sepenuhnya                                  |
-| Gateway         | `src/gateways/<id>/docs/`      | Arsitektur lebih ringan; sertakan Konfigurasi + Rute API |
-| Adapter         | `src/adapters/<gw>/<id>/docs/` | Standar penuh (semua bagian yang berlaku)                |
+| Tingkat         | Komponen                       | Bagian yang diperlukan                                     |
+| --------------- | ------------------------------ | ---------------------------------------------------------- |
+| Platform / inti | Dokumen platform `src/docs/`   | Semua bagian sepenuhnya                                    |
+| Gateway         | `src/gateways/<id>/docs/`      | Arsitektur lebih ringan; sertakan Konfigurasi + Rute API   |
+| Adapter         | `src/adapters/<gw>/<id>/docs/` | Standar penuh (semua bagian yang berlaku)                  |
+| Modul           | `src/modules/<id>/docs/`       | Standar penuh; sertakan Rute API saat modul menyediakannya |
 
 ### Cuplikan kode
 

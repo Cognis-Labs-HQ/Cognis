@@ -140,18 +140,45 @@ mit Zugriffsrichtlinien für UI-Seiten:
 4. Die Runtime installiert das Archiv als standardkonformes Drop-in-Modulverzeichnis.
 5. Admin aktiviert das Modul anschließend über den normalen `/enable`-Flow.
 
-## Erforderliche Dateien für neue Module
+## Kanonisches Layout für neue Module
 
-Jedes Runtime-Extension-Modul muss enthalten:
+Neue oder neu organisierte Module sollen auf dieses Wurzel-Layout zusammenlaufen:
 
-- `manifest.json` (Identität, Fähigkeiten, Entry-Points, Abhängigkeiten)
+```text
+src/modules/my-module/
+  manifest.json
+  routes.json
+  bootstrap.ts
+  docs/
+    index.en.md
+    index.de.md
+    index.ja.md
+    index.id.md
+  api/
+    index.ts
+  ui/
+  cli/
+    index.js
+  db/
+```
+
+Erforderlich:
+
+- `manifest.json` (Identität, Fähigkeiten, Entry-Points, Abhängigkeitsmetadaten)
 - `routes.json` (deklarierte API/UI-Routen für Sicherheitsprüfungen)
-- `bootstrap.js` oder `bootstrap.ts` (einziger Gateway-Einstiegspunkt, der Fähigkeiten in ctx injiziert)
-- `ui/`-Verzeichnis (statische Assets, auch ohne aktuelles UI-Entrypoint)
+- `bootstrap.js` oder `bootstrap.ts` (dünne ctx-Brücke, die das Modul an Runtime-Capabilities anbindet)
+- `docs/index.<lang>.md` (Moduldokumentation mit dem standardisierten Komponenten-Einstiegsdateinamen)
+- `ui/`-Verzeichnis (statische Assets; erforderlich, auch wenn die erste Version nur Shell-Hooks oder ruhende Seiten liefert)
 
-Empfohlen bei Bedarf:
+Kanonisch, wenn das Modul Backend-Code bereitstellt:
 
-- `api/index.js` oder `api/index.ts`
-- `cli/index.js`
-- `db/*.sql`
-- `docs/standard.<lang>.md`
+- `api/index.js` oder `api/index.ts` (moduleigene Server-Handler und Helfer; `bootstrap.*` soll nur delegieren und nicht die gesamte Logik tragen)
+
+Optionale Geschwisterverzeichnisse bei Bedarf:
+
+- `cli/index.js` (CLI-Befehlsregistrierung)
+- `db/` (Schema-Bootstrap oder Migrationen)
+- `tests/` (modullokale automatisierte Abdeckung)
+- `content/` (moduleigene statische Inhaltsbündel)
+
+Unterstützende Verzeichnisse dürfen neben `docs/`, `api/` und `ui/` liegen, dürfen diese stabilen Namen aber nicht durch benutzerdefinierte Alternativen ersetzen.

@@ -140,18 +140,45 @@ kebijakan akses untuk halaman UI:
 4. Runtime memasang arsip sebagai direktori modul drop-in yang mengikuti kontrak file wajib.
 5. Admin mengaktifkan modul lewat alur `/enable` normal.
 
-## File Wajib untuk Modul Baru
+## Tata Letak Kanonik untuk Modul Baru
 
-Setiap modul ekstensi runtime wajib berisi:
+Modul baru atau yang ditata ulang harus mengerucut ke tata letak root berikut:
 
-- `manifest.json` (identitas, kapabilitas, entrypoint, dependensi)
+```text
+src/modules/my-module/
+  manifest.json
+  routes.json
+  bootstrap.ts
+  docs/
+    index.en.md
+    index.de.md
+    index.ja.md
+    index.id.md
+  api/
+    index.ts
+  ui/
+  cli/
+    index.js
+  db/
+```
+
+Wajib:
+
+- `manifest.json` (identitas, kapabilitas, entrypoint, dan metadata dependensi)
 - `routes.json` (deklarasi rute API/UI untuk pemeriksaan keamanan)
-- `bootstrap.js` atau `bootstrap.ts` (gerbang tunggal yang menyuntikkan kapabilitas modul ke ctx)
-- direktori `ui/` (aset statis, wajib meski entrypoint UI belum diekspos)
+- `bootstrap.js` atau `bootstrap.ts` (jembatan ctx tipis yang menghubungkan modul ke kapabilitas runtime)
+- `docs/index.<lang>.md` (dokumentasi modul dengan nama file entry komponen standar)
+- direktori `ui/` (aset statis; wajib bahkan ketika rilis pertama hanya membawa shell hook atau halaman yang belum diaktifkan)
 
-Disarankan jika relevan:
+Kanonik saat modul melayani kode backend:
 
-- `api/index.js` atau `api/index.ts`
-- `cli/index.js`
-- `db/*.sql`
-- `docs/standard.<lang>.md`
+- `api/index.js` atau `api/index.ts` (handler dan helper server milik modul; pertahankan `bootstrap.*` sebagai delegator tipis, bukan tempat menumpuk logika)
+
+Direktori saudara opsional jika relevan:
+
+- `cli/index.js` (registrasi perintah CLI)
+- `db/` (bootstrap skema atau migrasi)
+- `tests/` (cakupan otomatis lokal modul)
+- `content/` (bundel konten statis milik modul)
+
+Direktori pendukung boleh berada di samping `docs/`, `api/`, dan `ui/`, tetapi tidak boleh mengganti nama stabil tersebut dengan alternatif khusus.

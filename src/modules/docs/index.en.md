@@ -140,18 +140,45 @@ policy metadata for UI pages:
 4. Runtime installs the archive as a standard drop-in module directory that follows the required file contract below.
 5. Admin enables the module through the normal `/enable` flow.
 
-## Required Files for New Modules
+## Canonical Layout for New Modules
 
-Every runtime extension module must include:
+New or reorganised modules should converge on this root layout:
+
+```text
+src/modules/my-module/
+  manifest.json
+  routes.json
+  bootstrap.ts
+  docs/
+    index.en.md
+    index.de.md
+    index.ja.md
+    index.id.md
+  api/
+    index.ts
+  ui/
+  cli/
+    index.js
+  db/
+```
+
+Required:
 
 - `manifest.json` (identity, capabilities, entrypoints, dependency metadata)
 - `routes.json` (declared API/UI routes used for safety checks)
-- `bootstrap.js` or `bootstrap.ts` (the single gateway that injects all module capabilities into ctx)
-- `ui/` directory (static assets; required even when UI entrypoint is not exposed yet)
+- `bootstrap.js` or `bootstrap.ts` (the thin ctx bridge that wires the module into runtime capabilities)
+- `docs/index.<lang>.md` (module documentation using the standard component entry filename)
+- `ui/` directory (static assets; required even when the first release only ships shell hooks or dormant pages)
 
-Recommended when relevant:
+Canonical when the module serves backend code:
 
-- `api/index.js` or `api/index.ts` (API route handlers used by bootstrap)
+- `api/index.js` or `api/index.ts` (module-owned server handlers and helpers; keep `bootstrap.*` as a thin delegator rather than a logic dump)
+
+Optional sibling directories when relevant:
+
 - `cli/index.js` (CLI command registration)
-- `db/*.sql` (schema bootstrap/migrations)
-- `docs/standard.<lang>.md` (module standards and operational notes)
+- `db/` (schema bootstrap or migrations)
+- `tests/` (module-local automated coverage)
+- `content/` (module-owned static content bundles)
+
+Support directories may sit beside `docs/`, `api/`, and `ui/`, but they must not replace those stable names with custom alternatives.

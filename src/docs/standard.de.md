@@ -11,12 +11,26 @@ Die Dokumentation liegt neben dem Code, den sie beschreibt. Gateway-Docs befinde
 ## Verantwortlichkeiten
 
 - Die kanonische Abschnittsstruktur für alle Komponentendokumentation definieren.
+- Das kanonische Wurzel-Layout für Module, Gateways, Adapter und Core-nahe Oberflächen definieren.
 - Dateinamenskonventionen und Sprachanforderungen definieren.
 - Tiefenebenen definieren, damit Autoren wissen, wie detailliert jedes Dokument sein soll.
 
 Nicht verantwortlich für: das Durchsetzen der Existenz von Docs (das ist eine Code-Review-Angelegenheit), automatische Rechtschreibprüfung oder Link-Validierung.
 
 ## Architektur
+
+### Kanonisches Komponenten-Wurzel-Layout
+
+Neue oder neu organisierte Komponenten sollen auf dieselben Top-Level-Namen für Zuständigkeiten zusammenlaufen, damit Mitwirkende nicht für jeden Verzeichnisbaum ein neues Muster lernen müssen. Wenn eine Komponente eine Dokumentations-, Server- oder Browser-Oberfläche besitzt, reserviere am Komponentenstamm das passende Verzeichnis `docs/`, `api/` oder `ui/` und halte den Einstiegspunkt vorhersehbar.
+
+| Familie                | Wurzel                         | Kanonische Wurzeln     | Hinweise                                                                                                                                                                    |
+| ---------------------- | ------------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plattform / Core-Ebene | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` enthält Entwicklerdokumentation, `src/api/` HTTP-/Server-Code und `src/ui/` Browser-Assets. `src/core/` bleibt die anbieterneutrale Vertrags- und Diensteebene. |
+| Gateway                | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Gateway-eigene Server-Handler, Routenregistrierung und Bootstrap-Helfer gehören unter `api/`; Admin-/Browser-Assets unter `ui/`.                                            |
+| Adapter                | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | `api/` ist für adaptereigene Bootstrap- oder Server-Helfer, `ui/` für adaptereigene Browser-Assets, wenn der Adapter sie bereitstellt.                                      |
+| Modul                  | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` und `ui/` sind die stabilen Orte für Moduldokumentation und Browser-Assets. `api/` ist der stabile Ort für modulseitigen Server-Code.                               |
+
+Unterstützende Verzeichnisse wie `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/` und `reuse/` dürfen daneben liegen, ergänzen diese Wurzeln aber nur und dürfen sie nicht ersetzen. Für neue oder neu organisierte Komponenten `api/routes/` statt eines Top-Level-`routes/`-Geschwisters und `docs/index.<lang>.md` statt benutzerdefinierter Dokumentations-Einstiegsdateien bevorzugen.
 
 ### Abschnittsstruktur
 
@@ -42,11 +56,12 @@ Jede Dokumentdatei ist eine Markdown-Datei. Abschnitte erscheinen in dieser Reih
 
 Verschiedene Komponententypen erfordern unterschiedliche Tiefe:
 
-| Ebene            | Komponenten                    | Erforderliche Abschnitte                                       |
-| ---------------- | ------------------------------ | -------------------------------------------------------------- |
-| Plattform / Core | `src/docs/`-Plattformdocs      | Alle Abschnitte vollständig                                    |
-| Gateway          | `src/gateways/<id>/docs/`      | Leichtere Architektur; Konfiguration + API-Routen einschließen |
-| Adapter          | `src/adapters/<gw>/<id>/docs/` | Vollständiger Standard (alle anwendbaren Abschnitte)           |
+| Ebene            | Komponenten                    | Erforderliche Abschnitte                                                            |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
+| Plattform / Core | `src/docs/`-Plattformdocs      | Alle Abschnitte vollständig                                                         |
+| Gateway          | `src/gateways/<id>/docs/`      | Leichtere Architektur; Konfiguration + API-Routen einschließen                      |
+| Adapter          | `src/adapters/<gw>/<id>/docs/` | Vollständiger Standard (alle anwendbaren Abschnitte)                                |
+| Modul            | `src/modules/<id>/docs/`       | Vollständiger Standard; API-Routen einschließen, wenn das Modul welche bereitstellt |
 
 ### Code-Snippets
 
