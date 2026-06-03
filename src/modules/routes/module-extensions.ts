@@ -95,8 +95,7 @@ interface ModulePlugin {
 }
 
 interface ModuleBootstrapCtx
-    extends ModuleUiRegistrationContext,
-        ModuleApiRegistrationContext {
+    extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
     registerApiGet(
         routePath: string,
         handler: RouteHandler["handler"],
@@ -282,6 +281,25 @@ export function createModuleExtensionRoutes(
         };
     }
 
+    function resolveModuleEntrypointPath(
+        moduleRoot: string,
+        entrypoints: { bootstrap?: string; api?: string } | undefined,
+    ): { path: string; type: "bootstrap" | "legacy-api" } | null {
+        if (entrypoints?.bootstrap) {
+            return {
+                path: path.join(moduleRoot, entrypoints.bootstrap),
+                type: "bootstrap",
+            };
+        }
+        if (entrypoints?.api) {
+            return {
+                path: path.join(moduleRoot, entrypoints.api),
+                type: "legacy-api",
+            };
+        }
+        return null;
+    }
+
     async function refresh() {
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
@@ -304,42 +322,50 @@ export function createModuleExtensionRoutes(
                 nextHandlers,
                 canRegisterUi,
             );
-            const pluginPath = manifest.entrypoints?.bootstrap
-                ? path.join(moduleRoot, manifest.entrypoints.bootstrap)
-                : manifest.entrypoints?.api
-                  ? path.join(moduleRoot, manifest.entrypoints.api)
-                  : "";
-            if (!pluginPath) continue;
+            const entrypoint = resolveModuleEntrypointPath(
+                moduleRoot,
+                manifest.entrypoints,
+            );
+            if (!entrypoint) continue;
+            log?.("debug", "Loading module route entrypoint.", {
+                component: "module-extension-routes",
+                moduleId: manifest.id,
+                entrypoint: entrypoint.type,
+                pluginPath: entrypoint.path,
+            });
             try {
                 const plugin = (await import(
-                    `${pluginPath}?t=${Date.now()}`
+                    `${entrypoint.path}?t=${Date.now()}`
                 )) as ModulePlugin & ModuleBootstrapPlugin;
                 if (typeof plugin.bootstrapModule === "function") {
+                    if (plugin.registerUi || plugin.registerApiRoutes) {
+                        log?.(
+                            "warn",
+                            "Module exports bootstrapModule and legacy route hooks; legacy hooks are ignored.",
+                            {
+                                component: "module-extension-routes",
+                                moduleId: manifest.id,
+                            },
+                        );
+                    }
                     await plugin.bootstrapModule(moduleCtx);
                     if (canRegisterUi) {
                         uiHooksRegisteredByModule.add(manifest.id);
                     }
                     continue;
                 }
-                if (
-                    plugin.registerUi &&
-                    options?.uiRegistry &&
-                    canRegisterUi
-                ) {
+                if (plugin.registerUi && options?.uiRegistry && canRegisterUi) {
                     plugin.registerUi(moduleCtx);
                     uiHooksRegisteredByModule.add(manifest.id);
                 }
                 if (typeof plugin.registerApiRoutes === "function") {
-                    plugin.registerApiRoutes(
-                        moduleCtx.router,
-                        moduleCtx,
-                    );
+                    plugin.registerApiRoutes(moduleCtx.router, moduleCtx);
                 }
             } catch (error) {
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,
-                    pluginPath,
+                    pluginPath: entrypoint.path,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });

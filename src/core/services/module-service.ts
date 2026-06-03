@@ -108,10 +108,16 @@ export class ModuleService {
         const repository = this.parseGithubRepositoryUrl(input.repositoryUrl);
         const versionTag = String(input.versionTag ?? "").trim();
         if (!versionTag) {
-            throw new Error("GitHub module import requires a non-empty versionTag");
+            throw new Error(
+                "GitHub module import requires a non-empty versionTag",
+            );
         }
 
-        const archiveUrl = `https://codeload.github.com/${repository.owner}/${repository.repo}/tar.gz/refs/tags/${encodeURIComponent(versionTag)}`;
+        const githubArchiveBaseUrl =
+            process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL ??
+            "https://codeload.github.com";
+        const archiveUrl = new URL(githubArchiveBaseUrl.replace(/\/+$/, ""));
+        archiveUrl.pathname = `${archiveUrl.pathname.replace(/\/+$/, "")}/${repository.owner}/${repository.repo}/tar.gz/refs/tags/${encodeURIComponent(versionTag)}`;
         const response = await fetch(archiveUrl, {
             headers: {
                 "user-agent": "cognis-module-importer",
@@ -277,7 +283,8 @@ export class ModuleService {
         repo: string;
     } {
         const raw = String(input ?? "").trim();
-        if (!raw) throw new Error("GitHub module import requires repositoryUrl");
+        if (!raw)
+            throw new Error("GitHub module import requires repositoryUrl");
 
         let parsed: URL;
         try {

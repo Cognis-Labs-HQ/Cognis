@@ -87,7 +87,8 @@ export function createModuleRoutes(
                     JSON.stringify({
                         error: {
                             code: "invalid_body",
-                            message: "repositoryUrl and versionTag are required",
+                            message:
+                                "repositoryUrl and versionTag are required",
                         },
                     }),
                 );

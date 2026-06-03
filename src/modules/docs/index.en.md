@@ -124,13 +124,13 @@ policy metadata for UI pages:
 
 ## API Routes
 
-| Method | Path                          | Description                                            | Auth   |
-| ------ | ----------------------------- | ------------------------------------------------------ | ------ |
-| `GET`  | `/api/v1/modules`             | List all installed modules with enabled/disabled state | Bearer |
-| `POST` | `/api/v1/modules/:id/enable`  | Enable a module                                        | Admin  |
-| `POST` | `/api/v1/modules/:id/disable` | Disable a module                                       | Admin  |
-| `POST` | `/api/v1/modules/install`     | Install a module from an uploaded archive              | Admin  |
-| `POST` | `/api/v1/modules/import/github` | Import a module archive from a GitHub repository tag | Admin  |
+| Method | Path                            | Description                                            | Auth   |
+| ------ | ------------------------------- | ------------------------------------------------------ | ------ |
+| `GET`  | `/api/v1/modules`               | List all installed modules with enabled/disabled state | Bearer |
+| `POST` | `/api/v1/modules/:id/enable`    | Enable a module                                        | Admin  |
+| `POST` | `/api/v1/modules/:id/disable`   | Disable a module                                       | Admin  |
+| `POST` | `/api/v1/modules/install`       | Install a module from an uploaded archive              | Admin  |
+| `POST` | `/api/v1/modules/import/github` | Import a module archive from a GitHub repository tag   | Admin  |
 
 ## GitHub Import Lifecycle
 

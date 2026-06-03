@@ -124,13 +124,13 @@ mit Zugriffsrichtlinien für UI-Seiten:
 
 ## API-Routen
 
-| Methode | Pfad                          | Beschreibung                                               | Auth   |
-| ------- | ----------------------------- | ---------------------------------------------------------- | ------ |
-| `GET`   | `/api/v1/modules`             | Alle installierten Module mit Aktivierungsstatus auflisten | Bearer |
-| `POST`  | `/api/v1/modules/:id/enable`  | Modul aktivieren                                           | Admin  |
-| `POST`  | `/api/v1/modules/:id/disable` | Modul deaktivieren                                         | Admin  |
-| `POST`  | `/api/v1/modules/install`     | Modul aus hochgeladenem Archiv installieren                | Admin  |
-| `POST`  | `/api/v1/modules/import/github` | Modularchiv aus einem GitHub-Repository-Tag importieren  | Admin  |
+| Methode | Pfad                            | Beschreibung                                               | Auth   |
+| ------- | ------------------------------- | ---------------------------------------------------------- | ------ |
+| `GET`   | `/api/v1/modules`               | Alle installierten Module mit Aktivierungsstatus auflisten | Bearer |
+| `POST`  | `/api/v1/modules/:id/enable`    | Modul aktivieren                                           | Admin  |
+| `POST`  | `/api/v1/modules/:id/disable`   | Modul deaktivieren                                         | Admin  |
+| `POST`  | `/api/v1/modules/install`       | Modul aus hochgeladenem Archiv installieren                | Admin  |
+| `POST`  | `/api/v1/modules/import/github` | Modularchiv aus einem GitHub-Repository-Tag importieren    | Admin  |
 
 ## GitHub-Import-Lebenszyklus
 

@@ -124,13 +124,13 @@ export function registerApiRoutes(router) {
 
 ## API ルート
 
-| メソッド | パス                          | 説明                                                              | 認証   |
-| -------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
-| `GET`    | `/api/v1/modules`             | 有効/無効の状態とともにインストール済みモジュールをすべて一覧表示 | Bearer |
-| `POST`   | `/api/v1/modules/:id/enable`  | モジュールを有効化                                                | Admin  |
-| `POST`   | `/api/v1/modules/:id/disable` | モジュールを無効化                                                | Admin  |
-| `POST`   | `/api/v1/modules/install`     | アップロードされたアーカイブからモジュールをインストール          | Admin  |
-| `POST`   | `/api/v1/modules/import/github` | GitHub リポジトリタグからモジュールアーカイブを取り込む         | Admin  |
+| メソッド | パス                            | 説明                                                              | 認証   |
+| -------- | ------------------------------- | ----------------------------------------------------------------- | ------ |
+| `GET`    | `/api/v1/modules`               | 有効/無効の状態とともにインストール済みモジュールをすべて一覧表示 | Bearer |
+| `POST`   | `/api/v1/modules/:id/enable`    | モジュールを有効化                                                | Admin  |
+| `POST`   | `/api/v1/modules/:id/disable`   | モジュールを無効化                                                | Admin  |
+| `POST`   | `/api/v1/modules/install`       | アップロードされたアーカイブからモジュールをインストール          | Admin  |
+| `POST`   | `/api/v1/modules/import/github` | GitHub リポジトリタグからモジュールアーカイブを取り込む           | Admin  |
 
 ## GitHub 取り込みライフサイクル
 

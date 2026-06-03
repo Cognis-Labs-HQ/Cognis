@@ -124,13 +124,13 @@ kebijakan akses untuk halaman UI:
 
 ## Rute API
 
-| Metode | Jalur                         | Deskripsi                                                       | Auth   |
-| ------ | ----------------------------- | --------------------------------------------------------------- | ------ |
-| `GET`  | `/api/v1/modules`             | Daftar semua modul yang terinstal beserta status aktif/nonaktif | Bearer |
-| `POST` | `/api/v1/modules/:id/enable`  | Aktifkan modul                                                  | Admin  |
-| `POST` | `/api/v1/modules/:id/disable` | Nonaktifkan modul                                               | Admin  |
-| `POST` | `/api/v1/modules/install`     | Instal modul dari arsip yang diunggah                           | Admin  |
-| `POST` | `/api/v1/modules/import/github` | Impor arsip modul dari tag repositori GitHub                  | Admin  |
+| Metode | Jalur                           | Deskripsi                                                       | Auth   |
+| ------ | ------------------------------- | --------------------------------------------------------------- | ------ |
+| `GET`  | `/api/v1/modules`               | Daftar semua modul yang terinstal beserta status aktif/nonaktif | Bearer |
+| `POST` | `/api/v1/modules/:id/enable`    | Aktifkan modul                                                  | Admin  |
+| `POST` | `/api/v1/modules/:id/disable`   | Nonaktifkan modul                                               | Admin  |
+| `POST` | `/api/v1/modules/install`       | Instal modul dari arsip yang diunggah                           | Admin  |
+| `POST` | `/api/v1/modules/import/github` | Impor arsip modul dari tag repositori GitHub                    | Admin  |
 
 ## Siklus Impor GitHub
 

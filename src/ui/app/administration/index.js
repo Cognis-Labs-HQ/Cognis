@@ -316,61 +316,6 @@ function bindModuleConfigureButtons() {
                         await reloadModules();
                         composer.refresh(elements);
                     }
-
-                    function bindGithubModuleImportButton() {
-                        const button = root.querySelector("#import-module-github");
-                        if (!button) return;
-                        button.addEventListener("click", async () => {
-                            const result = await openPopup({
-                                title: i18n.t("ui.app.admin.import_module_from_github"),
-                                body: `
-                                  <div class="stack">
-                                    <label class="field">
-                                      <span>${escapeHtml(i18n.t("ui.app.admin.github_repository_url"))}</span>
-                                      <input id="import-module-github-url" type="url" placeholder="https://github.com/owner/repo" />
-                                    </label>
-                                    <label class="field">
-                                      <span>${escapeHtml(i18n.t("ui.app.admin.github_version_tag"))}</span>
-                                      <input id="import-module-github-tag" type="text" placeholder="v1.0.0" />
-                                    </label>
-                                  </div>
-                                `,
-                                actions: [
-                                    {
-                                        id: "confirm",
-                                        label: i18n.t("ui.reuse.confirm"),
-                                        variant: "confirm",
-                                    },
-                                    {
-                                        id: "cancel",
-                                        label: i18n.t("ui.reuse.cancel"),
-                                        variant: "cancel",
-                                    },
-                                ],
-                            });
-                            if (result !== "confirm") return;
-                            const urlInput = document.querySelector("#import-module-github-url");
-                            const tagInput = document.querySelector("#import-module-github-tag");
-                            const repositoryUrl = String(urlInput?.value ?? "").trim();
-                            const versionTag = String(tagInput?.value ?? "").trim();
-                            if (!repositoryUrl || !versionTag) {
-                                showToast(i18n.t("ui.app.admin.github_import_missing_fields"), {
-                                    variant: "warning",
-                                });
-                                return;
-                            }
-                            try {
-                                await importGithubModule(repositoryUrl, versionTag);
-                                await reloadModules();
-                                composer.refresh(elements);
-                                showToast(i18n.t("ui.app.admin.github_import_success"), {
-                                    variant: "success",
-                                });
-                            } catch {
-                                showToast(i18n.t("ui.reuse.save_failed"), { variant: "error" });
-                            }
-                        });
-                    }
                 } catch (error) {
                     showToast(i18n.t("ui.reuse.save_failed"), {
                         variant: "error",
@@ -380,6 +325,62 @@ function bindModuleConfigureButtons() {
             });
         },
     );
+}
+
+function bindGithubModuleImportButton() {
+    const button = root.querySelector("#import-module-github");
+    if (!button) return;
+    button.addEventListener("click", async () => {
+        const result = await openPopup({
+            title: i18n.t("ui.app.admin.import_module_from_github"),
+            body: `
+              <div class="stack">
+                <label>
+                  <span>${escapeHtml(i18n.t("ui.app.admin.github_repository_url"))}</span>
+                  <input id="import-module-github-url" type="url" placeholder="https://github.com/owner/repo" />
+                </label>
+                <label>
+                  <span>${escapeHtml(i18n.t("ui.app.admin.github_version_tag"))}</span>
+                  <input id="import-module-github-tag" type="text" placeholder="v1.0.0" />
+                </label>
+              </div>
+            `,
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.reuse.confirm"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+        });
+        if (result !== "confirm") return;
+        const urlInput = document.querySelector("#import-module-github-url");
+        const tagInput = document.querySelector("#import-module-github-tag");
+        const repositoryUrl = String(urlInput?.value ?? "").trim();
+        const versionTag = String(tagInput?.value ?? "").trim();
+        if (!repositoryUrl || !versionTag) {
+            showToast(i18n.t("ui.app.admin.github_import_missing_fields"), {
+                variant: "warning",
+            });
+            return;
+        }
+        try {
+            await importGithubModule(repositoryUrl, versionTag);
+            await reloadModules();
+            composer.refresh(elements);
+            showToast(i18n.t("ui.app.admin.github_import_success"), {
+                variant: "success",
+            });
+        } catch (error) {
+            console.error(error);
+            showToast(i18n.t("ui.reuse.save_failed"), { variant: "error" });
+        }
+    });
 }
 
 function bindGatewayToggles() {
