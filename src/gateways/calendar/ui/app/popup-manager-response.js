@@ -108,7 +108,10 @@ export function createCalendarResponseHandler({
         }
         let targetCalendarId = null;
         if (responseOption === "accepted" || responseOption === "tentative") {
-            targetCalendarId = await promptTargetCalendar(eventData, responseOption);
+            targetCalendarId = await promptTargetCalendar(
+                eventData,
+                responseOption,
+            );
             if (!targetCalendarId) {
                 return false;
             }
@@ -138,9 +141,7 @@ export function createCalendarResponseHandler({
             console.warn("Failed to parse response body for movedTo:", err);
         }
         if (targetCalendarId) {
-            setSelectedCalendarId(
-                movedTo?.calendarId ?? targetCalendarId,
-            );
+            setSelectedCalendarId(movedTo?.calendarId ?? targetCalendarId);
             syncRouteSelection();
         }
         await reloadState();

@@ -97,7 +97,13 @@ export function renderTimedEventLayer(
     events,
     rangeStart,
     rangeEnd,
-    { i18n, renderEventButton, slotCount = 48, compact = false, currentAccountId = null } = {},
+    {
+        i18n,
+        renderEventButton,
+        slotCount = 48,
+        compact = false,
+        currentAccountId = null,
+    } = {},
 ) {
     const laidOutEvents = buildTimedEventLayout(events, rangeStart, rangeEnd);
     if (!laidOutEvents.length) return "";

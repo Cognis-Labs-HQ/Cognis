@@ -93,12 +93,16 @@ export async function handleCalendarResponseRoute(input: {
                     targetCalendarId,
                     moveAll: respondAll,
                 });
-                movedTo = { calendarId: targetCalendarId, eventId: input.eventId };
+                movedTo = {
+                    calendarId: targetCalendarId,
+                    eventId: input.eventId,
+                };
             } else if (invitedEvent) {
                 // Non-owned invitation: create a personal copy in the target calendar
                 const copy = input.gateway.addEventToCalendar({
                     calendarId: targetCalendarId,
-                    sourceEventId: invitedEvent.sourceEventId ?? invitedEvent.id,
+                    sourceEventId:
+                        invitedEvent.sourceEventId ?? invitedEvent.id,
                     title: invitedEvent.title,
                     description: invitedEvent.description,
                     startAt: invitedEvent.startAt,
