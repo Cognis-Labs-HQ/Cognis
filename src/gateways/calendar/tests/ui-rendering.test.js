@@ -229,9 +229,13 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /accept_calendar_title/);
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
     assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);
-    assert.doesNotMatch(
+    assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /calendar-share-generate/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /const name = calendar\.isDefault\s*\?\s*undefined/,
     );
 });
 

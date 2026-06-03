@@ -52,7 +52,8 @@
 .calendar-edit-popup {
     display: grid;
     gap: 0.75rem;
-    width: min(92vw, 40rem);
+    width: min(100%, 28rem);
+    justify-self: stretch;
 }
 
 .calendar-visibility-row {
@@ -69,6 +70,53 @@
 .calendar-delete-zone {
     border-top: 1px solid var(--field-border);
     padding-top: 0.65rem;
+}
+
+.calendar-share-controls {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.calendar-share-input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.calendar-share-input-row > * {
+    flex: 1 1 10.5rem;
+    min-width: 0;
+}
+
+.calendar-share-input-row > button {
+    flex: 0 0 auto;
+}
+
+.calendar-share-results {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.calendar-share-links-details {
+    margin: 0;
+    font-size: 0.78rem;
+    opacity: 0.8;
+}
+
+.calendar-share-result {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.calendar-share-result-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.calendar-share-result-row input {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .calendar-events-list,

@@ -71,6 +71,17 @@ test("calendar gateway does not allow deleting the default calendar", () => {
     );
 });
 
+test("calendar gateway allows default calendar visibility updates", () => {
+    const gateway = new CoreCalendarGateway();
+    const defaultCalendar = gateway.ensureDefaultCalendar("alice");
+    const updated = gateway.updateCalendar({
+        ownerAccountId: "alice",
+        calendarId: defaultCalendar.id,
+        visibility: "public",
+    });
+    assert.equal(updated.visibility, "public");
+});
+
 test("calendar gateway exports ICS and parses ICS imports", () => {
     const gateway = new CoreCalendarGateway();
     const calendar = gateway.createCalendar({
