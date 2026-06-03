@@ -1,5 +1,13 @@
 # Kalender-Upgrade
 
+## Termine aus allen Kalendern sichtbar
+
+Nach einem Neuladen der Kalenderseite verschwinden Termine aus nicht
+standardmäßigen Kalendern nicht mehr. Hauptansicht, ausstehende Einladungen und
+die Übersichten für kommende Termine bündeln jetzt weiterhin Ereignisse aus
+allen verfügbaren Kalendern, sodass angenommene und manuell angelegte Termine
+in sekundären Kalendern nach dem Aktualisieren erhalten bleiben.
+
 ## Ausstehende Einladungen in der Kurzübersicht
 
 Die Kurzübersicht enthält jetzt einen Abschnitt für ausstehende Termine mit

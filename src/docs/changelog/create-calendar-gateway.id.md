@@ -1,5 +1,13 @@
 # Peningkatan Kalender
 
+## Acara multi-kalender tetap terlihat
+
+Muat ulang halaman kalender kini tidak lagi menyembunyikan acara yang berada
+di kalender non-default. Tampilan utama kalender, undangan tertunda, dan
+ringkasan acara mendatang sekarang tetap menggabungkan acara dari semua
+kalender yang tersedia sehingga acara kalender sekunder, baik yang diterima
+maupun yang dibuat manual, tetap tersedia setelah penyegaran.
+
 ## Undangan tertunda di Ringkasan Mendatang
 
 Ringkasan Mendatang sekarang memiliki bagian Acara Menunggu Respons dengan aksi

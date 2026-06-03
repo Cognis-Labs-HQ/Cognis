@@ -1,5 +1,12 @@
 # Calendar Upgrade
 
+## Multi-calendar events stay visible
+
+Refreshing the calendar page no longer hides events that belong to non-default
+calendars. The main calendar view, pending invitations, and upcoming summaries
+now continue to aggregate events from every available calendar so accepted and
+manually created secondary-calendar events remain available after reload.
+
 ## Pending invites in Upcoming Summary
 
 Upcoming Summary now includes a Pending Events subsection with quick Accept,
