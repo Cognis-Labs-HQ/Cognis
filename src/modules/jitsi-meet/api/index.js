@@ -1,6 +1,7 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
 import { registerMeetingRoutes } from "./meetings-routes.js";
+import { registerAdminMeetingRoutes } from "./admin-meetings-routes.js";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
@@ -23,14 +24,6 @@ const LIVELINESS_TIMEOUT_MS = 5000;
 
 const storeByExecutor = new WeakMap();
 
-/**
- * Sends a JSON response with a fixed content-type header.
- *
- * @param {import("node:http").ServerResponse} res - HTTP response object.
- * @param {number} status - HTTP status code.
- * @param {unknown} payload - Serializable JSON payload.
- * @returns {void}
- */
 function sendJson(res, status, payload) {
     res.writeHead(status, { "content-type": "application/json" });
     res.end(JSON.stringify(payload));
@@ -277,6 +270,8 @@ export function registerApiRoutes(router, ctx) {
         "notify:registerCategory",
     );
     const accountStore = ctx.getCapability("auth:accountStore");
+    const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
+    const listCalendarEvents = ctx.getCapability("calendar:listEvents");
 
     if (typeof registerNotificationCategory === "function") {
         registerNotificationCategory("meetings", "Meetings");
@@ -295,6 +290,12 @@ export function registerApiRoutes(router, ctx) {
         });
         router.get(
             "/api/v1/modules/jitsi-meet/admin/meetings",
+            async (_req, res) => {
+                unavailablePayload(res);
+            },
+        );
+        router.get(
+            "/api/v1/modules/jitsi-meet/admin/meetings/upcoming",
             async (_req, res) => {
                 unavailablePayload(res);
             },
@@ -566,12 +567,12 @@ export function registerApiRoutes(router, ctx) {
                 creatorUsername: requesterUsername,
             });
 
-            if (normalizedInput.participantUsernames.length < 2) {
+            if (normalizedInput.participantUsernames.length < 1) {
                 sendError(
                     res,
                     400,
                     "bad_request",
-                    "At least two valid meeting participants are required.",
+                    "At least one valid meeting participant is required.",
                 );
                 return;
             }
@@ -763,6 +764,8 @@ export function registerApiRoutes(router, ctx) {
         router,
         store,
         profileStore,
+        listCalendarsByOwner,
+        listCalendarEvents,
         listClassroomParticipantHandles,
         resolveMeetingPayloadOrReject,
         createMeetingPayload,
@@ -982,17 +985,5 @@ export function registerApiRoutes(router, ctx) {
         { access: { minRole: "user" } },
     );
 
-    router.get(
-        "/api/v1/modules/jitsi-meet/admin/meetings",
-        async (req, res) => {
-            await store.ensureSchema();
-            const claims = requireAuth(req, res, "admin");
-            if (!claims) return;
-            const meetings = await store.listActiveMeetings();
-            sendJson(res, 200, {
-                data: meetings,
-            });
-        },
-        { access: { minRole: "admin" } },
-    );
+    registerAdminMeetingRoutes({ router, store, requireAuth, sendJson });
 }

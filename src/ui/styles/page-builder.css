@@ -946,6 +946,14 @@ body[data-theme="light"] .slider::before {
     box-shadow: none;
 }
 
+.btn-no-animation {
+    transition: none !important;
+}
+
+.btn-no-animation:hover:not(:disabled) {
+    transform: none;
+}
+
 [class*="btn-"]:disabled {
     opacity: 0.38;
     cursor: not-allowed;
@@ -1414,6 +1422,28 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     margin: 0;
     font-size: 0.875rem;
     color: var(--text);
+}
+
+.dashboard-upcoming-event-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.dashboard-upcoming-event-link:hover {
+    color: var(--accent);
+}
+
+.dashboard-upcoming-event-link strong {
+    font-size: 0.875rem;
+}
+
+.dashboard-upcoming-event-link span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
 .dashboard-last-seen {

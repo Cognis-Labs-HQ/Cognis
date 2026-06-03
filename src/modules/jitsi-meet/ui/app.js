@@ -6,6 +6,7 @@ import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
+import { formatTime } from "/static/reuse/timestamp.js";
 import {
     bytesToHex,
     hexToBytes,
@@ -585,9 +586,7 @@ export async function mount(root, { signal } = {}) {
                     String(message?.senderId ?? "").trim() ||
                     "Unknown";
                 const createdAt = String(message?.createdAt ?? "").trim();
-                const safeTime = createdAt
-                    ? new Date(createdAt).toLocaleTimeString()
-                    : "";
+                const safeTime = formatTime(createdAt, "");
                 const body = renderMarkdown(
                     String(message?.text ?? i18n.t("ui.reuse.unknown")),
                     { softBreaks: true },

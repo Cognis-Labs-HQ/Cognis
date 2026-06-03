@@ -2,6 +2,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 
 const REFRESH_INTERVAL_MS = 2500;
 const TABLE_COLUMN_COUNT = 5;
+const UPCOMING_TABLE_COLUMN_COUNT = 5;
 
 /**
  * Creates the Jitsi Meetings administration section contribution rendered in
@@ -36,10 +37,23 @@ const TABLE_COLUMN_COUNT = 5;
 export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
     let panelRoot = null;
     let refreshTimer = null;
+    let upcomingPanelRoot = null;
+    let upcomingRefreshTimer = null;
 
     async function loadMeetings() {
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/admin/meetings",
+        );
+        if (!response.ok) {
+            return [];
+        }
+        const payload = await response.json().catch(() => ({ data: [] }));
+        return Array.isArray(payload?.data) ? payload.data : [];
+    }
+
+    async function loadUpcomingMeetings() {
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/admin/meetings/upcoming",
         );
         if (!response.ok) {
             return [];
@@ -68,6 +82,23 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
             .join("");
     }
 
+    function renderUpcomingRows(rows) {
+        if (!rows.length) {
+            return `<tr><td colspan="${UPCOMING_TABLE_COLUMN_COUNT}">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.upcoming_empty"))}</td></tr>`;
+        }
+        return rows
+            .map((row) => {
+                return `<tr>
+          <td><code>${escapeHtml(row.id ?? "")}</code></td>
+          <td><a href="${escapeHtml(row.meetingUrl ?? "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.meetingName ?? "Cognis Classroom")}</a></td>
+          <td>${escapeHtml(String(row.participantCount ?? 0))}</td>
+          <td>${escapeHtml(row.createdBy ?? "")}</td>
+          <td>${escapeHtml(formatDateTime(row.createdAt, i18n.t("ui.reuse.unknown")))}</td>
+        </tr>`;
+            })
+            .join("");
+    }
+
     async function refresh() {
         if (!(panelRoot instanceof HTMLElement) || !panelRoot.isConnected) {
             stopPolling();
@@ -78,6 +109,21 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
         const tbody = panelRoot.querySelector("tbody");
         if (!(tbody instanceof HTMLElement)) return;
         tbody.innerHTML = renderRows(rows);
+    }
+
+    async function refreshUpcoming() {
+        if (
+            !(upcomingPanelRoot instanceof HTMLElement) ||
+            !upcomingPanelRoot.isConnected
+        ) {
+            stopUpcomingPolling();
+            upcomingPanelRoot = null;
+            return;
+        }
+        const rows = await loadUpcomingMeetings();
+        const tbody = upcomingPanelRoot.querySelector("tbody");
+        if (!(tbody instanceof HTMLElement)) return;
+        tbody.innerHTML = renderUpcomingRows(rows);
     }
 
     function startPolling() {
@@ -91,6 +137,19 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
         if (refreshTimer === null) return;
         clearInterval(refreshTimer);
         refreshTimer = null;
+    }
+
+    function startUpcomingPolling() {
+        if (upcomingRefreshTimer !== null) return;
+        upcomingRefreshTimer = setInterval(() => {
+            void refreshUpcoming();
+        }, REFRESH_INTERVAL_MS);
+    }
+
+    function stopUpcomingPolling() {
+        if (upcomingRefreshTimer === null) return;
+        clearInterval(upcomingRefreshTimer);
+        upcomingRefreshTimer = null;
     }
 
     return {
@@ -107,10 +166,19 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                 );
                 if (!(panelRoot instanceof HTMLElement)) {
                     stopPolling();
-                    return;
+                } else {
+                    void refresh();
+                    startPolling();
                 }
-                void refresh();
-                startPolling();
+                upcomingPanelRoot = document.querySelector(
+                    "#jitsi-admin-upcoming-meetings-root",
+                );
+                if (!(upcomingPanelRoot instanceof HTMLElement)) {
+                    stopUpcomingPolling();
+                } else {
+                    void refreshUpcoming();
+                    startUpcomingPolling();
+                }
             },
             elements: [
                 {
@@ -133,6 +201,31 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                  </thead>
                                 <tbody>
                   <tr><td colspan="${TABLE_COLUMN_COUNT}">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.loading"))}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          `,
+                },
+                {
+                    id: "jitsi-upcoming-meetings",
+                    label: i18n.t(
+                        "module.jitsi_meet.admin.meetings.upcoming_table_label",
+                    ),
+                    pinned: true,
+                    render: () => `
+            <div class="users-table-wrap" id="jitsi-admin-upcoming-meetings-root">
+              <table class="users-table">
+                <thead>
+                  <tr>
+                     <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
+                     <th>${escapeHtml(i18n.t("ui.reuse.meeting"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.participants"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.created_by"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.created_at"))}</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                  <tr><td colspan="${UPCOMING_TABLE_COLUMN_COUNT}">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.upcoming_loading"))}</td></tr>
                 </tbody>
               </table>
             </div>

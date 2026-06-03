@@ -1,0 +1,8 @@
+{
+    "id": "calendar-caldav",
+    "name": "CalDAV Adapter",
+    "version": "1.0.0",
+    "gateway": "calendar",
+    "description": "Exports private and public calendar feeds for CalDAV clients.",
+    "publisher": "Cognis Labs HQ"
+}
