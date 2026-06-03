@@ -6,6 +6,7 @@ import {
 } from "./popup-manager-all-day.js";
 import {
     buildParticipantCardHtml,
+    buildParticipantOptionHtml,
     createParticipantDirectory,
     hydrateProfileAvatars,
     isUserMatchByIdentifier,
@@ -45,6 +46,7 @@ export function createCalendarPopupManager({
     setSelectedEventId,
     getEventsByCalendar,
     getCanInviteExternal,
+    getCurrentAccountId,
     getJitsiAvailable,
     reloadState,
     syncRouteSelection,
@@ -432,6 +434,10 @@ export function createCalendarPopupManager({
         endAt = "",
         eventData = null,
     } = {}) {
+        const currentUserIdentifier = String(getCurrentAccountId?.() ?? "")
+            .trim()
+            .replace(/^@/, "")
+            .toLowerCase();
         const popupBuilder = calendarUi.createEventComposerBuilder({
             i18n,
             calendars: getCalendars(),
@@ -466,6 +472,17 @@ export function createCalendarPopupManager({
         let selectedParticipants = eventData
             ? getEventParticipants(eventData.event, eventParticipantDirectory)
             : [];
+        if (currentUserIdentifier) {
+            selectedParticipants = selectedParticipants.filter((entry) => {
+                if (entry.type !== "user") return true;
+                return (
+                    String(entry.value ?? "")
+                        .trim()
+                        .replace(/^@/, "")
+                        .toLowerCase() !== currentUserIdentifier
+                );
+            });
+        }
         let popupSearchAbortController = null;
         let popupController = null;
         let confirmedConflictCreateKey = "";
@@ -499,9 +516,10 @@ export function createCalendarPopupManager({
             optionsElement.innerHTML = participantOptions
                 .map(
                     (option, index) =>
-                        `<button type="button" class="calendar-participant-option${index === 0 ? " is-active" : ""}" data-participant-option="${String(index)}">${escapeHtml(option.label)}</button>`,
+                        `<button type="button" class="calendar-participant-option${index === 0 ? " is-active" : ""}" data-participant-option="${String(index)}">${buildParticipantOptionHtml(option, { escapeHtml })}</button>`,
                 )
                 .join("");
+            hydrateProfileAvatars(optionsElement);
         }
 
         async function refreshParticipantOptions(overlay) {
@@ -548,6 +566,12 @@ export function createCalendarPopupManager({
                             .toLowerCase();
                         const userIdentifier = username || handle;
                         if (!userIdentifier) return;
+                        if (
+                            currentUserIdentifier &&
+                            userIdentifier === currentUserIdentifier
+                        ) {
+                            return;
+                        }
                         const displayName = String(
                             entry?.displayName ?? entry?.label ?? "",
                         ).trim();
@@ -558,6 +582,7 @@ export function createCalendarPopupManager({
                             type: "user",
                             value: userIdentifier,
                             avatarKey,
+                            displayName,
                             label:
                                 displayName &&
                                 displayName.toLowerCase() !==

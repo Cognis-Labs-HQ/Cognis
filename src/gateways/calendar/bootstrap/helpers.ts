@@ -331,6 +331,7 @@ export async function dispatchInviteNotifications({
                     attendee,
                     resolveAccountId,
                 );
+            if (recipientUsername === inviterAccountId) return;
             const invitedCopy = gateway
                 .listMirroredEvents(event.id)
                 .find((copy) => {
@@ -350,6 +351,7 @@ export async function dispatchInviteNotifications({
                     subject: `Calendar invite: ${event.title}`,
                     body: buildInternalInviteBody(event, actionUrl),
                     actionUrl,
+                    senderName: inviterAccountId,
                     metadata: {
                         eventId: actionEventId,
                         calendarId: actionCalendarId,
@@ -391,6 +393,7 @@ export async function dispatchInviteNotifications({
                         meetingAccessUrl,
                         inviterAccountId,
                     ),
+                    senderName: inviterAccountId,
                     actionUrl:
                         meetingAccessUrl ??
                         buildEventActionUrl(calendarId, event.id),
@@ -447,6 +450,7 @@ export async function dispatchCancellationNotifications({
                     subject: `Event cancelled: ${event.title}`,
                     body: buildCancellationNotificationBody(event),
                     actionUrl: "/calendar",
+                    senderName: event.createdBy,
                     metadata: {
                         eventId: event.id,
                         recurrenceId: event.recurrenceId,
@@ -474,6 +478,7 @@ export async function dispatchCancellationNotifications({
                     recipientEmail: email,
                     subject: `Event cancelled: ${event.title}`,
                     body: buildCancellationNotificationBody(event),
+                    senderName: event.createdBy,
                     metadata: {
                         eventId: event.id,
                         recurrenceId: event.recurrenceId,

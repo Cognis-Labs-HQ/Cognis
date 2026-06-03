@@ -244,6 +244,7 @@ export async function mount(root, { signal } = {}) {
         },
         getEventsByCalendar: () => eventsByCalendar,
         getCanInviteExternal: () => canInviteExternal,
+        getCurrentAccountId: () => currentAccountId,
         getJitsiAvailable: () => jitsiAvailable,
         reloadState,
         syncRouteSelection,

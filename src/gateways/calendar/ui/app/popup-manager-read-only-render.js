@@ -30,12 +30,16 @@ export function renderReadOnlyEventPopupBody({
               )
               .join("")}</div>`
         : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`;
-    const eventDateRows = isAllDay
-        ? ""
-        : `<dt>${escapeHtml(i18n.t("gateway.calendar.event_start"))}</dt>
-              <dd>${escapeHtml(new Date(eventData.event.startAt).toLocaleString())}</dd>
+    const startDate = new Date(eventData.event.startAt);
+    const endDate = new Date(eventData.event.endAt);
+    const endDateForAllDay = new Date(endDate);
+    if (isAllDay && !Number.isNaN(endDateForAllDay.getTime())) {
+        endDateForAllDay.setDate(endDateForAllDay.getDate() - 1);
+    }
+    const eventDateRows = `<dt>${escapeHtml(i18n.t("gateway.calendar.event_start"))}</dt>
+              <dd>${escapeHtml(isAllDay ? startDate.toLocaleDateString() : startDate.toLocaleString())}</dd>
               <dt>${escapeHtml(i18n.t("gateway.calendar.event_end"))}</dt>
-              <dd>${escapeHtml(new Date(eventData.event.endAt).toLocaleString())}</dd>`;
+              <dd>${escapeHtml(isAllDay ? endDateForAllDay.toLocaleDateString() : endDate.toLocaleString())}</dd>`;
     return `
           <div class="calendar-event-details">
             <dl class="calendar-event-detail-list">

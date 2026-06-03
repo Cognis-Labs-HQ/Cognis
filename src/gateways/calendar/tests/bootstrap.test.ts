@@ -368,12 +368,16 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
         uiRegistry,
     } as any);
 
-    const dispatched: Array<{ recipientUsername: string; subject: string }> =
-        [];
+    const dispatched: Array<{
+        recipientUsername: string;
+        subject: string;
+        senderName: string;
+    }> = [];
     capabilities.contribute("notify:dispatch", async (envelope: any) => {
         dispatched.push({
             recipientUsername: String(envelope.recipientUsername ?? ""),
             subject: String(envelope.subject ?? ""),
+            senderName: String(envelope.senderName ?? ""),
         });
         return { dispatched: ["internal"] };
     });
@@ -417,10 +421,7 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
         {
             recipientUsername: "bob",
             subject: "Calendar invite: Planning",
-        },
-        {
-            recipientUsername: "alice",
-            subject: "Calendar invite: Planning",
+            senderName: "alice",
         },
     ]);
 });

@@ -601,9 +601,21 @@
 }
 
 .calendar-participant-option {
+    display: flex;
+    align-items: center;
     justify-content: flex-start;
     text-align: left;
     width: 100%;
+}
+
+.calendar-participant-option-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.calendar-participant-option .calendar-participant-card-meta {
+    align-items: flex-start;
 }
 
 @media (max-width: 900px) {

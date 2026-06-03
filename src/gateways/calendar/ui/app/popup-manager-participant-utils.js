@@ -127,7 +127,7 @@ export function buildParticipantCardHtml(
             fallbackClass: "calendar-participant-card-avatar-fallback",
             profileHandle: null,
         });
-        return `<div class="calendar-participant-card"><a href="/profile/${escapeHtml(handle)}" class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></a>${removeButton}</div>`;
+        return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></div>${removeButton}</div>`;
     }
     const email = String(entry.value ?? "").trim();
     const displayLabel = String(entry.label ?? email).trim();
@@ -141,6 +141,25 @@ export function buildParticipantCardHtml(
         profileHandle: null,
     });
     return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayLabel)}</span></span></div>${removeButton}</div>`;
+}
+
+export function buildParticipantOptionHtml(option, { escapeHtml }) {
+    if (option.type === "user") {
+        const handle = String(option.value ?? "").trim();
+        const displayName = String(option.displayName ?? option.label ?? handle).trim();
+        const avatarKey = String(option.avatarKey ?? "").trim();
+        const avatarMarkup = buildProfileAvatarMarkup({
+            avatarKey: avatarKey || null,
+            label: displayName || handle,
+            colorSeed: handle,
+            avatarClass: "calendar-participant-card-avatar-profile",
+            imageClass: "calendar-participant-card-avatar-image",
+            fallbackClass: "calendar-participant-card-avatar-fallback",
+            profileHandle: null,
+        });
+        return `<span class="calendar-participant-option-content"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></span>`;
+    }
+    return escapeHtml(String(option.label ?? ""));
 }
 
 export { hydrateProfileAvatars };
