@@ -3,6 +3,99 @@ import {
     renderReminderField,
 } from "./popup-manager-reminders.js";
 
+function renderCalendarShareResults({ i18n, escapeHtml, shareData }) {
+    return `<p class="calendar-share-links-details">${escapeHtml(i18n.t("gateway.calendar.share_links_details"))}</p>
+      <label class="calendar-share-result">
+        <span>CalDAV</span>
+        <div class="calendar-share-result-row">
+          <input type="text" readonly value="${escapeHtml(shareData.caldavUrl)}" />
+          <button type="button" class="btn-cancel btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.caldavUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+        </div>
+      </label>
+      <label class="calendar-share-result">
+        <span>ICS</span>
+        <div class="calendar-share-result-row">
+          <input type="text" readonly value="${escapeHtml(shareData.icsUrl)}" />
+          <button type="button" class="btn-cancel btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.icsUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+        </div>
+      </label>`;
+}
+
+function bindCalendarShareControls({
+    overlay,
+    calendarId,
+    i18n,
+    apiFetch,
+    escapeHtml,
+    showToast,
+}) {
+    const shareGenerateBtn = overlay.querySelector("#calendar-share-generate");
+    const shareResults = overlay.querySelector("#calendar-share-results");
+    if (!shareGenerateBtn || !shareResults) return;
+    shareGenerateBtn.addEventListener("click", async () => {
+        const permission = String(
+            overlay.querySelector("#calendar-share-permission")?.value ??
+                "read",
+        );
+        const expiresInHoursRaw = String(
+            overlay.querySelector("#calendar-share-expiry")?.value ?? "24",
+        );
+        const shareName = String(
+            overlay.querySelector("#calendar-share-name")?.value ?? "",
+        ).trim();
+        const response = await apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share`,
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    permission: permission === "write" ? "write" : "read",
+                    expiresInHours:
+                        expiresInHoursRaw === "never"
+                            ? null
+                            : Number(expiresInHoursRaw),
+                    name: shareName || undefined,
+                }),
+            },
+        );
+        if (!response.ok) {
+            showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
+            return;
+        }
+        const payload = await response.json().catch(() => null);
+        const shareData = payload?.data;
+        if (
+            typeof shareData?.caldavUrl !== "string" ||
+            typeof shareData?.icsUrl !== "string"
+        ) {
+            showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
+            return;
+        }
+        shareResults.innerHTML = renderCalendarShareResults({
+            i18n,
+            escapeHtml,
+            shareData,
+        });
+        shareResults.hidden = false;
+    });
+    shareResults.addEventListener("click", async (event) => {
+        const copyButton = event.target.closest("[data-calendar-share-copy]");
+        if (!(copyButton instanceof HTMLElement)) return;
+        const link = String(
+            copyButton.getAttribute("data-calendar-share-copy") ?? "",
+        );
+        if (
+            !link ||
+            typeof navigator === "undefined" ||
+            !navigator.clipboard?.writeText
+        ) {
+            return;
+        }
+        await navigator.clipboard.writeText(link);
+        showToast(i18n.t("gateway.calendar.share_link_copied"), "success");
+    });
+}
+
 export function createCalendarEditPopupHandler({
     i18n,
     apiFetch,
@@ -77,100 +170,14 @@ export function createCalendarEditPopupHandler({
                 },
             ],
             onOpen: (overlay, closePopup) => {
-                const renderShareResults = (shareData) =>
-                    `<p class="calendar-share-links-details">${escapeHtml(i18n.t("gateway.calendar.share_links_details"))}</p>
-                     <label class="calendar-share-result">
-                       <span>CalDAV</span>
-                       <div class="calendar-share-result-row">
-                         <input type="text" readonly value="${escapeHtml(shareData.caldavUrl)}" />
-                         <button type="button" class="btn-cancel btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.caldavUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
-                       </div>
-                     </label>
-                     <label class="calendar-share-result">
-                       <span>ICS</span>
-                       <div class="calendar-share-result-row">
-                         <input type="text" readonly value="${escapeHtml(shareData.icsUrl)}" />
-                         <button type="button" class="btn-cancel btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.icsUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
-                       </div>
-                     </label>`;
-                const shareGenerateBtn = overlay.querySelector(
-                    "#calendar-share-generate",
-                );
-                const shareResults = overlay.querySelector(
-                    "#calendar-share-results",
-                );
-                if (shareGenerateBtn && shareResults) {
-                    shareGenerateBtn.addEventListener("click", async () => {
-                        const permission = String(
-                            overlay.querySelector("#calendar-share-permission")
-                                ?.value ?? "read",
-                        );
-                        const expiresInHoursRaw = String(
-                            overlay.querySelector("#calendar-share-expiry")
-                                ?.value ?? "24",
-                        );
-                        const shareName = String(
-                            overlay.querySelector("#calendar-share-name")
-                                ?.value ?? "",
-                        ).trim();
-                        const response = await apiFetch(
-                            `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}/share`,
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({
-                                    permission:
-                                        permission === "write"
-                                            ? "write"
-                                            : "read",
-                                    expiresInHours:
-                                        expiresInHoursRaw === "never"
-                                            ? null
-                                            : Number(expiresInHoursRaw),
-                                    name: shareName || undefined,
-                                }),
-                            },
-                        );
-                        if (!response.ok) {
-                            showToast(
-                                i18n.t("gateway.calendar.share_link_failed"),
-                                "error",
-                            );
-                            return;
-                        }
-                        const payload = await response.json().catch(() => null);
-                        const shareData = payload?.data;
-                        if (
-                            typeof shareData?.caldavUrl !== "string" ||
-                            typeof shareData?.icsUrl !== "string"
-                        ) {
-                            showToast(
-                                i18n.t("gateway.calendar.share_link_failed"),
-                                "error",
-                            );
-                            return;
-                        }
-                        shareResults.innerHTML = renderShareResults(shareData);
-                        shareResults.hidden = false;
-                    });
-                    shareResults.addEventListener("click", async (event) => {
-                        const copyButton = event.target.closest(
-                            "[data-calendar-share-copy]",
-                        );
-                        if (!(copyButton instanceof HTMLElement)) return;
-                        const link = String(
-                            copyButton.getAttribute(
-                                "data-calendar-share-copy",
-                            ) ?? "",
-                        );
-                        if (!link || !navigator?.clipboard?.writeText) return;
-                        await navigator.clipboard.writeText(link);
-                        showToast(
-                            i18n.t("gateway.calendar.share_link_copied"),
-                            "success",
-                        );
-                    });
-                }
+                bindCalendarShareControls({
+                    overlay,
+                    calendarId: calendar.id,
+                    i18n,
+                    apiFetch,
+                    escapeHtml,
+                    showToast,
+                });
                 const deleteBtn = overlay.querySelector(
                     "#calendar-edit-delete",
                 );
