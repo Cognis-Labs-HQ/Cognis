@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { CoreCalendarGateway } from "../gateway.js";
+import type { CoreCalendarGateway } from "./index.js";
 import type {
     CalendarAdapter,
     CalendarAdapterBootstrapCtx,

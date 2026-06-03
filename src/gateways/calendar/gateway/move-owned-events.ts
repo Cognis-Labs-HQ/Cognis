@@ -1,4 +1,4 @@
-import type { CalendarEventRecord, CalendarRecord } from "../gateway.js";
+import type { CalendarEventRecord, CalendarRecord } from "./index.js";
 
 export function moveOwnedEvents(input: {
     ownerAccountId: string;

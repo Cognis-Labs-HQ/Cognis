@@ -1,10 +1,10 @@
 import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
-import type { CoreCalendarGateway } from "../gateway.js";
+import type { CoreCalendarGateway } from "../gateway/index.js";
 import type {
     CalendarEventRecord,
     CalendarEventResponse,
     CalendarVisibility,
-} from "../gateway.js";
+} from "../gateway/index.js";
 
 const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 

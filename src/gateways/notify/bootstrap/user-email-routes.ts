@@ -1,11 +1,11 @@
-import { readJson } from "../shared.js";
+import { readJson } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
 import { TfaCodeService } from "../../../api/reuse/tfa-code.js";
-import { VerifyTokenService } from "../../api/reuse/verify-token.js";
+import { VerifyTokenService } from "../../../api/reuse/verify-token.js";
 import {
     resolveRouteContext,
     type RouteContext,
-} from "../../api/reuse/route-context.js";
+} from "../../../api/reuse/route-context.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { NotificationUserEmailStore } from "./stores.js";
 

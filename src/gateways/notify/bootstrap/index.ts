@@ -1,17 +1,20 @@
 import path from "node:path";
-import { type GatewayBootstrapContext } from "../shared.js";
+import { type GatewayBootstrapContext } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
-import { TfaCodeService, InMemoryTfaStore } from "../../../api/reuse/tfa-code.js";
+import {
+    TfaCodeService,
+    InMemoryTfaStore,
+} from "../../../api/reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
-} from "../../api/reuse/verify-token.js";
-import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
+} from "../../../api/reuse/verify-token.js";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
-} from "../../api/reuse/security-settings.js";
-import { type RouteContext } from "../../api/reuse/route-context.js";
+} from "../../../api/reuse/security-settings.js";
+import { type RouteContext } from "../../../api/reuse/route-context.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createNotificationRoutes } from "../routes/index.js";
 import { loadNotificationStores, serveHtmlPage } from "./stores.js";

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
-import type { CoreCalendarGateway } from "../gateway.js";
+import type { CoreCalendarGateway } from "../gateway/index.js";
 import {
     buildResponseNotificationBody,
     errorMessage,

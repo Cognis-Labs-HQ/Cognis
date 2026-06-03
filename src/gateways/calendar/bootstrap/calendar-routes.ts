@@ -6,7 +6,7 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import { normalizeCalendarColor } from "../color.js";
-import { CoreCalendarGateway } from "../gateway.js";
+import { CoreCalendarGateway } from "../gateway/index.js";
 import {
     buildCalendarShareData,
     dispatchCancellationNotifications,

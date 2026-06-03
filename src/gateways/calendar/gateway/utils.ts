@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
-import type { CoreCalendarGateway } from "../gateway.js";
+import type { CoreCalendarGateway } from "./index.js";
 
 export type CalendarVisibility = "private" | "public";
 export type CalendarEventStatus = "busy" | "free";

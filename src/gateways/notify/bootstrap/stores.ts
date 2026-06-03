@@ -1,6 +1,6 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
-import { type GatewayBootstrapContext } from "../shared.js";
+import { type GatewayBootstrapContext } from "../../shared.js";
 import type { ServerResponse } from "node:http";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 

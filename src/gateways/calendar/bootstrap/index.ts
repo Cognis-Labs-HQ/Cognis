@@ -11,7 +11,10 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import { DbCalendarStore } from "../calendar-store.js";
 import { normalizeCalendarColor } from "../color.js";
-import { CoreCalendarGateway, type CalendarVisibility } from "../gateway.js";
+import {
+    CoreCalendarGateway,
+    type CalendarVisibility,
+} from "../gateway/index.js";
 import { createCalendarAdapterRoutes } from "./adapter-routes.js";
 import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";

@@ -1,10 +1,10 @@
-import { readJson, type GatewayRegistry } from "../shared.js";
+import { readJson, type GatewayRegistry } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
 import {
     resolveRouteContext,
     type RouteContext,
-} from "../../api/reuse/route-context.js";
-import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
+} from "../../../api/reuse/route-context.js";
+import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 export function createGatewayAdapterRoutes(

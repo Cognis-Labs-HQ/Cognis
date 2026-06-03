@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import net from "node:net";
 import {
     SmtpNotificationSender,
-    SmtpRateLimiter,
     SmtpTemporaryError,
 } from "../smtp-notification-sender.js";
+import { SmtpRateLimiter } from "../smtp-notification-queue.js";
 import { createNotificationSender } from "../smtp-notification-sender-factory.js";
 
 test("createNotificationSender always returns a sender instance", () => {

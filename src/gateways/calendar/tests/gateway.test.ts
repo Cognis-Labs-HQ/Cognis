@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CoreCalendarGateway } from "../gateway.js";
+import { CoreCalendarGateway } from "../gateway/index.js";
 
 test("calendar gateway supports multiple calendars per user", () => {
     const gateway = new CoreCalendarGateway();

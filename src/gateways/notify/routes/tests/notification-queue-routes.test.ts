@@ -6,7 +6,7 @@ import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
 } from "../../gateway.js";
-import { createNotificationRoutes } from "../notifications.js";
+import { createNotificationRoutes } from "../index.js";
 
 function makeResponse() {
     let status = 0;
