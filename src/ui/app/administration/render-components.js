@@ -298,7 +298,10 @@ export function renderComponentsContent(modules, gateways, allAdapters, deps) {
     const { i18n } = deps;
     return `
     <div class="components-section">
-      <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
+      <div class="integrity-header">
+        <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
+        <button id="import-module-github" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.admin.import_module_from_github")}</button>
+      </div>
       <div class="components-section-body">
         ${renderModulesContent(modules, gateways, deps)}
       </div>

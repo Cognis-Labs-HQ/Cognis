@@ -86,3 +86,51 @@ test("module routes log enable operations", async () => {
         },
     ]);
 });
+
+test("module routes support github imports", async () => {
+    const route = createModuleRoutes({
+        list: async () => [],
+        enable: async () => ({ moduleId: "x", enabled: true }),
+        disable: async () => ({ moduleId: "x", enabled: false }),
+        importFromGithub: async () => ({
+            id: "jitsi-meet",
+            name: "Jitsi Meet",
+            version: "1.0.0",
+            class: "extension",
+            coreApiVersion: "v1",
+            capabilities: [],
+            entrypoints: {},
+        }),
+    } as any);
+
+    const token = issueAccessToken("owner", "owner", 60);
+    let status = 0;
+    let body = "";
+    const handled = await route(
+        {
+            method: "POST",
+            headers: { authorization: "Bearer " + token },
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from(
+                    JSON.stringify({
+                        repositoryUrl: "https://github.com/acme/jitsi-meet",
+                        versionTag: "v1.0.0",
+                    }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/import/github"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    assert.match(body, /jitsi-meet/);
+});

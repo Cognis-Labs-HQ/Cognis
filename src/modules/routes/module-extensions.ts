@@ -94,6 +94,25 @@ interface ModulePlugin {
     registerUi?: (ctx: ModuleUiRegistrationContext) => void;
 }
 
+interface ModuleBootstrapCtx
+    extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
+    registerApiGet(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    registerApiPost(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    router: ModuleApiRouter;
+}
+
+interface ModuleBootstrapPlugin {
+    bootstrapModule?: (ctx: ModuleBootstrapCtx) => Promise<void> | void;
+}
+
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     getCapability?: <T>(capabilityId: string) => T | undefined;
@@ -154,6 +173,133 @@ export function createModuleExtensionRoutes(
         );
     }
 
+    function createModuleCtx(
+        moduleId: string,
+        moduleRoot: string,
+        nextHandlers: RouteHandler[],
+        allowUiRegistration: boolean,
+    ): ModuleBootstrapCtx {
+        function registerApiRoute(
+            method: "GET" | "POST",
+            routePath: string,
+            handler: RouteHandler["handler"],
+            routeOptions?: ModuleRouteOptions,
+        ) {
+            const parsedAccess = parseRoleAccessPolicy(routeOptions?.access);
+            if (parsedAccess.invalid) {
+                logInvalidAccessPolicy(
+                    method,
+                    moduleId,
+                    routePath,
+                    routeOptions?.access,
+                );
+            }
+            nextHandlers.push({
+                method,
+                routePath,
+                moduleId,
+                access: parsedAccess.access,
+                invalidAccessPolicy: parsedAccess.invalid,
+                allowWhenDisabled: Boolean(routeOptions?.allowWhenDisabled),
+                handler,
+            });
+        }
+
+        const router: ModuleApiRouter = {
+            get(routePath, handler, routeOptions) {
+                registerApiRoute("GET", routePath, handler, routeOptions);
+            },
+            post(routePath, handler, routeOptions) {
+                registerApiRoute("POST", routePath, handler, routeOptions);
+            },
+        };
+
+        return {
+            moduleId,
+            moduleRoot,
+            getCapability: options?.getCapability ?? (() => undefined),
+            registerApiGet(routePath, handler, routeOptions) {
+                registerApiRoute("GET", routePath, handler, routeOptions);
+            },
+            registerApiPost(routePath, handler, routeOptions) {
+                registerApiRoute("POST", routePath, handler, routeOptions);
+            },
+            router,
+            registerNavbarPlugin(pluginDef) {
+                if (!allowUiRegistration) return;
+                const pluginConfig =
+                    typeof pluginDef === "string"
+                        ? { scriptUrl: pluginDef }
+                        : pluginDef;
+                options?.uiRegistry?.registerNavbarPlugin({
+                    scriptUrl: pluginConfig.scriptUrl,
+                    access: pluginConfig.access,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerSpaRoute(route) {
+                if (!allowUiRegistration) return;
+                options?.uiRegistry?.registerSpaRoute({
+                    ...route,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerSettingsSection(section) {
+                if (!allowUiRegistration) return;
+                options?.uiRegistry?.registerSettingsSection({
+                    ...section,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerPageExtension(pageId, element) {
+                if (!allowUiRegistration) return;
+                options?.uiRegistry?.registerPageExtension(pageId, {
+                    ...element,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerAdminSection(section) {
+                if (!allowUiRegistration) return;
+                options?.uiRegistry?.registerAdminSection({
+                    ...section,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
+            },
+            registerStaticDir(urlPrefix, absoluteDir) {
+                if (!allowUiRegistration) return;
+                const normalizedPrefix = String(urlPrefix ?? "")
+                    .trim()
+                    .replace(/^\/+|\/+$/g, "");
+                const fullPrefix = normalizedPrefix
+                    ? `${moduleId}/${normalizedPrefix}`
+                    : moduleId;
+                options?.uiRegistry?.registerModuleStaticDir(
+                    fullPrefix,
+                    absoluteDir,
+                );
+            },
+        };
+    }
+
+    function resolveModuleEntrypointPath(
+        moduleRoot: string,
+        entrypoints: { bootstrap?: string; api?: string } | undefined,
+    ): { path: string; type: "bootstrap" | "legacy-api" } | null {
+        if (entrypoints?.bootstrap) {
+            return {
+                path: path.join(moduleRoot, entrypoints.bootstrap),
+                type: "bootstrap",
+            };
+        }
+        if (entrypoints?.api) {
+            return {
+                path: path.join(moduleRoot, entrypoints.api),
+                type: "legacy-api",
+            };
+        }
+        return null;
+    }
+
     async function refresh() {
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
@@ -169,144 +315,57 @@ export function createModuleExtensionRoutes(
                 staticDirsRegisteredByModule.add(manifest.id);
             }
 
-            if (!manifest.entrypoints?.api) continue;
-
-            const pluginPath = path.join(moduleRoot, manifest.entrypoints.api);
+            const canRegisterUi = !uiHooksRegisteredByModule.has(manifest.id);
+            const moduleCtx = createModuleCtx(
+                manifest.id,
+                moduleRoot,
+                nextHandlers,
+                canRegisterUi,
+            );
+            const entrypoint = resolveModuleEntrypointPath(
+                moduleRoot,
+                manifest.entrypoints,
+            );
+            if (!entrypoint) continue;
+            log?.("debug", "Loading module route entrypoint.", {
+                component: "module-extension-routes",
+                moduleId: manifest.id,
+                entrypoint: entrypoint.type,
+                pluginPath: entrypoint.path,
+            });
             try {
                 const plugin = (await import(
-                    `${pluginPath}?t=${Date.now()}`
-                )) as ModulePlugin;
-                if (
-                    plugin.registerUi &&
-                    options?.uiRegistry &&
-                    !uiHooksRegisteredByModule.has(manifest.id)
-                ) {
-                    plugin.registerUi({
-                        moduleId: manifest.id,
-                        moduleRoot,
-                        registerNavbarPlugin(pluginDef) {
-                            const pluginConfig =
-                                typeof pluginDef === "string"
-                                    ? { scriptUrl: pluginDef }
-                                    : pluginDef;
-                            options.uiRegistry?.registerNavbarPlugin({
-                                scriptUrl: pluginConfig.scriptUrl,
-                                access: pluginConfig.access,
-                                isEnabled: () => isModuleEnabled(manifest.id),
-                            });
-                        },
-                        registerSpaRoute(route) {
-                            options.uiRegistry?.registerSpaRoute({
-                                ...route,
-                                isEnabled: () => isModuleEnabled(manifest.id),
-                            });
-                        },
-                        registerSettingsSection(section) {
-                            options.uiRegistry?.registerSettingsSection({
-                                ...section,
-                                isEnabled: () => isModuleEnabled(manifest.id),
-                            });
-                        },
-                        registerPageExtension(pageId, element) {
-                            options.uiRegistry?.registerPageExtension(pageId, {
-                                ...element,
-                                isEnabled: () => isModuleEnabled(manifest.id),
-                            });
-                        },
-                        registerAdminSection(section) {
-                            options.uiRegistry?.registerAdminSection({
-                                ...section,
-                                isEnabled: () => isModuleEnabled(manifest.id),
-                            });
-                        },
-                        registerStaticDir(urlPrefix, absoluteDir) {
-                            const normalizedPrefix = String(urlPrefix ?? "")
-                                .trim()
-                                .replace(/^\/+|\/+$/g, "");
-                            const fullPrefix = normalizedPrefix
-                                ? `${manifest.id}/${normalizedPrefix}`
-                                : manifest.id;
-                            options.uiRegistry?.registerModuleStaticDir(
-                                fullPrefix,
-                                absoluteDir,
-                            );
-                        },
-                    });
+                    `${entrypoint.path}?t=${Date.now()}`
+                )) as ModulePlugin & ModuleBootstrapPlugin;
+                if (typeof plugin.bootstrapModule === "function") {
+                    if (plugin.registerUi || plugin.registerApiRoutes) {
+                        log?.(
+                            "warn",
+                            "Module exports bootstrapModule and legacy route hooks; legacy hooks are ignored.",
+                            {
+                                component: "module-extension-routes",
+                                moduleId: manifest.id,
+                            },
+                        );
+                    }
+                    await plugin.bootstrapModule(moduleCtx);
+                    if (canRegisterUi) {
+                        uiHooksRegisteredByModule.add(manifest.id);
+                    }
+                    continue;
+                }
+                if (plugin.registerUi && options?.uiRegistry && canRegisterUi) {
+                    plugin.registerUi(moduleCtx);
                     uiHooksRegisteredByModule.add(manifest.id);
                 }
                 if (typeof plugin.registerApiRoutes === "function") {
-                    plugin.registerApiRoutes(
-                        {
-                            get(
-                                routePath: string,
-                                handler: RouteHandler["handler"],
-                                options?: ModuleRouteOptions,
-                            ) {
-                                const parsedAccess = parseRoleAccessPolicy(
-                                    options?.access,
-                                );
-                                if (parsedAccess.invalid) {
-                                    logInvalidAccessPolicy(
-                                        "GET",
-                                        manifest.id,
-                                        routePath,
-                                        options?.access,
-                                    );
-                                }
-                                nextHandlers.push({
-                                    method: "GET",
-                                    routePath,
-                                    moduleId: manifest.id,
-                                    access: parsedAccess.access,
-                                    invalidAccessPolicy: parsedAccess.invalid,
-                                    allowWhenDisabled: Boolean(
-                                        options?.allowWhenDisabled,
-                                    ),
-                                    handler,
-                                });
-                            },
-                            post(
-                                routePath: string,
-                                handler: RouteHandler["handler"],
-                                options?: ModuleRouteOptions,
-                            ) {
-                                const parsedAccess = parseRoleAccessPolicy(
-                                    options?.access,
-                                );
-                                if (parsedAccess.invalid) {
-                                    logInvalidAccessPolicy(
-                                        "POST",
-                                        manifest.id,
-                                        routePath,
-                                        options?.access,
-                                    );
-                                }
-                                nextHandlers.push({
-                                    method: "POST",
-                                    routePath,
-                                    moduleId: manifest.id,
-                                    access: parsedAccess.access,
-                                    invalidAccessPolicy: parsedAccess.invalid,
-                                    allowWhenDisabled: Boolean(
-                                        options?.allowWhenDisabled,
-                                    ),
-                                    handler,
-                                });
-                            },
-                        },
-                        {
-                            moduleId: manifest.id,
-                            moduleRoot,
-                            getCapability:
-                                options?.getCapability ?? (() => undefined),
-                        },
-                    );
+                    plugin.registerApiRoutes(moduleCtx.router, moduleCtx);
                 }
             } catch (error) {
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,
-                    pluginPath,
+                    pluginPath: entrypoint.path,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });

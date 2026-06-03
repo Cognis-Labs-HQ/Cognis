@@ -8,7 +8,7 @@ Das Cognis-Modul-Framework ermöglicht es Drittanbieter- und Community-Entwickle
 
 - Modulmanifeste aus `COGNIS_MODULES_ROOT` (Standard `src/modules`) erkennen und laden.
 - `enable`- und `disable`-Operationen über das `ModuleRuntimeGateway`-Interface bereitstellen.
-- API-Routen-Plugins aus der `entrypoints.api`-Datei jedes aktivierten Moduls dynamisch importieren.
+- Jedes aktivierte Modul über den Bootstrap-Einstiegspunkt (`entrypoints.bootstrap`) laden und alle Modulfunktionen über ctx bereitstellen.
 - Blockieren, dass Modulrouten geschützte Systempräfixe überschreiben.
 - Registrierte Modulrouten aktualisieren, wenn Module aktiviert oder deaktiviert werden.
 
@@ -44,6 +44,7 @@ export interface ModuleManifest {
     capabilities: string[];
     requires?: string[];
     entrypoints: {
+        bootstrap?: string;
         api?: string;
         ui?: string;
         cli?: string;
@@ -79,7 +80,9 @@ export function registerApiRoutes(router) {
 }
 ```
 
-`createModuleExtensionRoutes` in `src/modules/routes/module-extensions.ts` ruft `registerApiRoutes` für jedes aktivierte Modul auf, das `entrypoints.api` deklariert. Routen werden bei jedem Aktivierungs-/Deaktivierungszyklus über `refresh()` neu geladen.
+`createModuleExtensionRoutes` in `src/modules/routes/module-extensions.ts` lädt aktivierte Module primär über `entrypoints.bootstrap`. Der Bootstrap erhält ein ctx-Objekt (`moduleId`, `moduleRoot`, `getCapability`, `router`, `registerApiGet`, `registerApiPost` und UI-Registrierungsmethoden) und ist die einzige erlaubte Integrationsoberfläche.
+
+Direkte Cross-Module- oder Core-zu-Modul-Imports sind verboten. Fähigkeitsaustausch muss über ctx laufen.
 
 Jede Modulroute kann optionale Zugriffsrichtlinien über das dritte
 Router-Argument deklarieren:
@@ -121,9 +124,34 @@ mit Zugriffsrichtlinien für UI-Seiten:
 
 ## API-Routen
 
-| Methode | Pfad                          | Beschreibung                                               | Auth   |
-| ------- | ----------------------------- | ---------------------------------------------------------- | ------ |
-| `GET`   | `/api/v1/modules`             | Alle installierten Module mit Aktivierungsstatus auflisten | Bearer |
-| `POST`  | `/api/v1/modules/:id/enable`  | Modul aktivieren                                           | Admin  |
-| `POST`  | `/api/v1/modules/:id/disable` | Modul deaktivieren                                         | Admin  |
-| `POST`  | `/api/v1/modules/install`     | Modul aus hochgeladenem Archiv installieren                | Admin  |
+| Methode | Pfad                            | Beschreibung                                               | Auth   |
+| ------- | ------------------------------- | ---------------------------------------------------------- | ------ |
+| `GET`   | `/api/v1/modules`               | Alle installierten Module mit Aktivierungsstatus auflisten | Bearer |
+| `POST`  | `/api/v1/modules/:id/enable`    | Modul aktivieren                                           | Admin  |
+| `POST`  | `/api/v1/modules/:id/disable`   | Modul deaktivieren                                         | Admin  |
+| `POST`  | `/api/v1/modules/install`       | Modul aus hochgeladenem Archiv installieren                | Admin  |
+| `POST`  | `/api/v1/modules/import/github` | Modularchiv aus einem GitHub-Repository-Tag importieren    | Admin  |
+
+## GitHub-Import-Lebenszyklus
+
+1. Admin übergibt `repositoryUrl` und `versionTag` über die Administration-UI oder `cognisctl modules:import-github`.
+2. Die API-Route `/api/v1/modules/import/github` validiert die Eingaben und delegiert an `ModuleService.importFromGithub`.
+3. Der Service lädt das Tag-Archiv von `codeload.github.com` und übergibt die Bytes an das ModuleRuntimeGateway.
+4. Die Runtime installiert das Archiv als standardkonformes Drop-in-Modulverzeichnis.
+5. Admin aktiviert das Modul anschließend über den normalen `/enable`-Flow.
+
+## Erforderliche Dateien für neue Module
+
+Jedes Runtime-Extension-Modul muss enthalten:
+
+- `manifest.json` (Identität, Fähigkeiten, Entry-Points, Abhängigkeiten)
+- `routes.json` (deklarierte API/UI-Routen für Sicherheitsprüfungen)
+- `bootstrap.js` oder `bootstrap.ts` (einziger Gateway-Einstiegspunkt, der Fähigkeiten in ctx injiziert)
+- `ui/`-Verzeichnis (statische Assets, auch ohne aktuelles UI-Entrypoint)
+
+Empfohlen bei Bedarf:
+
+- `api/index.js` oder `api/index.ts`
+- `cli/index.js`
+- `db/*.sql`
+- `docs/standard.<lang>.md`

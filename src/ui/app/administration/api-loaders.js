@@ -30,6 +30,13 @@ export async function toggleModule(moduleId, action) {
     );
 }
 
+export async function importGithubModule(repositoryUrl, versionTag) {
+    await apiFetch("/api/v1/modules/import/github", {
+        method: "POST",
+        body: JSON.stringify({ repositoryUrl, versionTag }),
+    });
+}
+
 export async function toggleGateway(gatewayId, action) {
     await apiFetch(
         `/api/v1/gateways/${encodeURIComponent(gatewayId)}/${action}`,

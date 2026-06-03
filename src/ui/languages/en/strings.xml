@@ -204,6 +204,11 @@
   <string name="ui.app.admin.description">Description</string>
   <string name="ui.app.admin.no_gateways">No gateways registered.</string>
   <string name="ui.app.admin.no_adapters">No adapters registered.</string>
+  <string name="ui.app.admin.import_module_from_github">Import Module from GitHub</string>
+  <string name="ui.app.admin.github_repository_url">GitHub Repository URL</string>
+  <string name="ui.app.admin.github_version_tag">Version Tag</string>
+  <string name="ui.app.admin.github_import_missing_fields">Repository URL and Version Tag are required.</string>
+  <string name="ui.app.admin.github_import_success">Module import request completed.</string>
   <string name="ui.app.admin.gateway.required">Required</string>
   <string name="ui.app.admin.gateway.dependencies">Dependencies</string>
   <string name="ui.app.admin.gateway.no_dependencies">None</string>

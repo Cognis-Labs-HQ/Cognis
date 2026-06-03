@@ -4,6 +4,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../reuse/route-context.js";
+import { readJson } from "../../reuse/read-json.js";
 
 export interface ModuleRouteHooks {
     onEnabled?: (moduleId: string) => Promise<void> | void;
@@ -19,6 +20,7 @@ export interface ModuleRouteHooks {
             status: "ok" | "mismatch" | "missing";
         }>
     >;
+    onImported?: (moduleId: string) => Promise<void> | void;
 }
 
 export function createModuleRoutes(
@@ -70,6 +72,42 @@ export function createModuleRoutes(
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
+            return true;
+        }
+        if (url.pathname === "/api/v1/modules/import/github") {
+            if (req.method !== "POST") return false;
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const repositoryUrl = String(body.repositoryUrl ?? "").trim();
+            const versionTag = String(body.versionTag ?? "").trim();
+            if (!repositoryUrl || !versionTag) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_body",
+                            message:
+                                "repositoryUrl and versionTag are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const manifest = await moduleService.importFromGithub({
+                repositoryUrl,
+                versionTag,
+            });
+            await hooks?.onImported?.(manifest.id);
+            hooks?.log?.("info", "Module imported from GitHub.", {
+                ...logMeta,
+                accountId: claims.sub,
+                moduleId: manifest.id,
+                repositoryUrl,
+                versionTag,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: manifest }));
             return true;
         }
 

@@ -32,6 +32,8 @@ Prefer gateway/adapter abstractions at every seam where a concrete implementatio
 
 Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions. When core, a gateway, an adapter, a module, or a route needs something owned elsewhere, it must obtain that capability through `ctx` (or a request/route context built from `ctx`) instead of importing another component's internals or receiving ad-hoc side-channel references.
 
+For runtime modules specifically, treat `ctx` as the full system bus: module bootstrap is the only entrypoint allowed to expose module capabilities, and traditional direct imports between modules/core internals are forbidden.
+
 - Register exported capabilities through `ctx.capabilities`.
 - Consume capabilities by querying `ctx`/`ctx.capabilities`, including optional dependency checks.
 - Use `ctx` to detect whether another component is present; do not hardcode adapter-to-adapter imports for availability checks.

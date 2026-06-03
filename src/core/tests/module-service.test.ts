@@ -11,7 +11,17 @@ function runtime(manifests: any[]): ModuleRuntimeGateway {
             return manifests;
         },
         async installFromZip() {
-            throw new Error("not used");
+            return (
+                manifests[0] ?? {
+                    id: "imported",
+                    name: "Imported",
+                    version: "1.0.0",
+                    class: "extension",
+                    coreApiVersion: "v1",
+                    capabilities: [],
+                    entrypoints: {},
+                }
+            );
         },
         async enable(moduleId: string) {
             return { moduleId, enabled: true };
@@ -21,6 +31,61 @@ function runtime(manifests: any[]): ModuleRuntimeGateway {
         },
     };
 }
+
+test("module import rejects non-github URLs", async () => {
+    const service = new ModuleService(runtime([]));
+    await assert.rejects(() =>
+        service.importFromGithub({
+            repositoryUrl: "https://example.com/acme/mod",
+            versionTag: "v1.0.0",
+        }),
+    );
+});
+
+test("module import passes downloaded archive to runtime", async () => {
+    const expectedManifest = {
+        id: "imported-mod",
+        name: "Imported",
+        version: "1.0.0",
+        class: "extension",
+        coreApiVersion: "v1",
+        capabilities: [],
+        entrypoints: {},
+    };
+    const captured: Uint8Array[] = [];
+    const service = new ModuleService({
+        async listManifests() {
+            return [];
+        },
+        async installFromZip(binary: Uint8Array) {
+            captured.push(binary);
+            return expectedManifest as any;
+        },
+        async enable(moduleId: string) {
+            return { moduleId, enabled: true };
+        },
+        async disable(moduleId: string) {
+            return { moduleId, enabled: false };
+        },
+    });
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+        new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { "content-type": "application/gzip" },
+        })) as any;
+    try {
+        const manifest = await service.importFromGithub({
+            repositoryUrl: "https://github.com/Cognis-Labs-HQ/Cognis",
+            versionTag: "v1.0.0",
+        });
+        assert.equal(manifest.id, "imported-mod");
+        assert.equal(captured.length, 1);
+        assert.equal(captured[0].length, 3);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
 
 test("module service enables extension modules", async () => {
     const service = new ModuleService(

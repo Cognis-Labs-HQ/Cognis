@@ -8,7 +8,7 @@ Kerangka modul Cognis memungkinkan pengembang pihak ketiga dan komunitas untuk m
 
 - Menemukan dan memuat manifes modul dari `COGNIS_MODULES_ROOT` (default `src/modules`).
 - Mengekspos operasi `enable` dan `disable` melalui antarmuka `ModuleRuntimeGateway`.
-- Mengimpor plugin rute API secara dinamis dari file `entrypoints.api` setiap modul yang aktif.
+- Memuat setiap modul aktif melalui entrypoint bootstrap (`entrypoints.bootstrap`) dan menyalurkan semua fitur modul melalui ctx.
 - Memblokir rute modul agar tidak menimpa prefiks sistem yang dilindungi.
 - Memperbarui rute modul yang terdaftar saat modul diaktifkan atau dinonaktifkan.
 
@@ -44,6 +44,7 @@ export interface ModuleManifest {
     capabilities: string[];
     requires?: string[];
     entrypoints: {
+        bootstrap?: string;
         api?: string;
         ui?: string;
         cli?: string;
@@ -79,7 +80,9 @@ export function registerApiRoutes(router) {
 }
 ```
 
-`createModuleExtensionRoutes` di `src/modules/routes/module-extensions.ts` memanggil `registerApiRoutes` untuk setiap modul aktif yang mendeklarasikan `entrypoints.api`. Rute dimuat ulang pada setiap siklus aktifkan/nonaktifkan melalui `refresh()`.
+`createModuleExtensionRoutes` di `src/modules/routes/module-extensions.ts` memuat modul aktif melalui `entrypoints.bootstrap` bila tersedia. Bootstrap menerima objek ctx (`moduleId`, `moduleRoot`, `getCapability`, `router`, `registerApiGet`, `registerApiPost`, dan metode registrasi UI) dan menjadi satu-satunya permukaan integrasi yang diizinkan.
+
+Impor langsung lintas modul atau inti-ke-modul dilarang. Pertukaran kapabilitas harus lewat ctx.
 
 Setiap rute modul dapat mendeklarasikan metadata kebijakan akses opsional melalui
 argumen router ketiga:
@@ -121,9 +124,34 @@ kebijakan akses untuk halaman UI:
 
 ## Rute API
 
-| Metode | Jalur                         | Deskripsi                                                       | Auth   |
-| ------ | ----------------------------- | --------------------------------------------------------------- | ------ |
-| `GET`  | `/api/v1/modules`             | Daftar semua modul yang terinstal beserta status aktif/nonaktif | Bearer |
-| `POST` | `/api/v1/modules/:id/enable`  | Aktifkan modul                                                  | Admin  |
-| `POST` | `/api/v1/modules/:id/disable` | Nonaktifkan modul                                               | Admin  |
-| `POST` | `/api/v1/modules/install`     | Instal modul dari arsip yang diunggah                           | Admin  |
+| Metode | Jalur                           | Deskripsi                                                       | Auth   |
+| ------ | ------------------------------- | --------------------------------------------------------------- | ------ |
+| `GET`  | `/api/v1/modules`               | Daftar semua modul yang terinstal beserta status aktif/nonaktif | Bearer |
+| `POST` | `/api/v1/modules/:id/enable`    | Aktifkan modul                                                  | Admin  |
+| `POST` | `/api/v1/modules/:id/disable`   | Nonaktifkan modul                                               | Admin  |
+| `POST` | `/api/v1/modules/install`       | Instal modul dari arsip yang diunggah                           | Admin  |
+| `POST` | `/api/v1/modules/import/github` | Impor arsip modul dari tag repositori GitHub                    | Admin  |
+
+## Siklus Impor GitHub
+
+1. Admin mengirim `repositoryUrl` dan `versionTag` lewat UI Administration atau `cognisctl modules:import-github`.
+2. Rute API `/api/v1/modules/import/github` memvalidasi input lalu meneruskan ke `ModuleService.importFromGithub`.
+3. Service mengunduh arsip tag dari `codeload.github.com` dan meneruskan byte ke module runtime gateway.
+4. Runtime memasang arsip sebagai direktori modul drop-in yang mengikuti kontrak file wajib.
+5. Admin mengaktifkan modul lewat alur `/enable` normal.
+
+## File Wajib untuk Modul Baru
+
+Setiap modul ekstensi runtime wajib berisi:
+
+- `manifest.json` (identitas, kapabilitas, entrypoint, dependensi)
+- `routes.json` (deklarasi rute API/UI untuk pemeriksaan keamanan)
+- `bootstrap.js` atau `bootstrap.ts` (gerbang tunggal yang menyuntikkan kapabilitas modul ke ctx)
+- direktori `ui/` (aset statis, wajib meski entrypoint UI belum diekspos)
+
+Disarankan jika relevan:
+
+- `api/index.js` atau `api/index.ts`
+- `cli/index.js`
+- `db/*.sql`
+- `docs/standard.<lang>.md`

@@ -812,6 +812,29 @@ register(
 );
 
 register(
+    "modules:import-github",
+    async ({ args, apiBaseUrl, getApiToken }) => {
+        const [repositoryUrl, versionTag] = args;
+        requireArgs(
+            args,
+            ["repositoryUrl", "versionTag"],
+            "cognisctl modules:import-github <repositoryUrl> <versionTag>",
+        );
+        return apiPost(
+            apiBaseUrl,
+            "/api/v1/modules/import/github",
+            { repositoryUrl, versionTag },
+            await getApiToken(),
+        );
+    },
+    {
+        usage: "cognisctl modules:import-github <repositoryUrl> <versionTag>",
+        description: "Import a module release from a GitHub repository tag.",
+        render: (payload) => formatStructured(payload),
+    },
+);
+
+register(
     "modules:enable",
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [moduleId] = args;

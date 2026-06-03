@@ -21,6 +21,11 @@ export interface ModulePathResolver {
     runtimeExtractPath?: string;
 }
 
+export interface GithubModuleImportInput {
+    repositoryUrl: string;
+    versionTag: string;
+}
+
 export class ModuleService {
     private readonly runtimeExtractPath: string;
 
@@ -95,6 +100,42 @@ export class ModuleService {
             });
         }
         return this.runtime.disable(moduleId);
+    }
+
+    async importFromGithub(
+        input: GithubModuleImportInput,
+    ): Promise<ModuleManifest> {
+        const repository = this.parseGithubRepositoryUrl(input.repositoryUrl);
+        const versionTag = String(input.versionTag ?? "").trim();
+        if (!versionTag) {
+            throw new Error(
+                "GitHub module import requires a non-empty versionTag",
+            );
+        }
+
+        const githubArchiveBaseUrl =
+            process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL ??
+            "https://codeload.github.com";
+        const archiveUrl = new URL(githubArchiveBaseUrl.replace(/\/+$/, ""));
+        archiveUrl.pathname = `${archiveUrl.pathname.replace(/\/+$/, "")}/${repository.owner}/${repository.repo}/tar.gz/refs/tags/${encodeURIComponent(versionTag)}`;
+        const response = await fetch(archiveUrl, {
+            headers: {
+                "user-agent": "cognis-module-importer",
+                accept: "application/octet-stream",
+            },
+        });
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch GitHub module archive (${response.status} ${response.statusText})`,
+            );
+        }
+
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        if (bytes.length === 0) {
+            throw new Error("Downloaded GitHub module archive is empty");
+        }
+
+        return this.runtime.installFromZip(bytes);
     }
 
     private assertToggleAllowed(manifest: ModuleManifest): void {
@@ -235,5 +276,47 @@ export class ModuleService {
         } catch {
             return [];
         }
+    }
+
+    private parseGithubRepositoryUrl(input: string): {
+        owner: string;
+        repo: string;
+    } {
+        const raw = String(input ?? "").trim();
+        if (!raw)
+            throw new Error("GitHub module import requires repositoryUrl");
+
+        let parsed: URL;
+        try {
+            parsed = new URL(raw);
+        } catch {
+            throw new Error("repositoryUrl must be a valid GitHub URL");
+        }
+
+        if (parsed.protocol !== "https:" || parsed.hostname !== "github.com") {
+            throw new Error(
+                "repositoryUrl must point to an https://github.com/<owner>/<repo> repository",
+            );
+        }
+
+        const parts = parsed.pathname
+            .split("/")
+            .map((segment) => segment.trim())
+            .filter(Boolean);
+        if (parts.length < 2) {
+            throw new Error(
+                "repositoryUrl must include both owner and repository name",
+            );
+        }
+
+        const owner = parts[0];
+        const repo = parts[1].replace(/\.git$/i, "");
+        if (!owner || !repo) {
+            throw new Error(
+                "repositoryUrl must include both owner and repository name",
+            );
+        }
+
+        return { owner, repo };
     }
 }
