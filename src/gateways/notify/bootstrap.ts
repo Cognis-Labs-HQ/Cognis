@@ -23,7 +23,7 @@ import {
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { createNotificationRoutes } from "./routes/notifications.js";
+import { createNotificationRoutes } from "./routes/index.js";
 
 interface NotificationUserEmailStore {
     getUserEmails(

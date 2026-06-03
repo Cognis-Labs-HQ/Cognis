@@ -3,14 +3,17 @@ export {
     createLogEntry,
     formatConsoleLog,
     writeConsoleLog,
-} from "../gateways/logging/logger.js";
+} from "../../gateways/logging/logger.js";
 export type {
     ConsoleLogFormat,
     LogEntry,
     LogLevel,
-} from "../gateways/logging/logger.js";
+} from "../../gateways/logging/logger.js";
 
-import { writeConsoleLog, type LogLevel } from "../gateways/logging/logger.js";
+import {
+    writeConsoleLog,
+    type LogLevel,
+} from "../../gateways/logging/logger.js";
 
 export type AppLog = (
     level: LogLevel,

@@ -8,7 +8,7 @@ import {
     type RoleAccessPolicy,
     type GatewayRegistry,
 } from "@cognis/core";
-import type { UIRegistry } from "../../ui-registry.js";
+import type { UIRegistry } from "../../reuse/ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { parseRoleAccessPolicy } from "../../reuse/parse-role-access-policy.js";
 import {

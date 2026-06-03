@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
-import { RouteRegistry } from "../../../api/route-registry.js";
+import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap as bootstrapAuth } from "../../auth/bootstrap.js";
 import { bootstrap as bootstrapTfa } from "../bootstrap.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";

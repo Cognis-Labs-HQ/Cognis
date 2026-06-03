@@ -49,8 +49,14 @@ its own contributions, or route registration outside its domain.
 ```
 src/gateways/<id>/
   manifest.json          — gateway identity and dependency declaration
-  bootstrap.ts           — exported bootstrap(ctx) entry point
+  bootstrap.ts           — re-exports bootstrap from ./bootstrap/index.js
+  bootstrap/
+    index.ts             — orchestrates sub-files; exports bootstrap()
+    routes.ts            — route-creation helpers (when bootstrap/ is used)
+    ...                  — other focused sub-files
   gateway.ts             — CoreFooGateway class and adapter context interface
+  routes/
+    index.ts             — HTTP route handlers for this gateway
   docs/
     index.en.md          — gateway documentation (required)
     index.de.md
@@ -58,8 +64,8 @@ src/gateways/<id>/
     index.id.md
 
 src/adapters/<id>/<adapter-id>/
-  package.json           — name, version, main
-  index.ts               — bootstrapFooAdapter(ctx) entry point
+  package.json           — name, version, "main": "index.ts"
+  index.ts               — orchestrator; re-exports public API
   docs/
     index.en.md          — adapter documentation (required)
     index.de.md
@@ -67,6 +73,28 @@ src/adapters/<id>/<adapter-id>/
     index.id.md
   tests/                 — adapter unit tests
 ```
+
+### File structure conventions
+
+Every component must use an `index.ts` (or `index.js`) as its orchestrating entry point. This applies at every level of nesting: a gateway's `bootstrap/` directory has a `bootstrap/index.ts`; a gateway's `routes/` directory has a `routes/index.ts`; an adapter directory has an `index.ts`.
+
+**Entry points are always `index.ts`.** Do not use filename prefixes derived from the parent directory: `src/adapters/notify/smtp/index.ts`, not `smtp-notification-sender.ts` as the main export surface. The directory name already provides context.
+
+**Route files live in `routes/` subdirectories.** Never place a route file as a flat `routes.ts` or `<feature>-routes.ts` directly inside a component root. Route handler files must be `routes/index.ts` (or `routes/<sub-domain>/index.ts` for further splits) so the directory structure mirrors the URL hierarchy.
+
+**Split large files with subdirectories.** When a file grows beyond approximately 400 lines, convert it into a directory: keep the original filename as a one-line barrel that re-exports from `./dirname/index.js`, place the implementation in `dirname/index.ts`, and extract logical sub-sections into focused sibling files within that directory. For example:
+
+```
+src/gateways/notify/
+  bootstrap.ts            — 1 line: export { bootstrap } from "./bootstrap/index.js"
+  bootstrap/
+    index.ts              — bootstrap() function; imports from sibling files
+    stores.ts             — store interfaces and initialisation helpers
+    user-email-routes.ts  — createUserEmailRoutes()
+    adapter-routes.ts     — createGatewayAdapterRoutes()
+```
+
+**Bootstrap directory additive pattern.** When multiple contributors must independently add items to a shared bootstrap surface, place each contribution in a dedicated sibling file under `bootstrap/` and have `bootstrap/index.ts` ingest all files in the directory automatically. This prevents PR collisions on a single registry file.
 
 ### manifest.json
 
@@ -102,10 +130,15 @@ function is responsible for calling `ctx.gatewayRegistry.register(...)`.
 
 ### bootstrap.ts
 
-The bootstrap file is the only entry point the server calls. It must export a
-single async function:
+The bootstrap file is the only entry point the server calls. For new or small gateways, it exports the `bootstrap` function directly. For gateways whose bootstrap logic exceeds approximately 400 lines, `bootstrap.ts` becomes a one-line re-export barrel and the implementation lives in a `bootstrap/` subdirectory:
 
 ```ts
+// bootstrap.ts (barrel form — used when implementation is split)
+export { bootstrap } from "./bootstrap/index.js";
+```
+
+```ts
+// bootstrap/index.ts (or bootstrap.ts for small gateways)
 import type { GatewayBootstrapContext } from "../shared.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {

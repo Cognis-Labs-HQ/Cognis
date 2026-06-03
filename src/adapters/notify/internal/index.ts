@@ -12,7 +12,7 @@ import {
 import { DbInternalNotificationStore } from "./db-store.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
-import { createInternalNotificationRoutes } from "./routes.js";
+import { createInternalNotificationRoutes } from "./routes/index.js";
 
 const SENDER_ID = "internal";
 

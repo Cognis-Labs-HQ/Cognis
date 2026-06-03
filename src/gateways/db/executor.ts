@@ -41,12 +41,7 @@ async function loadDbExecutorFactoryModule(
     adaptersRoot: string,
     adapterId: string,
 ): Promise<DbExecutorFactoryModule | null> {
-    const modulePath = path.resolve(
-        adaptersRoot,
-        "db",
-        adapterId,
-        "adapter.ts",
-    );
+    const modulePath = path.resolve(adaptersRoot, "db", adapterId, "index.ts");
     try {
         return (await import(modulePath)) as DbExecutorFactoryModule;
     } catch {

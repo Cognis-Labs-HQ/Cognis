@@ -218,8 +218,8 @@ test("module and adapter ui app entries use ui/app/index.js structure", () => {
 
 const ALLOWED_CORE_GATEWAY_IMPORT_FILES = new Set([
     "src/api/bootstrap/db-init.ts",
-    "src/api/gateway-bootstrap.ts",
-    "src/api/logger.ts",
+    "src/api/bootstrap/gateway.ts",
+    "src/api/reuse/logger.ts",
     "src/api/main.ts",
     "src/api/reuse/route-context.ts",
     "src/core/index.ts",

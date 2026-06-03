@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PostgresDbGateway, type PostgresClient } from "../adapter.js";
+import { PostgresDbGateway, type PostgresClient } from "../index.js";
 
 test("postgres adapter wraps query and transactions", async () => {
     const calls: string[] = [];

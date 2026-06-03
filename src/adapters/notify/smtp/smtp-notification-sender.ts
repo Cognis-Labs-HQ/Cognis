@@ -990,6 +990,3 @@ export class SmtpNotificationSender implements NotificationSender {
         });
     }
 }
-
-export { SmtpRateLimiter } from "./smtp-notification-queue.js";
-export { createNotificationSender } from "./smtp-notification-sender-factory.js";

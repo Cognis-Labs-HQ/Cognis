@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
 import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
-import { RouteRegistry } from "../../../../api/route-registry.js";
-import { UIRegistry } from "../../../../api/ui-registry.js";
+import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
+import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import { bootstrapSocialAdapter } from "../index.js";
 
 function makeInMemoryDb() {

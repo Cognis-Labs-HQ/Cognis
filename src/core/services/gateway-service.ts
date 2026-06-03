@@ -106,7 +106,7 @@ export class CapabilityStore {
 
 /**
  * Minimum context fields consumed by GatewayService.bootstrap(). The full
- * GatewayBootstrapContext in src/api/gateway-bootstrap.ts extends this with
+ * GatewayBootstrapContext in src/api/bootstrap/gateway.ts extends this with
  * API-specific fields (routeRegistry, uiRegistry, etc.) that individual
  * gateways consume but the orchestrator itself does not.
  */

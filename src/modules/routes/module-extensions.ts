@@ -7,7 +7,7 @@ import type {
 import path from "node:path";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
-import type { UIRegistry } from "../../api/ui-registry.js";
+import type { UIRegistry } from "../../api/reuse/ui-registry.js";
 
 interface RouteHandler {
     method: string;

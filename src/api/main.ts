@@ -13,9 +13,9 @@ import {
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { RouteRegistry } from "./route-registry.js";
-import { UIRegistry } from "./ui-registry.js";
-import { setAppLogger, writeConsoleLog } from "./logger.js";
+import { RouteRegistry } from "./reuse/route-registry.js";
+import { UIRegistry } from "./reuse/ui-registry.js";
+import { setAppLogger, writeConsoleLog } from "./reuse/logger.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";

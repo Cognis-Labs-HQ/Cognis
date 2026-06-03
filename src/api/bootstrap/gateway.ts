@@ -1,6 +1,6 @@
-import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
-import type { RouteRegistry } from "./route-registry.js";
-import type { UIRegistry } from "./ui-registry.js";
+import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
+import type { RouteRegistry } from "../reuse/route-registry.js";
+import type { UIRegistry } from "../reuse/ui-registry.js";
 
 export type {
     GatewayBootstrapBase,

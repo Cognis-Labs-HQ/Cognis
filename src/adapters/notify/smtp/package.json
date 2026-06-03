@@ -3,7 +3,7 @@
     "version": "0.2.1",
     "private": true,
     "type": "module",
-    "main": "smtp-notification-sender.ts",
+    "main": "index.ts",
     "dependencies": {
         "@cognis/core": "0.1.1"
     }

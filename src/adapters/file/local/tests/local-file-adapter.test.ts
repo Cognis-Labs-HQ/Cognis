@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { LocalFileGateway } from "../adapter.js";
+import { LocalFileGateway } from "../index.js";
 
 test("local file gateway put/get/delete", async () => {
     const root = await mkdtemp(join(tmpdir(), "cognis-files-"));

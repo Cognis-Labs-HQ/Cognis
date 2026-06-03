@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SqliteDbGateway, type SqliteClient } from "../adapter.js";
+import { SqliteDbGateway, type SqliteClient } from "../index.js";
 
 test("sqlite adapter runs query and transaction", async () => {
     const execCalls: string[] = [];

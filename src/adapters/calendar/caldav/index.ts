@@ -1,7 +1,7 @@
 import type {
     CalendarAdapter,
     CalendarAdapterBootstrapCtx,
-} from "../../../gateways/calendar/gateway.js";
+} from "../../../gateways/calendar/gateway/index.js";
 import {
     resolveRouteContext,
     type RouteContext,

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { UIRegistry } from "../../ui-registry.js";
+import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createGatewayRoutes } from "../../routes/gateways/index.js";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { GatewayRegistry } from "@cognis/core";

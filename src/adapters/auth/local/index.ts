@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import type { AuthContext } from "@cognis/core";
-import type { LocalAccountStore } from "./auth-adapter.js";
+import type { LocalAccountStore } from "./adapter.js";
 import type {
     AuthProviderAdapter,
     AuthConfigField,

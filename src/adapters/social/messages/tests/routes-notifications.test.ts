@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createMessagesRoutes } from "../routes.js";
+import { createMessagesRoutes } from "../routes/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 
 function makeReq(method: string, token: string | null) {

@@ -1,4 +1,4 @@
-import type { UIRegistry } from "../../api/ui-registry.js";
+import type { UIRegistry } from "../../api/reuse/ui-registry.js";
 
 export function createGatewayUiRegistryHooks(
     uiRegistry: UIRegistry | undefined,

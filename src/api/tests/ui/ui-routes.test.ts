@@ -499,7 +499,7 @@ test("changelogs route requires login cookie and serves changelog entrypoint fro
     assert.match(authed.body, /id="app"/);
 });
 
-import { UIRegistry as StaticUIRegistry } from "../../ui-registry.js";
+import { UIRegistry as StaticUIRegistry } from "../../reuse/ui-registry.js";
 import path from "node:path";
 
 test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {

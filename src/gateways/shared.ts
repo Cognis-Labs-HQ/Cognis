@@ -33,7 +33,7 @@ export type {
     GatewayBootstrapContext,
     GatewayBootstrapBase,
     BootstrapLog,
-} from "../api/gateway-bootstrap.js";
+} from "../api/bootstrap/gateway.js";
 export { GatewayRegistry, CapabilityStore } from "@cognis/core";
 export {
     requireAuth,

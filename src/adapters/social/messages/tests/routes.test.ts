@@ -6,7 +6,7 @@ import {
     canSendMessageRequest,
     canDirectMessageNowOrByApprovedRequest,
     createMessagesRoutes,
-} from "../routes.js";
+} from "../routes/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 
 function makeReq(method: string, token: string | null) {

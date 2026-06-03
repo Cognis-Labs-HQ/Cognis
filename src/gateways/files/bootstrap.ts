@@ -44,7 +44,7 @@ async function loadLocalFileGateway(
         "adapters",
         "file",
         "local",
-        "adapter.ts",
+        "index.ts",
     );
     const localAdapterModule = await import(
         `${localAdapterPath}?t=${Date.now()}`

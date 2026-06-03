@@ -6,7 +6,7 @@ import type {
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
 import { DbClassesStore } from "./store.js";
-import { createClassesRoutes } from "./routes.js";
+import { createClassesRoutes } from "./routes/index.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
     resolveRouteContext,

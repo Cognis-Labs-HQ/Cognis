@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VolatileLocalAccountStore } from "../auth-adapter.js";
+import { VolatileLocalAccountStore } from "../adapter.js";
 import { createAdapter } from "../index.js";
 
 test("local adapter authenticates valid credentials", async () => {

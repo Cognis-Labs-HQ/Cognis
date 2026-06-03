@@ -3,15 +3,22 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
-import { RouteRegistry } from "../../../api/route-registry.js";
-import { UIRegistry } from "../../../api/ui-registry.js";
+import { RouteRegistry } from "../../../api/reuse/route-registry.js";
+import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
-const bootstrapSource = readFileSync(
-    path.resolve(process.cwd(), "src", "gateways", "tfa", "bootstrap.ts"),
+const tfaRoutesSource = readFileSync(
+    path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "tfa",
+        "bootstrap",
+        "tfa-routes.ts",
+    ),
     "utf8",
 );
 
@@ -133,7 +140,7 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
 });
 
 test("setup verification route rotates setup-pending tokens", () => {
-    assert.match(bootstrapSource, /auth:issueAccessToken/);
-    assert.match(bootstrapSource, /setupPending:\s*false/);
-    assert.match(bootstrapSource, /responseData\.token\s*=\s*refreshedToken/);
+    assert.match(tfaRoutesSource, /auth:issueAccessToken/);
+    assert.match(tfaRoutesSource, /setupPending:\s*false/);
+    assert.match(tfaRoutesSource, /responseData\.token\s*=\s*refreshedToken/);
 });

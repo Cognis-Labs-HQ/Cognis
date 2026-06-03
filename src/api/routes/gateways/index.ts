@@ -4,7 +4,7 @@ import {
     type GatewayRegistry,
 } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { UIRegistry } from "../../ui-registry.js";
+import type { UIRegistry } from "../../reuse/ui-registry.js";
 import {
     resolveRouteContext,
     type RouteContext,

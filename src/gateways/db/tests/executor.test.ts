@@ -13,7 +13,7 @@ test("createDbExecutor loads the matching adapter factory on the fly", async () 
         const adapterDir = path.join(tempRoot, "db", "custom");
         await mkdir(adapterDir, { recursive: true });
         await writeFile(
-            path.join(adapterDir, "adapter.ts"),
+            path.join(adapterDir, "index.ts"),
             `export function canHandleDbProvider(providerId) {
                 return providerId === 'custom';
             }

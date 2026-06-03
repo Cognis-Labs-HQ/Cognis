@@ -2,8 +2,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     resolveRouteContext,
     type RouteContext,
-} from "../../../api/reuse/route-context.js";
-import type { IInternalNotificationStore } from "./store.js";
+} from "../../../../api/reuse/route-context.js";
+import type { IInternalNotificationStore } from "../store.js";
 
 /**
  * Route handler for all internal notification inbox endpoints.

@@ -193,7 +193,7 @@ test("non-gateway paths return false", async () => {
     assert.equal(handled, false);
 });
 
-import { UIRegistry } from "../../ui-registry.js";
+import { UIRegistry } from "../../reuse/ui-registry.js";
 
 test("GET /api/v1/admin/sections returns empty array with no uiRegistry", async () => {
     const registry = new GatewayRegistry();

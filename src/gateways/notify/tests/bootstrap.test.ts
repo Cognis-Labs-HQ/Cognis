@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
-import { RouteRegistry } from "../../../api/route-registry.js";
+import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
@@ -140,7 +140,7 @@ test("gateway adapter route requires admin auth", async () => {
 
 import { access } from "node:fs/promises";
 import path from "node:path";
-import { UIRegistry } from "../../../api/ui-registry.js";
+import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 
 test("notify gateway bootstrap registers correct static dir and admin-section.js exists on disk", async () => {
     const { gatewayRegistry, routeRegistry, capabilities, db } =

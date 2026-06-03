@@ -7,7 +7,7 @@ import type {
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
 import { DbMessagesStore } from "./store.js";
-import { createMessagesRoutes } from "./routes.js";
+import { createMessagesRoutes } from "./routes/index.js";
 import type { DbProfileStore } from "../profile/store.js";
 import {
     resolveRouteContext,

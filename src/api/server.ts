@@ -17,9 +17,9 @@ import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import { createUserRoutes } from "./routes/users/index.js";
-import type { RouteRegistry } from "./route-registry.js";
+import type { RouteRegistry } from "./reuse/route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
-import type { UIRegistry } from "./ui-registry.js";
+import type { UIRegistry } from "./reuse/ui-registry.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;

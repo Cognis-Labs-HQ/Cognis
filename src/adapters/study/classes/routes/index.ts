@@ -26,13 +26,13 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readJson } from "../../../api/reuse/read-json.js";
-import { jsonOk, jsonError } from "../../../api/reuse/json-responses.js";
+import { readJson } from "../../../../api/reuse/read-json.js";
+import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import {
     resolveRouteContext,
     type RouteContext,
-} from "../../../api/reuse/route-context.js";
-import type { DbClassesStore, StudyLanguageRow } from "./store.js";
+} from "../../../../api/reuse/route-context.js";
+import type { DbClassesStore, StudyLanguageRow } from "../store.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
 type DispatchToRole = (
