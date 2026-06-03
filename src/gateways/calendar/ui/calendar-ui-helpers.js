@@ -574,7 +574,7 @@ function renderWeekView(events, weekStart, i18n, currentAccountId = null) {
                 dayEnd,
             ).filter((event) => isAllDayEvent(event));
             const isCurrentDay = dayStart.getTime() === todayStart;
-            return `<div class="calendar-week-all-day-cell calendar-timeslot-events${isCurrentDay ? " calendar-week-slot--current-day" : ""}" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true, i18n, currentAccountId }) : ""}</div>`;
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events calendar-timeslot-events--click-add${isCurrentDay ? " calendar-week-slot--current-day" : ""}" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true, i18n, currentAccountId }) : ""}</div>`;
         })
         .join("");
     const timedEvents = events.filter((event) => !isAllDayEvent(event));

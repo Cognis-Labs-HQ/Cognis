@@ -80,7 +80,9 @@ export function createCalendarEditPopupHandler({
                             "success",
                         );
                         refreshComposer();
-                        overlay.closest("[data-popup]")?.remove();
+                        overlay
+                            .querySelector('[data-popup-action="close"]')
+                            ?.click();
                     });
                 }
             },

@@ -89,3 +89,14 @@ The Jitsi Meet administration page now shows a second table, "Scheduled Meetings
 listing meetings that have been created for upcoming calendar events but have not
 yet been started or ended. The event creator is always included as a participant
 when a meeting is generated from a calendar event.
+
+## Calendar UI polish
+
+The calendar popup now closes automatically after a calendar is deleted. Hovering
+over an empty time-slot now shows a clearly visible tinted background so the
+clickable area is obvious. The all-day row in the week view now also shows the
+pointer cursor on hover, matching the timed slots. Pending event invitations have
+been moved into the My Calendars toolbar section, removing the duplicate
+"Upcoming Events" label from the sidebar. Event cards in all views now correctly
+show a tinted background in the calendar colour, including month-grid compact
+cards.

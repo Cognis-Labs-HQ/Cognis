@@ -92,3 +92,15 @@ Die Jitsi-Meet-Verwaltungsseite zeigt jetzt eine zweite Tabelle „Geplante Meet
 in der Meetings aufgelistet sind, die für zukünftige Kalendertermine erstellt wurden,
 aber noch nicht gestartet oder beendet wurden. Der Ersteller des Termins wird immer
 als Teilnehmer hinzugefügt, wenn ein Meeting aus einem Kalenderereignis generiert wird.
+
+## Kalender-UI-Verbesserungen
+
+Das Kalender-Popup schließt sich jetzt automatisch, nachdem ein Kalender gelöscht
+wurde. Beim Überfahren eines leeren Zeitfensters mit der Maus wird jetzt ein
+deutlich sichtbarer farbiger Hintergrund angezeigt, damit der klickbare Bereich
+klar erkennbar ist. Die Ganztages-Zeile in der Wochenansicht zeigt beim Überfahren
+jetzt ebenfalls den Zeiger-Cursor, passend zu den Zeitfenstern. Ausstehende
+Termineinladungen wurden in den Bereich „Meine Kalender" der Seitenleiste
+verschoben und entfernen so das doppelte Label „Bevorstehende Termine". Terminkar-
+ten zeigen in allen Ansichten jetzt korrekt einen gefärbten Hintergrund in der
+Kalenderfarbe, auch bei kompakten Karten in der Monatsansicht.

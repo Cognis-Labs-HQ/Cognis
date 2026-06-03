@@ -90,3 +90,15 @@ Halaman administrasi Jitsi Meet kini menampilkan tabel kedua "Rapat Terjadwal"
 yang berisi rapat yang dibuat untuk acara kalender mendatang tetapi belum dimulai
 atau diakhiri. Pembuat acara selalu disertakan sebagai peserta saat rapat
 dibuat dari acara kalender.
+
+## Penyempurnaan UI Kalender
+
+Popup kalender kini otomatis menutup setelah kalender dihapus. Saat mengarahkan
+kursor ke slot waktu yang kosong, kini ditampilkan latar belakang berwarna yang
+jelas sehingga area yang dapat diklik terlihat nyata. Baris sepanjang hari pada
+tampilan mingguan kini juga menampilkan kursor penunjuk saat diarahkan, sesuai
+dengan slot waktu. Undangan acara yang tertunda telah dipindahkan ke dalam bagian
+toolbar Kalender Saya, sehingga label "Acara Mendatang" yang duplikat tidak lagi
+muncul di bilah sisi. Kartu acara di semua tampilan kini menampilkan latar
+belakang berwarna sesuai warna kalender dengan benar, termasuk kartu kompak di
+tampilan bulan.
