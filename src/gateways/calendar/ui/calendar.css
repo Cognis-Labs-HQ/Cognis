@@ -398,11 +398,14 @@
     min-height: 1.45rem;
     padding: 0;
     font-size: 0.7rem;
-    background: color-mix(
-        in srgb,
-        var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb))
-            calc(var(--calendar-density, 0) * 12%),
-        var(--surface, transparent)
+    background: var(
+        --calendar-day-background,
+        color-mix(
+            in srgb,
+            var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb))
+                calc(var(--calendar-density, 0) * 12%),
+            var(--surface, transparent)
+        )
     );
     color: inherit;
     display: inline-flex;
@@ -411,10 +414,13 @@
 }
 
 .calendar-year-day-dot--active {
-    background: color-mix(
-        in srgb,
-        var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb)) 55%,
-        var(--surface, transparent)
+    background: var(
+        --calendar-day-background,
+        color-mix(
+            in srgb,
+            var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb)) 55%,
+            var(--surface, transparent)
+        )
     );
     border-color: color-mix(
         in srgb,
@@ -619,18 +625,44 @@
 }
 
 @media (max-width: 900px) {
-    .calendar-week-table tr,
-    .calendar-week-table td,
-    .calendar-week-table th,
-    .calendar-month-table tr,
-    .calendar-month-table td,
-    .calendar-month-table th {
-        grid-template-columns: 1fr;
-        display: block;
-    }
-
     .calendar-timeslot-row {
         grid-template-columns: 4.5rem 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .calendar-month-table {
+        border-spacing: 0.18rem;
+    }
+
+    .calendar-month-table th {
+        padding-inline: 0.08rem;
+    }
+
+    .calendar-month-header-day {
+        font-size: 0.68rem;
+        white-space: nowrap;
+        line-height: 1.1;
+    }
+
+    .calendar-week-view {
+        --calendar-week-axis-width: 4.4rem;
+    }
+
+    .calendar-week-day-header {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.08rem;
+        padding: 0.35rem 0.12rem;
+        min-width: 2.3rem;
+    }
+
+    .calendar-week-day-name,
+    .calendar-week-day-date {
+        font-size: 0.7rem;
+        line-height: 1.1;
+        white-space: nowrap;
     }
 }
 

@@ -124,6 +124,28 @@ function listEventsInWindow(events, startDate, endDate) {
     });
 }
 
+function collectDayPaletteColors(events, limit = 4) {
+    const palette = [];
+    for (const event of events) {
+        const normalizedColor = normalizeHexColor(event?.calendarColor);
+        if (!normalizedColor || palette.includes(normalizedColor)) continue;
+        palette.push(normalizedColor);
+        if (palette.length >= limit) break;
+    }
+    return palette;
+}
+
+function buildDayPaletteGradient(palette) {
+    if (!palette.length) return null;
+    const segmentSize = 100 / palette.length;
+    const segments = palette.map((color, index) => {
+        const start = index * segmentSize;
+        const end = (index + 1) * segmentSize;
+        return `color-mix(in srgb, ${color} 62%, var(--surface, transparent)) ${start}% ${end}%`;
+    });
+    return `conic-gradient(${segments.join(",")})`;
+}
+
 function collectUpcomingEvents(
     eventsByCalendar,
     calendars,
@@ -678,15 +700,20 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
           const dayStart = startOfDay(day);
           const dayEnd = addDays(dayStart, 1);
           const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
+          const dayPalette = collectDayPaletteColors(dayEvents);
           const styleProperties = [
               `--calendar-density:${Math.min(dayEvents.length, 4)}`,
           ];
-          const dayHighlightColor = normalizeHexColor(
-              dayEvents[0]?.calendarColor,
-          );
+          const dayHighlightColor = dayPalette[0];
           if (dayHighlightColor) {
               styleProperties.push(
                   `--calendar-day-color:${escapeHtml(dayHighlightColor)}`,
+              );
+          }
+          const dayBackground = buildDayPaletteGradient(dayPalette);
+          if (dayBackground) {
+              styleProperties.push(
+                  `--calendar-day-background:${escapeHtml(dayBackground)}`,
               );
           }
           return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="${styleProperties.join(";")}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
