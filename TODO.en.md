@@ -20,6 +20,12 @@
 
 **Reason ignored:** This is an adapter-local refactor in `src/adapters/social/messages/ui/` that does not affect the compact-navigation loading-loop regression being fixed here. Taking it on in this patch would widen the scope into a separate messages-adapter cleanup and trigger unrelated versioning/changelog work, so I left it for a dedicated follow-up.
 
+### dashboard-layout.js compact-nav helper placement — move nested helpers inside applyCompactNav
+
+**Reviewer suggestion:** Move `getNavEntries`, `isOverflowManaged`, `syncOverflowVisibility`, and `syncDomOrder` inside `applyCompactNav()` because they allegedly live at module scope.
+
+**Reason ignored:** False positive. All four helpers already live inside `applyCompactNav()` and close over `topnav`/compact-nav state there; moving them "inside `applyCompactNav()`" would be a no-op because that is their current scope.
+
 ## Code Review — PR #45 third-pass (2026-05-29)
 
 ### settings-section.js drag-drop handler — mutation before rerender

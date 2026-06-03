@@ -19,3 +19,9 @@
 **Saran peninjau:** Gunakan helper `applyTemplateToComposer` yang sudah ada untuk jalur penyisipan templat di sekitar baris 3288-3291 alih-alih mengulang logika pembaruan composer yang sama.
 
 **Alasan ditunda:** Ini adalah refaktor lokal adapter di `src/adapters/social/messages/ui/` yang tidak memengaruhi regresi loop pemuatan navigasi ringkas yang sedang diperbaiki di sini. Mengambilnya dalam patch ini akan memperluas cakupan ke cleanup adapter messages yang terpisah dan memicu pekerjaan versioning/changelog yang tidak terkait, jadi saya menundanya untuk tindak lanjut khusus.
+
+### dashboard-layout.js penempatan helper compact-nav — pindahkan helper bersarang ke applyCompactNav
+
+**Saran peninjau:** Pindahkan `getNavEntries`, `isOverflowManaged`, `syncOverflowVisibility`, dan `syncDomOrder` ke dalam `applyCompactNav()` karena katanya berada pada scope modul.
+
+**Alasan ditunda:** False positive. Keempat helper itu sudah berada di dalam `applyCompactNav()` dan sudah menutup state `topnav`/compact-nav di sana; memindahkannya "ke dalam `applyCompactNav()`" tidak akan mengubah apa pun karena itu memang scope mereka saat ini.

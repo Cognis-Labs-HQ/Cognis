@@ -19,3 +19,9 @@
 **Vorschlag des Reviewers:** Verwende für den Vorlagen-Einfügepfad bei ungefähr Zeile 3288-3291 den bestehenden Helfer `applyTemplateToComposer`, statt dieselbe Composer-Aktualisierungslogik zu wiederholen.
 
 **Grund für die Zurückstellung:** Das ist ein adapterlokales Refactoring in `src/adapters/social/messages/ui/`, das die hier behobene Lade-Schleifen-Regression der kompakten Navigation nicht betrifft. Würde ich es in diesen Patch aufnehmen, würde sich der Umfang auf ein separates Cleanup des Messages-Adapters ausweiten und unnötige Versions-/Changelog-Arbeit auslösen, daher habe ich es für einen dedizierten Folge-Task zurückgestellt.
+
+### dashboard-layout.js Platzierung der Compact-Nav-Helfer — verschachtelte Helfer in applyCompactNav verschieben
+
+**Vorschlag des Reviewers:** Verschiebe `getNavEntries`, `isOverflowManaged`, `syncOverflowVisibility` und `syncDomOrder` in `applyCompactNav()`, weil sie angeblich auf Modulebene liegen.
+
+**Grund für die Zurückstellung:** Falschmeldung. Alle vier Helfer befinden sich bereits innerhalb von `applyCompactNav()` und schließen dort über `topnav` bzw. den Compact-Nav-Zustand. Sie „in `applyCompactNav()` zu verschieben“ wäre daher wirkungslos, weil genau das bereits ihre aktuelle Sichtbarkeit ist.
