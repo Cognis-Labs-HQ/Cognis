@@ -32,6 +32,22 @@ src/adapters/
     local/       — Penyimpanan file berbasis filesystem
 ```
 
+## Konvensi Struktur File
+
+Field `main` dalam `package.json` harus selalu menunjuk ke `index.ts` — ini adalah titik masuk yang mengorkestrasikan adapter dan file yang diimpor secara dinamis oleh gateway:
+
+```json
+{
+    "name": "@cognis/adapter-notify-smtp",
+    "version": "0.2.1",
+    "private": true,
+    "type": "module",
+    "main": "index.ts"
+}
+```
+
+`index.ts` adalah permukaan publik adapter dan mengekspor semua yang dibutuhkan pemanggil eksternal. File implementasi internal berada sebagai saudara dari `index.ts` dan tidak pernah diimpor langsung dari luar adapter.
+
 ## Titik Ekstensi
 
 Untuk menambahkan adapter baru untuk gateway yang ada, buat direktori di bawah `src/adapters/<gateway-id>/<adapter-id>/` berisi:

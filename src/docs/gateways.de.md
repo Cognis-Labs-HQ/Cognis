@@ -38,8 +38,14 @@ der Server wissen, welche Adapter vorhanden sind.
 ```
 src/gateways/<id>/
   manifest.json
-  bootstrap.ts
+  bootstrap.ts           — Re-Export aus ./bootstrap/index.js
+  bootstrap/
+    index.ts             — Orchestriert Unter-Dateien; exportiert bootstrap()
+    routes.ts            — Routen-Hilfsfunktionen (wenn bootstrap/ verwendet)
+    ...                  — weitere fokussierte Unter-Dateien
   gateway.ts
+  routes/
+    index.ts             — HTTP-Routen-Handler dieses Gateways
   docs/
     index.en.md
     index.de.md
@@ -47,13 +53,35 @@ src/gateways/<id>/
     index.id.md
 
 src/adapters/<id>/<adapter-id>/
-  package.json
-  index.ts
+  package.json           — name, version, "main": "index.ts"
+  index.ts               — Orchestrator; re-exportiert öffentliche API
   docs/
     index.en.md
     ...
   tests/
 ```
+
+### Dateistruktur-Konventionen
+
+Jede Komponente muss eine `index.ts` (oder `index.js`) als orchestrierenden Einstiegspunkt verwenden. Das gilt auf jeder Verschachtelungsebene: Das `bootstrap/`-Verzeichnis eines Gateways hat eine `bootstrap/index.ts`; das `routes/`-Verzeichnis hat eine `routes/index.ts`; ein Adapter-Verzeichnis hat eine `index.ts`.
+
+**Einstiegspunkte sind immer `index.ts`.** Keine Dateinamen, die aus dem übergeordneten Verzeichnis abgeleitet werden: `src/adapters/notify/smtp/index.ts`, nicht `smtp-notification-sender.ts` als öffentliche Exportoberfläche. Der Verzeichnisname liefert bereits den Kontext.
+
+**Route-Dateien leben in `routes/`-Unterverzeichnissen.** Keine flache `routes.ts` oder `<feature>-routes.ts` direkt im Komponentenwurzelverzeichnis. Route-Handler-Dateien müssen `routes/index.ts` (oder `routes/<sub-domain>/index.ts`) sein.
+
+**Große Dateien mit Unterverzeichnissen aufteilen.** Wenn eine Datei ca. 400 Zeilen überschreitet, wird sie in ein Verzeichnis umgewandelt: Die ursprüngliche Datei wird zum einzeiligen Barrel, das aus `./dirname/index.js` re-exportiert; die Implementierung wandert in `dirname/index.ts`; logische Abschnitte werden in fokussierte Geschwister-Dateien extrahiert. Beispiel:
+
+```
+src/gateways/notify/
+  bootstrap.ts            — 1 Zeile: export { bootstrap } from "./bootstrap/index.js"
+  bootstrap/
+    index.ts              — bootstrap()-Funktion; importiert aus Geschwister-Dateien
+    stores.ts             — Store-Interfaces und Initialisierungs-Helfer
+    user-email-routes.ts  — createUserEmailRoutes()
+    adapter-routes.ts     — createGatewayAdapterRoutes()
+```
+
+````
 
 ### manifest.json
 
@@ -68,7 +96,7 @@ src/adapters/<id>/<adapter-id>/
     "requires": ["db"],
     "hasAdapters": true
 }
-```
+````
 
 | Feld          | Pflicht | Beschreibung                                                             |
 | ------------- | ------- | ------------------------------------------------------------------------ |
@@ -82,7 +110,15 @@ src/adapters/<id>/<adapter-id>/
 
 ### bootstrap.ts
 
+Die Bootstrap-Datei ist der einzige Einstiegspunkt, den der Server aufruft. Für neue oder kleine Gateways exportiert sie die `bootstrap`-Funktion direkt. Wenn die Bootstrap-Logik ca. 400 Zeilen überschreitet, wird `bootstrap.ts` zum einzeiligen Re-Export-Barrel und die Implementierung lebt in einem `bootstrap/`-Unterverzeichnis:
+
 ```ts
+// bootstrap.ts (Barrel-Form — wenn Implementierung aufgeteilt ist)
+export { bootstrap } from "./bootstrap/index.js";
+```
+
+```ts
+// bootstrap/index.ts (oder bootstrap.ts für kleine Gateways)
 import type { GatewayBootstrapContext } from "../shared.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {

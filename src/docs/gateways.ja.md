@@ -31,8 +31,14 @@
 ```
 src/gateways/<id>/
   manifest.json
-  bootstrap.ts
+  bootstrap.ts           — ./bootstrap/index.js からの再エクスポート
+  bootstrap/
+    index.ts             — サブファイルを統括し bootstrap() をエクスポート
+    routes.ts            — ルートヘルパー関数（bootstrap/ 使用時）
+    ...                  — その他の焦点を絞ったサブファイル
   gateway.ts
+  routes/
+    index.ts             — このゲートウェイのHTTPルートハンドラ
   docs/
     index.en.md
     index.de.md
@@ -40,13 +46,23 @@ src/gateways/<id>/
     index.id.md
 
 src/adapters/<id>/<adapter-id>/
-  package.json
-  index.ts
+  package.json           — name, version, "main": "index.ts"
+  index.ts               — オーケストレータ; パブリックAPIを再エクスポート
   docs/
     index.en.md
     ...
   tests/
 ```
+
+### ファイル構造の規約
+
+すべてのコンポーネントはオーケストレータのエントリーポイントとして `index.ts`（または `index.js`）を使用しなければならない。これはすべての入れ子レベルに適用される：ゲートウェイの `bootstrap/` ディレクトリには `bootstrap/index.ts` があり、`routes/` ディレクトリには `routes/index.ts` があり、アダプタディレクトリには `index.ts` がある。
+
+**エントリーポイントは常に `index.ts`。** 親ディレクトリから派生したファイル名は使用しない。ディレクトリ名がすでにコンテキストを提供している。
+
+**ルートファイルは `routes/` サブディレクトリに配置する。** フラットな `routes.ts` や `<feature>-routes.ts` をコンポーネントルートに直接置かない。ルートハンドラファイルは `routes/index.ts` でなければならない。
+
+**大きなファイルはサブディレクトリで分割する。** ファイルが約400行を超えた場合、ディレクトリに変換する：元のファイル名を `./dirname/index.js` から再エクスポートする1行バレルとして保持し、実装を `dirname/index.ts` に配置し、論理的な部分を焦点を絞ったサブファイルに抽出する。
 
 ### manifest.json
 
@@ -75,7 +91,15 @@ src/adapters/<id>/<adapter-id>/
 
 ### bootstrap.ts
 
+bootstrap ファイルはサーバーが呼び出す唯一のエントリーポイントである。新しいまたは小さいゲートウェイでは、`bootstrap` 関数を直接エクスポートする。ブートストラップロジックが約400行を超える場合、`bootstrap.ts` は1行の再エクスポートバレルとなり、実装は `bootstrap/` サブディレクトリに配置される：
+
 ```ts
+// bootstrap.ts（実装が分割されている場合のバレル形式）
+export { bootstrap } from "./bootstrap/index.js";
+```
+
+```ts
+// bootstrap/index.ts（または小さいゲートウェイの場合は bootstrap.ts）
 import type { GatewayBootstrapContext } from "../shared.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {

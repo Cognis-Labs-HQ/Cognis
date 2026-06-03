@@ -34,7 +34,21 @@ src/adapters/
     local/       — Dateisystem-basierter Dateispeicher
 ```
 
-## Erweiterungspunkte
+### Dateistruktur-Konventionen
+
+Das `main`-Feld in `package.json` muss immer auf `index.ts` zeigen — das ist der orchestrierende Einstiegspunkt des Adapters und die Datei, die das Gateway dynamisch importiert:
+
+```json
+{
+    "name": "@cognis/adapter-notify-smtp",
+    "version": "0.2.1",
+    "private": true,
+    "type": "module",
+    "main": "index.ts"
+}
+```
+
+`index.ts` ist die öffentliche Oberfläche des Adapters und exportiert alles, was externe Aufrufer benötigen. Interne Implementierungsdateien leben als Geschwister von `index.ts` und werden nie direkt von außerhalb des Adapters importiert. Für komplexe Adapter, deren `index.ts` etwa 400 Zeilen überschreiten würde, gilt das gleiche Aufteilungsmuster wie für Gateways.
 
 Um einen neuen Adapter für ein vorhandenes Gateway hinzuzufügen, ein Verzeichnis unter `src/adapters/<gateway-id>/<adapter-id>/` erstellen mit:
 

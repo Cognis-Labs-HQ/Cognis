@@ -38,8 +38,14 @@ Core maupun server tidak mengetahui adapter mana yang ada.
 ```
 src/gateways/<id>/
   manifest.json
-  bootstrap.ts
+  bootstrap.ts           — re-ekspor dari ./bootstrap/index.js
+  bootstrap/
+    index.ts             — mengatur sub-file; mengekspor bootstrap()
+    routes.ts            — fungsi pembantu rute (jika bootstrap/ digunakan)
+    ...                  — sub-file lain yang fokus
   gateway.ts
+  routes/
+    index.ts             — handler rute HTTP gateway ini
   docs/
     index.en.md
     index.de.md
@@ -47,13 +53,23 @@ src/gateways/<id>/
     index.id.md
 
 src/adapters/<id>/<adapter-id>/
-  package.json
-  index.ts
+  package.json           — name, version, "main": "index.ts"
+  index.ts               — orkestrator; mengekspor ulang API publik
   docs/
     index.en.md
     ...
   tests/
 ```
+
+### Konvensi Struktur File
+
+Setiap komponen harus menggunakan `index.ts` (atau `index.js`) sebagai titik masuk yang mengorkestrasikan komponen tersebut. Ini berlaku di setiap tingkat kedalaman: direktori `bootstrap/` gateway memiliki `bootstrap/index.ts`; direktori `routes/` memiliki `routes/index.ts`; direktori adapter memiliki `index.ts`.
+
+**Titik masuk selalu `index.ts`.** Jangan gunakan nama file yang berasal dari direktori induk. Nama direktori sudah memberikan konteks.
+
+**File rute berada di subdirektori `routes/`.** Jangan letakkan file rute sebagai `routes.ts` atau `<fitur>-routes.ts` langsung di akar komponen. File handler rute harus berupa `routes/index.ts`.
+
+**Pecah file besar dengan subdirektori.** Jika sebuah file melebihi sekitar 400 baris, konversi menjadi direktori: simpan nama file asli sebagai barrel satu baris yang melakukan re-ekspor dari `./dirname/index.js`, letakkan implementasi di `dirname/index.ts`, dan ekstrak bagian logis ke file-file saudara yang fokus.
 
 ### manifest.json
 
@@ -82,7 +98,15 @@ src/adapters/<id>/<adapter-id>/
 
 ### bootstrap.ts
 
+File bootstrap adalah satu-satunya titik masuk yang dipanggil server. Untuk gateway baru atau kecil, file ini mengekspor fungsi `bootstrap` secara langsung. Untuk gateway yang logika bootstrap-nya melebihi sekitar 400 baris, `bootstrap.ts` menjadi barrel satu baris dan implementasinya berada di subdirektori `bootstrap/`:
+
 ```ts
+// bootstrap.ts (bentuk barrel — digunakan ketika implementasi dipecah)
+export { bootstrap } from "./bootstrap/index.js";
+```
+
+```ts
+// bootstrap/index.ts (atau bootstrap.ts untuk gateway kecil)
 import type { GatewayBootstrapContext } from "../shared.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
