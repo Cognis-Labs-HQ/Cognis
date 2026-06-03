@@ -3735,7 +3735,15 @@ export function createPageComposer(
 
         const toolbarHtml =
             Array.isArray(toolbar) && toolbar.length > 0
-                ? toolbar.map((t) => t.render()).join("")
+                ? toolbar
+                      .map(
+                          (item, index) => `<section
+                class="toolbar-mobile-section"
+                data-toolbar-section-id="${escapeHtml(item.id || `section-${index + 1}`)}"
+                data-toolbar-section-label="${escapeHtml(item.label || `Section ${index + 1}`)}"
+            >${item.render()}</section>`,
+                      )
+                      .join("")
                 : undefined;
         const subNavigationHtml =
             Array.isArray(subNavigation) && subNavigation.length > 0
@@ -3812,11 +3820,101 @@ export function createPageComposer(
                 const mobileMedia = window.matchMedia(
                     `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
                 );
+                const getToolbarSections = () =>
+                    Array.from(
+                        toolbarEl.querySelectorAll(".toolbar-mobile-section"),
+                    ).filter((section) => section instanceof HTMLElement);
+                const getSectionLabel = (section, fallback) => {
+                    const metadataLabel =
+                        section.dataset.toolbarSectionLabel?.trim() ?? "";
+                    if (metadataLabel) return metadataLabel;
+                    const headingLabel =
+                        section
+                            .querySelector("h2, h3, h4")
+                            ?.textContent?.trim() ?? "";
+                    if (headingLabel) return headingLabel;
+                    return fallback;
+                };
+                const ensureMobileToolbarTabs = () => {
+                    let tabs = toolbarEl.querySelector(".toolbar-mobile-tabs");
+                    if (!(tabs instanceof HTMLDivElement)) {
+                        tabs = document.createElement("div");
+                        tabs.className = "toolbar-mobile-tabs";
+                        tabs.setAttribute("role", "tablist");
+                        toolbarEl.prepend(tabs);
+                    }
+                    return tabs;
+                };
+                const removeMobileToolbarTabs = () => {
+                    toolbarEl.querySelector(".toolbar-mobile-tabs")?.remove();
+                };
+                const syncMobileToolbarSections = () => {
+                    const sections = getToolbarSections();
+                    const tabs = ensureMobileToolbarTabs();
+                    tabs.innerHTML = "";
+                    if (sections.length === 0) {
+                        removeMobileToolbarTabs();
+                        return;
+                    }
+                    const availableSectionIds = new Set(
+                        sections.map(
+                            (section, index) =>
+                                section.dataset.toolbarSectionId ??
+                                `section-${index + 1}`,
+                        ),
+                    );
+                    const storedActiveSectionId =
+                        toolbarEl.dataset.mobileToolbarActiveSection;
+                    let activeSectionId =
+                        storedActiveSectionId &&
+                        availableSectionIds.has(storedActiveSectionId)
+                            ? storedActiveSectionId
+                            : sections[0].dataset.toolbarSectionId ??
+                              "section-1";
+                    toolbarEl.dataset.mobileToolbarActiveSection =
+                        activeSectionId;
+                    sections.forEach((section, index) => {
+                        const sectionId =
+                            section.dataset.toolbarSectionId ??
+                            `section-${index + 1}`;
+                        if (!section.dataset.toolbarSectionId) {
+                            section.dataset.toolbarSectionId = sectionId;
+                        }
+                        const label = getSectionLabel(
+                            section,
+                            `Section ${index + 1}`,
+                        );
+                        const tab = document.createElement("button");
+                        tab.type = "button";
+                        tab.className = "toolbar-mobile-tab";
+                        tab.textContent = label;
+                        const selected = activeSectionId === sectionId;
+                        tab.setAttribute("aria-pressed", String(selected));
+                        tab.classList.toggle("active", selected);
+                        section.hidden = !selected;
+                        tab.addEventListener("click", () => {
+                            activeSectionId = sectionId;
+                            toolbarEl.dataset.mobileToolbarActiveSection =
+                                sectionId;
+                            syncMobileToolbarSections();
+                        });
+                        tabs.appendChild(tab);
+                    });
+                };
                 const syncMobileToolbarMode = () => {
                     toolbarEl.classList.toggle(
-                        "toolbar--mobile-scroll",
+                        "toolbar--mobile-stack",
                         mobileMedia.matches,
                     );
+                    if (mobileMedia.matches) {
+                        syncMobileToolbarSections();
+                        return;
+                    }
+                    removeMobileToolbarTabs();
+                    delete toolbarEl.dataset.mobileToolbarActiveSection;
+                    getToolbarSections().forEach((section) => {
+                        section.hidden = false;
+                    });
                 };
 
                 mobileMedia.addEventListener("change", syncMobileToolbarMode);

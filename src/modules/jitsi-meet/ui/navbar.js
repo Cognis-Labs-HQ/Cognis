@@ -14,6 +14,8 @@ async function syncMeetingLink() {
     if (!(link instanceof HTMLAnchorElement)) {
         link = document.createElement("a");
         link.setAttribute("data-meeting-link", "true");
+        link.dataset.navOrder = "50";
+        link.dataset.mobilePriority = "4";
         topnav.appendChild(link);
     }
     link.href = "/meetings";

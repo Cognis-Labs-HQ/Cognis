@@ -47,7 +47,7 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
-test("page composer includes mobile toolbar scroll behavior", () => {
+test("page composer includes mobile toolbar stacked section behavior", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
@@ -56,13 +56,14 @@ test("page composer includes mobile toolbar scroll behavior", () => {
     assert.match(source, /MOBILE_TOOLBAR_BREAKPOINT = 900/);
     assert.match(source, /window\.matchMedia\(/);
     assert.match(source, /\(max-width: \$\{MOBILE_TOOLBAR_BREAKPOINT\}px\)/);
-    assert.match(source, /toolbar--mobile-scroll/);
+    assert.match(source, /toolbar--mobile-stack/);
     assert.match(source, /syncMobileToolbarMode/);
     assert.match(
         source,
-        /toolbarEl\.classList\.toggle\(\s*"toolbar--mobile-scroll",\s*mobileMedia\.matches,\s*\)/m,
+        /toolbarEl\.classList\.toggle\(\s*"toolbar--mobile-stack",\s*mobileMedia\.matches,\s*\)/m,
     );
-    assert.doesNotMatch(source, /closeMobileDrawerIfNeeded/);
+    assert.match(source, /toolbar-mobile-tabs/);
+    assert.match(source, /toolbarSectionLabel/);
 });
 
 test("page composer resolves edit toggle from the active page root", () => {

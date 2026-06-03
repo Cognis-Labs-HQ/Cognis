@@ -31,6 +31,8 @@ function createStudyNavButton(languagesAvailable, i18n) {
     const studyBtn = document.createElement("a");
     studyBtn.href = "/study";
     studyBtn.textContent = i18n.t("ui.reuse.study");
+    studyBtn.dataset.navOrder = "40";
+    studyBtn.dataset.mobilePriority = "3";
     if (languagesAvailable === false) {
         studyBtn.setAttribute("aria-disabled", "true");
         studyBtn.setAttribute("title", i18n.t("gateway.study.no_languages"));

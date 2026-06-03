@@ -431,31 +431,69 @@ code {
     .main-window--with-toolbar .toolbar {
         margin-right: 0;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-scroll {
-        display: flex;
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack {
+        display: grid;
         gap: 12px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        overscroll-behavior-x: contain;
-        padding: 0 18px 8px;
-        margin: 0 -18px;
+        overflow: visible;
+        padding: 0;
+        margin: 0;
         background: transparent;
         border-radius: 0;
+    }
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > * {
+        min-width: 0;
+    }
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 18px 4px;
+        margin: 0 -18px;
         scrollbar-width: thin;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-scroll > * {
-        flex: 0 0 min(320px, calc(100vw - 36px));
+    .toolbar-mobile-tab {
+        flex: 0 0 auto;
         min-width: 0;
+        width: auto;
+        min-height: 0;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--text-muted);
+        white-space: nowrap;
+        text-align: center;
+    }
+    .toolbar-mobile-tab:hover {
+        color: var(--text);
+        background: var(--surface-soft);
+    }
+    .toolbar-mobile-tab.active {
+        color: var(--text);
+        border-color: transparent;
+        background-color: var(--surface-soft);
+        background-image: linear-gradient(var(--accent-2), var(--accent-2));
+        background-repeat: no-repeat;
+        background-size: 90% 2px;
+        background-position: center bottom;
+    }
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section {
         padding: 16px;
         border: 1px solid var(--border);
         border-radius: 14px;
         background: var(--toolbar-bg);
-        scroll-snap-align: start;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-scroll > :first-child {
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section[hidden] {
+        display: none;
+    }
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section > * {
+        min-width: 0;
+    }
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section > :first-child {
         padding-top: 16px;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-scroll > :last-child {
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section > :last-child {
         padding-bottom: 16px;
     }
 }
@@ -477,13 +515,13 @@ code {
     .toolbar button {
         min-width: 0;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-scroll {
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-tabs {
         gap: 10px;
-        padding: 0 14px 8px;
+        padding: 0 14px 4px;
         margin: 0 -14px;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-scroll > * {
-        flex-basis: calc(100vw - 28px);
+    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section {
+        padding: 14px;
     }
     .workspace.app-page--frameless {
         padding: 0;

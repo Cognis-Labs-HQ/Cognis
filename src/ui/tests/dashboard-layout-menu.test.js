@@ -152,7 +152,7 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
     );
 });
 
-test("dashboard compact navigation keeps visible links and moves overflow into the ellipsis menu", () => {
+test("dashboard compact navigation applies stable mobile pinning and ordered overflow", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
@@ -164,26 +164,36 @@ test("dashboard compact navigation keeps visible links and moves overflow into t
 
     assert.ok(
         layoutSource.includes(
-            "const navLinks = Array.from(topnav.children).filter(",
+            "const DEFAULT_NAV_METADATA =",
         ),
-        "compact navigation should work from the inline topnav links",
+        "compact navigation should provide a default ordered navigation model",
+    );
+    assert.ok(
+        layoutSource.includes("const MOBILE_NAV_PINNED_LIMIT = 2;"),
+        "mobile navigation should pin a bounded set of links",
+    );
+    assert.ok(
+        layoutSource.includes('link.dataset.mobileOverflowHidden = "true"'),
+        "compact navigation should mark only overflow links as hidden",
+    );
+    assert.ok(
+        layoutSource.includes("entry.mobilePinned"),
+        "compact navigation should honor explicit mobile pinning metadata",
+    );
+    assert.ok(
+        layoutSource.includes('link.classList.contains("active")'),
+        "compact navigation should keep the active link pinned on mobile",
     );
     assert.ok(
         layoutSource.includes("openHamburgerMenu(compactToggle"),
         "overflow navigation should open from the compact toggle button",
     );
     assert.ok(
-        layoutSource.includes("link.hidden = true"),
-        "compact navigation should hide only the overflowing links",
+        template.includes('data-mobile-pinned="true"'),
+        "dashboard link should declare pinned mobile metadata",
     );
     assert.ok(
-        layoutSource.includes(
-            'filter((link) => !link.classList.contains("active"))',
-        ),
-        "compact navigation should prefer keeping the active link visible",
-    );
-    assert.ok(
-        template.includes('<span aria-hidden="true">...</span>'),
-        "compact toggle should render as a trailing ellipsis button",
+        template.includes('data-mobile-priority="1"'),
+        "messages link should declare mobile priority metadata",
     );
 });

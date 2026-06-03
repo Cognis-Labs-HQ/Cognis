@@ -12,6 +12,8 @@ function ensureCalendarNavbarLink() {
     const link = document.createElement("a");
     link.href = "/calendar";
     link.textContent = i18n.t("ui.reuse.calendar");
+    link.dataset.navOrder = "30";
+    link.dataset.mobilePriority = "2";
     topnav.appendChild(link);
 }
 

@@ -359,6 +359,23 @@ function ensureReleaseChangelogPopupChecked(i18n) {
     maybeShowReleaseChangelogPopup(i18n).catch(() => {});
 }
 
+const MOBILE_NAV_BREAKPOINT = 640;
+const MOBILE_NAV_PINNED_LIMIT = 2;
+const DEFAULT_NAV_METADATA = {
+    "/dashboard": { order: 10, mobilePriority: 0, mobilePinned: true },
+    "/messages": { order: 20, mobilePriority: 1 },
+    "/calendar": { order: 30, mobilePriority: 2 },
+    "/study": { order: 40, mobilePriority: 3 },
+    "/meetings": { order: 50, mobilePriority: 4 },
+};
+
+function getNavNumberAttribute(link, attributeName, fallback) {
+    const rawValue = link.getAttribute(attributeName);
+    if (rawValue === null || rawValue === "") return fallback;
+    const parsed = Number.parseInt(rawValue, 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 function applyCompactNav(root) {
     const navrow = root.querySelector(".global-navrow");
     const topnav = navrow?.querySelector(".topnav");
@@ -368,52 +385,108 @@ function applyCompactNav(root) {
     if (navrow.dataset.compactNavBound === "true") return;
     navrow.dataset.compactNavBound = "true";
 
-    const navLinks = Array.from(topnav.children).filter(
-        (element) => element instanceof HTMLAnchorElement,
-    );
+    let overflowLinks = [];
+    const mobileMedia = window.matchMedia(`(max-width: ${MOBILE_NAV_BREAKPOINT}px)`);
 
-    function getOverflowLinks() {
-        return navLinks.filter((link) => link.hidden);
+    function getNavEntries() {
+        const navLinks = Array.from(topnav.children).filter(
+            (element) => element instanceof HTMLAnchorElement,
+        );
+        return navLinks
+            .map((link, index) => {
+                const defaultMetadata =
+                    DEFAULT_NAV_METADATA[link.getAttribute("href") ?? ""] ?? {};
+                return {
+                    link,
+                    order: getNavNumberAttribute(
+                        link,
+                        "data-nav-order",
+                        defaultMetadata.order ?? (index + 1) * 10,
+                    ),
+                    mobilePriority: getNavNumberAttribute(
+                        link,
+                        "data-mobile-priority",
+                        defaultMetadata.mobilePriority ?? index,
+                    ),
+                    mobilePinned:
+                        link.dataset.mobilePinned === "true" ||
+                        defaultMetadata.mobilePinned === true,
+                    originalIndex: index,
+                };
+            })
+            .sort(
+                (left, right) =>
+                    left.order - right.order ||
+                    left.originalIndex - right.originalIndex,
+            );
+    }
+
+    function clearOverflowVisibilityState(entries) {
+        entries.forEach(({ link }) => {
+            if (link.dataset.mobileOverflowHidden !== "true") return;
+            link.hidden = false;
+            delete link.dataset.mobileOverflowHidden;
+        });
+    }
+
+    function syncDomOrder(entries) {
+        entries.forEach(({ link }) => {
+            if (link.parentElement === topnav) topnav.appendChild(link);
+        });
     }
 
     function syncCompactState() {
-        navLinks.forEach((link) => {
-            link.hidden = false;
-        });
+        const entries = getNavEntries();
+        clearOverflowVisibilityState(entries);
+        syncDomOrder(entries);
+        overflowLinks = [];
         compactToggle.hidden = true;
         compactToggle.setAttribute("aria-expanded", "false");
         navrow.classList.remove("global-navrow--compact");
-        if (topnav.scrollWidth <= topnav.clientWidth + 2) return;
+        if (!mobileMedia.matches) return;
 
-        compactToggle.hidden = false;
-        navrow.classList.add("global-navrow--compact");
+        const candidateEntries = entries.filter(({ link }) => !link.hidden);
+        if (candidateEntries.length <= MOBILE_NAV_PINNED_LIMIT) return;
 
-        const preferredHiddenLinks = [...navLinks]
-            .filter((link) => !link.classList.contains("active"))
-            .reverse();
-        const remainingHiddenLinks = [...navLinks].reverse();
-        const hideUntilFits = (links) => {
-            links.forEach((link) => {
-                if (topnav.scrollWidth <= topnav.clientWidth + 2) return;
-                link.hidden = true;
-            });
+        const pinnedEntries = [];
+        const pinnedSet = new Set();
+        const pushPinned = (entry) => {
+            if (!entry || pinnedSet.has(entry.link)) return;
+            pinnedEntries.push(entry);
+            pinnedSet.add(entry.link);
         };
 
-        hideUntilFits(preferredHiddenLinks);
-        hideUntilFits(remainingHiddenLinks);
+        pushPinned(candidateEntries[0]);
+        candidateEntries
+            .filter((entry) => entry.mobilePinned)
+            .forEach((entry) => pushPinned(entry));
+        pushPinned(
+            candidateEntries.find(({ link }) => link.classList.contains("active")),
+        );
+        candidateEntries
+            .slice()
+            .sort((left, right) => left.mobilePriority - right.mobilePriority)
+            .forEach((entry) => {
+                if (pinnedEntries.length >= MOBILE_NAV_PINNED_LIMIT) return;
+                pushPinned(entry);
+            });
 
-        if (getOverflowLinks().length === 0) {
-            compactToggle.hidden = true;
-            navrow.classList.remove("global-navrow--compact");
-        }
+        overflowLinks = candidateEntries.filter(({ link }) => !pinnedSet.has(link));
+        if (overflowLinks.length === 0) return;
+
+        overflowLinks.forEach(({ link }) => {
+            link.hidden = true;
+            link.dataset.mobileOverflowHidden = "true";
+        });
+        compactToggle.hidden = false;
+        navrow.classList.add("global-navrow--compact");
     }
 
     compactToggle.addEventListener("click", async () => {
-        const overflowLinks = getOverflowLinks();
         if (overflowLinks.length === 0) return;
         compactToggle.setAttribute("aria-expanded", "true");
         const selectedAction = await openHamburgerMenu(compactToggle, {
-            items: overflowLinks.map((link, index) => ({
+            items: overflowLinks.map(({ link }, index) => ({
                 id: String(index),
                 label:
                     link.textContent?.trim() ?? link.getAttribute("href") ?? "",
@@ -421,7 +494,7 @@ function applyCompactNav(root) {
         });
         compactToggle.setAttribute("aria-expanded", "false");
         if (selectedAction === null) return;
-        const selectedLink = overflowLinks[Number(selectedAction)];
+        const selectedLink = overflowLinks[Number(selectedAction)]?.link;
         if (selectedLink instanceof HTMLAnchorElement) {
             selectedLink.click();
         }
@@ -430,6 +503,20 @@ function applyCompactNav(root) {
     const resizeObserver = new ResizeObserver(syncCompactState);
     resizeObserver.observe(topnav);
     resizeObserver.observe(navrow);
+    const navMutationObserver = new MutationObserver(syncCompactState);
+    navMutationObserver.observe(topnav, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: [
+            "hidden",
+            "class",
+            "data-nav-order",
+            "data-mobile-priority",
+            "data-mobile-pinned",
+        ],
+    });
+    mobileMedia.addEventListener("change", syncCompactState);
     syncCompactState();
 }
 
