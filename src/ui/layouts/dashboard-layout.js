@@ -423,17 +423,16 @@ function applyCompactNav(root) {
             );
     }
 
-    const hasOverflowHiddenMarker = (link) =>
+    const isOverflowManaged = (link) =>
         link.dataset.mobileOverflowHidden === "true";
 
     function syncOverflowVisibility(entries, overflowSet) {
         entries.forEach(({ link }) => {
             const shouldHide = overflowSet.has(link);
-            const isManagedHidden = hasOverflowHiddenMarker(link);
+            const isManagedHidden = isOverflowManaged(link);
             if (shouldHide) {
-                // Skip redundant writes so observer callbacks do not retrigger
-                // compact-nav sync while the same overflow state is already
-                // applied.
+                // Skip if the link is already hidden by overflow management to
+                // prevent observer reentry.
                 if (isManagedHidden && link.hidden) return;
                 link.hidden = true;
                 link.dataset.mobileOverflowHidden = "true";
@@ -448,8 +447,8 @@ function applyCompactNav(root) {
     function syncDomOrder(entries) {
         entries.forEach(({ link }, index) => {
             if (link.parentElement !== topnav) return;
-            // Avoid reinserting links that are already in place because the
-            // mutation observer treats each reorder as another compact-nav sync.
+            // Skip reordering if the link is already at the correct index to
+            // avoid retriggering the mutation observer.
             if (topnav.children[index] === link) return;
             topnav.insertBefore(link, topnav.children[index] ?? null);
         });
@@ -465,7 +464,7 @@ function applyCompactNav(root) {
 
         if (mobileMedia.matches) {
             const candidateEntries = entries.filter(
-                ({ link }) => !link.hidden || hasOverflowHiddenMarker(link),
+                ({ link }) => !link.hidden || isOverflowManaged(link),
             );
             if (candidateEntries.length > MOBILE_NAV_PINNED_LIMIT) {
                 const pinnedEntries = [];

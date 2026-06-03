@@ -183,7 +183,7 @@ test("dashboard compact navigation applies stable mobile pinning and ordered ove
         "compact navigation should keep the active link pinned on mobile",
     );
     assert.ok(
-        layoutSource.includes("!link.hidden || hasOverflowHiddenMarker(link)"),
+        layoutSource.includes("!link.hidden || isOverflowManaged(link)"),
         "compact navigation should reevaluate overflow-managed links without unhiding and rehiding them on every sync",
     );
     assert.ok(

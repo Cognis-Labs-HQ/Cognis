@@ -14,6 +14,12 @@
 
 **Reason ignored:** This feedback targets `src/adapters/social/messages/ui/`, which is outside the compact-navigation regression surface. Under the repository versioning rules, touching that adapter would require unrelated adapter-version and changelog updates for a documentation-only follow-up, so I left it unchanged in this fix.
 
+### messages/ui/app.js template insertion path — deduplicate applyTemplateToComposer logic
+
+**Reviewer suggestion:** Reuse the existing `applyTemplateToComposer` helper for the template insertion path near lines 3288-3291 instead of repeating the same composer update logic.
+
+**Reason ignored:** This is an adapter-local refactor in `src/adapters/social/messages/ui/` that does not affect the compact-navigation loading-loop regression being fixed here. Taking it on in this patch would widen the scope into a separate messages-adapter cleanup and trigger unrelated versioning/changelog work, so I left it for a dedicated follow-up.
+
 ## Code Review — PR #45 third-pass (2026-05-29)
 
 ### settings-section.js drag-drop handler — mutation before rerender
