@@ -1,8 +1,6 @@
 :where(.calendar-day-view, .calendar-week-view) {
     --calendar-accent: var(--btn-confirm-bg, #1f8ceb);
     --calendar-title-sticky-offset: 0.24rem;
-    --calendar-title-sticky-surface-mix: 76%;
-    --calendar-title-sticky-stripe-mix: 24%;
 }
 
 .calendar-day-view {
@@ -277,19 +275,20 @@
     inset-block-start: var(--calendar-title-sticky-offset);
     margin-top: auto;
     z-index: 1;
-    background: color-mix(
-        in srgb,
-        var(--surface, transparent)
-            var(--calendar-title-sticky-surface-mix, 100%),
-        var(--calendar-event-stripe, var(--calendar-accent))
-            var(--calendar-title-sticky-stripe-mix, 0%)
-    );
+    background: transparent;
     border-radius: 0;
     padding-inline: 0;
 }
 
+:where(.calendar-day-view, .calendar-week-view) .calendar-slot-event-title {
+    background: color-mix(
+        in srgb,
+        var(--surface, transparent) 76%,
+        var(--calendar-event-stripe, var(--calendar-accent)) 24%
+    );
+}
+
 .calendar-slot-event--compact .calendar-slot-event-title {
-    background: transparent;
     position: static;
     margin-top: 0;
 }

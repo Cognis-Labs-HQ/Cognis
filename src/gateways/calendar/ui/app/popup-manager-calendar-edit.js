@@ -55,7 +55,7 @@ export function createCalendarEditPopupHandler({
                     variant: "cancel",
                 },
             ],
-            onOpen: (overlay) => {
+            onOpen: (overlay, closePopup) => {
                 const deleteBtn = overlay.querySelector(
                     "#calendar-edit-delete",
                 );
@@ -80,9 +80,7 @@ export function createCalendarEditPopupHandler({
                             "success",
                         );
                         refreshComposer();
-                        overlay
-                            .querySelector('[data-popup-action="close"]')
-                            ?.click();
+                        closePopup();
                     });
                 }
             },

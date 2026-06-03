@@ -435,7 +435,7 @@ export async function openPopup({
         lockPageScroll();
 
         if (typeof onOpen === "function") {
-            onOpen(overlay);
+            onOpen(overlay, () => dismiss(null));
         }
 
         requestAnimationFrame(() => {
