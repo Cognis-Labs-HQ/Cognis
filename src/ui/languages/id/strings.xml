@@ -204,6 +204,11 @@
   <string name="ui.app.admin.description">Deskripsi</string>
   <string name="ui.app.admin.no_gateways">Tidak ada gateway yang terdaftar.</string>
   <string name="ui.app.admin.no_adapters">Tidak ada adapter yang terdaftar.</string>
+  <string name="ui.app.admin.import_module_from_github">Impor Modul dari GitHub</string>
+  <string name="ui.app.admin.github_repository_url">URL Repositori GitHub</string>
+  <string name="ui.app.admin.github_version_tag">Tag Versi</string>
+  <string name="ui.app.admin.github_import_missing_fields">URL repositori dan tag versi wajib diisi.</string>
+  <string name="ui.app.admin.github_import_success">Permintaan impor modul selesai.</string>
   <string name="ui.app.admin.gateway.required">Wajib</string>
   <string name="ui.app.admin.gateway.dependencies">Ketergantungan</string>
   <string name="ui.app.admin.gateway.no_dependencies">Tidak ada</string>

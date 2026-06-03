@@ -6,6 +6,7 @@
     "coreApiVersion": "v1",
     "capabilities": ["meeting:video", "meeting:chat", "meeting:moderation"],
     "entrypoints": {
+        "bootstrap": "./bootstrap.js",
         "api": "./api/index.js",
         "ui": "./ui/index.html"
     },

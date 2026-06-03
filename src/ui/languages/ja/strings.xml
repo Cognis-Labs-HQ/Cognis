@@ -204,6 +204,11 @@
   <string name="ui.app.admin.description">説明</string>
   <string name="ui.app.admin.no_gateways">登録されたゲートウェイはありません。</string>
   <string name="ui.app.admin.no_adapters">登録されたアダプターはありません。</string>
+  <string name="ui.app.admin.import_module_from_github">GitHub からモジュールを取り込む</string>
+  <string name="ui.app.admin.github_repository_url">GitHub リポジトリ URL</string>
+  <string name="ui.app.admin.github_version_tag">バージョンタグ</string>
+  <string name="ui.app.admin.github_import_missing_fields">リポジトリ URL とバージョンタグは必須です。</string>
+  <string name="ui.app.admin.github_import_success">モジュール取り込みリクエストが完了しました。</string>
   <string name="ui.app.admin.gateway.required">必須</string>
   <string name="ui.app.admin.gateway.dependencies">依存関係</string>
   <string name="ui.app.admin.gateway.no_dependencies">なし</string>

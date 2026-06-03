@@ -16,6 +16,7 @@ export interface ModuleManifest {
      */
     requires?: string[];
     entrypoints: {
+        bootstrap?: string;
         api?: string;
         ui?: string;
         cli?: string;

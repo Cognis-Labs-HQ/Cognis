@@ -8,7 +8,7 @@ Cognis モジュールフレームワークにより、サードパーティお�
 
 - `COGNIS_MODULES_ROOT` (デフォルト `src/modules`) からモジュールマニフェストを検出してロードする。
 - `ModuleRuntimeGateway` インターフェースを通じて `enable` および `disable` 操作を公開する。
-- 有効な各モジュールの `entrypoints.api` ファイルから API ルートプラグインを動的にインポートする。
+- 有効な各モジュールをブートストラップエントリポイント (`entrypoints.bootstrap`) からロードし、機能提供を ctx 経由に統一する。
 - モジュールルートが保護されたシステムプレフィックスを上書きしないようにブロックする。
 - モジュールが有効化または無効化されたときに登録済みモジュールルートを更新する。
 
@@ -44,6 +44,7 @@ export interface ModuleManifest {
     capabilities: string[];
     requires?: string[];
     entrypoints: {
+        bootstrap?: string;
         api?: string;
         ui?: string;
         cli?: string;
@@ -79,7 +80,9 @@ export function registerApiRoutes(router) {
 }
 ```
 
-`src/modules/routes/module-extensions.ts` の `createModuleExtensionRoutes` は、`entrypoints.api` を宣言するすべての有効なモジュールの `registerApiRoutes` を呼び出します。ルートは `refresh()` を通じてすべての有効化/無効化サイクルで再ロードされます。
+`src/modules/routes/module-extensions.ts` の `createModuleExtensionRoutes` は、`entrypoints.bootstrap` がある場合それを優先してモジュールをロードします。ブートストラップには ctx (`moduleId`, `moduleRoot`, `getCapability`, `router`, `registerApiGet`, `registerApiPost`, UI 登録メソッド) が渡され、これが唯一の連携面です。
+
+モジュール間またはコアからモジュールへの直接 import は禁止です。機能連携は必ず ctx を通します。
 
 各モジュールルートは、3 番目の router 引数で任意のアクセス
 ポリシーメタデータを宣言できます:
@@ -127,3 +130,28 @@ export function registerApiRoutes(router) {
 | `POST`   | `/api/v1/modules/:id/enable`  | モジュールを有効化                                                | Admin  |
 | `POST`   | `/api/v1/modules/:id/disable` | モジュールを無効化                                                | Admin  |
 | `POST`   | `/api/v1/modules/install`     | アップロードされたアーカイブからモジュールをインストール          | Admin  |
+| `POST`   | `/api/v1/modules/import/github` | GitHub リポジトリタグからモジュールアーカイブを取り込む         | Admin  |
+
+## GitHub 取り込みライフサイクル
+
+1. 管理者が Administration UI または `cognisctl modules:import-github` で `repositoryUrl` と `versionTag` を送信します。
+2. API ルート `/api/v1/modules/import/github` が入力を検証し、`ModuleService.importFromGithub` に委譲します。
+3. Service が `codeload.github.com` からタグアーカイブを取得し、バイト列を module runtime gateway に渡します。
+4. Runtime が必須ファイル契約に従った drop-in モジュールディレクトリとしてインストールします。
+5. 管理者が通常の `/enable` フローで有効化します。
+
+## 新規モジュールの必須ファイル
+
+すべてのランタイム拡張モジュールは次を含めます:
+
+- `manifest.json`（識別情報、機能、エントリポイント、依存関係）
+- `routes.json`（安全性チェックに使う API/UI ルート宣言）
+- `bootstrap.js` または `bootstrap.ts`（モジュール機能を ctx に注入する唯一のゲートウェイ）
+- `ui/` ディレクトリ（UI エントリポイント未公開でも必須）
+
+必要に応じて推奨:
+
+- `api/index.js` または `api/index.ts`
+- `cli/index.js`
+- `db/*.sql`
+- `docs/standard.<lang>.md`

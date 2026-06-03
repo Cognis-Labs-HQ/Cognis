@@ -22,3 +22,9 @@ Das Jitsi-Meet-Modul bietet Cognis-native Meeting-Orchestrierung mit Teilnehmera
 - Meeting-Details werden nur an berechtigte Teilnehmer ausgegeben.
 - Meeting-Passwörter werden pro Meeting-Datensatz generiert.
 - Die Sitzungsübernahme ermöglicht das Trennen einer vorherigen aktiven Sitzung.
+
+## Goldstandard-Vertrag
+
+- `bootstrap.js` ist der einzige vom Plattformkern genutzte Moduleinstieg.
+- Das Bootstrap-ctx ist der einzige Integrationsbus dieses Moduls (API-Routen, UI-Registrierung, Fähigkeiten sowie künftige CLI/DB-Anbindung).
+- Direkte Imports aus anderen Modulen oder Core-Interna sind verboten; Integration muss über ctx erfolgen.

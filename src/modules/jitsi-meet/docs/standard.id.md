@@ -22,3 +22,9 @@ Modul Jitsi Meet menyediakan orkestrasi rapat native Cognis dengan pemilihan pes
 - Detail rapat hanya diberikan ke peserta yang diizinkan.
 - Password rapat dibuat untuk setiap catatan rapat.
 - Reclaim sesi memungkinkan pengguna memutus sesi aktif sebelumnya.
+
+## Kontrak Standar Emas
+
+- `bootstrap.js` adalah satu-satunya entrypoint modul yang dipakai platform.
+- ctx bootstrap adalah satu-satunya bus integrasi modul ini (rute API, registrasi UI, kapabilitas, serta wiring CLI/DB di masa depan).
+- Impor langsung dari modul lain atau internal core dilarang; integrasi wajib lewat permukaan yang diberikan ctx.
