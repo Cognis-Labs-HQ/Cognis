@@ -29,7 +29,6 @@ import {
 } from "./popup-manager-event-utils.js";
 import { createCalendarResponseHandler } from "./popup-manager-response.js";
 import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
-
 export function createCalendarPopupManager({
     root,
     signal,
@@ -626,7 +625,6 @@ export function createCalendarPopupManager({
             renderParticipantOptions(overlay);
         }
 
-        // Meeting creation toggle is create-only and intentionally hidden for edits.
         const showMeetingToggle = getJitsiAvailable() && !eventData;
 
         await openPopup({

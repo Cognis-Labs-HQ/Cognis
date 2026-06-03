@@ -146,7 +146,9 @@ export function buildParticipantCardHtml(
 export function buildParticipantOptionHtml(option, { escapeHtml }) {
     if (option.type === "user") {
         const handle = String(option.value ?? "").trim();
-        const displayName = String(option.displayName ?? option.label ?? handle).trim();
+        const displayName = String(
+            option.displayName ?? option.label ?? handle,
+        ).trim();
         const avatarKey = String(option.avatarKey ?? "").trim();
         const avatarMarkup = buildProfileAvatarMarkup({
             avatarKey: avatarKey || null,

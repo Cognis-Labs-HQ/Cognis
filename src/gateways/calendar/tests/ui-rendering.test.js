@@ -33,7 +33,10 @@ const POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE = readFileSync(
     "utf8",
 );
 const POPUP_MANAGER_READ_ONLY_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-read-only-render.js"),
+    resolve(
+        ROOT,
+        "src/gateways/calendar/ui/app/popup-manager-read-only-render.js",
+    ),
     "utf8",
 );
 const POPUP_MANAGER_CALENDAR_EDIT_SOURCE = readFileSync(
@@ -217,7 +220,10 @@ test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
 test("calendar participant picker renders user cards and excludes current user", () => {
     assert.match(POPUP_MANAGER_SOURCE, /buildParticipantOptionHtml/);
     assert.match(POPUP_MANAGER_SOURCE, /getCurrentAccountId/);
-    assert.match(POPUP_MANAGER_SOURCE, /userIdentifier === currentUserIdentifier/);
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /userIdentifier === currentUserIdentifier/,
+    );
     assert.doesNotMatch(
         POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE,
         /href="\/profile\//,
@@ -230,5 +236,8 @@ test("calendar read-only all-day details keep start and end date fields", () => 
         POPUP_MANAGER_READ_ONLY_SOURCE,
         /gateway\.calendar\.event_start/,
     );
-    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /gateway\.calendar\.event_end/);
+    assert.match(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /gateway\.calendar\.event_end/,
+    );
 });
