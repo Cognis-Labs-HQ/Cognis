@@ -119,7 +119,10 @@ export function createCalendarEditPopupHandler({
                                 method: "POST",
                                 headers: { "content-type": "application/json" },
                                 body: JSON.stringify({
-                                    permission: permission === "write" ? "write" : "read",
+                                    permission:
+                                        permission === "write"
+                                            ? "write"
+                                            : "read",
                                     expiresInHours:
                                         expiresInHoursRaw === "never"
                                             ? null
@@ -156,8 +159,9 @@ export function createCalendarEditPopupHandler({
                         );
                         if (!(copyButton instanceof HTMLElement)) return;
                         const link = String(
-                            copyButton.getAttribute("data-calendar-share-copy") ??
-                                "",
+                            copyButton.getAttribute(
+                                "data-calendar-share-copy",
+                            ) ?? "",
                         );
                         if (!link || !navigator?.clipboard?.writeText) return;
                         await navigator.clipboard.writeText(link);
