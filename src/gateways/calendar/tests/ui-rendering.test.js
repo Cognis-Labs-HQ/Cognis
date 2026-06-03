@@ -158,15 +158,12 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
 });
 
-test("calendar default layout keeps upcoming events visible", () => {
+test("calendar upcoming events moved to toolbar", () => {
     assert.match(APP_SOURCE, /id:\s*"upcoming-events"/);
-    assert.match(
-        APP_SOURCE,
-        /id:\s*"upcoming-events"[\s\S]*gridSize:\s*\{\s*default:\s*\[12,\s*4\]/,
-    );
+    assert.match(APP_SOURCE, /renderToolbarSummary[\s\S]*allUpcomingEvents/);
     assert.doesNotMatch(
         APP_SOURCE,
-        /id:\s*"upcoming-events"[\s\S]*defaultHidden:\s*true/,
+        /id:\s*"upcoming-events"[\s\S]*gridSize:\s*\{\s*default:\s*\[12,\s*4\]/,
     );
 });
 

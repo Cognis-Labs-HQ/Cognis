@@ -468,22 +468,33 @@ function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
-            const calendar = gateway.getOwnedCalendar(claims.sub, calendarId);
-            const event = calendar
+            const ownedCalendar = gateway.getOwnedCalendar(
+                claims.sub,
+                calendarId,
+            );
+            const ownedEvent = ownedCalendar
                 ? gateway.getEvent(calendarId, eventId)
                 : null;
-            if (!calendar || !event) {
+            let invitedEvent = null;
+            if (!ownedCalendar) {
+                const ev = gateway.getEvent(calendarId, eventId);
+                invitedEvent = ev?.attendees.includes(claims.sub) ? ev : null;
+            }
+            const effectiveCalendar =
+                ownedCalendar ?? gateway.getCalendar(calendarId);
+            const effectiveEvent = ownedEvent ?? invitedEvent;
+            if (!effectiveCalendar || !effectiveEvent) {
                 sendCalendarError(res, "not_found", "Event not found.", 404);
                 return true;
             }
             sendJson(res, 200, {
                 data: {
-                    calendar,
-                    event,
+                    calendar: effectiveCalendar,
+                    event: effectiveEvent,
                     meta: resolveEventMeta(
-                        event,
+                        effectiveEvent,
                         claims.sub,
-                        gateway.getEventResponse(event.id, claims.sub),
+                        gateway.getEventResponse(effectiveEvent.id, claims.sub),
                     ),
                 },
             });

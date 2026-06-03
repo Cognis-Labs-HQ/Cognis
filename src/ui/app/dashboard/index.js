@@ -48,7 +48,10 @@ async function loadDashboardExtensions({ i18n, account, role }) {
 
 async function loadUpcomingCalendarEvents() {
     try {
-        const calendarsResponse = await apiFetch("/api/v1/calendar/calendars");
+        const [calendarsResponse, invitationsResponse] = await Promise.all([
+            apiFetch("/api/v1/calendar/calendars"),
+            apiFetch("/api/v1/calendar/invitations"),
+        ]);
         if (!calendarsResponse.ok) return [];
         const calendarsPayload = await calendarsResponse.json();
         const calendars = Array.isArray(calendarsPayload?.data)
@@ -70,8 +73,16 @@ async function loadUpcomingCalendarEvents() {
                 }));
             }),
         );
-        return eventLists
-            .flat()
+        const invitationEvents = invitationsResponse.ok
+            ? ((await invitationsResponse.json())?.data ?? []).filter(Boolean)
+            : [];
+        return [
+            ...eventLists.flat(),
+            ...invitationEvents.map((event) => ({
+                ...event,
+                calendarName: "",
+            })),
+        ]
             .filter((event) => new Date(event.endAt).getTime() >= Date.now())
             .sort((left, right) => left.startAt.localeCompare(right.startAt))
             .slice(0, 5);
@@ -189,9 +200,11 @@ export async function mount(root) {
               ? `<ul class="dashboard-info-list">${upcomingCalendarEvents
                     .map(
                         (event) => `<li>
-            <strong>${escapeHtml(event.title)}</strong><br />
-            <span>${escapeHtml(formatDateTime(event.startAt))}</span><br />
-            <span>${escapeHtml(String(event.calendarName ?? ""))}</span>
+            <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link">
+              <strong>${escapeHtml(event.title)}</strong>
+              <span>${escapeHtml(formatDateTime(event.startAt))}</span>
+              ${event.calendarName ? `<span>${escapeHtml(String(event.calendarName))}</span>` : ""}
+            </a>
           </li>`,
                     )
                     .join("")}</ul>`

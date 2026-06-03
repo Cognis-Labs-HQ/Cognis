@@ -531,17 +531,6 @@ export async function mount(root, { signal } = {}) {
                     );
                 },
             },
-            {
-                id: "upcoming-events",
-                label: i18n.t("gateway.calendar.upcoming_events"),
-                gridSize: { default: [12, 4], min: [6, 4], max: "full" },
-                render: () => `
-          <section class="calendar-section">
-            <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
-            ${calendarUi.renderUpcomingEvents(allUpcomingEvents(), i18n)}
-          </section>
-        `,
-            },
         ],
         toolbar: [
             {
@@ -555,6 +544,18 @@ export async function mount(root, { signal } = {}) {
             </header>
             <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
             <div id="calendar-toolbar-summary">${calendarUi.renderPendingEvents(allPendingEvents(), i18n)}</div>
+          </section>
+        `,
+            },
+            {
+                id: "upcoming-events",
+                label: i18n.t("gateway.calendar.upcoming_events"),
+                render: () => `
+          <section class="toolbar-section calendar-toolbar-section">
+            <header class="calendar-toolbar-heading">
+              <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
+            </header>
+            <div id="calendar-toolbar-upcoming">${calendarUi.renderToolbarSummary(allUpcomingEvents(), [], i18n)}</div>
           </section>
         `,
             },
@@ -614,6 +615,16 @@ export async function mount(root, { signal } = {}) {
             if (toolbarSummary) {
                 toolbarSummary.innerHTML = calendarUi.renderPendingEvents(
                     allPendingEvents(),
+                    i18n,
+                );
+            }
+            const toolbarUpcoming = root.querySelector(
+                "#calendar-toolbar-upcoming",
+            );
+            if (toolbarUpcoming) {
+                toolbarUpcoming.innerHTML = calendarUi.renderToolbarSummary(
+                    allUpcomingEvents(),
+                    [],
                     i18n,
                 );
             }

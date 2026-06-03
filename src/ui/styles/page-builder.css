@@ -1424,6 +1424,28 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     color: var(--text);
 }
 
+.dashboard-upcoming-event-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.dashboard-upcoming-event-link:hover {
+    color: var(--accent);
+}
+
+.dashboard-upcoming-event-link strong {
+    font-size: 0.875rem;
+}
+
+.dashboard-upcoming-event-link span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 .dashboard-last-seen {
     margin: 12px 0 0;
     font-size: 0.9rem;
