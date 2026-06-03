@@ -172,6 +172,7 @@ export function createPageComposer(
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
+    const getToolbarSectionFallbackLabel = (index) => `Section ${index + 1}`;
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -3736,13 +3737,20 @@ export function createPageComposer(
         const toolbarHtml =
             Array.isArray(toolbar) && toolbar.length > 0
                 ? toolbar
-                      .map(
-                          (item, index) => `<section
-                class="toolbar-mobile-section"
-                data-toolbar-section-id="${escapeHtml(item.id || `section-${index + 1}`)}"
-                data-toolbar-section-label="${escapeHtml(item.label || `Section ${index + 1}`)}"
-            >${item.render()}</section>`,
-                      )
+                      .map((item, index) => {
+                          const sectionId = escapeHtml(
+                              item.id || `section-${index + 1}`,
+                          );
+                          const sectionLabel = escapeHtml(
+                              item.label ||
+                                  getToolbarSectionFallbackLabel(index),
+                          );
+                          return [
+                              `<section class="toolbar-mobile-section" data-toolbar-section-id="${sectionId}" data-toolbar-section-label="${sectionLabel}">`,
+                              item.render(),
+                              "</section>",
+                          ].join("");
+                      })
                       .join("")
                 : undefined;
         const subNavigationHtml =
@@ -3869,8 +3877,8 @@ export function createPageComposer(
                         storedActiveSectionId &&
                         availableSectionIds.has(storedActiveSectionId)
                             ? storedActiveSectionId
-                            : sections[0].dataset.toolbarSectionId ??
-                              "section-1";
+                            : (sections[0].dataset.toolbarSectionId ??
+                              "section-1");
                     toolbarEl.dataset.mobileToolbarActiveSection =
                         activeSectionId;
                     sections.forEach((section, index) => {
@@ -3882,7 +3890,7 @@ export function createPageComposer(
                         }
                         const label = getSectionLabel(
                             section,
-                            `Section ${index + 1}`,
+                            getToolbarSectionFallbackLabel(index),
                         );
                         const tab = document.createElement("button");
                         tab.type = "button";

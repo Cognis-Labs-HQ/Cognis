@@ -369,9 +369,9 @@ const DEFAULT_NAV_METADATA = {
     "/meetings": { order: 50, mobilePriority: 4 },
 };
 
-function getNavNumberAttribute(link, attributeName, fallback) {
+function getNumericNavAttribute(link, attributeName, fallback) {
     const rawValue = link.getAttribute(attributeName);
-    if (rawValue === null || rawValue === "") return fallback;
+    if (rawValue === null) return fallback;
     const parsed = Number.parseInt(rawValue, 10);
     return Number.isFinite(parsed) ? parsed : fallback;
 }
@@ -386,7 +386,9 @@ function applyCompactNav(root) {
     navrow.dataset.compactNavBound = "true";
 
     let overflowLinks = [];
-    const mobileMedia = window.matchMedia(`(max-width: ${MOBILE_NAV_BREAKPOINT}px)`);
+    const mobileMedia = window.matchMedia(
+        `(max-width: ${MOBILE_NAV_BREAKPOINT}px)`,
+    );
 
     function getNavEntries() {
         const navLinks = Array.from(topnav.children).filter(
@@ -398,12 +400,12 @@ function applyCompactNav(root) {
                     DEFAULT_NAV_METADATA[link.getAttribute("href") ?? ""] ?? {};
                 return {
                     link,
-                    order: getNavNumberAttribute(
+                    order: getNumericNavAttribute(
                         link,
                         "data-nav-order",
                         defaultMetadata.order ?? (index + 1) * 10,
                     ),
-                    mobilePriority: getNavNumberAttribute(
+                    mobilePriority: getNumericNavAttribute(
                         link,
                         "data-mobile-priority",
                         defaultMetadata.mobilePriority ?? index,
@@ -450,28 +452,33 @@ function applyCompactNav(root) {
 
         const pinnedEntries = [];
         const pinnedSet = new Set();
-        const pushPinned = (entry) => {
-            if (!entry || pinnedSet.has(entry.link)) return;
+        const addPinnedEntry = (entry) => {
+            if (!entry || pinnedSet.has(entry.link)) return false;
             pinnedEntries.push(entry);
             pinnedSet.add(entry.link);
+            return true;
         };
 
-        pushPinned(candidateEntries[0]);
+        addPinnedEntry(candidateEntries[0]);
         candidateEntries
             .filter((entry) => entry.mobilePinned)
-            .forEach((entry) => pushPinned(entry));
-        pushPinned(
-            candidateEntries.find(({ link }) => link.classList.contains("active")),
+            .forEach((entry) => addPinnedEntry(entry));
+        addPinnedEntry(
+            candidateEntries.find(({ link }) =>
+                link.classList.contains("active"),
+            ),
         );
         candidateEntries
             .slice()
             .sort((left, right) => left.mobilePriority - right.mobilePriority)
             .forEach((entry) => {
                 if (pinnedEntries.length >= MOBILE_NAV_PINNED_LIMIT) return;
-                pushPinned(entry);
+                addPinnedEntry(entry);
             });
 
-        overflowLinks = candidateEntries.filter(({ link }) => !pinnedSet.has(link));
+        overflowLinks = candidateEntries.filter(
+            ({ link }) => !pinnedSet.has(link),
+        );
         if (overflowLinks.length === 0) return;
 
         overflowLinks.forEach(({ link }) => {

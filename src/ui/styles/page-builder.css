@@ -443,7 +443,9 @@ code {
     .main-window--with-toolbar .toolbar.toolbar--mobile-stack > * {
         min-width: 0;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-tabs {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-tabs {
         display: flex;
         gap: 8px;
         overflow-x: auto;
@@ -478,22 +480,35 @@ code {
         background-size: 90% 2px;
         background-position: center bottom;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-section {
         padding: 16px;
         border: 1px solid var(--border);
         border-radius: 14px;
         background: var(--toolbar-bg);
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section[hidden] {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-section[hidden] {
         display: none;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section > * {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-section
+        > * {
         min-width: 0;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section > :first-child {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-section
+        > :first-child {
         padding-top: 16px;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section > :last-child {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-section
+        > :last-child {
         padding-bottom: 16px;
     }
 }
@@ -515,12 +530,16 @@ code {
     .toolbar button {
         min-width: 0;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-tabs {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-tabs {
         gap: 10px;
         padding: 0 14px 4px;
         margin: 0 -14px;
     }
-    .main-window--with-toolbar .toolbar.toolbar--mobile-stack > .toolbar-mobile-section {
+    .main-window--with-toolbar
+        .toolbar.toolbar--mobile-stack
+        > .toolbar-mobile-section {
         padding: 14px;
     }
     .workspace.app-page--frameless {

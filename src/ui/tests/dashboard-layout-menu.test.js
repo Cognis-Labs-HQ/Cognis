@@ -163,9 +163,7 @@ test("dashboard compact navigation applies stable mobile pinning and ordered ove
     );
 
     assert.ok(
-        layoutSource.includes(
-            "const DEFAULT_NAV_METADATA =",
-        ),
+        layoutSource.includes("const DEFAULT_NAV_METADATA ="),
         "compact navigation should provide a default ordered navigation model",
     );
     assert.ok(
