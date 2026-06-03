@@ -228,6 +228,10 @@ test("calendar participant picker renders user cards and excludes current user",
         POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE,
         /href="\/profile\//,
     );
+    assert.match(
+        POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE,
+        /<div class="calendar-participant-card-profile">/,
+    );
 });
 
 test("calendar read-only all-day details keep start and end date fields", () => {

@@ -433,10 +433,11 @@ export function createCalendarPopupManager({
         endAt = "",
         eventData = null,
     } = {}) {
-        const currentUserIdentifier = String(getCurrentAccountId?.() ?? "")
-            .trim()
-            .replace(/^@/, "")
-            .toLowerCase();
+        const normalizeParticipantIdentifier = (value) =>
+            normalizeUserIdentifier({ username: value });
+        const currentUserIdentifier = normalizeParticipantIdentifier(
+            getCurrentAccountId?.(),
+        );
         const popupBuilder = calendarUi.createEventComposerBuilder({
             i18n,
             calendars: getCalendars(),
@@ -475,10 +476,8 @@ export function createCalendarPopupManager({
             selectedParticipants = selectedParticipants.filter((entry) => {
                 if (entry.type !== "user") return true;
                 return (
-                    String(entry.value ?? "")
-                        .trim()
-                        .replace(/^@/, "")
-                        .toLowerCase() !== currentUserIdentifier
+                    normalizeParticipantIdentifier(entry.value) !==
+                    currentUserIdentifier
                 );
             });
         }

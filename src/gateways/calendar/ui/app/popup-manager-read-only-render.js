@@ -34,6 +34,7 @@ export function renderReadOnlyEventPopupBody({
     const endDate = new Date(eventData.event.endAt);
     const endDateForAllDay = new Date(endDate);
     if (isAllDay && !Number.isNaN(endDateForAllDay.getTime())) {
+        // All-day events store endAt as an exclusive boundary (next day at midnight).
         endDateForAllDay.setDate(endDateForAllDay.getDate() - 1);
     }
     const eventDateRows = `<dt>${escapeHtml(i18n.t("gateway.calendar.event_start"))}</dt>
