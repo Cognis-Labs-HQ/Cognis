@@ -31,7 +31,12 @@ function bindCalendarShareControls({
 }) {
     const shareGenerateBtn = overlay.querySelector("#calendar-share-generate");
     const shareResults = overlay.querySelector("#calendar-share-results");
-    if (!shareGenerateBtn || !shareResults) return;
+    if (!shareGenerateBtn || !shareResults) {
+        console.warn(
+            "[calendar] Missing share controls in calendar edit popup.",
+        );
+        return;
+    }
     shareGenerateBtn.addEventListener("click", async () => {
         const permission = String(
             overlay.querySelector("#calendar-share-permission")?.value ??
@@ -208,12 +213,10 @@ export function createCalendarEditPopupHandler({
             },
             onAction: async (actionId, overlay) => {
                 if (actionId !== "save") return true;
-                const name = calendar.isDefault
-                    ? undefined
-                    : String(
-                          overlay.querySelector("#calendar-edit-name")?.value ??
-                              "",
-                      ).trim();
+                const editedName = String(
+                    overlay.querySelector("#calendar-edit-name")?.value ?? "",
+                ).trim();
+                const name = calendar.isDefault ? undefined : editedName;
                 if (!calendar.isDefault && !name) return false;
                 const color = calendarUi.normalizeHexColor(
                     overlay.querySelector("#calendar-edit-color")?.value,
