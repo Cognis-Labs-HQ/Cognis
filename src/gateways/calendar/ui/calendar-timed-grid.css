@@ -210,7 +210,7 @@
     display: contents;
 }
 
-.calendar-slot-event {
+.calendar-view-canvas .calendar-slot-event {
     width: 100%;
     background: color-mix(
         in srgb,

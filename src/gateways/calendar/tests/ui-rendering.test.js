@@ -124,6 +124,10 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
         TIMED_GRID_CSS_SOURCE,
         /\.calendar-view-canvas\s+\.calendar-slot-event\s*\{[\s\S]*background:\s*color-mix\(/s,
     );
+    assert.doesNotMatch(
+        TIMED_GRID_CSS_SOURCE,
+        /(?:^|\n)\.calendar-slot-event\s*\{[\s\S]*background:\s*color-mix\(/s,
+    );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
         /\.calendar-slot-event-title\s*\{[\s\S]*position:\s*sticky;/s,
@@ -156,6 +160,10 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
 
 test("calendar default layout keeps upcoming events visible", () => {
     assert.match(APP_SOURCE, /id:\s*"upcoming-events"/);
+    assert.match(
+        APP_SOURCE,
+        /id:\s*"upcoming-events"[\s\S]*gridSize:\s*\{\s*default:\s*\[12,\s*4\]/,
+    );
     assert.doesNotMatch(
         APP_SOURCE,
         /id:\s*"upcoming-events"[\s\S]*defaultHidden:\s*true/,
@@ -182,6 +190,10 @@ test("calendar year view day dots inherit calendar event colors", () => {
     assert.match(
         CSS_SOURCE,
         /\.calendar-view-canvas\s+\.calendar-year-day-dot\s*\{[\s\S]*background:\s*var\(\s*--calendar-day-background,/s,
+    );
+    assert.doesNotMatch(
+        CSS_SOURCE,
+        /(?:^|\n)\.calendar-year-day-dot\s*\{[\s\S]*background:\s*var\(\s*--calendar-day-background,/s,
     );
     assert.match(
         CSS_SOURCE,
