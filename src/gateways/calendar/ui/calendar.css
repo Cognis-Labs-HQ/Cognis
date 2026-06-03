@@ -855,8 +855,18 @@
         45deg,
         transparent,
         transparent 4px,
-        color-mix(in srgb, var(--calendar-event-stripe, #1f8ceb) 20%, transparent) 4px,
-        color-mix(in srgb, var(--calendar-event-stripe, #1f8ceb) 20%, transparent) 8px
+        color-mix(
+                in srgb,
+                var(--calendar-event-stripe, #1f8ceb) 20%,
+                transparent
+            )
+            4px,
+        color-mix(
+                in srgb,
+                var(--calendar-event-stripe, #1f8ceb) 20%,
+                transparent
+            )
+            8px
     ) !important;
     border-style: dashed;
 }

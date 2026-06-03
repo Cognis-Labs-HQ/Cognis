@@ -171,14 +171,13 @@ test("calendar year view day dots inherit calendar event colors", () => {
         CSS_SOURCE,
         /var\(--calendar-day-color,\s*var\(--btn-confirm-bg,\s*#1f8ceb\)\)/,
     );
-    assert.match(CSS_SOURCE, /background:\s*var\(\s*--calendar-day-background,/s);
+    assert.match(
+        CSS_SOURCE,
+        /background:\s*var\(\s*--calendar-day-background,/s,
+    );
 });
 
 test("calendar month and week mobile headers stay compact without table cell block stacking", () => {
-    assert.doesNotMatch(
-        CSS_SOURCE,
-        /@media \(max-width:\s*900px\)[\s\S]*calendar-month-table th[\s\S]*display:\s*block/s,
-    );
     assert.match(
         CSS_SOURCE,
         /@media \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,

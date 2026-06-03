@@ -212,9 +212,7 @@ function collectPendingEvents(
         );
     const invitePending = Array.isArray(pendingInvitations)
         ? pendingInvitations
-              .filter(
-                  (event) => new Date(event.endAt).getTime() >= Date.now(),
-              )
+              .filter((event) => new Date(event.endAt).getTime() >= Date.now())
               .map((event) => ({
                   ...event,
                   calendarColor: normalizeHexColor(null),
@@ -311,7 +309,12 @@ function renderResponseSummary(event, i18n, participantDirectory = null) {
 
 function renderEventButton(
     event,
-    { compact = false, showTime = false, i18n = null, currentAccountId = null } = {},
+    {
+        compact = false,
+        showTime = false,
+        i18n = null,
+        currentAccountId = null,
+    } = {},
 ) {
     const allDayLabel = i18n?.t("gateway.calendar.all_day") ?? "";
     const timeLabel = isAllDayEvent(event)
@@ -428,10 +431,16 @@ function renderSlotEvents(
     const overflowCount = Math.max(0, slotEvents.length - visibleEvents.length);
     return `<div class="calendar-slot-event-stack${compact ? " calendar-slot-event-stack--compact" : ""}">
       ${visibleEvents
-          .map((event) =>
-              `<div class="calendar-slot-event-card" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">` +
-              renderEventButton(event, { compact, showTime, i18n, currentAccountId }) +
-              `</div>`,
+          .map(
+              (event) =>
+                  `<div class="calendar-slot-event-card" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">` +
+                  renderEventButton(event, {
+                      compact,
+                      showTime,
+                      i18n,
+                      currentAccountId,
+                  }) +
+                  `</div>`,
           )
           .join("")}
       ${overflowCount > 0 ? `<span class="calendar-slot-event-overflow-badge">+${overflowCount}</span>` : ""}
@@ -749,7 +758,13 @@ function renderYearGrid(events, currentDate, i18n) {
     ).join("")}</div>`;
 }
 
-function renderCalendarView(events, selectedView, activeDate, i18n, currentAccountId = null) {
+function renderCalendarView(
+    events,
+    selectedView,
+    activeDate,
+    i18n,
+    currentAccountId = null,
+) {
     if (selectedView === "day") {
         const dayStart = startOfDay(activeDate);
         const dayEnd = addDays(dayStart, 1);
