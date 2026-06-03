@@ -23,7 +23,6 @@ import {
     resolveEventMeta,
     sendCalendarError,
     sendJson,
-    syncInvitedCopiesForEvents,
     type CalendarLogger,
     type NotificationDispatcher,
     type ResolveAccountId,
@@ -86,6 +85,18 @@ function createCalendarCoreRoutes({
                     canInviteExternal: hasMinRole(claims.role, "admin"),
                     currentAccountId: claims.sub,
                 },
+            });
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/calendar/invitations" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            sendJson(res, 200, {
+                data: gateway.listInvitedPendingEvents(claims.sub),
             });
             return true;
         }
@@ -387,11 +398,6 @@ function createCalendarCoreRoutes({
                     calendarId,
                     createdEvent,
                 );
-                await syncInvitedCopiesForEvents({
-                    gateway,
-                    events: createdSeries,
-                    resolveAccountId,
-                });
                 await gateway.flushStore();
                 await Promise.all(
                     createdSeries.map((event) =>
@@ -580,11 +586,6 @@ function createCalendarCoreRoutes({
                     updatedCalendarId,
                     updatedEvent,
                 );
-                await syncInvitedCopiesForEvents({
-                    gateway,
-                    events: updatedSeries,
-                    resolveAccountId,
-                });
                 await gateway.flushStore();
                 sendJson(res, 200, { data: updatedEvent });
             } catch (error) {

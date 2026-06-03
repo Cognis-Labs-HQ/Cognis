@@ -158,7 +158,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     assert.ok(routes.length > 0);
 });
 
-test("calendar event update/delete endpoints forbid editing mirrored invite copies", async () => {
+test("calendar invitations endpoint returns pending invited events for attendee", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -215,52 +215,34 @@ test("calendar event update/delete endpoints forbid editing mirrored invite copi
     );
     const sourceEventId = createEventResponse.body.data.id;
 
+    // Bob should see the invitation via the invitations API
+    const bobInvitationsResponse = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/invitations",
+    );
+    assert.equal(bobInvitationsResponse.statusCode, 200);
+    assert.ok(Array.isArray(bobInvitationsResponse.body.data));
+    assert.equal(bobInvitationsResponse.body.data.length, 1);
+    assert.equal(bobInvitationsResponse.body.data[0].id, sourceEventId);
+    assert.deepEqual(
+        bobInvitationsResponse.body.data[0].reminderOffsetsMinutes,
+        [10, 60],
+    );
+
+    // Bob should NOT have an "Invited" calendar any more
     const bobCalendars = await dispatchJson(
         "GET",
         bobToken,
         "/api/v1/calendar/calendars",
     );
-    const invitedCalendarId = bobCalendars.body.data.find(
-        (calendar: { name: string }) => calendar.name === "Invited",
-    ).id;
-
-    const invitedEventsResponse = await dispatchJson(
-        "GET",
-        bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
+    assert.ok(
+        !bobCalendars.body.data.some(
+            (calendar: { name: string }) => calendar.name === "Invited",
+        ),
     );
-    assert.deepEqual(
-        invitedEventsResponse.body.data.events[0].reminderOffsetsMinutes,
-        [10, 60],
-    );
-    const mirroredEventId = invitedEventsResponse.body.data.events[0].id;
 
-    const updateResponse = await dispatchJson(
-        "PATCH",
-        bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events/${encodeURIComponent(mirroredEventId)}`,
-        {
-            title: "Compromised update",
-        },
-    );
-    assert.equal(updateResponse.statusCode, 403);
-
-    const dispatchCountBeforeDelete = cancellationDispatchCount;
-    const deleteResponse = await dispatchJson(
-        "DELETE",
-        bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events/${encodeURIComponent(mirroredEventId)}`,
-    );
-    assert.equal(deleteResponse.statusCode, 403);
-    assert.equal(cancellationDispatchCount, dispatchCountBeforeDelete);
-
-    const invitedEventsAfter = await dispatchJson(
-        "GET",
-        bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
-    );
-    assert.equal(invitedEventsAfter.body.data.events.length, 1);
-
+    // After organizer deletes the event, cancellation notifications fire
     const dispatchCountBeforeOrganizerDelete = cancellationDispatchCount;
     const organizerDeleteResponse = await dispatchJson(
         "DELETE",
@@ -426,7 +408,7 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
     ]);
 });
 
-test("calendar accept response can move invited events into a chosen calendar", async () => {
+test("calendar accept response via invitations API saves copy into chosen calendar and returns movedTo", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -480,6 +462,7 @@ test("calendar accept response can move invited events into a chosen calendar", 
         },
     );
     assert.equal(createEventResponse.statusCode, 201);
+    const sourceEventId = createEventResponse.body.data.id;
 
     const bobCalendars = await dispatchJson(
         "GET",
@@ -489,49 +472,60 @@ test("calendar accept response can move invited events into a chosen calendar", 
     const bobDefaultCalendarId = bobCalendars.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
     ).id;
-    const invitedCalendarId = bobCalendars.body.data.find(
-        (calendar: { name: string }) => calendar.name === "Invited",
-    ).id;
 
-    const invitedEvents = await dispatchJson(
+    // Bob sees the invitation via the invitations API
+    const bobInvitations = await dispatchJson(
         "GET",
         bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
+        "/api/v1/calendar/invitations",
     );
-    const invitedEventId = invitedEvents.body.data.events[0].id;
+    assert.equal(bobInvitations.statusCode, 200);
+    assert.equal(bobInvitations.body.data.length, 1);
+    assert.equal(bobInvitations.body.data[0].id, sourceEventId);
 
+    // Bob responds (accepted) using the original calendarId and eventId
     const respondResponse = await dispatchJson(
         "POST",
         bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events/${encodeURIComponent(invitedEventId)}/respond`,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events/${encodeURIComponent(sourceEventId)}/respond`,
         {
             response: "accepted",
             targetCalendarId: bobDefaultCalendarId,
         },
     );
     assert.equal(respondResponse.statusCode, 200);
+    assert.ok(respondResponse.body.data.movedTo?.calendarId);
+    assert.ok(respondResponse.body.data.movedTo?.eventId);
 
-    const invitedEventsAfter = await dispatchJson(
-        "GET",
-        bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(invitedCalendarId)}/events`,
-    );
-    assert.equal(invitedEventsAfter.body.data.events.length, 0);
+    const movedCalendarId = respondResponse.body.data.movedTo.calendarId;
+    const movedEventId = respondResponse.body.data.movedTo.eventId;
+    assert.equal(movedCalendarId, bobDefaultCalendarId);
 
+    // Bob's default calendar now has a copy
     const bobDefaultEvents = await dispatchJson(
         "GET",
         bobToken,
         `/api/v1/calendar/calendars/${encodeURIComponent(bobDefaultCalendarId)}/events`,
     );
     assert.equal(bobDefaultEvents.body.data.events.length, 1);
+    assert.equal(bobDefaultEvents.body.data.events[0].id, movedEventId);
     assert.equal(
         bobDefaultEvents.body.data.events[0].responses.bob,
         "accepted",
     );
     assert.equal(
         bobDefaultEvents.body.data.events[0].sourceEventId,
-        createEventResponse.body.data.id,
+        sourceEventId,
     );
+
+    // Invitation no longer appears in pending invitations after accepting
+    const bobInvitationsAfter = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/invitations",
+    );
+    assert.equal(bobInvitationsAfter.body.data.length, 0);
+
     assert.ok(
         dispatched.some(
             (entry) =>

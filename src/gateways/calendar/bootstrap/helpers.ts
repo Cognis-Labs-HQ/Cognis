@@ -6,8 +6,6 @@ import type {
     CalendarVisibility,
 } from "../gateway.js";
 
-export const INVITED_CALENDAR_NAME = "Invited";
-export const INVITED_CALENDAR_COLOR = "#8b5cf6";
 const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 
 export type NotificationDispatcher = (envelope: {
@@ -502,104 +500,6 @@ export async function dispatchCancellationNotifications({
             }
         }),
     );
-}
-
-export async function syncInvitedCopiesForEvents({
-    gateway,
-    events,
-    resolveAccountId,
-}: {
-    gateway: CoreCalendarGateway;
-    events: CalendarEventRecord[];
-    resolveAccountId: ResolveAccountId | null;
-}): Promise<void> {
-    for (const event of events) {
-        const resolvedAttendees = Array.from(
-            new Set(
-                (
-                    await Promise.all(
-                        event.attendees.map(async (attendee) => {
-                            if (!resolveAccountId) {
-                                return attendee;
-                            }
-                            try {
-                                const resolvedAccountId =
-                                    await resolveAccountId(attendee);
-                                return resolvedAccountId ?? attendee;
-                            } catch {
-                                return attendee;
-                            }
-                        }),
-                    )
-                )
-                    .map((entry) => String(entry ?? "").trim())
-                    .filter(Boolean),
-            ),
-        ).filter((accountId) => accountId !== event.createdBy);
-        const existingCopies = gateway.listMirroredEvents(event.id);
-        const existingCopyByOwner = new Map<string, CalendarEventRecord>();
-        for (const copy of existingCopies) {
-            const copyCalendar = gateway.getCalendar(copy.calendarId);
-            if (!copyCalendar) continue;
-            existingCopyByOwner.set(copyCalendar.ownerAccountId, copy);
-        }
-
-        for (const copy of existingCopies) {
-            const copyCalendar = gateway.getCalendar(copy.calendarId);
-            if (!copyCalendar) continue;
-            if (resolvedAttendees.includes(copyCalendar.ownerAccountId))
-                continue;
-            gateway.deleteEvent({
-                ownerAccountId: copyCalendar.ownerAccountId,
-                calendarId: copy.calendarId,
-                eventId: copy.id,
-            });
-        }
-
-        for (const attendeeAccountId of resolvedAttendees) {
-            const invitedCalendar = gateway.ensureSpecialCalendar(
-                attendeeAccountId,
-                INVITED_CALENDAR_NAME,
-                INVITED_CALENDAR_COLOR,
-            );
-            const existingCopy = existingCopyByOwner.get(attendeeAccountId);
-            if (existingCopy) {
-                gateway.updateEvent({
-                    ownerAccountId: attendeeAccountId,
-                    calendarId: existingCopy.calendarId,
-                    eventId: existingCopy.id,
-                    title: event.title,
-                    description: event.description,
-                    startAt: event.startAt,
-                    endAt: event.endAt,
-                    attendees: event.attendees,
-                    inviteEmails: event.inviteEmails,
-                    reminderOffsetsMinutes: event.reminderOffsetsMinutes,
-                    meetingUrl: event.meetingUrl,
-                    status: event.status,
-                    recurrence: event.recurrence,
-                    targetCalendarId: invitedCalendar.id,
-                });
-                continue;
-            }
-            gateway.addEventToCalendar({
-                calendarId: invitedCalendar.id,
-                sourceEventId: event.id,
-                title: event.title,
-                description: event.description,
-                startAt: event.startAt,
-                endAt: event.endAt,
-                createdBy: event.createdBy,
-                attendees: event.attendees,
-                inviteEmails: event.inviteEmails,
-                reminderOffsetsMinutes: event.reminderOffsetsMinutes,
-                meetingUrl: event.meetingUrl,
-                status: event.status,
-                recurrence: event.recurrence,
-                recurrenceId: event.recurrenceId,
-            });
-        }
-    }
 }
 
 export function resolveCreatedSeries(

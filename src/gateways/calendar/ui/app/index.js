@@ -19,6 +19,7 @@ export async function mount(root, { signal } = {}) {
     let selectedCalendarId = calendarUi.parseCalendarSelection();
     let selectedEventId = calendarUi.parseEventSelection();
     let eventsByCalendar = {};
+    let pendingInvitations = [];
     let canInviteExternal = false;
     let currentAccountId = "";
     let jitsiAvailable = false;
@@ -97,13 +98,22 @@ export async function mount(root, { signal } = {}) {
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
         currentAccountId = String(calendarState.meta?.currentAccountId ?? "");
         ensureSelectedCalendarId();
-        const eventEntries = await Promise.all(
+        const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
                 calendar.id,
                 await calendarUi.fetchEvents(calendar.id),
             ]),
         );
-        eventsByCalendar = Object.fromEntries(eventEntries);
+        eventsByCalendar = Object.fromEntries(
+            eventResults
+                .filter((result) => result.status === "fulfilled")
+                .map((result) => result.value),
+        );
+        try {
+            pendingInvitations = await calendarUi.fetchInvitations();
+        } catch {
+            pendingInvitations = [];
+        }
     }
 
     try {
@@ -143,6 +153,7 @@ export async function mount(root, { signal } = {}) {
             eventsByCalendar,
             calendars,
             selectedCalendarId,
+            currentAccountId,
         );
     }
 
@@ -152,6 +163,7 @@ export async function mount(root, { signal } = {}) {
             calendars,
             selectedCalendarId,
             currentAccountId,
+            pendingInvitations,
         );
     }
 
@@ -288,7 +300,7 @@ export async function mount(root, { signal } = {}) {
                 ${calendarUi.CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${i18n.t(`gateway.calendar.view_${view}`)}</button>`).join("")}
               </div>
             </header>
-            <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n)}</div>
+            <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId)}</div>
           </section>
         `;
                 },
@@ -544,7 +556,7 @@ export async function mount(root, { signal } = {}) {
             <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
           </section>
           <section class="toolbar-section calendar-toolbar-section">
-            <h3>${i18n.t("gateway.calendar.upcoming_summary")}</h3>
+            <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
             <div id="calendar-toolbar-summary">${calendarUi.renderToolbarSummary(allUpcomingEvents(), allPendingEvents(), i18n)}</div>
           </section>
         `,

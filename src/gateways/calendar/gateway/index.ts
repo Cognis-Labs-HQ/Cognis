@@ -4,6 +4,7 @@ import type { CalendarStore } from "../calendar-store.js";
 import { CalendarTokenStore } from "./token-store.js";
 import {
     applyEventFieldsFromSource,
+    enforceOwnerAttendance,
     normalizeAttendeeList,
     normalizeEventRecurrence,
     normalizeEventResponse,
@@ -27,6 +28,7 @@ import {
 import { createEventSeries } from "./event-series.js";
 import type {
     AddEventInput,
+    AddEventToCalendarInput,
     CreateCalendarInput,
     UpdateCalendarInput,
 } from "./inputs.js";
@@ -43,6 +45,7 @@ import {
     listEventsByRecurrenceIdIncludingMirrors,
     listOwnedEventsByRecurrenceId,
 } from "./recurrence-event-queries.js";
+import { listInvitedPendingEvents } from "./invitation-queries.js";
 
 export class CoreCalendarGateway {
     private readonly calendarsById = new Map<string, CalendarRecord>();
@@ -370,7 +373,7 @@ export class CoreCalendarGateway {
             startAt: input.startAt,
             endAt: input.endAt,
             createdBy: input.ownerAccountId,
-            attendees: this.enforceOwnerAttendance(
+            attendees: enforceOwnerAttendance(
                 input.ownerAccountId,
                 input.attendees,
             ),
@@ -385,23 +388,7 @@ export class CoreCalendarGateway {
         });
     }
 
-    addEventToCalendar(input: {
-        calendarId: string;
-        sourceEventId?: string | null;
-        title: string;
-        description?: string | null;
-        startAt: string;
-        endAt: string;
-        createdBy: string;
-        attendees?: string[];
-        inviteEmails?: string[];
-        reminderOffsetsMinutes?: number[];
-        meetingUrl?: string | null;
-        status?: CalendarEventStatus;
-        recurrence?: CalendarEventRecurrence;
-        recurrenceId?: string | null;
-        forceSingle?: boolean;
-    }): CalendarEventRecord {
+    addEventToCalendar(input: AddEventToCalendarInput): CalendarEventRecord {
         if (!this.calendarsById.has(input.calendarId)) {
             throw new Error("calendar_not_found");
         }
@@ -426,6 +413,14 @@ export class CoreCalendarGateway {
             .sort((leftEvent, rightEvent) =>
                 leftEvent.startAt.localeCompare(rightEvent.startAt),
             );
+    }
+
+    listInvitedPendingEvents(accountId: string): CalendarEventRecord[] {
+        return listInvitedPendingEvents(
+            accountId,
+            this.calendarsById,
+            this.eventsByCalendar,
+        );
     }
 
     getEvent(calendarId: string, eventId: string): CalendarEventRecord | null {
@@ -505,7 +500,7 @@ export class CoreCalendarGateway {
                     input.description.trim().length > 0
                   ? input.description
                   : null;
-        const nextAttendees = this.enforceOwnerAttendance(
+        const nextAttendees = enforceOwnerAttendance(
             input.ownerAccountId,
             input.attendees === undefined ? event.attendees : input.attendees,
         );
@@ -973,13 +968,6 @@ export class CoreCalendarGateway {
             this.responsesByRootEvent.delete(rootEventId);
         }
         this.refreshResponsesForRootEvent(rootEventId);
-    }
-
-    private enforceOwnerAttendance(
-        ownerAccountId: string,
-        attendees: string[] | undefined,
-    ): string[] {
-        return normalizeAttendeeList([...(attendees ?? []), ownerAccountId]);
     }
 
     private scheduleStoreWrite(

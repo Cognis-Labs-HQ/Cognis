@@ -146,9 +146,9 @@ test("calendar gateway scoped meeting tokens are one-time and scoped", () => {
     assert.equal(secondRead, null);
 });
 
-test("calendar gateway ensures invited special calendars per owner", () => {
+test("calendar gateway ensures special calendars are idempotent per owner", () => {
     const gateway = new CoreCalendarGateway();
-    const invitedCalendar = gateway.ensureSpecialCalendar(
+    const specialCalendar = gateway.ensureSpecialCalendar(
         "bob",
         "Invited",
         "#8B5CF6",
@@ -159,8 +159,8 @@ test("calendar gateway ensures invited special calendars per owner", () => {
         "#111111",
     );
 
-    assert.equal(invitedCalendar.id, repeatedLookup.id);
-    assert.equal(invitedCalendar.color, "#8b5cf6");
+    assert.equal(specialCalendar.id, repeatedLookup.id);
+    assert.equal(specialCalendar.color, "#8b5cf6");
     assert.equal(gateway.listCalendars("bob").length, 2);
 });
 
@@ -217,16 +217,16 @@ test("calendar gateway defaults organizer response to accepted", () => {
     assert.equal(gateway.getEventResponse(event.id, "bob"), "pending");
 });
 
-test("calendar gateway deletes mirrored invite copies with the source event", () => {
+test("calendar gateway deletes mirrored event copies when source event is deleted", () => {
     const gateway = new CoreCalendarGateway();
     const ownerCalendar = gateway.createCalendar({
         ownerAccountId: "alice",
         name: "Work",
     });
-    const invitedCalendar = gateway.ensureSpecialCalendar(
+    const mirrorCalendar = gateway.ensureSpecialCalendar(
         "bob",
-        "Invited",
-        "#8b5cf6",
+        "Accepted",
+        "#22c55e",
     );
     const sourceEvent = gateway.addEvent({
         ownerAccountId: "alice",
@@ -237,7 +237,7 @@ test("calendar gateway deletes mirrored invite copies with the source event", ()
         attendees: ["bob"],
     });
     const copyEvent = gateway.addEventToCalendar({
-        calendarId: invitedCalendar.id,
+        calendarId: mirrorCalendar.id,
         sourceEventId: sourceEvent.id,
         title: sourceEvent.title,
         startAt: sourceEvent.startAt,
@@ -254,7 +254,7 @@ test("calendar gateway deletes mirrored invite copies with the source event", ()
     });
 
     assert.equal(gateway.getEvent(ownerCalendar.id, sourceEvent.id), null);
-    assert.equal(gateway.getEvent(invitedCalendar.id, copyEvent.id), null);
+    assert.equal(gateway.getEvent(mirrorCalendar.id, copyEvent.id), null);
 });
 
 test("calendar gateway always keeps organizer in attendees", () => {

@@ -294,3 +294,11 @@ export function shiftDateByRecurrence(
     }
     return nextDate.toISOString();
 }
+
+
+export function enforceOwnerAttendance(
+    ownerAccountId: string,
+    attendees: string[] | undefined,
+): string[] {
+    return normalizeAttendeeList([...(attendees ?? []), ownerAccountId]);
+}

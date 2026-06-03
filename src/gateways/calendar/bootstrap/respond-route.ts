@@ -22,14 +22,26 @@ export async function handleCalendarResponseRoute(input: {
     dispatchNotification: NotificationDispatcher | null;
     log?: CalendarLogger;
 }): Promise<void> {
-    const calendar = input.gateway.getOwnedCalendar(
+    const ownedCalendar = input.gateway.getOwnedCalendar(
         input.claims.sub,
         input.calendarId,
     );
-    const event = calendar
+    const event = ownedCalendar
         ? input.gateway.getEvent(input.calendarId, input.eventId)
         : null;
-    if (!calendar || !event) {
+    // Also allow responding when the user is an attendee on a non-owned event
+    const invitedEvent =
+        !ownedCalendar
+            ? (() => {
+                  const ev = input.gateway.getEvent(
+                      input.calendarId,
+                      input.eventId,
+                  );
+                  return ev?.attendees.includes(input.claims.sub) ? ev : null;
+              })()
+            : null;
+    const effectiveEvent = event ?? invitedEvent;
+    if (!effectiveEvent) {
         sendCalendarError(input.res, "not_found", "Event not found.", 404);
         return;
     }
@@ -59,7 +71,7 @@ export async function handleCalendarResponseRoute(input: {
     const respondAll = input.url.searchParams.get("series") === "1";
     try {
         if (
-            response === "accepted" &&
+            (response === "accepted" || response === "tentative") &&
             targetCalendarId &&
             !input.gateway.getOwnedCalendar(input.claims.sub, targetCalendarId)
         ) {
@@ -71,33 +83,61 @@ export async function handleCalendarResponseRoute(input: {
             response,
             respondAll,
         });
-        if (response === "accepted" && targetCalendarId) {
-            input.gateway.moveOwnedEvent({
-                ownerAccountId: input.claims.sub,
-                calendarId: input.calendarId,
-                eventId: input.eventId,
-                targetCalendarId,
-                moveAll: respondAll,
-            });
+        let movedTo: { calendarId: string; eventId: string } | null = null;
+        if (
+            (response === "accepted" || response === "tentative") &&
+            targetCalendarId
+        ) {
+            if (ownedCalendar) {
+                // Owned mirror event: move it to the target calendar
+                input.gateway.moveOwnedEvent({
+                    ownerAccountId: input.claims.sub,
+                    calendarId: input.calendarId,
+                    eventId: input.eventId,
+                    targetCalendarId,
+                    moveAll: respondAll,
+                });
+                movedTo = { calendarId: targetCalendarId, eventId: input.eventId };
+            } else if (invitedEvent) {
+                // Non-owned invitation: create a personal copy in the target calendar
+                const copy = input.gateway.addEventToCalendar({
+                    calendarId: targetCalendarId,
+                    sourceEventId: invitedEvent.sourceEventId ?? invitedEvent.id,
+                    title: invitedEvent.title,
+                    description: invitedEvent.description,
+                    startAt: invitedEvent.startAt,
+                    endAt: invitedEvent.endAt,
+                    createdBy: invitedEvent.createdBy,
+                    attendees: invitedEvent.attendees,
+                    inviteEmails: invitedEvent.inviteEmails,
+                    reminderOffsetsMinutes: invitedEvent.reminderOffsetsMinutes,
+                    meetingUrl: invitedEvent.meetingUrl,
+                    status: invitedEvent.status,
+                    recurrence: invitedEvent.recurrence,
+                    recurrenceId: invitedEvent.recurrenceId,
+                    forceSingle: true,
+                });
+                movedTo = { calendarId: targetCalendarId, eventId: copy.id };
+            }
         }
         await input.gateway.flushStore();
         if (
             input.dispatchNotification &&
-            event.createdBy !== input.claims.sub
+            effectiveEvent.createdBy !== input.claims.sub
         ) {
             try {
                 await input.dispatchNotification({
                     category: "calendar",
-                    recipientUsername: event.createdBy,
-                    subject: `Calendar response: ${event.title}`,
+                    recipientUsername: effectiveEvent.createdBy,
+                    subject: `Calendar response: ${effectiveEvent.title}`,
                     body: buildResponseNotificationBody(
-                        event,
+                        effectiveEvent,
                         input.claims.sub,
                         response,
                     ),
                     actionUrl: "/calendar",
                     metadata: {
-                        eventId: event.id,
+                        eventId: effectiveEvent.id,
                         response,
                         attendee: input.claims.sub,
                     },
@@ -112,7 +152,9 @@ export async function handleCalendarResponseRoute(input: {
                 });
             }
         }
-        sendJson(input.res, 200, { data: responseRecord });
+        sendJson(input.res, 200, {
+            data: { ...responseRecord, ...(movedTo ? { movedTo } : {}) },
+        });
     } catch (error) {
         const message = errorMessage(error);
         if (message === "calendar_response_forbidden") {

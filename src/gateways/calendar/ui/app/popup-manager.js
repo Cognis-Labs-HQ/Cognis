@@ -263,6 +263,7 @@ export function createCalendarPopupManager({
             reloadState,
             syncRouteSelection,
             refreshComposer,
+            openEventPopup: (calId, evId) => openEventPopup(calId, evId),
         });
 
     async function openEventPopup(calendarId, eventId) {

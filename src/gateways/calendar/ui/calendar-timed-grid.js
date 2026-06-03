@@ -97,7 +97,7 @@ export function renderTimedEventLayer(
     events,
     rangeStart,
     rangeEnd,
-    { i18n, renderEventButton, slotCount = 48, compact = false } = {},
+    { i18n, renderEventButton, slotCount = 48, compact = false, currentAccountId = null } = {},
 ) {
     const laidOutEvents = buildTimedEventLayout(events, rangeStart, rangeEnd);
     if (!laidOutEvents.length) return "";
@@ -113,12 +113,14 @@ export function renderTimedEventLayer(
             const heightPercent = (spanSlots / slotCount) * 100;
             const widthPercent = 100 / entry.columnCount;
             const leftPercent = widthPercent * entry.columnIndex;
-            return `<div class="calendar-timed-event-card" style="top:${topPercent}%;height:${heightPercent}%;left:${leftPercent}%;width:${widthPercent}%;">${renderEventButton(
+            const color = escapeHtml(entry.event.calendarColor ?? "#1f8ceb");
+            return `<div class="calendar-timed-event-card" style="top:${topPercent}%;height:${heightPercent}%;left:${leftPercent}%;width:${widthPercent}%;--calendar-event-stripe:${color};">${renderEventButton(
                 entry.event,
                 {
                     compact,
                     showTime: true,
                     i18n,
+                    currentAccountId,
                 },
             )}</div>`;
         })

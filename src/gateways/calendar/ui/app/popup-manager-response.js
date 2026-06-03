@@ -9,6 +9,7 @@ export function createCalendarResponseHandler({
     reloadState,
     syncRouteSelection,
     refreshComposer,
+    openEventPopup,
 }) {
     async function promptResponseScope(eventData) {
         if (eventData.event.recurrence === "none") {
@@ -42,10 +43,14 @@ export function createCalendarResponseHandler({
         return scopeAction === "series";
     }
 
-    async function promptAcceptedCalendar(eventData) {
+    async function promptTargetCalendar(eventData, responseOption) {
         const availableCalendars = getCalendars();
         let targetCalendarId = null;
         let confirmed = false;
+        const confirmLabel =
+            responseOption === "tentative"
+                ? i18n.t("gateway.calendar.response_action_tentative")
+                : i18n.t("gateway.calendar.response_action_accepted");
         await openPopup({
             title: i18n.t("gateway.calendar.accept_calendar_title"),
             body: () => `
@@ -65,7 +70,7 @@ export function createCalendarResponseHandler({
             actions: [
                 {
                     id: "confirm",
-                    label: i18n.t("gateway.calendar.response_action_accepted"),
+                    label: confirmLabel,
                     variant: "confirm",
                 },
                 {
@@ -102,8 +107,8 @@ export function createCalendarResponseHandler({
             return false;
         }
         let targetCalendarId = null;
-        if (responseOption === "accepted") {
-            targetCalendarId = await promptAcceptedCalendar(eventData);
+        if (responseOption === "accepted" || responseOption === "tentative") {
+            targetCalendarId = await promptTargetCalendar(eventData, responseOption);
             if (!targetCalendarId) {
                 return false;
             }
@@ -124,8 +129,17 @@ export function createCalendarResponseHandler({
             );
             return false;
         }
+        let movedTo = null;
+        try {
+            const payload = await response.json();
+            movedTo = payload?.data?.movedTo ?? null;
+        } catch {
+            // response body may be absent in some test stubs
+        }
         if (targetCalendarId) {
-            setSelectedCalendarId(targetCalendarId);
+            setSelectedCalendarId(
+                movedTo?.calendarId ?? targetCalendarId,
+            );
             syncRouteSelection();
         }
         await reloadState();
@@ -134,6 +148,9 @@ export function createCalendarResponseHandler({
             i18n.t("gateway.calendar.response_update_success"),
             "success",
         );
+        if (movedTo?.calendarId && movedTo?.eventId && openEventPopup) {
+            await openEventPopup(movedTo.calendarId, movedTo.eventId);
+        }
         return true;
     }
 

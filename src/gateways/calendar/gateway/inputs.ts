@@ -22,6 +22,24 @@ export type UpdateCalendarInput = {
     defaultReminderOffsetsMinutes?: number[];
 };
 
+export type AddEventToCalendarInput = {
+    calendarId: string;
+    sourceEventId?: string | null;
+    title: string;
+    description?: string | null;
+    startAt: string;
+    endAt: string;
+    createdBy: string;
+    attendees?: string[];
+    inviteEmails?: string[];
+    reminderOffsetsMinutes?: number[];
+    meetingUrl?: string | null;
+    status?: CalendarEventStatus;
+    recurrence?: CalendarEventRecurrence;
+    recurrenceId?: string | null;
+    forceSingle?: boolean;
+};
+
 export type AddEventInput = {
     ownerAccountId: string;
     calendarId: string;

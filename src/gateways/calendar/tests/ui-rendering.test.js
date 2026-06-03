@@ -134,7 +134,7 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
-        /\.calendar-slot-event-title\s*\{[\s\S]*background:\s*color-mix\([\s\S]*--calendar-title-sticky-stripe-mix/s,
+        /\.calendar-slot-event-title\s*\{[\s\S]*background:\s*var\(--surface/s,
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,

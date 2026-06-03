@@ -668,29 +668,49 @@
 
 .calendar-pending-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
     margin-top: 0.45rem;
 }
 
 .toolbar .calendar-pending-action {
     min-width: 0;
     min-height: 0;
-    padding: 0.35rem 0.55rem;
+    padding: 0.3rem;
     border: 1px solid var(--field-border);
     border-radius: 999px;
     background: transparent;
     color: inherit;
-    font-size: 0.72rem;
-    line-height: 1.2;
+    font-size: 0.85rem;
+    line-height: 1;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .calendar-pending-action--accepted {
-    border-color: var(--btn-confirm-bg, #1f8ceb);
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
+}
+
+.calendar-pending-action--tentative {
+    background: #eab308;
+    color: #fff;
+    border-color: #eab308;
 }
 
 .calendar-pending-action--declined {
-    border-color: var(--btn-cancel-bg, #d34a4a);
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+}
+
+.calendar-toolbar-upcoming-scroll {
+    overflow-y: auto;
+    max-height: 18rem;
 }
 
 .calendar-response-calendar-picker {
@@ -795,4 +815,16 @@
 
 .calendar-delete-event-popup .popup-footer .popup-action-btn {
     width: 100%;
+}
+
+.calendar-slot-event--pending {
+    opacity: 0.55;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 4px,
+        color-mix(in srgb, var(--calendar-event-stripe, #1f8ceb) 20%, transparent) 4px,
+        color-mix(in srgb, var(--calendar-event-stripe, #1f8ceb) 20%, transparent) 8px
+    ) !important;
+    border-style: dashed;
 }

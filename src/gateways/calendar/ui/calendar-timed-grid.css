@@ -201,6 +201,10 @@
     gap: 0.2rem;
 }
 
+.calendar-slot-event-card {
+    display: contents;
+}
+
 .calendar-slot-event {
     width: 100%;
     background: color-mix(
@@ -266,12 +270,7 @@
     inset-block-start: var(--calendar-title-sticky-offset);
     margin-top: auto;
     z-index: 1;
-    background: color-mix(
-        in srgb,
-        var(--calendar-event-stripe, var(--calendar-accent))
-            var(--calendar-title-sticky-stripe-mix),
-        var(--surface, transparent)
-    );
+    background: var(--surface, transparent);
     border-radius: 0;
     padding-inline: 0;
 }

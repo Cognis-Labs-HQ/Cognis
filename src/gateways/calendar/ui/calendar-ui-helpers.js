@@ -1,4 +1,3 @@
-import { apiFetch } from "/static/reuse/api-client.js";
 import { formatDateTime, formatTime } from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
@@ -118,6 +117,7 @@ function collectUpcomingEvents(
     eventsByCalendar,
     calendars,
     selectedCalendarId,
+    currentAccountId,
 ) {
     const calendarById = new Map(
         calendars.map((calendar) => [calendar.id, calendar]),
@@ -138,11 +138,20 @@ function collectUpcomingEvents(
         .filter(
             (event) =>
                 !selectedCalendarId || event.calendarId === selectedCalendarId,
-        );
+        )
+        .filter((event) => {
+            if (!currentAccountId) return true;
+            if (event.createdBy === currentAccountId) return true;
+            const response = String(
+                event.responses?.[currentAccountId] ?? "pending",
+            );
+            return response === "accepted" || response === "tentative";
+        });
 }
 
 /**
  * Returns upcoming events for the signed-in attendee whose response is still pending.
+ * Includes invitation events from other users' calendars (passed as pendingInvitations).
  * Missing account ids intentionally produce no quick-response entries until auth-backed
  * calendar metadata is available. In this state the Upcoming Summary stays safe by
  * omitting quick-response controls instead of guessing the active attendee.
@@ -152,12 +161,14 @@ function collectPendingEvents(
     calendars,
     selectedCalendarId,
     currentAccountId,
+    pendingInvitations,
 ) {
     if (!currentAccountId) return [];
-    return collectUpcomingEvents(
+    const ownPending = collectUpcomingEvents(
         eventsByCalendar,
         calendars,
         selectedCalendarId,
+        null,
     )
         .filter((event) => Array.isArray(event.attendees))
         .filter((event) => event.attendees.includes(currentAccountId))
@@ -166,113 +177,33 @@ function collectPendingEvents(
                 String(event.responses?.[currentAccountId] ?? "pending") ===
                 "pending",
         );
-}
-
-async function fetchCalendarState() {
-    const response = await apiFetch("/api/v1/calendar/calendars");
-    if (!response.ok) throw new Error("calendar_load_failed");
-    const payload = await response.json();
-    return {
-        calendars: Array.isArray(payload?.data) ? payload.data : [],
-        meta:
-            payload && typeof payload.meta === "object" && payload.meta
-                ? payload.meta
-                : {},
-    };
-}
-
-async function fetchEvents(calendarId) {
-    const response = await apiFetch(
-        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events`,
-    );
-    if (!response.ok) throw new Error("calendar_events_failed");
-    const payload = await response.json();
-    return Array.isArray(payload?.data?.events) ? payload.data.events : [];
-}
-
-async function fetchEvent(calendarId, eventId) {
-    const response = await apiFetch(
-        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
-    );
-    if (!response.ok) throw new Error("calendar_event_failed");
-    const payload = await response.json();
-    return payload?.data ?? null;
-}
-
-async function updateEvent(calendarId, eventId, payload) {
-    return apiFetch(
-        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
-        {
-            method: "PATCH",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        },
+    const invitePending = Array.isArray(pendingInvitations)
+        ? pendingInvitations
+              .filter(
+                  (event) => new Date(event.endAt).getTime() >= Date.now(),
+              )
+              .map((event) => ({
+                  ...event,
+                  calendarColor: normalizeHexColor(null),
+                  calendarName: "",
+              }))
+        : [];
+    return [...ownPending, ...invitePending].sort((a, b) =>
+        a.startAt.localeCompare(b.startAt),
     );
 }
 
-async function deleteEvent(calendarId, eventId, { deleteAll = false } = {}) {
-    const query = deleteAll ? "?series=1" : "";
-    return apiFetch(
-        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}${query}`,
-        {
-            method: "DELETE",
-        },
-    );
-}
-
-async function respondToEvent(
-    calendarId,
-    eventId,
-    response,
-    { respondAll = false, targetCalendarId = null } = {},
-) {
-    const query = respondAll ? "?series=1" : "";
-    return apiFetch(
-        `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/respond${query}`,
-        {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({
-                response,
-                ...(targetCalendarId ? { targetCalendarId } : {}),
-            }),
-        },
-    );
-}
-
-async function probeJitsiAvailability() {
-    const response = await apiFetch("/api/v1/modules/jitsi-meet/ping");
-    if (!response.ok) return false;
-    const payload = await response.json();
-    return (
-        Boolean(payload?.data?.ready) && Boolean(payload?.data?.configComplete)
-    );
-}
-
-async function createJitsiMeeting(attendees) {
-    const response = await apiFetch(
-        "/api/v1/modules/jitsi-meet/meetings/create",
-        {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({ participants: attendees }),
-        },
-    );
-    if (!response.ok) throw new Error("meeting_create_failed");
-    const payload = await response.json();
-    const meetingId = String(payload?.data?.id ?? "").trim();
-    if (meetingId) {
-        // Prefer the in-app Meetings route so join flows stay within Cognis UI.
-        return `${window.location.origin}/meetings?meetingId=${encodeURIComponent(meetingId)}`;
-    }
-    return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
-}
+import {
+    fetchCalendarState,
+    fetchEvents,
+    fetchInvitations,
+    fetchEvent,
+    updateEvent,
+    deleteEvent,
+    respondToEvent,
+    probeJitsiAvailability,
+    createJitsiMeeting,
+} from "./calendar-api.js";
 
 function visibilityIcon(visibility) {
     return visibility === "public" ? "🌐" : "🔒";
@@ -359,7 +290,7 @@ function renderResponseSummary(event, i18n, participantDirectory = null) {
 
 function renderEventButton(
     event,
-    { compact = false, showTime = false, i18n = null } = {},
+    { compact = false, showTime = false, i18n = null, currentAccountId = null } = {},
 ) {
     const allDayLabel = i18n?.t("gateway.calendar.all_day") ?? "";
     const timeLabel = isAllDayEvent(event)
@@ -375,11 +306,21 @@ function renderEventButton(
     const eventAriaLabel = event.meetingUrl
         ? `${event.title} — ${i18n?.t("gateway.calendar.event_meeting_link") ?? "Meeting"}`
         : event.title;
-    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}" aria-label="${escapeHtml(eventAriaLabel)}">
+    const isPending =
+        currentAccountId &&
+        event.createdBy !== currentAccountId &&
+        String(event.responses?.[currentAccountId] ?? "pending") === "pending";
+    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${isPending ? " calendar-slot-event--pending" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}" aria-label="${escapeHtml(eventAriaLabel)}">
       ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
       <strong class="calendar-slot-event-title">${meetingIcon}${escapeHtml(event.title)}</strong>
     </button>`;
 }
+
+const PENDING_ACTION_ICONS = {
+    accepted: "&#10003;",
+    tentative: "?",
+    declined: "&#10007;",
+};
 
 function renderPendingEvents(events, i18n) {
     if (!events.length) {
@@ -399,7 +340,7 @@ function renderPendingEvents(events, i18n) {
           <div class="calendar-pending-actions">
             ${EVENT_RESPONSE_OPTIONS.map(
                 (responseOption) =>
-                    `<button type="button" class="calendar-pending-action calendar-pending-action--${escapeHtml(responseOption)}" data-calendar-pending-response="${escapeHtml(responseOption)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}</button>`,
+                    `<button type="button" class="calendar-pending-action calendar-pending-action--${escapeHtml(responseOption)}" data-calendar-pending-response="${escapeHtml(responseOption)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" aria-label="${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}" title="${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}">${PENDING_ACTION_ICONS[responseOption] ?? responseOption}</button>`,
             ).join("")}
           </div>
         </li>`,
@@ -409,12 +350,12 @@ function renderPendingEvents(events, i18n) {
 }
 
 function renderToolbarSummary(summary, pendingEvents, i18n) {
+    const pendingMarkup = renderPendingEvents(pendingEvents, i18n);
     if (!summary.length && !pendingEvents.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_events")}</p>`;
     }
     const upcomingMarkup = summary.length
-        ? `<ul class="calendar-events-list calendar-events-list--compact">${summary
-              .slice(0, 5)
+        ? `<div class="calendar-toolbar-upcoming-scroll"><ul class="calendar-events-list calendar-events-list--compact">${summary
               .map(
                   (
                       event,
@@ -425,9 +366,9 @@ function renderToolbarSummary(summary, pendingEvents, i18n) {
           </button>
         </li>`,
               )
-              .join("")}</ul>`
+              .join("")}</ul></div>`
         : `<p class="calendar-empty">${i18n.t("gateway.calendar.no_events")}</p>`;
-    return `${upcomingMarkup}${renderPendingEvents(pendingEvents, i18n)}`;
+    return `${pendingMarkup}${upcomingMarkup}`;
 }
 
 function renderUpcomingEvents(events, i18n) {
@@ -458,6 +399,7 @@ function renderSlotEvents(
         compact = false,
         showTime = false,
         i18n = null,
+        currentAccountId = null,
     } = {},
 ) {
     if (!slotEvents.length) return "";
@@ -465,7 +407,11 @@ function renderSlotEvents(
     const overflowCount = Math.max(0, slotEvents.length - visibleEvents.length);
     return `<div class="calendar-slot-event-stack${compact ? " calendar-slot-event-stack--compact" : ""}">
       ${visibleEvents
-          .map((event) => renderEventButton(event, { compact, showTime, i18n }))
+          .map((event) =>
+              `<div class="calendar-slot-event-card" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}">` +
+              renderEventButton(event, { compact, showTime, i18n, currentAccountId }) +
+              `</div>`,
+          )
           .join("")}
       ${overflowCount > 0 ? `<span class="calendar-slot-event-overflow-badge">+${overflowCount}</span>` : ""}
     </div>`;
@@ -506,7 +452,7 @@ function isAllDayEvent(event) {
     return startsAtMidnight && endsAtMidnight;
 }
 
-function renderDayView(events, day, i18n) {
+function renderDayView(events, day, i18n, currentAccountId = null) {
     const dayLabel = day.toLocaleDateString(undefined, {
         weekday: "long",
         month: "long",
@@ -522,7 +468,7 @@ function renderDayView(events, day, i18n) {
     );
     const allDayRow = `<div class="calendar-day-all-day-row">
   <div class="calendar-timeslot-label calendar-day-all-day-label">${escapeHtml(i18n.t("gateway.calendar.all_day"))}</div>
-  <div class="calendar-timeslot-events calendar-timeslot-events--click-add calendar-day-all-day-slot" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true, i18n }) : ""}</div>
+  <div class="calendar-timeslot-events calendar-timeslot-events--click-add calendar-day-all-day-slot" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${allDayEvents.length ? renderSlotEvents(allDayEvents, { previewLimit: MONTH_EVENT_PREVIEW_LIMIT, compact: true, i18n, currentAccountId }) : ""}</div>
 </div>`;
     const timedRows = renderTimeAxisRows(dayStart, {
         slotClassName:
@@ -546,13 +492,14 @@ function renderDayView(events, day, i18n) {
       ${renderTimedEventLayer(timedEvents, dayStart, dayEnd, {
           i18n,
           renderEventButton,
+          currentAccountId,
       })}
     </div>
   </div>
 </div>`;
 }
 
-function renderWeekView(events, weekStart, i18n) {
+function renderWeekView(events, weekStart, i18n, currentAccountId = null) {
     const days = Array.from({ length: 7 }, (_, offset) =>
         addDays(weekStart, offset),
     );
@@ -577,7 +524,7 @@ function renderWeekView(events, weekStart, i18n) {
                 dayEnd,
             ).filter((event) => isAllDayEvent(event));
             const isCurrentDay = dayStart.getTime() === todayStart;
-            return `<div class="calendar-week-all-day-cell calendar-timeslot-events${isCurrentDay ? " calendar-week-slot--current-day" : ""}" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true, i18n }) : ""}</div>`;
+            return `<div class="calendar-week-all-day-cell calendar-timeslot-events${isCurrentDay ? " calendar-week-slot--current-day" : ""}" data-timeslot-events data-slot-start="${dayStart.toISOString()}" data-slot-end="${dayEnd.toISOString()}">${dayEvents.length ? renderSlotEvents(dayEvents, { compact: true, i18n, currentAccountId }) : ""}</div>`;
         })
         .join("");
     const timedEvents = events.filter((event) => !isAllDayEvent(event));
@@ -632,6 +579,7 @@ function renderWeekView(events, weekStart, i18n) {
             ${renderTimedEventLayer(dayTimedEvents, dayStart, dayEnd, {
                 i18n,
                 renderEventButton,
+                currentAccountId,
             })}
           </div>`;
           })
@@ -641,7 +589,7 @@ function renderWeekView(events, weekStart, i18n) {
 </div>`;
 }
 
-function renderMonthGrid(events, currentDate, i18n) {
+function renderMonthGrid(events, currentDate, i18n, currentAccountId = null) {
     const monthStart = startOfMonth(currentDate);
     const gridStart = startOfWeek(monthStart);
     const weekdayHeaders = Array.from({ length: 7 }, (_, dayIndex) => {
@@ -670,6 +618,7 @@ function renderMonthGrid(events, currentDate, i18n) {
                       compact: true,
                       showTime: !isAllDayEvent(event),
                       i18n,
+                      currentAccountId,
                   }),
               )
               .join("");
@@ -774,7 +723,7 @@ function renderYearGrid(events, currentDate, i18n) {
     ).join("")}</div>`;
 }
 
-function renderCalendarView(events, selectedView, activeDate, i18n) {
+function renderCalendarView(events, selectedView, activeDate, i18n, currentAccountId = null) {
     if (selectedView === "day") {
         const dayStart = startOfDay(activeDate);
         const dayEnd = addDays(dayStart, 1);
@@ -782,6 +731,7 @@ function renderCalendarView(events, selectedView, activeDate, i18n) {
             listEventsInWindow(events, dayStart, dayEnd),
             dayStart,
             i18n,
+            currentAccountId,
         );
     }
     if (selectedView === "week") {
@@ -791,12 +741,13 @@ function renderCalendarView(events, selectedView, activeDate, i18n) {
             listEventsInWindow(events, weekStart, weekEnd),
             weekStart,
             i18n,
+            currentAccountId,
         );
     }
     if (selectedView === "year") {
         return renderYearGrid(events, activeDate, i18n);
     }
-    return renderMonthGrid(events, activeDate, i18n);
+    return renderMonthGrid(events, activeDate, i18n, currentAccountId);
 }
 
 function createEventComposerBuilder({
@@ -941,6 +892,7 @@ export {
     collectPendingEvents,
     fetchCalendarState,
     fetchEvents,
+    fetchInvitations,
     fetchEvent,
     updateEvent,
     deleteEvent,
