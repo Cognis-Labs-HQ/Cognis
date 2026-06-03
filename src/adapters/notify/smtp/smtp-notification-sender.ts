@@ -8,10 +8,12 @@ import type {
     NotificationSender,
     NotificationSenderQueueEntry,
 } from "@cognis/core";
+import { encodeBasicHtmlEntities } from "./html-entities.js";
 import {
-    decodeBasicHtmlEntities,
-    encodeBasicHtmlEntities,
-} from "./html-entities.js";
+    buildAttachmentMimeParts,
+    type MimeAttachment,
+} from "./mime-attachments.js";
+import { dotStuff, isTemporaryCode, stripHtmlTags } from "./mime-utils.js";
 import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
@@ -43,10 +45,6 @@ export class SmtpTemporaryError extends Error {
         super(message);
         this.name = "SmtpTemporaryError";
     }
-}
-
-function isTemporaryCode(code: number): boolean {
-    return code >= 400 && code < 500;
 }
 
 let cachedEmailTemplate: string | null = null;
@@ -264,35 +262,6 @@ function encodeQuotedPrintable(input: string): string {
     return wrapped.join("\r\n");
 }
 
-function stripHtmlTags(html: string): string {
-    let out = "";
-    for (let cursor = 0; cursor < html.length; cursor++) {
-        if (html[cursor] === "<") {
-            const tagEnd = html.indexOf(">", cursor + 1);
-            if (tagEnd === -1) break;
-            const tagContent = html
-                .slice(cursor + 1, tagEnd)
-                .trim()
-                .replace(/^\/+/, "")
-                .toLowerCase();
-            if (tagContent.startsWith("br")) {
-                out += "\n";
-            }
-            cursor = tagEnd;
-            continue;
-        }
-        out += html[cursor];
-    }
-    return decodeBasicHtmlEntities(out);
-}
-
-function dotStuff(message: string): string {
-    return normalizeNewlines(message)
-        .split("\n")
-        .map((line) => (line.startsWith(".") ? `.${line}` : line))
-        .join("\r\n");
-}
-
 async function buildMessage(
     from: string,
     to: string,
@@ -305,6 +274,7 @@ async function buildMessage(
         verifyButtonLabel?: string;
         senderName?: string;
         messageIdDomain?: string;
+        attachments?: MimeAttachment[];
     } = {},
 ): Promise<string> {
     const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
@@ -386,6 +356,9 @@ async function buildMessage(
         "Cognis automated notification. Please do not reply to this message.",
     ].join("\n");
     const boundary = `cognis-${randomUUID()}`;
+    const hasAttachments =
+        Array.isArray(options.attachments) && options.attachments.length > 0;
+    const mixedBoundary = hasAttachments ? `cognis-mixed-${randomUUID()}` : "";
     const headers = [
         foldHeader("From", formatAddressHeader(from, options.senderName)),
         foldHeader("To", formatAddressHeader(to)),
@@ -397,11 +370,13 @@ async function buildMessage(
         "X-Auto-Response-Suppress: All",
         foldHeader(
             "Content-Type",
-            `multipart/alternative; boundary="${boundary}"`,
+            hasAttachments
+                ? `multipart/mixed; boundary="${mixedBoundary}"`
+                : `multipart/alternative; boundary="${boundary}"`,
         ),
     ];
 
-    const mimeBody = [
+    const alternativeBody = [
         `--${boundary}`,
         "Content-Type: text/plain; charset=UTF-8",
         "Content-Transfer-Encoding: quoted-printable",
@@ -413,8 +388,29 @@ async function buildMessage(
         "",
         encodeQuotedPrintable(htmlBody),
         `--${boundary}--`,
-        "",
     ].join("\r\n");
+
+    const attachmentBody = hasAttachments
+        ? buildAttachmentMimeParts(
+              (options.attachments ?? []) as MimeAttachment[],
+              mixedBoundary,
+          )
+        : "";
+
+    const mimeBody = hasAttachments
+        ? [
+              `--${mixedBoundary}`,
+              foldHeader(
+                  "Content-Type",
+                  `multipart/alternative; boundary=\"${boundary}\"`,
+              ),
+              "",
+              alternativeBody,
+              attachmentBody,
+              `--${mixedBoundary}--`,
+              "",
+          ].join("\r\n")
+        : [alternativeBody, ""].join("\r\n");
 
     return `${dotStuff(`${headers.join("\r\n")}\r\n\r\n${mimeBody}`)}\r\n.\r\n`;
 }
@@ -539,6 +535,7 @@ async function sendMail(
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
+    attachments?: MimeAttachment[],
 ): Promise<void> {
     let session = await openSession(
         config.host,
@@ -621,6 +618,7 @@ async function sendMail(
                 verifyButtonLabel,
                 senderName: config.senderName,
                 messageIdDomain: config.ehloHostname ?? config.host,
+                attachments,
             }),
         );
         const sent = await session.read();
@@ -649,6 +647,7 @@ async function sendMailWithRetry(
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
+    attachments?: MimeAttachment[],
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -668,6 +667,7 @@ async function sendMailWithRetry(
                 theme,
                 verifyUrl,
                 verifyButtonLabel,
+                attachments,
             );
             return;
         } catch (err) {
@@ -965,6 +965,8 @@ export class SmtpNotificationSender implements NotificationSender {
             this.sleep,
             theme,
             undefined,
+            undefined,
+            envelope.attachments ?? [],
         );
     }
 

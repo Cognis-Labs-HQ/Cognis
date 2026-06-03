@@ -62,3 +62,22 @@ test("jitsi meeting creation resolves hidden participants only for admins", () =
         /\{ includeHidden: hasMinRole\(claims\.role, "admin"\) \}/,
     );
 });
+
+test("jitsi meetings API exposes current events query endpoint", () => {
+    const apiSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    const routesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/meetings-routes.js"),
+        "utf8",
+    );
+
+    assert.match(apiSource, /calendar:listCalendars/);
+    assert.match(apiSource, /calendar:listEvents/);
+    assert.match(
+        routesSource,
+        /\/api\/v1\/modules\/jitsi-meet\/events\/current/,
+    );
+    assert.match(routesSource, /ownership must be one of all, own, or invited/);
+});

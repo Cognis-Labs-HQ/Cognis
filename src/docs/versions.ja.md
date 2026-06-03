@@ -36,6 +36,7 @@
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
 | 登録                       | `src/gateways/registration/` | `1.1.2`    |
 | ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
+| カレンダー                 | `src/gateways/calendar/`     | `1.1.4`    |
 
 ## API
 

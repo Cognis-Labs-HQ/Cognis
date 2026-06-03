@@ -3,6 +3,7 @@ import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { formatDateTime } from "../../reuse/timestamp.js";
 import {
     buildAnalogueClockMarkup,
     buildDigitalClockMarkup,
@@ -45,6 +46,52 @@ async function loadDashboardExtensions({ i18n, account, role }) {
     }
 }
 
+async function loadUpcomingCalendarEvents() {
+    try {
+        const [calendarsResponse, invitationsResponse] = await Promise.all([
+            apiFetch("/api/v1/calendar/calendars"),
+            apiFetch("/api/v1/calendar/invitations"),
+        ]);
+        if (!calendarsResponse.ok) return [];
+        const calendarsPayload = await calendarsResponse.json();
+        const calendars = Array.isArray(calendarsPayload?.data)
+            ? calendarsPayload.data
+            : [];
+        const eventLists = await Promise.all(
+            calendars.map(async (calendar) => {
+                const eventsResponse = await apiFetch(
+                    `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}/events`,
+                );
+                if (!eventsResponse.ok) return [];
+                const eventsPayload = await eventsResponse.json();
+                const events = Array.isArray(eventsPayload?.data?.events)
+                    ? eventsPayload.data.events
+                    : [];
+                return events.map((event) => ({
+                    ...event,
+                    calendarName: calendar.name,
+                }));
+            }),
+        );
+        const invitationEvents = invitationsResponse.ok
+            ? ((await invitationsResponse.json())?.data ?? []).filter(Boolean)
+            : [];
+        const now = Date.now();
+        return [
+            ...eventLists.flat(),
+            ...invitationEvents.map((event) => ({
+                ...event,
+                calendarName: null,
+            })),
+        ]
+            .filter((event) => new Date(event.endAt).getTime() >= now)
+            .sort((left, right) => left.startAt.localeCompare(right.startAt))
+            .slice(0, 5);
+    } catch {
+        return [];
+    }
+}
+
 export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
@@ -54,6 +101,7 @@ export async function mount(root) {
     const role = localStorage.getItem("cognis_role") ?? "user";
 
     const info = await loadAccountInfo(account);
+    const upcomingCalendarEvents = await loadUpcomingCalendarEvents();
     const { formatDateValue, formatDateTimeValue } = createDateTimeFormatters({
         dateFallback: i18n.t("ui.app.dashboard.never"),
         dateTimeFallback: i18n.t("ui.app.dashboard.never"),
@@ -141,6 +189,29 @@ export async function mount(root) {
                     renderClock: buildAnalogueClockMarkup,
                 });
             },
+        },
+        {
+            id: "calendar-upcoming",
+            label: i18n.t("ui.app.dashboard.element.calendar_upcoming.label"),
+            gridSize: { default: [6, 3], min: [4, 2], max: [8, 4] },
+            render: () => `
+      <h3>${i18n.t("ui.app.dashboard.element.calendar_upcoming.label")}</h3>
+      ${
+          upcomingCalendarEvents.length > 0
+              ? `<ul class="dashboard-info-list">${upcomingCalendarEvents
+                    .map(
+                        (event) => `<li>
+            <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link">
+              <strong>${escapeHtml(event.title)}</strong>
+              <span>${escapeHtml(formatDateTime(event.startAt))}</span>
+              ${event.calendarName ? `<span>${escapeHtml(String(event.calendarName))}</span>` : ""}
+            </a>
+          </li>`,
+                    )
+                    .join("")}</ul>`
+              : `<p>${escapeHtml(i18n.t("ui.app.dashboard.element.calendar_upcoming.empty"))}</p>`
+      }
+    `,
         },
     ];
 

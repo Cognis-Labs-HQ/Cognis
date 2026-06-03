@@ -3,6 +3,7 @@
   <string name="ui.reuse.dashboard">Dasbor</string>
   <string name="ui.reuse.messages">Pesan</string>
   <string name="ui.reuse.study">Belajar</string>
+  <string name="ui.reuse.calendar">Kalender</string>
   <string name="ui.reuse.profile">Profil</string>
   <string name="ui.reuse.settings">Pengaturan</string>
   <string name="ui.reuse.docs">Dokumentasi</string>
@@ -551,6 +552,11 @@
   <string name="ui.app.settings.datetime_tz_heading">Zona Waktu</string>
   <string name="ui.app.settings.datetime_tz_label">Zona Waktu Tampilan</string>
   <string name="ui.app.settings.datetime_tz_auto">Deteksi otomatis ({tz})</string>
+  <string name="ui.app.settings.datetime_time_format_heading">Format Waktu</string>
+  <string name="ui.app.settings.datetime_time_format_label">Gaya Jam</string>
+  <string name="ui.app.settings.datetime_time_format_auto">Gunakan Default Lokal</string>
+  <string name="ui.app.settings.datetime_time_format_12h">Jam 12 Jam</string>
+  <string name="ui.app.settings.datetime_time_format_24h">Jam 24 Jam</string>
   <string name="ui.reuse.classes">Kelas Saya</string>
   <string name="module.study.classes.page_title">Kelas</string>
   <string name="module.study.classes.page_subtitle">Kelola kelas bahasa yang ditetapkan untuk Anda.</string>
@@ -604,4 +610,6 @@
   <string name="ui.app.dashboard.element.student_classes.label">Kelas Saya</string>
   <string name="ui.app.dashboard.element.student_classes.cta">Lihat dan kelola kelas yang Anda ikuti.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Ke Kelas Saya</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.label">Acara Kalender Mendatang</string>
+  <string name="ui.app.dashboard.element.calendar_upcoming.empty">Tidak ada acara kalender mendatang.</string>
 </resources>

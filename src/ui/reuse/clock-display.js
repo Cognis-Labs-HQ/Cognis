@@ -32,6 +32,7 @@
 import {
     formatDate,
     formatDateTime,
+    formatTime,
     getEffectiveTimezone,
 } from "./timestamp.js";
 
@@ -49,16 +50,16 @@ export function createDateTimeFormatters({
  * Resolves hour, minute, and second values in the target timezone for analogue clock rendering.
  *
  * @param {Date} now
- * @param {string} tz
+ * @param {string} timezone
  * @returns {{ hour: number, minute: number, second: number }}
  */
-function getClockTimeParts(now, tz) {
+function getClockTimeParts(now, timezone) {
     const parts = new Intl.DateTimeFormat(undefined, {
         hour: "numeric",
         minute: "numeric",
         second: "numeric",
         hour12: false,
-        timeZone: tz,
+        timeZone: timezone,
     }).formatToParts(now);
 
     return {
@@ -80,11 +81,11 @@ function getClockTimeParts(now, tz) {
 
 /**
  * @param {Date} now
- * @param {string} tz
+ * @param {string} timezone
  * @returns {string}
  */
-export function buildAnalogueClockMarkup(now, tz) {
-    const { hour, minute, second } = getClockTimeParts(now, tz);
+export function buildAnalogueClockMarkup(now, timezone) {
+    const { hour, minute, second } = getClockTimeParts(now, timezone);
     const centerX = 54;
     const centerY = 54;
     const faceRadius = 48;
@@ -133,22 +134,21 @@ export function buildAnalogueClockMarkup(now, tz) {
 
 /**
  * @param {Date} now
- * @param {string} tz
+ * @param {string} timezone
  * @returns {string}
  */
-export function buildDigitalClockMarkup(now, tz) {
-    const timeStr = now.toLocaleTimeString(undefined, {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZone: tz,
+export function buildDigitalClockMarkup(now, timezone) {
+    const nowIso = now.toISOString();
+    const timeStr = formatTime(nowIso, "", {
+        includeSeconds: true,
+        timeZone: timezone,
     });
     const dateStr = now.toLocaleDateString(undefined, {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
-        timeZone: tz,
+        timeZone: timezone,
     });
 
     return `
@@ -160,7 +160,7 @@ export function buildDigitalClockMarkup(now, tz) {
 }
 
 /**
- * @param {{ displayId: string, tzId?: string, renderClock: (now: Date, tz: string) => string }} options
+ * @param {{ displayId: string, tzId?: string, renderClock: (now: Date, timezone: string) => string }} options
  * @returns {void}
  */
 export function mountLiveClock({ displayId, tzId, renderClock }) {
