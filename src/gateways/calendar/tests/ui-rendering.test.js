@@ -235,6 +235,25 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
 });
 
+test("calendar main view and summaries aggregate events across calendars", () => {
+    assert.match(
+        APP_SOURCE,
+        /function allCalendarEvents\(\)\s*\{[\s\S]*Object\.entries\(eventsByCalendar\)[\s\S]*\.sort\(\(left, right\) => left\.startAt\.localeCompare\(right\.startAt\)\);/s,
+    );
+    assert.doesNotMatch(
+        APP_SOURCE,
+        /function allCalendarEvents\(\)\s*\{[\s\S]*event\.calendarId === selectedCalendarId[\s\S]*\}/s,
+    );
+    assert.match(
+        APP_SOURCE,
+        /function allUpcomingEvents\(\)\s*\{[\s\S]*collectUpcomingEvents\(\s*eventsByCalendar,\s*calendars,\s*"",\s*currentAccountId,/s,
+    );
+    assert.match(
+        APP_SOURCE,
+        /function allPendingEvents\(\)\s*\{[\s\S]*collectPendingEvents\(\s*eventsByCalendar,\s*calendars,\s*"",\s*currentAccountId,\s*pendingInvitations,\s*\);/s,
+    );
+});
+
 test("calendar deep-link event popup does not block mount completion", () => {
     assert.match(
         APP_SOURCE,

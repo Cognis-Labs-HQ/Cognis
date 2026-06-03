@@ -141,11 +141,6 @@ export async function mount(root, { signal } = {}) {
                     ),
                 })),
             )
-            .filter(
-                (event) =>
-                    !selectedCalendarId ||
-                    event.calendarId === selectedCalendarId,
-            )
             .sort((left, right) => left.startAt.localeCompare(right.startAt));
     }
 
@@ -153,7 +148,7 @@ export async function mount(root, { signal } = {}) {
         return calendarUi.collectUpcomingEvents(
             eventsByCalendar,
             calendars,
-            selectedCalendarId,
+            "",
             currentAccountId,
         );
     }
@@ -162,7 +157,7 @@ export async function mount(root, { signal } = {}) {
         return calendarUi.collectPendingEvents(
             eventsByCalendar,
             calendars,
-            selectedCalendarId,
+            "",
             currentAccountId,
             pendingInvitations,
         );
