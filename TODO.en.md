@@ -1,5 +1,19 @@
 # Ignored Automated Feedback
 
+## Code Review — compact navigation loading loop
+
+### dashboard-layout-menu.test.js compact-nav stability — add runtime observer test
+
+**Reviewer suggestion:** Replace the source-level compact-nav guard assertion with a runtime test that fires the observers repeatedly and verifies the navigation stays stable without looping.
+
+**Reason ignored:** The current UI test harness in this repository is source- and fixture-oriented for dashboard-layout.js and does not yet provide a lightweight DOM/runtime loader for exercising `applyCompactNav()` directly without a broader test-infrastructure change. I kept the targeted source regression assertions in this fix and deferred the heavier runtime harness work to a follow-up so the loading-loop correction itself could ship immediately.
+
+### messages/ui/app.js wrapComposerSelection JSDoc — expand selected vs cursor behavior
+
+**Reviewer suggestion:** Add a more detailed JSDoc description explaining how `wrapComposerSelection()` behaves when text is selected versus when the cursor is collapsed.
+
+**Reason ignored:** This feedback targets `src/adapters/social/messages/ui/`, which is outside the compact-navigation regression surface. Under the repository versioning rules, touching that adapter would require unrelated adapter-version and changelog updates for a documentation-only follow-up, so I left it unchanged in this fix.
+
 ## Code Review — PR #45 third-pass (2026-05-29)
 
 ### settings-section.js drag-drop handler — mutation before rerender
