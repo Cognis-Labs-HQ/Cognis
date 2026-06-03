@@ -477,8 +477,10 @@ function createCalendarCoreRoutes({
                 : null;
             let invitedEvent = null;
             if (!ownedCalendar) {
-                const ev = gateway.getEvent(calendarId, eventId);
-                invitedEvent = ev?.attendees.includes(claims.sub) ? ev : null;
+                const fetchedEvent = gateway.getEvent(calendarId, eventId);
+                invitedEvent = fetchedEvent?.attendees.includes(claims.sub)
+                    ? fetchedEvent
+                    : null;
             }
             const effectiveCalendar =
                 ownedCalendar ?? gateway.getCalendar(calendarId);

@@ -555,7 +555,7 @@ export async function mount(root, { signal } = {}) {
             <header class="calendar-toolbar-heading">
               <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
             </header>
-            <div id="calendar-toolbar-upcoming">${calendarUi.renderToolbarSummary(allUpcomingEvents(), [], i18n)}</div>
+            <div id="calendar-toolbar-upcoming">${calendarUi.renderToolbarSummary(allUpcomingEvents(), /* pendingEvents */ [], i18n)}</div>
           </section>
         `,
             },
@@ -624,7 +624,7 @@ export async function mount(root, { signal } = {}) {
             if (toolbarUpcoming) {
                 toolbarUpcoming.innerHTML = calendarUi.renderToolbarSummary(
                     allUpcomingEvents(),
-                    [],
+                    /* pendingEvents */ [],
                     i18n,
                 );
             }

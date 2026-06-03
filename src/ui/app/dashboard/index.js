@@ -76,14 +76,15 @@ async function loadUpcomingCalendarEvents() {
         const invitationEvents = invitationsResponse.ok
             ? ((await invitationsResponse.json())?.data ?? []).filter(Boolean)
             : [];
+        const now = Date.now();
         return [
             ...eventLists.flat(),
             ...invitationEvents.map((event) => ({
                 ...event,
-                calendarName: "",
+                calendarName: null,
             })),
         ]
-            .filter((event) => new Date(event.endAt).getTime() >= Date.now())
+            .filter((event) => new Date(event.endAt).getTime() >= now)
             .sort((left, right) => left.startAt.localeCompare(right.startAt))
             .slice(0, 5);
     } catch {
