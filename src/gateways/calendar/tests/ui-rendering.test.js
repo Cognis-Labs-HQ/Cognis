@@ -177,7 +177,7 @@ test("calendar year view day dots inherit calendar event colors", () => {
     );
 });
 
-test("calendar month and week mobile headers stay compact without table cell block stacking", () => {
+test("calendar mobile headers render compactly on narrow viewports", () => {
     assert.match(
         CSS_SOURCE,
         /@media \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,

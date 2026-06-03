@@ -33,6 +33,7 @@ const ISO_WEEK_THURSDAY_OFFSET = 4;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
 const TIMESLOT_EVENT_PREVIEW_LIMIT = 2;
 const MONTH_EVENT_PREVIEW_LIMIT = 3;
+const DAY_PALETTE_SEGMENT_OPACITY = 62;
 
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
@@ -124,10 +125,21 @@ function listEventsInWindow(events, startDate, endDate) {
     });
 }
 
+/**
+ * Collect up to `limit` unique calendar colors from the provided event list.
+ * The default of four colors keeps year-day gradients readable and bounded;
+ * additional unique colors beyond the limit are ignored.
+ *
+ * @param {Array<{ calendarColor?: string | null }>} events
+ * @param {number} [limit=4]
+ * @returns {string[]}
+ * @example
+ * collectDayPaletteColors([{ calendarColor: "#ff0000" }, { calendarColor: "#00ff00" }], 4);
+ */
 function collectDayPaletteColors(events, limit = 4) {
     const palette = [];
     for (const event of events) {
-        const normalizedColor = normalizeHexColor(event?.calendarColor);
+        const normalizedColor = normalizeHexColor(event.calendarColor);
         if (!normalizedColor || palette.includes(normalizedColor)) continue;
         palette.push(normalizedColor);
         if (palette.length >= limit) break;
@@ -135,13 +147,21 @@ function collectDayPaletteColors(events, limit = 4) {
     return palette;
 }
 
+/**
+ * Build a conic-gradient background string from a color palette.
+ *
+ * @param {string[]} palette
+ * @returns {string | null}
+ * @example
+ * buildDayPaletteGradient(["#ff0000", "#00ff00"]);
+ */
 function buildDayPaletteGradient(palette) {
     if (!palette.length) return null;
     const segmentSize = 100 / palette.length;
     const segments = palette.map((color, index) => {
         const start = index * segmentSize;
         const end = (index + 1) * segmentSize;
-        return `color-mix(in srgb, ${color} 62%, var(--surface, transparent)) ${start}% ${end}%`;
+        return `color-mix(in srgb, ${escapeHtml(color)} ${DAY_PALETTE_SEGMENT_OPACITY}%, var(--surface, transparent)) ${start}% ${end}%`;
     });
     return `conic-gradient(${segments.join(",")})`;
 }
