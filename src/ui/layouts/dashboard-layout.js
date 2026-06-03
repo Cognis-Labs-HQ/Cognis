@@ -423,70 +423,90 @@ function applyCompactNav(root) {
             );
     }
 
-    function clearOverflowVisibilityState(entries) {
+    const isManagedOverflowLink = (link) =>
+        link.dataset.mobileOverflowHidden === "true";
+
+    function syncOverflowVisibility(entries, overflowSet) {
         entries.forEach(({ link }) => {
-            if (link.dataset.mobileOverflowHidden !== "true") return;
+            const shouldHide = overflowSet.has(link);
+            const isManagedHidden = isManagedOverflowLink(link);
+            if (shouldHide) {
+                if (isManagedHidden && link.hidden) return;
+                link.hidden = true;
+                link.dataset.mobileOverflowHidden = "true";
+                return;
+            }
+            if (!isManagedHidden) return;
             link.hidden = false;
             delete link.dataset.mobileOverflowHidden;
         });
     }
 
     function syncDomOrder(entries) {
-        entries.forEach(({ link }) => {
-            if (link.parentElement === topnav) topnav.appendChild(link);
+        entries.forEach(({ link }, index) => {
+            if (link.parentElement !== topnav) return;
+            if (topnav.children[index] === link) return;
+            topnav.insertBefore(link, topnav.children[index] ?? null);
         });
     }
 
     function syncCompactState() {
         const entries = getNavEntries();
-        clearOverflowVisibilityState(entries);
         syncDomOrder(entries);
         overflowLinks = [];
-        compactToggle.hidden = true;
         compactToggle.setAttribute("aria-expanded", "false");
-        navrow.classList.remove("global-navrow--compact");
-        if (!mobileMedia.matches) return;
+        let hasOverflowMenu = false;
+        const overflowSet = new Set();
 
-        const candidateEntries = entries.filter(({ link }) => !link.hidden);
-        if (candidateEntries.length <= MOBILE_NAV_PINNED_LIMIT) return;
+        if (mobileMedia.matches) {
+            const candidateEntries = entries.filter(
+                ({ link }) => !link.hidden || isManagedOverflowLink(link),
+            );
+            if (candidateEntries.length > MOBILE_NAV_PINNED_LIMIT) {
+                const pinnedEntries = [];
+                const pinnedSet = new Set();
+                const addPinnedEntry = (entry) => {
+                    if (!entry || pinnedSet.has(entry.link)) return false;
+                    pinnedEntries.push(entry);
+                    pinnedSet.add(entry.link);
+                    return true;
+                };
 
-        const pinnedEntries = [];
-        const pinnedSet = new Set();
-        const addPinnedEntry = (entry) => {
-            if (!entry || pinnedSet.has(entry.link)) return false;
-            pinnedEntries.push(entry);
-            pinnedSet.add(entry.link);
-            return true;
-        };
+                addPinnedEntry(candidateEntries[0]);
+                candidateEntries
+                    .filter((entry) => entry.mobilePinned)
+                    .forEach((entry) => addPinnedEntry(entry));
+                addPinnedEntry(
+                    candidateEntries.find(({ link }) =>
+                        link.classList.contains("active"),
+                    ),
+                );
+                candidateEntries
+                    .slice()
+                    .sort(
+                        (left, right) =>
+                            left.mobilePriority - right.mobilePriority,
+                    )
+                    .forEach((entry) => {
+                        if (pinnedEntries.length >= MOBILE_NAV_PINNED_LIMIT) {
+                            return;
+                        }
+                        addPinnedEntry(entry);
+                    });
 
-        addPinnedEntry(candidateEntries[0]);
-        candidateEntries
-            .filter((entry) => entry.mobilePinned)
-            .forEach((entry) => addPinnedEntry(entry));
-        addPinnedEntry(
-            candidateEntries.find(({ link }) =>
-                link.classList.contains("active"),
-            ),
-        );
-        candidateEntries
-            .slice()
-            .sort((left, right) => left.mobilePriority - right.mobilePriority)
-            .forEach((entry) => {
-                if (pinnedEntries.length >= MOBILE_NAV_PINNED_LIMIT) return;
-                addPinnedEntry(entry);
-            });
+                overflowLinks = candidateEntries.filter(
+                    ({ link }) => !pinnedSet.has(link),
+                );
+                if (overflowLinks.length > 0) {
+                    hasOverflowMenu = true;
+                    overflowLinks.forEach(({ link }) => overflowSet.add(link));
+                }
+            }
+        }
 
-        overflowLinks = candidateEntries.filter(
-            ({ link }) => !pinnedSet.has(link),
-        );
-        if (overflowLinks.length === 0) return;
-
-        overflowLinks.forEach(({ link }) => {
-            link.hidden = true;
-            link.dataset.mobileOverflowHidden = "true";
-        });
-        compactToggle.hidden = false;
-        navrow.classList.add("global-navrow--compact");
+        syncOverflowVisibility(entries, overflowSet);
+        compactToggle.hidden = !hasOverflowMenu;
+        navrow.classList.toggle("global-navrow--compact", hasOverflowMenu);
     }
 
     compactToggle.addEventListener("click", async () => {

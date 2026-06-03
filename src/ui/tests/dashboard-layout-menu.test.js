@@ -183,6 +183,14 @@ test("dashboard compact navigation applies stable mobile pinning and ordered ove
         "compact navigation should keep the active link pinned on mobile",
     );
     assert.ok(
+        layoutSource.includes("!link.hidden || isManagedOverflowLink(link)"),
+        "compact navigation should reevaluate overflow-managed links without unhiding and rehiding them on every sync",
+    );
+    assert.ok(
+        layoutSource.includes("if (topnav.children[index] === link) return;"),
+        "compact navigation should avoid redundant DOM reordering that can retrigger observers",
+    );
+    assert.ok(
         layoutSource.includes("openHamburgerMenu(compactToggle"),
         "overflow navigation should open from the compact toggle button",
     );
