@@ -390,7 +390,7 @@
     text-align: center;
 }
 
-.calendar-year-day-dot {
+.calendar-view-canvas .calendar-year-day-dot {
     border: 1px solid var(--field-border);
     border-radius: 999px;
     width: 100%;
@@ -413,7 +413,7 @@
     justify-content: center;
 }
 
-.calendar-year-day-dot--active {
+.calendar-view-canvas .calendar-year-day-dot--active {
     background: var(
         --calendar-day-background,
         color-mix(
@@ -429,7 +429,7 @@
     );
 }
 
-.calendar-year-day-dot--outside {
+.calendar-view-canvas .calendar-year-day-dot--outside {
     opacity: 0.55;
 }
 

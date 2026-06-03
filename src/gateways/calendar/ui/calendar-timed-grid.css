@@ -19,7 +19,7 @@
 .calendar-timeslot-grid,
 .calendar-timed-event-layer,
 .calendar-timed-event-card,
-.calendar-slot-event {
+.calendar-view-canvas .calendar-slot-event {
     min-width: 0;
 }
 

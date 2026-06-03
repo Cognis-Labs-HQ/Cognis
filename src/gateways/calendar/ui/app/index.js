@@ -534,7 +534,6 @@ export async function mount(root, { signal } = {}) {
             {
                 id: "upcoming-events",
                 label: i18n.t("gateway.calendar.upcoming_events"),
-                defaultHidden: true,
                 gridSize: { default: [12, 4], min: [6, 4], max: "full" },
                 render: () => `
           <section class="calendar-section">

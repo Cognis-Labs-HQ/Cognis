@@ -122,6 +122,10 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
+        /\.calendar-view-canvas\s+\.calendar-slot-event\s*\{[\s\S]*background:\s*color-mix\(/s,
+    );
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
         /\.calendar-slot-event-title\s*\{[\s\S]*position:\s*sticky;/s,
     );
     assert.match(
@@ -150,6 +154,14 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
 });
 
+test("calendar default layout keeps upcoming events visible", () => {
+    assert.match(APP_SOURCE, /id:\s*"upcoming-events"/);
+    assert.doesNotMatch(
+        APP_SOURCE,
+        /id:\s*"upcoming-events"[\s\S]*defaultHidden:\s*true/,
+    );
+});
+
 test("calendar composer supports multiple reminders and remembers selected view", () => {
     assert.match(POPUP_REMINDERS_SOURCE, /REMINDER_OFFSET_OPTIONS/);
     assert.match(
@@ -167,6 +179,10 @@ test("calendar year view day dots inherit calendar event colors", () => {
     assert.match(HELPERS_SOURCE, /collectDayPaletteColors/);
     assert.match(HELPERS_SOURCE, /--calendar-day-background:/);
     assert.match(HELPERS_SOURCE, /conic-gradient/);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-view-canvas\s+\.calendar-year-day-dot\s*\{[\s\S]*background:\s*var\(\s*--calendar-day-background,/s,
+    );
     assert.match(
         CSS_SOURCE,
         /var\(--calendar-day-color,\s*var\(--btn-confirm-bg,\s*#1f8ceb\)\)/,
