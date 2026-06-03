@@ -33,6 +33,11 @@ export type CalendarLogger = (
     meta?: Record<string, unknown>,
 ) => void;
 
+export type EventLocationRef = {
+    calendarId: string;
+    eventId: string;
+};
+
 export function normalizeVisibility(value: unknown): CalendarVisibility {
     return value === "public" ? "public" : "private";
 }

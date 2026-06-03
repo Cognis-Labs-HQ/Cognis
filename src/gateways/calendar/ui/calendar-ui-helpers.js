@@ -6,6 +6,17 @@ import {
     renderTimeAxisRows,
     renderTimedEventLayer,
 } from "./calendar-timed-grid.js";
+import {
+    fetchCalendarState,
+    fetchEvents,
+    fetchInvitations,
+    fetchEvent,
+    updateEvent,
+    deleteEvent,
+    respondToEvent,
+    probeJitsiAvailability,
+    createJitsiMeeting,
+} from "./calendar-api.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
@@ -193,18 +204,6 @@ function collectPendingEvents(
     );
 }
 
-import {
-    fetchCalendarState,
-    fetchEvents,
-    fetchInvitations,
-    fetchEvent,
-    updateEvent,
-    deleteEvent,
-    respondToEvent,
-    probeJitsiAvailability,
-    createJitsiMeeting,
-} from "./calendar-api.js";
-
 function visibilityIcon(visibility) {
     return visibility === "public" ? "🌐" : "🔒";
 }
@@ -317,9 +316,9 @@ function renderEventButton(
 }
 
 const PENDING_ACTION_ICONS = {
-    accepted: "&#10003;",
+    accepted: "✓",
     tentative: "?",
-    declined: "&#10007;",
+    declined: "✗",
 };
 
 function renderPendingEvents(events, i18n) {

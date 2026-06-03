@@ -202,6 +202,9 @@
 }
 
 .calendar-slot-event-card {
+    /* display:contents removes this wrapper from the box tree so it does not
+       affect layout, while still providing a scoping element for the
+       --calendar-event-stripe CSS variable inherited by the child button. */
     display: contents;
 }
 

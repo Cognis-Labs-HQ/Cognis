@@ -111,7 +111,8 @@ export async function mount(root, { signal } = {}) {
         );
         try {
             pendingInvitations = await calendarUi.fetchInvitations();
-        } catch {
+        } catch (err) {
+            console.warn("Failed to load pending invitations:", err);
             pendingInvitations = [];
         }
     }

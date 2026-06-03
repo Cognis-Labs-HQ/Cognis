@@ -8,6 +8,7 @@ import {
     sendCalendarError,
     sendJson,
     type CalendarLogger,
+    type EventLocationRef,
     type NotificationDispatcher,
 } from "./helpers.js";
 
@@ -30,16 +31,11 @@ export async function handleCalendarResponseRoute(input: {
         ? input.gateway.getEvent(input.calendarId, input.eventId)
         : null;
     // Also allow responding when the user is an attendee on a non-owned event
-    const invitedEvent =
-        !ownedCalendar
-            ? (() => {
-                  const ev = input.gateway.getEvent(
-                      input.calendarId,
-                      input.eventId,
-                  );
-                  return ev?.attendees.includes(input.claims.sub) ? ev : null;
-              })()
-            : null;
+    let invitedEvent = null;
+    if (!ownedCalendar) {
+        const ev = input.gateway.getEvent(input.calendarId, input.eventId);
+        invitedEvent = ev?.attendees.includes(input.claims.sub) ? ev : null;
+    }
     const effectiveEvent = event ?? invitedEvent;
     if (!effectiveEvent) {
         sendCalendarError(input.res, "not_found", "Event not found.", 404);
@@ -83,7 +79,7 @@ export async function handleCalendarResponseRoute(input: {
             response,
             respondAll,
         });
-        let movedTo: { calendarId: string; eventId: string } | null = null;
+        let movedTo: EventLocationRef | null = null;
         if (
             (response === "accepted" || response === "tentative") &&
             targetCalendarId
