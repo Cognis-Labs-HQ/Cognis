@@ -10,7 +10,14 @@ import {
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
-import { makeInMemoryDb } from "./auth-gateway-test-helpers.js";
+import {
+    makeInMemoryDb,
+    type InMemoryDb,
+} from "./auth-gateway-test-helpers.js";
+
+function createDbExecutor(): InMemoryDb {
+    return makeInMemoryDb();
+}
 
 test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -18,12 +25,7 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const capabilities = new CapabilityStore();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -42,12 +44,7 @@ test("auth gateway contributes auth:accountStore capability", async () => {
     const capabilities = new CapabilityStore();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -66,12 +63,7 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     const capabilities = new CapabilityStore();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -122,12 +114,7 @@ test("auth bootstrap hook directory contributes route-level TFA login capabiliti
     const capabilities = new CapabilityStore();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -163,12 +150,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     const uiRegistry = new UIRegistry();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -195,12 +177,7 @@ test("auth gateway bootstrap registers security section without redundant authen
     const uiRegistry = new UIRegistry();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -348,12 +325,7 @@ test("auth bootstrap contributes page script origin registration capability", as
     const capabilities = new CapabilityStore();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
