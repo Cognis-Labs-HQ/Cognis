@@ -54,29 +54,6 @@ function collectMissingIndexViolations({
     return violations;
 }
 
-// Legacy over-limit files kept as a temporary allowlist while they are
-// incrementally split into directory-based entrypoints. The list must only
-// shrink over time; do not add entries unless an explicit migration plan exists.
-// Target milestone: clear this allowlist before the first v0.2.0 release.
-// New oversized files are forbidden.
-const LEGACY_LARGE_FILES = new Set([
-    "src/adapters/social/messages/routes.ts",
-    "src/adapters/social/messages/store.ts",
-    "src/adapters/social/messages/ui/app.js",
-    "src/adapters/social/profile/ui/app.js",
-    "src/adapters/social/profile/ui/profile.css",
-    "src/adapters/study/classes/store.ts",
-    "src/api/tests/ui/ui-routes.test.ts",
-    "src/gateways/auth/bootstrap.ts",
-    "src/gateways/auth/tests/auth-gateway.test.ts",
-    "src/gateways/notify/bootstrap.ts",
-    "src/modules/jitsi-meet/ui/app.js",
-    "src/tooling/cli/index.ts",
-    "src/ui/app/administration/index.js",
-    "src/ui/reuse/page-composer/init.js",
-    "src/ui/styles/page-builder.css",
-]);
-
 const SOURCE_EXTENSIONS = new Set([".js", ".ts", ".css", ".html"]);
 
 const LEGACY_FLAT_UI_APP_ENTRIES = new Set([
@@ -105,7 +82,6 @@ test("source files stay under the 1000-line guardrail", () => {
         const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
         if (lineCount <= 1000) continue;
-        if (LEGACY_LARGE_FILES.has(repoPath)) continue;
         hits.push(`${repoPath} (${lineCount} lines)`);
     }
 
@@ -123,7 +99,6 @@ test("anti-monolith guardrail warns above 1250 LOC and fails above 1750 LOC", ()
     for (const filePath of walk(resolve(ROOT, "src"))) {
         if (!hasSourceExtension(filePath)) continue;
         const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
-        if (LEGACY_LARGE_FILES.has(repoPath)) continue;
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
         if (lineCount > 1250) {
             warningHits.push(`${repoPath} (${lineCount} lines)`);
