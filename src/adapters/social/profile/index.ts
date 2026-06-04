@@ -230,7 +230,6 @@ export async function bootstrapSocialAdapter(
             ctx.log,
             onMessagesProfileChanged ?? undefined,
             routeContext,
-            ctx.flow,
         ),
         "social",
     );

@@ -40,7 +40,6 @@ const BANNER_ALLOWED_MIME = new Set([
 ]);
 
 type SocialAdapterLog = NonNullable<SocialAdapterBootstrapCtx["log"]>;
-type SocialAdapterFlowApi = SocialAdapterBootstrapCtx["flow"];
 
 function profileResponse(
     profile: AccountProfile,
@@ -149,10 +148,9 @@ export function createProfileRoutes(
         avatarChanged?: boolean;
     }) => Promise<void>,
     routeContext?: RouteContext,
-    flow?: SocialAdapterFlowApi,
 ) {
     const ctx = resolveRouteContext(routeContext);
-    const flowApi = flow ?? ctx.flow;
+    const flowApi = ctx.flow;
     return async (
         req: IncomingMessage,
         res: ServerResponse,

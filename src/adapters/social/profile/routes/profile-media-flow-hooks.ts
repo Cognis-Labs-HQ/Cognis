@@ -14,9 +14,7 @@ export type ProfileMediaMutationResult = {
 
 type SocialAdapterLog = NonNullable<SocialAdapterBootstrapCtx["log"]>;
 type SocialAdapterFlowApi = SocialAdapterBootstrapCtx["flow"];
-type FlowRunSnapshot = {
-    stageResults: Record<string, unknown>;
-};
+type FlowRunSnapshot = Awaited<ReturnType<SocialAdapterFlowApi["run"]>>;
 
 export async function replaceProfileMedia(
     profileStore: ProfileStore,
