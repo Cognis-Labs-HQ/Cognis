@@ -105,3 +105,17 @@
 **Reviewer suggestion:** Avoid jumping the LDAP adapter manifest version from `0.1.1` to `0.1.4`, or document the missing intermediate `0.1.2` / `0.1.3` manifest bumps.
 
 **Reason ignored:** The repository was already in an inconsistent state: `src/adapters/auth/ldap/package.json` and the version documents were at `0.1.3`, while `src/adapters/auth/ldap/manifest.json` still lagged at `0.1.1`. This change fixes the inconsistency by bringing the manifest up to the new synchronized version `0.1.4`, but it cannot reconstruct undocumented historical manifest edits inside the same PR.
+
+## Code Review — profile media ctx flows
+
+### routes/index.ts fallback upload path — remove direct onProfileChanged invocation
+
+**Reviewer suggestion:** Remove the direct `onProfileChanged` invocation in the fallback upload path because flow `emit-events` hooks already handle profile-change event fan-out.
+
+**Reason ignored:** False positive. The direct callback runs only in the explicit no-flow fallback branch used when `upload-profile-media` is unavailable; when the flow exists, event fan-out is handled exclusively by the flow hook and this fallback branch is not executed. Removing the fallback callback would silently drop avatar-change event emission in no-flow contexts (including isolated adapter tests), changing existing behavior.
+
+### profile-media-flow-hooks.ts getFirstStageResult helper — promote to shared reuse module
+
+**Reviewer suggestion:** Move `getFirstStageResult` into a shared reuse flow utility module.
+
+**Reason ignored:** This helper has exactly one callsite in one adapter flow file today. Promoting it to a shared module now would create a cross-component abstraction with no active reuse and increase indirection for no practical benefit. If another component needs the same helper, we will then promote it into a reuse module with multiple consumers.
