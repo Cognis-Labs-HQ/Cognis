@@ -52,6 +52,18 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
         ),
         ["resolve-sections", "augment-sections", "compose-page"],
     );
+    assert.deepEqual(
+        getCanonicalFlowContract("upload-profile-media")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["validate-upload", "persist-media", "emit-events"],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("remove-profile-media")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["validate-removal", "persist-removal", "emit-events"],
+    );
 });
 
 test("registerCanonicalFlow derives ctx registrations from the catalog", () => {

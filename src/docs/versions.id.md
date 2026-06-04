@@ -22,7 +22,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Undangan Registrasi    | `src/adapters/registration/invite/` | `0.1.1` |
 | Token Registrasi       | `src/adapters/registration/token/`  | `0.1.1` |
 | Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0` |
-| Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.6` |
+| Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.7` |
 | Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.4` |
 
 ## Gateway
@@ -32,7 +32,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Database (db)            | `src/gateways/db/`           | `1.1.2` |
 | Autentikasi (auth)       | `src/gateways/auth/`         | `1.4.9` |
 | Notifikasi (notify)      | `src/gateways/notify/`       | `1.1.1` |
-| Sosial                   | `src/gateways/social/`       | `1.2.0` |
+| Sosial                   | `src/gateways/social/`       | `1.2.6` |
 | Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |
 | Registrasi               | `src/gateways/registration/` | `1.1.2` |
 | Logging                  | `src/gateways/logging/`      | `1.4.0` |

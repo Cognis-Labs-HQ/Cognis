@@ -13,6 +13,7 @@ import { CoreSocialGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import {
     MESSAGING_FLOW_CATALOG,
+    PROFILE_MEDIA_FLOW_CATALOG,
     CTX_CAPABILITY,
     registerCanonicalFlow,
 } from "@cognis/core";
@@ -230,7 +231,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.5",
+        version: "1.2.6",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
@@ -252,6 +253,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY)!;
     for (const flow of MESSAGING_FLOW_CATALOG) {
+        registerCanonicalFlow(systemCtx, flow);
+    }
+    for (const flow of PROFILE_MEDIA_FLOW_CATALOG) {
         registerCanonicalFlow(systemCtx, flow);
     }
 
@@ -326,6 +330,42 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 []) as Array<{ messageId?: string; persisted?: boolean }>;
             const messageId = persistResults[0]?.messageId;
             return { fanOut: Boolean(messageId), messageId };
+        },
+    );
+
+    ctx.flow.extend(
+        "upload-profile-media",
+        "validate-upload",
+        { id: "social-gateway:validate-profile-media-upload" },
+        (stageCtx) => {
+            const input = stageCtx.input as Record<string, unknown>;
+            const mediaField = String(input.mediaField ?? "");
+            if (mediaField !== "avatarKey" && mediaField !== "bannerKey") {
+                return { valid: false, reason: "invalid_media_field" };
+            }
+            const accountId = String(input.accountId ?? "");
+            if (!accountId) {
+                return { valid: false, reason: "missing_account_id" };
+            }
+            return { valid: true, mediaField, accountId };
+        },
+    );
+
+    ctx.flow.extend(
+        "remove-profile-media",
+        "validate-removal",
+        { id: "social-gateway:validate-profile-media-removal" },
+        (stageCtx) => {
+            const input = stageCtx.input as Record<string, unknown>;
+            const mediaField = String(input.mediaField ?? "");
+            if (mediaField !== "avatarKey" && mediaField !== "bannerKey") {
+                return { valid: false, reason: "invalid_media_field" };
+            }
+            const accountId = String(input.accountId ?? "");
+            if (!accountId) {
+                return { valid: false, reason: "missing_account_id" };
+            }
+            return { valid: true, mediaField, accountId };
         },
     );
 }

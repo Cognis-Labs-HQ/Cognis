@@ -4,7 +4,10 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { DbProfileStore } from "./store.js";
 import { DbUserPreferenceStore } from "./preference-store.js";
-import { createProfileRoutes } from "./routes/index.js";
+import {
+    createProfileRoutes,
+    registerProfileMediaFlowHooks,
+} from "./routes/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileRoutes } from "./routes/files.js";
@@ -211,6 +214,16 @@ export async function bootstrapSocialAdapter(
         }) => Promise<void>
     >("social:messages:onProfileChanged");
 
+    if (fileGateway) {
+        registerProfileMediaFlowHooks({
+            flow: ctx.flow,
+            profileStore,
+            fileGateway,
+            log: ctx.log as never,
+            onProfileChanged: onMessagesProfileChanged ?? undefined,
+        });
+    }
+
     ctx.registerRoute(
         createProfileRoutes(
             profileStore,
@@ -219,6 +232,7 @@ export async function bootstrapSocialAdapter(
             ctx.log as never,
             onMessagesProfileChanged ?? undefined,
             routeContext,
+            ctx.flow,
         ),
         "social",
     );

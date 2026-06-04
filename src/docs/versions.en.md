@@ -41,7 +41,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.6` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.7` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.5` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.3` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
@@ -54,7 +54,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.8` |
-| Social                | `src/gateways/social/`       | `1.2.5` |
+| Social                | `src/gateways/social/`       | `1.2.6` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.9` |
 | Logging               | `src/gateways/logging/`      | `1.5.1` |
@@ -65,7 +65,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.1.2` |
+| Core Package | `src/core/` | `0.1.3` |
 
 ## API
 

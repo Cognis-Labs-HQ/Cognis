@@ -22,7 +22,7 @@
 | 登録招待                   | `src/adapters/registration/invite/` | `0.1.1`    |
 | 登録トークン               | `src/adapters/registration/token/`  | `0.1.1`    |
 | 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
-| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.6`    |
+| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.7`    |
 | メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
 
 ## ゲートウェイ
@@ -32,7 +32,7 @@
 | データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
 | 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
-| ソーシャル                 | `src/gateways/social/`       | `1.2.0`    |
+| ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
 | 登録                       | `src/gateways/registration/` | `1.1.2`    |
 | ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
