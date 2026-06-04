@@ -293,13 +293,29 @@ export function createSessionRoutes({
         return true;
     }
 
+    interface LoginFlowSessionResult {
+        outcome: string;
+        accountId?: string;
+        displayName?: string;
+        provider?: string;
+        providerId?: string;
+        role?: string;
+        isFounder?: boolean;
+        token?: string;
+        ttlSeconds?: number;
+        loginAttemptId?: string;
+        methods?: unknown[];
+        userValidationMode?: string;
+        requiredUserValidation?: unknown;
+    }
+
     function dispatchLoginFlowResult(
         req: import("node:http").IncomingMessage,
         res: import("node:http").ServerResponse,
-        sessionResult: Record<string, unknown>,
+        sessionResult: LoginFlowSessionResult,
         logMeta: AuthRouteLogMeta,
     ): true {
-        const outcome = sessionResult["outcome"] as string | undefined;
+        const outcome = sessionResult.outcome;
         if (outcome === "provider_unavailable") {
             log?.("warn", "Login failed: provider unavailable (flow).", {
                 ...logMeta,
@@ -351,42 +367,42 @@ export function createSessionRoutes({
         if (outcome === "tfa_required") {
             log?.("info", "Login entered TFA challenge flow (flow).", {
                 ...logMeta,
-                accountId: sessionResult["accountId"],
-                provider: sessionResult["provider"],
-                role: sessionResult["role"],
+                accountId: sessionResult.accountId,
+                provider: sessionResult.provider,
+                role: sessionResult.role,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
                         tfaRequired: true,
-                        loginAttemptId: sessionResult["loginAttemptId"],
-                        methods: sessionResult["methods"],
-                        accountId: sessionResult["accountId"],
-                        displayName: sessionResult["displayName"],
-                        provider: sessionResult["provider"],
-                        providerId: sessionResult["providerId"],
-                        role: sessionResult["role"],
-                        isFounder: sessionResult["isFounder"],
-                        userValidationMode: sessionResult["userValidationMode"],
+                        loginAttemptId: sessionResult.loginAttemptId,
+                        methods: sessionResult.methods,
+                        accountId: sessionResult.accountId,
+                        displayName: sessionResult.displayName,
+                        provider: sessionResult.provider,
+                        providerId: sessionResult.providerId,
+                        role: sessionResult.role,
+                        isFounder: sessionResult.isFounder,
+                        userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
-                            sessionResult["requiredUserValidation"],
+                            sessionResult.requiredUserValidation,
                     },
                 }),
             );
             return true;
         }
         if (outcome === "tfa_setup_required") {
-            const token = sessionResult["token"] as string;
-            const ttlSeconds = sessionResult["ttlSeconds"] as number;
+            const token = sessionResult.token ?? "";
+            const ttlSeconds = sessionResult.ttlSeconds ?? 0;
             log?.(
                 "info",
                 "Login succeeded with pending TFA setup gate (flow).",
                 {
                     ...logMeta,
-                    accountId: sessionResult["accountId"],
-                    provider: sessionResult["provider"],
-                    role: sessionResult["role"],
+                    accountId: sessionResult.accountId,
+                    provider: sessionResult.provider,
+                    role: sessionResult.role,
                 },
             );
             res.writeHead(200, {
@@ -400,16 +416,16 @@ export function createSessionRoutes({
             res.end(
                 JSON.stringify({
                     data: {
-                        accountId: sessionResult["accountId"],
-                        displayName: sessionResult["displayName"],
-                        provider: sessionResult["provider"],
-                        providerId: sessionResult["providerId"],
-                        role: sessionResult["role"],
-                        isFounder: sessionResult["isFounder"],
+                        accountId: sessionResult.accountId,
+                        displayName: sessionResult.displayName,
+                        provider: sessionResult.provider,
+                        providerId: sessionResult.providerId,
+                        role: sessionResult.role,
+                        isFounder: sessionResult.isFounder,
                         token,
-                        userValidationMode: sessionResult["userValidationMode"],
+                        userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
-                            sessionResult["requiredUserValidation"],
+                            sessionResult.requiredUserValidation,
                         tfaSetupRequired: true,
                     },
                 }),
@@ -417,14 +433,14 @@ export function createSessionRoutes({
             return true;
         }
         if (outcome === "success") {
-            const token = sessionResult["token"] as string;
-            const ttlSeconds = sessionResult["ttlSeconds"] as number;
+            const token = sessionResult.token ?? "";
+            const ttlSeconds = sessionResult.ttlSeconds ?? 0;
             log?.("info", "Login succeeded (flow).", {
                 ...logMeta,
-                accountId: sessionResult["accountId"],
-                provider: sessionResult["provider"],
-                role: sessionResult["role"],
-                requiresUserValidation: sessionResult["requiredUserValidation"],
+                accountId: sessionResult.accountId,
+                provider: sessionResult.provider,
+                role: sessionResult.role,
+                requiresUserValidation: sessionResult.requiredUserValidation,
             });
             res.writeHead(200, {
                 "content-type": "application/json",
@@ -437,16 +453,16 @@ export function createSessionRoutes({
             res.end(
                 JSON.stringify({
                     data: {
-                        accountId: sessionResult["accountId"],
-                        displayName: sessionResult["displayName"],
-                        provider: sessionResult["provider"],
-                        providerId: sessionResult["providerId"],
-                        role: sessionResult["role"],
-                        isFounder: sessionResult["isFounder"],
+                        accountId: sessionResult.accountId,
+                        displayName: sessionResult.displayName,
+                        provider: sessionResult.provider,
+                        providerId: sessionResult.providerId,
+                        role: sessionResult.role,
+                        isFounder: sessionResult.isFounder,
                         token,
-                        userValidationMode: sessionResult["userValidationMode"],
+                        userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
-                            sessionResult["requiredUserValidation"],
+                            sessionResult.requiredUserValidation,
                     },
                 }),
             );
@@ -494,6 +510,7 @@ export function createSessionRoutes({
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
+
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
 
@@ -504,7 +521,7 @@ export function createSessionRoutes({
                     credentials,
                 });
                 const sessionResult = result.data["sessionResult"] as
-                    | Record<string, unknown>
+                    | LoginFlowSessionResult
                     | undefined;
                 if (sessionResult) {
                     return dispatchLoginFlowResult(

@@ -356,7 +356,7 @@ export function createUserRoutes(
                     );
                     return true;
                 }
-                log?.("warn", "Created user account (flow).", {
+                log?.("info", "Created user account (flow).", {
                     ...logMeta,
                     accountId: adminClaims.sub,
                     targetAccountId:
@@ -373,7 +373,7 @@ export function createUserRoutes(
                 String(body.password ?? "changeme"),
                 role === "admin",
             );
-            log?.("warn", "Created user account.", {
+            log?.("info", "Created user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: created.username,
@@ -486,13 +486,13 @@ export function createUserRoutes(
                 );
                 return true;
             }
-            const targetInfo = await getTargetInfo();
-            const targetRole = resolveEffectiveRole(
-                targetInfo?.role,
-                Boolean(targetInfo?.isFounder),
-            );
             const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
             if (flowCtx?.hasFlow("deprovision-user")) {
+                const targetInfo = await getTargetInfo();
+                const targetRole = resolveEffectiveRole(
+                    targetInfo?.role,
+                    Boolean(targetInfo?.isFounder),
+                );
                 await flowCtx.runFlow("deprovision-user", {
                     username,
                     action: "disable" as const,

@@ -231,6 +231,16 @@ function sendRedirect(res: ServerResponse, location: string): true {
     return true;
 }
 
+function isSettingsSectionVisible(
+    section: { isEnabled?: () => boolean; access?: never },
+    role: string,
+): boolean {
+    return (
+        (!section.isEnabled || section.isEnabled()) &&
+        isRoleAllowed(role, section.access)
+    );
+}
+
 export function createUiRoutes(
     runtime?: ModuleRuntimeGateway,
     uiRegistry?: UIRegistry,
@@ -765,22 +775,18 @@ export function createUiRoutes(
                 const flowSections = result.data["sections"] as
                     | unknown[]
                     | undefined;
-                sections = (flowSections ?? []).filter((section) => {
-                    const sectionRecord = section as Record<string, unknown>;
-                    return (
-                        (!sectionRecord["isEnabled"] ||
-                            (sectionRecord["isEnabled"] as () => boolean)()) &&
-                        isRoleAllowed(
-                            claims.role,
-                            sectionRecord["access"] as never,
-                        )
-                    );
-                });
+                sections = (flowSections ?? []).filter((section) =>
+                    isSettingsSectionVisible(
+                        section as {
+                            isEnabled?: () => boolean;
+                            access?: never;
+                        },
+                        claims.role,
+                    ),
+                );
             } else {
                 sections = (uiRegistry?.listSettingsSections() ?? []).filter(
-                    (section) =>
-                        (!section.isEnabled || section.isEnabled()) &&
-                        isRoleAllowed(claims.role, section.access),
+                    (section) => isSettingsSectionVisible(section, claims.role),
                 );
             }
             res.writeHead(200, { "content-type": "application/json" });

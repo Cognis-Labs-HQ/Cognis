@@ -374,8 +374,11 @@ export async function registerAuthBootstrapHook(
                 };
             }
             const username = String(input.username ?? "");
-            const password = String(input.password ?? "changeme");
+            const password = String(input.password ?? "");
             const role = validateResult.role ?? "user";
+            if (!password) {
+                return { persisted: false, reason: "missing_password" };
+            }
             if (!context.accountStore.register) {
                 return { persisted: false, reason: "register_unavailable" };
             }
