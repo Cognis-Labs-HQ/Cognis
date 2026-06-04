@@ -39,6 +39,18 @@ For runtime modules specifically, treat `ctx` as the full system bus: module boo
 - Use `ctx` to detect whether another component is present; do not hardcode adapter-to-adapter imports for availability checks.
 - When a subsystem exposes multiple provider tracks or outputs, model that selection through capabilities and ctx-backed contracts rather than hardcoded branches.
 
+### Flows and staged injection are mandatory for orchestration
+
+Treat all meaningful operations as named `ctx` flows with explicit stages. A flow can represent backend operations (create user, login, change password, send message, create meeting) and UI construction operations (construct login page, construct settings page).
+
+- Register every orchestration pipeline as a flow with ordered stage IDs.
+- Components must extend behavior by injecting stage hooks into flows, not by editing unrelated internals.
+- Flow hooks must be removable so disabling a component cleanly unhooks its behavior.
+- Flows may call other flows through `ctx` to compose behavior (for example login page flow calling login flow, login flow calling LDAP flow).
+- Provider-specific choices (like LDAP availability) must be expressed as flow hook participation and capability checks, not hardcoded route/UI branches.
+
+When introducing new behavior, first decide which flow owns it, then decide which stage receives the hook. Direct cross-component imports are still forbidden even for core-owned orchestration logic.
+
 ### Each gateway is the sole authority for its adapter type
 
 A gateway is the only component that may interact directly with its adapters. No route handler, service, or utility outside a gateway may hold a reference to a concrete adapter instance or call its methods directly. All capabilities of an adapter must be obtained by calling methods on the owning gateway. Passing a raw adapter instance around (e.g. `smtpSender`, a raw DB driver, a concrete auth client) anywhere outside the gateway violates this principle and must never be introduced.

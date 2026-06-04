@@ -2,17 +2,18 @@
 
 ## Overview
 
-`src/core/` is the foundation layer of Cognis. It contains provider-agnostic contracts, interfaces, and policy services that the rest of the platform depends on. Core defines what capabilities exist and what rules govern them — it never contains any concrete implementation of those capabilities.
+`src/core/` is the foundation layer of Cognis. It contains provider-agnostic contracts, interfaces, policy services, and the ctx flow bus that the rest of the platform depends on. Core defines what capabilities exist and what rules govern them — it never contains provider-specific implementation.
 
 The critical rule is that core never imports from gateway or adapter code. The dependency arrow always points inward: gateways import from core; core does not know gateways exist. This invariant keeps core stable and testable in isolation, and it ensures that swapping a gateway or adapter cannot break the contract layer.
 
-Core currently exposes two services and four capability namespaces. These are intentionally minimal — the design philosophy is that domain logic lives in gateways, not core. Core concerns itself with lifecycle (modules), health reporting, and defining the shared interfaces that gateways implement.
+Core currently exposes service primitives plus the ctx capability/flow bus. The design philosophy remains minimal: domain behavior lives in gateways/adapters/modules, while core provides orchestration contracts and shared lifecycle primitives.
 
 ## Responsibilities
 
 - Define the `DatabaseGateway`, `FileStorageGateway`, `AuthAccountStore`, `AuthContext`, and other cross-cutting interfaces consumed by gateways.
 - Provide `ModuleService` for module lifecycle management (discovery, enable, disable, pointer writing, route safety enforcement).
 - Provide `HealthService` for platform health and uptime metadata.
+- Provide `createCtx` as the cross-component capability bus and staged flow orchestrator.
 - Define the `ModuleManifest` contract that all modules must satisfy.
 - Expose the capability namespaces `system:health`, `auth:accounts`, `modules:lifecycle`, and `ui:shell`.
 
@@ -29,6 +30,7 @@ Not responsible for: implementing authentication, storing data, sending notifica
 | `src/core/services/module-service.ts`   | `ModuleService` class                                            |
 | `src/core/services/health-service.ts`   | `HealthService` class                                            |
 | `src/core/services/gateway-service.ts`  | Gateway registry service                                         |
+| `src/core/ctx/`                         | Ctx capability bus and staged flow orchestration primitives      |
 | `src/core/index.ts`                     | Public exports for the `@cognis/core` package                    |
 
 ### ModuleService
@@ -101,3 +103,14 @@ export interface AuthAccountStore {
 | `auth:accounts`     | Auth gateway         | Built-in account lifecycle and authentication policy wiring        |
 | `modules:lifecycle` | Module routes        | Module listing, enable/disable controls, and policy checks         |
 | `ui:shell`          | UI routes            | Shared application shell routing and admin operations surface      |
+
+### Ctx flow bus
+
+`src/core/ctx/` defines a composable `createCtx()` surface that supports:
+
+- capability contribution and lookup (`contributeCapability`, `getCapability`, `requireCapability`)
+- flow lifecycle registration (`registerFlow`, `unregisterFlow`, `hasFlow`, `listFlows`)
+- staged hook injection (`addFlowStageHook`, `removeFlowStageHook`)
+- deterministic flow execution (`runFlow`)
+
+Flows are ordered stage pipelines that components can extend without direct imports between owners. A single flow can orchestrate backend behavior (e.g. login, password change) and UI construction behavior (e.g. construct login page, construct settings page), while optional adapters/modules hook into stages only when enabled.
