@@ -42,11 +42,20 @@ export interface AuthAccountStore {
         role?: string;
     } | null>;
     setFounder(username: string, isFounder: boolean): Promise<void>;
+    /**
+     * Registers a new account. Optional — only implemented by stores that
+     * support local account creation (e.g. local/LDAP adapters). Absent on
+     * read-only or SSO-only stores. Returns the created account record.
+     */
     register?(
         username: string,
         password: string,
         isAdmin: boolean,
     ): Promise<{ username: string; role?: string }>;
+    /**
+     * Enables or disables an account. Optional — only available on stores that
+     * support toggling account status. Absent on read-only stores.
+     */
     setEnabled?(username: string, enabled: boolean): Promise<void>;
 }
 

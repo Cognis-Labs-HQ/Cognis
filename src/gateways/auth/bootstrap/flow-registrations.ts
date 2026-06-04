@@ -374,7 +374,7 @@ export async function registerAuthBootstrapHook(
                 };
             }
             const username = String(input.username ?? "");
-            const password = String(input.password ?? "");
+            const password = String(input.password ?? "").trim();
             const role = validateResult.role ?? "user";
             if (!password.trim()) {
                 return { persisted: false, reason: "missing_password" };

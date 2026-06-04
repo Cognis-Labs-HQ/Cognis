@@ -8,7 +8,7 @@ import {
     type ModuleRuntimeGateway,
     type GatewayRegistry,
 } from "@cognis/core";
-import type { UIRegistry, SettingsSection } from "../../reuse/ui-registry.js";
+import type { UIRegistry } from "../../reuse/ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import {
     resolveRouteContext,
@@ -17,6 +17,7 @@ import {
 import {
     parseModuleUiRoutes,
     type ModuleUiRouteRule,
+    type SettingsSectionVisibilityCheck,
 } from "./ui-route-rules.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
@@ -232,7 +233,7 @@ function sendRedirect(res: ServerResponse, location: string): true {
 }
 
 function isSettingsSectionVisible(
-    section: { isEnabled?: () => boolean; access?: SettingsSection["access"] },
+    section: SettingsSectionVisibilityCheck,
     role: string,
 ): boolean {
     return (

@@ -370,10 +370,10 @@ export function createUserRoutes(
             }
             const created = await accountStore.register(
                 username,
-                String(body.password ?? "changeme"),
+                String(body.password ?? ""),
                 role === "admin",
             );
-            log?.("info", "Created user account.", {
+            log?.("info", "Created user account (legacy).", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: created.username,
