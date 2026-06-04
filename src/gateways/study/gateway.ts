@@ -1,9 +1,12 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
+import type {
+    CapabilityStore,
+    GatewayRegistry,
+    AccessRole,
+} from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { AccessRole } from "../auth/access-tokens.js";
 
 const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
     user: 1,

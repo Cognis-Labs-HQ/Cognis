@@ -36,6 +36,9 @@ export interface FlowRunResult {
 
 export interface Ctx {
     contributeCapability(key: string, value: unknown): void;
+    contributePublicCapability(key: string, value: unknown): void;
+    isPublicCapability(key: string): boolean;
+    listPublicCapabilities(): string[];
     hasCapability(key: string): boolean;
     getCapability<T>(key: string): T | undefined;
     requireCapability<T>(key: string): T;

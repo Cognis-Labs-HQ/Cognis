@@ -1,21 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { Ctx } from "@cognis/core";
+import type { AuthContext, AuthGateway, Ctx } from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
-export interface AuthContext {
-    accountId: string;
-    provider: string;
-    externalUserId: string;
-    email?: string;
-    role?: string;
-}
-
-export interface AuthGateway {
-    authenticate(token: string): Promise<AuthContext | null>;
-    createLocalAdmin(username: string, password: string): Promise<AuthContext>;
-}
+export type { AuthContext, AuthGateway };
 
 export interface AuthConfigField {
     key: string;

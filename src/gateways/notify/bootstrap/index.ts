@@ -175,11 +175,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const flowCtx = ctx.capabilities.get<Ctx>("system:ctx");
     if (flowCtx?.hasFlow("construct-settings-ui")) {
-        flowCtx.on("construct-settings-ui", "resolve-sections", async () => ({
-            gatewayId: "notify",
-            sectionId: "notifications",
-            scriptUrl: "/static/gateways/notify/notification-prefs.js",
-        }));
+        flowCtx.addFlowStageHook(
+            "construct-settings-ui",
+            "resolve-sections",
+            { id: "notify-gateway:resolve-sections" },
+            () => ({
+                gatewayId: "notify",
+                sectionId: "notifications",
+                scriptUrl: "/static/gateways/notify/notification-prefs.js",
+            }),
+        );
     }
 
     // Expose the notification gateway itself + a thin dispatch helper as

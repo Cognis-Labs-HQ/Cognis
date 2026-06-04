@@ -1,9 +1,12 @@
 import { addFlowStageHook as addFlowStageHookImpl } from "./add-flow-stage-hook.js";
 import { contributeCapability as contributeCapabilityImpl } from "./contribute-capability.js";
+import { contributePublicCapability as contributePublicCapabilityImpl } from "./contribute-public-capability.js";
 import { getCapability as getCapabilityImpl } from "./get-capability.js";
 import { hasCapability as hasCapabilityImpl } from "./has-capability.js";
 import { hasFlow as hasFlowImpl } from "./has-flow.js";
+import { isPublicCapability as isPublicCapabilityImpl } from "./is-public-capability.js";
 import { listFlows as listFlowsImpl } from "./list-flows.js";
+import { listPublicCapabilities as listPublicCapabilitiesImpl } from "./list-public-capabilities.js";
 import { registerFlow as registerFlowImpl } from "./register-flow.js";
 import { removeFlowStageHook as removeFlowStageHookImpl } from "./remove-flow-stage-hook.js";
 import { requireCapability as requireCapabilityImpl } from "./require-capability.js";
@@ -25,6 +28,15 @@ export function createCtx(): Ctx {
     const ctx: Ctx = {
         contributeCapability(key: string, value: unknown): void {
             contributeCapabilityImpl(state, key, value);
+        },
+        contributePublicCapability(key: string, value: unknown): void {
+            contributePublicCapabilityImpl(state, key, value);
+        },
+        isPublicCapability(key: string): boolean {
+            return isPublicCapabilityImpl(state, key);
+        },
+        listPublicCapabilities(): string[] {
+            return listPublicCapabilitiesImpl(state);
         },
         hasCapability(key: string): boolean {
             return hasCapabilityImpl(state, key);

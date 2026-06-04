@@ -8,8 +8,8 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { logAppEvent as log } from "../../api/reuse/logger.js";
-
-export type AccessRole = "user" | "teacher" | "moderator" | "admin" | "owner";
+import type { AccessRole } from "@cognis/core";
+export type { AccessRole };
 
 interface AccessTokenRecord {
     subject: string;

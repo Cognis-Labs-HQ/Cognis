@@ -17,12 +17,14 @@ export interface RegisteredFlow {
 
 export interface CtxState {
     readonly capabilities: Map<string, unknown>;
+    readonly publicCapabilities: Set<string>;
     readonly flows: Map<string, RegisteredFlow>;
 }
 
 export function createCtxState(): CtxState {
     return {
         capabilities: new Map<string, unknown>(),
+        publicCapabilities: new Set<string>(),
         flows: new Map<string, RegisteredFlow>(),
     };
 }

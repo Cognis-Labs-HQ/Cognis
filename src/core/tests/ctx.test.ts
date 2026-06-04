@@ -242,3 +242,48 @@ test("ctx runFlow throws when flow does not exist", async () => {
     const ctx = createCtx();
     await assert.rejects(() => ctx.runFlow("missing"), /is not registered/);
 });
+
+test("ctx public capabilities are separate from private capabilities", () => {
+    const ctx = createCtx();
+
+    ctx.contributeCapability("db:internal", { secret: true });
+    ctx.contributePublicCapability("db:executor", { query: () => {} });
+    ctx.contributePublicCapability("auth:routeContext", {
+        requireAuth: () => {},
+    });
+
+    assert.equal(ctx.isPublicCapability("db:executor"), true);
+    assert.equal(ctx.isPublicCapability("auth:routeContext"), true);
+    assert.equal(ctx.isPublicCapability("db:internal"), false);
+    assert.equal(ctx.isPublicCapability("missing"), false);
+});
+
+test("ctx listPublicCapabilities returns sorted list of public keys only", () => {
+    const ctx = createCtx();
+
+    ctx.contributeCapability("z:private", "private");
+    ctx.contributePublicCapability("logging:logger", () => {});
+    ctx.contributePublicCapability("db:executor", {});
+    ctx.contributePublicCapability("auth:routeContext", {});
+
+    const publicKeys = ctx.listPublicCapabilities();
+    assert.deepEqual(publicKeys, [
+        "auth:routeContext",
+        "db:executor",
+        "logging:logger",
+    ]);
+    assert.equal(publicKeys.includes("z:private"), false);
+});
+
+test("ctx public capabilities are still accessible via standard capability methods", () => {
+    const ctx = createCtx();
+    const executor = {
+        query: () => Promise.resolve({ rows: [], rowCount: 0 }),
+    };
+
+    ctx.contributePublicCapability("db:executor", executor);
+
+    assert.equal(ctx.hasCapability("db:executor"), true);
+    assert.strictEqual(ctx.getCapability("db:executor"), executor);
+    assert.strictEqual(ctx.requireCapability("db:executor"), executor);
+});

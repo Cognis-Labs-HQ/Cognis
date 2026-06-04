@@ -12,7 +12,6 @@ import { DbAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import {
-    type Ctx,
     MESSAGING_FLOW_CATALOG,
     ensureCtxCapability,
     registerCanonicalFlow,
@@ -259,27 +258,33 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerCanonicalFlow(flowCtx, flow);
     }
 
-    flowCtx.on("construct-messaging-ui", "resolve-navigation", async () => {
-        const uiResources = ctx.capabilities.get<{
-            languageBaseUrls?: string[];
-            stylesheetUrls?: string[];
-        }>("social:messages:uiResources");
-        return {
-            navEntry: {
-                id: "messages",
-                label: "module.social.messages.nav_title",
-                url: "/messages",
-                iconUrl: "/static/gateways/social/assets/messages-icon.svg",
-                stylesheetUrls: uiResources?.stylesheetUrls ?? [],
-                languageBaseUrls: uiResources?.languageBaseUrls ?? [],
-            },
-        };
-    });
+    flowCtx.addFlowStageHook(
+        "construct-messaging-ui",
+        "resolve-navigation",
+        { id: "social-gateway:resolve-navigation" },
+        () => {
+            const uiResources = ctx.capabilities.get<{
+                languageBaseUrls?: string[];
+                stylesheetUrls?: string[];
+            }>("social:messages:uiResources");
+            return {
+                navEntry: {
+                    id: "messages",
+                    label: "module.social.messages.nav_title",
+                    url: "/messages",
+                    iconUrl: "/static/gateways/social/assets/messages-icon.svg",
+                    stylesheetUrls: uiResources?.stylesheetUrls ?? [],
+                    languageBaseUrls: uiResources?.languageBaseUrls ?? [],
+                },
+            };
+        },
+    );
 
-    flowCtx.on(
+    flowCtx.addFlowStageHook(
         "construct-messaging-ui",
         "compose-surface",
-        async (input, stageCtx) => {
+        { id: "social-gateway:compose-surface" },
+        (stageCtx) => {
             const navResults = (stageCtx.stageResults["resolve-navigation"] ??
                 []) as Array<{ navEntry?: unknown }>;
             return {
@@ -289,24 +294,37 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
-    flowCtx.on("send-message", "validate-message", async (input) => {
-        const roomId = String((input as Record<string, unknown>).roomId ?? "");
-        const content = String(
-            (input as Record<string, unknown>).content ?? "",
-        );
-        if (!roomId) {
-            return { valid: false, reason: "missing_room_id" };
-        }
-        if (!content.trim()) {
-            return { valid: false, reason: "empty_content" };
-        }
-        return { valid: true, roomId, content };
-    });
+    flowCtx.addFlowStageHook(
+        "send-message",
+        "validate-message",
+        { id: "social-gateway:validate-message" },
+        (stageCtx) => {
+            const input = stageCtx.input;
+            const roomId = String(
+                (input as Record<string, unknown>).roomId ?? "",
+            );
+            const content = String(
+                (input as Record<string, unknown>).content ?? "",
+            );
+            if (!roomId) {
+                return { valid: false, reason: "missing_room_id" };
+            }
+            if (!content.trim()) {
+                return { valid: false, reason: "empty_content" };
+            }
+            return { valid: true, roomId, content };
+        },
+    );
 
-    flowCtx.on("send-message", "fan-out", async (input, stageCtx) => {
-        const persistResults = (stageCtx.stageResults["persist-message"] ??
-            []) as Array<{ messageId?: string; persisted?: boolean }>;
-        const messageId = persistResults[0]?.messageId;
-        return { fanOut: Boolean(messageId), messageId };
-    });
+    flowCtx.addFlowStageHook(
+        "send-message",
+        "fan-out",
+        { id: "social-gateway:fan-out" },
+        (stageCtx) => {
+            const persistResults = (stageCtx.stageResults["persist-message"] ??
+                []) as Array<{ messageId?: string; persisted?: boolean }>;
+            const messageId = persistResults[0]?.messageId;
+            return { fanOut: Boolean(messageId), messageId };
+        },
+    );
 }
