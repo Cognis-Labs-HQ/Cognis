@@ -10,13 +10,13 @@ import type {
     AccountProfile,
     AccountVisibility,
     AccountRole,
-} from "../profile-store.js";
+} from "../store-contract.js";
 import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";
 import {
     getFirstStageResult,
     replaceProfileMedia,
     type ProfileMediaMutationResult,
-} from "./profile-media-flow-hooks.js";
+} from "./media-flow-hooks.js";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
     "hidden",

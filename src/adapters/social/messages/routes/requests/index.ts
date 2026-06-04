@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
+import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import {
     canSendMessageRequest,
     publicProfileSummary,
     type MessagesRoutesDeps,
-} from "./shared.js";
+} from "../shared.js";
 
 export function createRequestsHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore } = deps;

@@ -1,4 +1,4 @@
-import type { AccountProfile, ProfileStore } from "../profile-store.js";
+import type { AccountProfile, ProfileStore } from "../store-contract.js";
 import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";
 import type { FileStorageGateway } from "../../../../gateways/files/gateway.js";
 

@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
-import { readJson } from "../../../../api/reuse/read-json.js";
-import type { AccountProfile } from "../../profile/store.js";
+import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
+import { readJson } from "../../../../../api/reuse/read-json.js";
+import type { AccountProfile } from "../../../profile/store.js";
 import {
     canDirectMessageNowOrByApprovedRequest,
     canMessage,
@@ -10,7 +10,7 @@ import {
     hasAdminBypass,
     summarizeRoomRequest,
     type MessagesRoutesDeps,
-} from "./shared.js";
+} from "../shared.js";
 
 export function createRoomListHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch } = deps;

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
-import { readJson } from "../../../../api/reuse/read-json.js";
+import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
+import { readJson } from "../../../../../api/reuse/read-json.js";
 import {
     canMessage,
     enrichMembersWithProfiles,
@@ -8,7 +8,7 @@ import {
     normalizeReactionEmoji,
     summarizeRoomRequest,
     type MessagesRoutesDeps,
-} from "./shared.js";
+} from "../shared.js";
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;

@@ -5,7 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { DbProfileStore } from "./store.js";
 import { DbUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "./routes/index.js";
-import { registerProfileMediaFlowHooks } from "./routes/profile-media-flow-hooks.js";
+import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileRoutes } from "./routes/files.js";

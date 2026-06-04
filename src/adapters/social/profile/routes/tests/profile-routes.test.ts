@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VolatileProfileStore } from "../../profile-store.js";
+import { VolatileProfileStore } from "../../store-contract.js";
 import { createProfileRoutes } from "../index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 

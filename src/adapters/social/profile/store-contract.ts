@@ -1,10 +1,10 @@
 /**
- * Abstract profile-store interface and shared types used by the API layer.
- * Concrete implementations (DB-backed) live in the DB adapters; this
- * definition keeps route handlers free of any adapter-specific import.
+ * Abstract store contract and shared types used by the social profile API layer.
+ * Concrete implementations (DB-backed) live in store.ts; this definition keeps
+ * route handlers free of any adapter-specific import.
  *
  * @example
- *   import type { ProfileStore } from '../../reuse/profile-store.js';
+ *   import type { ProfileStore } from '../store-contract.js';
  *   export function createProfileRoutes(store: ProfileStore) { ... }
  *
  * @param getProfile      - Fetch a profile by internal account ID.

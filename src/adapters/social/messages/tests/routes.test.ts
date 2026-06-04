@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VolatileProfileStore } from "../../profile/profile-store.js";
+import { VolatileProfileStore } from "../../profile/store-contract.js";
 import {
     canMessage,
     canSendMessageRequest,

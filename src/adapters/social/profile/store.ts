@@ -14,8 +14,8 @@ export type {
     FileSizeLimit,
     ProfileCreateStore,
     ProfileStore,
-} from "./profile-store.js";
-export { visibilityRank } from "./profile-store.js";
+} from "./store-contract.js";
+export { visibilityRank } from "./store-contract.js";
 import type {
     AccountRole,
     AccountVisibility,
@@ -24,7 +24,7 @@ import type {
     Post,
     FileSizeLimit,
     ProfileCreateStore,
-} from "./profile-store.js";
+} from "./store-contract.js";
 
 function rowToPost(row: any): Post {
     return {

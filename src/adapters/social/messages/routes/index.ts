@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../api/reuse/read-json.js";
-import { createRequestsHandler } from "./requests-routes.js";
-import { createRoomHandler } from "./room-routes.js";
-import { createRoomListHandler } from "./rooms-routes.js";
+import { createRequestsHandler } from "./requests/index.js";
+import { createRoomHandler } from "./room/index.js";
+import { createRoomListHandler } from "./rooms/index.js";
 import {
     canMessage,
     canSendMessageRequest,
