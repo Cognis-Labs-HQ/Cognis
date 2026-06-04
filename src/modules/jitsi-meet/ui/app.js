@@ -6,7 +6,6 @@ import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { handleProfileAvatarError } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
-import { ALONE_PROMPT_GRACE_PERIOD_MS } from "./constants.js";
 import { ensureSessionId } from "./session.js";
 import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
 import {
@@ -26,6 +25,7 @@ import { createChatHandlers } from "./jitsi-chat.js";
 import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
+import { createMountUtilities } from "./jitsi-mount-utils.js";
 
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 
