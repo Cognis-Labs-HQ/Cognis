@@ -267,7 +267,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         return {
             navEntry: {
                 id: "messages",
-                label: "Messages",
+                label: "module.social.messages.nav_title",
                 url: "/messages",
                 iconUrl: "/static/gateways/social/assets/messages-icon.svg",
                 stylesheetUrls: uiResources?.stylesheetUrls ?? [],

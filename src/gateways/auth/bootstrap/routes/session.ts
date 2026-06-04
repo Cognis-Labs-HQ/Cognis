@@ -23,7 +23,11 @@ import {
 } from "../../../shared.js";
 import type { Ctx } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../../shared.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMeta,
+    LoginFlowSessionResult,
+} from "./shared.js";
 
 interface SessionRouteDependencies {
     authGateway: CoreAuthGateway;
@@ -291,22 +295,6 @@ export function createSessionRoutes({
             }),
         );
         return true;
-    }
-
-    interface LoginFlowSessionResult {
-        outcome: string;
-        accountId?: string;
-        displayName?: string;
-        provider?: string;
-        providerId?: string;
-        role?: string;
-        isFounder?: boolean;
-        token?: string;
-        ttlSeconds?: number;
-        loginAttemptId?: string;
-        methods?: unknown[];
-        userValidationMode?: string;
-        requiredUserValidation?: unknown;
     }
 
     function dispatchLoginFlowResult(

@@ -13,3 +13,19 @@ export type AuthGatewayRouteHandler = (
     url: URL,
     logMeta: AuthRouteLogMeta,
 ) => Promise<boolean>;
+
+export interface LoginFlowSessionResult {
+    outcome: string;
+    accountId?: string;
+    displayName?: string;
+    provider?: string;
+    providerId?: string;
+    role?: string;
+    isFounder?: boolean;
+    token?: string;
+    ttlSeconds?: number;
+    loginAttemptId?: string;
+    methods?: unknown[];
+    userValidationMode?: string;
+    requiredUserValidation?: unknown;
+}

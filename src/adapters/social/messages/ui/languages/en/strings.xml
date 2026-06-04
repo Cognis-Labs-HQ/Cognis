@@ -69,4 +69,5 @@
   <string name="module.social.messages.member_summary_empty">No members found for this conversation.</string>
   <string name="module.social.messages.emoji_more">More Reactions</string>
   <string name="module.social.messages.emoji_search_placeholder">Search emojis…</string>
+  <string name="module.social.messages.nav_title">Messages</string>
 </resources>

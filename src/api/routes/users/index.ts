@@ -327,7 +327,7 @@ export function createUserRoutes(
             if (flowCtx?.hasFlow("provision-user")) {
                 const result = await flowCtx.runFlow("provision-user", {
                     username,
-                    password: String(body.password ?? "changeme"),
+                    password: String(body.password ?? ""),
                     role,
                 });
                 const emitResult = (result.data["emit-events"] ??
