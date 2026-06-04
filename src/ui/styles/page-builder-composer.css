@@ -1,0 +1,400 @@
+
+.composer-view-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
+    grid-auto-rows: var(--composer-grid-row-size, 90px);
+    gap: 8px;
+}
+
+.composer-view-grid .widget-card {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+}
+
+.widget-card--missing,
+.composer-cell--missing .composer-cell-content--missing {
+    border: 1px dashed var(--color-danger-border);
+    background: color-mix(
+        in srgb,
+        var(--color-danger-background, #7f1d1d) 20%,
+        var(--widget-card-tint, var(--surface))
+    );
+}
+
+.composer-missing-element {
+    height: 100%;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    padding: 12px;
+}
+
+.composer-missing-element-icon {
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--color-danger-border);
+}
+
+.composer-missing-element-label {
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.composer-missing-element-id {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    word-break: break-word;
+}
+
+.composer-grid-active {
+    position: relative;
+    display: block;
+}
+
+.composer-done-btn {
+    background: var(--accent-2);
+    border: 1px solid transparent;
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.composer-done-btn:hover {
+    background: color-mix(in srgb, var(--accent-2) 80%, #fff 20%);
+    transform: translateY(-1px);
+}
+
+.composer-drag-handle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.composer-drag-icon {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.composer-drag-label {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.composer-remove-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: auto;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.composer-remove-btn:hover {
+    background: var(--color-danger);
+    color: var(--color-danger-text);
+    border-color: var(--color-danger-border);
+    transform: none;
+}
+
+.widget-card.composer-editing {
+    border-color: var(--accent-2);
+    opacity: 0.95;
+}
+
+.content-panel.composer-content-panel--editing {
+    display: grid;
+    gap: 12px;
+}
+
+.content-panel.composer-content-panel--editing > .content-section {
+    border-radius: 12px;
+}
+
+.widget-card.composer-dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+}
+
+.widget-card.composer-drag-over {
+    box-shadow: 0 0 0 2px var(--accent-2);
+    background: color-mix(
+        in srgb,
+        var(--widget-card-tint, var(--surface)) 70%,
+        var(--accent-2) 30%
+    );
+}
+
+.composer-library {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 200;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 200px;
+    max-width: 260px;
+    box-shadow: var(--shadow);
+}
+
+.composer-library-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.composer-library-header h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.composer-library-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.composer-library-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.88rem;
+    cursor: grab;
+    touch-action: none;
+}
+
+.composer-add-btn {
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.composer-add-btn:hover {
+    background: var(--control-hover-bg);
+    border-color: var(--border-strong);
+    transform: none;
+}
+
+.composer-library-empty {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.dashboard-app-icon {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 4px;
+}
+
+.dashboard-app-icon-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+}
+
+.dashboard-app-icon-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.dashboard-welcome-heading {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+}
+
+.dashboard-welcome-account {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.dashboard-info-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 14px;
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+.dashboard-info-list dt {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.dashboard-info-list dd {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text);
+}
+
+.dashboard-upcoming-event-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.dashboard-upcoming-event-link:hover {
+    color: var(--accent);
+}
+
+.dashboard-upcoming-event-link strong {
+    font-size: 0.875rem;
+}
+
+.dashboard-upcoming-event-link span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.dashboard-last-seen {
+    margin: 12px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.dashboard-teacher-classes-placeholder,
+.dashboard-classes-placeholder {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 12px 0 0;
+}
+.dashboard-clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 100%;
+    padding: 0;
+    text-align: center;
+}
+
+.dashboard-clock-display {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.dashboard-clock--digital .dashboard-clock-display {
+    align-items: center;
+}
+
+.clock-digital-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.clock-digital-time {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+}
+
+.clock-digital-date {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.dashboard-clock-tz {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.dashboard-clock--analogue {
+    gap: 6px;
+}
+
+.clock-analogue {
+    display: block;
+}
+
+.clock-analogue-face {
+    fill: var(--control-bg);
+    stroke: var(--border-strong);
+    stroke-width: 2;
+}
+
+.clock-analogue-tick {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+}
+
+.clock-analogue-tick-major {
+    stroke: var(--text);
+    stroke-width: 2;
+}
+
+.clock-hand-hour {
+    stroke: var(--text);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.clock-hand-minute {
+    stroke: var(--text);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.clock-hand-second {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+}
+
+.clock-analogue-centre {
+    fill: var(--accent);
+}
+

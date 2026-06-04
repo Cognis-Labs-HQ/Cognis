@@ -1,0 +1,316 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { RouteRegistry } from "../../../api/reuse/route-registry.js";
+import { bootstrap } from "../bootstrap.js";
+import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
+import { dispatchRoute, makeJsonRequest } from "./auth-gateway-test-helpers.js";
+
+test("login userValidation fails open when SMTP validation is enabled but unavailable", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+            displayName,
+        }: {
+            username: string;
+            password: string;
+            displayName?: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    username: string,
+                    password: string,
+                    role?: "user" | "teacher" | "moderator" | "admin",
+                    displayName?: string,
+                ) => Promise<{
+                    username: string;
+                    role?: string;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(
+                username,
+                password,
+                "user",
+                displayName,
+            );
+        },
+    );
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "smtp",
+            });
+        },
+    });
+    const db = new InMemoryTestExecutor();
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            username: "alice",
+            password: "pass123",
+            displayName: "Alice Liddell",
+        }),
+        "/api/v1/auth/register",
+    );
+    assert.ok(registerResult.handled);
+    assert.equal(registerResult.res.status, 201);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: {
+            displayName: string;
+            requiredUserValidation: boolean;
+            userValidationMode: string;
+        };
+    };
+    assert.equal(payload.data.displayName, "Alice Liddell");
+    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.requiredUserValidation, false);
+});
+
+test("login userValidation exempts founder admin even when SMTP is available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "smtp",
+            });
+        },
+    });
+    capabilities.contribute("notify:canSendVerificationEmail", () => true);
+    const db = new InMemoryTestExecutor();
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const createLocalAdmin = capabilities.get<
+        (username: string, password: string) => Promise<void>
+    >("auth:createLocalAdmin");
+    const accountStore = capabilities.get<{
+        isFounder: (username: string) => Promise<boolean>;
+    }>("auth:accountStore");
+    assert.ok(createLocalAdmin);
+    assert.ok(accountStore);
+    await createLocalAdmin?.("root-admin", "adminpass");
+    assert.equal(await accountStore?.isFounder("root-admin"), true);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "root-admin",
+            password: "adminpass",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: {
+            role: string;
+            isFounder: boolean;
+            requiredUserValidation: boolean;
+            userValidationMode: string;
+        };
+    };
+    assert.equal(payload.data.role, "owner");
+    assert.equal(payload.data.isFounder, true);
+    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.requiredUserValidation, false);
+});
+
+test("login fails closed when TFA is required but no challenge methods are available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+            displayName,
+        }: {
+            username: string;
+            password: string;
+            displayName?: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    username: string,
+                    password: string,
+                    role?: "user" | "teacher" | "moderator" | "admin",
+                    displayName?: string,
+                ) => Promise<{
+                    username: string;
+                    role?: string;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(
+                username,
+                password,
+                "user",
+                displayName,
+            );
+        },
+    );
+    const db = new InMemoryTestExecutor();
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            username: "alice",
+            password: "pass123",
+            displayName: "Alice Liddell",
+        }),
+        "/api/v1/auth/register",
+    );
+    assert.ok(registerResult.handled);
+    assert.equal(registerResult.res.status, 201);
+
+    capabilities.contribute("tfa:getUserStatus", async () => ({
+        requiresSetup: false,
+        hasConfiguredMethod: true,
+    }));
+    capabilities.contribute("tfa:getLoginMethods", async () => []);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 503);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        error: { code: string };
+    };
+    assert.equal(payload.error.code, "tfa_unavailable");
+    assert.equal(loginResult.res.headers["set-cookie"], undefined);
+});
+
+test("login fails closed when TFA is required but getLoginMethods capability is absent", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+            displayName,
+        }: {
+            username: string;
+            password: string;
+            displayName?: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    username: string,
+                    password: string,
+                    role?: "user" | "teacher" | "moderator" | "admin",
+                    displayName?: string,
+                ) => Promise<{
+                    username: string;
+                    role?: string;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(
+                username,
+                password,
+                "user",
+                displayName,
+            );
+        },
+    );
+    const db = new InMemoryTestExecutor();
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            username: "alice",
+            password: "pass123",
+            displayName: "Alice Liddell",
+        }),
+        "/api/v1/auth/register",
+    );
+    assert.ok(registerResult.handled);
+    assert.equal(registerResult.res.status, 201);
+
+    capabilities.contribute("tfa:getUserStatus", async () => ({
+        requiresSetup: false,
+        hasConfiguredMethod: true,
+    }));
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 503);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        error: { code: string };
+    };
+    assert.equal(payload.error.code, "tfa_unavailable");
+    assert.equal(loginResult.res.headers["set-cookie"], undefined);
+});

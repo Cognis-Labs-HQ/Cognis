@@ -1,0 +1,26 @@
+export function createResponseRecorder() {
+  let status = 0;
+  let headers: Record<string, string> = {};
+  const chunks: string[] = [];
+  return {
+    res: {
+      setHeader() {},
+      writeHead(code: number, nextHeaders: Record<string, string>) {
+        status = code;
+        headers = nextHeaders ?? {};
+      },
+      end(body?: string | Buffer) {
+        if (body) chunks.push(body.toString());
+      },
+    },
+    get status() {
+      return status;
+    },
+    get headers() {
+      return headers;
+    },
+    get body() {
+      return chunks.join('');
+    },
+  };
+}
