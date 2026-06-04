@@ -1,7 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../../api/reuse/read-json.js";
-import type { AccountProfile } from "../../../profile/store.js";
 import {
     canDirectMessageNowOrByApprovedRequest,
     canMessage,
@@ -11,6 +10,7 @@ import {
     summarizeRoomRequest,
     type MessagesRoutesDeps,
 } from "../shared.js";
+import type { SocialMessagesProfile } from "../../profile-store-contract.js";
 
 export function createRoomListHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch } = deps;
@@ -104,7 +104,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        const targets: AccountProfile[] = [];
+        const targets: SocialMessagesProfile[] = [];
         for (const handle of handles) {
             const candidate = await profileStore.getProfileByHandle(handle);
             if (!candidate || candidate.accountId === accountId) continue;

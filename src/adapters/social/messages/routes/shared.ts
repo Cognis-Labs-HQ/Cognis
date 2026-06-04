@@ -2,7 +2,10 @@ import { hasMinRole } from "@cognis/core";
 import type { FlowApi } from "@cognis/core";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbMessagesStore, MemberRow } from "../store.js";
-import type { AccountProfile, DbProfileStore } from "../../profile/store.js";
+import type {
+    SocialMessagesProfile,
+    SocialMessagesProfileStore,
+} from "../profile-store-contract.js";
 
 export interface DispatchEnvelope {
     category: string;
@@ -32,7 +35,7 @@ export function normalizeReactionEmoji(rawEmoji: string): string {
 }
 
 export async function canMessage(
-    profileStore: DbProfileStore,
+    profileStore: SocialMessagesProfileStore,
     fromId: string,
     toId: string,
 ): Promise<boolean> {
@@ -62,7 +65,7 @@ export async function canMessage(
 }
 
 export async function canSendMessageRequest(
-    profileStore: DbProfileStore,
+    profileStore: SocialMessagesProfileStore,
     fromId: string,
     toId: string,
 ): Promise<boolean> {
@@ -88,7 +91,7 @@ export async function canSendMessageRequest(
 }
 
 export async function canDirectMessageNowOrByApprovedRequest(
-    profileStore: DbProfileStore,
+    profileStore: SocialMessagesProfileStore,
     messagesStore: DbMessagesStore,
     fromId: string,
     toId: string,
@@ -108,7 +111,7 @@ export function hasAdminBypass(role: string | null | undefined): boolean {
     return Boolean(role && hasMinRole(role, "admin"));
 }
 
-export function publicProfileSummary(profile: AccountProfile) {
+export function publicProfileSummary(profile: SocialMessagesProfile) {
     return {
         accountId: profile.accountId,
         handle: profile.handle,
@@ -131,7 +134,7 @@ export interface RoomRequestSummary {
 
 export interface MessagesRoutesDeps {
     messagesStore: DbMessagesStore;
-    profileStore: DbProfileStore;
+    profileStore: SocialMessagesProfileStore;
     dispatch: Dispatch | null;
     isAdapterEnabled: () => boolean;
     routeContext?: RouteContext;
@@ -140,7 +143,7 @@ export interface MessagesRoutesDeps {
 
 export async function enrichMembersWithProfiles(
     members: MemberRow[],
-    profileStore: DbProfileStore,
+    profileStore: SocialMessagesProfileStore,
 ): Promise<EnrichedMemberRow[]> {
     return Promise.all(
         members.map(async (memberRow) => {
@@ -159,7 +162,7 @@ export async function summarizeRoomRequest(
     request: Awaited<
         ReturnType<DbMessagesStore["getPendingRoomMessageRequest"]>
     >,
-    profileStore: DbProfileStore,
+    profileStore: SocialMessagesProfileStore,
     accountId: string,
 ): Promise<RoomRequestSummary | null> {
     if (!request) return null;

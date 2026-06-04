@@ -1,1 +1,1 @@
-export const SMTP_VERIFICATION_RATE_LIMIT_MS = 60_000;
+export { SMTP_VERIFICATION_RATE_LIMIT_MS } from "@cognis/core";

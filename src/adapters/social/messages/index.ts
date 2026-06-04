@@ -8,11 +8,11 @@ import type {
 } from "../../../gateways/social/gateway.js";
 import { DbMessagesStore } from "./store.js";
 import { createMessagesRoutes } from "./routes/index.js";
-import type { DbProfileStore } from "../profile/store.js";
 import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
+import type { SocialMessagesProfileStore } from "./profile-store-contract.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -84,7 +84,8 @@ function createMessagesPageRoutes(
  * see docs/standard.en.md for the full threat model.
  *
  * Cross-adapter dependencies:
- *   social:profileStore    — DbProfileStore contributed by the profile adapter.
+ *   social:profileStore    — Profile-store capability contributed by the
+ *                            profile adapter.
  *                            Used for handle lookup, visibility, follow, and
  *                            block queries that gate messaging eligibility.
  *   notify:dispatch (opt)  — When present, new-message events are dispatched
@@ -99,7 +100,7 @@ export async function bootstrapSocialAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const profileStore = ctx.capabilities.get<DbProfileStore>(
+    const profileStore = ctx.capabilities.get<SocialMessagesProfileStore>(
         "social:profileStore",
     );
     if (!profileStore) {

@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "../../notify/smtp/rate-limit.js";
+import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "@cognis/core";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const DEFAULT_CODE_LENGTH = 6;
