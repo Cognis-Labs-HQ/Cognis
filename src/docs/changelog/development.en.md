@@ -82,3 +82,25 @@ now receive `flow: FlowApi` directly from their bootstrap context.
 - All gateway bootstraps and adapters migrated to `ctx.flow.extend()`
 - New boundary rules in `ctx-boundary.test.ts` (Rules 5 and 6)
 - Expanded `ctx.test.ts` with `ctx.flow` API coverage
+
+## File naming compliance pass
+
+Feature or adapter prefixes have been removed from file names wherever the
+enclosing directory already provides the same context. Affected files now live
+at more natural, unsuffixed paths:
+
+- `src/core/contracts/profile-media-flow-catalog.ts` → `profile/media-flow-catalog.ts`
+- `src/adapters/social/profile/profile-store.ts` → `store-contract.ts`
+- `src/adapters/social/profile/routes/profile-media-flow-hooks.ts` → `routes/media-flow-hooks.ts`
+- `src/adapters/social/messages/routes/requests-routes.ts` → `routes/requests/index.ts`
+- `src/adapters/social/messages/routes/room-routes.ts` → `routes/room/index.ts`
+- `src/adapters/social/messages/routes/rooms-routes.ts` → `routes/rooms/index.ts`
+- `src/adapters/notify/smtp/smtp-message-builders.ts` → `message-builders.ts`
+- `src/adapters/notify/smtp/smtp-notification-queue.ts` → `notification-queue.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender.ts` → `notification-sender.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender-factory.ts` → `notification-sender-factory.ts`
+- `src/gateways/calendar/calendar-store.ts` → `store.ts`
+- `src/api/routes/ui/ui-route-rules.ts` → `route-rules.ts`
+
+All imports and test files updated accordingly. The AI instructions file now
+documents the broader no-redundant-prefix rule explicitly.

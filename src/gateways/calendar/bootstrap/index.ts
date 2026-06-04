@@ -9,7 +9,7 @@ import {
 import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { GatewayBootstrapContext } from "../shared.js";
-import { DbCalendarStore } from "../calendar-store.js";
+import { DbCalendarStore } from "../store.js";
 import { normalizeCalendarColor } from "../color.js";
 import {
     CoreCalendarGateway,

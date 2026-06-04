@@ -1,4 +1,4 @@
-import { SmtpNotificationSender } from "./smtp-notification-sender.js";
+import { SmtpNotificationSender } from "./notification-sender.js";
 
 export function createNotificationSender(
     env: Record<string, string | undefined>,

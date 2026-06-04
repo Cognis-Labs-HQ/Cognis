@@ -4,7 +4,7 @@ import type {
     CalendarEventResponse,
     CalendarEventResponseRecord,
 } from "./utils.js";
-import type { CalendarStore } from "../calendar-store.js";
+import type { CalendarStore } from "../store.js";
 
 export class ResponseTracker {
     private readonly responsesByRootEvent = new Map<

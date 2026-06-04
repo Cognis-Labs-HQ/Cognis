@@ -17,11 +17,11 @@ import { dotStuff, isTemporaryCode, stripHtmlTags } from "./mime-utils.js";
 import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
-} from "./smtp-notification-queue.js";
+} from "./notification-queue.js";
 import {
     buildRegistrationInviteEmailMessage,
     buildVerificationEmailMessage,
-} from "./smtp-message-builders.js";
+} from "./message-builders.js";
 import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
 
 export interface SmtpConfig {

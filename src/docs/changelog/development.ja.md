@@ -82,3 +82,25 @@ studyゲートウェイはこれまでルール4に違反し、`AccessRole` をa
 - `ensureCtxCapability`と`CtxCapabilityStore`を`@cognis/core`から削除
 - すべてのゲートウェイブートストラップを`ctx.flow.extend()`に移行
 - `ctx-boundary.test.ts`にルール5・6を追加
+
+## ファイル命名コンプライアンス確認
+
+親ディレクトリが既に同じコンテキストを提供している場合、ファイル名から
+フィーチャーまたはアダプタのプレフィックスが削除されました。
+対象ファイルはより自然なプレフィックスなしのパスに移動しました：
+
+- `src/core/contracts/profile-media-flow-catalog.ts` → `profile/media-flow-catalog.ts`
+- `src/adapters/social/profile/profile-store.ts` → `store-contract.ts`
+- `src/adapters/social/profile/routes/profile-media-flow-hooks.ts` → `routes/media-flow-hooks.ts`
+- `src/adapters/social/messages/routes/requests-routes.ts` → `routes/requests/index.ts`
+- `src/adapters/social/messages/routes/room-routes.ts` → `routes/room/index.ts`
+- `src/adapters/social/messages/routes/rooms-routes.ts` → `routes/rooms/index.ts`
+- `src/adapters/notify/smtp/smtp-message-builders.ts` → `message-builders.ts`
+- `src/adapters/notify/smtp/smtp-notification-queue.ts` → `notification-queue.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender.ts` → `notification-sender.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender-factory.ts` → `notification-sender-factory.ts`
+- `src/gateways/calendar/calendar-store.ts` → `store.ts`
+- `src/api/routes/ui/ui-route-rules.ts` → `route-rules.ts`
+
+すべてのインポートとテストファイルが更新されました。AIインストラクションファイルに
+冗長なプレフィックス禁止ルールが明示的に文書化されました。

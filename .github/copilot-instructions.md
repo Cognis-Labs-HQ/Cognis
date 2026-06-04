@@ -142,7 +142,7 @@ Never add new top-level navigation using `window.location.href =`, `window.locat
 
 Route handler files live in subdirectories named after their domain, mirroring the `src/ui/app/` convention. Each handler is `index.ts` inside that directory (e.g. `src/api/routes/profile/index.ts`, `src/api/routes/social/index.ts`). Never place a route handler as a flat `*-routes.ts` file directly inside `routes/`.
 
-Never use redundant suffixes in file names when the directory path already provides the context. A file at `gateways/notifications.ts` does not need to be named `notification-gateway.ts`; a file at `routes/users/index.ts` does not need to live at `routes/user-routes.ts`.
+Never use redundant prefixes or suffixes in file names when the directory path already provides the context. A file at `gateways/notifications.ts` does not need to be named `notification-gateway.ts`; a file at `routes/users/index.ts` does not need to live at `routes/user-routes.ts`; files inside `adapters/notify/smtp/` do not need the `smtp-` prefix. When a file would need a feature or adapter prefix to disambiguate it, that is a signal to place it in a subdirectory and give it a generic name instead (e.g. `message-builders.ts` inside `smtp/`, not `smtp-message-builders.ts` at a higher level).
 
 ### Core contract file organisation
 

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SmtpRateLimiter } from "../smtp-notification-queue.js";
+import { SmtpRateLimiter } from "../notification-queue.js";
 
 test("SmtpRateLimiter allows first send", () => {
     const limiter = new SmtpRateLimiter(60_000);

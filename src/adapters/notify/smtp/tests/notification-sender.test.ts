@@ -4,9 +4,9 @@ import net from "node:net";
 import {
     SmtpNotificationSender,
     SmtpTemporaryError,
-} from "../smtp-notification-sender.js";
-import { SmtpRateLimiter } from "../smtp-notification-queue.js";
-import { createNotificationSender } from "../smtp-notification-sender-factory.js";
+} from "../notification-sender.js";
+import { SmtpRateLimiter } from "../notification-queue.js";
+import { createNotificationSender } from "../notification-sender-factory.js";
 
 test("createNotificationSender always returns a sender instance", () => {
     const sender = createNotificationSender({});

@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import net from "node:net";
-import { SmtpNotificationSender } from "../smtp-notification-sender.js";
+import { SmtpNotificationSender } from "../notification-sender.js";
 import {
     SmtpRateLimiter,
     SmtpNotificationQueue,
-} from "../smtp-notification-queue.js";
+} from "../notification-queue.js";
 
 type MockSmtpServer = {
     host: string;

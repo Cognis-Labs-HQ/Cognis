@@ -80,3 +80,25 @@ Adapter und Module erhalten `flow: FlowApi` direkt aus dem Bootstrap-Kontext.
 - `ensureCtxCapability` und `CtxCapabilityStore` aus `@cognis/core` entfernt
 - Alle Gateway-Bootstraps auf `ctx.flow.extend()` migriert
 - Neue Boundary-Regeln 5 und 6 in `ctx-boundary.test.ts`
+
+## Dateinamens-Compliance-Überprüfung
+
+Feature- oder Adapter-Präfixe wurden aus Dateinamen entfernt, wo das übergeordnete
+Verzeichnis bereits den gleichen Kontext bereitstellt. Betroffene Dateien befinden
+sich nun an natürlicheren, präfixfreien Pfaden:
+
+- `src/core/contracts/profile-media-flow-catalog.ts` → `profile/media-flow-catalog.ts`
+- `src/adapters/social/profile/profile-store.ts` → `store-contract.ts`
+- `src/adapters/social/profile/routes/profile-media-flow-hooks.ts` → `routes/media-flow-hooks.ts`
+- `src/adapters/social/messages/routes/requests-routes.ts` → `routes/requests/index.ts`
+- `src/adapters/social/messages/routes/room-routes.ts` → `routes/room/index.ts`
+- `src/adapters/social/messages/routes/rooms-routes.ts` → `routes/rooms/index.ts`
+- `src/adapters/notify/smtp/smtp-message-builders.ts` → `message-builders.ts`
+- `src/adapters/notify/smtp/smtp-notification-queue.ts` → `notification-queue.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender.ts` → `notification-sender.ts`
+- `src/adapters/notify/smtp/smtp-notification-sender-factory.ts` → `notification-sender-factory.ts`
+- `src/gateways/calendar/calendar-store.ts` → `store.ts`
+- `src/api/routes/ui/ui-route-rules.ts` → `route-rules.ts`
+
+Alle Imports und Testdateien wurden entsprechend aktualisiert. Die KI-Anweisungen
+dokumentieren die allgemeine Regel zu redundanten Präfixen jetzt explizit.

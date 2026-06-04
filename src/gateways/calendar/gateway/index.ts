@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { normalizeCalendarColor } from "../color.js";
-import type { CalendarStore } from "../calendar-store.js";
+import type { CalendarStore } from "../store.js";
 import { CalendarTokenStore } from "./token-store.js";
 import {
     applyEventFieldsFromSource,

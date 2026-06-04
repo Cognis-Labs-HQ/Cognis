@@ -17,7 +17,7 @@ import {
     parseModuleUiRoutes,
     type ModuleUiRouteRule,
     type SettingsSectionVisibilityCheck,
-} from "./ui-route-rules.js";
+} from "./route-rules.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
