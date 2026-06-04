@@ -4,6 +4,7 @@ import {
     registerLimitedAuthPathAllowance,
     type GatewayBootstrapContext,
 } from "../../shared.js";
+import { ensureCtxCapability } from "@cognis/core";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
 import { CoreTfaGateway } from "../gateway.js";
@@ -100,7 +101,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",
-        version: "1.1.0",
+        version: "1.1.1",
         description:
             "Manages two-factor authentication methods and login checks.",
         publisher: "Cognis Labs HQ",
@@ -215,4 +216,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         component: "tfa-gateway",
         adapterCount: gateway.listAdapters().length,
     });
+
+    const flowCtx = ensureCtxCapability(ctx.capabilities);
+    if (flowCtx.hasFlow("bootstrap-platform")) {
+        flowCtx.addFlowStageHook(
+            "bootstrap-platform",
+            "register-flows",
+            { id: "tfa-gateway:bootstrap-registration" },
+            () => ({ gatewayId: "tfa", registeredFlowIds: [] }),
+        );
+    }
 }

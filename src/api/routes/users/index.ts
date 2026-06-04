@@ -324,63 +324,58 @@ export function createUserRoutes(
                 return true;
             }
             const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
-            if (flowCtx?.hasFlow("provision-user")) {
-                const result = await flowCtx.runFlow("provision-user", {
-                    username,
-                    password: String(body.password ?? ""),
-                    role,
-                });
-                const emitResult = (result.data["emit-events"] ??
-                    (result.stageResults["emit-events"] ?? [])[0]) as
-                    | { emitted?: boolean; accountId?: string }
-                    | undefined;
-                const persistResult = (result.stageResults["persist-account"] ??
-                    [])[0] as
-                    | {
-                          persisted: boolean;
-                          created?: { username: string };
-                          reason?: string;
-                      }
-                    | undefined;
-                if (!persistResult?.persisted) {
-                    res.writeHead(500, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: persistResult?.reason ?? "create_failed",
-                                message: "Failed to create user account",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                log?.("info", "Created user account (flow).", {
-                    ...logMeta,
-                    accountId: adminClaims.sub,
-                    targetAccountId:
-                        emitResult?.accountId ??
-                        persistResult.created?.username,
-                    role,
-                });
-                res.writeHead(201, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: persistResult.created }));
+            if (!flowCtx?.hasFlow("provision-user")) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "flow_unavailable",
+                            message: "provision-user flow not available",
+                        },
+                    }),
+                );
                 return true;
             }
-            const created = await accountStore.register(
+            const result = await flowCtx.runFlow("provision-user", {
                 username,
-                String(body.password ?? ""),
-                role === "admin",
-            );
-            log?.("info", "Created user account (legacy).", {
+                password: String(body.password ?? ""),
+                role,
+            });
+            const emitResult = (result.data["emit-events"] ??
+                (result.stageResults["emit-events"] ?? [])[0]) as
+                | { emitted?: boolean; accountId?: string }
+                | undefined;
+            const persistResult = (result.stageResults["persist-account"] ??
+                [])[0] as
+                | {
+                      persisted: boolean;
+                      created?: { username: string };
+                      reason?: string;
+                  }
+                | undefined;
+            if (!persistResult?.persisted) {
+                res.writeHead(500, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: persistResult?.reason ?? "create_failed",
+                            message: "Failed to create user account",
+                        },
+                    }),
+                );
+                return true;
+            }
+            log?.("info", "Created user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
-                targetAccountId: created.username,
+                targetAccountId:
+                    emitResult?.accountId ?? persistResult.created?.username,
                 role,
             });
             res.writeHead(201, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: created }));
+            res.end(JSON.stringify({ data: persistResult.created }));
             return true;
         }
 
@@ -487,35 +482,55 @@ export function createUserRoutes(
                 return true;
             }
             const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
-            if (flowCtx?.hasFlow("deprovision-user")) {
-                const targetInfo = await getTargetInfo();
-                const targetRole = resolveEffectiveRole(
-                    targetInfo?.role,
-                    Boolean(targetInfo?.isFounder),
+            if (!flowCtx?.hasFlow("deprovision-user")) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "flow_unavailable",
+                            message: "deprovision-user flow not available",
+                        },
+                    }),
                 );
-                await flowCtx.runFlow("deprovision-user", {
-                    username,
-                    action: "disable" as const,
-                    callerRole: callerClaims?.role ?? "admin",
-                    targetRole,
-                    targetIsFounder: Boolean(targetInfo?.isFounder),
-                });
-                log?.("warn", "Disabled user account (flow).", {
-                    ...logMeta,
-                    accountId: adminClaims.sub,
-                    targetAccountId: username,
-                });
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { updated: true } }));
                 return true;
             }
-            await accountStore.setEnabled(username, false);
-            const revokedCount = ctx.revokeAccessTokensForSubject(username);
+            const targetInfo = await getTargetInfo();
+            const targetRole = resolveEffectiveRole(
+                targetInfo?.role,
+                Boolean(targetInfo?.isFounder),
+            );
+            const disableResult = await flowCtx.runFlow("deprovision-user", {
+                username,
+                action: "disable" as const,
+                callerRole: callerClaims?.role ?? "admin",
+                targetRole,
+                targetIsFounder: Boolean(targetInfo?.isFounder),
+            });
+            const authorizeResult = (disableResult.stageResults[
+                "authorize-request"
+            ] ?? [])[0] as
+                | { authorized?: boolean; reason?: string }
+                | undefined;
+            if (authorizeResult?.authorized === false) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: authorizeResult.reason ?? "forbidden",
+                            message: "Not authorized to disable this account",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const cleanupResult = (disableResult.stageResults[
+                "cleanup-dependencies"
+            ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Disabled user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
-                revokedTokenCount: revokedCount,
+                revokedTokenCount: cleanupResult?.revokedTokenCount ?? 0,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
@@ -556,35 +571,51 @@ export function createUserRoutes(
 
         if (req.method === "DELETE" && !action) {
             const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
-            if (flowCtx?.hasFlow("deprovision-user")) {
-                const targetInfo = await getTargetInfo();
-                const targetRole = resolveEffectiveRole(
-                    targetInfo?.role,
-                    Boolean(targetInfo?.isFounder),
+            if (!flowCtx?.hasFlow("deprovision-user")) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "flow_unavailable",
+                            message: "deprovision-user flow not available",
+                        },
+                    }),
                 );
-                await flowCtx.runFlow("deprovision-user", {
-                    username,
-                    action: "delete" as const,
-                    callerRole: callerClaims?.role ?? "admin",
-                    targetRole,
-                    targetIsFounder: Boolean(targetInfo?.isFounder),
-                });
-                log?.("warn", "Deleted user account (flow).", {
-                    ...logMeta,
-                    accountId: adminClaims.sub,
-                    targetAccountId: username,
-                });
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { deleted: true } }));
                 return true;
             }
-            const revokedCount = ctx.revokeAccessTokensForSubject(username);
-            await accountStore.delete(username);
+            const targetInfo = await getTargetInfo();
+            const targetRole = resolveEffectiveRole(
+                targetInfo?.role,
+                Boolean(targetInfo?.isFounder),
+            );
+            const deleteResult = await flowCtx.runFlow("deprovision-user", {
+                username,
+                action: "delete" as const,
+                callerRole: callerClaims?.role ?? "admin",
+                targetRole,
+                targetIsFounder: Boolean(targetInfo?.isFounder),
+            });
+            const authorizeDeleteResult = (deleteResult.stageResults[
+                "authorize-request"
+            ] ?? [])[0] as
+                | { authorized?: boolean; reason?: string }
+                | undefined;
+            if (authorizeDeleteResult?.authorized === false) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: authorizeDeleteResult.reason ?? "forbidden",
+                            message: "Not authorized to delete this account",
+                        },
+                    }),
+                );
+                return true;
+            }
             log?.("warn", "Deleted user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
-                revokedTokenCount: revokedCount,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { deleted: true } }));

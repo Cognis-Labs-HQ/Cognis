@@ -11,7 +11,7 @@ import {
 } from "./shared.js";
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore, dispatch } = deps;
+    const { messagesStore, profileStore, dispatch, flowCtx } = deps;
     const ctx = resolveRouteContext(deps.routeContext);
 
     return async (
@@ -370,7 +370,21 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     return true;
                 }
-                const message = await messagesStore.appendMessage({
+                if (!flowCtx?.hasFlow("send-message")) {
+                    res.writeHead(503, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "flow_unavailable",
+                                message: "send-message flow not available",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const flowResult = await flowCtx.runFlow("send-message", {
                     roomId,
                     senderId: accountId,
                     ciphertext: body.ciphertext,
@@ -382,44 +396,31 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                             ? body.contentType
                             : "text/plain",
                 });
-                await messagesStore.setTyping(roomId, accountId, false);
-                if (dispatch) {
-                    const sender = await profileStore.getProfile(accountId);
-                    const senderHandle = sender?.handle ?? sender?.accountId;
-                    const members = await messagesStore.listMembers(roomId);
-                    for (const otherMember of members) {
-                        if (
-                            otherMember.accountId === accountId ||
-                            otherMember.muted
-                        ) {
-                            continue;
-                        }
-                        const pendingIncomingForRecipient =
-                            await messagesStore.getPendingIncomingRoomMessageRequest(
-                                roomId,
-                                otherMember.accountId,
-                            );
-                        if (pendingIncomingForRecipient) continue;
-                        const recipient = await profileStore.getProfile(
-                            otherMember.accountId,
-                        );
-                        if (!recipient) continue;
-                        await dispatch({
-                            category: "messages",
-                            recipientUsername: recipient.handle,
-                            subject: "New message",
-                            body: "New message",
-                            senderName: senderHandle,
-                            actionUrl: `/messages/${roomId}`,
-                            metadata: {
-                                roomId,
-                                messageId: message.id,
+                const persistResult = (flowResult.stageResults[
+                    "persist-message"
+                ] ?? [])[0] as
+                    | {
+                          messageId?: string;
+                          persisted?: boolean;
+                          message?: Record<string, unknown>;
+                      }
+                    | undefined;
+                if (!persistResult?.persisted) {
+                    res.writeHead(500, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "persist_failed",
+                                message: "Failed to send message",
                             },
-                        }).catch(() => undefined);
-                    }
+                        }),
+                    );
+                    return true;
                 }
                 res.writeHead(201, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: message }));
+                res.end(JSON.stringify({ data: persistResult.message }));
                 return true;
             }
         }

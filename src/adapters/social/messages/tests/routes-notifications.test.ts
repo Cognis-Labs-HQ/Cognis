@@ -2,6 +2,153 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createMessagesRoutes } from "../routes/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
+import {
+    CapabilityStore,
+    ensureCtxCapability,
+    registerCanonicalFlow,
+    MESSAGING_FLOW_CATALOG,
+} from "@cognis/core";
+import type { Ctx } from "@cognis/core";
+
+type MinimalMessagesStore = {
+    appendMessage(args: {
+        roomId: string;
+        senderId: string;
+        ciphertext: string;
+        iv: string;
+        authTag: string;
+        contentType: string;
+    }): Promise<Record<string, unknown>>;
+    setTyping(
+        roomId: string,
+        accountId: string,
+        typing: boolean,
+    ): Promise<void>;
+    listMembers(
+        roomId: string,
+    ): Promise<Array<{ accountId: string; muted: boolean }>>;
+    getPendingIncomingRoomMessageRequest(
+        roomId: string,
+        toAccountId: string,
+    ): Promise<unknown>;
+};
+
+type MinimalProfileStore = {
+    getProfile(accountId: string): Promise<Record<string, unknown> | null>;
+};
+
+type DispatchFn = (
+    envelope: Record<string, unknown>,
+) => Promise<{ dispatched: string[] }>;
+
+function makeFlowCtx(
+    messagesStore: MinimalMessagesStore,
+    profileStore: MinimalProfileStore,
+    dispatch: DispatchFn,
+): Ctx {
+    const capabilities = new CapabilityStore();
+    const flowCtx = ensureCtxCapability(capabilities);
+    const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(
+        (f) => f.id === "send-message",
+    );
+    if (sendMessageFlow) {
+        registerCanonicalFlow(flowCtx, sendMessageFlow);
+    }
+    flowCtx.addFlowStageHook(
+        "send-message",
+        "validate-message",
+        { id: "test:validate-message" },
+        (stageCtx) => {
+            const input = (stageCtx.input ?? {}) as {
+                ciphertext?: unknown;
+                iv?: unknown;
+            };
+            if (
+                typeof input.ciphertext !== "string" ||
+                typeof input.iv !== "string"
+            ) {
+                return { valid: false, reason: "missing_ciphertext_or_iv" };
+            }
+            return { valid: true };
+        },
+    );
+    flowCtx.addFlowStageHook(
+        "send-message",
+        "persist-message",
+        { id: "test:persist-message" },
+        async (stageCtx) => {
+            const input = (stageCtx.input ?? {}) as {
+                roomId?: string;
+                senderId?: string;
+                ciphertext?: string;
+                iv?: string;
+                authTag?: string;
+                contentType?: string;
+            };
+            const msg = await messagesStore.appendMessage({
+                roomId: input.roomId ?? "",
+                senderId: input.senderId ?? "",
+                ciphertext: input.ciphertext ?? "",
+                iv: input.iv ?? "",
+                authTag: input.authTag ?? "",
+                contentType: input.contentType ?? "text/plain",
+            });
+            await messagesStore.setTyping(
+                input.roomId ?? "",
+                input.senderId ?? "",
+                false,
+            );
+            return { persisted: true, message: msg, messageId: msg["id"] };
+        },
+    );
+    flowCtx.addFlowStageHook(
+        "send-message",
+        "fan-out",
+        { id: "test:fan-out" },
+        async (stageCtx) => {
+            const input = (stageCtx.input ?? {}) as {
+                roomId?: string;
+                senderId?: string;
+            };
+            const persistResult = (
+                (stageCtx.stageResults["persist-message"] ?? []) as Array<{
+                    persisted: boolean;
+                    messageId?: unknown;
+                }>
+            )[0];
+            if (!persistResult?.persisted) return { fanOut: false };
+            const members = await messagesStore.listMembers(input.roomId ?? "");
+            for (const member of members) {
+                if (member.accountId === input.senderId || member.muted) {
+                    continue;
+                }
+                const pending =
+                    await messagesStore.getPendingIncomingRoomMessageRequest(
+                        input.roomId ?? "",
+                        member.accountId,
+                    );
+                if (pending) continue;
+                const recipient = await profileStore.getProfile(
+                    member.accountId,
+                );
+                if (!recipient) continue;
+                await dispatch({
+                    category: "messages",
+                    recipientUsername: recipient["handle"],
+                    subject: "New message",
+                    body: "New message",
+                    actionUrl: `/messages/${input.roomId}`,
+                    metadata: {
+                        roomId: input.roomId,
+                        messageId: persistResult.messageId,
+                    },
+                }).catch(() => undefined);
+            }
+            return { fanOut: true };
+        },
+    );
+    return flowCtx;
+}
 
 function makeReq(method: string, token: string | null) {
     return {
@@ -234,6 +381,14 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
             return { dispatched: ["bob"] };
         },
         isAdapterEnabled: () => true,
+        flowCtx: makeFlowCtx(
+            messagesStore as any,
+            profileStore as any,
+            async (envelope: Record<string, unknown>) => {
+                dispatched.push(envelope);
+                return { dispatched: ["bob"] };
+            },
+        ),
     });
     let statusCode = 0;
     let responseBody = "";

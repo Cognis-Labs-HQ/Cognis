@@ -12,6 +12,7 @@ import { CoreRegistrationGateway } from "../gateway.js";
 import { createRegistrationPageRoutes } from "./page-routes.js";
 import { createRegistrationRoutes } from "./registration-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
+import { ensureCtxCapability } from "@cognis/core";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
@@ -173,7 +174,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.8",
+        version: "1.1.9",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs HQ",
@@ -183,6 +184,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         component: "registration-gateway",
         adapterCount: gateway.listAdapters().length,
     });
+
+    const flowCtx = ensureCtxCapability(ctx.capabilities);
+    if (flowCtx.hasFlow("bootstrap-platform")) {
+        flowCtx.addFlowStageHook(
+            "bootstrap-platform",
+            "register-flows",
+            { id: "registration-gateway:bootstrap-registration" },
+            () => ({ gatewayId: "registration", registeredFlowIds: [] }),
+        );
+    }
 }
 
 export { createRegistrationPageRoutes, createRegistrationRoutes };

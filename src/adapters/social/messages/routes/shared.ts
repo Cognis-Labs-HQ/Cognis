@@ -1,4 +1,5 @@
 import { hasMinRole } from "@cognis/core";
+import type { Ctx } from "@cognis/core";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbMessagesStore, MemberRow } from "../store.js";
 import type { AccountProfile, DbProfileStore } from "../../profile/store.js";
@@ -134,6 +135,7 @@ export interface MessagesRoutesDeps {
     dispatch: Dispatch | null;
     isAdapterEnabled: () => boolean;
     routeContext?: RouteContext;
+    flowCtx?: Ctx;
 }
 
 export async function enrichMembersWithProfiles(

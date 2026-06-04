@@ -42,7 +42,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.6` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.4` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.5` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.3` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
@@ -52,14 +52,14 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.0` |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.7` |
-| Social                | `src/gateways/social/`       | `1.2.4` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1` |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.8` |
+| Social                | `src/gateways/social/`       | `1.2.5` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
-| Registration          | `src/gateways/registration/` | `1.1.8` |
+| Registration          | `src/gateways/registration/` | `1.1.9` |
 | Logging               | `src/gateways/logging/`      | `1.5.1` |
-| Study                 | `src/gateways/study/`        | `1.5.6` |
-| Calendar              | `src/gateways/calendar/`     | `1.1.4` |
+| Study                 | `src/gateways/study/`        | `1.5.7` |
+| Calendar              | `src/gateways/calendar/`     | `1.1.5` |
 
 ## Core contracts
 
@@ -71,13 +71,13 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.1.8` |
+| API Server | `src/api/` | `0.1.9` |
 
 ## Modules
 
 | Component       | Path                              | Version |
 | --------------- | --------------------------------- | ------- |
 | Analytics       | `src/modules/analytics/`          | `2.0.1` |
-| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.0.7` |
+| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.0.8` |
 | Cognis Japanese | `src/modules/study/languages/ja/` | `1.2.4` |
 | Cognis English  | `src/modules/study/languages/en/` | `1.2.2` |

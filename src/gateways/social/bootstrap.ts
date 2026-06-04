@@ -233,7 +233,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.4",
+        version: "1.2.5",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
@@ -303,16 +303,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const roomId = String(
                 (input as Record<string, unknown>).roomId ?? "",
             );
-            const content = String(
-                (input as Record<string, unknown>).content ?? "",
+            const ciphertext = String(
+                (input as Record<string, unknown>).ciphertext ?? "",
             );
+            const iv = String((input as Record<string, unknown>).iv ?? "");
             if (!roomId) {
                 return { valid: false, reason: "missing_room_id" };
             }
-            if (!content.trim()) {
-                return { valid: false, reason: "empty_content" };
+            if (!ciphertext || !iv) {
+                return {
+                    valid: false,
+                    reason: "missing_ciphertext_or_iv",
+                };
             }
-            return { valid: true, roomId, content };
+            return { valid: true, roomId, ciphertext, iv };
         },
     );
 

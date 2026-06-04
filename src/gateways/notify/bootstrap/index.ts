@@ -20,7 +20,7 @@ import { createNotificationRoutes } from "../routes/index.js";
 import { loadNotificationStores, serveHtmlPage } from "./stores.js";
 import { createUserEmailRoutes } from "./user-email-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-routes.js";
-import { type Ctx } from "@cognis/core";
+import { ensureCtxCapability } from "@cognis/core";
 
 export { createUserEmailRoutes };
 
@@ -144,7 +144,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.7",
+        version: "1.4.8",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,
@@ -173,8 +173,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/notification-prefs.js",
     });
 
-    const flowCtx = ctx.capabilities.get<Ctx>("system:ctx");
-    if (flowCtx?.hasFlow("construct-settings-ui")) {
+    const flowCtx = ensureCtxCapability(ctx.capabilities);
+    if (flowCtx.hasFlow("construct-settings-ui")) {
         flowCtx.addFlowStageHook(
             "construct-settings-ui",
             "resolve-sections",

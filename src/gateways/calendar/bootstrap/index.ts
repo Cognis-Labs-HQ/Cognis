@@ -19,6 +19,7 @@ import { createCalendarAdapterRoutes } from "./adapter-routes.js";
 import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
+import { ensureCtxCapability } from "@cognis/core";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -184,10 +185,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.0.1",
+        version: "1.1.5",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
+
+    const flowCtx = ensureCtxCapability(ctx.capabilities);
+    if (flowCtx.hasFlow("bootstrap-platform")) {
+        flowCtx.addFlowStageHook(
+            "bootstrap-platform",
+            "register-flows",
+            { id: "calendar-gateway:bootstrap-registration" },
+            () => ({ gatewayId: "calendar", registeredFlowIds: [] }),
+        );
+    }
 }

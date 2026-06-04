@@ -13,6 +13,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
+import type { Ctx } from "@cognis/core";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -291,6 +292,8 @@ export async function bootstrapSocialAdapter(
             "/static/adapters/social/messages/reactions.js",
     });
 
+    const flowCtx = ctx.capabilities.get<Ctx>("system:ctx");
+
     ctx.registerRoute(
         createMessagesRoutes({
             messagesStore,
@@ -298,9 +301,100 @@ export async function bootstrapSocialAdapter(
             dispatch: dispatch ?? null,
             isAdapterEnabled: () => ctx.isGatewayEnabled(),
             routeContext,
+            flowCtx: flowCtx ?? undefined,
         }),
         "social",
     );
+
+    if (flowCtx?.hasFlow("send-message")) {
+        flowCtx.addFlowStageHook(
+            "send-message",
+            "persist-message",
+            { id: "social-messages-adapter:persist-message" },
+            async (stageCtx) => {
+                const input = stageCtx.input as {
+                    roomId: string;
+                    senderId: string;
+                    ciphertext: string;
+                    iv: string;
+                    authTag?: string;
+                    contentType?: string;
+                };
+                const message = await messagesStore.appendMessage({
+                    roomId: input.roomId,
+                    senderId: input.senderId,
+                    ciphertext: input.ciphertext,
+                    iv: input.iv,
+                    authTag: input.authTag ?? "",
+                    contentType: input.contentType ?? "text/plain",
+                });
+                await messagesStore.setTyping(
+                    input.roomId,
+                    input.senderId,
+                    false,
+                );
+                return { messageId: message.id, persisted: true, message };
+            },
+        );
+
+        flowCtx.addFlowStageHook(
+            "send-message",
+            "fan-out",
+            { id: "social-messages-adapter:fan-out" },
+            async (stageCtx) => {
+                if (!dispatch) return { dispatched: false };
+                const persistResults = (stageCtx.stageResults[
+                    "persist-message"
+                ] ?? []) as Array<{
+                    messageId?: string;
+                    persisted?: boolean;
+                    message?: { id: string };
+                }>;
+                const persistResult = persistResults[0];
+                if (!persistResult?.persisted || !persistResult.messageId) {
+                    return { dispatched: false };
+                }
+                const input = stageCtx.input as {
+                    roomId: string;
+                    senderId: string;
+                };
+                const sender = await profileStore.getProfile(input.senderId);
+                const senderHandle = sender?.handle ?? sender?.accountId;
+                const members = await messagesStore.listMembers(input.roomId);
+                for (const otherMember of members) {
+                    if (
+                        otherMember.accountId === input.senderId ||
+                        otherMember.muted
+                    ) {
+                        continue;
+                    }
+                    const pendingIncoming =
+                        await messagesStore.getPendingIncomingRoomMessageRequest(
+                            input.roomId,
+                            otherMember.accountId,
+                        );
+                    if (pendingIncoming) continue;
+                    const recipient = await profileStore.getProfile(
+                        otherMember.accountId,
+                    );
+                    if (!recipient) continue;
+                    await dispatch({
+                        category: "messages",
+                        recipientUsername: recipient.handle,
+                        subject: "New message",
+                        body: "New message",
+                        senderName: senderHandle,
+                        actionUrl: `/messages/${input.roomId}`,
+                        metadata: {
+                            roomId: input.roomId,
+                            messageId: persistResult.messageId,
+                        },
+                    }).catch(() => undefined);
+                }
+                return { dispatched: true };
+            },
+        );
+    }
 
     ctx.registerRoute(
         createMessagesPageRoutes(routeContext, () => ctx.isGatewayEnabled()),
