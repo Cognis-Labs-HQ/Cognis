@@ -32,7 +32,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
-import type { DbClassesStore, StudyLanguageRow } from '../store/index.js';
+import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
 type DispatchToRole = (

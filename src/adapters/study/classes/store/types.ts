@@ -1,63 +1,59 @@
-export type TeacherRequestStatus = 'pending' | 'approved' | 'rejected';
+export type TeacherRequestStatus = "pending" | "approved" | "rejected";
 
 export interface StudyLanguageRow {
-  code: string;
-  name: string;
-  flag: string;
-  available: boolean;
-  active: boolean;
-  sortOrder: number;
+    code: string;
+    name: string;
+    flag: string;
+    available: boolean;
+    active: boolean;
+    sortOrder: number;
 }
 
 export interface ClassRow {
-  id: string;
-  languageCode: string;
-  teacherAccountId: string;
-  createdAt: string;
+    id: string;
+    languageCode: string;
+    teacherAccountId: string;
+    createdAt: string;
 }
 
 export interface ClassroomStateRow {
-  classId: string;
-  studentLimit: number;
-  seatAssignments: Record<string, number>;
-  updatedAt: string;
+    classId: string;
+    studentLimit: number;
+    seatAssignments: Record<string, number>;
+    updatedAt: string;
 }
 
 export interface TeacherRequestRow {
-  id: string;
-  accountId: string;
-  languageCode: string;
-  status: TeacherRequestStatus;
-  reason: string | null;
-  reviewedBy: string | null;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    accountId: string;
+    languageCode: string;
+    status: TeacherRequestStatus;
+    reason: string | null;
+    reviewedBy: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface TeacherAssignmentRow {
-  accountId: string;
-  languageCode: string;
-  classId: string;
-  assignedAt: string;
+    accountId: string;
+    languageCode: string;
+    classId: string;
+    assignedAt: string;
 }
 
-export type ClassMembershipStatus =
-  | 'pending'
-  | 'member'
-  | 'rejected'
-  | 'left';
+export type ClassMembershipStatus = "pending" | "member" | "rejected" | "left";
 
 export interface ClassMembershipRow {
-  classId: string;
-  studentAccountId: string;
-  status: ClassMembershipStatus;
-  invitedBy: string | null;
-  joinedAt: string;
+    classId: string;
+    studentAccountId: string;
+    status: ClassMembershipStatus;
+    invitedBy: string | null;
+    joinedAt: string;
 }
 
 export interface StudyPreferencesRow {
-  accountId: string;
-  learningLanguages: string[];
-  teachingLanguages: string[];
-  updatedAt: string;
+    accountId: string;
+    learningLanguages: string[];
+    teachingLanguages: string[];
+    updatedAt: string;
 }

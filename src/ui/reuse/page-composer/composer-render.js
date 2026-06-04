@@ -11,7 +11,13 @@
  * @param {object} deps
  * @returns {object}
  */
-import { buildOccupiedSet, checkPlacement, gridStep, halfGrid, registerOccupiedPlacement, } from './grid-math.js';
+import {
+    buildOccupiedSet,
+    checkPlacement,
+    gridStep,
+    halfGrid,
+    registerOccupiedPlacement,
+} from "./grid-math.js";
 
 export function createComposerRenderer({
     state,
@@ -24,6 +30,11 @@ export function createComposerRenderer({
     createCell,
     createMissingCell,
     createElementsPanel,
+    computeGridDimensions,
+    initializePlacements,
+    applyLayoutForCurrentGridColumns,
+    computeSubGridDimensions,
+    initializeSubPlacements,
     syncEditToggle,
     mountSubComposer,
     unmountSubComposer,
@@ -85,7 +96,11 @@ export function createComposerRenderer({
      * @param {Array<{ id: string, gridSize?: object }>} [elems]
      * @returns {{ min: number, max: number }}
      */
-    function resolvePlacementWidthBounds(placement, maxCols, elems = state.elements) {
+    function resolvePlacementWidthBounds(
+        placement,
+        maxCols,
+        elems = state.elements,
+    ) {
         const element = elems.find((entry) => entry.id === placement.id);
         const currentWidth = Math.min(maxCols, Math.max(1, placement.w));
         if (!element) {
@@ -444,18 +459,20 @@ export function createComposerRenderer({
         const adjustedById = new Map(
             adjustedPlacements.map((placement) => [placement.id, placement]),
         );
-        subState.layout.placements = subState.layout.placements.map((placement) => {
-            const adjusted = adjustedById.get(placement.id);
-            return adjusted
-                ? {
-                      ...placement,
-                      col: adjusted.col,
-                      row: adjusted.row,
-                      w: adjusted.w,
-                      h: adjusted.h,
-                  }
-                : placement;
-        });
+        subState.layout.placements = subState.layout.placements.map(
+            (placement) => {
+                const adjusted = adjustedById.get(placement.id);
+                return adjusted
+                    ? {
+                          ...placement,
+                          col: adjusted.col,
+                          row: adjusted.row,
+                          w: adjusted.w,
+                          h: adjusted.h,
+                      }
+                    : placement;
+            },
+        );
     }
 
     function computeViewPlacements() {
@@ -555,11 +572,11 @@ export function createComposerRenderer({
         section.className = "content-section";
         panel.appendChild(section);
         state.contentGrid.appendChild(panel);
-        gridSection = section;
+        state.gridSection = section;
 
         if (state.editing) {
             section.classList.add("composer-grid-active");
-            section.style.minHeight = `${gridRows * UNIT}px`;
+            section.style.minHeight = `${state.gridRows * UNIT}px`;
             section.style.width = `${state.gridCols * UNIT}px`;
             section.appendChild(createGridOverlay());
         } else if (!state.frameless) {
@@ -594,7 +611,9 @@ export function createComposerRenderer({
                 );
             }
             for (const placement of visiblePlacements) {
-                const element = state.elements.find((e) => e.id === placement.id);
+                const element = state.elements.find(
+                    (e) => e.id === placement.id,
+                );
                 const card = document.createElement("section");
                 const isMissing = !element;
                 card.className = isMissing
@@ -618,7 +637,9 @@ export function createComposerRenderer({
 
         if (state.editing) {
             for (const placement of visiblePlacements) {
-                const element = state.elements.find((e) => e.id === placement.id);
+                const element = state.elements.find(
+                    (e) => e.id === placement.id,
+                );
                 if (!element) {
                     section.appendChild(createMissingCell(placement));
                     continue;
@@ -647,7 +668,9 @@ export function createComposerRenderer({
 
     function getEffectiveLayout() {
         const allIds = state.elements.map((e) => e.id);
-        const pinnedIds = state.elements.filter((e) => e.pinned).map((e) => e.id);
+        const pinnedIds = state.elements
+            .filter((e) => e.pinned)
+            .map((e) => e.id);
         const storedOrder = (state.layout?.order ?? []).filter((id) =>
             allIds.includes(id),
         );
@@ -689,7 +712,8 @@ export function createComposerRenderer({
                     : "";
                 const editingClass = state.editing ? " composer-editing" : "";
                 const isActive =
-                    state.subPageNavigation && element.id === state.activeSubPageId;
+                    state.subPageNavigation &&
+                    element.id === state.activeSubPageId;
                 const activeClass = isActive ? " active" : "";
                 const hiddenAttr =
                     state.subPageNavigation && !isActive ? " hidden" : "";
@@ -722,7 +746,7 @@ export function createComposerRenderer({
         return `
       <aside class="composer-library">
         <div class="composer-library-header">
-          <h3>${i18n.t("ui.reuse.state.elements")}</h3>
+          <h3>${i18n.t("ui.reuse.elements")}</h3>
         </div>
         <ul class="composer-library-list">${listItems}${emptyMsg}</ul>
       </aside>
@@ -734,7 +758,9 @@ export function createComposerRenderer({
         let html = "";
 
         const cardsHtml = renderCards(effectiveLayout);
-        const editingClass = state.editing ? " composer-content-panel--state.editing" : "";
+        const editingClass = state.editing
+            ? " composer-content-panel--state.editing"
+            : "";
         html += `<article class="content-panel${editingClass}">${cardsHtml}</article>`;
 
         if (state.editing) {
@@ -750,9 +776,13 @@ export function createComposerRenderer({
             element?.state.onRender?.();
         }
         state.onRender?.();
-        const activeEl = state.elements.find((e) => e.id === state.activeSubPageId);
+        const activeEl = state.elements.find(
+            (e) => e.id === state.activeSubPageId,
+        );
         if (activeEl?.subComposerOptions) {
-            const outerDiv = state.contentGrid.querySelector(`#${state.activeSubPageId}`);
+            const outerDiv = state.contentGrid.querySelector(
+                `#${state.activeSubPageId}`,
+            );
             const sectionDiv =
                 outerDiv?.querySelector(".sub-composer-inner") ??
                 outerDiv ??
@@ -776,17 +806,19 @@ export function createComposerRenderer({
                 });
             });
 
-        state.contentGrid.querySelectorAll("[data-composer-add]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                const id = btn.dataset.composerAdd;
-                const effective = getEffectiveLayout();
-                state.layout = {
-                    order: effective.order,
-                    hidden: effective.hidden.filter((h) => h !== id),
-                };
-                renderSubPageComposer();
+        state.contentGrid
+            .querySelectorAll("[data-composer-add]")
+            .forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const id = btn.dataset.composerAdd;
+                    const effective = getEffectiveLayout();
+                    state.layout = {
+                        order: effective.order,
+                        hidden: effective.hidden.filter((h) => h !== id),
+                    };
+                    renderSubPageComposer();
+                });
             });
-        });
 
         state.contentGrid
             .querySelectorAll("[data-composer-element][draggable]")
@@ -824,7 +856,8 @@ export function createComposerRenderer({
                     event.preventDefault();
                     card.classList.remove("composer-drag-over");
                     const targetId = card.dataset.composerElement;
-                    if (!state.dragSourceId || state.dragSourceId === targetId) return;
+                    if (!state.dragSourceId || state.dragSourceId === targetId)
+                        return;
 
                     const effective = getEffectiveLayout();
                     const visibleOrder = effective.order.filter(
@@ -846,7 +879,10 @@ export function createComposerRenderer({
                             effective.hidden.includes(id),
                         ),
                     ];
-                    state.layout = { order: newOrder, hidden: effective.hidden };
+                    state.layout = {
+                        order: newOrder,
+                        hidden: effective.hidden,
+                    };
                     renderSubPageComposer();
                 });
             });
@@ -861,5 +897,11 @@ export function createComposerRenderer({
         }
     }
 
-    return { render, renderGridComposer, computeSubViewPlacements, syncLayoutToCurrentGridColumns, syncSubLayoutToCurrentGridColumns, };
+    return {
+        render,
+        renderGridComposer,
+        computeSubViewPlacements,
+        syncLayoutToCurrentGridColumns,
+        syncSubLayoutToCurrentGridColumns,
+    };
 }

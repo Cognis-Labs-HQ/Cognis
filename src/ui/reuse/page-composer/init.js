@@ -1,72 +1,8 @@
 /**
- * Page composer — orchestrates the full dashboard layout for a page. For pages
- * without sub-page navigation, renders a free-form grid (Android-widget-style)
- * where elements are absolutely positioned, draggable, and resizable. For
- * sub-page navigation pages (settings, administration, docs), renders the
- * traditional vertical list with section switching.
- *
- * Layouts are persisted to the user-preferences API under the caller-supplied key
- * so each page retains its own arrangement independently.
- *
- * Public exports:
- *   createPageComposer(root, options) — creates a layout composer and returns
- *     an instance with init() and refresh() methods.
- *
- * Usage:
- *   const composer = createPageComposer(document.querySelector('#app'), {
- *     allowCustomization: true,
- *     elements: [
- *       {
- *         id: 'modules',
- *         label: 'Modules',
- *         render: () => '<h2>Modules</h2>...',
- *         gridSize: { default: [4, 3], min: [2, 2], max: [6, 4] },
- *       },
- *       { id: 'pinned-widget', label: 'Widget', render: () => '...', pinned: true },
- *     ],
- *     preferenceKey: 'administration-layout',
- *     i18n,
- *     pageContext: { title: 'Administration', subtitle: 'Admin tools and controls.' },
- *     onRender: () => bindMyPageEvents(),
- *   });
- *   await composer.init();
- *   // Later, re-render with fresh data:
- *   composer.refresh(updatedElements);
- *
- * Sub-page navigation:
- *   Pass subPageNavigation: true to show only one element at a time. Toolbar
- *   buttons with [data-composer-scroll] become section selectors — clicking one
- *   shows that section, hides the others, and marks the button active. The active
- *   section is also reflected in the URL hash so deep-links work.
- *
- * Pinned elements:
- *   Set pinned: true on an element to prevent it from being removed by the user.
- *   Pinned elements still appear in the drag handle for reordering but have no
- *   remove button.
- *
- * Grid size:
- *   Each element may declare a gridSize field to control its size on the grid.
- *   Example: gridSize: { default: [4, 3], min: [2, 2], max: [6, 4] }
- *   When absent, defaults to { default: [4, 3], min: [2, 2] }.
- *   Each value is [width, height] in grid units (90 px each).
- *   Magic string values for max:
- *     'full'  — spans all available columns (full width).
- *     'half'  — spans half the available columns (half width). When the grid
- *               dimension is odd, placements snap to half-grid increments
- *               (UNIT / 2 steps) so elements can fill the space evenly.
- *     'fill'  — spans the remaining columns from the placement position to
- *               the right edge of the grid (fill remaining space).
- *   To apply half/fill on both axes, use max: ['half', 'half'] or max: ['fill', 'fill'].
- *   To mix, use max: ['half', n], max: ['fill', n], max: [n, 'half'], etc.
- *
- * Multi-column layout:
- *   Pass columns: 2 to render the content grid in two columns (sub-page navigation
- *   path only). Grid mode handles layout natively and ignores this option.
- *
- * Sub-composer heading:
- *   Pass heading: 'Section title' in subComposerOptions to render an h2 above the
- *   sub-composer grid. The heading is rendered outside the inner grid container so
- *   it is preserved across re-renders triggered by resize or sub-page switching.
+ * Page composer layout orchestration.
+ * Export: createPageComposer(root, options).
+ * Usage: const composer = createPageComposer(root, { allowCustomization: true, elements, preferenceKey, i18n }); await composer.init();
+ * Supports grid and sub-page layouts, per-grid persistence, and nested sub-composers.
  *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
@@ -101,16 +37,15 @@
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
-
-import { apiFetch, configureConnectionRecoveryPrompt } from '../api-client.js';
-import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
-import { prefersReducedMotion } from '../motion.js';
-import { showToast, configureToastDismissLabel } from '../toast.js';
-import { createFormDraftManager } from './form-draft.js';
-import { createLayoutPersistence } from './layout-persistence.js';
-import { createGridOverlayHandlers } from './grid-overlay.js';
-import { createSubComposerHandlers } from './sub-composer.js';
-import { createComposerRenderer } from './composer-render.js';
+import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
+import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
+import { prefersReducedMotion } from "../motion.js";
+import { showToast, configureToastDismissLabel } from "../toast.js";
+import { createFormDraftManager } from "./form-draft.js";
+import { createLayoutPersistence } from "./layout-persistence.js";
+import { createGridOverlayHandlers } from "./grid-overlay.js";
+import { createSubComposerHandlers } from "./sub-composer.js";
+import { createComposerRenderer } from "./composer-render.js";
 
 const TOOLBAR_TOGGLE_OPEN_SVG =
     '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
@@ -195,45 +130,43 @@ export function createPageComposer(
             window.removeEventListener("beforeunload", handleBeforeUnload);
         }
     }
-
-
     const {
-    getLayoutForGrid,
-    loadLayoutByKey,
-    saveLayoutByKey,
-    cloneLayoutData,
-} = createLayoutPersistence({ apiFetch });
+        getLayoutForGrid,
+        loadLayoutByKey,
+        saveLayoutByKey,
+        cloneLayoutData,
+    } = createLayoutPersistence({ apiFetch });
 
     const {
         captureFormState,
-    restoreFormState,
-    mergeFormStateSnapshots,
-    loadPersistedFormState,
-    bindFormDraftPersistence,
-} = createFormDraftManager({
-    FORM_DRAFT_STORAGE_PREFIX,
-    LARGE_FORM_RESET_FIELD_THRESHOLD,
-    i18n,
-});
+        restoreFormState,
+        mergeFormStateSnapshots,
+        loadPersistedFormState,
+        bindFormDraftPersistence,
+    } = createFormDraftManager({
+        FORM_DRAFT_STORAGE_PREFIX,
+        LARGE_FORM_RESET_FIELD_THRESHOLD,
+        i18n,
+    });
 
     async function loadLayout() {
-    const loaded = await loadLayoutByKey(preferenceKey, gridCols);
-    layoutProfiles = loaded.profiles;
-    return cloneLayoutData(loaded.layout);
-}
+        const loaded = await loadLayoutByKey(preferenceKey, gridCols);
+        layoutProfiles = loaded.profiles;
+        return cloneLayoutData(loaded.layout);
+    }
 
     function hasStoredLayoutProfiles() {
-    return Object.keys(layoutProfiles?.layoutsByGrid ?? {}).length > 0;
-}
+        return Object.keys(layoutProfiles?.layoutsByGrid ?? {}).length > 0;
+    }
 
     async function saveLayout() {
-    layoutProfiles = await saveLayoutByKey(
-        preferenceKey,
-        layoutProfiles,
-        gridCols,
-        layout,
-    );
-}
+        layoutProfiles = await saveLayoutByKey(
+            preferenceKey,
+            layoutProfiles,
+            gridCols,
+            layout,
+        );
+    }
 
     function applyLayoutForCurrentGridColumns() {
         const selected = getLayoutForGrid(layoutProfiles, gridCols);
@@ -357,154 +290,166 @@ export function createPageComposer(
         };
     }
 
-
     function getSubPanelId(preferenceKey) {
-    return (
-        'composer-elements-panel-' +
-        preferenceKey.replace(/[^a-z0-9]/g, '-')
-    );
-}
+        return (
+            "composer-elements-panel-" +
+            preferenceKey.replace(/[^a-z0-9]/g, "-")
+        );
+    }
 
     const composerState = {
-    root,
-    allowCustomization,
-    frameless,
-    preferenceKey,
-    persistLayoutPreferences,
-    subPageNavigation,
-    onRender,
-    get elements() {
-        return elements;
-    },
-    set elements(value) {
-        elements = value;
-    },
-    get layout() {
-        return layout;
-    },
-    set layout(value) {
-        layout = value;
-    },
-    get editing() {
-        return editing;
-    },
-    set editing(value) {
-        editing = value;
-    },
-    get dragSourceId() {
-        return dragSourceId;
-    },
-    set dragSourceId(value) {
-        dragSourceId = value;
-    },
-    get contentGrid() {
-        return contentGrid;
-    },
-    set contentGrid(value) {
-        contentGrid = value;
-    },
-    get activeSubPageId() {
-        return activeSubPageId;
-    },
-    set activeSubPageId(value) {
-        activeSubPageId = value;
-    },
-    get panelPosition() {
-        return panelPosition;
-    },
-    set panelPosition(value) {
-        panelPosition = value;
-    },
-    get layoutSnapshot() {
-        return layoutSnapshot;
-    },
-    set layoutSnapshot(value) {
-        layoutSnapshot = value;
-    },
-    get gridCols() {
-        return gridCols;
-    },
-    set gridCols(value) {
-        gridCols = value;
-    },
-    get gridRows() {
-        return gridRows;
-    },
-    set gridRows(value) {
-        gridRows = value;
-    },
-    get gridSection() {
-        return gridSection;
-    },
-    set gridSection(value) {
-        gridSection = value;
-    },
-};
+        root,
+        allowCustomization,
+        frameless,
+        preferenceKey,
+        persistLayoutPreferences,
+        subPageNavigation,
+        onRender,
+        get elements() {
+            return elements;
+        },
+        set elements(value) {
+            elements = value;
+        },
+        get layout() {
+            return layout;
+        },
+        set layout(value) {
+            layout = value;
+        },
+        get editing() {
+            return editing;
+        },
+        set editing(value) {
+            editing = value;
+        },
+        get dragSourceId() {
+            return dragSourceId;
+        },
+        set dragSourceId(value) {
+            dragSourceId = value;
+        },
+        get contentGrid() {
+            return contentGrid;
+        },
+        set contentGrid(value) {
+            contentGrid = value;
+        },
+        get activeSubPageId() {
+            return activeSubPageId;
+        },
+        set activeSubPageId(value) {
+            activeSubPageId = value;
+        },
+        get panelPosition() {
+            return panelPosition;
+        },
+        set panelPosition(value) {
+            panelPosition = value;
+        },
+        get layoutSnapshot() {
+            return layoutSnapshot;
+        },
+        set layoutSnapshot(value) {
+            layoutSnapshot = value;
+        },
+        get gridCols() {
+            return gridCols;
+        },
+        set gridCols(value) {
+            gridCols = value;
+        },
+        get gridRows() {
+            return gridRows;
+        },
+        set gridRows(value) {
+            gridRows = value;
+        },
+        get gridSection() {
+            return gridSection;
+        },
+        set gridSection(value) {
+            gridSection = value;
+        },
+    };
 
     let renderer;
 
     const gridOverlayHandlers = createGridOverlayHandlers({
-    state: composerState,
-    UNIT,
-    i18n,
-    getGridSize,
-    renderGridComposer: () => renderer.renderGridComposer(),
-    saveLayout,
-    endEditMode,
-});
+        state: composerState,
+        UNIT,
+        i18n,
+        getGridSize,
+        renderGridComposer: () => renderer.renderGridComposer(),
+        saveLayout,
+        endEditMode,
+    });
 
     const subComposerHandlers = createSubComposerHandlers({
-    i18n,
-    UNIT,
-    beginEditMode,
-    endEditMode,
-    getGridSize,
-    getSubPanelId,
-    getComposerPanelSafeTop:
-        gridOverlayHandlers.getComposerPanelSafeTop,
-    clampComposerPanelLeft:
-        gridOverlayHandlers.clampComposerPanelLeft,
-    buildDropZoneLine: gridOverlayHandlers.buildDropZoneLine,
-    loadLayoutFor: loadLayoutByKey,
-    saveLayoutFor: saveLayoutByKey,
-    cloneLayoutData,
-    captureFormState,
-    restoreFormState,
-    mergeFormStateSnapshots,
-    loadPersistedFormState,
-    bindFormDraftPersistence,
-    computeSubViewPlacements: (subState) =>
-        renderer.computeSubViewPlacements(subState),
-    syncSubEditToggle,
-});
+        i18n,
+        UNIT,
+        beginEditMode,
+        endEditMode,
+        getGridSize,
+        getSubPanelId,
+        getComposerPanelSafeTop: gridOverlayHandlers.getComposerPanelSafeTop,
+        clampComposerPanelLeft: gridOverlayHandlers.clampComposerPanelLeft,
+        getComposerPanelHorizontalBounds:
+            gridOverlayHandlers.getComposerPanelHorizontalBounds,
+        buildDropZoneLine: gridOverlayHandlers.buildDropZoneLine,
+        loadLayoutFor: loadLayoutByKey,
+        saveLayoutFor: saveLayoutByKey,
+        cloneLayoutData,
+        captureFormState,
+        restoreFormState,
+        mergeFormStateSnapshots,
+        loadPersistedFormState,
+        bindFormDraftPersistence,
+        computeSubViewPlacements: (subState) =>
+            renderer.computeSubViewPlacements(subState),
+        syncSubEditToggle,
+    });
 
     renderer = createComposerRenderer({
-    state: composerState,
-    UNIT,
-    i18n,
-    escapeHtml,
-    getGridSize,
-    renderMissingElementContent:
-        gridOverlayHandlers.renderMissingElementContent,
-    createGridOverlay: gridOverlayHandlers.createGridOverlay,
-    createCell: gridOverlayHandlers.createCell,
-    createMissingCell: gridOverlayHandlers.createMissingCell,
-    createElementsPanel: gridOverlayHandlers.createElementsPanel,
-    syncEditToggle,
-    mountSubComposer: subComposerHandlers.mountSubComposer,
-    unmountSubComposer: subComposerHandlers.unmountSubComposer,
-    captureFormState,
-    restoreFormState,
-    mergeFormStateSnapshots,
-    loadPersistedFormState,
-    bindFormDraftPersistence,
-});
+        state: composerState,
+        UNIT,
+        i18n,
+        escapeHtml,
+        getGridSize,
+        renderMissingElementContent:
+            gridOverlayHandlers.renderMissingElementContent,
+        createGridOverlay: gridOverlayHandlers.createGridOverlay,
+        createCell: gridOverlayHandlers.createCell,
+        createMissingCell: gridOverlayHandlers.createMissingCell,
+        createElementsPanel: gridOverlayHandlers.createElementsPanel,
+        computeGridDimensions: gridOverlayHandlers.computeGridDimensions,
+        initializePlacements: gridOverlayHandlers.initializePlacements,
+        applyLayoutForCurrentGridColumns,
+        computeSubGridDimensions: subComposerHandlers.computeSubGridDimensions,
+        initializeSubPlacements: subComposerHandlers.initializeSubPlacements,
+        syncEditToggle,
+        mountSubComposer: subComposerHandlers.mountSubComposer,
+        unmountSubComposer: subComposerHandlers.unmountSubComposer,
+        captureFormState,
+        restoreFormState,
+        mergeFormStateSnapshots,
+        loadPersistedFormState,
+        bindFormDraftPersistence,
+    });
 
     const { compactPlacements } = gridOverlayHandlers;
-    const { mountSubComposer, unmountSubComposer, renderSubGrid, compactSubPlacements } =
-        subComposerHandlers;
-    const { render, renderGridComposer, syncLayoutToCurrentGridColumns, syncSubLayoutToCurrentGridColumns } =
-        renderer;
+    const {
+        mountSubComposer,
+        unmountSubComposer,
+        renderSubGrid,
+        compactSubPlacements,
+    } = subComposerHandlers;
+    const {
+        render,
+        renderGridComposer,
+        syncLayoutToCurrentGridColumns,
+        syncSubLayoutToCurrentGridColumns,
+    } = renderer;
 
     function syncSubEditToggle(state) {
         const editBtn = getComposerEditToggleButton();
@@ -543,7 +488,7 @@ export function createPageComposer(
                     compactSubPlacements(state);
                     state.editing = false;
                     endEditMode();
-                                            state.layoutProfiles = await saveLayoutByKey(
+                    state.layoutProfiles = await saveLayoutByKey(
                         state.preferenceKey,
                         state.layoutProfiles,
                         state.gridCols,

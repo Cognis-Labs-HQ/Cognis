@@ -1,4 +1,3 @@
-
 .composer-view-grid {
     display: grid;
     grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
@@ -397,4 +396,3 @@
 .clock-analogue-centre {
     fill: var(--accent);
 }
-
