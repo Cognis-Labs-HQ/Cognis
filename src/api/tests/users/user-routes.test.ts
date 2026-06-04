@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
+import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
 import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
 import {
@@ -17,7 +18,7 @@ import {
 } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 
-function makeGetCapability(accountStore: LocalAccountStore) {
+function makeRouteContext(accountStore: LocalAccountStore) {
     const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
     const capabilities = new CapabilityStore();
     const flowCtx = createCtx();
@@ -174,8 +175,11 @@ function makeGetCapability(accountStore: LocalAccountStore) {
             return { cleaned: true, revokedTokenCount: revokedCount };
         },
     );
-    return <T>(capabilityId: string): T | undefined =>
-        capabilities.get<T>(capabilityId);
+    return createDefaultRouteContext({
+        getCapability: capabilities.get.bind(capabilities),
+        requireCapability: capabilities.require.bind(capabilities),
+        flow: flowCtx.flow,
+    });
 }
 
 const adminToken = issueAccessToken("admin", "admin", 60);
@@ -194,8 +198,7 @@ test("user routes create/list/update lifecycle", async () => {
         undefined,
         undefined,
         undefined,
-        undefined,
-        makeGetCapability(accounts),
+        makeRouteContext(accounts),
     );
     let body = "";
     let status = 0;
@@ -289,8 +292,7 @@ test("user routes log account disable operations", async () => {
         },
         undefined,
         undefined,
-        undefined,
-        makeGetCapability(accounts),
+        makeRouteContext(accounts),
     );
     let status = 0;
 
@@ -494,8 +496,7 @@ test("disabling a user invalidates existing access tokens for that user", async 
         undefined,
         undefined,
         undefined,
-        undefined,
-        makeGetCapability(accounts),
+        makeRouteContext(accounts),
     );
     let status = 0;
 
@@ -528,8 +529,7 @@ test("deleting a user invalidates existing access tokens for that user", async (
         undefined,
         undefined,
         undefined,
-        undefined,
-        makeGetCapability(accounts),
+        makeRouteContext(accounts),
     );
     let status = 0;
 
@@ -562,8 +562,7 @@ test("deleting a user frees the username for re-registration", async () => {
         undefined,
         undefined,
         undefined,
-        undefined,
-        makeGetCapability(accounts),
+        makeRouteContext(accounts),
     );
     let status = 0;
 
@@ -617,8 +616,7 @@ test("admins cannot manage admin or owner accounts while owner can manage others
         undefined,
         undefined,
         undefined,
-        undefined,
-        makeGetCapability(accounts),
+        makeRouteContext(accounts),
     );
     let status = 0;
 
@@ -942,13 +940,14 @@ test("users list includes hasTfaConfigured when tfa capability is present", asyn
         undefined,
         undefined,
         undefined,
-        undefined,
-        <T>(capabilityId: string): T | undefined => {
-            if (capabilityId !== "tfa:isSecondFactorEnabled") {
-                return undefined;
-            }
-            return (async (accountId: string) => accountId === "alice") as T;
-        },
+        createDefaultRouteContext({
+            getCapability: <T>(capabilityId: string): T | undefined => {
+                if (capabilityId !== "tfa:isSecondFactorEnabled") {
+                    return undefined;
+                }
+                return (async (accountId: string) => accountId === "alice") as T;
+            },
+        }),
     );
 
     await route(

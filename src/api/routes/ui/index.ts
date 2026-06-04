@@ -4,7 +4,6 @@ import path from "node:path";
 import {
     isRoleAllowed,
     type BootstrapLog,
-    type Ctx,
     type ModuleRuntimeGateway,
     type GatewayRegistry,
 } from "@cognis/core";
@@ -250,7 +249,6 @@ export function createUiRoutes(
     isModuleEnabled?: (moduleId: string) => boolean,
     log?: BootstrapLog,
     routeContext?: RouteContext,
-    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -765,14 +763,11 @@ export function createUiRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const flowCtx = getCapability?.<Ctx>("system:ctx");
             let sections: unknown[];
-            if (flowCtx?.hasFlow("construct-settings-ui")) {
-                const result = await flowCtx.runFlow(
-                    "construct-settings-ui",
-                    undefined,
-                    { meta: { uiRegistry } },
-                );
+            if (ctx.flow.exists("construct-settings-ui")) {
+                const result = await ctx.flow.run("construct-settings-ui", undefined, {
+                    meta: { uiRegistry },
+                });
                 const flowSections = result.data["sections"] as
                     | unknown[]
                     | undefined;

@@ -82,7 +82,7 @@ export async function bootstrapNotifyAdapter(
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
-    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
+    const dbExecutor = ctx.capabilities.get("db:executor");
 
     if (dbExecutor) {
         const secret = getDataEncryptionKey();

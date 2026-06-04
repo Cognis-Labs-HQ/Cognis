@@ -4,8 +4,6 @@ import { createModuleExtensionRoutes } from "../module-extensions.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
 
-const { requireRoleAccess } = createDefaultRouteContext();
-
 test("module extension routes expose module API endpoints", async () => {
     const mockDb = {
         async ensureTable() {},
@@ -28,9 +26,10 @@ test("module extension routes expose module API endpoints", async () => {
         () => true,
         undefined,
         {
-            requireRoleAccess,
-            getCapability: (id: string) =>
-                id === "db:executor" ? mockDb : undefined,
+            routeContext: createDefaultRouteContext({
+                getCapability: (id: string) =>
+                    id === "db:executor" ? mockDb : undefined,
+            }),
         },
     );
     await extensions.refresh();
@@ -72,7 +71,7 @@ test("module extension routes enforce declared minimum role policies", async () 
         } as any,
         () => true,
         undefined,
-        { requireRoleAccess },
+        { routeContext: createDefaultRouteContext() },
     );
     await extensions.refresh();
 
@@ -113,7 +112,7 @@ test("module extension routes fail closed on invalid role access policies", asyn
         } as any,
         () => true,
         undefined,
-        { requireRoleAccess },
+        { routeContext: createDefaultRouteContext() },
     );
     await extensions.refresh();
 
@@ -163,7 +162,7 @@ test("module extension routes register module admin sections with enable hooks",
         () => enabled,
         undefined,
         {
-            requireRoleAccess,
+            routeContext: createDefaultRouteContext(),
             uiRegistry: {
                 registerModuleStaticDir() {},
                 registerAdminSection(section: any) {

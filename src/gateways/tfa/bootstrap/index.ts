@@ -11,11 +11,7 @@ import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    if (!dbExecutor) {
-        throw new Error("db_executor_unavailable");
-    }
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
 
     const store = new DbTfaStore(dbExecutor);
     await store.ensureSchema();

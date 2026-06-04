@@ -175,11 +175,7 @@ function createSocialAdapterRoutes(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    if (!dbExecutor) {
-        throw new Error("db_executor_unavailable");
-    }
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
     const configStore = new DbAdapterConfigStore(dbExecutor);
     await configStore.ensureSchema();
 
@@ -211,7 +207,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerAuthTypingMessage: (message) =>
             ctx.uiRegistry?.registerAuthTypingMessage(message),
         log: ctx.log,
-        dbExecutor,
         isGatewayEnabled: () =>
             ctx.gatewayRegistry.get("social")?.status !== "disabled",
     });

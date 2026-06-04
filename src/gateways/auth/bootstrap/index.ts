@@ -1,21 +1,15 @@
 import path from "node:path";
 import type { IncomingMessage } from "node:http";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
-import type { RouteContext } from "../../../api/reuse/route-context.js";
 import {
-    canAccessUserData,
-    getAuthClaims,
-    getCookieSession,
-    hasMinRole,
-    requireAuth,
-    requireRoleAccess,
-    setPageSecurityHeaders,
+    createDefaultRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
+import {
     type CapabilityStore,
     type GatewayBootstrapContext,
 } from "../../shared.js";
 import {
-    lookupAccessToken,
-    revokeAccessTokensForSubject,
     type AccessRole,
 } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
@@ -130,11 +124,7 @@ export async function runAuthRouteBootstrapHooks(
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    if (!dbExecutor) {
-        throw new Error("db_executor_unavailable");
-    }
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
 
     const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
     await accountStore.ensureSchema();
@@ -263,17 +253,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
     });
 
-    const routeContext: RouteContext = {
-        getAuthClaims,
-        requireAuth,
-        requireRoleAccess,
-        canAccessUserData,
-        hasMinRole,
-        getCookieSession,
-        setPageSecurityHeaders,
-        lookupAccessToken,
-        revokeAccessTokensForSubject,
-    };
+    const routeContext: RouteContext = createDefaultRouteContext({
+        getCapability: ctx.capabilities.get.bind(ctx.capabilities),
+        requireCapability: ctx.capabilities.require.bind(ctx.capabilities),
+        flow: ctx.flow,
+    });
     await runAuthBootstrapHooks({
         accountStore,
         authGateway,

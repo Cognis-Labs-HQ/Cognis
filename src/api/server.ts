@@ -78,7 +78,6 @@ export interface ApiDependencies {
         moduleId: string,
         enabled: boolean,
     ) => Promise<void> | void;
-    getModuleCapability?: <T>(capabilityId: string) => T | undefined;
     routeContext?: RouteContext;
 }
 
@@ -114,8 +113,7 @@ export function buildServer(deps: ApiDependencies) {
         log,
         {
             uiRegistry: deps.uiRegistry,
-            getCapability: deps.getModuleCapability,
-            requireRoleAccess: routeContext.requireRoleAccess,
+            routeContext,
         },
     );
 
@@ -146,7 +144,6 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
         log,
         routeContext,
-        deps.getModuleCapability,
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(
@@ -157,7 +154,6 @@ export function buildServer(deps: ApiDependencies) {
         (moduleId) => enabledModules.has(moduleId),
         log,
         routeContext,
-        deps.getModuleCapability,
     );
     const userRoutes = deps.accountStore
         ? createUserRoutes(
@@ -168,7 +164,6 @@ export function buildServer(deps: ApiDependencies) {
               deps.getProfileVisibility,
               deps.setProfileVisibility,
               routeContext,
-              deps.getModuleCapability,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry

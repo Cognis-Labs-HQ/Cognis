@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    CTX_CAPABILITY,
+    createCtx,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap as bootstrapAuth } from "../../auth/bootstrap.js";
 import { bootstrap as bootstrapTfa } from "../bootstrap.js";
@@ -74,20 +79,23 @@ test("login issues setup-pending token when global TFA setup is required", async
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
+    const systemCtx = createCtx();
+    capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    capabilities.contribute("db:executor", db);
 
     await bootstrapAuth({
-        dbExecutor: db,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow: systemCtx.flow,
     });
     await bootstrapTfa({
-        dbExecutor: db,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow: systemCtx.flow,
     });
 
     const createLocalAdmin = capabilities.get<

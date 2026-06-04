@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { existsSync } from "node:fs";
 import { EventEmitter } from "node:events";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
@@ -11,6 +11,12 @@ import { bootstrap } from "../bootstrap.js";
 function createCapabilities(entries) {
     return {
         get(key) {
+            return entries.get(key);
+        },
+        require(key) {
+            if (!entries.has(key)) {
+                throw new Error(`Missing capability: ${key}`);
+            }
             return entries.get(key);
         },
         contribute(key, value) {
@@ -137,6 +143,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         } as any,
         gatewayRegistry: { register() {} } as any,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        flow: createCtx().flow,
     } as any);
 
     assert.equal(
@@ -214,6 +221,12 @@ test("registration:public:isEnabled capability returns false when gateway is dis
             get(key: string) {
                 return map.get(key);
             },
+            require(key: string) {
+                if (!map.has(key)) {
+                    throw new Error(`Missing capability: ${key}`);
+                }
+                return map.get(key);
+            },
             contribute(key: string, value: unknown) {
                 map.set(key, value);
             },
@@ -227,6 +240,7 @@ test("registration:public:isEnabled capability returns false when gateway is dis
         } as any,
         gatewayRegistry: registry as any,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        flow: createCtx().flow,
     } as any);
 
     const isEnabled = map.get("registration:public:isEnabled") as () => boolean;
@@ -289,6 +303,12 @@ test("registration:public:register capability throws when gateway is disabled", 
             get(key: string) {
                 return map.get(key);
             },
+            require(key: string) {
+                if (!map.has(key)) {
+                    throw new Error(`Missing capability: ${key}`);
+                }
+                return map.get(key);
+            },
             contribute(key: string, value: unknown) {
                 map.set(key, value);
             },
@@ -302,6 +322,7 @@ test("registration:public:register capability throws when gateway is disabled", 
         } as any,
         gatewayRegistry: registry as any,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        flow: createCtx().flow,
     } as any);
 
     const registerFn = map.get("registration:public:register") as (
@@ -374,6 +395,7 @@ test("registration adapter routes announce controls and accept empty config save
         } as any,
         gatewayRegistry: new GatewayRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        flow: createCtx().flow,
     } as any);
 
     const adminToken = issueAccessToken("admin-user", "admin", 60);

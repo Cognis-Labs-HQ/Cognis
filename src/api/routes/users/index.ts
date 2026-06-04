@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapLog, Ctx } from "@cognis/core";
+import type { BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
@@ -50,7 +50,6 @@ export function createUserRoutes(
         visibility: "friends",
     ) => Promise<void>,
     routeContext?: RouteContext,
-    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -66,7 +65,7 @@ export function createUserRoutes(
         if (url.pathname === "/api/v1/users" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const isSecondFactorEnabled = getCapability?.<
+            const isSecondFactorEnabled = ctx.getCapability<
                 (accountId: string) => Promise<boolean>
             >("tfa:isSecondFactorEnabled");
             const users = await Promise.all(
@@ -323,8 +322,7 @@ export function createUserRoutes(
                 );
                 return true;
             }
-            const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
-            if (!flowCtx?.hasFlow("provision-user")) {
+            if (!ctx.flow.exists("provision-user")) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -336,7 +334,7 @@ export function createUserRoutes(
                 );
                 return true;
             }
-            const result = await flowCtx.runFlow("provision-user", {
+            const result = await ctx.flow.run("provision-user", {
                 username,
                 password: String(body.password ?? ""),
                 role,
@@ -481,8 +479,7 @@ export function createUserRoutes(
                 );
                 return true;
             }
-            const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
-            if (!flowCtx?.hasFlow("deprovision-user")) {
+            if (!ctx.flow.exists("deprovision-user")) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -499,7 +496,7 @@ export function createUserRoutes(
                 targetInfo?.role,
                 Boolean(targetInfo?.isFounder),
             );
-            const disableResult = await flowCtx.runFlow("deprovision-user", {
+            const disableResult = await ctx.flow.run("deprovision-user", {
                 username,
                 action: "disable" as const,
                 callerRole: callerClaims?.role ?? "admin",
@@ -570,8 +567,7 @@ export function createUserRoutes(
         }
 
         if (req.method === "DELETE" && !action) {
-            const flowCtx = getCapability?.("system:ctx") as Ctx | undefined;
-            if (!flowCtx?.hasFlow("deprovision-user")) {
+            if (!ctx.flow.exists("deprovision-user")) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -588,7 +584,7 @@ export function createUserRoutes(
                 targetInfo?.role,
                 Boolean(targetInfo?.isFounder),
             );
-            const deleteResult = await flowCtx.runFlow("deprovision-user", {
+            const deleteResult = await ctx.flow.run("deprovision-user", {
                 username,
                 action: "delete" as const,
                 callerRole: callerClaims?.role ?? "admin",

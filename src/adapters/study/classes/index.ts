@@ -109,7 +109,7 @@ export async function bootstrapStudyAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
+    const dbExecutor = ctx.capabilities.get("db:executor");
     if (!dbExecutor) {
         ctx.log?.(
             "warn",

@@ -227,6 +227,29 @@ export const USER_LIFECYCLE_FLOW_CATALOG = Object.freeze([
         ],
     }),
     createFlowContract({
+        id: "update-user-account",
+        owner: "users",
+        description:
+            "Applies staged profile, role, preference, or lifecycle updates to an existing account.",
+        stages: [
+            {
+                id: "authorize-request",
+                description:
+                    "Validate caller authority, target-account rules, and update scope before mutation begins.",
+            },
+            {
+                id: "persist-updates",
+                description:
+                    "Apply canonical account and preference updates through the owning gateway surfaces.",
+            },
+            {
+                id: "emit-events",
+                description:
+                    "Propagate notifications, profile sync, and audit side effects after account updates succeed.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "deprovision-user",
         owner: "users",
         description:
@@ -246,6 +269,106 @@ export const USER_LIFECYCLE_FLOW_CATALOG = Object.freeze([
                 id: "cleanup-dependencies",
                 description:
                     "Remove or reconcile dependent state such as sessions, memberships, or background resources.",
+            },
+        ],
+    }),
+]);
+
+export const UI_SURFACE_FLOW_CATALOG = Object.freeze([
+    createFlowContract({
+        id: "construct-dashboard-ui",
+        owner: "ui",
+        description:
+            "Builds the dashboard shell from staged data, widget, and navigation contributions.",
+        stages: [
+            {
+                id: "resolve-shell",
+                description:
+                    "Declare dashboard shell requirements, framing, and shared capability inputs.",
+            },
+            {
+                id: "resolve-panels",
+                description:
+                    "Collect dashboard panels, widgets, and summary data from owning gateways or modules.",
+            },
+            {
+                id: "compose-page",
+                description:
+                    "Assemble the final dashboard layout from resolved shell and panel contributions.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "construct-administration-ui",
+        owner: "ui",
+        description:
+            "Builds the administration experience from staged section, data, and control contributions.",
+        stages: [
+            {
+                id: "resolve-data",
+                description:
+                    "Resolve shared administration metadata and capability-backed state before composition.",
+            },
+            {
+                id: "resolve-sections",
+                description:
+                    "Register canonical administration sections owned by gateways, modules, or the platform.",
+            },
+            {
+                id: "compose-page",
+                description:
+                    "Assemble the final administration page structure from resolved sections and datasets.",
+            },
+            {
+                id: "bind-controls",
+                description:
+                    "Attach control handlers, mutations, and follow-up orchestration after page composition.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "construct-navbar-ui",
+        owner: "ui",
+        description:
+            "Builds the dashboard navbar from staged shell, plugin, and control contributions.",
+        stages: [
+            {
+                id: "resolve-shell",
+                description:
+                    "Declare canonical navbar shell requirements and shared control slots.",
+            },
+            {
+                id: "resolve-plugins",
+                description:
+                    "Collect navbar plugins, indicators, and capability-backed actions.",
+            },
+            {
+                id: "compose-navbar",
+                description:
+                    "Assemble the final navbar ordering, layout, and control bindings.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "construct-spa-routes",
+        owner: "ui",
+        description:
+            "Builds the SPA route table from staged core, gateway, and module route contributions.",
+        stages: [
+            {
+                id: "resolve-core-routes",
+                description:
+                    "Register canonical shell routes and shared router metadata owned by the platform.",
+            },
+            {
+                id: "extend-routes",
+                description:
+                    "Allow gateways and modules to contribute additional route descriptors and assets.",
+            },
+            {
+                id: "finalize-router",
+                description:
+                    "Compose the final route manifest, loader metadata, and ordering for runtime use.",
             },
         ],
     }),
@@ -349,12 +472,163 @@ export const MEETINGS_FLOW_CATALOG = Object.freeze([
     }),
 ]);
 
+export const GATEWAY_LIFECYCLE_FLOW_CATALOG = Object.freeze([
+    createFlowContract({
+        id: "activate-gateway-routes",
+        owner: "core",
+        description:
+            "Activates gateway-owned HTTP routes and UI surfaces after required capabilities are available.",
+        stages: [
+            {
+                id: "resolve-dependencies",
+                description:
+                    "Confirm required gateway capabilities and bootstrap prerequisites before activation.",
+            },
+            {
+                id: "register-routes",
+                description:
+                    "Register gateway-owned route handlers and route-context dependencies for runtime traffic.",
+            },
+            {
+                id: "activate-surfaces",
+                description:
+                    "Expose gateway-owned UI surfaces, static assets, and passive metadata after route registration.",
+            },
+        ],
+    }),
+]);
+
+export const MODULE_LIFECYCLE_FLOW_CATALOG = Object.freeze([
+    createFlowContract({
+        id: "enable-module",
+        owner: "modules",
+        description:
+            "Enables a runtime module through staged policy, state persistence, and refresh work.",
+        stages: [
+            {
+                id: "authorize-request",
+                description:
+                    "Validate runtime policy, dependency readiness, and acknowledgement requirements.",
+            },
+            {
+                id: "persist-state",
+                description:
+                    "Persist the module enabled state through the owning runtime authority.",
+            },
+            {
+                id: "refresh-runtime",
+                description:
+                    "Refresh routes, flows, CLI surfaces, and related runtime state after enablement succeeds.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "disable-module",
+        owner: "modules",
+        description:
+            "Disables a runtime module through staged policy, state persistence, and refresh work.",
+        stages: [
+            {
+                id: "authorize-request",
+                description:
+                    "Validate runtime policy and safeguard rules before disablement begins.",
+            },
+            {
+                id: "persist-state",
+                description:
+                    "Persist the module disabled state through the owning runtime authority.",
+            },
+            {
+                id: "refresh-runtime",
+                description:
+                    "Refresh routes, flows, CLI surfaces, and related runtime state after disablement succeeds.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "refresh-module-runtime",
+        owner: "modules",
+        description:
+            "Refreshes module-owned routes, flows, UI surfaces, and capability contributions.",
+        stages: [
+            {
+                id: "resolve-state",
+                description:
+                    "Resolve current module manifests, enablement state, and runtime prerequisites.",
+            },
+            {
+                id: "reload-contributions",
+                description:
+                    "Reload active module route, flow, UI, and capability contributions from the runtime catalog.",
+            },
+            {
+                id: "publish-state",
+                description:
+                    "Publish refreshed runtime metadata for downstream consumers such as UI and CLI surfaces.",
+            },
+        ],
+    }),
+]);
+
+export const CLI_FLOW_CATALOG = Object.freeze([
+    createFlowContract({
+        id: "discover-cli-commands",
+        owner: "tooling",
+        description:
+            "Builds the CLI command catalog from staged core, gateway, and module command contributors.",
+        stages: [
+            {
+                id: "resolve-core-commands",
+                description:
+                    "Register canonical CLI commands and shared metadata owned by the tooling layer.",
+            },
+            {
+                id: "extend-commands",
+                description:
+                    "Allow gateways and modules to contribute additional command descriptors and handlers.",
+            },
+            {
+                id: "finalize-catalog",
+                description:
+                    "Compose the final executable command catalog and help metadata for runtime use.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "execute-cli-command",
+        owner: "tooling",
+        description:
+            "Executes a CLI command through staged resolution, authorization, and handler dispatch.",
+        stages: [
+            {
+                id: "resolve-command",
+                description:
+                    "Resolve the target command, command metadata, and capability prerequisites from the active catalog.",
+            },
+            {
+                id: "authorize-command",
+                description:
+                    "Validate execution policy, token availability, and runtime preconditions before dispatch.",
+            },
+            {
+                id: "dispatch-command",
+                description:
+                    "Execute the owning command handler and return its canonical payload.",
+            },
+        ],
+    }),
+]);
+
 export const CORE_FLOW_CATALOG = Object.freeze([
     ...BOOTSTRAP_FLOW_CATALOG,
     ...AUTH_FLOW_CATALOG,
     ...USER_LIFECYCLE_FLOW_CATALOG,
+    ...UI_SURFACE_FLOW_CATALOG,
     ...MESSAGING_FLOW_CATALOG,
     ...MEETINGS_FLOW_CATALOG,
+    ...GATEWAY_LIFECYCLE_FLOW_CATALOG,
+    ...MODULE_LIFECYCLE_FLOW_CATALOG,
+    ...CLI_FLOW_CATALOG,
 ]);
 
 export function listCanonicalFlowContracts(): readonly CanonicalFlowContract[] {

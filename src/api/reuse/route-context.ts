@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { NULL_FLOW_API, type FlowApi } from "@cognis/core";
 import {
     canAccessUserData,
     getAuthClaims,
@@ -43,9 +44,20 @@ export interface RouteContext {
         token: string,
     ): { sub: string; role: AccessRole; revoked: boolean } | null;
     revokeAccessTokensForSubject(subject: string): number;
+    getCapability<T>(capabilityId: string): T | undefined;
+    requireCapability<T>(capabilityId: string): T;
+    flow: FlowApi;
 }
 
-export function createDefaultRouteContext(): RouteContext {
+export interface RouteContextOptions {
+    getCapability?: <T>(capabilityId: string) => T | undefined;
+    requireCapability?: <T>(capabilityId: string) => T;
+    flow?: FlowApi;
+}
+
+export function createDefaultRouteContext(
+    options: RouteContextOptions = {},
+): RouteContext {
     return {
         getAuthClaims,
         requireAuth,
@@ -56,6 +68,15 @@ export function createDefaultRouteContext(): RouteContext {
         setPageSecurityHeaders,
         lookupAccessToken,
         revokeAccessTokensForSubject,
+        getCapability: options.getCapability ?? (() => undefined),
+        requireCapability:
+            options.requireCapability ??
+            ((capabilityId: string) => {
+                throw new Error(
+                    `Required capability "${capabilityId}" is not available.`,
+                );
+            }),
+        flow: options.flow ?? NULL_FLOW_API,
     };
 }
 

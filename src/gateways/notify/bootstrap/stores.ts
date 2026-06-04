@@ -88,11 +88,7 @@ export async function loadNotificationStores(
         ): Promise<string[]>;
     };
 }> {
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    if (!dbExecutor) {
-        throw new Error("db_executor_unavailable");
-    }
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
     const notificationStoreModulePath = path.resolve(
         process.cwd(),
         "src",

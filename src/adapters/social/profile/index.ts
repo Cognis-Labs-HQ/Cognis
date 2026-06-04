@@ -134,8 +134,7 @@ export async function bootstrapSocialAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
 
     if (!dbExecutor) {
         ctx.log?.(

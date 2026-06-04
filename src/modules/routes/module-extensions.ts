@@ -4,9 +4,7 @@ import type {
     ModuleRuntimeGateway,
     RoleAccessPolicy,
     FlowApi,
-    Ctx,
 } from "@cognis/core";
-import { NULL_FLOW_API, CTX_CAPABILITY } from "@cognis/core";
 import path from "node:path";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
@@ -119,12 +117,7 @@ interface ModuleBootstrapPlugin {
 
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
-    getCapability?: <T>(capabilityId: string) => T | undefined;
-    /**
-     * Required auth gate injected from server route context. This is mandatory
-     * and has no fallback path.
-     */
-    requireRoleAccess: RouteContext["requireRoleAccess"];
+    routeContext: RouteContext;
 }
 
 export interface ModuleExtensionRoutes {
@@ -143,12 +136,12 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
-    if (!options?.requireRoleAccess) {
+    if (!options?.routeContext) {
         throw new Error(
-            "module_extension_require_role_access_missing: createModuleExtensionRoutes requires requireRoleAccess from route context for all module routes",
+            "module_extension_route_context_missing: createModuleExtensionRoutes requires route context for module routes",
         );
     }
-    const { requireRoleAccess } = options;
+    const { requireRoleAccess } = options.routeContext;
     const staticDirsRegisteredByModule = new Set<string>();
     const uiHooksRegisteredByModule = new Set<string>();
     const modulesRoot =
@@ -218,15 +211,13 @@ export function createModuleExtensionRoutes(
             },
         };
 
-        const flow: FlowApi =
-            options?.getCapability?.<Ctx>(CTX_CAPABILITY)?.flow ??
-            NULL_FLOW_API;
+        const flow: FlowApi = options.routeContext.flow;
 
         return {
             moduleId,
             moduleRoot,
             flow,
-            getCapability: options?.getCapability ?? (() => undefined),
+            getCapability: options.routeContext.getCapability,
             registerApiGet(routePath, handler, routeOptions) {
                 registerApiRoute("GET", routePath, handler, routeOptions);
             },

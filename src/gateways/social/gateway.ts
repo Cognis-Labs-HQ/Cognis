@@ -2,7 +2,6 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry, FlowApi } from "@cognis/core";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { AdapterConfigStore } from "./adapter-config-store.js";
 
 /**
@@ -69,7 +68,6 @@ export interface SocialAdapterBootstrapCtx {
         ownerId: string;
     }): void;
     log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
-    dbExecutor?: DbExecutor;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;
 }

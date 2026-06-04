@@ -6,7 +6,6 @@ import type {
     GatewayRegistry,
     AccessRole,
 } from "@cognis/core";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
 
 const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
     user: 1,
@@ -159,7 +158,6 @@ export interface StudyAdapterBootstrapCtx {
         message: string,
         meta?: Record<string, unknown>,
     ): void | Promise<void>;
-    dbExecutor?: DbExecutor;
 }
 
 type StudyBootstrapBaseCtx = Omit<

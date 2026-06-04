@@ -278,7 +278,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 );
             },
             log: ctx.log,
-            dbExecutor: ctx.capabilities.get("db:executor") ?? ctx.dbExecutor,
         }),
         gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
             capabilities: ctx.capabilities,

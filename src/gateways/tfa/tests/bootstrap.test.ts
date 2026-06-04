@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
@@ -80,6 +80,8 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
+    const systemCtx = createCtx();
+    capabilities.contribute("db:executor", db);
 
     const registeredSecuritySections: Array<{
         id: string;
@@ -98,11 +100,11 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
     );
 
     await bootstrap({
-        dbExecutor: db,
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow: systemCtx.flow,
         uiRegistry,
     });
 

@@ -77,27 +77,24 @@ export function createSystemRoutes(
     preferenceStore?: UserPreferenceStore,
     log?: BootstrapLog,
     routeContext?: RouteContext,
-    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
-    const canSendVerificationEmail = getCapability
-        ? getCapability<() => boolean>("notify:canSendVerificationEmail")
-        : undefined;
-    const getEnforceTfaForAllUsers = getCapability
-        ? getCapability<() => Promise<boolean>>("tfa:getEnforceAllUsers")
-        : undefined;
-    const applyTfaEnforcementPolicy = getCapability
-        ? getCapability<
-              (input: {
-                  required: boolean;
-                  excludedSubject?: string;
-              }) => Promise<{
-                  required: boolean;
-                  previousRequired: boolean;
-                  revokedSetupPendingCount: number;
-              }>
-          >("tfa:applyEnforcementPolicy")
-        : undefined;
     const ctx = resolveRouteContext(routeContext);
+    const canSendVerificationEmail = ctx.getCapability<() => boolean>(
+        "notify:canSendVerificationEmail",
+    );
+    const getEnforceTfaForAllUsers = ctx.getCapability<
+        () => Promise<boolean>
+    >("tfa:getEnforceAllUsers");
+    const applyTfaEnforcementPolicy = ctx.getCapability<
+        (input: {
+            required: boolean;
+            excludedSubject?: string;
+        }) => Promise<{
+            required: boolean;
+            previousRequired: boolean;
+            revokedSetupPendingCount: number;
+        }>
+    >("tfa:applyEnforcementPolicy");
     const licenseMarkdownFile = resolve(
         process.cwd(),
         "src",

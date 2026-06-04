@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { EventEmitter } from "node:events";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
@@ -139,6 +139,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        flow: createCtx().flow,
     } as any);
 
     const gateway = gatewayRegistry.get("calendar");
@@ -183,6 +184,7 @@ test("calendar invitations endpoint returns pending invited events for attendee"
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        flow: createCtx().flow,
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
@@ -270,6 +272,7 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        flow: createCtx().flow,
     } as any);
 
     const dispatchJson = (
@@ -348,6 +351,7 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        flow: createCtx().flow,
     } as any);
 
     const dispatched: Array<{
@@ -438,6 +442,7 @@ test("calendar accept response via invitations API saves copy into chosen calend
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        flow: createCtx().flow,
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);

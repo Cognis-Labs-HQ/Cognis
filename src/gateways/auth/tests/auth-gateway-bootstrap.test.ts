@@ -20,9 +20,10 @@ function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
 }
 
-function makeBaseCtx(capabilities: CapabilityStore) {
+function makeBaseCtx(capabilities: CapabilityStore, dbExecutor: InMemoryDb) {
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    capabilities.contribute("db:executor", dbExecutor);
     return { flow: systemCtx.flow };
 }
 
@@ -30,14 +31,14 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     const gateways = gatewayRegistry.list();
@@ -50,14 +51,14 @@ test("auth gateway contributes auth:accountStore capability", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     assert.ok(
@@ -70,14 +71,14 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
@@ -134,14 +135,14 @@ test("auth bootstrap hook directory contributes route-level TFA login capabiliti
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     assert.equal(
@@ -171,15 +172,15 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     const staticDir = uiRegistry.getStaticDir("auth");
@@ -199,15 +200,15 @@ test("auth gateway bootstrap registers security section without redundant authen
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     const sections = uiRegistry.listAdminSections();
@@ -348,14 +349,14 @@ test("auth bootstrap contributes page script origin registration capability", as
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
 
     await bootstrap({
-        dbExecutor: createDbExecutor(),
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities),
+        ...makeBaseCtx(capabilities, dbExecutor),
     });
 
     const registerScriptOrigins = capabilities.get<

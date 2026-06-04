@@ -87,9 +87,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("db:type", dbType);
     ctx.capabilities.contribute("db:dialect", dialect);
 
-    ctx.dbExecutor = executor;
-    ctx.dbType = dbType;
-
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",

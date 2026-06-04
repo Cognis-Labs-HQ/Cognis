@@ -16,11 +16,7 @@ import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    if (!dbExecutor) {
-        throw new Error("db_executor_unavailable");
-    }
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;

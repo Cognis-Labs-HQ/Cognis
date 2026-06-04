@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
@@ -41,19 +41,21 @@ async function makeCtx() {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const db = makeInMemoryDb();
-    return { gatewayRegistry, routeRegistry, capabilities, db };
+    const systemCtx = createCtx();
+    capabilities.contribute("db:executor", db);
+    return { gatewayRegistry, routeRegistry, capabilities, db, flow: systemCtx.flow };
 }
 
 test("bootstrap registers notify gateway with GatewayRegistry", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
     });
 
     const gateways = gatewayRegistry.list();
@@ -63,15 +65,15 @@ test("bootstrap registers notify gateway with GatewayRegistry", async () => {
 });
 
 test("bootstrap registers routes with RouteRegistry", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
     });
 
     assert.ok(
@@ -81,15 +83,15 @@ test("bootstrap registers routes with RouteRegistry", async () => {
 });
 
 test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
     });
 
     const handlers = routeRegistry.getHandlers();
@@ -113,15 +115,15 @@ test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", 
 });
 
 test("gateway adapter route requires admin auth", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
     });
 
     const handlers = routeRegistry.getHandlers();
@@ -143,16 +145,16 @@ import path from "node:path";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 
 test("notify gateway bootstrap registers correct static dir and admin-section.js exists on disk", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
     const uiRegistry = new UIRegistry();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
         uiRegistry,
     });
 
@@ -175,16 +177,16 @@ test("notify gateway bootstrap registers correct static dir and admin-section.js
 });
 
 test("notify gateway bootstrap registers admin section scriptUrl that resolves within static dir", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
     const uiRegistry = new UIRegistry();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
         uiRegistry,
     });
 
@@ -213,16 +215,16 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
 });
 
 test("notify gateway bootstrap registers broadcasts admin section scriptUrl that resolves within static dir", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, db } =
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
     const uiRegistry = new UIRegistry();
 
     await bootstrap({
-        dbExecutor: db as any,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        flow,
         uiRegistry,
     });
 

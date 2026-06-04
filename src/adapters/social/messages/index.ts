@@ -110,7 +110,7 @@ export async function bootstrapSocialAdapter(
         );
         return;
     }
-    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
+    const dbExecutor = ctx.capabilities.get("db:executor");
     if (!dbExecutor) {
         ctx.log?.(
             "warn",

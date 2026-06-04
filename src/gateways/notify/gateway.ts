@@ -2,7 +2,6 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore } from "@cognis/core";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
 
 /**
  * Context passed to `bootstrapNotifyAdapter` when a notification adapter
@@ -23,7 +22,6 @@ export interface NotifyAdapterBootstrapCtx {
     registerNavbarPlugin(scriptUrl: string): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
     log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
-    dbExecutor?: DbExecutor;
 }
 
 export interface NotificationEnvelope {
