@@ -51,7 +51,12 @@ test("POST /api/v1/auth/request-login-link sends a password reset link and consu
             },
         );
 
-        await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+        await bootstrapAuthGateway({
+            gatewayRegistry,
+            routeRegistry,
+            capabilities,
+            db: db,
+        });
 
         const accountStore = capabilities.get<{
             register: (username: string, password: string) => Promise<unknown>;
@@ -140,7 +145,12 @@ test("POST /api/v1/auth/consume-login-link rejects concurrent reuse before first
             },
         );
 
-        await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+        await bootstrapAuthGateway({
+            gatewayRegistry,
+            routeRegistry,
+            capabilities,
+            db: db,
+        });
 
         const accountStore = capabilities.get<{
             register: (username: string, password: string) => Promise<unknown>;
@@ -240,7 +250,12 @@ test("POST /api/v1/auth/request-login-link falls back to support contact details
         const capabilities = new CapabilityStore();
         const db = new InMemoryTestExecutor();
 
-        await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+        await bootstrapAuthGateway({
+            gatewayRegistry,
+            routeRegistry,
+            capabilities,
+            db: db,
+        });
 
         const accountStore = capabilities.get<{
             register: (username: string, password: string) => Promise<unknown>;

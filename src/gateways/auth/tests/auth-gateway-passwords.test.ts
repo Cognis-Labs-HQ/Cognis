@@ -41,12 +41,17 @@ test("GET /api/v1/auth/password-change-capability reports support for local acco
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        } });
+        },
+    });
 
     const token = issueAccessToken("settings-user", "user", 60);
     const { handled, res } = await dispatchRoute(
@@ -78,7 +83,12 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -125,7 +135,12 @@ test("POST /api/v1/auth/reset-password requires current password", async () => {
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -154,7 +169,12 @@ test("POST /api/v1/auth/reset-password rejects incorrect current password", asyn
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -189,7 +209,12 @@ test("POST /api/v1/auth/reset-password rejects previously used password", async 
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -236,7 +261,12 @@ test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current p
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -276,7 +306,12 @@ test("POST /api/v1/auth/reset-password backfills previous hash for migrated acco
     const capabilities = new CapabilityStore();
     const db = new InMemoryTestExecutor();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -346,7 +381,12 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
         },
     );
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const accountStore = capabilities.get<{
         register: (username: string, password: string) => Promise<unknown>;
@@ -382,12 +422,17 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        } });
+        },
+    });
 
     const userToken = issueAccessToken("regular-user", "user", 60);
     const req = {
@@ -410,12 +455,17 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        } });
+        },
+    });
 
     const req = {
         method: "POST",

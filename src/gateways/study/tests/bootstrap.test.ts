@@ -80,8 +80,9 @@ async function bootstrapStudyGateway() {
     const dbExecutor = {
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
-        transaction: async (callback: (executor: unknown) => Promise<unknown>) =>
-            callback(dbExecutor),
+        transaction: async (
+            callback: (executor: unknown) => Promise<unknown>,
+        ) => callback(dbExecutor),
     };
     capabilities.contribute("db:executor", dbExecutor);
 

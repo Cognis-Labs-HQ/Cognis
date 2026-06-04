@@ -75,7 +75,12 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
         },
     });
     const db = new InMemoryTestExecutor();
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const registerResult = await dispatchRoute(
         routeRegistry,
@@ -127,7 +132,12 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     });
     capabilities.contribute("notify:canSendVerificationEmail", () => true);
     const db = new InMemoryTestExecutor();
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const createLocalAdmin = capabilities.get<
         (username: string, password: string) => Promise<void>
@@ -202,7 +212,12 @@ test("login fails closed when TFA is required but no challenge methods are avail
         },
     );
     const db = new InMemoryTestExecutor();
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const registerResult = await dispatchRoute(
         routeRegistry,
@@ -277,7 +292,12 @@ test("login fails closed when TFA is required but getLoginMethods capability is 
         },
     );
     const db = new InMemoryTestExecutor();
-    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: db,
+    });
 
     const registerResult = await dispatchRoute(
         routeRegistry,
