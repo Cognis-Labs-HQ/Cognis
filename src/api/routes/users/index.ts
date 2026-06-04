@@ -612,10 +612,14 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            const deleteCleanupResult = (deleteResult.stageResults[
+                "cleanup-dependencies"
+            ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Deleted user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
+                revokedTokenCount: deleteCleanupResult?.revokedTokenCount ?? 0,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { deleted: true } }));
