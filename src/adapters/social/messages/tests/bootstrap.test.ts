@@ -1,9 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 const ROOT = process.cwd();
+
+function readMessagesUiBundle() {
+    const uiDir = resolve(ROOT, "src/adapters/social/messages/ui");
+    return readdirSync(uiDir)
+        .filter((entry) => entry.endsWith(".js") || entry.endsWith(".mjs"))
+        .sort()
+        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .join("\n");
+}
 
 test("messages asset registrations do not use query-string versioning", () => {
     const adapterSource = readFileSync(
@@ -30,10 +39,7 @@ test("meeting-linked chat reuse does not rename existing group chats", () => {
 });
 
 test("messages polling does not rerender for read timestamp churn", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const source = readMessagesUiBundle();
     const signatureBody =
         source.match(
             /function messageRenderSignature[\s\S]*?function roomListRenderSignature/,
@@ -45,10 +51,7 @@ test("messages polling does not rerender for read timestamp churn", () => {
 });
 
 test("messages avatars fall back after failed image loads", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readMessagesUiBundle();
     const sharedSource = readFileSync(
         resolve(ROOT, "src/gateways/social/ui/reuse/profile-avatar.js"),
         "utf8",
@@ -78,10 +81,7 @@ test("messages avatars fall back after failed image loads", () => {
 });
 
 test("messages reaction chips render hover popup metadata and styles", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readMessagesUiBundle();
     const stylesheetSource = readFileSync(
         resolve(
             ROOT,

@@ -1,25 +1,28 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRoomKeyStore } from "../ui/room-keys.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
+function readMessagesUiBundle() {
+    const uiDir = resolve(ROOT, "src/adapters/social/messages/ui");
+    return readdirSync(uiDir)
+        .filter((entry) => entry.endsWith(".js") || entry.endsWith(".mjs"))
+        .sort()
+        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .join("\n");
+}
+
 test("messages new-conversation search uses messaging lookup endpoint", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const source = readMessagesUiBundle();
     assert.match(source, /endpoint:\s*"\/api\/v1\/messages\/users\/lookup"/);
 });
 
 test("messages member count control opens local member summary without jitsi calls", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const source = readMessagesUiBundle();
     const memberSummaryPopupSource =
         source.match(
             /await openPopup\(\{[\s\S]*?module\.social\.messages\.member_summary_title[\s\S]*?maxWidth:\s*"560px",[\s\S]*?\}\);/,
@@ -104,10 +107,7 @@ test("messages speech bubbles remove tails and overlay avatars", () => {
 });
 
 test("messages reactions and receipts include advanced interaction safeguards", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readMessagesUiBundle();
     const messagesCssSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
@@ -184,10 +184,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
 });
 
 test("messages templates are opened from sidebar in a popup", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readMessagesUiBundle();
     const messagesCssSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
         "utf8",
@@ -215,7 +212,7 @@ test("messages templates are opened from sidebar in a popup", () => {
     assert.match(appSource, /id="messages-composer-preview"/);
     assert.match(
         appSource,
-        /openTemplatesPopupFromSidebar = async \([\s\S]*preloadTemplateId = null/,
+        /async function openTemplatesPopup\(preloadTemplateId = null\)/,
     );
     assert.match(
         appSource,
@@ -237,7 +234,7 @@ test("messages templates are opened from sidebar in a popup", () => {
     );
     assert.match(
         appSource,
-        /templatesBtn\?\.addEventListener\("click",[\s\S]*openTemplatesPopupFromSidebar/,
+        /templatesButton\?\.addEventListener\("click",[\s\S]*templateUi\.openTemplatesPopup/,
     );
     assert.match(
         appSource,
@@ -345,10 +342,7 @@ test("requireRoomKey throws detailed errors on failure", async () => {
 });
 
 test("messages saved templates are scoped to the current account", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
-        "utf8",
-    );
+    const source = readMessagesUiBundle();
 
     assert.match(source, /function loadSavedMessageTemplates\(accountId\)/);
     assert.match(

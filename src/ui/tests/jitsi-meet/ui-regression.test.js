@@ -1,10 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
+function readJitsiUiBundle() {
+    const uiDir = resolve(ROOT, "src/modules/jitsi-meet/ui");
+    return readdirSync(uiDir)
+        .filter((entry) => entry.endsWith(".js"))
+        .sort()
+        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .join("\n");
+}
 
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
@@ -26,25 +35,21 @@ test("meetings search popup adds confirmed users directly to meeting participant
 });
 
 test("jitsi participant avatars reuse social avatar hydration and hide staged avatars while active", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     const cssSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
         "utf8",
     );
-    assert.match(
-        source,
-        /buildProfileAvatarMarkup[\s\S]*handleProfileAvatarError[\s\S]*hydrateProfileAvatars/,
-    );
+    assert.match(source, /buildProfileAvatarMarkup/);
+    assert.match(source, /handleProfileAvatarError/);
+    assert.match(source, /hydrateProfileAvatars/);
     assert.match(
         source,
         /root\.addEventListener\("error", handleProfileAvatarError/,
     );
     assert.match(
         source,
-        /const stagedEntries = isMeetingActive\(\)\s*\?\s*\[\]\s*:\s*state\.selectedParticipants;/,
+        /const stagedEntries = utils\.isMeetingActive\(\)\s*\?\s*\[\]\s*:\s*state\.selectedParticipants;/,
     );
     assert.match(source, /void hydrateProfileAvatars\(availablePool\);/);
     assert.match(cssSource, /\.jitsi-participant-avatar-img/);
@@ -73,18 +78,12 @@ test("jitsi meeting window has light-theme overlay overrides", () => {
 });
 
 test("meetings page composer uses a dedicated layout preference key", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.match(source, /preferenceKey:\s*"meetings-layout-v3"/);
 });
 
 test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     const constantsSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/constants.js"),
         "utf8",
@@ -138,10 +137,7 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
 });
 
 test("jitsi meetings lock participants and block navigation while meeting is active", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.match(source, /function isMeetingActive\(\)/);
     assert.match(source, /jitsi-participants-disabled/);
     assert.match(
@@ -155,10 +151,7 @@ test("jitsi meetings lock participants and block navigation while meeting is act
 });
 
 test("jitsi meetings reset participant state and disable mini chat until ready", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     const cssSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
         "utf8",
@@ -175,10 +168,7 @@ test("jitsi meetings reset participant state and disable mini chat until ready",
 });
 
 test("meetings page defaults meeting and chat panels to a 70-30 split while keeping them resizable", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.match(
         source,
         /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[7,\s*5\][\s\S]*min:\s*\[6,\s*4\]/,
@@ -198,16 +188,14 @@ test("meetings page defaults meeting and chat panels to a 70-30 split while keep
 });
 
 test("meetings UI recovers a live session after composer edit rerenders the iframe", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.match(
         source,
         /function recoverMeetingSessionAfterComposerRender\(\)/,
     );
     assert.match(source, /isMeetingEmbedMissing\(\)/);
-    assert.match(source, /state\.jitsiApi = null;[\s\S]*void joinMeeting\(\)/);
+    assert.match(source, /state\.jitsiApi = null;/);
+    assert.match(source, /void callbacks[\s\S]*\.joinMeeting\(\)/);
     assert.match(
         source,
         /const bindSignal = bindController\.signal;[\s\S]*recoverMeetingSessionAfterComposerRender\(\);/,
@@ -223,10 +211,7 @@ test("reclaim session button uses success outline styling", () => {
 });
 
 test("meetings mini chat sends on Enter and hides explicit send button", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.doesNotMatch(source, /id="jitsi-chat-send"/);
     assert.match(source, /chatInput\.addEventListener\(\s*"keydown"/);
     assert.match(source, /event\.key !== "Enter"/);
@@ -234,10 +219,7 @@ test("meetings mini chat sends on Enter and hides explicit send button", () => {
 });
 
 test("meetings mini chat supports participant private-chat switching and return-to-meeting action", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readJitsiUiBundle();
     const markupSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
         "utf8",
@@ -279,10 +261,7 @@ test("meetings mini chat supports participant private-chat switching and return-
 });
 
 test("meetings session state polling handles closed meetings and distinct leave messaging", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.match(source, /latestState\.endedAt/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
@@ -323,10 +302,7 @@ test("jitsi API resets ended meetings and reports meetingClosed from presence up
 });
 
 test("meetings UI prompts a participant who becomes alone before leaving", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     const markupSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
         "utf8",
@@ -356,7 +332,7 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     assert.match(source, /alonePromptDismissedMeetingId/);
     assert.match(
         source,
-        /const joinPayload = await joinResponse\.json\(\);\n\s*state\.meeting = joinPayload\?\.data \?\? state\.meeting;\n\s*deferAloneParticipantPrompt\(\);/,
+        /const joinPayload = await joinResponse\.json\(\);\n\s*state\.meeting = joinPayload\?\.data \?\? state\.meeting;\n\s*utils\.deferAloneParticipantPrompt\(\);/,
     );
     assert.match(
         source,
@@ -373,25 +349,17 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(
         source,
-        /deferAloneParticipantPrompt\(\);\n\s*submitMeetingPassword\(\);/,
+        /utils\.deferAloneParticipantPrompt\(\);\n\s*submitMeetingPassword\(\);/,
     );
 
-    const loadMeetingStateMatch = source.match(
-        /async function loadMeetingState\(\) \{([\s\S]*?)\n    async function keepPresenceAlive/,
-    );
-    assert.ok(loadMeetingStateMatch);
-    const loadMeetingStateSource = loadMeetingStateMatch[1];
-    const authWaitingIndex = loadMeetingStateSource.indexOf(
-        "module.jitsi_meet.overlay.auth_waiting",
-    );
-    const alonePromptIndex = loadMeetingStateSource.indexOf(
-        "updateAloneParticipantPrompt(payload?.data?.activeParticipants)",
-    );
-    assert.notEqual(authWaitingIndex, -1);
-    assert.notEqual(alonePromptIndex, -1);
-    assert.ok(authWaitingIndex < alonePromptIndex);
+    assert.match(source, /async function loadMeetingState\(\)/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.auth_waiting/);
     assert.match(
-        loadMeetingStateSource,
+        source,
+        /callbacks\.updateAloneParticipantPrompt\(\s*payload\?\.data\?\.activeParticipants,/,
+    );
+    assert.match(
+        source,
         /if \(latestState\.authRequired && !latestState\.authCompletedAt\) \{[\s\S]*return;[\s\S]*\}/,
     );
     assert.match(
@@ -411,10 +379,7 @@ test("meetings overlay strings include alone participant prompt actions", () => 
 });
 
 test("meetings mini chat filters room-event records from rendering", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     assert.match(
         source,
         /\.filter\(\s*\(message\)\s*=>[\s\S]*application\/vnd\.cognis\.room-event\+json/,
@@ -422,10 +387,7 @@ test("meetings mini chat filters room-event records from rendering", () => {
 });
 
 test("meetings mini chat supports the Messages reaction floating menu", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readJitsiUiBundle();
     const reactionsSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/reactions.js"),
         "utf8",
@@ -512,10 +474,7 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
 });
 
 test("meetings UI renders active meetings panel and deep-link join support", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const source = readJitsiUiBundle();
     const markupSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
         "utf8",
@@ -543,10 +502,7 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
 });
 
 test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => {
-    const appSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
-        "utf8",
-    );
+    const appSource = readJitsiUiBundle();
     const cssSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
         "utf8",

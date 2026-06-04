@@ -5,6 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const exportCache = new Map();
 
 function walk(dir) {
     const out = [];
@@ -15,6 +16,66 @@ function walk(dir) {
         else out.push(p);
     }
     return out;
+}
+
+function parseNamedSpecifiers(specifierList) {
+    return specifierList
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .map((part) => {
+            const [imported, exported] = part
+                .split(/\s+as\s+/)
+                .map((value) => value.trim());
+            return { imported, exported: exported ?? imported };
+        });
+}
+
+function collectExportedNames(filePath, seen = new Set()) {
+    const cached = exportCache.get(filePath);
+    if (cached) return cached;
+    if (seen.has(filePath)) return new Set();
+    seen.add(filePath);
+
+    const source = readFileSync(filePath, "utf8");
+    const exported = new Set(
+        [
+            ...source.matchAll(
+                /^export\s+(?:async\s+)?function\s+(\w+)|^export\s+(?:const|class)\s+(\w+)/gm,
+            ),
+        ].map((match) => match[1] ?? match[2]),
+    );
+
+    for (const match of source.matchAll(/^export\s*\{([^}]+)\}\s*;?/gm)) {
+        for (const { exported: name } of parseNamedSpecifiers(match[1])) {
+            exported.add(name);
+        }
+    }
+
+    for (const match of source.matchAll(
+        /^export\s*\{([^}]+)\}\s*from\s*['"](\.[^'"]+)['"]\s*;?/gm,
+    )) {
+        const target = resolve(dirname(filePath), match[2]);
+        if (!existsSync(target)) continue;
+        const targetExports = collectExportedNames(target, seen);
+        for (const { imported, exported: alias } of parseNamedSpecifiers(
+            match[1],
+        )) {
+            if (targetExports.has(imported)) exported.add(alias);
+        }
+    }
+
+    for (const match of source.matchAll(
+        /^export\s+\*\s+from\s+['"](\.[^'"]+)['"]\s*;?/gm,
+    )) {
+        const target = resolve(dirname(filePath), match[1]);
+        if (!existsSync(target)) continue;
+        const targetExports = collectExportedNames(target, seen);
+        for (const name of targetExports) exported.add(name);
+    }
+
+    exportCache.set(filePath, exported);
+    return exported;
 }
 
 const CSS_ROOTS = [join(ROOT, "src/ui/styles")];
@@ -182,14 +243,7 @@ test("no missing named imports from relative modules", () => {
                     continue;
                 }
 
-                const targetSrc = readFileSync(targetPath, "utf8");
-                const exported = new Set(
-                    [
-                        ...targetSrc.matchAll(
-                            /^export\s+(?:async\s+)?function\s+(\w+)|^export\s+(?:const|class)\s+(\w+)/gm,
-                        ),
-                    ].map((em) => em[1] ?? em[2]),
-                );
+                const exported = collectExportedNames(targetPath);
 
                 for (const name of names) {
                     if (!exported.has(name)) {

@@ -1,16 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
+function readPageComposerBundle() {
+    const composerDir = resolve(ROOT, "src/ui/reuse/page-composer");
+    return readdirSync(composerDir)
+        .filter((entry) => entry.endsWith(".js"))
+        .sort()
+        .map((entry) => readFileSync(join(composerDir, entry), "utf8"))
+        .join("\n");
+}
 
 test("page composer refresh preserves existing elements when called without args", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(
         source,
@@ -19,10 +25,7 @@ test("page composer refresh preserves existing elements when called without args
 });
 
 test("page composer refresh restores window scroll position after re-render", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /function restoreWindowScrollPosition\(left, top\)/);
     assert.match(source, /window\.requestAnimationFrame\(\(\) => \{/);
@@ -39,19 +42,13 @@ test("page composer refresh restores window scroll position after re-render", ()
 });
 
 test("page composer invokes element-level onRender callbacks", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
-    assert.match(source, /element\?\.onRender\?\.\(\);/);
+    assert.match(source, /element\?\.state\.onRender\?\.\(\);/);
 });
 
 test("page composer includes mobile toolbar drawer behavior", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /MOBILE_TOOLBAR_BREAKPOINT = 900/);
     assert.match(source, /window\.matchMedia\(/);
@@ -75,10 +72,7 @@ test("page composer includes mobile toolbar drawer behavior", () => {
 });
 
 test("page composer resolves edit toggle from the active page root", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /function getComposerEditToggleButton\(\)/);
     assert.match(source, /root\.querySelector\("#composer-edit-toggle"\)/);
@@ -88,10 +82,7 @@ test("page composer resolves edit toggle from the active page root", () => {
 });
 
 test("page composer expands compact single-pane rows to full width", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\s*=/);
     assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
@@ -128,10 +119,7 @@ test("page composer expands compact single-pane rows to full width", () => {
 });
 
 test("page composer elements panels stay below header and use viewport top", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /function getComposerPanelSafeTop\(\)/);
     assert.match(
@@ -152,19 +140,12 @@ test("page composer elements panels stay below header and use viewport top", () 
     );
     assert.match(
         source,
-        /panel\.style\.top = `\$\{Math\.max\(safeTop, panelPosition\.top\)\}px`;/,
-    );
-    assert.match(
-        source,
         /panel\.style\.top = `\$\{Math\.max\(safeTop, state\.panelPosition\.top\)\}px`;/,
     );
 });
 
 test("page composer persists separate layout profiles per grid size", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /function getLayoutProfileKey\(gridColumnCount\)/);
     assert.match(source, /layoutsByGrid/);
@@ -178,10 +159,7 @@ test("page composer persists separate layout profiles per grid size", () => {
 });
 
 test("page composer does not block initial render on async layout loading", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.doesNotMatch(
         source,
@@ -192,10 +170,7 @@ test("page composer does not block initial render on async layout loading", () =
 });
 
 test("page composer preserves form input values across grid re-renders", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(
         source,
@@ -204,12 +179,15 @@ test("page composer preserves form input values across grid re-renders", () => {
     assert.match(source, /function restoreFormState\(container, snapshot\)/);
     assert.match(
         source,
-        /const gridFormSnapshot = mergeFormStateSnapshots\(\s*loadPersistedFormState\(preferenceKey\),\s*captureFormState\(contentGrid\),\s*\)/m,
+        /const gridFormSnapshot = mergeFormStateSnapshots\(\s*loadPersistedFormState\(state\.preferenceKey\),\s*captureFormState\(state\.contentGrid\),\s*\)/m,
     );
-    assert.match(source, /restoreFormState\(contentGrid, gridFormSnapshot\)/);
     assert.match(
         source,
-        /bindFormDraftPersistence\(contentGrid, preferenceKey\)/,
+        /restoreFormState\(state\.contentGrid, gridFormSnapshot\)/,
+    );
+    assert.match(
+        source,
+        /bindFormDraftPersistence\(state\.contentGrid, state\.preferenceKey\)/,
     );
     assert.match(
         source,
@@ -226,10 +204,7 @@ test("page composer preserves form input values across grid re-renders", () => {
 });
 
 test("page composer persists drafts and renders large-form draft reset control", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft"/);
     assert.match(source, /function isExcludedFromFormMemory\(field\)/);
@@ -261,10 +236,7 @@ test("page composer persists drafts and renders large-form draft reset control",
 });
 
 test("page composer preserves excluded form values in transient snapshots across rerenders", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(
         source,
@@ -273,10 +245,7 @@ test("page composer preserves excluded form values in transient snapshots across
 });
 
 test("page composer preserves missing placements and shows warning placeholders", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
-        "utf8",
-    );
+    const source = readPageComposerBundle();
 
     assert.match(source, /function renderMissingElementContent\(elementId\)/);
     assert.match(source, /class="composer-missing-element-icon"/);
@@ -286,10 +255,10 @@ test("page composer preserves missing placements and shows warning placeholders"
     );
     assert.match(
         source,
-        /layout\.placements = layout\.placements\.filter\(\s*\(p\) =>[\s\S]*?typeof p\.id === "string"[\s\S]*?Number\.isFinite\(p\.col\)[\s\S]*?Number\.isFinite\(p\.row\)[\s\S]*?Number\.isFinite\(p\.w\)[\s\S]*?Number\.isFinite\(p\.h\)[\s\S]*?p\.w > 0[\s\S]*?p\.h > 0,/m,
+        /state\.layout\.placements = state\.layout\.placements\.filter\(\s*\(p\) =>[\s\S]*?typeof p\.id === "string"[\s\S]*?Number\.isFinite\(p\.col\)[\s\S]*?Number\.isFinite\(p\.row\)[\s\S]*?Number\.isFinite\(p\.w\)[\s\S]*?Number\.isFinite\(p\.h\)[\s\S]*?p\.w > 0[\s\S]*?p\.h > 0,/m,
     );
     assert.match(
         source,
-        /layout\.hidden = layout\.hidden\.filter\(\s*\(id\) => id && typeof id === "string",\s*\)/m,
+        /state\.layout\.hidden = state\.layout\.hidden\.filter\(\s*\(id\) => id && typeof id === "string",\s*\)/m,
     );
 });

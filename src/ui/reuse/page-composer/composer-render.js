@@ -759,7 +759,7 @@ export function createComposerRenderer({
 
         const cardsHtml = renderCards(effectiveLayout);
         const editingClass = state.editing
-            ? " composer-content-panel--state.editing"
+            ? " composer-content-panel--editing"
             : "";
         html += `<article class="content-panel${editingClass}">${cardsHtml}</article>`;
 
