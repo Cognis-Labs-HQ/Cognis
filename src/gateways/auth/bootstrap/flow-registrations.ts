@@ -4,7 +4,6 @@ import {
     ensureCtxCapability,
     registerCanonicalFlow,
 } from "@cognis/core";
-import { registerLdapFlowHooks } from "../../../adapters/auth/ldap/flow-hooks.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
@@ -69,16 +68,10 @@ export async function registerAuthBootstrapHook(
         }),
     );
 
-    if (context.authGateway.getAdapter("ldap")) {
-        registerLdapFlowHooks(flowCtx, {
-            getAvailability: () => {
-                const adapter = context.authGateway.getEnabledAdapter("ldap");
-                return {
-                    id: "ldap",
-                    name: adapter?.name ?? "LDAP",
-                    enabled: Boolean(adapter),
-                };
-            },
+    const ldapAdapter = context.authGateway.getAdapter("ldap");
+    if (typeof ldapAdapter?.registerFlowHooks === "function") {
+        ldapAdapter.registerFlowHooks(flowCtx, {
+            enabled: context.authGateway.getEnabledAdapter("ldap") !== null,
         });
     }
 }

@@ -1,8 +1,9 @@
-import type { AuthContext } from "@cognis/core";
+import type { AuthContext, Ctx } from "@cognis/core";
 import type {
     AuthProviderAdapter,
     AuthConfigField,
 } from "../../../gateways/auth/gateway.js";
+import { registerLdapFlowHooks } from "./flow-hooks.js";
 
 export interface LdapIdentity {
     id: string;
@@ -158,6 +159,21 @@ class LdapAuthAdapter implements AuthProviderAdapter {
 
     setClient(client: LdapClient): void {
         this.client = client;
+    }
+
+    registerFlowHooks(
+        ctx: Ctx,
+        options?: {
+            enabled?: boolean;
+        },
+    ): void {
+        registerLdapFlowHooks(ctx, {
+            getAvailability: () => ({
+                id: this.id,
+                name: this.name,
+                enabled: options?.enabled === true,
+            }),
+        });
     }
 }
 

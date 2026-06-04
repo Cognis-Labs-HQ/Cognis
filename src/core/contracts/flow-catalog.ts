@@ -33,42 +33,38 @@ export interface CtxCapabilityStore {
     contribute?(key: string, value: unknown): void;
 }
 
+function freezePayloadContract(
+    payload?: FlowPayloadContract,
+): FlowPayloadContract | undefined {
+    if (!payload) {
+        return undefined;
+    }
+    return Object.freeze({
+        ...payload,
+        fields: payload.fields
+            ? Object.freeze(
+                  [...payload.fields].map((field) =>
+                      Object.freeze({ ...field }),
+                  ),
+              )
+            : undefined,
+    });
+}
+
+function freezeStageContract(stage: FlowStageContract): FlowStageContract {
+    return Object.freeze({
+        ...stage,
+        input: freezePayloadContract(stage.input),
+        output: freezePayloadContract(stage.output),
+    });
+}
+
 function createFlowContract(
     flow: CanonicalFlowContract,
 ): CanonicalFlowContract {
     return Object.freeze({
         ...flow,
-        stages: Object.freeze(
-            flow.stages.map((stage) =>
-                Object.freeze({
-                    ...stage,
-                    input: stage.input
-                        ? Object.freeze({
-                              ...stage.input,
-                              fields: stage.input.fields
-                                  ? Object.freeze(
-                                        [...stage.input.fields].map((field) =>
-                                            Object.freeze({ ...field }),
-                                        ),
-                                    )
-                                  : undefined,
-                          })
-                        : undefined,
-                    output: stage.output
-                        ? Object.freeze({
-                              ...stage.output,
-                              fields: stage.output.fields
-                                  ? Object.freeze(
-                                        [...stage.output.fields].map((field) =>
-                                            Object.freeze({ ...field }),
-                                        ),
-                                    )
-                                  : undefined,
-                          })
-                        : undefined,
-                }),
-            ),
-        ),
+        stages: Object.freeze(flow.stages.map(freezeStageContract)),
     });
 }
 

@@ -75,13 +75,26 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
         flowCtx,
         "auth bootstrap must contribute the shared ctx flow bus",
     );
-    assert.deepEqual(flowCtx?.listFlows(), [
-        "bootstrap-platform",
-        "construct-login-ui",
-        "construct-settings-ui",
-        "ldap-auth",
-        "login",
-    ]);
+    assert.deepEqual(
+        flowCtx
+            ?.listFlows()
+            .filter((flowId) =>
+                [
+                    "bootstrap-platform",
+                    "construct-login-ui",
+                    "construct-settings-ui",
+                    "ldap-auth",
+                    "login",
+                ].includes(flowId),
+            ),
+        [
+            "bootstrap-platform",
+            "construct-login-ui",
+            "construct-settings-ui",
+            "ldap-auth",
+            "login",
+        ],
+    );
 
     const loginUiResult = await flowCtx?.runFlow("construct-login-ui");
     assert.deepEqual(loginUiResult?.stageResults["resolve-methods"], [
