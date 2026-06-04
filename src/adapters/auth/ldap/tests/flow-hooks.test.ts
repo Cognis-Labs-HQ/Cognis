@@ -31,7 +31,7 @@ test("ldap flow hooks annotate canonical auth flows with availability", async ()
     assert.deepEqual(loginUiResult.stageResults["augment-methods"], [
         { id: "ldap", name: "LDAP", enabled: false },
     ]);
-    assert.deepEqual(loginResult.stageResults.authenticate, [
+    assert.deepEqual(loginResult.stageResults["authenticate"], [
         { id: "ldap", name: "LDAP", enabled: false },
     ]);
     assert.deepEqual(ldapResult.stageResults["resolve-adapter"], [

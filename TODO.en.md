@@ -97,3 +97,11 @@
 **Reviewer suggestion:** Batch presence/participants/state queries instead of running 3 × rowCount queries.
 
 **Reason ignored:** This is the same established pattern used by `listActiveMeetings()` (store.js lines 570–625), which also uses per-row `Promise.all([listPresence, listParticipants, getMeetingState])`. Refactoring to batch queries would require significant changes to the store's query interface and is out of scope for this PR. Tracked here for a future performance pass.
+
+## Code Review — ctx flow catalog phase 1
+
+### adapters/auth/ldap manifest version history — sequential manifest bumps
+
+**Reviewer suggestion:** Avoid jumping the LDAP adapter manifest version from `0.1.1` to `0.1.4`, or document the missing intermediate `0.1.2` / `0.1.3` manifest bumps.
+
+**Reason ignored:** The repository was already in an inconsistent state: `src/adapters/auth/ldap/package.json` and the version documents were at `0.1.3`, while `src/adapters/auth/ldap/manifest.json` still lagged at `0.1.1`. This change fixes the inconsistency by bringing the manifest up to the new synchronized version `0.1.4`, but it cannot reconstruct undocumented historical manifest edits inside the same PR.

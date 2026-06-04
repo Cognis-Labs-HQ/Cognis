@@ -68,10 +68,12 @@ export async function registerAuthBootstrapHook(
         }),
     );
 
-    const ldapAdapter = context.authGateway.getAdapter("ldap");
+    const enabledLdapAdapter = context.authGateway.getEnabledAdapter("ldap");
+    const ldapAdapter =
+        enabledLdapAdapter ?? context.authGateway.getAdapter("ldap");
     if (typeof ldapAdapter?.registerFlowHooks === "function") {
         ldapAdapter.registerFlowHooks(flowCtx, {
-            enabled: context.authGateway.getEnabledAdapter("ldap") !== null,
+            enabled: enabledLdapAdapter !== null,
         });
     }
 }

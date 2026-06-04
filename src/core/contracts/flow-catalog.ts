@@ -53,7 +53,8 @@ function freezePayloadContract(
 
 function freezeStageContract(stage: FlowStageContract): FlowStageContract {
     return Object.freeze({
-        ...stage,
+        id: stage.id,
+        description: stage.description,
         input: freezePayloadContract(stage.input),
         output: freezePayloadContract(stage.output),
     });

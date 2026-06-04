@@ -71,13 +71,12 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     });
 
     const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
-    assert.ok(
-        flowCtx,
-        "auth bootstrap must contribute the shared ctx flow bus",
-    );
+    if (!flowCtx) {
+        assert.fail("auth bootstrap must contribute the shared ctx flow bus");
+    }
     assert.deepEqual(
         flowCtx
-            ?.listFlows()
+            .listFlows()
             .filter((flowId) =>
                 [
                     "bootstrap-platform",
@@ -96,23 +95,23 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
         ],
     );
 
-    const loginUiResult = await flowCtx?.runFlow("construct-login-ui");
-    assert.deepEqual(loginUiResult?.stageResults["resolve-methods"], [
+    const loginUiResult = await flowCtx.runFlow("construct-login-ui");
+    assert.deepEqual(loginUiResult.stageResults["resolve-methods"], [
         {
             methods: [{ id: "local", name: "Local" }],
         },
     ]);
 
-    const loginResult = await flowCtx?.runFlow("login");
-    assert.deepEqual(loginResult?.stageResults["resolve-provider"], [
+    const loginResult = await flowCtx.runFlow("login");
+    assert.deepEqual(loginResult.stageResults["resolve-provider"], [
         {
             defaultProviderId: "local",
             enabledMethods: [{ id: "local", name: "Local" }],
         },
     ]);
 
-    const settingsResult = await flowCtx?.runFlow("construct-settings-ui");
-    assert.deepEqual(settingsResult?.stageResults["resolve-sections"], [
+    const settingsResult = await flowCtx.runFlow("construct-settings-ui");
+    assert.deepEqual(settingsResult.stageResults["resolve-sections"], [
         {
             gatewayId: "auth",
             sectionId: "security",
