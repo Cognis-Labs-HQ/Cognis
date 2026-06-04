@@ -815,8 +815,11 @@ export class SmtpNotificationSender implements NotificationSender {
         if (queued.notificationId == null) {
             throw new Error("smtp_queue_item_missing");
         }
-        if (!queued.notificationId) {
-            return;
+        if (
+            typeof queued.notificationId !== "string" ||
+            queued.notificationId.trim().length === 0
+        ) {
+            throw new Error("smtp_queue_item_missing");
         }
         await this.queue.waitForResult(queued.notificationId);
     }
@@ -839,6 +842,12 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             verifyUrl,
         });
+        if (
+            typeof queued.notificationId !== "string" ||
+            queued.notificationId.trim().length === 0
+        ) {
+            throw new Error("smtp_queue_item_missing");
+        }
         const queueItem = await this.getQueueItemWithRetry(
             queued.notificationId,
         );

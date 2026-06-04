@@ -80,10 +80,6 @@
 
 **Reason ignored:** The current API payload for login methods does not expose a generic initiation contract, and adding one would require cross-layer contract changes (gateway response shape, UI rendering assumptions, and adapter compatibility) beyond this bugfix scope. This should be handled as a dedicated protocol enhancement task to avoid introducing implicit partial contracts.
 
-# Deferred Feedback Items
-
-- [ ] `src/gateways/calendar/ui/app/index.js` automated review suggested restoring calendar selection logic (setting `selectedCalendarId`, clearing `selectedEventId`, calling `syncRouteSelection()` and `composer.refresh()`) alongside the edit action in the toolbar click handler. Not applied because the explicit user instruction was to make clicking a calendar open the edit popup as the sole click behavior, which directly conflicts with preserving the select-to-filter behavior.
-
 ## Code Review — calendar popup + upcoming meetings (create-calendar-gateway)
 
 ### admin-meetings-section.js — formatDateTime import flagged as missing

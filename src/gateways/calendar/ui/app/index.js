@@ -598,6 +598,10 @@ export async function mount(root, { signal } = {}) {
                                 (c) => c.id === calendarId,
                             );
                             if (!calendar) return;
+                            selectedCalendarId = calendarId;
+                            selectedEventId = "";
+                            syncRouteSelection();
+                            composer.refresh();
                             openCalendarEditPopup(calendar);
                         },
                         { signal },

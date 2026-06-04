@@ -180,6 +180,39 @@ test("SmtpNotificationSender.queueVerificationEmail retries queue lookup before 
     assert.ok(lookupCount >= 2);
 });
 
+test("SmtpNotificationSender.sendVerificationEmail rejects empty queue ids", async () => {
+    const sender = new SmtpNotificationSender({
+        host: "smtp.example.com",
+        port: 587,
+        from: "no-reply@example.com",
+        secure: "starttls",
+    });
+    const senderWithInternals = sender as unknown as {
+        queueVerificationEmail: (
+            to: string,
+            code: string,
+            verifyUrl?: string,
+            theme?: string,
+        ) => Promise<{ notificationId: string }>;
+        queue: {
+            waitForResult: (notificationId: string) => Promise<void>;
+        };
+    };
+    senderWithInternals.queueVerificationEmail = async () => ({
+        notificationId: "",
+    });
+    let waitForResultCalled = false;
+    senderWithInternals.queue.waitForResult = async () => {
+        waitForResultCalled = true;
+    };
+
+    await assert.rejects(
+        () => sender.sendVerificationEmail("alice@example.com", "123456"),
+        /smtp_queue_item_missing/,
+    );
+    assert.equal(waitForResultCalled, false);
+});
+
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
