@@ -23,7 +23,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Registrierungs-Token      | `src/adapters/registration/token/`  | `0.1.1` |
 | Öffentliche Registrierung | `src/adapters/registration/public/` | `0.1.0` |
 | Profil (Social)           | `src/adapters/social/profile/`      | `1.0.6` |
-| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.4.0` |
+| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.4.4` |
 
 ## Gateways
 

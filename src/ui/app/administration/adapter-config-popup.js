@@ -1,0 +1,502 @@
+export function createAdapterConfigPopup({
+    i18n,
+    escapeHtml,
+    apiFetch,
+    openPopup,
+    showToast,
+}) {
+    /**
+     * Maps a raw backend field name to a human-readable label using existing
+     * i18n keys. Falls back to converting camelCase to Title Case for unknown
+     * fields.
+     *
+     * @param {string} name
+     * @returns {string}
+     */
+    function fieldNameToLabel(name) {
+        const knownLabels = {
+            host: i18n.t("ui.app.admin.notif.smtp_host"),
+            port: i18n.t("ui.app.admin.notif.smtp_port"),
+            from: i18n.t("ui.app.admin.notif.smtp_from"),
+            senderName: i18n.t("ui.app.admin.notif.smtp_sender_name"),
+            user: i18n.t("ui.app.admin.notif.smtp_user"),
+            password: i18n.t("ui.app.admin.notif.smtp_password"),
+            secure: i18n.t("ui.app.admin.notif.smtp_secure"),
+            allowSelfSigned: i18n.t(
+                "ui.app.admin.notif.smtp_allow_self_signed",
+            ),
+            authDisabled: i18n.t("ui.app.admin.notif.smtp_auth_disabled"),
+        };
+        if (knownLabels[name]) return knownLabels[name];
+        return name
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (character) => character.toUpperCase())
+            .trim();
+    }
+
+    function renderGenericAdapterForm(
+        descriptors,
+        requiredFields,
+        showTestControls,
+    ) {
+        const requiredSet = new Set(requiredFields);
+        const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
+        const conflictTitle = i18n.t("ui.app.admin.notif.field_env_conflict");
+
+        function fieldLabel(name, labelText, inputHtml) {
+            const descriptor = descriptors[name];
+            const isRequired = requiredSet.has(name);
+            const isEmpty = !descriptor?.effectiveValue;
+            const hasConflict = descriptor?.envConflict === true;
+            const requiredClass =
+                isRequired && isEmpty
+                    ? " provider-field-required provider-field-missing"
+                    : "";
+            const labelTitle =
+                isRequired && isEmpty ? ` title="${requiredTooltip}"` : "";
+            const conflictWarning = hasConflict
+                ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
+                : "";
+            return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${escapeHtml(labelText)}${inputHtml}${conflictWarning}</label>`;
+        }
+
+        const fieldKeys = Object.keys(descriptors).filter(
+            (name) => name !== "enabled",
+        );
+
+        const authFieldNames = new Set(["user", "password"]);
+
+        const selectFieldKeys = fieldKeys.filter(
+            (name) => descriptors[name]?.schemaType === "select",
+        );
+
+        const textFieldKeys = fieldKeys.filter((name) => {
+            if (name === "secure") return false;
+            if (name === "authDisabled") return false;
+            if (descriptors[name]?.schemaType === "select") return false;
+            const rawValue = descriptors[name]?.effectiveValue;
+            return !(
+                rawValue === true ||
+                rawValue === false ||
+                rawValue === "true" ||
+                rawValue === "false"
+            );
+        });
+
+        const boolFieldKeys = fieldKeys.filter((name) => {
+            if (name === "secure") return false;
+            if (authFieldNames.has(name)) return false;
+            if (descriptors[name]?.schemaType === "select") return false;
+            const rawValue = descriptors[name]?.effectiveValue;
+            return (
+                rawValue === true ||
+                rawValue === false ||
+                rawValue === "true" ||
+                rawValue === "false"
+            );
+        });
+
+        const hasSecure = "secure" in descriptors;
+        const authFieldKeys = textFieldKeys.filter((name) =>
+            authFieldNames.has(name),
+        );
+        const nonAuthTextFieldKeys = textFieldKeys.filter(
+            (name) => !authFieldNames.has(name),
+        );
+
+        const selectFieldsHtml = selectFieldKeys
+            .map((name) => {
+                const descriptor = descriptors[name];
+                const value = descriptor?.effectiveValue ?? "";
+                const options = Array.isArray(descriptor?.schemaOptions)
+                    ? descriptor.schemaOptions
+                    : [];
+                const label = descriptor?.schemaLabel ?? fieldNameToLabel(name);
+                const optionsHtml = options
+                    .map(
+                        (option) =>
+                            `<option value="${escapeHtml(String(option))}"${value === String(option) ? " selected" : ""}>${escapeHtml(String(option))}</option>`,
+                    )
+                    .join("");
+                return fieldLabel(
+                    name,
+                    label,
+                    `<select name="${escapeHtml(name)}" class="theme-select">${optionsHtml}</select>`,
+                );
+            })
+            .join("");
+
+        const secureFieldHtml = hasSecure
+            ? (() => {
+                  const value = descriptors["secure"]?.effectiveValue ?? "none";
+                  return fieldLabel(
+                      "secure",
+                      fieldNameToLabel("secure"),
+                      `<select name="secure" class="theme-select">
+                <option value="none"${value === "none" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_none")}</option>
+                <option value="starttls"${value === "starttls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_starttls")}</option>
+                <option value="tls"${value === "tls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_tls")}</option>
+              </select>`,
+                  );
+              })()
+            : "";
+
+        const nonAuthFieldsHtml = nonAuthTextFieldKeys
+            .map((name) => {
+                const descriptor = descriptors[name];
+                const value = escapeHtml(descriptor?.effectiveValue ?? "");
+                const isPassword =
+                    name.toLowerCase().includes("password") ||
+                    name.toLowerCase().includes("secret");
+                const isPort =
+                    name === "port" || name.toLowerCase().endsWith("port");
+
+                let inputHtml;
+                if (isPassword) {
+                    inputHtml = `<input name="${escapeHtml(name)}" type="password" value="" />`;
+                } else if (isPort) {
+                    inputHtml = `<input name="${escapeHtml(name)}" type="number" value="${value}" />`;
+                } else {
+                    inputHtml = `<input name="${escapeHtml(name)}" type="text" value="${value}" />`;
+                }
+
+                return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+            })
+            .join("");
+
+        const authFieldsHtml = authFieldKeys
+            .map((name) => {
+                const descriptor = descriptors[name];
+                const value = escapeHtml(descriptor?.effectiveValue ?? "");
+                const inputHtml =
+                    name === "password"
+                        ? `<input name="${escapeHtml(name)}" type="password" value="" />`
+                        : `<input name="${escapeHtml(name)}" type="text" value="${value}" />`;
+                return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+            })
+            .join("");
+
+        const authFieldsBlock =
+            authFieldKeys.length > 0
+                ? `<div class="provider-auth-fields">${authFieldsHtml}</div>`
+                : "";
+
+        const boolFieldsHtml = boolFieldKeys.length
+            ? `<div class="provider-option-toggles">${boolFieldKeys
+                  .map((name) => {
+                      const rawValue = descriptors[name]?.effectiveValue;
+                      const checked =
+                          rawValue === true || rawValue === "true"
+                              ? " checked"
+                              : "";
+                      const isAuthDisabled = name === "authDisabled";
+                      return `<div class="provider-option-row${isAuthDisabled ? " provider-auth-toggle-row" : ""}">
+          <span class="provider-option-label">${escapeHtml(fieldNameToLabel(name))}</span>
+          <label class="switch">
+            <input name="${escapeHtml(name)}" type="checkbox"${checked} />
+            <span class="slider"></span>
+          </label>
+        </div>`;
+                  })
+                  .join("")}</div>`
+            : "";
+
+        return `
+    <div class="provider-popup-form">
+      <div class="provider-popup-toggle-row">
+        <span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.notif.enable_provider")}</span>
+        <label class="switch provider-popup-switch">
+          <input type="checkbox" name="enabled" class="provider-enable-toggle" disabled />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="provider-fields">
+        ${selectFieldsHtml}
+        ${secureFieldHtml}
+        ${nonAuthFieldsHtml}
+      </div>
+      ${authFieldsBlock}
+      ${boolFieldsHtml}
+      ${
+          showTestControls
+              ? `<div class="provider-test-row">
+        <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
+        <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
+      </div>`
+              : ""
+      }
+    </div>
+  `;
+    }
+
+    function buildConfigPayload(
+        popupFormEl,
+        { omitBlankPasswords = false } = {},
+    ) {
+        const config = {};
+        popupFormEl.querySelectorAll("[name]").forEach((field) => {
+            if (field instanceof HTMLInputElement) {
+                if (field.type === "checkbox") {
+                    config[field.name] = field.checked;
+                    return;
+                }
+                if (
+                    omitBlankPasswords &&
+                    field.type === "password" &&
+                    field.value === ""
+                ) {
+                    return;
+                }
+                config[field.name] =
+                    field.name === "port" ? Number(field.value) : field.value;
+                return;
+            }
+            if (field instanceof HTMLSelectElement) {
+                config[field.name] = field.value;
+            }
+        });
+        return config;
+    }
+
+    return {
+        async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
+            if (!configUrl) return;
+
+            const response = await apiFetch(configUrl);
+            if (!response.ok) return;
+            const payload = await response.json();
+            const dbData = payload.data ?? {};
+            const envData = payload.envValues ?? {};
+            const requiredFields = Array.isArray(payload.requiredFields)
+                ? payload.requiredFields
+                : [];
+            const supportsTest = payload.supportsTest === true;
+            const schemaFields = Array.isArray(payload.schema)
+                ? payload.schema
+                : [];
+
+            const fieldNames = new Set([
+                ...Object.keys(dbData),
+                ...Object.keys(envData),
+                ...requiredFields,
+                ...schemaFields.map((field) => field.key),
+            ]);
+            const descriptors = {};
+            for (const field of fieldNames) {
+                const rawDb = dbData[field];
+                const rawEnv = envData[field];
+                const dbValue =
+                    rawDb != null && rawDb !== "" ? String(rawDb) : undefined;
+                const envValue =
+                    rawEnv != null && rawEnv !== ""
+                        ? String(rawEnv)
+                        : undefined;
+                let effectiveValue;
+                let source;
+                if (dbValue !== undefined) {
+                    effectiveValue = dbValue;
+                    source = "db";
+                } else if (envValue !== undefined) {
+                    effectiveValue = envValue;
+                    source = "env";
+                } else {
+                    effectiveValue = undefined;
+                    source = "none";
+                }
+                const schemaEntry = schemaFields.find(
+                    (entry) => entry.key === field,
+                );
+                descriptors[field] = {
+                    dbValue,
+                    envValue,
+                    effectiveValue,
+                    source,
+                    envConflict:
+                        dbValue !== undefined &&
+                        envValue !== undefined &&
+                        dbValue !== envValue,
+                    required: requiredFields.includes(field),
+                    schemaType: schemaEntry?.type ?? null,
+                    schemaLabel: schemaEntry?.label ?? null,
+                    schemaOptions: schemaEntry?.options ?? null,
+                };
+            }
+
+            let popupFormEl = null;
+
+            const result = await openPopup({
+                title: name,
+                body: renderGenericAdapterForm(
+                    descriptors,
+                    requiredFields,
+                    supportsTest,
+                ),
+                maxWidth: "640px",
+                actions: [
+                    {
+                        id: "save",
+                        label: i18n.t("ui.app.admin.notif.save_settings"),
+                        variant: "confirm",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                ],
+                closeProtection: true,
+                onOpen: (overlay) => {
+                    popupFormEl = overlay.querySelector(".provider-popup-form");
+                    if (!popupFormEl) return;
+
+                    const toggle = popupFormEl.querySelector(
+                        ".provider-enable-toggle",
+                    );
+                    if (!toggle) return;
+
+                    function requiredAllFilled() {
+                        return requiredFields.every((field) => {
+                            const input = popupFormEl.querySelector(
+                                `[name="${CSS.escape(field)}"]`,
+                            );
+                            return (
+                                input instanceof HTMLInputElement &&
+                                input.value.trim() !== ""
+                            );
+                        });
+                    }
+
+                    function updateRequiredHighlights() {
+                        const requiredTooltip = i18n.t(
+                            "ui.app.admin.notif.required_field",
+                        );
+                        for (const field of requiredFields) {
+                            const input = popupFormEl.querySelector(
+                                `[name="${CSS.escape(field)}"]`,
+                            );
+                            if (!(input instanceof HTMLInputElement)) continue;
+                            const label = input.closest("label");
+                            const isEmpty = input.value.trim() === "";
+                            if (label) {
+                                label.classList.toggle(
+                                    "provider-field-required",
+                                    isEmpty,
+                                );
+                                label.classList.toggle(
+                                    "provider-field-missing",
+                                    isEmpty,
+                                );
+                                if (isEmpty) {
+                                    label.setAttribute(
+                                        "title",
+                                        requiredTooltip,
+                                    );
+                                } else {
+                                    label.removeAttribute("title");
+                                }
+                            }
+                        }
+                    }
+
+                    function syncToggle() {
+                        const areAllRequiredFieldsFilled = requiredAllFilled();
+                        toggle.disabled = !areAllRequiredFieldsFilled;
+                        if (!areAllRequiredFieldsFilled) {
+                            toggle.checked = false;
+                        }
+                    }
+
+                    const enabledValue = descriptors["enabled"]?.effectiveValue;
+                    const isEnabledByConfig =
+                        enabledValue !== "false" && enabledValue !== false;
+                    if (requiredAllFilled()) {
+                        toggle.disabled = false;
+                        toggle.checked = isEnabledByConfig;
+                    }
+
+                    popupFormEl.addEventListener("input", () => {
+                        updateRequiredHighlights();
+                        syncToggle();
+                    });
+
+                    const authDisabledCheckbox = popupFormEl.querySelector(
+                        '[name="authDisabled"]',
+                    );
+                    const authFieldsEl = popupFormEl.querySelector(
+                        ".provider-auth-fields",
+                    );
+                    if (
+                        authDisabledCheckbox instanceof HTMLInputElement &&
+                        authFieldsEl instanceof HTMLElement
+                    ) {
+                        const isAuthOff = authDisabledCheckbox.checked;
+                        authFieldsEl.style.display = isAuthOff ? "none" : "";
+                        authDisabledCheckbox.addEventListener("change", () => {
+                            authFieldsEl.style.display =
+                                authDisabledCheckbox.checked ? "none" : "";
+                        });
+                    }
+
+                    const testButton =
+                        popupFormEl.querySelector(".provider-test-btn");
+                    const testInput = popupFormEl.querySelector(
+                        ".provider-test-input",
+                    );
+
+                    if (testButton && testInput && testUrl) {
+                        testButton.addEventListener("click", async () => {
+                            const recipient =
+                                testInput instanceof HTMLInputElement
+                                    ? testInput.value.trim()
+                                    : "";
+                            if (!recipient) {
+                                showToast(
+                                    i18n.t(
+                                        "ui.app.admin.notif.test_email_required",
+                                    ),
+                                    {
+                                        variant: "error",
+                                    },
+                                );
+                                return;
+                            }
+                            const config = buildConfigPayload(popupFormEl, {
+                                omitBlankPasswords: true,
+                            });
+                            const testResponse = await apiFetch(testUrl, {
+                                method: "POST",
+                                headers: {
+                                    "content-type": "application/json",
+                                },
+                                body: JSON.stringify({ to: recipient, config }),
+                            });
+                            showToast(
+                                testResponse.ok
+                                    ? i18n.t("ui.app.admin.notif.test_sent")
+                                    : i18n.t("ui.app.admin.notif.test_failed"),
+                                {
+                                    variant: testResponse.ok
+                                        ? "success"
+                                        : "error",
+                                },
+                            );
+                        });
+                    }
+                },
+            });
+
+            if (result === "save" && popupFormEl) {
+                const config = buildConfigPayload(popupFormEl);
+                await apiFetch(configUrl, {
+                    method: "PUT",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify(config),
+                });
+                await onSaved?.();
+                showToast(i18n.t("ui.app.admin.settings_saved"), {
+                    variant: "success",
+                });
+            }
+        },
+    };
+}

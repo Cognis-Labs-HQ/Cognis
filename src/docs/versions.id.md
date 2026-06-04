@@ -23,7 +23,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Token Registrasi       | `src/adapters/registration/token/`  | `0.1.1` |
 | Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0` |
 | Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.6` |
-| Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.0` |
+| Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.4` |
 
 ## Gateway
 
