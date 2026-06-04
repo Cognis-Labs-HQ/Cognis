@@ -144,6 +144,10 @@ Route handler files live in subdirectories named after their domain, mirroring t
 
 Never use redundant suffixes in file names when the directory path already provides the context. A file at `gateways/notifications.ts` does not need to be named `notification-gateway.ts`; a file at `routes/users/index.ts` does not need to live at `routes/user-routes.ts`.
 
+### Core contract file organisation
+
+In `src/core/contracts/`, use domain subdirectories instead of feature prefixes in flat file names. For example, prefer `src/core/contracts/profile/media-flow-catalog.ts` over `src/core/contracts/profile-media-flow-catalog.ts`.
+
 ### Route granularity and self-registration
 
 Routes must be granular enough that disabling or removing a gateway, adapter, or module cannot create dead code or crashes elsewhere. Gateways and adapters should be able to register their own API routes as part of their setup, so that removing a component is as simple as not loading it. The server assembles the full route table from what is present, rather than from a hardcoded list of known subsystems. Avoid presumptive checks in server.ts for a specific named gateway or module.

@@ -1,7 +1,7 @@
 import {
     createFlowContract,
     type CanonicalFlowContract,
-} from "./flow-contract.js";
+} from "../flow-contract.js";
 
 export const PROFILE_MEDIA_FLOW_CATALOG: readonly CanonicalFlowContract[] =
     Object.freeze([

@@ -4,7 +4,7 @@ export * from "./contracts/auth-gateway.js";
 export * from "./contracts/db-gateway.js";
 export * from "./contracts/files-gateway.js";
 export * from "./contracts/flow-catalog.js";
-export * from "./contracts/profile-media-flow-catalog.js";
+export * from "./contracts/profile/media-flow-catalog.js";
 export * from "./contracts/module-manifest.js";
 export * from "./ctx/index.js";
 export * from "./services/module-service.js";

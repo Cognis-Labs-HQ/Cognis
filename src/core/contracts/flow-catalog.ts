@@ -3,7 +3,7 @@ import {
     createFlowContract,
     type CanonicalFlowContract,
 } from "./flow-contract.js";
-import { PROFILE_MEDIA_FLOW_CATALOG } from "./profile-media-flow-catalog.js";
+import { PROFILE_MEDIA_FLOW_CATALOG } from "./profile/media-flow-catalog.js";
 
 export const CTX_CAPABILITY = "system:ctx";
 export type {
