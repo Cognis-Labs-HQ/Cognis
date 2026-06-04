@@ -1,14 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
-    hasMinRole,
-    type BootstrapLog,
-    type FileStorageGateway,
-    type FlowApi,
-} from "@cognis/core";
-import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
+import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";
+import type { FileStorageGateway } from "../../../../gateways/files/gateway.js";
 import type {
     ProfileStore,
     AccountProfile,
@@ -43,6 +39,9 @@ const BANNER_ALLOWED_MIME = new Set([
     "image/gif",
 ]);
 
+type SocialAdapterLog = NonNullable<SocialAdapterBootstrapCtx["log"]>;
+type SocialAdapterFlowApi = SocialAdapterBootstrapCtx["flow"];
+
 function profileResponse(
     profile: AccountProfile,
     followerCount: number | null,
@@ -68,8 +67,11 @@ function profileResponse(
     };
 }
 
-function hasAdminProfileBypass(role: string | null | undefined): boolean {
-    return Boolean(role && hasMinRole(role as AccountRole, "admin"));
+function hasAdminProfileBypass(
+    role: string | null | undefined,
+    ctx: RouteContext,
+): boolean {
+    return Boolean(role && ctx.hasMinRole(role as AccountRole, "admin"));
 }
 
 function minimalProfileResponse(profile: AccountProfile) {
@@ -96,8 +98,9 @@ async function canDiscoverProfile(
     requesterId: string | null,
     requesterRole: string | null,
     target: AccountProfile,
+    ctx: RouteContext,
 ): Promise<boolean> {
-    if (hasAdminProfileBypass(requesterRole)) return true;
+    if (hasAdminProfileBypass(requesterRole, ctx)) return true;
     if (requesterId === target.accountId) return true;
     if (!requesterId) return false;
     return target.visibility !== "hidden";
@@ -108,8 +111,9 @@ async function canViewFullProfile(
     requesterRole: string | null,
     target: AccountProfile,
     profileStore: ProfileStore,
+    ctx: RouteContext,
 ): Promise<boolean> {
-    if (hasAdminProfileBypass(requesterRole)) return true;
+    if (hasAdminProfileBypass(requesterRole, ctx)) return true;
     if (requesterId === target.accountId) return true;
     if (!requesterId || target.visibility === "hidden") return false;
     if (target.visibility === "community") return true;
@@ -136,7 +140,7 @@ export function createProfileRoutes(
     profileStore: ProfileStore,
     fileGateway?: FileStorageGateway,
     isGatewayEnabled?: () => boolean,
-    log?: BootstrapLog,
+    log?: SocialAdapterLog,
     onProfileChanged?: (input: {
         accountId: string;
         handle?: string | null;
@@ -145,9 +149,10 @@ export function createProfileRoutes(
         avatarChanged?: boolean;
     }) => Promise<void>,
     routeContext?: RouteContext,
-    flow?: FlowApi,
+    flow?: SocialAdapterFlowApi,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const flowApi = flow ?? ctx.flow;
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -388,8 +393,8 @@ export function createProfileRoutes(
             }
             let updated: AccountProfile | null | undefined;
             let storedKey: string | undefined;
-            if (flow?.exists("upload-profile-media")) {
-                const flowResult = await flow.run("upload-profile-media", {
+            if (flowApi.exists("upload-profile-media")) {
+                const flowResult = await flowApi.run("upload-profile-media", {
                     accountId: claims!.sub,
                     mediaField: "avatarKey",
                     content: body,
@@ -512,8 +517,8 @@ export function createProfileRoutes(
                 return true;
             }
             const profile = await profileStore.getProfile(claims!.sub);
-            if (flow?.exists("remove-profile-media")) {
-                const flowResult = await flow.run("remove-profile-media", {
+            if (flowApi.exists("remove-profile-media")) {
+                const flowResult = await flowApi.run("remove-profile-media", {
                     accountId: claims!.sub,
                     mediaField: "avatarKey",
                 });
@@ -639,8 +644,8 @@ export function createProfileRoutes(
             }
             let updated: AccountProfile | null | undefined;
             let storedKey: string | undefined;
-            if (flow?.exists("upload-profile-media")) {
-                const flowResult = await flow.run("upload-profile-media", {
+            if (flowApi.exists("upload-profile-media")) {
+                const flowResult = await flowApi.run("upload-profile-media", {
                     accountId: claims!.sub,
                     mediaField: "bannerKey",
                     content: body,
@@ -757,8 +762,8 @@ export function createProfileRoutes(
                 return true;
             }
             const profile = await profileStore.getProfile(claims!.sub);
-            if (flow?.exists("remove-profile-media")) {
-                const flowResult = await flow.run("remove-profile-media", {
+            if (flowApi.exists("remove-profile-media")) {
+                const flowResult = await flowApi.run("remove-profile-media", {
                     accountId: claims!.sub,
                     mediaField: "bannerKey",
                 });
@@ -831,7 +836,7 @@ export function createProfileRoutes(
                 return true;
             }
             if (
-                !hasAdminProfileBypass(claims!.role) &&
+                !hasAdminProfileBypass(claims!.role, ctx) &&
                 (await profileStore.isBlocked(target.accountId, claims!.sub))
             ) {
                 log?.("debug", "Public profile lookup was blocked.", {
@@ -854,6 +859,7 @@ export function createProfileRoutes(
                 claims!.sub,
                 claims!.role,
                 target,
+                ctx,
             );
             if (!visible) {
                 log?.(
@@ -881,6 +887,7 @@ export function createProfileRoutes(
                 claims!.role,
                 target,
                 profileStore,
+                ctx,
             );
             const [followerCount, followingCount, posts] = showDetails
                 ? await Promise.all([

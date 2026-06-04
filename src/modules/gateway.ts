@@ -1,4 +1,4 @@
-import type { ModuleManifest } from "../core/contracts/module-manifest.js";
+import type { ModuleManifest } from "@cognis/core";
 
 export interface ModuleState {
     moduleId: string;

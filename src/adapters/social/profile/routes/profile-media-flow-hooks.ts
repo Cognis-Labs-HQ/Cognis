@@ -1,10 +1,6 @@
 import type { AccountProfile, ProfileStore } from "../profile-store.js";
-import type {
-    BootstrapLog,
-    FileStorageGateway,
-    FlowApi,
-    FlowRunResult,
-} from "@cognis/core";
+import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";
+import type { FileStorageGateway } from "../../../../gateways/files/gateway.js";
 
 type ProfileMediaKey = "avatarKey" | "bannerKey";
 
@@ -14,6 +10,12 @@ export type ProfileMediaMutationResult = {
     updated?: AccountProfile | null;
     storedKey?: string;
     reason?: string;
+};
+
+type SocialAdapterLog = NonNullable<SocialAdapterBootstrapCtx["log"]>;
+type SocialAdapterFlowApi = SocialAdapterBootstrapCtx["flow"];
+type FlowRunSnapshot = {
+    stageResults: Record<string, unknown>;
 };
 
 export async function replaceProfileMedia(
@@ -53,7 +55,7 @@ export async function replaceProfileMedia(
 }
 
 export function getFirstStageResult<T>(
-    flowResult: FlowRunResult,
+    flowResult: FlowRunSnapshot,
     stageId: string,
 ): T | undefined {
     const stageResults = flowResult.stageResults[stageId];
@@ -64,10 +66,10 @@ export function getFirstStageResult<T>(
 }
 
 export function registerProfileMediaFlowHooks(input: {
-    flow: FlowApi;
+    flow: SocialAdapterFlowApi;
     profileStore: ProfileStore;
     fileGateway: FileStorageGateway;
-    log?: BootstrapLog;
+    log?: SocialAdapterLog;
     onProfileChanged?: (payload: {
         accountId: string;
         handle?: string | null;

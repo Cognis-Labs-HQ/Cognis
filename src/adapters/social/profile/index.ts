@@ -10,12 +10,12 @@ import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
-import type { FileStorageGateway } from "@cognis/core";
 import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
+import type { FileStorageGateway } from "../../../gateways/files/gateway.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -217,7 +217,7 @@ export async function bootstrapSocialAdapter(
             flow: ctx.flow,
             profileStore,
             fileGateway,
-            log: ctx.log as never,
+            log: ctx.log,
             onProfileChanged: onMessagesProfileChanged ?? undefined,
         });
     }
@@ -227,7 +227,7 @@ export async function bootstrapSocialAdapter(
             profileStore,
             fileGateway ?? undefined,
             () => ctx.isGatewayEnabled(),
-            ctx.log as never,
+            ctx.log,
             onMessagesProfileChanged ?? undefined,
             routeContext,
             ctx.flow,

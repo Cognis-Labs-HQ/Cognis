@@ -5,7 +5,7 @@ import {
     isRoleAllowed,
     isAccessRole,
     type RoleAccessPolicy,
-} from "../../core/contracts/access-policy.js";
+} from "@cognis/core";
 
 export { hasMinRole, isRoleAllowed, isAccessRole };
 export type { RoleAccessPolicy };

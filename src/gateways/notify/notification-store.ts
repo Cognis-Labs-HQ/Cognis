@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { isAccessRole } from "../../core/contracts/access-policy.js";
+import { isAccessRole } from "@cognis/core";
 import type { NotificationPreferenceStore } from "./gateway.js";
 
 export interface NotificationConfigStore {
