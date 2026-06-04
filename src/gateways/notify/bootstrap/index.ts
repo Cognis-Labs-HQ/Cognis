@@ -20,6 +20,7 @@ import { createNotificationRoutes } from "../routes/index.js";
 import { loadNotificationStores, serveHtmlPage } from "./stores.js";
 import { createUserEmailRoutes } from "./user-email-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-routes.js";
+import { type Ctx } from "@cognis/core";
 
 export { createUserEmailRoutes };
 
@@ -171,6 +172,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Notifications",
         scriptUrl: "/static/gateways/notify/notification-prefs.js",
     });
+
+    const flowCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    if (flowCtx?.hasFlow("construct-settings-ui")) {
+        flowCtx.on("construct-settings-ui", "resolve-sections", async () => ({
+            gatewayId: "notify",
+            sectionId: "notifications",
+            scriptUrl: "/static/gateways/notify/notification-prefs.js",
+        }));
+    }
 
     // Expose the notification gateway itself + a thin dispatch helper as
     // capabilities so other adapters (e.g. the social/messages adapter) can

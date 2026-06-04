@@ -11,6 +11,12 @@ import {
 import { DbAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
+import {
+    type Ctx,
+    MESSAGING_FLOW_CATALOG,
+    ensureCtxCapability,
+    registerCanonicalFlow,
+} from "@cognis/core";
 
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
 export {
@@ -246,5 +252,61 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Social gateway: initialized.", {
         component: "social-gateway",
         adaptersRoot,
+    });
+
+    const flowCtx = ensureCtxCapability(ctx.capabilities);
+    for (const flow of MESSAGING_FLOW_CATALOG) {
+        registerCanonicalFlow(flowCtx, flow);
+    }
+
+    flowCtx.on("construct-messaging-ui", "resolve-navigation", async () => {
+        const uiResources = ctx.capabilities.get<{
+            languageBaseUrls?: string[];
+            stylesheetUrls?: string[];
+        }>("social:messages:uiResources");
+        return {
+            navEntry: {
+                id: "messages",
+                label: "Messages",
+                url: "/messages",
+                iconUrl: "/static/gateways/social/assets/messages-icon.svg",
+                stylesheetUrls: uiResources?.stylesheetUrls ?? [],
+                languageBaseUrls: uiResources?.languageBaseUrls ?? [],
+            },
+        };
+    });
+
+    flowCtx.on(
+        "construct-messaging-ui",
+        "compose-surface",
+        async (input, stageCtx) => {
+            const navResults = (stageCtx.stageResults["resolve-navigation"] ??
+                []) as Array<{ navEntry?: unknown }>;
+            return {
+                surface: "messages",
+                navEntries: navResults.map((r) => r.navEntry).filter(Boolean),
+            };
+        },
+    );
+
+    flowCtx.on("send-message", "validate-message", async (input) => {
+        const roomId = String((input as Record<string, unknown>).roomId ?? "");
+        const content = String(
+            (input as Record<string, unknown>).content ?? "",
+        );
+        if (!roomId) {
+            return { valid: false, reason: "missing_room_id" };
+        }
+        if (!content.trim()) {
+            return { valid: false, reason: "empty_content" };
+        }
+        return { valid: true, roomId, content };
+    });
+
+    flowCtx.on("send-message", "fan-out", async (input, stageCtx) => {
+        const persistResults = (stageCtx.stageResults["persist-message"] ??
+            []) as Array<{ messageId?: string; persisted?: boolean }>;
+        const messageId = persistResults[0]?.messageId;
+        return { fanOut: Boolean(messageId), messageId };
     });
 }

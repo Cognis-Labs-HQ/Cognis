@@ -1,11 +1,14 @@
 import type { IncomingMessage } from "node:http";
-import type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
 import type {
     CapabilityStore,
     GatewayBootstrapContext,
 } from "../../../shared.js";
 import type { CoreAuthGateway } from "../../gateway.js";
-import type { AuthAccountStore, AuthRouteBootstrapRuntime } from "../index.js";
+import type {
+    AuthAccountStore,
+    AuthRouteBootstrapRuntime,
+    SecuritySettings,
+} from "../index.js";
 import { MemoryRateLimiter } from "../rate-limiter.js";
 import { PASSWORD_RESET_RATE_LIMIT_MS } from "../route-runtime.js";
 import { createLoginLinkRoutes } from "./login-links.js";
@@ -15,11 +18,6 @@ import { createSecurityRoutes, type SecuritySubsection } from "./security.js";
 import { createSessionRoutes } from "./session.js";
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
 
-interface SecuritySettings {
-    registrationsEnabled: boolean;
-    userValidationMode: "none" | "smtp";
-}
-
 export function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
@@ -27,6 +25,7 @@ export function createAuthGatewayRoutes(
     authRouteBootstrapRuntime: AuthRouteBootstrapRuntime,
     securitySubsections: SecuritySubsection[],
     log?: GatewayBootstrapContext["log"],
+    readSecuritySettings?: () => Promise<SecuritySettings>,
 ) {
     const dispatchNotification =
         capabilities.get<
@@ -38,42 +37,12 @@ export function createAuthGatewayRoutes(
             }) => Promise<unknown>
         >("notify:dispatch");
 
-    async function readSecuritySettings(): Promise<SecuritySettings> {
-        const preferenceStore =
-            capabilities.get<UserPreferenceStore>("preferences:store");
-        if (!preferenceStore) {
-            return {
-                registrationsEnabled: false,
-                userValidationMode: "none",
-            };
-        }
-        const raw = await preferenceStore.get(
-            "__system__",
-            "security-settings",
-        );
-        if (!raw) {
-            return {
-                registrationsEnabled: false,
-                userValidationMode: "none",
-            };
-        }
-        try {
-            const parsed = JSON.parse(raw) as Record<string, unknown>;
-            return {
-                registrationsEnabled:
-                    typeof parsed.registrationsEnabled === "boolean"
-                        ? parsed.registrationsEnabled
-                        : false,
-                userValidationMode:
-                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
-            };
-        } catch {
-            return {
-                registrationsEnabled: false,
-                userValidationMode: "none",
-            };
-        }
-    }
+    const resolvedReadSecuritySettings: () => Promise<SecuritySettings> =
+        readSecuritySettings ??
+        (async () => ({
+            registrationsEnabled: false,
+            userValidationMode: "none",
+        }));
 
     async function registrationsEnabled(): Promise<boolean> {
         const isPublicRegistrationEnabled = capabilities.get<() => boolean>(
@@ -104,21 +73,21 @@ export function createAuthGatewayRoutes(
             accountStore,
             capabilities,
             authRouteBootstrapRuntime,
-            readSecuritySettings,
+            readSecuritySettings: resolvedReadSecuritySettings,
             log,
         }),
         createSecurityRoutes({
             capabilities,
             securitySubsections,
             registrationsEnabled,
-            readSecuritySettings,
+            readSecuritySettings: resolvedReadSecuritySettings,
             log,
         }),
         createRegistrationRoutes({
             accountStore,
             capabilities,
             registrationsEnabled,
-            readSecuritySettings,
+            readSecuritySettings: resolvedReadSecuritySettings,
             log,
         }),
         createLoginLinkRoutes({

@@ -4,17 +4,20 @@ import path from "node:path";
 import {
     isRoleAllowed,
     type BootstrapLog,
+    type Ctx,
     type ModuleRuntimeGateway,
-    type RoleAccessPolicy,
     type GatewayRegistry,
 } from "@cognis/core";
 import type { UIRegistry } from "../../reuse/ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
-import { parseRoleAccessPolicy } from "../../reuse/parse-role-access-policy.js";
 import {
     resolveRouteContext,
     type RouteContext,
 } from "../../reuse/route-context.js";
+import {
+    parseModuleUiRoutes,
+    type ModuleUiRouteRule,
+} from "./ui-route-rules.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -22,40 +25,6 @@ const PUBLIC_ROOT = path.join(UI_ROOT, "public");
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
-
-interface ModuleUiRouteRule {
-    path: string;
-    access?: RoleAccessPolicy;
-    invalidAccessPolicy?: boolean;
-}
-
-function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-        .map((entry) => {
-            if (typeof entry === "string") {
-                return { path: entry } as ModuleUiRouteRule;
-            }
-            if (
-                !entry ||
-                typeof entry !== "object" ||
-                Array.isArray(entry) ||
-                typeof (entry as { path?: unknown }).path !== "string"
-            ) {
-                return null;
-            }
-            const parsedAccess = parseRoleAccessPolicy(
-                (entry as { access?: unknown }).access,
-            );
-            return {
-                path: (entry as { path: string }).path,
-                access: parsedAccess.access,
-                invalidAccessPolicy: parsedAccess.invalid,
-            } as ModuleUiRouteRule;
-        })
-        .filter((entry): entry is ModuleUiRouteRule => Boolean(entry));
-}
 
 function resolveContentType(filePath: string) {
     const ext = path.extname(filePath);
@@ -270,6 +239,7 @@ export function createUiRoutes(
     isModuleEnabled?: (moduleId: string) => boolean,
     log?: BootstrapLog,
     routeContext?: RouteContext,
+    getCapability?: <T>(capabilityId: string) => T | undefined,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -784,17 +754,37 @@ export function createUiRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const sections = (uiRegistry?.listSettingsSections() ?? []).filter(
-                (section) =>
-                    (!section.isEnabled || section.isEnabled()) &&
-                    isRoleAllowed(claims.role, section.access),
-            );
+            const flowCtx = getCapability?.<Ctx>("system:ctx");
+            let sections: unknown[];
+            if (flowCtx?.hasFlow("construct-settings-ui")) {
+                const result = await flowCtx.runFlow(
+                    "construct-settings-ui",
+                    undefined,
+                    { meta: { uiRegistry } },
+                );
+                const flowSections = result.data["sections"] as
+                    | unknown[]
+                    | undefined;
+                sections = (flowSections ?? []).filter((section) => {
+                    const sectionRecord = section as Record<string, unknown>;
+                    return (
+                        (!sectionRecord["isEnabled"] ||
+                            (sectionRecord["isEnabled"] as () => boolean)()) &&
+                        isRoleAllowed(
+                            claims.role,
+                            sectionRecord["access"] as never,
+                        )
+                    );
+                });
+            } else {
+                sections = (uiRegistry?.listSettingsSections() ?? []).filter(
+                    (section) =>
+                        (!section.isEnabled || section.isEnabled()) &&
+                        isRoleAllowed(claims.role, section.access),
+                );
+            }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    data: sections,
-                }),
-            );
+            res.end(JSON.stringify({ data: sections }));
             return true;
         }
 

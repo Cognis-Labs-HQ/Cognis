@@ -10,20 +10,20 @@ import {
     type AccessRole,
 } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
-import type { AuthAccountStore, AuthRouteBootstrapRuntime } from "../index.js";
+import type {
+    AuthAccountStore,
+    AuthRouteBootstrapRuntime,
+    SecuritySettings,
+} from "../index.js";
 import { resolveRole } from "../local-account.js";
 import {
     readJson,
     requireAuth,
     type CapabilityStore,
 } from "../../../shared.js";
+import type { Ctx } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../../shared.js";
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
-
-interface SecuritySettings {
-    registrationsEnabled: boolean;
-    userValidationMode: "none" | "smtp";
-}
 
 interface SessionRouteDependencies {
     authGateway: CoreAuthGateway;
@@ -293,6 +293,181 @@ export function createSessionRoutes({
         return true;
     }
 
+    function dispatchLoginFlowResult(
+        req: import("node:http").IncomingMessage,
+        res: import("node:http").ServerResponse,
+        sessionResult: Record<string, unknown>,
+        logMeta: AuthRouteLogMeta,
+    ): true {
+        const outcome = sessionResult["outcome"] as string | undefined;
+        if (outcome === "provider_unavailable") {
+            log?.("warn", "Login failed: provider unavailable (flow).", {
+                ...logMeta,
+            });
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "provider_unavailable",
+                        message: "Auth provider not available",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "invalid_credentials") {
+            log?.("warn", "Login failed due to invalid credentials (flow).", {
+                ...logMeta,
+            });
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "invalid_credentials",
+                        message: "Invalid credentials",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "tfa_unavailable") {
+            log?.(
+                "warn",
+                "Login denied because configured TFA challenges are unavailable (flow).",
+                { ...logMeta },
+            );
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "tfa_unavailable",
+                        message:
+                            "Two-factor authentication is temporarily unavailable. Please try again.",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "tfa_required") {
+            log?.("info", "Login entered TFA challenge flow (flow).", {
+                ...logMeta,
+                accountId: sessionResult["accountId"],
+                provider: sessionResult["provider"],
+                role: sessionResult["role"],
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        tfaRequired: true,
+                        loginAttemptId: sessionResult["loginAttemptId"],
+                        methods: sessionResult["methods"],
+                        accountId: sessionResult["accountId"],
+                        displayName: sessionResult["displayName"],
+                        provider: sessionResult["provider"],
+                        providerId: sessionResult["providerId"],
+                        role: sessionResult["role"],
+                        isFounder: sessionResult["isFounder"],
+                        userValidationMode: sessionResult["userValidationMode"],
+                        requiredUserValidation:
+                            sessionResult["requiredUserValidation"],
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "tfa_setup_required") {
+            const token = sessionResult["token"] as string;
+            const ttlSeconds = sessionResult["ttlSeconds"] as number;
+            log?.(
+                "info",
+                "Login succeeded with pending TFA setup gate (flow).",
+                {
+                    ...logMeta,
+                    accountId: sessionResult["accountId"],
+                    provider: sessionResult["provider"],
+                    role: sessionResult["role"],
+                },
+            );
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
+                    req,
+                    token,
+                    ttlSeconds,
+                ),
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        accountId: sessionResult["accountId"],
+                        displayName: sessionResult["displayName"],
+                        provider: sessionResult["provider"],
+                        providerId: sessionResult["providerId"],
+                        role: sessionResult["role"],
+                        isFounder: sessionResult["isFounder"],
+                        token,
+                        userValidationMode: sessionResult["userValidationMode"],
+                        requiredUserValidation:
+                            sessionResult["requiredUserValidation"],
+                        tfaSetupRequired: true,
+                    },
+                }),
+            );
+            return true;
+        }
+        if (outcome === "success") {
+            const token = sessionResult["token"] as string;
+            const ttlSeconds = sessionResult["ttlSeconds"] as number;
+            log?.("info", "Login succeeded (flow).", {
+                ...logMeta,
+                accountId: sessionResult["accountId"],
+                provider: sessionResult["provider"],
+                role: sessionResult["role"],
+                requiresUserValidation: sessionResult["requiredUserValidation"],
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
+                    req,
+                    token,
+                    ttlSeconds,
+                ),
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        accountId: sessionResult["accountId"],
+                        displayName: sessionResult["displayName"],
+                        provider: sessionResult["provider"],
+                        providerId: sessionResult["providerId"],
+                        role: sessionResult["role"],
+                        isFounder: sessionResult["isFounder"],
+                        token,
+                        userValidationMode: sessionResult["userValidationMode"],
+                        requiredUserValidation:
+                            sessionResult["requiredUserValidation"],
+                    },
+                }),
+            );
+            return true;
+        }
+        log?.("warn", "Login flow returned unknown outcome.", {
+            ...logMeta,
+            outcome,
+        });
+        res.writeHead(500, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({
+                error: {
+                    code: "internal_error",
+                    message: "An unexpected error occurred during login.",
+                },
+            }),
+        );
+        return true;
+    }
+
     return async (
         req,
         res,
@@ -319,6 +494,28 @@ export function createSessionRoutes({
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
+            const credentials: Record<string, unknown> = { ...body };
+            delete credentials.provider;
+
+            const flowCtx = capabilities.get<Ctx>("system:ctx");
+            if (flowCtx?.hasFlow("login")) {
+                const result = await flowCtx.runFlow("login", {
+                    provider,
+                    credentials,
+                });
+                const sessionResult = result.data["sessionResult"] as
+                    | Record<string, unknown>
+                    | undefined;
+                if (sessionResult) {
+                    return dispatchLoginFlowResult(
+                        req,
+                        res,
+                        sessionResult,
+                        logMeta,
+                    );
+                }
+            }
+
             const adapter =
                 authGateway.getEnabledAdapter(provider) ??
                 authGateway.getEnabledAdapter("local");
@@ -342,8 +539,6 @@ export function createSessionRoutes({
                 );
                 return true;
             }
-            const credentials: Record<string, unknown> = { ...body };
-            delete credentials.provider;
             const session = await adapter.authenticate(credentials);
             if (!session) {
                 log?.("warn", "Login failed due to invalid credentials.", {

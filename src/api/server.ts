@@ -157,6 +157,7 @@ export function buildServer(deps: ApiDependencies) {
         (moduleId) => enabledModules.has(moduleId),
         log,
         routeContext,
+        deps.getModuleCapability,
     );
     const userRoutes = deps.accountStore
         ? createUserRoutes(

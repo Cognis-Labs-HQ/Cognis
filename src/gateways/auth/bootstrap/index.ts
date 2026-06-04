@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { IncomingMessage } from "node:http";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import {
     canAccessUserData,
@@ -41,6 +42,12 @@ export interface AuthAccountStore {
         role?: string;
     } | null>;
     setFounder(username: string, isFounder: boolean): Promise<void>;
+    register?(
+        username: string,
+        password: string,
+        isAdmin: boolean,
+    ): Promise<{ username: string; role?: string }>;
+    setEnabled?(username: string, enabled: boolean): Promise<void>;
 }
 
 export interface PendingTfaLoginAttempt {
@@ -56,11 +63,18 @@ export interface PendingTfaLoginAttempt {
     expiresAt: number;
 }
 
+export interface SecuritySettings {
+    registrationsEnabled: boolean;
+    userValidationMode: "none" | "smtp";
+}
+
 export interface AuthBootstrapHookContext {
     accountStore: AuthAccountStore;
     authGateway: CoreAuthGateway;
     ctx: GatewayBootstrapContext;
     routeContext: RouteContext;
+    authRouteBootstrapRuntime: AuthRouteBootstrapRuntime;
+    readSecuritySettings: () => Promise<SecuritySettings>;
 }
 
 export interface AuthRouteBootstrapRuntime {
@@ -166,6 +180,34 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         runtime: authRouteBootstrapRuntime,
     });
 
+    async function readSecuritySettings(): Promise<SecuritySettings> {
+        const preferenceStore =
+            ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+        if (!preferenceStore) {
+            return { registrationsEnabled: false, userValidationMode: "none" };
+        }
+        const raw = await preferenceStore.get(
+            "__system__",
+            "security-settings",
+        );
+        if (!raw) {
+            return { registrationsEnabled: false, userValidationMode: "none" };
+        }
+        try {
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            return {
+                registrationsEnabled:
+                    typeof parsed.registrationsEnabled === "boolean"
+                        ? parsed.registrationsEnabled
+                        : false,
+                userValidationMode:
+                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
+            };
+        } catch {
+            return { registrationsEnabled: false, userValidationMode: "none" };
+        }
+    }
+
     const securitySubsections: SecuritySubsection[] = [];
     ctx.capabilities.contribute(
         "auth:registerSecuritySection",
@@ -182,6 +224,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             authRouteBootstrapRuntime,
             securitySubsections,
             ctx.log,
+            readSecuritySettings,
         ),
         "auth",
     );
@@ -209,7 +252,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "security",
         label: "Security",
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
-        stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
     const routeContext: RouteContext = {
@@ -228,6 +270,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         authGateway,
         ctx,
         routeContext,
+        authRouteBootstrapRuntime,
+        readSecuritySettings,
     });
 
     const registerNotificationCategory = ctx.capabilities.get<

@@ -3,6 +3,7 @@ import type {
     ModuleManifest,
     ModuleRuntimeGateway,
     ModuleState,
+    Ctx,
 } from "@cognis/core";
 import {
     GatewayService,
@@ -258,6 +259,12 @@ try {
         { error: err instanceof Error ? err.message : String(err) },
     );
     process.exit(1);
+}
+
+const flowCtx = capabilities.get<Ctx>("system:ctx");
+if (flowCtx?.hasFlow("bootstrap-platform")) {
+    await flowCtx.runFlow("bootstrap-platform");
+    await log("info", "bootstrap-platform flow complete.");
 }
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
