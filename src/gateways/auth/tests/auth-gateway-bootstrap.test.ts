@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import {
+    CTX_CAPABILITY,
+    GatewayRegistry,
+    CapabilityStore,
+    type Ctx,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
@@ -53,6 +58,59 @@ test("auth gateway contributes auth:accountStore capability", async () => {
         capabilities.get("auth:accountStore"),
         "auth:accountStore should be contributed",
     );
+});
+
+test("auth bootstrap registers canonical ctx flow skeletons", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
+    assert.ok(flowCtx, "auth bootstrap must contribute the shared ctx flow bus");
+    assert.deepEqual(flowCtx?.listFlows(), [
+        "bootstrap-platform",
+        "construct-login-ui",
+        "construct-settings-ui",
+        "ldap-auth",
+        "login",
+    ]);
+
+    const loginUiResult = await flowCtx?.runFlow("construct-login-ui");
+    assert.deepEqual(loginUiResult?.stageResults["resolve-methods"], [
+        {
+            methods: [{ id: "local", name: "Local" }],
+        },
+    ]);
+
+    const loginResult = await flowCtx?.runFlow("login");
+    assert.deepEqual(loginResult?.stageResults["resolve-provider"], [
+        {
+            defaultProviderId: "local",
+            enabledMethods: [{ id: "local", name: "Local" }],
+        },
+    ]);
+
+    const settingsResult = await flowCtx?.runFlow("construct-settings-ui");
+    assert.deepEqual(settingsResult?.stageResults["resolve-sections"], [
+        {
+            gatewayId: "auth",
+            sectionId: "security",
+            scriptUrl: "/static/gateways/auth/security-prefs/index.js",
+        },
+    ]);
 });
 
 test("auth bootstrap hook directory contributes route-level TFA login capabilities", async () => {

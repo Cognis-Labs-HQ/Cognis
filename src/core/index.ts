@@ -1,5 +1,6 @@
 export * from "./contracts/auth-account.js";
 export * from "./contracts/access-policy.js";
+export * from "./contracts/flow-catalog.js";
 export * from "./contracts/module-manifest.js";
 export * from "./ctx/index.js";
 export type { AuthContext, AuthGateway } from "../gateways/auth/gateway.js";
