@@ -7,9 +7,18 @@ import { readFileSync } from "node:fs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 test("page builder stylesheet defines the shared loading shade and wheel", () => {
-    const source = readFileSync(
+    const bundleSource = readFileSync(
         resolve(ROOT, "src/ui/styles/page-builder.css"),
         "utf8",
+    );
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/loading.css"),
+        "utf8",
+    );
+
+    assert.match(
+        bundleSource,
+        /@import url\("\/static\/styles\/page-builder\/index\.css"\);/,
     );
 
     assert.match(source, /body:not\(\[data-page-ready="true"\]\)::before/);

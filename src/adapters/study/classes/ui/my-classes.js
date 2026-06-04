@@ -12,7 +12,7 @@
 
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
-import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";

@@ -4,7 +4,7 @@ import {
     createI18n,
     extendI18n,
 } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";

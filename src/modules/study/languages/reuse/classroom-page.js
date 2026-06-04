@@ -24,7 +24,7 @@
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { showToast } from "/static/reuse/toast.js";
 import { isTeacherScope } from "/static/reuse/access-role.js";
 import {

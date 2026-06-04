@@ -30,7 +30,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
-import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";

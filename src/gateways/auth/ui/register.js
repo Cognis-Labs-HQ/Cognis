@@ -1,4 +1,4 @@
-import { createPageComposer } from "/static/reuse/page-composer/init.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import {
     DEFAULT_LOCALE,

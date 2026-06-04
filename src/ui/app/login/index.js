@@ -1,6 +1,6 @@
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";

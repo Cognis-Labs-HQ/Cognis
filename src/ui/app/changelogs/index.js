@@ -5,7 +5,7 @@ import {
     readPreferredLanguages,
 } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
-import { createPageComposer } from "../../reuse/page-composer/init.js";
+import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
 
