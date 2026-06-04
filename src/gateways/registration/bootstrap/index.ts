@@ -12,7 +12,6 @@ import { CoreRegistrationGateway } from "../gateway.js";
 import { createRegistrationPageRoutes } from "./page-routes.js";
 import { createRegistrationRoutes } from "./registration-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-admin-routes.js";
-import { ensureCtxCapability } from "@cognis/core";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
@@ -185,9 +184,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: gateway.listAdapters().length,
     });
 
-    const flowCtx = ensureCtxCapability(ctx.capabilities);
-    if (flowCtx.hasFlow("bootstrap-platform")) {
-        flowCtx.addFlowStageHook(
+    if (ctx.flow.exists("bootstrap-platform")) {
+        ctx.flow.extend(
             "bootstrap-platform",
             "register-flows",
             { id: "registration-gateway:bootstrap-registration" },

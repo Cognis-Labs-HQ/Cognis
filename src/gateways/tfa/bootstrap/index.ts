@@ -4,7 +4,6 @@ import {
     registerLimitedAuthPathAllowance,
     type GatewayBootstrapContext,
 } from "../../shared.js";
-import { ensureCtxCapability } from "@cognis/core";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
 import { CoreTfaGateway } from "../gateway.js";
@@ -217,9 +216,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: gateway.listAdapters().length,
     });
 
-    const flowCtx = ensureCtxCapability(ctx.capabilities);
-    if (flowCtx.hasFlow("bootstrap-platform")) {
-        flowCtx.addFlowStageHook(
+    if (ctx.flow.exists("bootstrap-platform")) {
+        ctx.flow.extend(
             "bootstrap-platform",
             "register-flows",
             { id: "tfa-gateway:bootstrap-registration" },

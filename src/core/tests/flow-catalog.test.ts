@@ -2,9 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     CORE_FLOW_CATALOG,
-    CTX_CAPABILITY,
+    createCtx,
     createFlowRegistration,
-    ensureCtxCapability,
     getCanonicalFlowContract,
     registerCanonicalFlow,
 } from "../index.js";
@@ -55,28 +54,8 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
     );
 });
 
-test("ensureCtxCapability contributes a reusable flow bus", () => {
-    const capabilities = new Map<string, unknown>();
-    const store = {
-        get<T>(key: string): T | undefined {
-            return capabilities.get(key) as T | undefined;
-        },
-        contribute(key: string, value: unknown): void {
-            capabilities.set(key, value);
-        },
-    };
-
-    const first = ensureCtxCapability(store);
-    const second = ensureCtxCapability(store);
-
-    assert.equal(first, second);
-    assert.equal(capabilities.get(CTX_CAPABILITY), first);
-});
-
 test("registerCanonicalFlow derives ctx registrations from the catalog", () => {
-    const ctx = ensureCtxCapability({
-        get: () => undefined,
-    });
+    const ctx = createCtx();
     const flow = getCanonicalFlowContract("send-message");
 
     assert.ok(flow);

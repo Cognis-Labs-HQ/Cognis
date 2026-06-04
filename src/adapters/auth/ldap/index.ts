@@ -1,4 +1,4 @@
-import type { AuthContext, Ctx } from "@cognis/core";
+import type { AuthContext, FlowApi } from "@cognis/core";
 import type {
     AuthProviderAdapter,
     AuthConfigField,
@@ -162,12 +162,12 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     }
 
     registerFlowHooks(
-        ctx: Ctx,
+        flow: FlowApi,
         options?: {
             enabled?: boolean;
         },
     ): void {
-        registerLdapFlowHooks(ctx, {
+        registerLdapFlowHooks(flow, {
             getAvailability: () => ({
                 id: this.id,
                 name: this.name,

@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import type { FlowApi } from "../ctx/types.js";
 
 export interface GatewayManifest {
     id: string;
@@ -113,6 +114,21 @@ export class CapabilityStore {
 export interface GatewayBootstrapBase {
     gatewayRegistry: GatewayRegistry;
     capabilities: CapabilityStore;
+    /**
+     * Direct access to the platform flow API. Use `ctx.flow.exists()` and
+     * `ctx.flow.extend()` to check for and inject stage hooks without
+     * acquiring a Ctx capability handle or checking for its presence.
+     *
+     * @example
+     * ```ts
+     * if (ctx.flow.exists("construct-settings-ui")) {
+     *     ctx.flow.extend("construct-settings-ui", "resolve-sections", {
+     *         id: "my-gateway:settings-section",
+     *     }, () => ({ sectionId: "my-section", scriptUrl: "/static/..." }));
+     * }
+     * ```
+     */
+    flow: FlowApi;
     log?: BootstrapLog;
 }
 

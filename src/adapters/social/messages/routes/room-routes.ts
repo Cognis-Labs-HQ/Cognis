@@ -11,7 +11,7 @@ import {
 } from "./shared.js";
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore, dispatch, flowCtx } = deps;
+    const { messagesStore, profileStore, dispatch, flow } = deps;
     const ctx = resolveRouteContext(deps.routeContext);
 
     return async (
@@ -370,7 +370,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     return true;
                 }
-                if (!flowCtx?.hasFlow("send-message")) {
+                if (!flow?.exists("send-message")) {
                     res.writeHead(503, {
                         "content-type": "application/json",
                     });
@@ -384,7 +384,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     return true;
                 }
-                const flowResult = await flowCtx.runFlow("send-message", {
+                const flowResult = await flow.run("send-message", {
                     roomId,
                     senderId: accountId,
                     ciphertext: body.ciphertext,

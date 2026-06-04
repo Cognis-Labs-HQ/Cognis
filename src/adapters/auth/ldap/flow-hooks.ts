@@ -1,4 +1,4 @@
-import type { Ctx } from "@cognis/core";
+import type { FlowApi } from "@cognis/core";
 
 interface LdapAvailability {
     id: string;
@@ -7,26 +7,26 @@ interface LdapAvailability {
 }
 
 export function registerLdapFlowHooks(
-    ctx: Ctx,
+    flow: FlowApi,
     options: {
         getAvailability: () => LdapAvailability;
     },
 ): void {
-    ctx.addFlowStageHook(
+    flow.extend(
         "ldap-auth",
         "resolve-adapter",
         { id: "auth-ldap:resolve-adapter" },
         () => options.getAvailability(),
     );
 
-    ctx.addFlowStageHook(
+    flow.extend(
         "login",
         "authenticate",
         { id: "auth-ldap:login-authentication-bridge", order: 10 },
         () => options.getAvailability(),
     );
 
-    ctx.addFlowStageHook(
+    flow.extend(
         "construct-login-ui",
         "augment-methods",
         { id: "auth-ldap:login-method-availability", order: 10 },

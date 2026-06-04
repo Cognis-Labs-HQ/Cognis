@@ -13,9 +13,10 @@ import { CoreSocialGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import {
     MESSAGING_FLOW_CATALOG,
-    ensureCtxCapability,
+    CTX_CAPABILITY,
     registerCanonicalFlow,
 } from "@cognis/core";
+import type { Ctx } from "@cognis/core";
 
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
 export {
@@ -198,6 +199,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway,
         capabilities: ctx.capabilities,
         gatewayRegistry: ctx.gatewayRegistry,
+        flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
         registerAdapterStaticDir: (gatewayId, adapterId, absoluteDir) =>
@@ -253,12 +255,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adaptersRoot,
     });
 
-    const flowCtx = ensureCtxCapability(ctx.capabilities);
+    const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY)!;
     for (const flow of MESSAGING_FLOW_CATALOG) {
-        registerCanonicalFlow(flowCtx, flow);
+        registerCanonicalFlow(systemCtx, flow);
     }
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "construct-messaging-ui",
         "resolve-navigation",
         { id: "social-gateway:resolve-navigation" },
@@ -280,7 +282,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "construct-messaging-ui",
         "compose-surface",
         { id: "social-gateway:compose-surface" },
@@ -294,7 +296,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "send-message",
         "validate-message",
         { id: "social-gateway:validate-message" },
@@ -320,7 +322,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "send-message",
         "fan-out",
         { id: "social-gateway:fan-out" },

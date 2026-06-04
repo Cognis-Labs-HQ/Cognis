@@ -34,6 +34,52 @@ export interface FlowRunResult {
     stageResults: Record<string, unknown[]>;
 }
 
+/**
+ * Simplified flow API for consuming components. Exposes the three operations
+ * most callers need: checking whether a flow exists, injecting a stage hook,
+ * and running a flow. Use `ctx.flow` on any bootstrap context to access it.
+ *
+ * @example Guard-and-inject pattern (idiomatic):
+ * ```ts
+ * if (ctx.flow.exists("construct-settings-ui")) {
+ *     ctx.flow.extend("construct-settings-ui", "resolve-sections", {
+ *         id: "my-gateway:settings-section",
+ *     }, () => ({ sectionId: "my-section", scriptUrl: "/static/..." }));
+ * }
+ * ```
+ *
+ * @example Running a flow from a route handler:
+ * ```ts
+ * const result = await ctx.flow.run("provision-user", { username, password });
+ * const persisted = result.stageResults["persist-account"]?.[0];
+ * ```
+ */
+export interface FlowApi {
+    /** Returns true if a flow with the given ID is currently registered. */
+    exists(flowId: string): boolean;
+    /**
+     * Injects a stage hook into an existing flow. Returns true when the hook
+     * was registered, false when the hook ID is already present (idempotent —
+     * never throws on duplicate). Also returns false when the flow or stage
+     * does not exist.
+     */
+    extend(
+        flowId: string,
+        stageId: string,
+        hook: FlowHookRegistration,
+        handler: FlowStageHook,
+    ): boolean;
+    /**
+     * Runs a registered flow with optional input data and options. Resolves
+     * with the accumulated stage results when all hooks complete.
+     */
+    run(
+        flowId: string,
+        input?: unknown,
+        options?: FlowRunOptions,
+    ): Promise<FlowRunResult>;
+}
+
 export interface Ctx {
     contributeCapability(key: string, value: unknown): void;
     contributePublicCapability(key: string, value: unknown): void;
@@ -62,4 +108,6 @@ export interface Ctx {
         input?: unknown,
         options?: FlowRunOptions,
     ): Promise<FlowRunResult>;
+    /** Direct access to the flow API; the preferred surface for consuming code. */
+    readonly flow: FlowApi;
 }

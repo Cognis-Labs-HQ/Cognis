@@ -48,3 +48,27 @@ Komponen ini tidak memiliki konfigurasi variabel lingkungan runtime.
 ## Rute API
 
 Komponen ini tidak mendaftarkan rute HTTP secara langsung.
+
+## API ctx.flow
+
+`ctx.flow` adalah antarmuka sempit untuk pola guard-and-inject.
+Komponen memeriksa apakah flow ada sebelum menginjeksi hook.
+
+### Antarmuka
+
+- **`exists(flowId)`** — mengembalikan `true` jika flow telah terdaftar.
+- **`extend(flowId, stageId, hook, handler)`** — mendaftarkan stage hook. Mengembalikan `true` jika berhasil, `false` jika id hook sudah ada (idempotent, tidak melempar error).
+- **`run(flowId, input?)`** — menjalankan flow.
+
+### Contoh: Guard-and-Inject
+
+```ts
+if (ctx.flow.exists("construct-settings-ui")) {
+    ctx.flow.extend(
+        "construct-settings-ui",
+        "resolve-sections",
+        { id: "notify-gateway:resolve-sections" },
+        () => ({ gatewayId: "notify", sectionId: "notifications" }),
+    );
+}
+```

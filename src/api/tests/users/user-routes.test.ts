@@ -10,7 +10,8 @@ import {
 } from "../../../gateways/auth/access-tokens.js";
 import {
     CapabilityStore,
-    ensureCtxCapability,
+    CTX_CAPABILITY,
+    createCtx,
     registerCanonicalFlow,
     USER_LIFECYCLE_FLOW_CATALOG,
 } from "@cognis/core";
@@ -19,7 +20,8 @@ import type { LocalAccountStore } from "../../reuse/account-store.js";
 function makeGetCapability(accountStore: LocalAccountStore) {
     const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
     const capabilities = new CapabilityStore();
-    const flowCtx = ensureCtxCapability(capabilities);
+    const flowCtx = createCtx();
+    capabilities.contribute(CTX_CAPABILITY, flowCtx);
     capabilities.contribute(
         "auth:revokeAccessTokensForSubject",
         revokeAccessTokensForSubject,
@@ -27,7 +29,7 @@ function makeGetCapability(accountStore: LocalAccountStore) {
     for (const flow of USER_LIFECYCLE_FLOW_CATALOG) {
         registerCanonicalFlow(flowCtx, flow);
     }
-    flowCtx.addFlowStageHook(
+    flowCtx.flow.extend(
         "provision-user",
         "validate-request",
         { id: "test:validate-account-input" },
@@ -40,7 +42,7 @@ function makeGetCapability(accountStore: LocalAccountStore) {
             return { valid: true, role };
         },
     );
-    flowCtx.addFlowStageHook(
+    flowCtx.flow.extend(
         "provision-user",
         "persist-account",
         { id: "test:create-account" },
@@ -76,7 +78,7 @@ function makeGetCapability(accountStore: LocalAccountStore) {
             return { persisted: true, created, role };
         },
     );
-    flowCtx.addFlowStageHook(
+    flowCtx.flow.extend(
         "provision-user",
         "emit-events",
         { id: "test:provision-emit" },
@@ -96,7 +98,7 @@ function makeGetCapability(accountStore: LocalAccountStore) {
             };
         },
     );
-    flowCtx.addFlowStageHook(
+    flowCtx.flow.extend(
         "deprovision-user",
         "authorize-request",
         { id: "test:authorize-deprovision" },
@@ -121,7 +123,7 @@ function makeGetCapability(accountStore: LocalAccountStore) {
             return { authorized: true };
         },
     );
-    flowCtx.addFlowStageHook(
+    flowCtx.flow.extend(
         "deprovision-user",
         "persist-state",
         { id: "test:apply-deprovision" },
@@ -151,7 +153,7 @@ function makeGetCapability(accountStore: LocalAccountStore) {
             return { persisted: true, username, action: input.action };
         },
     );
-    flowCtx.addFlowStageHook(
+    flowCtx.flow.extend(
         "deprovision-user",
         "cleanup-dependencies",
         { id: "test:revoke-tokens" },

@@ -6,6 +6,7 @@ import type {
     Ctx,
 } from "@cognis/core";
 import {
+    createCtx,
     GatewayService,
     GatewayRegistry,
     CapabilityStore,
@@ -170,6 +171,11 @@ const uiRegistry = new UIRegistry();
 
 const gatewayService = new GatewayService(gatewayRegistry);
 
+// Create the platform flow bus upfront so every gateway bootstrap receives it
+// as ctx.flow — no capability unwrapping required.
+const systemCtx = createCtx();
+capabilities.contribute("system:ctx", systemCtx);
+
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
     path.resolve(process.cwd(), "src", "gateways");
@@ -180,6 +186,7 @@ const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
     gatewayRegistry,
     capabilities,
     uiRegistry,
+    flow: systemCtx.flow,
 });
 
 const contributedLog = capabilities.get<BootstrapLog>("logging:log");
@@ -261,9 +268,9 @@ try {
     process.exit(1);
 }
 
-const flowCtx = capabilities.get<Ctx>("system:ctx");
-if (flowCtx?.hasFlow("bootstrap-platform")) {
-    await flowCtx.runFlow("bootstrap-platform");
+const flowCtx = systemCtx;
+if (flowCtx.flow.exists("bootstrap-platform")) {
+    await flowCtx.flow.run("bootstrap-platform");
     await log("info", "bootstrap-platform flow complete.");
 }
 

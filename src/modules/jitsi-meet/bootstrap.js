@@ -5,14 +5,14 @@ export function bootstrapModule(ctx) {
     registerUi(ctx);
     registerApiRoutes(ctx.router, ctx);
 
-    const flowCtx = ctx.getCapability("system:ctx");
-    if (!flowCtx) return;
-
-    for (const flow of MEETINGS_FLOW_CATALOG) {
-        registerCanonicalFlow(flowCtx, flow);
+    const systemCtx = ctx.getCapability("system:ctx");
+    if (systemCtx) {
+        for (const flow of MEETINGS_FLOW_CATALOG) {
+            registerCanonicalFlow(systemCtx, flow);
+        }
     }
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "bootstrap-platform",
         "register-flows",
         { id: "jitsi-meet-module:bootstrap-registration" },
@@ -22,7 +22,7 @@ export function bootstrapModule(ctx) {
         }),
     );
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "construct-meetings-ui",
         "resolve-providers",
         { id: "jitsi-meet-module:resolve-providers" },
@@ -33,7 +33,7 @@ export function bootstrapModule(ctx) {
         }),
     );
 
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "create-meeting",
         "validate-request",
         { id: "jitsi-meet-module:validate-request" },

@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { AuthContext, AuthGateway, Ctx } from "@cognis/core";
+import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
@@ -24,7 +24,7 @@ export interface AuthProviderAdapter {
     configure(config: Record<string, unknown>): void;
     getPasswordResetSupport?(): { supported: boolean; reason?: string };
     registerFlowHooks?(
-        ctx: Ctx,
+        flow: FlowApi,
         options?: {
             enabled?: boolean;
         },

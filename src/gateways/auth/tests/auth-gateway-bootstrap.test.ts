@@ -5,6 +5,7 @@ import {
     CTX_CAPABILITY,
     GatewayRegistry,
     CapabilityStore,
+    createCtx,
     type Ctx,
 } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
@@ -19,6 +20,12 @@ function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
 }
 
+function makeBaseCtx(capabilities: CapabilityStore) {
+    const systemCtx = createCtx();
+    capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    return { flow: systemCtx.flow };
+}
+
 test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -30,6 +37,7 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        ...makeBaseCtx(capabilities),
     });
 
     const gateways = gatewayRegistry.list();
@@ -49,6 +57,7 @@ test("auth gateway contributes auth:accountStore capability", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        ...makeBaseCtx(capabilities),
     });
 
     assert.ok(
@@ -68,6 +77,7 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        ...makeBaseCtx(capabilities),
     });
 
     const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
@@ -131,6 +141,7 @@ test("auth bootstrap hook directory contributes route-level TFA login capabiliti
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        ...makeBaseCtx(capabilities),
     });
 
     assert.equal(
@@ -168,6 +179,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        ...makeBaseCtx(capabilities),
     });
 
     const staticDir = uiRegistry.getStaticDir("auth");
@@ -195,6 +207,7 @@ test("auth gateway bootstrap registers security section without redundant authen
         gatewayRegistry,
         capabilities,
         uiRegistry,
+        ...makeBaseCtx(capabilities),
     });
 
     const sections = uiRegistry.listAdminSections();
@@ -342,6 +355,7 @@ test("auth bootstrap contributes page script origin registration capability", as
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        ...makeBaseCtx(capabilities),
     });
 
     const registerScriptOrigins = capabilities.get<

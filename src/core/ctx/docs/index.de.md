@@ -48,3 +48,27 @@ Diese Komponente hat keine Laufzeit-Umgebungsvariablen.
 ## API-Routen
 
 Diese Komponente registriert selbst keine HTTP-Routen.
+
+## ctx.flow-API
+
+`ctx.flow` ist eine schmale Schnittstelle für das Guard-and-Inject-Muster.
+Komponenten prüfen, ob ein Flow existiert, bevor sie Hooks injizieren.
+
+### Schnittstelle
+
+- **`exists(flowId)`** — gibt `true` zurück, wenn der Flow registriert ist.
+- **`extend(flowId, stageId, hook, handler)`** — registriert einen Stage-Hook. Gibt `true` bei Erfolg zurück, `false` bei doppelter Hook-ID (idempotent, kein Fehler).
+- **`run(flowId, input?)`** — führt den Flow aus.
+
+### Beispiel: Guard-and-Inject
+
+```ts
+if (ctx.flow.exists("construct-settings-ui")) {
+    ctx.flow.extend(
+        "construct-settings-ui",
+        "resolve-sections",
+        { id: "notify-gateway:resolve-sections" },
+        () => ({ gatewayId: "notify", sectionId: "notifications" }),
+    );
+}
+```

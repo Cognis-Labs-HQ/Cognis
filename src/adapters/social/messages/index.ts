@@ -13,7 +13,6 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import type { Ctx } from "@cognis/core";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -292,8 +291,6 @@ export async function bootstrapSocialAdapter(
             "/static/adapters/social/messages/reactions.js",
     });
 
-    const flowCtx = ctx.capabilities.get<Ctx>("system:ctx");
-
     ctx.registerRoute(
         createMessagesRoutes({
             messagesStore,
@@ -301,13 +298,13 @@ export async function bootstrapSocialAdapter(
             dispatch: dispatch ?? null,
             isAdapterEnabled: () => ctx.isGatewayEnabled(),
             routeContext,
-            flowCtx: flowCtx ?? undefined,
+            flow: ctx.flow,
         }),
         "social",
     );
 
-    if (flowCtx?.hasFlow("send-message")) {
-        flowCtx.addFlowStageHook(
+    if (ctx.flow.exists("send-message")) {
+        ctx.flow.extend(
             "send-message",
             "persist-message",
             { id: "social-messages-adapter:persist-message" },
@@ -337,7 +334,7 @@ export async function bootstrapSocialAdapter(
             },
         );
 
-        flowCtx.addFlowStageHook(
+        ctx.flow.extend(
             "send-message",
             "fan-out",
             { id: "social-messages-adapter:fan-out" },

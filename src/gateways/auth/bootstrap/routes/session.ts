@@ -502,9 +502,9 @@ export function createSessionRoutes({
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
 
-            const flowCtx = capabilities.get<Ctx>("system:ctx");
-            if (flowCtx?.hasFlow("login")) {
-                const result = await flowCtx.runFlow("login", {
+            const systemCtx = capabilities.get<Ctx>("system:ctx");
+            if (systemCtx?.flow.exists("login")) {
+                const result = await systemCtx.flow.run("login", {
                     provider,
                     credentials,
                 });

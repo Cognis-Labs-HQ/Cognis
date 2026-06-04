@@ -19,7 +19,6 @@ import { createCalendarAdapterRoutes } from "./adapter-routes.js";
 import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
-import { ensureCtxCapability } from "@cognis/core";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -192,9 +191,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         hasAdapters: true,
     });
 
-    const flowCtx = ensureCtxCapability(ctx.capabilities);
-    if (flowCtx.hasFlow("bootstrap-platform")) {
-        flowCtx.addFlowStageHook(
+    if (ctx.flow.exists("bootstrap-platform")) {
+        ctx.flow.extend(
             "bootstrap-platform",
             "register-flows",
             { id: "calendar-gateway:bootstrap-registration" },

@@ -1,6 +1,7 @@
 import { addFlowStageHook as addFlowStageHookImpl } from "./add-flow-stage-hook.js";
 import { contributeCapability as contributeCapabilityImpl } from "./contribute-capability.js";
 import { contributePublicCapability as contributePublicCapabilityImpl } from "./contribute-public-capability.js";
+import { createFlowApi } from "./flow-api.js";
 import { getCapability as getCapabilityImpl } from "./get-capability.js";
 import { hasCapability as hasCapabilityImpl } from "./has-capability.js";
 import { hasFlow as hasFlowImpl } from "./has-flow.js";
@@ -15,6 +16,7 @@ import { createCtxState } from "./state.js";
 import { unregisterFlow as unregisterFlowImpl } from "./unregister-flow.js";
 import type {
     Ctx,
+    FlowApi,
     FlowHookRegistration,
     FlowRegistration,
     FlowRunOptions,
@@ -24,6 +26,11 @@ import type {
 
 export function createCtx(): Ctx {
     const state = createCtxState();
+
+    // `cachedFlow` is populated the first time `ctx.flow` is accessed so that
+    // the FlowApi receives the fully-assembled ctx reference rather than a
+    // partially initialised object literal.
+    let cachedFlow: FlowApi | undefined;
 
     const ctx: Ctx = {
         contributeCapability(key: string, value: unknown): void {
@@ -80,6 +87,12 @@ export function createCtx(): Ctx {
             options?: FlowRunOptions,
         ): Promise<FlowRunResult> {
             return runFlowImpl(state, ctx, flowId, input, options);
+        },
+        get flow(): FlowApi {
+            if (!cachedFlow) {
+                cachedFlow = createFlowApi(state, ctx);
+            }
+            return cachedFlow;
         },
     };
 

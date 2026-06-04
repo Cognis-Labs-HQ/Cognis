@@ -287,3 +287,70 @@ test("ctx public capabilities are still accessible via standard capability metho
     assert.strictEqual(ctx.getCapability("db:executor"), executor);
     assert.strictEqual(ctx.requireCapability("db:executor"), executor);
 });
+
+test("ctx.flow.exists returns false for unregistered flows", () => {
+    const ctx = createCtx();
+    assert.equal(ctx.flow.exists("nonexistent"), false);
+});
+
+test("ctx.flow.exists returns true after registerFlow", () => {
+    const ctx = createCtx();
+    ctx.registerFlow({ id: "login", stages: ["authenticate"] });
+    assert.equal(ctx.flow.exists("login"), true);
+});
+
+test("ctx.flow.extend registers a stage hook and returns true", () => {
+    const ctx = createCtx();
+    ctx.registerFlow({ id: "login", stages: ["authenticate"] });
+    const registered = ctx.flow.extend(
+        "login",
+        "authenticate",
+        { id: "hook-a" },
+        () => ({ ok: true }),
+    );
+    assert.equal(registered, true);
+});
+
+test("ctx.flow.extend is idempotent — duplicate hook id returns false without throwing", () => {
+    const ctx = createCtx();
+    ctx.registerFlow({ id: "login", stages: ["authenticate"] });
+    ctx.flow.extend("login", "authenticate", { id: "hook-a" }, () => ({}));
+    const duplicate = ctx.flow.extend(
+        "login",
+        "authenticate",
+        { id: "hook-a" },
+        () => ({}),
+    );
+    assert.equal(duplicate, false);
+});
+
+test("ctx.flow guard-and-inject pattern works end-to-end", async () => {
+    const ctx = createCtx();
+    ctx.registerFlow({
+        id: "construct-settings-ui",
+        stages: ["resolve-sections"],
+    });
+
+    if (ctx.flow.exists("construct-settings-ui")) {
+        ctx.flow.extend(
+            "construct-settings-ui",
+            "resolve-sections",
+            { id: "notify-gateway:resolve-sections" },
+            () => ({ sectionId: "notifications" }),
+        );
+    }
+
+    const result = await ctx.flow.run("construct-settings-ui", {});
+    const sections = result.stageResults["resolve-sections"] as Array<{
+        sectionId: string;
+    }>;
+    assert.equal(sections[0]?.sectionId, "notifications");
+});
+
+test("ctx.flow.run throws for unknown flow", async () => {
+    const ctx = createCtx();
+    await assert.rejects(
+        () => ctx.flow.run("no-such-flow", {}),
+        /is not registered/,
+    );
+});

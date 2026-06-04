@@ -288,3 +288,65 @@ test("gateway implementations do not import production code from other gateways"
             "Use ctx capabilities to share functionality across gateways.",
     );
 });
+
+// ---------------------------------------------------------------------------
+// Rule 5: ensureCtxCapability must not be used outside of core
+// ---------------------------------------------------------------------------
+
+test("no source file outside core uses the removed ensureCtxCapability helper", async () => {
+    const allFiles = [
+        ...(await findTsFiles(path.join(srcRoot, "gateways"))),
+        ...(await findTsFiles(path.join(srcRoot, "adapters"))),
+        ...(await findTsFiles(path.join(srcRoot, "api"))),
+        ...(await findTsFiles(path.join(srcRoot, "modules"))),
+    ].filter(
+        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+    );
+
+    const pattern = /\bensureCtxCapability\b/;
+
+    const violations: string[] = [];
+    for (const file of allFiles) {
+        const source = await readFile(file, "utf8");
+        if (pattern.test(source)) {
+            violations.push(path.relative(srcRoot, file));
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        "ensureCtxCapability has been removed. Use ctx.flow.exists() / ctx.flow.extend() instead.",
+    );
+});
+
+// ---------------------------------------------------------------------------
+// Rule 6: Prefer ctx.flow over raw addFlowStageHook calls
+// ---------------------------------------------------------------------------
+
+test("no source file outside core calls addFlowStageHook directly", async () => {
+    const allFiles = [
+        ...(await findTsFiles(path.join(srcRoot, "gateways"))),
+        ...(await findTsFiles(path.join(srcRoot, "adapters"))),
+        ...(await findTsFiles(path.join(srcRoot, "api"))),
+        ...(await findTsFiles(path.join(srcRoot, "modules"))),
+    ].filter(
+        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+    );
+
+    const pattern = /\.addFlowStageHook\(/;
+
+    const violations: string[] = [];
+    for (const file of allFiles) {
+        const source = await readFile(file, "utf8");
+        if (pattern.test(source)) {
+            violations.push(path.relative(srcRoot, file));
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        "Use ctx.flow.extend() instead of calling addFlowStageHook() directly.",
+    );
+});

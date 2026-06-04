@@ -3,7 +3,10 @@ import type {
     BootstrapLog,
     ModuleRuntimeGateway,
     RoleAccessPolicy,
+    FlowApi,
+    Ctx,
 } from "@cognis/core";
+import { NULL_FLOW_API, CTX_CAPABILITY } from "@cognis/core";
 import path from "node:path";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
@@ -96,6 +99,7 @@ interface ModulePlugin {
 
 interface ModuleBootstrapCtx
     extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
+    flow: FlowApi;
     registerApiGet(
         routePath: string,
         handler: RouteHandler["handler"],
@@ -214,9 +218,14 @@ export function createModuleExtensionRoutes(
             },
         };
 
+        const flow: FlowApi =
+            options?.getCapability?.<Ctx>(CTX_CAPABILITY)?.flow ??
+            NULL_FLOW_API;
+
         return {
             moduleId,
             moduleRoot,
+            flow,
             getCapability: options?.getCapability ?? (() => undefined),
             registerApiGet(routePath, handler, routeOptions) {
                 registerApiRoute("GET", routePath, handler, routeOptions);

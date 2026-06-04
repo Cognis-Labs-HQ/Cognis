@@ -11,7 +11,6 @@ import {
 } from "../../api/reuse/route-context.js";
 import { CoreStudyGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
-import { ensureCtxCapability } from "@cognis/core";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MODULES_ROOT =
@@ -395,9 +394,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adaptersRoot,
     });
 
-    const flowCtx = ensureCtxCapability(ctx.capabilities);
-    if (flowCtx.hasFlow("bootstrap-platform")) {
-        flowCtx.addFlowStageHook(
+    if (ctx.flow.exists("bootstrap-platform")) {
+        ctx.flow.extend(
             "bootstrap-platform",
             "register-flows",
             { id: "study-gateway:bootstrap-registration" },

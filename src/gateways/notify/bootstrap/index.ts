@@ -20,7 +20,6 @@ import { createNotificationRoutes } from "../routes/index.js";
 import { loadNotificationStores, serveHtmlPage } from "./stores.js";
 import { createUserEmailRoutes } from "./user-email-routes.js";
 import { createGatewayAdapterRoutes } from "./adapter-routes.js";
-import { ensureCtxCapability } from "@cognis/core";
 
 export { createUserEmailRoutes };
 
@@ -173,9 +172,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/notification-prefs.js",
     });
 
-    const flowCtx = ensureCtxCapability(ctx.capabilities);
-    if (flowCtx.hasFlow("construct-settings-ui")) {
-        flowCtx.addFlowStageHook(
+    if (ctx.flow.exists("construct-settings-ui")) {
+        ctx.flow.extend(
             "construct-settings-ui",
             "resolve-sections",
             { id: "notify-gateway:resolve-sections" },

@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
+import type { CapabilityStore, GatewayRegistry, FlowApi } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { AdapterConfigStore } from "./adapter-config-store.js";
 
@@ -38,6 +38,7 @@ export interface SocialAdapterBootstrapCtx {
     adapterRoot: string;
     capabilities: CapabilityStore;
     gatewayRegistry: GatewayRegistry;
+    flow: FlowApi;
     registerRoute(
         handler: (
             req: IncomingMessage,

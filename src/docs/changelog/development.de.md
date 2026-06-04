@@ -66,3 +66,16 @@ Auth-Gateway importierte; dieser Import erfolgt nun über `@cognis/core`.
 - `src/gateways/study/gateway.ts`
 - `src/core/tests/ctx.test.ts`
 - `src/core/tests/ctx-boundary.test.ts` (neu)
+
+## ctx.flow-API und Entfernung von ensureCtxCapability
+
+Ersetzt das ausführliche `ensureCtxCapability` / `addFlowStageHook`-Muster durch
+`ctx.flow.exists()` / `ctx.flow.extend()` / `ctx.flow.run()`. Hook-Injektion ist
+jetzt idempotent (`extend()` gibt `false` zurück statt zu werfen). Alle Gateways,
+Adapter und Module erhalten `flow: FlowApi` direkt aus dem Bootstrap-Kontext.
+
+### Geändert
+- `FlowApi`-Interface und `flow`-Eigenschaft zu `Ctx` und `GatewayBootstrapBase` hinzugefügt
+- `ensureCtxCapability` und `CtxCapabilityStore` aus `@cognis/core` entfernt
+- Alle Gateway-Bootstraps auf `ctx.flow.extend()` migriert
+- Neue Boundary-Regeln 5 und 6 in `ctx-boundary.test.ts`

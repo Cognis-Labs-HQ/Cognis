@@ -67,3 +67,17 @@ studyゲートウェイはこれまでルール4に違反し、`AccessRole` をa
 - `src/gateways/study/gateway.ts`
 - `src/core/tests/ctx.test.ts`
 - `src/core/tests/ctx-boundary.test.ts`（新規）
+
+## ctx.flow APIとensureCtxCapabilityの削除
+
+冗長な`ensureCtxCapability`/`addFlowStageHook`パターンを
+`ctx.flow.exists()`/`ctx.flow.extend()`/`ctx.flow.run()`に置き換え。
+フックの注入は冪等になり（重複IDでは例外を投げずに`false`を返す）、
+すべてのゲートウェイ・アダプタ・モジュールがブートストラップコンテキストから
+`flow: FlowApi`を直接受け取るようになりました。
+
+### 変更点
+- `FlowApi`インターフェースと`flow`プロパティを`Ctx`と`GatewayBootstrapBase`に追加
+- `ensureCtxCapability`と`CtxCapabilityStore`を`@cognis/core`から削除
+- すべてのゲートウェイブートストラップを`ctx.flow.extend()`に移行
+- `ctx-boundary.test.ts`にルール5・6を追加

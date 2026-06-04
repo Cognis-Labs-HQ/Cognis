@@ -48,3 +48,27 @@ flow は `context.ctx.runFlow(...)` で別 flow を呼び出せます。例: ロ
 ## API ルート
 
 このコンポーネントは HTTP ルートを直接登録しません。
+
+## ctx.flow API
+
+`ctx.flow`はガード＆インジェクトパターン向けの狭いインターフェースです。
+コンポーネントはフックを注入する前にフローが存在するかどうかを確認します。
+
+### インターフェース
+
+- **`exists(flowId)`** — フローが登録されている場合に`true`を返します。
+- **`extend(flowId, stageId, hook, handler)`** — ステージフックを登録します。成功時は`true`、フックIDが重複している場合は`false`を返します（冪等、例外なし）。
+- **`run(flowId, input?)`** — フローを実行します。
+
+### 例: ガード＆インジェクト
+
+```ts
+if (ctx.flow.exists("construct-settings-ui")) {
+    ctx.flow.extend(
+        "construct-settings-ui",
+        "resolve-sections",
+        { id: "notify-gateway:resolve-sections" },
+        () => ({ gatewayId: "notify", sectionId: "notifications" }),
+    );
+}
+```

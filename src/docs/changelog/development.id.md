@@ -69,3 +69,17 @@ dari gateway auth; impor tersebut kini dilakukan melalui `@cognis/core`.
 - `src/gateways/study/gateway.ts`
 - `src/core/tests/ctx.test.ts`
 - `src/core/tests/ctx-boundary.test.ts` (baru)
+
+## API ctx.flow dan penghapusan ensureCtxCapability
+
+Mengganti pola verbose `ensureCtxCapability` / `addFlowStageHook` dengan
+`ctx.flow.exists()` / `ctx.flow.extend()` / `ctx.flow.run()`. Injeksi hook kini
+idempotent (`extend()` mengembalikan `false` pada id duplikat alih-alih melempar error).
+Semua gateway, adapter, dan modul kini menerima `flow: FlowApi` langsung dari
+konteks bootstrap.
+
+### Perubahan
+- Menambahkan antarmuka `FlowApi` dan properti `flow` ke `Ctx` dan `GatewayBootstrapBase`
+- Menghapus `ensureCtxCapability` dan `CtxCapabilityStore` dari `@cognis/core`
+- Semua bootstrap gateway dimigrasikan ke `ctx.flow.extend()`
+- Aturan batas baru 5 dan 6 di `ctx-boundary.test.ts`

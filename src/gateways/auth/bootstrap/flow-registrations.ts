@@ -1,10 +1,11 @@
 import {
     AUTH_FLOW_CATALOG,
     BOOTSTRAP_FLOW_CATALOG,
+    CTX_CAPABILITY,
     USER_LIFECYCLE_FLOW_CATALOG,
-    ensureCtxCapability,
     registerCanonicalFlow,
 } from "@cognis/core";
+import type { Ctx } from "@cognis/core";
 import { issueAccessToken, type AccessRole } from "../access-tokens.js";
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
@@ -22,17 +23,19 @@ function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
 export async function registerAuthBootstrapHook(
     context: AuthBootstrapHookContext,
 ): Promise<void> {
-    const flowCtx = ensureCtxCapability(context.ctx.capabilities);
+    // Canonical flow registration requires the full Ctx handle; use ctx.flow
+    // for all subsequent stage hook injection.
+    const systemCtx = context.ctx.capabilities.get<Ctx>(CTX_CAPABILITY)!;
 
     for (const flow of [
         ...BOOTSTRAP_FLOW_CATALOG,
         ...AUTH_FLOW_CATALOG,
         ...USER_LIFECYCLE_FLOW_CATALOG,
     ]) {
-        registerCanonicalFlow(flowCtx, flow);
+        registerCanonicalFlow(systemCtx, flow);
     }
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "bootstrap-platform",
         "register-flows",
         { id: "auth-gateway:bootstrap-registration" },
@@ -45,7 +48,7 @@ export async function registerAuthBootstrapHook(
         }),
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "login",
         "resolve-provider",
         { id: "auth-gateway:enabled-providers" },
@@ -58,7 +61,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "login",
         "authenticate",
         { id: "auth-gateway:authenticate" },
@@ -91,7 +94,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "login",
         "establish-session",
         { id: "auth-gateway:establish-session" },
@@ -295,7 +298,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "construct-login-ui",
         "resolve-methods",
         { id: "auth-gateway:login-methods" },
@@ -304,7 +307,7 @@ export async function registerAuthBootstrapHook(
         }),
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "construct-settings-ui",
         "resolve-sections",
         { id: "auth-gateway:security-section" },
@@ -315,7 +318,7 @@ export async function registerAuthBootstrapHook(
         }),
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "construct-settings-ui",
         "compose-page",
         { id: "auth-gateway:compose-settings-page" },
@@ -331,7 +334,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "provision-user",
         "validate-request",
         { id: "auth-gateway:validate-account-input" },
@@ -351,7 +354,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "provision-user",
         "persist-account",
         { id: "auth-gateway:create-account" },
@@ -391,7 +394,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "provision-user",
         "emit-events",
         { id: "auth-gateway:provision-emit" },
@@ -414,7 +417,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "deprovision-user",
         "authorize-request",
         { id: "auth-gateway:authorize-deprovision" },
@@ -440,7 +443,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "deprovision-user",
         "persist-state",
         { id: "auth-gateway:apply-deprovision" },
@@ -471,7 +474,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    flowCtx.addFlowStageHook(
+    context.ctx.flow.extend(
         "deprovision-user",
         "cleanup-dependencies",
         { id: "auth-gateway:revoke-tokens" },
@@ -497,7 +500,7 @@ export async function registerAuthBootstrapHook(
     const ldapAdapter =
         enabledLdapAdapter ?? context.authGateway.getAdapter("ldap");
     if (typeof ldapAdapter?.registerFlowHooks === "function") {
-        ldapAdapter.registerFlowHooks(flowCtx, {
+        ldapAdapter.registerFlowHooks(context.ctx.flow, {
             enabled: enabledLdapAdapter !== null,
         });
     }

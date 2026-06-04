@@ -1,4 +1,4 @@
-import { createCtx, type Ctx, type FlowRegistration } from "../ctx/index.js";
+import { type Ctx, type FlowRegistration } from "../ctx/index.js";
 
 export const CTX_CAPABILITY = "system:ctx";
 
@@ -26,11 +26,6 @@ export interface CanonicalFlowContract {
     owner: string;
     description: string;
     stages: readonly FlowStageContract[];
-}
-
-export interface CtxCapabilityStore {
-    get<T>(key: string): T | undefined;
-    contribute?(key: string, value: unknown): void;
 }
 
 function freezePayloadContract(
@@ -391,14 +386,4 @@ export function registerCanonicalFlow(
     }
     ctx.registerFlow(createFlowRegistration(flow));
     return true;
-}
-
-export function ensureCtxCapability(capabilities: CtxCapabilityStore): Ctx {
-    const existing = capabilities.get<Ctx>(CTX_CAPABILITY);
-    if (existing) {
-        return existing;
-    }
-    const ctx = createCtx();
-    capabilities.contribute?.(CTX_CAPABILITY, ctx);
-    return ctx;
 }
