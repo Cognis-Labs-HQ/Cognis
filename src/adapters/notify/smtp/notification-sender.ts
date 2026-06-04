@@ -812,16 +812,11 @@ export class SmtpNotificationSender implements NotificationSender {
             verifyUrl,
             theme,
         );
-        if (queued.notificationId == null) {
+        const notificationId = queued.notificationId?.trim();
+        if (!notificationId) {
             throw new Error("smtp_queue_item_missing");
         }
-        if (
-            typeof queued.notificationId !== "string" ||
-            queued.notificationId.trim().length === 0
-        ) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        await this.queue.waitForResult(queued.notificationId);
+        await this.queue.waitForResult(notificationId);
     }
 
     async queueVerificationEmail(
@@ -842,15 +837,11 @@ export class SmtpNotificationSender implements NotificationSender {
             theme,
             verifyUrl,
         });
-        if (
-            typeof queued.notificationId !== "string" ||
-            queued.notificationId.trim().length === 0
-        ) {
+        const notificationId = queued.notificationId?.trim();
+        if (!notificationId) {
             throw new Error("smtp_queue_item_missing");
         }
-        const queueItem = await this.getQueueItemWithRetry(
-            queued.notificationId,
-        );
+        const queueItem = await this.getQueueItemWithRetry(notificationId);
         if (!queueItem) {
             throw new Error("smtp_queue_item_missing");
         }
