@@ -60,7 +60,12 @@ that loads before flows are registered is always safe.
 ```ts
 interface FlowApi {
     exists(flowId: string): boolean;
-    extend(flowId: string, stageId: string, hook: HookMeta, handler: StageHandler): boolean;
+    extend(
+        flowId: string,
+        stageId: string,
+        hook: HookMeta,
+        handler: StageHandler,
+    ): boolean;
     run(flowId: string, input?: unknown): Promise<FlowRunResult>;
 }
 ```
@@ -73,18 +78,18 @@ interface FlowApi {
 
 Use these well-known stage names when contributing hooks to canonical flows:
 
-| Flow                      | Stages (in order)                                              |
-|---------------------------|----------------------------------------------------------------|
-| `login`                   | `resolve-provider`, `authenticate`, `establish-session`        |
-| `construct-login-ui`      | `resolve-shell`, `resolve-methods`, `augment-methods`, `compose-form` |
-| `construct-settings-ui`   | `resolve-sections`, `augment-sections`, `compose-page`         |
-| `bootstrap-platform`      | `register-flows`, `post-boot`                                  |
-| `send-message`            | `validate-message`, `persist-message`, `fan-out`               |
-| `construct-messaging-ui`  | `resolve-navigation`, `compose-surface`                        |
-| `create-meeting`          | `validate-request`, `schedule`, `notify-participants`          |
-| `construct-meetings-ui`   | `resolve-providers`, `compose-surface`                         |
-| `provision-user`          | `validate-request`, `persist-account`, `emit-events`           |
-| `deprovision-user`        | `authorize-request`, `persist-state`, `cleanup-dependencies`   |
+| Flow                     | Stages (in order)                                                     |
+| ------------------------ | --------------------------------------------------------------------- |
+| `login`                  | `resolve-provider`, `authenticate`, `establish-session`               |
+| `construct-login-ui`     | `resolve-shell`, `resolve-methods`, `augment-methods`, `compose-form` |
+| `construct-settings-ui`  | `resolve-sections`, `augment-sections`, `compose-page`                |
+| `bootstrap-platform`     | `register-flows`, `post-boot`                                         |
+| `send-message`           | `validate-message`, `persist-message`, `fan-out`                      |
+| `construct-messaging-ui` | `resolve-navigation`, `compose-surface`                               |
+| `create-meeting`         | `validate-request`, `schedule`, `notify-participants`                 |
+| `construct-meetings-ui`  | `resolve-providers`, `compose-surface`                                |
+| `provision-user`         | `validate-request`, `persist-account`, `emit-events`                  |
+| `deprovision-user`       | `authorize-request`, `persist-state`, `cleanup-dependencies`          |
 
 ### Usage examples
 
@@ -114,7 +119,10 @@ if (ctx.flow.exists("send-message")) {
         "validate-message",
         { id: "social-gateway:validate-message" },
         (stageCtx) => {
-            const { roomId, ciphertext, iv } = stageCtx.input as Record<string, string>;
+            const { roomId, ciphertext, iv } = stageCtx.input as Record<
+                string,
+                string
+            >;
             if (!roomId) return { valid: false, reason: "missing_room_id" };
             return { valid: true, roomId, ciphertext, iv };
         },
@@ -125,7 +133,9 @@ if (ctx.flow.exists("send-message")) {
         "fan-out",
         { id: "social-gateway:fan-out" },
         (stageCtx) => {
-            const persisted = stageCtx.stageResults["persist-message"] as Array<{ messageId?: string }>;
+            const persisted = stageCtx.stageResults[
+                "persist-message"
+            ] as Array<{ messageId?: string }>;
             return { fanOut: Boolean(persisted[0]?.messageId) };
         },
     );
@@ -138,7 +148,9 @@ if (ctx.flow.exists("send-message")) {
 const systemCtx = capabilities.get<Ctx>("system:ctx");
 if (systemCtx?.flow.exists("login")) {
     const result = await systemCtx.flow.run("login", { provider, credentials });
-    const authResults = result.stageResults["authenticate"] as Array<{ success: boolean }>;
+    const authResults = result.stageResults["authenticate"] as Array<{
+        success: boolean;
+    }>;
 }
 ```
 
@@ -149,7 +161,8 @@ canonical flows are registered) use `NULL_FLOW_API` as a safe no-op:
 
 ```ts
 import { NULL_FLOW_API, CTX_CAPABILITY } from "@cognis/core";
-const flow = options?.getCapability?.<Ctx>(CTX_CAPABILITY)?.flow ?? NULL_FLOW_API;
+const flow =
+    options?.getCapability?.<Ctx>(CTX_CAPABILITY)?.flow ?? NULL_FLOW_API;
 ```
 
 All `NULL_FLOW_API` methods are no-ops: `exists()` returns `false`, `extend()`

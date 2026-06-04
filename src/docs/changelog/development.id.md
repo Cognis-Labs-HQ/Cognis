@@ -79,6 +79,7 @@ Semua gateway, adapter, dan modul kini menerima `flow: FlowApi` langsung dari
 konteks bootstrap.
 
 ### Perubahan
+
 - Menambahkan antarmuka `FlowApi` dan properti `flow` ke `Ctx` dan `GatewayBootstrapBase`
 - Menghapus `ensureCtxCapability` dan `CtxCapabilityStore` dari `@cognis/core`
 - Semua bootstrap gateway dimigrasikan ke `ctx.flow.extend()`

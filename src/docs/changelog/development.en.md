@@ -75,6 +75,7 @@ duplicate hook id instead of throwing). All gateways, adapters, and modules
 now receive `flow: FlowApi` directly from their bootstrap context.
 
 ### Changed
+
 - Added `FlowApi` interface and `flow` property to `Ctx` and `GatewayBootstrapBase`
 - Added `flow: FlowApi` to `SocialAdapterBootstrapCtx` and `ModuleBootstrapCtx`
 - Removed `ensureCtxCapability` and `CtxCapabilityStore` from `@cognis/core`

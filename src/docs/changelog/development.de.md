@@ -75,6 +75,7 @@ jetzt idempotent (`extend()` gibt `false` zurück statt zu werfen). Alle Gateway
 Adapter und Module erhalten `flow: FlowApi` direkt aus dem Bootstrap-Kontext.
 
 ### Geändert
+
 - `FlowApi`-Interface und `flow`-Eigenschaft zu `Ctx` und `GatewayBootstrapBase` hinzugefügt
 - `ensureCtxCapability` und `CtxCapabilityStore` aus `@cognis/core` entfernt
 - Alle Gateway-Bootstraps auf `ctx.flow.extend()` migriert

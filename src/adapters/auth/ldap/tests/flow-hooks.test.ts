@@ -16,7 +16,7 @@ test("ldap flow hooks annotate canonical auth flows with availability", async ()
         registerCanonicalFlow(ctx, flow);
     }
 
-    registerLdapFlowHooks(ctx, {
+    registerLdapFlowHooks(ctx.flow, {
         getAvailability: () => ({
             id: "ldap",
             name: "LDAP",

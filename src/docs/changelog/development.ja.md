@@ -77,6 +77,7 @@ studyゲートウェイはこれまでルール4に違反し、`AccessRole` をa
 `flow: FlowApi`を直接受け取るようになりました。
 
 ### 変更点
+
 - `FlowApi`インターフェースと`flow`プロパティを`Ctx`と`GatewayBootstrapBase`に追加
 - `ensureCtxCapability`と`CtxCapabilityStore`を`@cognis/core`から削除
 - すべてのゲートウェイブートストラップを`ctx.flow.extend()`に移行

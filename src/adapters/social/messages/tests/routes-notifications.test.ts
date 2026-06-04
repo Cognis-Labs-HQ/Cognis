@@ -3,12 +3,11 @@ import assert from "node:assert/strict";
 import { createMessagesRoutes } from "../routes/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 import {
-    CapabilityStore,
-    ensureCtxCapability,
+    createCtx,
     registerCanonicalFlow,
     MESSAGING_FLOW_CATALOG,
 } from "@cognis/core";
-import type { Ctx } from "@cognis/core";
+import type { FlowApi } from "@cognis/core";
 
 type MinimalMessagesStore = {
     appendMessage(args: {
@@ -41,20 +40,19 @@ type DispatchFn = (
     envelope: Record<string, unknown>,
 ) => Promise<{ dispatched: string[] }>;
 
-function makeFlowCtx(
+function makeFlow(
     messagesStore: MinimalMessagesStore,
     profileStore: MinimalProfileStore,
     dispatch: DispatchFn,
-): Ctx {
-    const capabilities = new CapabilityStore();
-    const flowCtx = ensureCtxCapability(capabilities);
+): FlowApi {
+    const ctx = createCtx();
     const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(
         (f) => f.id === "send-message",
     );
     if (sendMessageFlow) {
-        registerCanonicalFlow(flowCtx, sendMessageFlow);
+        registerCanonicalFlow(ctx, sendMessageFlow);
     }
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "send-message",
         "validate-message",
         { id: "test:validate-message" },
@@ -72,7 +70,7 @@ function makeFlowCtx(
             return { valid: true };
         },
     );
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "send-message",
         "persist-message",
         { id: "test:persist-message" },
@@ -101,7 +99,7 @@ function makeFlowCtx(
             return { persisted: true, message: msg, messageId: msg["id"] };
         },
     );
-    flowCtx.addFlowStageHook(
+    ctx.flow.extend(
         "send-message",
         "fan-out",
         { id: "test:fan-out" },
@@ -147,7 +145,7 @@ function makeFlowCtx(
             return { fanOut: true };
         },
     );
-    return flowCtx;
+    return ctx.flow;
 }
 
 function makeReq(method: string, token: string | null) {
@@ -381,7 +379,7 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
             return { dispatched: ["bob"] };
         },
         isAdapterEnabled: () => true,
-        flowCtx: makeFlowCtx(
+        flow: makeFlow(
             messagesStore as any,
             profileStore as any,
             async (envelope: Record<string, unknown>) => {
