@@ -765,9 +765,13 @@ export function createUiRoutes(
             if (!claims) return true;
             let sections: unknown[];
             if (ctx.flow.exists("construct-settings-ui")) {
-                const result = await ctx.flow.run("construct-settings-ui", undefined, {
-                    meta: { uiRegistry },
-                });
+                const result = await ctx.flow.run(
+                    "construct-settings-ui",
+                    undefined,
+                    {
+                        meta: { uiRegistry },
+                    },
+                );
                 const flowSections = result.data["sections"] as
                     | unknown[]
                     | undefined;

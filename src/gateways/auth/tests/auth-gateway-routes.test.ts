@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    CTX_CAPABILITY,
+    createCtx,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../access-tokens.js";
@@ -11,23 +16,35 @@ import {
     makeResponse,
 } from "./auth-gateway-test-helpers.js";
 
+async function bootstrapAuthGateway(input: {
+    gatewayRegistry: GatewayRegistry;
+    routeRegistry: RouteRegistry;
+    capabilities: CapabilityStore;
+    db: unknown;
+}): Promise<void> {
+    const systemCtx = createCtx();
+    input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    input.capabilities.contribute("db:executor", input.db);
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry: input.routeRegistry,
+        gatewayRegistry: input.gatewayRegistry,
+        capabilities: input.capabilities,
+        flow: systemCtx.flow,
+    });
+}
+
 test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -58,18 +75,12 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
     const capabilities = new CapabilityStore();
     capabilities.contribute("registration:public:isEnabled", () => true);
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -102,18 +113,12 @@ test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -141,18 +146,12 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -182,18 +181,12 @@ test("login endpoint returns 503 when no auth providers are available", async ()
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const entries = routeRegistry.getEntries();
     const chunks = [
@@ -233,18 +226,12 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
     const token = issueAccessToken("verify-user", "admin", 10800, {
@@ -282,18 +269,12 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const token = issueAccessToken("verify-user-fresh", "admin", 60);
     const req = {
@@ -324,18 +305,12 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const req = {
         method: "POST",
@@ -365,18 +340,12 @@ test("registration:public:register capability is looked up lazily in register ha
 
     let createdUsername: string | null = null;
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     capabilities.contribute("registration:public:isEnabled", () => true);
     capabilities.contribute(
@@ -425,18 +394,12 @@ test("auth register endpoint returns 403 when open registration is disabled", as
     const capabilities = new CapabilityStore();
     capabilities.contribute("registration:public:isEnabled", () => false);
 
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
             execute: (
                 sql: string,
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
-        },
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+        } });
 
     const entries = routeRegistry.getEntries();
     const req = {

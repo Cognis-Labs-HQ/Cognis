@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createSystemRoutes } from "../../routes/system/index.js";
+import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 
 const healthService = {
@@ -346,11 +347,12 @@ test("security PUT rejects smtp validation mode when SMTP adapter unavailable", 
         healthService as any,
         preferenceStore as any,
         undefined,
-        undefined,
-        (cap) =>
-            (cap === "notify:canSendVerificationEmail"
-                ? () => false
-                : undefined) as any,
+        createDefaultRouteContext({
+            getCapability: (cap) =>
+                (cap === "notify:canSendVerificationEmail"
+                    ? () => false
+                    : undefined) as any,
+        }),
     );
 
     const handled = await route(
@@ -397,11 +399,12 @@ test("security PUT accepts smtp validation mode when SMTP adapter is available",
         healthService as any,
         preferenceStore as any,
         undefined,
-        undefined,
-        (cap) =>
-            (cap === "notify:canSendVerificationEmail"
-                ? () => true
-                : undefined) as any,
+        createDefaultRouteContext({
+            getCapability: (cap) =>
+                (cap === "notify:canSendVerificationEmail"
+                    ? () => true
+                    : undefined) as any,
+        }),
     );
 
     const handled = await route(
@@ -445,27 +448,28 @@ test("security PUT revokes setup-pending tokens when mandatory TFA is disabled",
         healthService as any,
         preferenceStore as any,
         undefined,
-        undefined,
-        (capabilityName) => {
-            if (capabilityName === "tfa:applyEnforcementPolicy") {
-                return async ({
-                    required,
-                    excludedSubject,
-                }: {
-                    required: boolean;
-                    excludedSubject?: string;
-                }) => {
-                    setEnforceValue = required;
-                    revokeExcludedSubject = String(excludedSubject ?? "");
-                    return {
+        createDefaultRouteContext({
+            getCapability: (capabilityName) => {
+                if (capabilityName === "tfa:applyEnforcementPolicy") {
+                    return async ({
                         required,
-                        previousRequired: true,
-                        revokedSetupPendingCount: 2,
+                        excludedSubject,
+                    }: {
+                        required: boolean;
+                        excludedSubject?: string;
+                    }) => {
+                        setEnforceValue = required;
+                        revokeExcludedSubject = String(excludedSubject ?? "");
+                        return {
+                            required,
+                            previousRequired: true,
+                            revokedSetupPendingCount: 2,
+                        };
                     };
-                };
-            }
-            return undefined;
-        },
+                }
+                return undefined;
+            },
+        }),
     );
 
     const handled = await route(

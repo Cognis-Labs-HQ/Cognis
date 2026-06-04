@@ -1,10 +1,33 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    CTX_CAPABILITY,
+    createCtx,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import { dispatchRoute, makeJsonRequest } from "./auth-gateway-test-helpers.js";
+
+async function bootstrapAuthGateway(input: {
+    gatewayRegistry: GatewayRegistry;
+    routeRegistry: RouteRegistry;
+    capabilities: CapabilityStore;
+    db: unknown;
+}): Promise<void> {
+    const systemCtx = createCtx();
+    input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    input.capabilities.contribute("db:executor", input.db);
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry: input.routeRegistry,
+        gatewayRegistry: input.gatewayRegistry,
+        capabilities: input.capabilities,
+        flow: systemCtx.flow,
+    });
+}
 
 test("POST /api/v1/auth/request-login-link sends a password reset link and consumes it once", async () => {
     const previousExternalHost = process.env.EXTERNAL_HOST;
@@ -28,13 +51,7 @@ test("POST /api/v1/auth/request-login-link sends a password reset link and consu
             },
         );
 
-        await bootstrap({
-            dbExecutor: db,
-            adaptersRoot: "/nonexistent",
-            routeRegistry,
-            gatewayRegistry,
-            capabilities,
-        });
+        await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
         const accountStore = capabilities.get<{
             register: (username: string, password: string) => Promise<unknown>;
@@ -123,13 +140,7 @@ test("POST /api/v1/auth/consume-login-link rejects concurrent reuse before first
             },
         );
 
-        await bootstrap({
-            dbExecutor: db,
-            adaptersRoot: "/nonexistent",
-            routeRegistry,
-            gatewayRegistry,
-            capabilities,
-        });
+        await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
         const accountStore = capabilities.get<{
             register: (username: string, password: string) => Promise<unknown>;
@@ -229,13 +240,7 @@ test("POST /api/v1/auth/request-login-link falls back to support contact details
         const capabilities = new CapabilityStore();
         const db = new InMemoryTestExecutor();
 
-        await bootstrap({
-            dbExecutor: db,
-            adaptersRoot: "/nonexistent",
-            routeRegistry,
-            gatewayRegistry,
-            capabilities,
-        });
+        await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
         const accountStore = capabilities.get<{
             register: (username: string, password: string) => Promise<unknown>;

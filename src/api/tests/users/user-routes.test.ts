@@ -945,7 +945,8 @@ test("users list includes hasTfaConfigured when tfa capability is present", asyn
                 if (capabilityId !== "tfa:isSecondFactorEnabled") {
                     return undefined;
                 }
-                return (async (accountId: string) => accountId === "alice") as T;
+                return (async (accountId: string) =>
+                    accountId === "alice") as T;
             },
         }),
     );

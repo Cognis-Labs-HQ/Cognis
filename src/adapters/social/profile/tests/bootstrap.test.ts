@@ -28,6 +28,7 @@ function makeAdapterCtx(
     const routeRegistry = overrides.routeRegistry ?? new RouteRegistry();
     const capabilities = overrides.capabilities ?? new CapabilityStore();
     const uiRegistry = overrides.uiRegistry;
+    capabilities.contribute("db:executor", makeInMemoryDb());
     const registeredAdapters: Array<{
         adapterId: string;
         adapterName: string;
@@ -61,7 +62,6 @@ function makeAdapterCtx(
             registerAuthTypingMessage: (
                 m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(m),
-            dbExecutor: makeInMemoryDb() as never,
             isGatewayEnabled: () => true,
         },
         gateway,

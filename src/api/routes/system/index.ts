@@ -82,14 +82,11 @@ export function createSystemRoutes(
     const canSendVerificationEmail = ctx.getCapability<() => boolean>(
         "notify:canSendVerificationEmail",
     );
-    const getEnforceTfaForAllUsers = ctx.getCapability<
-        () => Promise<boolean>
-    >("tfa:getEnforceAllUsers");
+    const getEnforceTfaForAllUsers = ctx.getCapability<() => Promise<boolean>>(
+        "tfa:getEnforceAllUsers",
+    );
     const applyTfaEnforcementPolicy = ctx.getCapability<
-        (input: {
-            required: boolean;
-            excludedSubject?: string;
-        }) => Promise<{
+        (input: { required: boolean; excludedSubject?: string }) => Promise<{
             required: boolean;
             previousRequired: boolean;
             revokedSetupPendingCount: number;

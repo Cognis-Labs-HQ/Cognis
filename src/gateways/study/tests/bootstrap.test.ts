@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { EventEmitter } from "node:events";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
@@ -76,6 +76,14 @@ async function dispatchRoute(
 async function bootstrapStudyGateway() {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const systemCtx = createCtx();
+    const dbExecutor = {
+        executeCommand: async () => ({ rows: [], rowCount: 0 }),
+        ensureTable: async () => {},
+        transaction: async (callback: (executor: unknown) => Promise<unknown>) =>
+            callback(dbExecutor),
+    };
+    capabilities.contribute("db:executor", dbExecutor);
 
     await bootstrap({
         capabilities,
@@ -83,6 +91,7 @@ async function bootstrapStudyGateway() {
         uiRegistry: new UIRegistry(),
         gatewayRegistry: new GatewayRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        flow: systemCtx.flow,
     } as any);
 
     return {

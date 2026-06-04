@@ -9,9 +9,7 @@ import {
     type CapabilityStore,
     type GatewayBootstrapContext,
 } from "../../shared.js";
-import {
-    type AccessRole,
-} from "../access-tokens.js";
+import { type AccessRole } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";

@@ -43,7 +43,13 @@ async function makeCtx() {
     const db = makeInMemoryDb();
     const systemCtx = createCtx();
     capabilities.contribute("db:executor", db);
-    return { gatewayRegistry, routeRegistry, capabilities, db, flow: systemCtx.flow };
+    return {
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db,
+        flow: systemCtx.flow,
+    };
 }
 
 test("bootstrap registers notify gateway with GatewayRegistry", async () => {

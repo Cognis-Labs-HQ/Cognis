@@ -1,10 +1,33 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    CTX_CAPABILITY,
+    createCtx,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import { dispatchRoute, makeJsonRequest } from "./auth-gateway-test-helpers.js";
+
+async function bootstrapAuthGateway(input: {
+    gatewayRegistry: GatewayRegistry;
+    routeRegistry: RouteRegistry;
+    capabilities: CapabilityStore;
+    db: unknown;
+}): Promise<void> {
+    const systemCtx = createCtx();
+    input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    input.capabilities.contribute("db:executor", input.db);
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry: input.routeRegistry,
+        gatewayRegistry: input.gatewayRegistry,
+        capabilities: input.capabilities,
+        flow: systemCtx.flow,
+    });
+}
 
 test("login userValidation fails open when SMTP validation is enabled but unavailable", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -52,13 +75,7 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
         },
     });
     const db = new InMemoryTestExecutor();
-    await bootstrap({
-        dbExecutor: db,
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
     const registerResult = await dispatchRoute(
         routeRegistry,
@@ -110,13 +127,7 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     });
     capabilities.contribute("notify:canSendVerificationEmail", () => true);
     const db = new InMemoryTestExecutor();
-    await bootstrap({
-        dbExecutor: db,
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
     const createLocalAdmin = capabilities.get<
         (username: string, password: string) => Promise<void>
@@ -191,13 +202,7 @@ test("login fails closed when TFA is required but no challenge methods are avail
         },
     );
     const db = new InMemoryTestExecutor();
-    await bootstrap({
-        dbExecutor: db,
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
     const registerResult = await dispatchRoute(
         routeRegistry,
@@ -272,13 +277,7 @@ test("login fails closed when TFA is required but getLoginMethods capability is 
         },
     );
     const db = new InMemoryTestExecutor();
-    await bootstrap({
-        dbExecutor: db,
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
+    await bootstrapAuthGateway({ gatewayRegistry, routeRegistry, capabilities, db: db });
 
     const registerResult = await dispatchRoute(
         routeRegistry,
