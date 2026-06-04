@@ -79,7 +79,10 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     });
 
     const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
-    assert.ok(flowCtx, "auth bootstrap must contribute the shared ctx flow bus");
+    assert.ok(
+        flowCtx,
+        "auth bootstrap must contribute the shared ctx flow bus",
+    );
     assert.deepEqual(flowCtx?.listFlows(), [
         "bootstrap-platform",
         "construct-login-ui",

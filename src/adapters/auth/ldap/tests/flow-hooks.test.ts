@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createCtx, registerCanonicalFlow, getCanonicalFlowContract } from "@cognis/core";
+import {
+    createCtx,
+    registerCanonicalFlow,
+    getCanonicalFlowContract,
+} from "@cognis/core";
 import { registerLdapFlowHooks } from "../flow-hooks.js";
 
 test("ldap flow hooks annotate canonical auth flows with availability", async () => {

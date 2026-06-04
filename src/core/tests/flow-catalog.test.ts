@@ -13,7 +13,11 @@ test("core flow catalog keeps unique flow and stage ids", () => {
     const flowIds = new Set<string>();
 
     for (const flow of CORE_FLOW_CATALOG) {
-        assert.equal(flowIds.has(flow.id), false, `duplicate flow id: ${flow.id}`);
+        assert.equal(
+            flowIds.has(flow.id),
+            false,
+            `duplicate flow id: ${flow.id}`,
+        );
         flowIds.add(flow.id);
 
         const stageIds = new Set<string>();
