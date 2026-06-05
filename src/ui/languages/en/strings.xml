@@ -8,6 +8,7 @@
   <string name="ui.reuse.settings">Settings</string>
   <string name="ui.reuse.docs">Docs</string>
   <string name="ui.reuse.users">Users</string>
+  <string name="ui.reuse.requests">Requests</string>
   <string name="ui.reuse.invite">Invite</string>
   <string name="ui.reuse.registration">Registration</string>
   <string name="ui.reuse.administration">Administration</string>
@@ -563,6 +564,7 @@
   <string name="ui.app.settings.datetime_time_format_12h">12-Hour Clock</string>
   <string name="ui.app.settings.datetime_time_format_24h">24-Hour Clock</string>
   <string name="ui.reuse.classes">My Classes</string>
+  <string name="module.study.classes.create_class">Create Class</string>
   <string name="module.study.classes.page_title">Classes</string>
   <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>
   <string name="module.study.classes.classroom_page_title">Classroom Hub</string>
@@ -578,6 +580,9 @@
   <string name="module.study.classes.open_meeting">Start Meeting</string>
   <string name="module.study.classes.pending_requests">Pending Teacher Requests</string>
   <string name="module.study.classes.no_pending_requests">No pending teacher requests.</string>
+  <string name="module.study.classes.requests_page_title">Requests</string>
+  <string name="module.study.classes.requests_page_subtitle">Review incoming requests for study classes and future workflows.</string>
+  <string name="module.study.classes.teacher_requests_section_title">Teacher Applications</string>
   <string name="module.study.classes.approve">Approve</string>
   <string name="module.study.classes.reject">Reject</string>
   <string name="module.study.classes.review_saved">Teacher request reviewed.</string>

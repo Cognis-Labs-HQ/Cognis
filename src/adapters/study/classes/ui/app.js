@@ -19,14 +19,15 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { isAdminScope, isTeacherScope } from "/static/reuse/access-role.js";
+import { isTeacherScope } from "/static/reuse/access-role.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "module.study.classes.page_title");
 
     let classes = [];
-    let pendingRequests = [];
+    let availableStudyLanguages = [];
+    let requireTeacherManualApproval = true;
     let isTeacher = isTeacherScope();
     let selectedLanguageFilter = "";
     let managingClassId = "";
@@ -77,16 +78,29 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    async function loadPendingRequests() {
-        if (!isAdminScope()) return;
+    async function loadStudyLanguages() {
         try {
-            const response = await apiFetch("/api/v1/study/teacher-requests");
+            const response = await apiFetch("/api/v1/study/registered-languages");
             if (response.ok) {
                 const payload = await response.json();
-                pendingRequests = payload?.data ?? [];
+                availableStudyLanguages = Array.isArray(payload?.data)
+                    ? payload.data
+                    : [];
             }
         } catch {
-            pendingRequests = [];
+            availableStudyLanguages = [];
+        }
+    }
+
+    async function loadTeacherApplicationPolicy() {
+        try {
+            const response = await apiFetch("/api/v1/system/security");
+            if (!response.ok) return;
+            const payload = await response.json();
+            requireTeacherManualApproval =
+                payload?.data?.requireTeacherManualApproval !== false;
+        } catch {
+            requireTeacherManualApproval = true;
         }
     }
 
@@ -112,7 +126,11 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    await Promise.all([loadClasses(), loadPendingRequests()]);
+    await Promise.all([
+        loadClasses(),
+        loadStudyLanguages(),
+        loadTeacherApplicationPolicy(),
+    ]);
 
     function buildFilterLanguages() {
         return [...new Set(classes.map((cls) => cls.languageCode))].sort();
@@ -256,59 +274,62 @@ export async function mount(root, { signal } = {}) {
     }
 
     function renderRequestForm() {
+        const options = availableStudyLanguages
+            .map((language) => {
+                const languageCode = String(language?.code ?? "").trim();
+                if (!languageCode) return "";
+                const languageName = String(language?.name ?? "").trim();
+                const languageFlag = String(language?.flag ?? "").trim();
+                const label = `${languageFlag ? `${languageFlag} ` : ""}${languageName || languageCode}`;
+                return `<option value="${escapeHtml(languageCode)}">${escapeHtml(label)}</option>`;
+            })
+            .filter(Boolean)
+            .join("");
         return `
           <div class="classes-request-form">
-            <h3 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.request_teacher"))}</h3>
+            <h3 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.create_class"))}</h3>
             <div class="classes-request-row">
-              <input
-                type="text"
-                class="classes-language-input"
-                placeholder="${escapeHtml(i18n.t("ui.reuse.language"))}"
-                maxlength="32"
-              />
-              <button type="button" class="btn-confirm btn-animated classes-request-btn">
-                ${escapeHtml(i18n.t("module.study.classes.request_teacher"))}
+              <select class="theme-select classes-language-select"${options ? "" : " disabled"}>
+                ${options}
+              </select>
+              <button type="button" class="btn-confirm btn-animated classes-create-class-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_class"))}" title="${escapeHtml(i18n.t("module.study.classes.create_class"))}"${options ? "" : " disabled"}>
+                +
               </button>
             </div>
           </div>
         `;
     }
 
-    function renderPendingRequests() {
-        if (!isAdminScope()) return "";
-        const rows = pendingRequests.length
-            ? pendingRequests
-                  .map(
-                      (request) => `
-                <li class="classes-item">
-                    <span class="classes-language">${escapeHtml(request.accountId)} · ${escapeHtml(request.languageCode)}</span>
-                    ${request.reason ? `<p class="classes-request-reason">${escapeHtml(request.reason)}</p>` : ""}
-                    <div class="classes-actions">
-                        <button type="button" class="btn-confirm btn-animated classes-review-btn" data-request-id="${escapeHtml(request.id)}" data-action="approve">${escapeHtml(i18n.t("module.study.classes.approve"))}</button>
-                        <button type="button" class="btn-cancel btn-animated classes-review-btn" data-request-id="${escapeHtml(request.id)}" data-action="reject">${escapeHtml(i18n.t("module.study.classes.reject"))}</button>
-                    </div>
-                </li>
-            `,
-                  )
-                  .join("")
-            : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_pending_requests"))}</p>`;
-        return `
-            <div class="classes-request-form">
-                <h3 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.pending_requests"))}</h3>
-                <ul class="classes-list">${rows}</ul>
-            </div>
-        `;
-    }
-
-    async function askTeacherReason() {
+    async function openCreateClassPopup(defaultLanguageCode = "") {
+        let selectedLanguageCode = defaultLanguageCode;
         let reason = "";
+        const languageOptions = availableStudyLanguages
+            .map((language) => {
+                const languageCode = String(language?.code ?? "").trim();
+                if (!languageCode) return "";
+                const languageName = String(language?.name ?? "").trim();
+                const languageFlag = String(language?.flag ?? "").trim();
+                const label = `${languageFlag ? `${languageFlag} ` : ""}${languageName || languageCode}`;
+                const selected =
+                    selectedLanguageCode === languageCode ? " selected" : "";
+                return `<option value="${escapeHtml(languageCode)}"${selected}>${escapeHtml(label)}</option>`;
+            })
+            .filter(Boolean)
+            .join("");
+        const reasonField = requireTeacherManualApproval
+            ? `<label class="stack">
+                    ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
+                    <textarea id="classes-teacher-reason" class="theme-select" rows="5" required></textarea>
+                </label>`
+            : "";
         const action = await openPopup({
-            title: i18n.t("module.study.classes.teacher_application_title"),
+            title: i18n.t("module.study.classes.create_class"),
             body: `
                 <label class="stack">
-                    ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
-                    <textarea id="classes-teacher-reason" class="theme-select" rows="5"></textarea>
+                    ${escapeHtml(i18n.t("ui.reuse.language"))}
+                    <select id="classes-teacher-language" class="theme-select">${languageOptions}</select>
                 </label>
+                ${reasonField}
             `,
             variant: "confirm",
             actions: [
@@ -326,12 +347,24 @@ export async function mount(root, { signal } = {}) {
             closeProtection: true,
             onAction: (actionId, overlay) => {
                 if (actionId !== "submit") return true;
-                const input = overlay.querySelector("#classes-teacher-reason");
-                reason = input?.value?.trim() ?? "";
-                return true;
+                const languageSelect = overlay.querySelector(
+                    "#classes-teacher-language",
+                );
+                selectedLanguageCode = languageSelect?.value?.trim() ?? "";
+                if (!selectedLanguageCode) return false;
+                if (!requireTeacherManualApproval) return true;
+                const reasonInput = overlay.querySelector(
+                    "#classes-teacher-reason",
+                );
+                reason = reasonInput?.value?.trim() ?? "";
+                return Boolean(reason);
             },
         });
-        return action === "submit" ? reason : null;
+        if (action !== "submit") return null;
+        return {
+            languageCode: selectedLanguageCode,
+            reason: requireTeacherManualApproval ? reason : "",
+        };
     }
 
     const classListElement = {
@@ -340,8 +373,7 @@ export async function mount(root, { signal } = {}) {
         render() {
             return `<div class="classes-section">${
                 (isTeacher ? renderClassList() : "") +
-                renderRequestForm() +
-                renderPendingRequests()
+                renderRequestForm()
             }</div>`;
         },
         onRender() {
@@ -353,8 +385,7 @@ export async function mount(root, { signal } = {}) {
             function refreshSection() {
                 section.innerHTML =
                     (isTeacher ? renderClassList() : "") +
-                    renderRequestForm() +
-                    renderPendingRequests();
+                    renderRequestForm();
             }
 
             section.addEventListener(
@@ -534,42 +565,17 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
 
-                    const reviewButton = event.target.closest(
-                        ".classes-review-btn",
+                    const createClassButton = event.target.closest(
+                        ".classes-create-class-btn",
                     );
-                    if (reviewButton instanceof HTMLElement) {
-                        const requestId = reviewButton.dataset.requestId ?? "";
-                        const reviewAction = reviewButton.dataset.action ?? "";
-                        const response = await apiFetch(
-                            `/api/v1/study/teacher-requests/${encodeURIComponent(requestId)}/${reviewAction}`,
-                            { method: "POST" },
-                        );
-                        showToast(
-                            i18n.t(
-                                response.ok
-                                    ? "module.study.classes.review_saved"
-                                    : "module.study.classes.review_failed",
-                            ),
-                            { variant: response.ok ? "success" : "error" },
-                        );
-                        if (response.ok) {
-                            await loadPendingRequests();
-                            refreshSection();
-                        }
-                        return;
-                    }
-
-                    const requestButton = event.target.closest(
-                        ".classes-request-btn",
+                    if (!createClassButton) return;
+                    const languageSelect = section.querySelector(
+                        ".classes-language-select",
                     );
-                    if (!requestButton) return;
-                    const languageInput = section.querySelector(
-                        ".classes-language-input",
+                    const popupInput = await openCreateClassPopup(
+                        languageSelect?.value?.trim() ?? "",
                     );
-                    const languageCode = languageInput?.value?.trim() ?? "";
-                    if (!languageCode) return;
-                    const reason = await askTeacherReason();
-                    if (reason === null) return;
+                    if (!popupInput?.languageCode) return;
 
                     try {
                         const response = await apiFetch(
@@ -577,7 +583,10 @@ export async function mount(root, { signal } = {}) {
                             {
                                 method: "POST",
                                 headers: { "content-type": "application/json" },
-                                body: JSON.stringify({ languageCode, reason }),
+                                body: JSON.stringify({
+                                    languageCode: popupInput.languageCode,
+                                    reason: popupInput.reason,
+                                }),
                             },
                         );
                         if (response.ok) {
@@ -585,7 +594,8 @@ export async function mount(root, { signal } = {}) {
                                 i18n.t("module.study.classes.request_sent"),
                                 { variant: "success" },
                             );
-                            if (languageInput) languageInput.value = "";
+                            await loadClasses();
+                            refreshSection();
                         } else {
                             showToast(
                                 i18n.t("module.study.classes.request_failed"),

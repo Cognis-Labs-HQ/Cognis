@@ -713,6 +713,11 @@ function initSearchBar(i18n) {
                           url: "/users",
                       },
                       {
+                          id: "page-requests",
+                          label: i18n.t("ui.reuse.requests"),
+                          url: "/requests",
+                      },
+                      {
                           id: "page-modules",
                           label: `${i18n.t("ui.reuse.administration")} → ${i18n.t("ui.app.admin.components")} → ${i18n.t("ui.reuse.modules")}`,
                           url: "/administration#components",

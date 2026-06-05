@@ -8,6 +8,7 @@
   <string name="ui.reuse.settings">Einstellungen</string>
   <string name="ui.reuse.docs">Dokumente</string>
   <string name="ui.reuse.users">Benutzer</string>
+  <string name="ui.reuse.requests">Anfragen</string>
   <string name="ui.reuse.invite">Einladen</string>
   <string name="ui.reuse.registration">Registrierung</string>
   <string name="ui.reuse.administration">Administration</string>
@@ -563,6 +564,7 @@
   <string name="ui.app.settings.datetime_time_format_12h">12-Stunden-Uhr</string>
   <string name="ui.app.settings.datetime_time_format_24h">24-Stunden-Uhr</string>
   <string name="ui.reuse.classes">Meine Klassen</string>
+  <string name="module.study.classes.create_class">Klasse erstellen</string>
   <string name="module.study.classes.page_title">Klassen</string>
   <string name="module.study.classes.page_subtitle">Verwalten Sie Ihre zugewiesenen Sprachklassen.</string>
   <string name="module.study.classes.classroom_page_title">Klassenraum-Hub</string>
@@ -578,6 +580,9 @@
   <string name="module.study.classes.open_meeting">Sitzung starten</string>
   <string name="module.study.classes.pending_requests">Ausstehende Lehreranträge</string>
   <string name="module.study.classes.no_pending_requests">Keine ausstehenden Lehreranträge.</string>
+  <string name="module.study.classes.requests_page_title">Anfragen</string>
+  <string name="module.study.classes.requests_page_subtitle">Prüfe eingehende Anfragen für Study-Klassen und zukünftige Workflows.</string>
+  <string name="module.study.classes.teacher_requests_section_title">Lehreranträge</string>
   <string name="module.study.classes.approve">Genehmigen</string>
   <string name="module.study.classes.reject">Ablehnen</string>
   <string name="module.study.classes.review_saved">Lehrerantrag wurde geprüft.</string>

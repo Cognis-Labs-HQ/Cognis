@@ -8,6 +8,7 @@
   <string name="ui.reuse.settings">Pengaturan</string>
   <string name="ui.reuse.docs">Dokumentasi</string>
   <string name="ui.reuse.users">Pengguna</string>
+  <string name="ui.reuse.requests">Permintaan</string>
   <string name="ui.reuse.invite">Undang</string>
   <string name="ui.reuse.registration">Pendaftaran</string>
   <string name="ui.reuse.administration">Administrasi</string>
@@ -563,6 +564,7 @@
   <string name="ui.app.settings.datetime_time_format_12h">Jam 12 Jam</string>
   <string name="ui.app.settings.datetime_time_format_24h">Jam 24 Jam</string>
   <string name="ui.reuse.classes">Kelas Saya</string>
+  <string name="module.study.classes.create_class">Buat Kelas</string>
   <string name="module.study.classes.page_title">Kelas</string>
   <string name="module.study.classes.page_subtitle">Kelola kelas bahasa yang ditetapkan untuk Anda.</string>
   <string name="module.study.classes.classroom_page_title">Pusat Kelas</string>
@@ -578,6 +580,9 @@
   <string name="module.study.classes.open_meeting">Mulai Pertemuan</string>
   <string name="module.study.classes.pending_requests">Permintaan Pengajar Tertunda</string>
   <string name="module.study.classes.no_pending_requests">Tidak ada permintaan pengajar tertunda.</string>
+  <string name="module.study.classes.requests_page_title">Permintaan</string>
+  <string name="module.study.classes.requests_page_subtitle">Tinjau permintaan masuk untuk kelas Study dan alur kerja mendatang.</string>
+  <string name="module.study.classes.teacher_requests_section_title">Aplikasi Pengajar</string>
   <string name="module.study.classes.approve">Setujui</string>
   <string name="module.study.classes.reject">Tolak</string>
   <string name="module.study.classes.review_saved">Permintaan pengajar telah ditinjau.</string>

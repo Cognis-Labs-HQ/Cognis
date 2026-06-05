@@ -8,6 +8,7 @@
   <string name="ui.reuse.settings">設定</string>
   <string name="ui.reuse.docs">ドキュメント</string>
   <string name="ui.reuse.users">ユーザー</string>
+  <string name="ui.reuse.requests">リクエスト</string>
   <string name="ui.reuse.invite">招待</string>
   <string name="ui.reuse.registration">登録</string>
   <string name="ui.reuse.administration">管理</string>
@@ -563,6 +564,7 @@
   <string name="ui.app.settings.datetime_time_format_12h">12時間表示</string>
   <string name="ui.app.settings.datetime_time_format_24h">24時間表示</string>
   <string name="ui.reuse.classes">マイクラス</string>
+  <string name="module.study.classes.create_class">クラスを作成</string>
   <string name="module.study.classes.page_title">クラス</string>
   <string name="module.study.classes.page_subtitle">担当する語学クラスを管理します。</string>
   <string name="module.study.classes.classroom_page_title">教室ハブ</string>
@@ -578,6 +580,9 @@
   <string name="module.study.classes.open_meeting">ミーティングを開始</string>
   <string name="module.study.classes.pending_requests">保留中の教師申請</string>
   <string name="module.study.classes.no_pending_requests">保留中の教師申請はありません。</string>
+  <string name="module.study.classes.requests_page_title">リクエスト</string>
+  <string name="module.study.classes.requests_page_subtitle">Studyクラスと今後のワークフロー向けの受信リクエストを確認します。</string>
+  <string name="module.study.classes.teacher_requests_section_title">教師申請</string>
   <string name="module.study.classes.approve">承認</string>
   <string name="module.study.classes.reject">却下</string>
   <string name="module.study.classes.review_saved">教師申請を確認しました。</string>

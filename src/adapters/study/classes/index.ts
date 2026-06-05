@@ -9,6 +9,10 @@ import { DbClassesStore } from "./store/index.js";
 import { createClassesRoutes } from "./routes/index.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
+    parseSecuritySettings,
+    SECURITY_SETTINGS_KEY,
+} from "../../../api/reuse/security-settings.js";
+import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
@@ -19,13 +23,21 @@ const ADAPTER_UI_ROOT = path.resolve(
 );
 
 let adapterReady = false;
+let requireTeacherManualApproval = true;
+let persistTeacherManualApproval: null | ((value: boolean) => Promise<void>) =
+    null;
 
 export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "classes",
         adapterName: "Classes",
-        getConfig: () => ({}),
-        setConfig: () => {},
+        getConfig: () => ({ requireTeacherManualApproval }),
+        setConfig: async (config) => {
+            const rawValue = config?.requireTeacherManualApproval;
+            requireTeacherManualApproval =
+                rawValue === false || rawValue === "false" ? false : true;
+            await persistTeacherManualApproval?.(requireTeacherManualApproval);
+        },
         isConfigured: () => adapterReady,
     };
 }
@@ -121,6 +133,40 @@ function createMyClassesPageRoute(
             res.end();
             return true;
         }
+
+        function createRequestsPageRoute(
+            routeContext: RouteContext | undefined,
+            isAdapterEnabled: () => boolean,
+        ) {
+            const ctx = resolveRouteContext(routeContext);
+            return async (
+                req: IncomingMessage,
+                res: ServerResponse,
+                url: URL,
+            ): Promise<boolean> => {
+                if (req.method && req.method !== "GET") return false;
+                if (!isAdapterEnabled()) return false;
+                if (url.pathname !== "/requests") return false;
+                const session = ctx.getCookieSession(req);
+                if (!session) {
+                    res.writeHead(302, { location: "/login" });
+                    res.end();
+                    return true;
+                }
+                if (!ctx.hasMinRole(session.role, "admin")) {
+                    res.writeHead(302, { location: "/dashboard" });
+                    res.end();
+                    return true;
+                }
+                ctx.setPageSecurityHeaders(res);
+                const html = await import("node:fs/promises").then((fs) =>
+                    fs.readFile(path.join(ADAPTER_UI_ROOT, "requests.html"), "utf8"),
+                );
+                res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+                res.end(html);
+                return true;
+            };
+        }
         if (session.role === "teacher") {
             res.writeHead(302, { location: "/classes" });
             res.end();
@@ -173,21 +219,31 @@ export async function bootstrapStudyAdapter(
     const preferenceStore =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const readTeacherManualApproval = async (): Promise<boolean> => {
-        if (!preferenceStore) return true;
-        const raw = await preferenceStore.get(
-            "__system__",
-            "security-settings",
-        );
-        if (!raw) return true;
-        try {
-            const parsed = JSON.parse(raw) as {
-                requireTeacherManualApproval?: unknown;
-            };
-            return parsed.requireTeacherManualApproval !== false;
-        } catch {
-            return true;
-        }
+        return requireTeacherManualApproval;
     };
+    const loadTeacherManualApproval = async (): Promise<boolean> => {
+        if (!preferenceStore) return true;
+        const raw = await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY);
+        return parseSecuritySettings(raw)?.requireTeacherManualApproval !== false;
+    };
+    persistTeacherManualApproval = async (value) => {
+        if (!preferenceStore) return;
+        const raw = await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY);
+        const settings = parseSecuritySettings(raw);
+        await preferenceStore.set(
+            "__system__",
+            SECURITY_SETTINGS_KEY,
+            JSON.stringify({
+                trustedDomains: settings?.trustedDomains ?? [],
+                registrationsEnabled: settings?.registrationsEnabled === true,
+                userValidationMode:
+                    settings?.userValidationMode === "smtp" ? "smtp" : "none",
+                requireTeacherManualApproval: value,
+                enforceTfaForAllUsers: settings?.enforceTfaForAllUsers === true,
+            }),
+        );
+    };
+    requireTeacherManualApproval = await loadTeacherManualApproval();
     const accountStore = ctx.capabilities.get<{
         setRole(username: string, role: "teacher"): Promise<void>;
         exists(username: string): Promise<boolean>;
@@ -252,6 +308,7 @@ export async function bootstrapStudyAdapter(
         createMyClassesPageRoute(routeContext, isEnabled),
         "study",
     );
+    ctx.registerRoute(createRequestsPageRoute(routeContext, isEnabled), "study");
     ctx.registerRoute(
         createClassroomHubPageRoute(routeContext, isEnabled),
         "study",
@@ -336,6 +393,23 @@ export async function bootstrapStudyAdapter(
         ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
+    ctx.registerSpaRoute?.({
+        id: "study-classes-requests-page",
+        pattern: "^/requests$",
+        base: "/requests",
+        scriptUrl: "/static/adapters/study/classes/requests.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/study/classes/classes.css",
+        ],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
+
+    const registerNotificationCategory = ctx.capabilities.get<
+        (id: string, label: string) => void
+    >("notify:registerCategory");
+    registerNotificationCategory?.("study", "Study");
 
     ctx.log?.("info", "Study/classes adapter: bootstrapped.", {
         component: "study-classes",
