@@ -56,10 +56,7 @@ export function createCalendarCoreRoutes({
     const MAX_SET_TIMEOUT_DELAY_MS = 2 ** 31 - 1;
     let cachedJitsiAvailability: boolean | null = null;
     let cachedJitsiAvailabilityAtMs = 0;
-    const scheduledReminderTimers = new Map<
-        string,
-        ReturnType<typeof setTimeout>
-    >();
+    const scheduledReminderTimers = new Map<string, NodeJS.Timeout>();
     const reminderKeysByEventId = new Map<string, Set<string>>();
 
     const removeReminderKey = (eventId: string, reminderKey: string) => {
@@ -83,7 +80,7 @@ export function createCalendarCoreRoutes({
         }
     };
 
-    const detachReminderTimer = (timer: ReturnType<typeof setTimeout>) => {
+    const detachReminderTimer = (timer: NodeJS.Timeout) => {
         if (typeof timer.unref === "function") {
             timer.unref();
         }
@@ -396,12 +393,12 @@ export function createCalendarCoreRoutes({
                 const deletedEventIds = gateway
                     .listEvents(calendarId)
                     .map((event) => event.id);
+                deletedEventIds.forEach((eventId) => {
+                    clearScheduledReminderTimersForEvent(eventId);
+                });
                 gateway.deleteCalendar({
                     ownerAccountId: claims.sub,
                     calendarId,
-                });
-                deletedEventIds.forEach((eventId) => {
-                    clearScheduledReminderTimersForEvent(eventId);
                 });
                 await gateway.flushStore();
                 sendJson(res, 200, { data: { deleted: true } });
