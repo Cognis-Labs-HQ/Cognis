@@ -53,7 +53,7 @@ export function createCalendarCoreRoutes({
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
     const JITSI_AVAILABILITY_CACHE_TTL_MS = 60 * 1000;
-    const MAX_SET_TIMEOUT_DELAY_MS = 2_147_483_647;
+    const MAX_SET_TIMEOUT_DELAY_MS = 2 ** 31 - 1;
     let cachedJitsiAvailability: boolean | null = null;
     let cachedJitsiAvailabilityAtMs = 0;
     const scheduledReminderTimers = new Map<
@@ -83,6 +83,12 @@ export function createCalendarCoreRoutes({
         }
     };
 
+    const detachReminderTimer = (timer: ReturnType<typeof setTimeout>) => {
+        if (typeof timer.unref === "function") {
+            timer.unref();
+        }
+    };
+
     const scheduleReminderNotificationsForEvent = (
         event: CalendarEventRecord,
     ) => {
@@ -101,9 +107,25 @@ export function createCalendarCoreRoutes({
                     eventStartAtMs - reminderOffsetMinutes * 60_000;
                 const initialDelayMs = reminderAtMs - Date.now();
                 if (!Number.isFinite(initialDelayMs) || initialDelayMs <= 0) {
+                    log?.(
+                        "warn",
+                        "Skipped scheduling calendar reminder in the past.",
+                        {
+                            component: "calendar-gateway",
+                            eventId: event.id,
+                            attendee,
+                            reminderOffsetMinutes,
+                            reminderAt: new Date(reminderAtMs).toISOString(),
+                            startAt: event.startAt,
+                        },
+                    );
                     continue;
                 }
-                const reminderKey = `${event.id}:${attendee}:${reminderOffsetMinutes}`;
+                const reminderKey = JSON.stringify([
+                    event.id,
+                    attendee,
+                    reminderOffsetMinutes,
+                ]);
                 const scheduleDispatch = (remainingDelayMs: number) => {
                     const delayMs = Math.min(
                         remainingDelayMs,
@@ -132,9 +154,7 @@ export function createCalendarCoreRoutes({
                             log,
                         });
                     }, delayMs);
-                    if (typeof timer.unref === "function") {
-                        timer.unref();
-                    }
+                    detachReminderTimer(timer);
                     scheduledReminderTimers.set(reminderKey, timer);
                     const eventReminderKeys =
                         reminderKeysByEventId.get(event.id) ?? new Set();
