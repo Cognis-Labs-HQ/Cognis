@@ -66,6 +66,8 @@ test("messages adapter ensures send-message flow before hook registration", () =
         source,
         /const fanOutHookRegistered = ctx\.flow\.extend\(\s*"send-message",\s*"fan-out"/,
     );
+    assert.match(source, /failed to register send-message persist hook/);
+    assert.match(source, /failed to register send-message fan-out hook/);
 });
 
 test("messages avatars fall back after failed image loads", () => {
