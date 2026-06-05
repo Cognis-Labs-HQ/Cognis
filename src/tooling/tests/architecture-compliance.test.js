@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 
 const ROOT = process.cwd();
 const COPILOT_INSTRUCTIONS_PATH = resolve(
@@ -33,6 +33,10 @@ function walkDirectories(directoryPath) {
         directories.push(...walkDirectories(entryPath));
     }
     return directories;
+}
+
+function normalizePath(filePath) {
+    return filePath.replace(/\\/g, "/");
 }
 
 function collectMissingIndexViolations({
@@ -92,6 +96,7 @@ function extractImportPaths(source) {
     const patterns = [
         /(?:^|\n)\s*import\s+["']([^"']+)["']/g,
         /(?:^|\n)\s*(?:import|export)\s+(?:type\s+)?(?:[\w*\s{},]+)\s+from\s+["']([^"']+)["']/g,
+        /(?:^|\n)\s*export\s+\*\s+from\s+["']([^"']+)["']/g,
         /\bimport\(\s*["']([^"']+)["']\s*\)/g,
     ];
 
@@ -100,6 +105,26 @@ function extractImportPaths(source) {
         pattern.lastIndex = 0;
         while ((match = pattern.exec(source)) !== null) {
             importPaths.add(match[1]);
+        }
+
+        function isDirectComponentImport(sourceFilePath, importPath) {
+            if (importPath.startsWith(".")) {
+                const resolvedImportPath = resolve(dirname(sourceFilePath), importPath);
+                const normalizedImportPath = normalizePath(resolvedImportPath);
+                return (
+                    normalizedImportPath.startsWith(
+                        `${normalizePath(resolve(ROOT, "src/gateways"))}/`,
+                    ) ||
+                    normalizedImportPath.startsWith(
+                        `${normalizePath(resolve(ROOT, "src/adapters"))}/`,
+                    )
+                );
+            }
+
+            return (
+                importPath.startsWith("/static/gateways/") ||
+                importPath.startsWith("/static/adapters/")
+            );
         }
     }
 
@@ -272,16 +297,16 @@ test("route handlers and module routers avoid direct gateway or adapter imports"
             if (!filePath.endsWith(".ts") && !filePath.endsWith(".js")) {
                 continue;
             }
-            if (filePath.includes("/tests/")) continue;
+            if (normalizePath(filePath).includes("/tests/")) continue;
 
             const source = readFileSync(filePath, "utf8");
             const importPaths = extractImportPaths(source);
             const hasDirectComponentImport = importPaths.some((importPath) =>
-                /(?:^|\/)(gateways|adapters)\//.test(importPath),
+                isDirectComponentImport(filePath, importPath),
             );
             if (!hasDirectComponentImport) continue;
 
-            violations.push(relative(ROOT, filePath).replace(/\\/g, "/"));
+            violations.push(normalizePath(relative(ROOT, filePath)));
         }
     }
 
