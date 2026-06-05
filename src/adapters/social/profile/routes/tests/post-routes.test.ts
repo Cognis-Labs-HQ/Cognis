@@ -56,7 +56,7 @@ test("post routes - hidden user cannot post with community visibility", async ()
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 400);
     } finally {
@@ -90,7 +90,7 @@ test("post routes - hidden user can post with only_me visibility", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 201);
         const created = JSON.parse(body).data;
@@ -101,7 +101,7 @@ test("post routes - hidden user can post with only_me visibility", async () => {
     }
 });
 
-test("post routes - unauthenticated POST /api/v1/posts returns 401", async () => {
+test("post routes - unauthenticated POST /api/v1/social/posts returns 401", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUser(executor, "alice");
@@ -120,7 +120,7 @@ test("post routes - unauthenticated POST /api/v1/posts returns 401", async () =>
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 401);
     } finally {
@@ -144,7 +144,7 @@ test("post routes - missing content returns 400", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 400);
     } finally {
@@ -172,7 +172,7 @@ test("post routes - invalid visibility returns 400", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 400);
     } finally {
@@ -207,7 +207,7 @@ test("post routes - create and list own posts", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 201);
         const created = JSON.parse(body).data;
@@ -224,7 +224,7 @@ test("post routes - create and list own posts", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 1);
@@ -259,7 +259,7 @@ test("post routes - delete own post", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         const postId = JSON.parse(body).data.id;
 
@@ -273,7 +273,7 @@ test("post routes - delete own post", async () => {
                     body = p;
                 },
             } as any,
-            new URL(`http://localhost/api/v1/posts/${postId}`),
+            new URL(`http://localhost/api/v1/social/posts/${postId}`),
         );
         assert.equal(status, 200);
         assert.match(body, /deleted/);
@@ -318,7 +318,7 @@ test("post routes - cannot delete another user post without elevated role", asyn
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         const postId = JSON.parse(body).data.id;
 
@@ -330,7 +330,7 @@ test("post routes - cannot delete another user post without elevated role", asyn
                 },
                 end() {},
             } as any,
-            new URL(`http://localhost/api/v1/posts/${postId}`),
+            new URL(`http://localhost/api/v1/social/posts/${postId}`),
         );
         assert.equal(status, 403);
     } finally {
@@ -365,7 +365,7 @@ test("post routes - moderator can delete another user post", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         const postId = JSON.parse(body).data.id;
 
@@ -379,7 +379,7 @@ test("post routes - moderator can delete another user post", async () => {
                     body = p;
                 },
             } as any,
-            new URL(`http://localhost/api/v1/posts/${postId}`),
+            new URL(`http://localhost/api/v1/social/posts/${postId}`),
         );
         assert.equal(status, 200);
         assert.match(body, /deleted/);
@@ -415,7 +415,7 @@ test("post routes - admin can delete another user post", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
         const postId = JSON.parse(body).data.id;
 
@@ -429,7 +429,7 @@ test("post routes - admin can delete another user post", async () => {
                     body = p;
                 },
             } as any,
-            new URL(`http://localhost/api/v1/posts/${postId}`),
+            new URL(`http://localhost/api/v1/social/posts/${postId}`),
         );
         assert.equal(status, 200);
         assert.match(body, /deleted/);
@@ -474,7 +474,7 @@ test("post routes - only_me posts not visible to others", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
 
         await route(
@@ -487,7 +487,7 @@ test("post routes - only_me posts not visible to others", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/users/alice/posts"),
+            new URL("http://localhost/api/v1/social/users/alice/posts"),
         );
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 0);
@@ -522,7 +522,7 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/users/alice/posts"),
+            new URL("http://localhost/api/v1/social/users/alice/posts"),
         );
         assert.equal(status, 404);
     } finally {
@@ -570,7 +570,7 @@ test("post routes - private account posts only visible to followers", async () =
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/posts"),
+            new URL("http://localhost/api/v1/social/posts"),
         );
 
         await route(
@@ -583,7 +583,7 @@ test("post routes - private account posts only visible to followers", async () =
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/users/alice/posts"),
+            new URL("http://localhost/api/v1/social/users/alice/posts"),
         );
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 1);
@@ -598,7 +598,7 @@ test("post routes - private account posts only visible to followers", async () =
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/users/alice/posts"),
+            new URL("http://localhost/api/v1/social/users/alice/posts"),
         );
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 0);

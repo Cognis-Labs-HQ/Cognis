@@ -104,6 +104,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerNotificationCategory("security", "Security");
     }
 
+    ctx.routeRegistry.registerPrefix("/api/v1/tfa", "tfa");
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",

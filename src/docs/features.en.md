@@ -35,7 +35,7 @@ When the SMTP adapter is configured, Cognis can send:
 
 - Two-factor authentication (TFA) codes.
 - Email verification links for new accounts.
-- System notifications dispatched via `POST /api/v1/notifications/send` (admin).
+- System notifications dispatched via `POST /api/v1/notify/send` (admin).
 
 Notification delivery respects per-user channel preferences stored in the database.
 

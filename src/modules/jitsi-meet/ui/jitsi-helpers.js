@@ -119,7 +119,7 @@ export function resolveMeetingChatRoomId(meeting) {
 }
 
 export async function fetchCurrentProfile() {
-    const response = await apiFetch("/api/v1/profile");
+    const response = await apiFetch("/api/v1/social/profile");
     if (!response.ok) return null;
     const payload = await response.json().catch(() => ({ data: null }));
     const profile = payload?.data;

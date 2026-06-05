@@ -49,7 +49,7 @@ async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
     if (!account) return null;
     const response = await apiFetch(
-        `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
+        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
     );
     if (!response.ok) return null;
     const payload = await response.json();
@@ -61,7 +61,7 @@ async function savePrefs(prefs) {
     const account = localStorage.getItem("cognis_account");
     if (!account) return;
     await apiFetch(
-        `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
+        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
             headers: { "content-type": "application/json" },

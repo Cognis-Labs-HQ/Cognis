@@ -17,7 +17,7 @@ export function createRoomKeyStore({
     async function getRoomKey(roomId) {
         if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
         const res = await fetchRoomKey(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
         );
         if (!res.ok) return null;
         const payload = await res.json();
@@ -31,7 +31,7 @@ export function createRoomKeyStore({
     async function requireRoomKey(roomId) {
         if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
         const res = await fetchRoomKey(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
         );
         if (!res.ok) {
             const payload = await res.json().catch(() => null);

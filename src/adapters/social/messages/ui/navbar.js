@@ -5,7 +5,7 @@ const messagesLink = document.querySelector("[data-messages-link]");
 async function syncMessagesLink() {
     if (!messagesLink) return;
     try {
-        const response = await apiFetch("/api/v1/messages/ping");
+        const response = await apiFetch("/api/v1/social/messages/ping");
         if (response.ok) {
             messagesLink.removeAttribute("hidden");
             return;

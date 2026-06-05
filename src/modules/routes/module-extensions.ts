@@ -384,7 +384,16 @@ export function createModuleExtensionRoutes(
             );
             if (!match) return false;
             if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
-                return false;
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_disabled",
+                            message: "Module disabled",
+                        },
+                    }),
+                );
+                return true;
             }
             if (match.invalidAccessPolicy) {
                 res.writeHead(403, { "content-type": "application/json" });

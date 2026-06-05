@@ -18,7 +18,10 @@ function readMessagesUiBundle() {
 
 test("messages new-conversation search uses messaging lookup endpoint", () => {
     const source = readMessagesUiBundle();
-    assert.match(source, /endpoint:\s*"\/api\/v1\/messages\/users\/lookup"/);
+    assert.match(
+        source,
+        /endpoint:\s*"\/api\/v1\/social\/messages\/users\/lookup"/,
+    );
 });
 
 test("messages member count control opens local member summary without jitsi calls", () => {

@@ -378,6 +378,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "study",
     );
 
+    ctx.routeRegistry.registerPrefix("/api/v1/study", "study");
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",

@@ -25,7 +25,7 @@ export async function loadUiPreferences() {
     if (!account || !hasPreferenceApiContext()) return null;
     try {
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
+            `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         );
         if (!response.ok) return null;
         const payload = await response.json();
@@ -43,7 +43,7 @@ export async function saveUiPreferences(patch) {
     const current = await loadUiPreferences();
     const merged = { ...(current || {}), ...patch };
     await apiFetch(
-        `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
+        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
             headers: { "content-type": "application/json" },

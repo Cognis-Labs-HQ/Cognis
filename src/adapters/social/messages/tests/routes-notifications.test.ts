@@ -251,7 +251,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms"),
+        new URL("http://localhost/api/v1/social/messages/rooms"),
     );
 
     assert.equal(handled, true);
@@ -412,7 +412,9 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms/room-1/messages"),
+        new URL(
+            "http://localhost/api/v1/social/messages/rooms/room-1/messages",
+        ),
     );
 
     assert.equal(handled, true);

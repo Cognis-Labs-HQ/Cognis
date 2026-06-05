@@ -13,7 +13,7 @@
 - `src/gateways/social/ui/emojis.json` — 絵文字名をi18nキーに変更
 - `src/gateways/social/ui/languages/*/strings.xml` — 366個の翻訳済み絵文字名を含む新しいSocial Gateway言語ファイル
 - `src/adapters/social/messages/store.ts` — 新しい`chat_emoji_usage`テーブル；`incrementEmojiUsage`と`getTopEmojiUsage`メソッド
-- `src/adapters/social/messages/routes.ts` — 新しい`GET/POST /api/v1/messages/emoji-usage`ルート
+- `src/adapters/social/messages/routes.ts` — 新しい`GET/POST /api/v1/social/messages/emoji-usage`ルート
 - `src/adapters/social/messages/ui/app.js` — サーバー側の絵文字使用履歴、i18n名前解決、ハードコードなし
 - `src/adapters/social/messages/ui/messages.css` — CSS分割：リアクションチップ常時表示、追加ボタンはホバー時のみ
 - `src/adapters/social/messages/ui/languages/en/strings.xml` — 新しいi18nキー

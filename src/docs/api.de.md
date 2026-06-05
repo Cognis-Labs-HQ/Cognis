@@ -126,46 +126,46 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 ### Profil
 
-| Methode  | Pfad                            | Beschreibung                                           | Auth   |
-| -------- | ------------------------------- | ------------------------------------------------------ | ------ |
-| `GET`    | `/api/v1/profile/ping`          | Fähigkeitsprüfung                                      | Bearer |
-| `GET`    | `/api/v1/profile`               | Eigenes Profil                                         | Bearer |
-| `PATCH`  | `/api/v1/profile`               | Eigene Profilfelder aktualisieren                      | Bearer |
-| `PUT`    | `/api/v1/profile/avatar`        | Avatar hochladen                                       | Bearer |
-| `DELETE` | `/api/v1/profile/avatar`        | Eigenen Avatar entfernen                               | Bearer |
-| `PUT`    | `/api/v1/profile/banner`        | Banner hochladen                                       | Bearer |
-| `DELETE` | `/api/v1/profile/banner`        | Eigenes Banner entfernen                               | Bearer |
-| `GET`    | `/api/v1/users/:handle/profile` | Öffentliches Profil (durch Sichtbarkeit eingeschränkt) | Bearer |
+| Methode  | Pfad                                   | Beschreibung                                           | Auth   |
+| -------- | -------------------------------------- | ------------------------------------------------------ | ------ |
+| `GET`    | `/api/v1/social/profile/ping`          | Fähigkeitsprüfung                                      | Bearer |
+| `GET`    | `/api/v1/social/profile`               | Eigenes Profil                                         | Bearer |
+| `PATCH`  | `/api/v1/social/profile`               | Eigene Profilfelder aktualisieren                      | Bearer |
+| `PUT`    | `/api/v1/social/profile/avatar`        | Avatar hochladen                                       | Bearer |
+| `DELETE` | `/api/v1/social/profile/avatar`        | Eigenen Avatar entfernen                               | Bearer |
+| `PUT`    | `/api/v1/social/profile/banner`        | Banner hochladen                                       | Bearer |
+| `DELETE` | `/api/v1/social/profile/banner`        | Eigenes Banner entfernen                               | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/profile` | Öffentliches Profil (durch Sichtbarkeit eingeschränkt) | Bearer |
 
 ### Soziales Netzwerk
 
-| Methode  | Pfad                              | Beschreibung                                      | Auth   |
-| -------- | --------------------------------- | ------------------------------------------------- | ------ |
-| `POST`   | `/api/v1/users/:handle/follow`    | Benutzer folgen                                   | Bearer |
-| `DELETE` | `/api/v1/users/:handle/follow`    | Entfolgen                                         | Bearer |
-| `POST`   | `/api/v1/users/:handle/block`     | Benutzer blockieren                               | Bearer |
-| `DELETE` | `/api/v1/users/:handle/block`     | Blockierung aufheben                              | Bearer |
-| `GET`    | `/api/v1/users/:handle/followers` | Follower-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
-| `GET`    | `/api/v1/users/:handle/following` | Folge-Liste (durch Sichtbarkeit eingeschränkt)    | Bearer |
+| Methode  | Pfad                                     | Beschreibung                                      | Auth   |
+| -------- | ---------------------------------------- | ------------------------------------------------- | ------ |
+| `POST`   | `/api/v1/social/users/:handle/follow`    | Benutzer folgen                                   | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/follow`    | Entfolgen                                         | Bearer |
+| `POST`   | `/api/v1/social/users/:handle/block`     | Benutzer blockieren                               | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/block`     | Blockierung aufheben                              | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/followers` | Follower-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/following` | Folge-Liste (durch Sichtbarkeit eingeschränkt)    | Bearer |
 
 ### Beiträge
 
-| Methode  | Pfad                          | Beschreibung                                       | Auth   |
-| -------- | ----------------------------- | -------------------------------------------------- | ------ |
-| `POST`   | `/api/v1/posts`               | Beitrag erstellen                                  | Bearer |
-| `GET`    | `/api/v1/posts`               | Eigene Beiträge auflisten                          | Bearer |
-| `DELETE` | `/api/v1/posts/:id`           | Beitrag löschen (Eigentümer, Moderator oder Admin) | Bearer |
-| `GET`    | `/api/v1/users/:handle/posts` | Beiträge eines Benutzers auflisten                 | Bearer |
+| Methode  | Pfad                                 | Beschreibung                                       | Auth   |
+| -------- | ------------------------------------ | -------------------------------------------------- | ------ |
+| `POST`   | `/api/v1/social/posts`               | Beitrag erstellen                                  | Bearer |
+| `GET`    | `/api/v1/social/posts`               | Eigene Beiträge auflisten                          | Bearer |
+| `DELETE` | `/api/v1/social/posts/:id`           | Beitrag löschen (Eigentümer, Moderator oder Admin) | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/posts` | Beiträge eines Benutzers auflisten                 | Bearer |
 
 ### Dateien
 
-| Methode  | Pfad                                  | Beschreibung                                 | Auth   |
-| -------- | ------------------------------------- | -------------------------------------------- | ------ |
-| `PUT`    | `/api/v1/files/:bucket/:key`          | Datei hochladen                              | Bearer |
-| `GET`    | `/api/v1/files/:bucket/:key`          | Datei herunterladen                          | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key`          | Datei löschen                                | Admin  |
-| `GET`    | `/api/v1/admin/file-limits`           | Größenbeschränkungen pro Kategorie auflisten | Admin  |
-| `PUT`    | `/api/v1/admin/file-limits/:category` | Größenbeschränkung festlegen                 | Admin  |
+| Methode  | Pfad                                         | Beschreibung                                 | Auth   |
+| -------- | -------------------------------------------- | -------------------------------------------- | ------ |
+| `PUT`    | `/api/v1/files/:bucket/:key`                 | Datei hochladen                              | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key`                 | Datei herunterladen                          | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key`                 | Datei löschen                                | Admin  |
+| `GET`    | `/api/v1/social/admin/file-limits`           | Größenbeschränkungen pro Kategorie auflisten | Admin  |
+| `PUT`    | `/api/v1/social/admin/file-limits/:category` | Größenbeschränkung festlegen                 | Admin  |
 
 ### Benutzer (Admin)
 

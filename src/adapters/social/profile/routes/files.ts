@@ -130,7 +130,7 @@ export function createFileRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/admin/file-limits" &&
+            url.pathname === "/api/v1/social/admin/file-limits" &&
             req.method === "GET"
         ) {
             if (!ctx.requireAuth(req, res, "admin")) return true;
@@ -141,7 +141,7 @@ export function createFileRoutes(
         }
 
         const limitMatch = url.pathname.match(
-            /^\/api\/v1\/admin\/file-limits\/([^/]+)$/,
+            /^\/api\/v1\/social\/admin\/file-limits\/([^/]+)$/,
         );
         if (limitMatch && req.method === "PUT") {
             if (!ctx.requireAuth(req, res, "admin")) return true;

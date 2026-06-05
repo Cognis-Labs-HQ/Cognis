@@ -13,14 +13,14 @@
 
 ## APIルート
 
-| メソッド | パス                                   | 説明                     | 認証     |
-| -------- | -------------------------------------- | ------------------------ | -------- |
-| `GET`    | `/api/v1/notifications/inbox`          | ユーザーの通知一覧を取得 | ユーザー |
-| `GET`    | `/api/v1/notifications/inbox/count`    | 未読件数を取得           | ユーザー |
-| `PUT`    | `/api/v1/notifications/inbox/read`     | すべて既読にする         | ユーザー |
-| `PUT`    | `/api/v1/notifications/inbox/:id/read` | 1件を既読にする          | ユーザー |
-| `DELETE` | `/api/v1/notifications/inbox/:id`      | 1件の通知を削除する      | ユーザー |
-| `DELETE` | `/api/v1/notifications/inbox`          | すべての通知を削除する   | ユーザー |
+| メソッド | パス                            | 説明                     | 認証     |
+| -------- | ------------------------------- | ------------------------ | -------- |
+| `GET`    | `/api/v1/notify/inbox`          | ユーザーの通知一覧を取得 | ユーザー |
+| `GET`    | `/api/v1/notify/inbox/count`    | 未読件数を取得           | ユーザー |
+| `PUT`    | `/api/v1/notify/inbox/read`     | すべて既読にする         | ユーザー |
+| `PUT`    | `/api/v1/notify/inbox/:id/read` | 1件を既読にする          | ユーザー |
+| `DELETE` | `/api/v1/notify/inbox/:id`      | 1件の通知を削除する      | ユーザー |
+| `DELETE` | `/api/v1/notify/inbox`          | すべての通知を削除する   | ユーザー |
 
 ## 設定
 

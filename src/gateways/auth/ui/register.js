@@ -491,7 +491,7 @@ export async function mount(root, { signal } = {}) {
         verifyToken,
     ) {
         const addResponse = await fetch(
-            `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+            `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails`,
             {
                 method: "POST",
                 headers: {
@@ -513,7 +513,7 @@ export async function mount(root, { signal } = {}) {
             const code = await promptVerificationCodeForRegister(emailAddress);
             if (!code) break;
             const verifyResponse = await fetch(
-                `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
+                `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
                 {
                     method: "POST",
                     headers: {

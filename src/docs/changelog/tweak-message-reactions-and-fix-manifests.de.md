@@ -13,7 +13,7 @@ Alle Emoji-Namen im Katalog sind jetzt Lokalisierungsschlüssel, die über die S
 - `src/gateways/social/ui/emojis.json` — Emoji-Namen als i18n-Schlüssel
 - `src/gateways/social/ui/languages/*/strings.xml` — neue Social-Gateway-Sprachdateien mit 366 übersetzten Emoji-Namen
 - `src/adapters/social/messages/store.ts` — neue Tabelle `chat_emoji_usage`; Methoden `incrementEmojiUsage` und `getTopEmojiUsage`
-- `src/adapters/social/messages/routes.ts` — neue Routen `GET/POST /api/v1/messages/emoji-usage`
+- `src/adapters/social/messages/routes.ts` — neue Routen `GET/POST /api/v1/social/messages/emoji-usage`
 - `src/adapters/social/messages/ui/app.js` — serverbasierte Emoji-Nutzung, i18n-Namensauflösung, keine fest codierten Standardwerte
 - `src/adapters/social/messages/ui/messages.css` — CSS aufgeteilt: Reaktions-Chips immer sichtbar, Hinzufügen-Schaltflächen nur beim Hover
 - `src/adapters/social/messages/ui/languages/en/strings.xml` — neue i18n-Schlüssel

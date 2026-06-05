@@ -225,6 +225,30 @@ export function buildServer(deps: ApiDependencies) {
         });
 
         try {
+            const owner = deps.routeRegistry?.findOwner(url.pathname);
+            if (
+                owner &&
+                deps.gatewayRegistry?.get(owner.gatewayId)?.status ===
+                    "disabled"
+            ) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "gateway_disabled",
+                            message: "Gateway disabled",
+                        },
+                    }),
+                );
+                log("info", "Request blocked: gateway disabled.", {
+                    method: req.method ?? "GET",
+                    path: url.pathname,
+                    gatewayId: owner.gatewayId,
+                    durationMs: Date.now() - startedAt,
+                });
+                return;
+            }
+
             const handledByModule = await moduleRoutes(req, res, url);
             if (handledByModule) {
                 log("info", "Request handled by module routes.", {

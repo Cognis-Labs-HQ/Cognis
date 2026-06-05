@@ -54,7 +54,7 @@ function navigateNotif(actionUrl) {
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
     const response = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
     );
     if (!response.ok) return null;
     const payload = await response.json().catch(() => null);
@@ -75,7 +75,7 @@ async function decryptRoomMessage(roomId) {
     const roomKey = await getRoomKey(roomId);
     if (!roomKey) return null;
     const response = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=1`,
+        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=1`,
     );
     if (!response.ok) return null;
     const payload = await response.json().catch(() => null);
@@ -107,7 +107,7 @@ async function decryptRoomMessage(roomId) {
 
 async function fetchCount() {
     try {
-        const res = await apiFetch("/api/v1/notifications/inbox/count");
+        const res = await apiFetch("/api/v1/notify/inbox/count");
         if (!res.ok) return 0;
         const payload = await res.json();
         return payload.data?.count ?? 0;
@@ -118,7 +118,7 @@ async function fetchCount() {
 
 async function fetchNotifications() {
     try {
-        const res = await apiFetch("/api/v1/notifications/inbox");
+        const res = await apiFetch("/api/v1/notify/inbox");
         if (!res.ok) return [];
         const payload = await res.json();
         return payload.data ?? [];
@@ -128,24 +128,23 @@ async function fetchNotifications() {
 }
 
 async function markAllRead() {
-    await apiFetch("/api/v1/notifications/inbox/read", { method: "PUT" });
+    await apiFetch("/api/v1/notify/inbox/read", { method: "PUT" });
 }
 
 async function markOneRead(id) {
-    await apiFetch(
-        `/api/v1/notifications/inbox/${encodeURIComponent(id)}/read`,
-        { method: "PUT" },
-    );
+    await apiFetch(`/api/v1/notify/inbox/${encodeURIComponent(id)}/read`, {
+        method: "PUT",
+    });
 }
 
 async function deleteNotification(id) {
-    await apiFetch(`/api/v1/notifications/inbox/${encodeURIComponent(id)}`, {
+    await apiFetch(`/api/v1/notify/inbox/${encodeURIComponent(id)}`, {
         method: "DELETE",
     });
 }
 
 async function deleteAllNotifications() {
-    const res = await apiFetch("/api/v1/notifications/inbox", {
+    const res = await apiFetch("/api/v1/notify/inbox", {
         method: "DELETE",
     });
     if (!res.ok) {

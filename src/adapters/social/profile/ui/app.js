@@ -303,7 +303,7 @@ async function openEditPopup() {
         const website = fieldValues.website ?? currentWebsite;
         const visibility = fieldValues.visibility ?? currentVisibility;
         try {
-            const response = await apiFetch("/api/v1/profile", {
+            const response = await apiFetch("/api/v1/social/profile", {
                 method: "PATCH",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
@@ -676,7 +676,7 @@ export async function mount(rootEl, { signal } = {}) {
     if (!isOwnProfile && profile?.handle) {
         try {
             const response = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(profile.handle)}/relationship`,
+                `/api/v1/social/users/${encodeURIComponent(profile.handle)}/relationship`,
             );
             if (response.ok) {
                 const payload = await response.json();

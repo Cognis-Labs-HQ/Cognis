@@ -270,10 +270,10 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
             },
         }),
         apiFetch: async (url) => {
-            if (url === "/api/v1/notifications/inbox/count") {
+            if (url === "/api/v1/notify/inbox/count") {
                 return { ok: true, json: async () => ({ data: { count: 0 } }) };
             }
-            if (url === "/api/v1/notifications/inbox") {
+            if (url === "/api/v1/notify/inbox") {
                 return { ok: true, json: async () => ({ data: [] }) };
             }
             return { ok: true, status: 200, json: async () => ({ data: [] }) };

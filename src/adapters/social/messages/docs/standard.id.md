@@ -9,7 +9,7 @@ tersimpan menggunakan `DATA_ENCRYPTION_KEY`.
 
 ## Endpoint
 
-Semua endpoint berada di bawah `/api/v1/messages`. Autentikasi wajib, kecuali
+Semua endpoint berada di bawah `/api/v1/social/messages`. Autentikasi wajib, kecuali
 `GET /messages/ping`.
 
 | Metode | Path                                                | Deskripsi                                                                      |

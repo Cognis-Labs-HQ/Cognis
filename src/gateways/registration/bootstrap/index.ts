@@ -166,10 +166,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "registration",
     );
 
+    ctx.routeRegistry.registerPrefix("/api/v1/registration", "registration");
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.9",
+        version: "1.1.10",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs HQ",

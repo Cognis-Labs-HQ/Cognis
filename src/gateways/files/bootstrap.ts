@@ -111,6 +111,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
+    ctx.routeRegistry.registerPrefix("/api/v1/files", "files");
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",

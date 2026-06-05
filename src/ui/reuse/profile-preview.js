@@ -23,7 +23,7 @@ function profileHandleFromLink(link) {
 async function loadProfilePreview(handle) {
     if (profileCache.has(handle)) return profileCache.get(handle);
     const promise = apiFetch(
-        `/api/v1/users/${encodeURIComponent(handle)}/profile`,
+        `/api/v1/social/users/${encodeURIComponent(handle)}/profile`,
     )
         .then(async (res) => {
             if (!res.ok) return null;

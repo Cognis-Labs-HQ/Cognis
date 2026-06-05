@@ -630,7 +630,7 @@ export async function renderThread(
     const params = new URLSearchParams({ limit: "50" });
     if (before) params.set("before", before);
     const response = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
     );
     if (!response.ok) {
         if (!before) container.innerHTML = "";
@@ -779,7 +779,7 @@ export async function renderThread(
 }
 
 export async function loadRooms(i18n, { getRoomKey }) {
-    const response = await apiFetch("/api/v1/messages/rooms");
+    const response = await apiFetch("/api/v1/social/messages/rooms");
     if (!response.ok) return [];
     const payload = await response.json();
     const rooms = payload?.data ?? [];

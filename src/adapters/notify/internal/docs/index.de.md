@@ -13,14 +13,14 @@ Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtig
 
 ## API-Routen
 
-| Methode  | Pfad                                   | Beschreibung                                | Auth     |
-| -------- | -------------------------------------- | ------------------------------------------- | -------- |
-| `GET`    | `/api/v1/notifications/inbox`          | Benachrichtigungen des Nutzers abrufen      | Benutzer |
-| `GET`    | `/api/v1/notifications/inbox/count`    | Anzahl ungelesener Benachrichtigungen       | Benutzer |
-| `PUT`    | `/api/v1/notifications/inbox/read`     | Alle als gelesen markieren                  | Benutzer |
-| `PUT`    | `/api/v1/notifications/inbox/:id/read` | Eine Benachrichtigung als gelesen markieren | Benutzer |
-| `DELETE` | `/api/v1/notifications/inbox/:id`      | Eine Benachrichtigung löschen               | Benutzer |
-| `DELETE` | `/api/v1/notifications/inbox`          | Alle Benachrichtigungen des Nutzers löschen | Benutzer |
+| Methode  | Pfad                            | Beschreibung                                | Auth     |
+| -------- | ------------------------------- | ------------------------------------------- | -------- |
+| `GET`    | `/api/v1/notify/inbox`          | Benachrichtigungen des Nutzers abrufen      | Benutzer |
+| `GET`    | `/api/v1/notify/inbox/count`    | Anzahl ungelesener Benachrichtigungen       | Benutzer |
+| `PUT`    | `/api/v1/notify/inbox/read`     | Alle als gelesen markieren                  | Benutzer |
+| `PUT`    | `/api/v1/notify/inbox/:id/read` | Eine Benachrichtigung als gelesen markieren | Benutzer |
+| `DELETE` | `/api/v1/notify/inbox/:id`      | Eine Benachrichtigung löschen               | Benutzer |
+| `DELETE` | `/api/v1/notify/inbox`          | Alle Benachrichtigungen des Nutzers löschen | Benutzer |
 
 ## Konfiguration
 

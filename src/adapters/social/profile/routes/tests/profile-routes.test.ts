@@ -96,14 +96,14 @@ test("profile routes - get own profile auto-creates profile when none exists", a
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
     assert.equal(parsed.data.handle, "alice");
 });
 
-test("profile routes - unauthenticated GET /api/v1/profile returns 401", async () => {
+test("profile routes - unauthenticated GET /api/v1/social/profile returns 401", async () => {
     const profileStore = new VolatileProfileStore();
     const route = createProfileRoutes(profileStore, fakeFileGateway());
     let status = 0;
@@ -115,7 +115,7 @@ test("profile routes - unauthenticated GET /api/v1/profile returns 401", async (
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
     assert.equal(status, 401);
 });
@@ -137,7 +137,7 @@ test("profile routes - get own profile returns data after creation", async () =>
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -167,7 +167,7 @@ test("profile routes - PATCH updates bio and visibility", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -203,7 +203,7 @@ test("profile routes log profile updates", async () => {
             writeHead() {},
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
 
     assert.deepEqual(entries, [
@@ -213,7 +213,7 @@ test("profile routes log profile updates", async () => {
             meta: {
                 component: "api-profile",
                 method: "PATCH",
-                path: "/api/v1/profile",
+                path: "/api/v1/social/profile",
                 accountId: "bob",
                 changedFields: ["bio", "visibility"],
             },
@@ -242,7 +242,7 @@ test("profile routes - PATCH updates displayName", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -263,7 +263,7 @@ test("profile routes - PATCH rejects invalid visibility", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile"),
+        new URL("http://localhost/api/v1/social/profile"),
     );
     assert.equal(status, 400);
 });
@@ -282,7 +282,7 @@ test("profile routes - hidden profile not visible to other users", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/dave/profile"),
+        new URL("http://localhost/api/v1/social/users/dave/profile"),
     );
     assert.equal(status, 404);
 });
@@ -304,7 +304,7 @@ test("profile routes - admin always sees hidden profile", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/hidden-user/profile"),
+        new URL("http://localhost/api/v1/social/users/hidden-user/profile"),
     );
     assert.equal(status, 200);
     assert.match(body, /hidden-user/);
@@ -337,7 +337,7 @@ test("profile routes - private profile returns full details only for mutual foll
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/alice/profile"),
+        new URL("http://localhost/api/v1/social/users/alice/profile"),
     );
     assert.equal(status, 200);
     const bobPayload = JSON.parse(body);
@@ -355,7 +355,7 @@ test("profile routes - private profile returns full details only for mutual foll
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/alice/profile"),
+        new URL("http://localhost/api/v1/social/users/alice/profile"),
     );
     assert.equal(status, 200);
     const carolPayload = JSON.parse(body);
@@ -384,7 +384,7 @@ test("profile routes - friends visibility: profile visible but counts hidden for
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/alice/profile"),
+        new URL("http://localhost/api/v1/social/users/alice/profile"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -411,7 +411,7 @@ test("profile routes - community profile visible to other users", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/frank/profile"),
+        new URL("http://localhost/api/v1/social/users/frank/profile"),
     );
     assert.equal(status, 200);
     assert.match(body, /frank/);
@@ -435,7 +435,7 @@ test("profile routes - blocked caller gets 404 on public profile", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice/profile"),
+        new URL("http://localhost/api/v1/social/users/alice/profile"),
     );
     assert.equal(status, 404);
 });
@@ -459,7 +459,7 @@ test("profile routes - avatar upload succeeds and sets avatarKey", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -482,7 +482,7 @@ test("profile routes - avatar upload deletes replaced file", async () => {
                 firstResponseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     const firstAvatarKey = JSON.parse(firstResponseBody).data.avatarKey;
 
@@ -495,7 +495,7 @@ test("profile routes - avatar upload deletes replaced file", async () => {
                 secondResponseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
 
     const secondAvatarKey = JSON.parse(secondResponseBody).data.avatarKey;
@@ -523,7 +523,7 @@ test("profile routes - avatar upload cleans up stored file when update fails", a
                 writeHead() {},
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/profile/avatar"),
+            new URL("http://localhost/api/v1/social/profile/avatar"),
         ),
         /update failed/,
     );
@@ -546,7 +546,7 @@ test("profile routes - avatar upload succeeds when previous delete fails", async
                 firstResponseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     const firstAvatarKey = JSON.parse(firstResponseBody).data.avatarKey;
 
@@ -572,7 +572,7 @@ test("profile routes - avatar upload succeeds when previous delete fails", async
                 secondResponseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
 
     assert.equal(status, 200);
@@ -597,7 +597,7 @@ test("profile routes - avatar upload rejects disallowed MIME type", async () => 
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     assert.equal(status, 415);
 });
@@ -617,7 +617,7 @@ test("profile routes - avatar upload rejects oversized image", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     assert.equal(status, 413);
 });
@@ -640,7 +640,7 @@ test("profile routes - banner upload allows gif", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/banner"),
+        new URL("http://localhost/api/v1/social/profile/banner"),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -661,7 +661,7 @@ test("profile routes - banner upload rejects unsupported type", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile/banner"),
+        new URL("http://localhost/api/v1/social/profile/banner"),
     );
     assert.equal(status, 415);
 });
@@ -687,7 +687,7 @@ test("profile routes - avatar DELETE clears avatarKey", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     assert.equal(status, 200);
     assert.match(body, /removed/);
@@ -716,7 +716,7 @@ test("profile routes - banner DELETE clears bannerKey", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/banner"),
+        new URL("http://localhost/api/v1/social/profile/banner"),
     );
     assert.equal(status, 200);
     assert.match(body, /removed/);
@@ -724,7 +724,7 @@ test("profile routes - banner DELETE clears bannerKey", async () => {
     assert.equal(profile?.bannerKey, null);
 });
 
-test("GET /api/v1/profile/ping returns 200 when authenticated", async () => {
+test("GET /api/v1/social/profile/ping returns 200 when authenticated", async () => {
     const profileStore = new VolatileProfileStore();
     await setupUser(profileStore, "alice");
     const route = createProfileRoutes(profileStore);
@@ -741,13 +741,13 @@ test("GET /api/v1/profile/ping returns 200 when authenticated", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/ping"),
+        new URL("http://localhost/api/v1/social/profile/ping"),
     );
     assert.equal(status, 200);
     assert.deepEqual(JSON.parse(body).data, { available: true });
 });
 
-test("GET /api/v1/profile/ping returns 401 when unauthenticated", async () => {
+test("GET /api/v1/social/profile/ping returns 401 when unauthenticated", async () => {
     const profileStore = new VolatileProfileStore();
     await setupUser(profileStore, "alice");
     const route = createProfileRoutes(profileStore);
@@ -760,7 +760,7 @@ test("GET /api/v1/profile/ping returns 401 when unauthenticated", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile/ping"),
+        new URL("http://localhost/api/v1/social/profile/ping"),
     );
     assert.equal(status, 401);
 });
@@ -787,7 +787,7 @@ test("avatar PUT returns 503 when fileGateway is absent", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     assert.equal(status, 503);
 });
@@ -809,7 +809,7 @@ test("avatar DELETE returns 503 when fileGateway is absent", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/avatar"),
+        new URL("http://localhost/api/v1/social/profile/avatar"),
     );
     assert.equal(status, 503);
     assert.equal(JSON.parse(body).error.code, "file_storage_unavailable");
@@ -840,7 +840,7 @@ test("banner PUT returns 503 when fileGateway is absent", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/banner"),
+        new URL("http://localhost/api/v1/social/profile/banner"),
     );
     assert.equal(status, 503);
     assert.equal(JSON.parse(body).error.code, "file_storage_unavailable");
@@ -863,7 +863,7 @@ test("banner DELETE returns 503 when fileGateway is absent", async () => {
                 body = p;
             },
         } as any,
-        new URL("http://localhost/api/v1/profile/banner"),
+        new URL("http://localhost/api/v1/social/profile/banner"),
     );
     assert.equal(status, 503);
     assert.equal(JSON.parse(body).error.code, "file_storage_unavailable");

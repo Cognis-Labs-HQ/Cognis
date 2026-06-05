@@ -6,7 +6,7 @@ import { showToast } from "/static/reuse/toast.js";
 
 async function loadUserEmails(accountId) {
     const response = await apiFetch(
-        `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+        `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails`,
     );
     if (!response.ok) {
         throw new Error("load_failed");
@@ -77,7 +77,7 @@ async function verifyRequiredEmailLoop({ accountId, emailAddress, i18n }) {
             throw new Error("verification_cancelled");
         }
         const verifyResponse = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
+            `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
             {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -99,7 +99,7 @@ async function verifyRequiredEmailLoop({ accountId, emailAddress, i18n }) {
 
 async function addRequiredEmail({ accountId, emailAddress }) {
     const response = await apiFetch(
-        `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+        `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails`,
         {
             method: "POST",
             headers: { "content-type": "application/json" },

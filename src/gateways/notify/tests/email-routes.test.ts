@@ -85,7 +85,7 @@ test("adding the first email auto-sets it as primary", async () => {
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
         res,
-        new URL("http://localhost/api/v1/users/alice/emails"),
+        new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(res.status, 201);
 
@@ -114,7 +114,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
         res,
-        new URL("http://localhost/api/v1/users/alice/emails"),
+        new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(res.status, 503);
     const data = JSON.parse(res.payload);
@@ -155,7 +155,7 @@ test("cannot delete primary email", async () => {
         } as any,
         res,
         new URL(
-            "http://localhost/api/v1/users/alice/emails/alice%40example.com",
+            "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com",
         ),
     );
     assert.equal(res.status, 409);
@@ -190,7 +190,7 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
         addRes,
-        new URL("http://localhost/api/v1/users/alice/emails"),
+        new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(addRes.status, 201);
     const addData = JSON.parse(addRes.payload);
@@ -208,7 +208,7 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
         makeRequest("POST", { code }, token),
         verRes,
         new URL(
-            "http://localhost/api/v1/users/alice/emails/alice%40example.com/verify",
+            "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify",
         ),
     );
     assert.equal(verRes.status, 200);
@@ -241,7 +241,7 @@ test("email verification rejects wrong code with 422", async () => {
         makeRequest("POST", { code: "000000" }, token),
         res,
         new URL(
-            "http://localhost/api/v1/users/alice/emails/alice%40example.com/verify",
+            "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify",
         ),
     );
     assert.equal(res.status, 422);
@@ -277,7 +277,7 @@ test("link verification GET redirects to /verify-email", async () => {
         { method: "GET", headers: {} } as any,
         res,
         new URL(
-            `http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=${linkToken}`,
+            `http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify?token=${linkToken}`,
         ),
     );
     assert.ok(
@@ -293,7 +293,7 @@ test("link verification GET redirects to /verify-email", async () => {
     );
 });
 
-test("POST /api/v1/verify-email with valid token verifies email", async () => {
+test("POST /api/v1/notify/verify-email with valid token verifies email", async () => {
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
 
@@ -315,7 +315,7 @@ test("POST /api/v1/verify-email with valid token verifies email", async () => {
     await route(
         makeRequest("POST", { token: linkToken }, ""),
         res,
-        new URL("http://localhost/api/v1/verify-email"),
+        new URL("http://localhost/api/v1/notify/verify-email"),
     );
     assert.equal(res.status, 200);
     const data = JSON.parse(res.payload);
@@ -325,7 +325,7 @@ test("POST /api/v1/verify-email with valid token verifies email", async () => {
     assert.equal(emails[0].verified, true);
 });
 
-test("POST /api/v1/verify-email token cannot be reused", async () => {
+test("POST /api/v1/notify/verify-email token cannot be reused", async () => {
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
 
@@ -347,7 +347,7 @@ test("POST /api/v1/verify-email token cannot be reused", async () => {
     await route(
         makeRequest("POST", { token: linkToken }, ""),
         first,
-        new URL("http://localhost/api/v1/verify-email"),
+        new URL("http://localhost/api/v1/notify/verify-email"),
     );
     assert.equal(first.status, 200);
 
@@ -355,7 +355,7 @@ test("POST /api/v1/verify-email token cannot be reused", async () => {
     await route(
         makeRequest("POST", { token: linkToken }, ""),
         second,
-        new URL("http://localhost/api/v1/verify-email"),
+        new URL("http://localhost/api/v1/notify/verify-email"),
     );
     assert.equal(second.status, 400);
     const errData = JSON.parse(second.payload);
@@ -395,7 +395,7 @@ test("add email issues both TFA code and verify token and includes link in email
     await route(
         makeRequest("POST", { email: "alice@example.com" }, authToken),
         res,
-        new URL("http://localhost/api/v1/users/alice/emails"),
+        new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(res.status, 201);
     assert.equal(sentEmails.length, 1);
@@ -429,7 +429,7 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
         { method: "GET", headers: {} } as any,
         res,
         new URL(
-            `http://localhost/api/v1/verify-tokens/status?token=${liveToken}`,
+            `http://localhost/api/v1/notify/verify-tokens/status?token=${liveToken}`,
         ),
     );
     assert.equal(res.status, 200);
@@ -460,7 +460,7 @@ test("verify-tokens/status returns pending:false after token is consumed", async
     await route(
         makeRequest("POST", { token: liveToken }, ""),
         verifyRes,
-        new URL("http://localhost/api/v1/verify-email"),
+        new URL("http://localhost/api/v1/notify/verify-email"),
     );
     assert.equal(verifyRes.status, 200);
 
@@ -469,7 +469,7 @@ test("verify-tokens/status returns pending:false after token is consumed", async
         { method: "GET", headers: {} } as any,
         statusRes,
         new URL(
-            `http://localhost/api/v1/verify-tokens/status?token=${liveToken}`,
+            `http://localhost/api/v1/notify/verify-tokens/status?token=${liveToken}`,
         ),
     );
     assert.equal(statusRes.status, 200);
@@ -502,7 +502,7 @@ test("owner can list another user's emails", async () => {
             headers: { authorization: `Bearer ${ownerToken}` },
         } as any,
         res,
-        new URL("http://localhost/api/v1/users/alice/emails"),
+        new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(res.status, 200);
     const data = JSON.parse(res.payload);
@@ -528,7 +528,9 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
     await route(
         { method: "GET", headers: {} } as any,
         res,
-        new URL("http://localhost/api/v1/verify-tokens/status?token=bogus"),
+        new URL(
+            "http://localhost/api/v1/notify/verify-tokens/status?token=bogus",
+        ),
     );
     assert.equal(res.status, 200);
     const data = JSON.parse(res.payload);

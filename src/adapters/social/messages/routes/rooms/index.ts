@@ -21,7 +21,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname !== "/api/v1/messages/rooms") {
+        if (url.pathname !== "/api/v1/social/messages/rooms") {
             return false;
         }
 

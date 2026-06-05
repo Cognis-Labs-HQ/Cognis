@@ -94,7 +94,7 @@ test("dashboard layout refreshes the greeting from the profile display name", ()
         "utf8",
     );
     assert.ok(
-        layoutSource.includes('apiFetch("/api/v1/profile")'),
+        layoutSource.includes('apiFetch("/api/v1/social/profile")'),
         "dashboard layout should fetch the authenticated profile to refresh the greeting display name",
     );
     assert.ok(

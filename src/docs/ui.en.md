@@ -45,7 +45,7 @@ Gateways inject admin panels, static assets, and per-page UI contributions at ru
 ### State model
 
 - The bearer token and account ID are stored client-side after login.
-- Page layout preferences are saved via `PUT /api/v1/users/:accountId/preferences/:pageId`.
+- Page layout preferences are saved via `PUT /api/v1/social/users/:accountId/preferences/:pageId`.
 - The auth token is also available in the `cognis_access_token` HttpOnly cookie for server-rendered route guards.
 
 ### Theme coverage requirement

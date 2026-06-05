@@ -34,7 +34,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
 
     async function loadEmails() {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
         if (!res.ok) return;
         const payload = await res.json();
@@ -51,7 +51,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
 
     async function addEmail(address) {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
             {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -71,7 +71,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
 
     async function removeEmail(address) {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
             { method: "DELETE" },
         );
         if (res.status === 409) {
@@ -84,14 +84,14 @@ export function initGeneralPrefs(root, { i18n, username }) {
 
     async function forceRemoveUnverifiedEmail(address) {
         await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}?force=true`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}?force=true`,
             { method: "DELETE" },
         );
     }
 
     async function resendVerification(address) {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
             { method: "POST" },
         );
         if (res.status === 429) throw new Error("rate_limited");
@@ -103,14 +103,14 @@ export function initGeneralPrefs(root, { i18n, username }) {
 
     async function setPrimaryEmail(address) {
         await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/primary`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/primary`,
             { method: "PUT" },
         );
     }
 
     async function submitVerificationCode(address, code) {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
             {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -212,7 +212,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                         apiFetch,
                         onConsumed() {
                             apiFetch(
-                                `/api/v1/users/${encodeURIComponent(username)}/emails`,
+                                `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
                             )
                                 .then((res) => (res.ok ? res.json() : null))
                                 .then((payload) => {

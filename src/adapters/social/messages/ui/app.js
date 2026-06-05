@@ -6,7 +6,7 @@
  *   right — selected room's message thread + composer.
  *
  * Messages are encrypted client-side with a per-room AES-GCM key fetched
- * from `GET /api/v1/messages/rooms/:id/key` and cached in memory for the
+ * from `GET /api/v1/social/messages/rooms/:id/key` and cached in memory for the
  * page's lifetime. The server holds the at-rest-wrapped form of the same
  * key. See `src/adapters/social/messages/docs/standard.en.md` for the full
  * threat model.
@@ -591,7 +591,7 @@ export async function mount(root, { signal } = {}) {
                     }
                     const { iv, ciphertext } = await encryptMessage(key, text);
                     const response = await apiFetch(
-                        `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages`,
+                        `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages`,
                         {
                             method: "POST",
                             body: JSON.stringify({ ciphertext, iv }),
@@ -703,7 +703,7 @@ export async function mount(root, { signal } = {}) {
         const newButton = document.getElementById("messages-new-btn");
         newButton?.addEventListener("click", () => {
             openSearchPopup({
-                endpoint: "/api/v1/messages/users/lookup",
+                endpoint: "/api/v1/social/messages/users/lookup",
                 category: "user",
                 ariaLabel: i18n.t("module.social.messages.new"),
                 noResultsText: i18n.t("ui.layout.search.no_results"),

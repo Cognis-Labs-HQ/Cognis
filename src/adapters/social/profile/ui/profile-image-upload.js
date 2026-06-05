@@ -56,7 +56,7 @@ export function createProfileImageUploadActions({
     openPopup,
 }) {
     async function doRemoveAvatar() {
-        await apiFetch("/api/v1/profile/avatar", { method: "DELETE" });
+        await apiFetch("/api/v1/social/profile/avatar", { method: "DELETE" });
         const currentState = getState();
         if (currentState.avatarBlobUrl) {
             URL.revokeObjectURL(currentState.avatarBlobUrl);
@@ -67,7 +67,7 @@ export function createProfileImageUploadActions({
     }
 
     async function doRemoveBanner() {
-        await apiFetch("/api/v1/profile/banner", { method: "DELETE" });
+        await apiFetch("/api/v1/social/profile/banner", { method: "DELETE" });
         const currentState = getState();
         if (currentState.bannerBlobUrl) {
             URL.revokeObjectURL(currentState.bannerBlobUrl);
@@ -106,8 +106,8 @@ export function createProfileImageUploadActions({
         if (!(uploadBlob instanceof Blob)) return false;
         const endpoint =
             kind === "avatar"
-                ? "/api/v1/profile/avatar"
-                : "/api/v1/profile/banner";
+                ? "/api/v1/social/profile/avatar"
+                : "/api/v1/social/profile/banner";
         const contentType = preserveOriginalGif
             ? file.type || "application/octet-stream"
             : "image/png";

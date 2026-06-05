@@ -253,7 +253,7 @@ test("file routes - get file size limits (admin only)", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/admin/file-limits"),
+            new URL("http://localhost/api/v1/social/admin/file-limits"),
         );
         assert.equal(status, 403);
 
@@ -267,7 +267,7 @@ test("file routes - get file size limits (admin only)", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/admin/file-limits"),
+            new URL("http://localhost/api/v1/social/admin/file-limits"),
         );
         assert.equal(status, 200);
         const limits = JSON.parse(body).data;
@@ -300,7 +300,7 @@ test("file routes - admin can update file size limit", async () => {
                     body = p;
                 },
             } as any,
-            new URL("http://localhost/api/v1/admin/file-limits/video"),
+            new URL("http://localhost/api/v1/social/admin/file-limits/video"),
         );
         assert.equal(status, 200);
         const result = JSON.parse(body);
@@ -330,7 +330,7 @@ test("file routes - invalid maxBytes returns 400", async () => {
                 },
                 end() {},
             } as any,
-            new URL("http://localhost/api/v1/admin/file-limits/image"),
+            new URL("http://localhost/api/v1/social/admin/file-limits/image"),
         );
         assert.equal(status, 400);
     } finally {

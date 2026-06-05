@@ -71,7 +71,7 @@ export function createMessagesRoomState({
 
     async function loadRoom(roomId) {
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}`,
         );
         if (!response.ok) return null;
         return (await response.json()).data ?? null;
@@ -260,7 +260,7 @@ export function createMessagesRoomState({
         if (!selectedRoomId) return;
         if (!force && !selectedRoomHasUnread()) return;
         await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/read`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/read`,
             { method: "POST" },
         ).catch(() => undefined);
         rooms = rooms.map((room) =>
@@ -278,7 +278,7 @@ export function createMessagesRoomState({
     ) {
         if (!requestId || !["approve", "reject"].includes(action)) return;
         const response = await apiFetch(
-            `/api/v1/messages/requests/${encodeURIComponent(requestId)}/${action}`,
+            `/api/v1/social/messages/requests/${encodeURIComponent(requestId)}/${action}`,
             { method: "POST" },
         ).catch((error) => {
             console.error("[messages] pending-request action failed", {
@@ -354,7 +354,7 @@ export function createMessagesRoomState({
         const normalizedEmoji = normalizeReactionEmoji(emoji);
         if (!normalizedEmoji) return;
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
             {
                 method: "POST",
                 body: JSON.stringify({ emoji: normalizedEmoji }),
@@ -516,7 +516,7 @@ export function createMessagesRoomState({
         typingActive = typing;
         lastTypingSentAt = now;
         void apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
             {
                 method: "POST",
                 body: JSON.stringify({
@@ -535,7 +535,7 @@ export function createMessagesRoomState({
     async function refreshTypingIndicator() {
         if (!selectedRoomId) return;
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
         );
         const typingStatusElement = document.getElementById(
             "messages-typing-status",
@@ -586,7 +586,7 @@ export function createMessagesRoomState({
             });
             if (!upload.ok) return;
             const update = await apiFetch(
-                `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}`,
+                `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}`,
                 {
                     method: "PATCH",
                     headers: { "content-type": "application/json" },
@@ -675,7 +675,7 @@ export function createMessagesRoomState({
         if (leaveResult !== "confirm") return;
         const roomIdToLeave = selectedRoomId;
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomIdToLeave)}/members/${encodeURIComponent(handle)}`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomIdToLeave)}/members/${encodeURIComponent(handle)}`,
             { method: "DELETE" },
         );
         if (!response.ok) {
@@ -721,7 +721,7 @@ export function createMessagesRoomState({
     }
 
     async function createConversationFromHandle(handle) {
-        const createResponse = await apiFetch("/api/v1/messages/rooms", {
+        const createResponse = await apiFetch("/api/v1/social/messages/rooms", {
             method: "POST",
             body: JSON.stringify({ handles: [handle] }),
         });

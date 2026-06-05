@@ -80,7 +80,7 @@ test("notification route dispatches to registered sender when prefs match", asyn
             adminToken,
         ),
         res,
-        new URL("http://localhost/api/v1/notifications/send"),
+        new URL("http://localhost/api/v1/notify/send"),
     );
 
     assert.equal(res.status, 200);
@@ -112,7 +112,7 @@ test("notification route returns empty dispatched array when no prefs configured
             adminToken,
         ),
         res,
-        new URL("http://localhost/api/v1/notifications/send"),
+        new URL("http://localhost/api/v1/notify/send"),
     );
 
     assert.equal(res.status, 200);
@@ -130,7 +130,7 @@ test("notification route returns 400 when required fields are missing", async ()
     await route(
         requestWithBody("POST", { category: "account_alert" }, adminToken),
         res,
-        new URL("http://localhost/api/v1/notifications/send"),
+        new URL("http://localhost/api/v1/notify/send"),
     );
 
     assert.equal(res.status, 400);
@@ -155,7 +155,7 @@ test("notification route returns 401 without authentication", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/notifications/send"),
+        new URL("http://localhost/api/v1/notify/send"),
     );
 
     assert.equal(status, 401);
@@ -185,7 +185,7 @@ test("notification route returns 403 for non-admin users", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/notifications/send"),
+        new URL("http://localhost/api/v1/notify/send"),
     );
 
     assert.equal(status, 403);
@@ -209,7 +209,7 @@ test("notification route does not handle unrelated paths", async () => {
     assert.equal(handled, false);
 });
 
-test("GET /api/v1/notifications/providers returns sender list to admin", async () => {
+test("GET /api/v1/notify/providers returns sender list to admin", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new CapturingSender("smtp"));
@@ -224,7 +224,7 @@ test("GET /api/v1/notifications/providers returns sender list to admin", async (
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/providers"),
+        new URL("http://localhost/api/v1/notify/providers"),
     );
 
     assert.equal(res.status, 200);
@@ -234,7 +234,7 @@ test("GET /api/v1/notifications/providers returns sender list to admin", async (
     assert.equal(data.data[0].senderId, "smtp");
 });
 
-test("GET /api/v1/notifications/providers returns sender list to non-admin user", async () => {
+test("GET /api/v1/notify/providers returns sender list to non-admin user", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new CapturingSender("smtp"));
@@ -249,7 +249,7 @@ test("GET /api/v1/notifications/providers returns sender list to non-admin user"
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/providers"),
+        new URL("http://localhost/api/v1/notify/providers"),
     );
 
     assert.equal(res.status, 200);
@@ -257,7 +257,7 @@ test("GET /api/v1/notifications/providers returns sender list to non-admin user"
     assert.ok(Array.isArray(data.data));
 });
 
-test("GET /api/v1/notifications/providers returns 401 without auth", async () => {
+test("GET /api/v1/notify/providers returns 401 without auth", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -270,13 +270,13 @@ test("GET /api/v1/notifications/providers returns 401 without auth", async () =>
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/providers"),
+        new URL("http://localhost/api/v1/notify/providers"),
     );
 
     assert.equal(res.status, 401);
 });
 
-test("GET /api/v1/notifications/categories returns categories to authenticated user", async () => {
+test("GET /api/v1/notify/categories returns categories to authenticated user", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerCategory("system", "System");
@@ -291,7 +291,7 @@ test("GET /api/v1/notifications/categories returns categories to authenticated u
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/categories"),
+        new URL("http://localhost/api/v1/notify/categories"),
     );
 
     assert.equal(res.status, 200);
@@ -300,7 +300,7 @@ test("GET /api/v1/notifications/categories returns categories to authenticated u
     assert.ok(data.data.some((c: { id: string }) => c.id === "system"));
 });
 
-test("GET /api/v1/notifications/categories returns 401 without auth", async () => {
+test("GET /api/v1/notify/categories returns 401 without auth", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -313,13 +313,13 @@ test("GET /api/v1/notifications/categories returns 401 without auth", async () =
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/categories"),
+        new URL("http://localhost/api/v1/notify/categories"),
     );
 
     assert.equal(res.status, 401);
 });
 
-test("GET /api/v1/notifications/providers/:id/config returns 404 for unknown sender", async () => {
+test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -333,15 +333,13 @@ test("GET /api/v1/notifications/providers/:id/config returns 404 for unknown sen
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL(
-            "http://localhost/api/v1/notifications/providers/unknown/config",
-        ),
+        new URL("http://localhost/api/v1/notify/providers/unknown/config"),
     );
 
     assert.equal(res.status, 404);
 });
 
-test("POST /api/v1/notifications/providers/:id/test returns 400 when sender has no sendTestEmail", async () => {
+test("POST /api/v1/notify/providers/:id/test returns 400 when sender has no sendTestEmail", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new CapturingSender("smtp"));
@@ -352,14 +350,14 @@ test("POST /api/v1/notifications/providers/:id/test returns 400 when sender has 
     await route(
         requestWithBody("POST", { to: "test@example.com" }, adminToken),
         res,
-        new URL("http://localhost/api/v1/notifications/providers/smtp/test"),
+        new URL("http://localhost/api/v1/notify/providers/smtp/test"),
     );
 
     assert.equal(res.status, 400);
     assert.match(res.payload, /not_supported/);
 });
 
-test("GET /api/v1/users/:username/notification-prefs returns 401 without auth", async () => {
+test("GET /api/v1/notify/users/:username/notification-prefs returns 401 without auth", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -372,13 +370,15 @@ test("GET /api/v1/users/:username/notification-prefs returns 401 without auth", 
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+        new URL(
+            "http://localhost/api/v1/notify/users/alice/notification-prefs",
+        ),
     );
 
     assert.equal(res.status, 401);
 });
 
-test("GET /api/v1/users/:username/notification-prefs returns 403 for different user", async () => {
+test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for different user", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -392,13 +392,15 @@ test("GET /api/v1/users/:username/notification-prefs returns 403 for different u
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+        new URL(
+            "http://localhost/api/v1/notify/users/alice/notification-prefs",
+        ),
     );
 
     assert.equal(res.status, 403);
 });
 
-test("GET /api/v1/users/:username/notification-prefs returns empty array without notifStore", async () => {
+test("GET /api/v1/notify/users/:username/notification-prefs returns empty array without notifStore", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -412,7 +414,9 @@ test("GET /api/v1/users/:username/notification-prefs returns empty array without
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+        new URL(
+            "http://localhost/api/v1/notify/users/alice/notification-prefs",
+        ),
     );
 
     assert.equal(res.status, 200);
@@ -420,7 +424,7 @@ test("GET /api/v1/users/:username/notification-prefs returns empty array without
     assert.deepEqual(data.data, []);
 });
 
-test("PUT /api/v1/users/:username/notification-prefs returns 200 without notifStore", async () => {
+test("PUT /api/v1/notify/users/:username/notification-prefs returns 200 without notifStore", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -434,13 +438,15 @@ test("PUT /api/v1/users/:username/notification-prefs returns 200 without notifSt
             userToken,
         ),
         res,
-        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+        new URL(
+            "http://localhost/api/v1/notify/users/alice/notification-prefs",
+        ),
     );
 
     assert.equal(res.status, 200);
 });
 
-test("PUT /api/v1/users/:username/notification-prefs strips disabled entries for always-on senders", async () => {
+test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entries for always-on senders", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerAlwaysOnSender("internal");
@@ -485,7 +491,9 @@ test("PUT /api/v1/users/:username/notification-prefs strips disabled entries for
             userToken,
         ),
         res,
-        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+        new URL(
+            "http://localhost/api/v1/notify/users/alice/notification-prefs",
+        ),
     );
 
     assert.equal(res.status, 200);
@@ -497,7 +505,7 @@ test("PUT /api/v1/users/:username/notification-prefs strips disabled entries for
     assert.equal(savedPrefs[0].senderId, "smtp");
 });
 
-test("GET /api/v1/notifications/providers/:id/config includes requiredFields when sender implements getRequiredFields", async () => {
+test("GET /api/v1/notify/providers/:id/config includes requiredFields when sender implements getRequiredFields", async () => {
     class ConfiguredSender implements NotificationSender {
         readonly senderId = "smtp";
         async send() {}
@@ -534,7 +542,7 @@ test("GET /api/v1/notifications/providers/:id/config includes requiredFields whe
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/providers/smtp/config"),
+        new URL("http://localhost/api/v1/notify/providers/smtp/config"),
     );
 
     assert.equal(res.status, 200);
@@ -542,7 +550,7 @@ test("GET /api/v1/notifications/providers/:id/config includes requiredFields whe
     assert.deepEqual(body.requiredFields, ["host", "from"]);
 });
 
-test("GET /api/v1/notifications/providers/:id/config returns empty requiredFields when sender has no getRequiredFields", async () => {
+test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when sender has no getRequiredFields", async () => {
     class MinimalSender implements NotificationSender {
         readonly senderId = "smtp";
         async send() {}
@@ -568,7 +576,7 @@ test("GET /api/v1/notifications/providers/:id/config returns empty requiredField
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/providers/smtp/config"),
+        new URL("http://localhost/api/v1/notify/providers/smtp/config"),
     );
 
     assert.equal(res.status, 200);
@@ -576,7 +584,7 @@ test("GET /api/v1/notifications/providers/:id/config returns empty requiredField
     assert.deepEqual(body.requiredFields, []);
 });
 
-test("GET /api/v1/users/:username/notification-prefs returns 200 for owner accessing another user", async () => {
+test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owner accessing another user", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway);
@@ -590,7 +598,9 @@ test("GET /api/v1/users/:username/notification-prefs returns 200 for owner acces
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+        new URL(
+            "http://localhost/api/v1/notify/users/alice/notification-prefs",
+        ),
     );
 
     assert.equal(res.status, 200);
@@ -598,7 +608,7 @@ test("GET /api/v1/users/:username/notification-prefs returns 200 for owner acces
     assert.deepEqual(data.data, []);
 });
 
-test("POST /api/v1/notifications/broadcasts creates a broadcast for admin users", async () => {
+test("POST /api/v1/notify/broadcasts creates a broadcast for admin users", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     let createdPayload: Record<string, unknown> | null = null;
@@ -632,7 +642,7 @@ test("POST /api/v1/notifications/broadcasts creates a broadcast for admin users"
             adminToken,
         ),
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts"),
+        new URL("http://localhost/api/v1/notify/broadcasts"),
     );
 
     assert.equal(response.status, 200);
@@ -642,7 +652,7 @@ test("POST /api/v1/notifications/broadcasts creates a broadcast for admin users"
     assert.equal(body.data.id, "broadcast-1");
 });
 
-test("POST /api/v1/notifications/broadcasts returns 400 for invalid payload", async () => {
+test("POST /api/v1/notify/broadcasts returns 400 for invalid payload", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway, {
@@ -669,14 +679,14 @@ test("POST /api/v1/notifications/broadcasts returns 400 for invalid payload", as
             adminToken,
         ),
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts"),
+        new URL("http://localhost/api/v1/notify/broadcasts"),
     );
 
     assert.equal(response.status, 400);
     assert.match(response.payload, /missing_broadcast_title/);
 });
 
-test("POST /api/v1/notifications/broadcasts returns 400 when no target roles are selected", async () => {
+test("POST /api/v1/notify/broadcasts returns 400 when no target roles are selected", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway, {
@@ -703,14 +713,14 @@ test("POST /api/v1/notifications/broadcasts returns 400 when no target roles are
             adminToken,
         ),
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts"),
+        new URL("http://localhost/api/v1/notify/broadcasts"),
     );
 
     assert.equal(response.status, 400);
     assert.match(response.payload, /missing_broadcast_roles/);
 });
 
-test("POST /api/v1/notifications/broadcasts returns 400 for invalid date ranges", async () => {
+test("POST /api/v1/notify/broadcasts returns 400 for invalid date ranges", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway, {
@@ -739,14 +749,14 @@ test("POST /api/v1/notifications/broadcasts returns 400 for invalid date ranges"
             adminToken,
         ),
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts"),
+        new URL("http://localhost/api/v1/notify/broadcasts"),
     );
 
     assert.equal(response.status, 400);
     assert.match(response.payload, /invalid_broadcast_window_range/);
 });
 
-test("POST /api/v1/notifications/broadcasts rejects external redirect URLs", async () => {
+test("POST /api/v1/notify/broadcasts rejects external redirect URLs", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     const route = createNotificationRoutes(gateway, {
@@ -774,14 +784,14 @@ test("POST /api/v1/notifications/broadcasts rejects external redirect URLs", asy
             adminToken,
         ),
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts"),
+        new URL("http://localhost/api/v1/notify/broadcasts"),
     );
 
     assert.equal(response.status, 400);
     assert.match(response.payload, /invalid_broadcast_redirect/);
 });
 
-test("POST /api/v1/notifications/broadcasts accepts trusted external redirect URLs", async () => {
+test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     let createdPayload: Record<string, unknown> | null = null;
@@ -819,7 +829,7 @@ test("POST /api/v1/notifications/broadcasts accepts trusted external redirect UR
             adminToken,
         ),
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts"),
+        new URL("http://localhost/api/v1/notify/broadcasts"),
     );
 
     assert.equal(response.status, 200);
@@ -829,7 +839,7 @@ test("POST /api/v1/notifications/broadcasts accepts trusted external redirect UR
     );
 });
 
-test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcasts", async () => {
+test("GET /api/v1/notify/broadcasts/active returns role-targeted broadcasts", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     let receivedRole = "";
@@ -855,7 +865,7 @@ test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcas
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         response,
-        new URL("http://localhost/api/v1/notifications/broadcasts/active"),
+        new URL("http://localhost/api/v1/notify/broadcasts/active"),
     );
 
     assert.equal(response.status, 200);
@@ -865,7 +875,7 @@ test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcas
     assert.equal(body.data[0].id, "broadcast-1");
 });
 
-test("GET /api/v1/notifications/broadcasts/:id/states returns broadcast acknowledgement state rows for admin", async () => {
+test("GET /api/v1/notify/broadcasts/:id/states returns broadcast acknowledgement state rows for admin", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     let requestedBroadcastId = "";
@@ -896,9 +906,7 @@ test("GET /api/v1/notifications/broadcasts/:id/states returns broadcast acknowle
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         response,
-        new URL(
-            "http://localhost/api/v1/notifications/broadcasts/broadcast-9/states",
-        ),
+        new URL("http://localhost/api/v1/notify/broadcasts/broadcast-9/states"),
     );
 
     assert.equal(response.status, 200);
@@ -907,7 +915,7 @@ test("GET /api/v1/notifications/broadcasts/:id/states returns broadcast acknowle
     assert.equal(body.data[0].accountId, "alice");
 });
 
-test("POST /api/v1/notifications/broadcasts/:id/acknowledge marks broadcast state", async () => {
+test("POST /api/v1/notify/broadcasts/:id/acknowledge marks broadcast state", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     let acknowledgedBy = "";
@@ -929,7 +937,7 @@ test("POST /api/v1/notifications/broadcasts/:id/acknowledge marks broadcast stat
         requestWithBody("POST", {}, userToken),
         response,
         new URL(
-            "http://localhost/api/v1/notifications/broadcasts/broadcast-9/acknowledge",
+            "http://localhost/api/v1/notify/broadcasts/broadcast-9/acknowledge",
         ),
     );
 
@@ -938,7 +946,7 @@ test("POST /api/v1/notifications/broadcasts/:id/acknowledge marks broadcast stat
     assert.equal(acknowledgedId, "broadcast-9");
 });
 
-test("POST /api/v1/notifications/broadcasts/:id/dismiss marks broadcast state", async () => {
+test("POST /api/v1/notify/broadcasts/:id/dismiss marks broadcast state", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     let dismissedBy = "";
@@ -960,7 +968,7 @@ test("POST /api/v1/notifications/broadcasts/:id/dismiss marks broadcast state", 
         requestWithBody("POST", {}, userToken),
         response,
         new URL(
-            "http://localhost/api/v1/notifications/broadcasts/broadcast-9/dismiss",
+            "http://localhost/api/v1/notify/broadcasts/broadcast-9/dismiss",
         ),
     );
 

@@ -10,7 +10,7 @@ the server's `DATA_ENCRYPTION_KEY`.
 
 ## Endpoints
 
-All endpoints are prefixed with `/api/v1/messages`. Authentication is
+All endpoints are prefixed with `/api/v1/social/messages`. Authentication is
 required for everything except `GET /messages/ping`, which is a lightweight
 probe used by the UI to detect whether the adapter is loaded.
 
@@ -58,7 +58,7 @@ and cannot send new messages from that archived room. Messaging the same user
 again creates a fresh direct room.
 
 The same predicate is exposed via the social gateway's
-`GET /api/v1/users/:handle/relationship` endpoint (`canMessage`,
+`GET /api/v1/social/users/:handle/relationship` endpoint (`canMessage`,
 `canSendMessageRequest`, `requiresMessageRequest`) so the profile UI can decide
 whether to open a room immediately or send a message request.
 

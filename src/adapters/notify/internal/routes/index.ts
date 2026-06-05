@@ -8,12 +8,12 @@ import type { IInternalNotificationStore } from "../store.js";
 /**
  * Route handler for all internal notification inbox endpoints.
  *
- *   GET    /api/v1/notifications/inbox          list the caller's notifications
- *   GET    /api/v1/notifications/inbox/count    unread count for the caller
- *   PUT    /api/v1/notifications/inbox/read     mark all as read
- *   PUT    /api/v1/notifications/inbox/:id/read mark one notification as read
- *   DELETE /api/v1/notifications/inbox          delete all notifications for the caller
- *   DELETE /api/v1/notifications/inbox/:id      delete one notification
+ *   GET    /api/v1/notify/inbox          list the caller's notifications
+ *   GET    /api/v1/notify/inbox/count    unread count for the caller
+ *   PUT    /api/v1/notify/inbox/read     mark all as read
+ *   PUT    /api/v1/notify/inbox/:id/read mark one notification as read
+ *   DELETE /api/v1/notify/inbox          delete all notifications for the caller
+ *   DELETE /api/v1/notify/inbox/:id      delete one notification
  */
 export function createInternalNotificationRoutes(
     store: IInternalNotificationStore,
@@ -25,7 +25,7 @@ export function createInternalNotificationRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (!url.pathname.startsWith("/api/v1/notifications/inbox")) {
+        if (!url.pathname.startsWith("/api/v1/notify/inbox")) {
             return false;
         }
 
@@ -43,7 +43,7 @@ export function createInternalNotificationRoutes(
         const username = claims.sub;
 
         if (
-            url.pathname === "/api/v1/notifications/inbox" &&
+            url.pathname === "/api/v1/notify/inbox" &&
             req.method === "DELETE"
         ) {
             const removed = await store.deleteAll(username);
@@ -52,7 +52,7 @@ export function createInternalNotificationRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/notifications/inbox") {
+        if (url.pathname === "/api/v1/notify/inbox") {
             if (req.method !== "GET") return false;
             const notifications = await store.list(username);
             res.writeHead(200, { "content-type": "application/json" });
@@ -60,7 +60,7 @@ export function createInternalNotificationRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/notifications/inbox/count") {
+        if (url.pathname === "/api/v1/notify/inbox/count") {
             if (req.method !== "GET") return false;
             const count = await store.countUnread(username);
             res.writeHead(200, { "content-type": "application/json" });
@@ -69,7 +69,7 @@ export function createInternalNotificationRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/notifications/inbox/read" &&
+            url.pathname === "/api/v1/notify/inbox/read" &&
             req.method === "PUT"
         ) {
             await store.markAllRead(username);

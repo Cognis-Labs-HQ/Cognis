@@ -67,11 +67,11 @@ test("apiFetch shows one permanent warning toast for repeated API network failur
     apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
 
     await assert.rejects(
-        apiClient.apiFetch("/api/v1/notifications/inbox"),
+        apiClient.apiFetch("/api/v1/notify/inbox"),
         networkError,
     );
     await assert.rejects(
-        apiClient.apiFetch("/api/v1/notifications/inbox"),
+        apiClient.apiFetch("/api/v1/notify/inbox"),
         networkError,
     );
 

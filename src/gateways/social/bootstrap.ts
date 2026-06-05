@@ -228,10 +228,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "social",
     );
 
+    ctx.routeRegistry.registerPrefix("/api/v1/social", "social");
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.6",
+        version: "1.2.7",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,

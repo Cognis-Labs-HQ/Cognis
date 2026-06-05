@@ -14,15 +14,15 @@ import type { NotificationUserEmailStore } from "./stores.js";
  * are owned by the notification gateway because they depend on the notification
  * store and verification email sender — concepts the core knows nothing about.
  *
- *   GET    /api/v1/users/:id/emails
- *   POST   /api/v1/users/:id/emails
- *   DELETE /api/v1/users/:id/emails/:addr
- *   PUT    /api/v1/users/:id/emails/:addr/primary
- *   POST   /api/v1/users/:id/emails/:addr/verify
- *   POST   /api/v1/users/:id/emails/:addr/resend
- *   GET    /api/v1/users/:id/emails/:addr/verify  (redirect)
- *   GET    /api/v1/verify-tokens/status
- *   POST   /api/v1/verify-email
+ *   GET    /api/v1/notify/users/:id/emails
+ *   POST   /api/v1/notify/users/:id/emails
+ *   DELETE /api/v1/notify/users/:id/emails/:addr
+ *   PUT    /api/v1/notify/users/:id/emails/:addr/primary
+ *   POST   /api/v1/notify/users/:id/emails/:addr/verify
+ *   POST   /api/v1/notify/users/:id/emails/:addr/resend
+ *   GET    /api/v1/notify/users/:id/emails/:addr/verify  (redirect)
+ *   GET    /api/v1/notify/verify-tokens/status
+ *   POST   /api/v1/notify/verify-email
  */
 export function createUserEmailRoutes(
     notifStore: NotificationUserEmailStore,
@@ -39,7 +39,7 @@ export function createUserEmailRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (
-            url.pathname === "/api/v1/verify-tokens/status" &&
+            url.pathname === "/api/v1/notify/verify-tokens/status" &&
             req.method === "GET"
         ) {
             const token = url.searchParams.get("token") ?? "";
@@ -49,7 +49,10 @@ export function createUserEmailRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/verify-email" && req.method === "POST") {
+        if (
+            url.pathname === "/api/v1/notify/verify-email" &&
+            req.method === "POST"
+        ) {
             const body = await readJson(req);
             const token = String(body.token ?? "").trim();
             if (!token) {
@@ -99,7 +102,7 @@ export function createUserEmailRoutes(
         }
 
         const emailsMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/emails$/,
+            /^\/api\/v1\/notify\/users\/([^/]+)\/emails$/,
         );
         if (emailsMatch) {
             const username = decodeURIComponent(emailsMatch[1]);
@@ -267,7 +270,7 @@ export function createUserEmailRoutes(
         }
 
         const emailActionsMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary|verify|resend))?$/,
+            /^\/api\/v1\/notify\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary|verify|resend))?$/,
         );
         if (emailActionsMatch) {
             const username = decodeURIComponent(emailActionsMatch[1]);

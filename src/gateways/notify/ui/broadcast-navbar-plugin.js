@@ -48,9 +48,7 @@ async function navigateAfterClose(redirectUrl, i18n) {
 
 async function fetchActiveBroadcasts() {
     try {
-        const response = await apiFetch(
-            "/api/v1/notifications/broadcasts/active",
-        );
+        const response = await apiFetch("/api/v1/notify/broadcasts/active");
         if (response.status === 401) {
             return { broadcasts: [], unauthorized: true };
         }
@@ -67,14 +65,14 @@ async function fetchActiveBroadcasts() {
 
 async function acknowledgeBroadcast(broadcastId) {
     await apiFetch(
-        `/api/v1/notifications/broadcasts/${encodeURIComponent(broadcastId)}/acknowledge`,
+        `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/acknowledge`,
         { method: "POST" },
     );
 }
 
 async function dismissBroadcast(broadcastId) {
     await apiFetch(
-        `/api/v1/notifications/broadcasts/${encodeURIComponent(broadcastId)}/dismiss`,
+        `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/dismiss`,
         { method: "POST" },
     );
 }

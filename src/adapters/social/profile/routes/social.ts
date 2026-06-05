@@ -60,7 +60,7 @@ export function createSocialRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const searchMatch = url.pathname === "/api/v1/users/search";
+        const searchMatch = url.pathname === "/api/v1/social/users/search";
         if (searchMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
@@ -84,7 +84,7 @@ export function createSocialRoutes(
         }
 
         const relationshipMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/relationship$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/relationship$/,
         );
         if (relationshipMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
@@ -186,7 +186,7 @@ export function createSocialRoutes(
         }
 
         const followMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/follow$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/follow$/,
         );
         if (followMatch) {
             const claims = ctx.requireAuth(req, res, "user");
@@ -278,7 +278,7 @@ export function createSocialRoutes(
         }
 
         const blockMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/block$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/block$/,
         );
         if (blockMatch) {
             const claims = ctx.requireAuth(req, res, "user");
@@ -321,7 +321,7 @@ export function createSocialRoutes(
         }
 
         const followersMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/followers$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/followers$/,
         );
         if (followersMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
@@ -381,7 +381,7 @@ export function createSocialRoutes(
         }
 
         const followingMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/following$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/following$/,
         );
         if (followingMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");

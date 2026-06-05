@@ -291,7 +291,7 @@ export function registerUserCommands(): void {
             await ensureUserExists(apiBaseUrl, getApiToken, username);
             const payload = await apiPost(
                 apiBaseUrl,
-                `/api/v1/users/${encodeURIComponent(username)}/preferences/clear`,
+                `/api/v1/social/users/${encodeURIComponent(username)}/preferences/clear`,
                 undefined,
                 await getApiToken(),
             );

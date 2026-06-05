@@ -35,25 +35,6 @@ export function createRegistrationRoutes(
             accountId: claims?.sub,
         };
         if (
-            url.pathname === "/api/v1/auth/registration-config" &&
-            req.method === "GET"
-        ) {
-            log?.("debug", "Read public registration config.", {
-                ...logMeta,
-                registrationsEnabled: gateway.isPublicEnabled(),
-            });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    data: {
-                        registrationsEnabled: gateway.isPublicEnabled(),
-                    },
-                }),
-            );
-            return true;
-        }
-
-        if (
             url.pathname === "/api/v1/registration/state" &&
             req.method === "GET"
         ) {

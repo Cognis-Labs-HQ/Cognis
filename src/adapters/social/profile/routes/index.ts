@@ -132,7 +132,7 @@ async function canViewFullProfile(
  *   being unregistered, so callers receive an explicit error rather than a 404.
  * @param isGatewayEnabled - Optional callback returning whether the profile
  *   gateway is currently active. When supplied and returns `false`, the
- *   `/api/v1/profile/ping` endpoint returns `503` so callers can detect that
+ *   `/api/v1/social/profile/ping` endpoint returns `503` so callers can detect that
  *   profile functionality is temporarily unavailable.
  */
 export function createProfileRoutes(
@@ -164,7 +164,10 @@ export function createProfileRoutes(
             accountId: claims?.sub,
         };
 
-        if (url.pathname === "/api/v1/profile/ping" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/social/profile/ping" &&
+            req.method === "GET"
+        ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
             if (isGatewayEnabled && !isGatewayEnabled()) {
                 log?.(
@@ -189,7 +192,7 @@ export function createProfileRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/profile" && req.method === "GET") {
+        if (url.pathname === "/api/v1/social/profile" && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "user")) return true;
             let profile = await profileStore.getProfile(claims!.sub);
             if (!profile) {
@@ -242,7 +245,10 @@ export function createProfileRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/profile" && req.method === "PATCH") {
+        if (
+            url.pathname === "/api/v1/social/profile" &&
+            req.method === "PATCH"
+        ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
             const body = await readJson(req);
             const updates: Parameters<typeof profileStore.updateProfile>[1] =
@@ -322,7 +328,10 @@ export function createProfileRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/profile/avatar" && req.method === "PUT") {
+        if (
+            url.pathname === "/api/v1/social/profile/avatar" &&
+            req.method === "PUT"
+        ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
@@ -493,7 +502,7 @@ export function createProfileRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/profile/avatar" &&
+            url.pathname === "/api/v1/social/profile/avatar" &&
             req.method === "DELETE"
         ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
@@ -573,7 +582,10 @@ export function createProfileRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/profile/banner" && req.method === "PUT") {
+        if (
+            url.pathname === "/api/v1/social/profile/banner" &&
+            req.method === "PUT"
+        ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
@@ -738,7 +750,7 @@ export function createProfileRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/profile/banner" &&
+            url.pathname === "/api/v1/social/profile/banner" &&
             req.method === "DELETE"
         ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
@@ -811,7 +823,7 @@ export function createProfileRoutes(
         }
 
         const publicProfileMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/profile$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/profile$/,
         );
         if (publicProfileMatch && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "user")) return true;

@@ -61,7 +61,7 @@ export function watchToken({
 
             try {
                 const res = await apiFetch(
-                    `/api/v1/verify-tokens/status?token=${encodeURIComponent(token)}`,
+                    `/api/v1/notify/verify-tokens/status?token=${encodeURIComponent(token)}`,
                 );
                 if (!res.ok) continue;
                 const payload = await res.json();

@@ -243,7 +243,7 @@ test("meetings mini chat supports participant private-chat switching and return-
     assert.match(appSource, /if \(!state\.meeting\?\.id\) return \[\];/);
     assert.match(appSource, /strip\.hidden = entries\.length === 0;/);
     assert.match(appSource, /state\.lastMeetingParticipants = \[\];/);
-    assert.match(appSource, /\/api\/v1\/messages\/rooms/);
+    assert.match(appSource, /\/api\/v1\/social\/messages\/rooms/);
     assert.match(cssSource, /\.jitsi-chat-participant-strip/);
     assert.match(cssSource, /overflow-y: hidden;/);
     assert.match(
@@ -409,7 +409,7 @@ test("meetings mini chat supports the Messages reaction floating menu", () => {
     assert.match(reactionsSource, /data-reaction-more="1"/);
     assert.match(
         reactionsSource,
-        /\/api\/v1\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\/\$\{encodeURIComponent\(messageId\)\}\/reactions/,
+        /\/api\/v1\/social\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\/\$\{encodeURIComponent\(messageId\)\}\/reactions/,
     );
     assert.match(
         sharedCssSource,

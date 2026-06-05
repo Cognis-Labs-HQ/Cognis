@@ -209,10 +209,7 @@ export function createNotificationRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (
-            url.pathname === "/api/v1/notifications/send" &&
-            req.method === "POST"
-        ) {
+        if (url.pathname === "/api/v1/notify/send" && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
 
             const body = await readJson(req);
@@ -254,7 +251,7 @@ export function createNotificationRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/notifications/providers" &&
+            url.pathname === "/api/v1/notify/providers" &&
             req.method === "GET"
         ) {
             if (!ctx.requireAuth(req, res, "user")) return true;
@@ -263,10 +260,7 @@ export function createNotificationRoutes(
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/notifications/queue" &&
-            req.method === "GET"
-        ) {
+        if (url.pathname === "/api/v1/notify/queue" && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listNotificationQueue() }));
@@ -274,7 +268,7 @@ export function createNotificationRoutes(
         }
 
         const queueItemMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/queue\/([^/]+)$/,
+            /^\/api\/v1\/notify\/queue\/([^/]+)$/,
         );
         if (queueItemMatch && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
@@ -310,7 +304,7 @@ export function createNotificationRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/notifications/categories" &&
+            url.pathname === "/api/v1/notify/categories" &&
             req.method === "GET"
         ) {
             const claims = ctx.getAuthClaims(req);
@@ -332,7 +326,7 @@ export function createNotificationRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/notifications/broadcasts" &&
+            url.pathname === "/api/v1/notify/broadcasts" &&
             req.method === "GET"
         ) {
             if (!ctx.requireAuth(req, res, "admin")) return true;
@@ -348,7 +342,7 @@ export function createNotificationRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/notifications/broadcasts" &&
+            url.pathname === "/api/v1/notify/broadcasts" &&
             req.method === "POST"
         ) {
             const claims = ctx.requireAuth(req, res, "admin");
@@ -427,7 +421,7 @@ export function createNotificationRoutes(
         }
 
         const setBroadcastEnabledMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/(enable|disable)$/,
+            /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/(enable|disable)$/,
         );
         if (setBroadcastEnabledMatch && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
@@ -463,7 +457,7 @@ export function createNotificationRoutes(
         }
 
         const broadcastStatesMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/states$/,
+            /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/states$/,
         );
         if (broadcastStatesMatch && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
@@ -481,7 +475,7 @@ export function createNotificationRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/notifications/broadcasts/active" &&
+            url.pathname === "/api/v1/notify/broadcasts/active" &&
             req.method === "GET"
         ) {
             const claims = ctx.getAuthClaims(req);
@@ -513,7 +507,7 @@ export function createNotificationRoutes(
         }
 
         const acknowledgeBroadcastMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/acknowledge$/,
+            /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/acknowledge$/,
         );
         if (acknowledgeBroadcastMatch && req.method === "POST") {
             const claims = ctx.getAuthClaims(req);
@@ -544,7 +538,7 @@ export function createNotificationRoutes(
         }
 
         const dismissBroadcastMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/dismiss$/,
+            /^\/api\/v1\/notify\/broadcasts\/([^/]+)\/dismiss$/,
         );
         if (dismissBroadcastMatch && req.method === "POST") {
             const claims = ctx.getAuthClaims(req);
@@ -575,7 +569,7 @@ export function createNotificationRoutes(
         }
 
         const providerConfigMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/providers\/([^/]+)\/config$/,
+            /^\/api\/v1\/notify\/providers\/([^/]+)\/config$/,
         );
         if (providerConfigMatch) {
             const senderId = decodeURIComponent(providerConfigMatch[1]);
@@ -623,7 +617,7 @@ export function createNotificationRoutes(
         }
 
         const providerTestMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/providers\/([^/]+)\/test$/,
+            /^\/api\/v1\/notify\/providers\/([^/]+)\/test$/,
         );
         if (providerTestMatch && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
@@ -656,7 +650,7 @@ export function createNotificationRoutes(
         }
 
         const userPrefsMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/notification-prefs$/,
+            /^\/api\/v1\/notify\/users\/([^/]+)\/notification-prefs$/,
         );
         if (userPrefsMatch) {
             const username = decodeURIComponent(userPrefsMatch[1]);

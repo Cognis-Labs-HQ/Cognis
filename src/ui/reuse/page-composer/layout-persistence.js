@@ -105,7 +105,7 @@ export function createLayoutPersistence({ apiFetch }) {
         }
         try {
             const response = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
+                `/api/v1/social/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             );
             if (!response.ok) {
                 return { layout: null, profiles: { layoutsByGrid: {} } };
@@ -131,7 +131,7 @@ export function createLayoutPersistence({ apiFetch }) {
             nextLayout,
         );
         await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
+            `/api/v1/social/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },

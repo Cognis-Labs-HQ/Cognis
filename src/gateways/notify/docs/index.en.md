@@ -60,18 +60,18 @@ Key source locations:
 
 ## API Routes
 
-| Method | Path                                               | Description                         | Auth   |
-| ------ | -------------------------------------------------- | ----------------------------------- | ------ |
-| `POST` | `/api/v1/notifications/send`                       | Dispatch a notification             | Admin  |
-| `GET`  | `/api/v1/notifications/providers`                  | List registered senders             | User   |
-| `GET`  | `/api/v1/notifications/categories`                 | List notification categories        | Bearer |
-| `GET`  | `/api/v1/notifications/preferences`                | Get own notification preferences    | Bearer |
-| `PUT`  | `/api/v1/notifications/preferences`                | Update own notification preferences | Bearer |
-| `POST` | `/api/v1/notifications/providers/:senderId/config` | Update sender config                | Admin  |
-| `POST` | `/api/v1/notifications/providers/:senderId/test`   | Send a test notification            | Admin  |
-| `POST` | `/api/v1/users/tfa/request`                        | Request a TFA code                  | Bearer |
-| `POST` | `/api/v1/users/tfa/verify`                         | Verify a TFA code                   | Bearer |
-| `POST` | `/api/v1/users/email/verify/request`               | Request email verification          | Bearer |
-| `POST` | `/api/v1/users/email/verify`                       | Complete email verification         | Bearer |
-| `GET`  | `/api/v1/users/:username/email`                    | Get primary email for a user        | Bearer |
-| `PUT`  | `/api/v1/users/:username/email`                    | Set primary email for a user        | Bearer |
+| Method | Path                                        | Description                         | Auth   |
+| ------ | ------------------------------------------- | ----------------------------------- | ------ |
+| `POST` | `/api/v1/notify/send`                       | Dispatch a notification             | Admin  |
+| `GET`  | `/api/v1/notify/providers`                  | List registered senders             | User   |
+| `GET`  | `/api/v1/notify/categories`                 | List notification categories        | Bearer |
+| `GET`  | `/api/v1/notify/preferences`                | Get own notification preferences    | Bearer |
+| `PUT`  | `/api/v1/notify/preferences`                | Update own notification preferences | Bearer |
+| `POST` | `/api/v1/notify/providers/:senderId/config` | Update sender config                | Admin  |
+| `POST` | `/api/v1/notify/providers/:senderId/test`   | Send a test notification            | Admin  |
+| `POST` | `/api/v1/users/tfa/request`                 | Request a TFA code                  | Bearer |
+| `POST` | `/api/v1/users/tfa/verify`                  | Verify a TFA code                   | Bearer |
+| `POST` | `/api/v1/users/email/verify/request`        | Request email verification          | Bearer |
+| `POST` | `/api/v1/users/email/verify`                | Complete email verification         | Bearer |
+| `GET`  | `/api/v1/users/:username/email`             | Get primary email for a user        | Bearer |
+| `PUT`  | `/api/v1/users/:username/email`             | Set primary email for a user        | Bearer |

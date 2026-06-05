@@ -100,7 +100,7 @@ async function fetchUserInfo(username) {
 
 async function fetchUserEmails(username) {
     const response = await apiFetch(
-        `/api/v1/users/${encodeURIComponent(username)}/emails`,
+        `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
     );
     if (!response.ok) return [];
     const payload = await response.json();
@@ -258,7 +258,7 @@ async function runUserMenuAction(action, username) {
             return;
         }
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(unverifiedEmail.email)}/resend`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(unverifiedEmail.email)}/resend`,
             { method: "POST" },
         );
         showToast(

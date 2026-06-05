@@ -39,18 +39,18 @@ export interface NotificationGateway {
 
 ## Route API
 
-| Metode | Path                                               | Keterangan                             | Autentikasi |
-| ------ | -------------------------------------------------- | -------------------------------------- | ----------- |
-| `POST` | `/api/v1/notifications/send`                       | Kirim notifikasi                       | Admin       |
-| `GET`  | `/api/v1/notifications/providers`                  | Daftar pengirim terdaftar              | Pengguna    |
-| `GET`  | `/api/v1/notifications/categories`                 | Daftar kategori notifikasi             | Bearer      |
-| `GET`  | `/api/v1/notifications/preferences`                | Dapatkan preferensi notifikasi sendiri | Bearer      |
-| `PUT`  | `/api/v1/notifications/preferences`                | Perbarui preferensi notifikasi sendiri | Bearer      |
-| `POST` | `/api/v1/notifications/providers/:senderId/config` | Perbarui konfigurasi pengirim          | Admin       |
-| `POST` | `/api/v1/notifications/providers/:senderId/test`   | Kirim notifikasi uji coba              | Admin       |
-| `POST` | `/api/v1/users/tfa/request`                        | Minta kode TFA                         | Bearer      |
-| `POST` | `/api/v1/users/tfa/verify`                         | Verifikasi kode TFA                    | Bearer      |
-| `POST` | `/api/v1/users/email/verify/request`               | Minta verifikasi email                 | Bearer      |
-| `POST` | `/api/v1/users/email/verify`                       | Selesaikan verifikasi email            | Bearer      |
-| `GET`  | `/api/v1/users/:username/email`                    | Dapatkan email utama pengguna          | Bearer      |
-| `PUT`  | `/api/v1/users/:username/email`                    | Atur email utama pengguna              | Bearer      |
+| Metode | Path                                        | Keterangan                             | Autentikasi |
+| ------ | ------------------------------------------- | -------------------------------------- | ----------- |
+| `POST` | `/api/v1/notify/send`                       | Kirim notifikasi                       | Admin       |
+| `GET`  | `/api/v1/notify/providers`                  | Daftar pengirim terdaftar              | Pengguna    |
+| `GET`  | `/api/v1/notify/categories`                 | Daftar kategori notifikasi             | Bearer      |
+| `GET`  | `/api/v1/notify/preferences`                | Dapatkan preferensi notifikasi sendiri | Bearer      |
+| `PUT`  | `/api/v1/notify/preferences`                | Perbarui preferensi notifikasi sendiri | Bearer      |
+| `POST` | `/api/v1/notify/providers/:senderId/config` | Perbarui konfigurasi pengirim          | Admin       |
+| `POST` | `/api/v1/notify/providers/:senderId/test`   | Kirim notifikasi uji coba              | Admin       |
+| `POST` | `/api/v1/users/tfa/request`                 | Minta kode TFA                         | Bearer      |
+| `POST` | `/api/v1/users/tfa/verify`                  | Verifikasi kode TFA                    | Bearer      |
+| `POST` | `/api/v1/users/email/verify/request`        | Minta verifikasi email                 | Bearer      |
+| `POST` | `/api/v1/users/email/verify`                | Selesaikan verifikasi email            | Bearer      |
+| `GET`  | `/api/v1/users/:username/email`             | Dapatkan email utama pengguna          | Bearer      |
+| `PUT`  | `/api/v1/users/:username/email`             | Atur email utama pengguna              | Bearer      |

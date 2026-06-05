@@ -15,7 +15,7 @@ Pages (except login) should render through a layout module so row/column guardra
 
 - Login uses `/api/v1/auth/login`.
 - Product docs UI reads `/api/v1/docs`.
-- User page preferences use `/api/v1/users/:accountId/preferences/:pageId`.
+- User page preferences use `/api/v1/social/users/:accountId/preferences/:pageId`.
 
 ## Internationalisation (i18n)
 

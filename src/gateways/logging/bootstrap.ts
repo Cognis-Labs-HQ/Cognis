@@ -397,6 +397,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     ctx.uiRegistry?.registerStaticDir("logging", uiDir);
 
+    ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",

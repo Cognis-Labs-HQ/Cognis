@@ -25,7 +25,7 @@ export function createProfilePostActions({
         if (submitButton) submitButton.disabled = true;
 
         try {
-            const response = await apiFetch("/api/v1/posts", {
+            const response = await apiFetch("/api/v1/social/posts", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
@@ -74,7 +74,7 @@ export function createProfilePostActions({
         });
         if (result !== "confirm") return;
         const response = await apiFetch(
-            `/api/v1/posts/${encodeURIComponent(postId)}`,
+            `/api/v1/social/posts/${encodeURIComponent(postId)}`,
             {
                 method: "DELETE",
             },
@@ -111,7 +111,7 @@ export function createProfilePostActions({
         }
 
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(handle)}/follow`,
+            `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
             { method: isFollowingTarget ? "DELETE" : "POST" },
         );
         if (response.ok) {
@@ -171,7 +171,7 @@ export function createProfilePostActions({
         });
         if (result !== "confirm") return;
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(urlHandle)}/block`,
+            `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
             { method: "POST" },
         );
         if (!response.ok) return;
@@ -214,7 +214,7 @@ export function createProfilePostActions({
         });
         if (result !== "confirm") return;
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(urlHandle)}/block`,
+            `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
             { method: "DELETE" },
         );
         if (!response.ok) return;
@@ -231,7 +231,7 @@ export function createProfilePostActions({
         const { profile } = getState();
         if (!profile?.handle) return;
         try {
-            const response = await apiFetch("/api/v1/messages/rooms", {
+            const response = await apiFetch("/api/v1/social/messages/rooms", {
                 method: "POST",
                 body: JSON.stringify({ handles: [profile.handle] }),
             });

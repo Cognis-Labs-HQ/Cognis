@@ -37,7 +37,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     async function loadBroadcasts() {
-        const response = await apiFetch("/api/v1/notifications/broadcasts");
+        const response = await apiFetch("/api/v1/notify/broadcasts");
         if (!response.ok) return [];
         const payload = await response.json();
         return Array.isArray(payload?.data) ? payload.data : [];
@@ -45,7 +45,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     async function loadBroadcastStates(broadcastId) {
         const response = await apiFetch(
-            `/api/v1/notifications/broadcasts/${encodeURIComponent(broadcastId)}/states`,
+            `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/states`,
         );
         if (!response.ok) return [];
         const payload = await response.json();
@@ -594,24 +594,21 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             }
 
             try {
-                const response = await apiFetch(
-                    "/api/v1/notifications/broadcasts",
-                    {
-                        method: "POST",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify({
-                            title: titleValue,
-                            message: messageValue,
-                            displayMode: modeValue,
-                            targetRoles,
-                            startAt: startAtInput.value,
-                            endAt: endAtInput.value,
-                            requireAcknowledgement: requireAcknowledgementValue,
-                            redirectUrl: redirectUrlValue || null,
-                            enabled: enabledValue,
-                        }),
-                    },
-                );
+                const response = await apiFetch("/api/v1/notify/broadcasts", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        title: titleValue,
+                        message: messageValue,
+                        displayMode: modeValue,
+                        targetRoles,
+                        startAt: startAtInput.value,
+                        endAt: endAtInput.value,
+                        requireAcknowledgement: requireAcknowledgementValue,
+                        redirectUrl: redirectUrlValue || null,
+                        enabled: enabledValue,
+                    }),
+                });
                 if (!response.ok) {
                     const payload = await response.json().catch(() => null);
                     const errorCode = String(payload?.error?.code ?? "").trim();
@@ -651,7 +648,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 if (!broadcastId || !toggleAction) return;
 
                 const response = await apiFetch(
-                    `/api/v1/notifications/broadcasts/${encodeURIComponent(broadcastId)}/${encodeURIComponent(toggleAction)}`,
+                    `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/${encodeURIComponent(toggleAction)}`,
                     { method: "POST" },
                 );
                 if (!response.ok) {

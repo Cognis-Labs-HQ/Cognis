@@ -181,6 +181,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     });
 
+    ctx.routeRegistry.registerPrefix("/api/v1/calendar", "calendar");
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",

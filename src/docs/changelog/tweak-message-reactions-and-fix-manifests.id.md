@@ -13,7 +13,7 @@ Semua nama emoji dalam katalog kini merupakan kunci lokalisasi yang diselesaikan
 - `src/gateways/social/ui/emojis.json` — nama emoji sebagai kunci i18n
 - `src/gateways/social/ui/languages/*/strings.xml` — file bahasa Social Gateway baru dengan 366 nama emoji yang diterjemahkan
 - `src/adapters/social/messages/store.ts` — tabel baru `chat_emoji_usage`; metode `incrementEmojiUsage` dan `getTopEmojiUsage`
-- `src/adapters/social/messages/routes.ts` — rute baru `GET/POST /api/v1/messages/emoji-usage`
+- `src/adapters/social/messages/routes.ts` — rute baru `GET/POST /api/v1/social/messages/emoji-usage`
 - `src/adapters/social/messages/ui/app.js` — penggunaan emoji berbasis server, resolusi nama i18n, tanpa default yang dikodekan keras
 - `src/adapters/social/messages/ui/messages.css` — CSS terpisah: chip reaksi selalu terlihat, tombol tambah hanya saat hover
 - `src/adapters/social/messages/ui/languages/en/strings.xml` — kunci i18n baru

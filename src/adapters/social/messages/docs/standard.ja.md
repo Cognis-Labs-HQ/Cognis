@@ -10,7 +10,7 @@
 
 ## エンドポイント
 
-すべてのエンドポイントは `/api/v1/messages` 配下です。`GET /messages/ping`
+すべてのエンドポイントは `/api/v1/social/messages` 配下です。`GET /messages/ping`
 以外は認証が必要です。
 
 | メソッド | パス                                                | 説明                                                           |

@@ -126,7 +126,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
 
     await bootstrap({
         capabilities: createCapabilities(map) as any,
-        routeRegistry: { register() {} } as any,
+        routeRegistry: { register() {}, registerPrefix() {} } as any,
         uiRegistry: {
             registerAdminSection(section) {
                 registeredSections.push(section);
@@ -231,7 +231,7 @@ test("registration:public:isEnabled capability returns false when gateway is dis
                 map.set(key, value);
             },
         } as any,
-        routeRegistry: { register() {} } as any,
+        routeRegistry: { register() {}, registerPrefix() {} } as any,
         uiRegistry: {
             registerAdminSection() {},
             registerNavbarPlugin() {},
@@ -313,7 +313,7 @@ test("registration:public:register capability throws when gateway is disabled", 
                 map.set(key, value);
             },
         } as any,
-        routeRegistry: { register() {} } as any,
+        routeRegistry: { register() {}, registerPrefix() {} } as any,
         uiRegistry: {
             registerAdminSection() {},
             registerNavbarPlugin() {},

@@ -10,7 +10,7 @@ raumbezogenen Schlüssel verschlüsselt und zusätzlich mit
 
 ## Endpunkte
 
-Alle Endpunkte sind unter `/api/v1/messages` verfügbar. Authentifizierung ist
+Alle Endpunkte sind unter `/api/v1/social/messages` verfügbar. Authentifizierung ist
 erforderlich, außer für `GET /messages/ping`.
 
 | Methode | Pfad                                                | Beschreibung                                                                         |

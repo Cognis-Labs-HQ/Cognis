@@ -13,7 +13,7 @@ All emoji names in the catalog are now localization keys resolved through the So
 - `src/gateways/social/ui/emojis.json` — emoji names changed to i18n keys
 - `src/gateways/social/ui/languages/*/strings.xml` — new Social Gateway language files with 366 translated emoji names
 - `src/adapters/social/messages/store.ts` — new `chat_emoji_usage` table; `incrementEmojiUsage` and `getTopEmojiUsage` methods
-- `src/adapters/social/messages/routes.ts` — new `GET/POST /api/v1/messages/emoji-usage` routes; adaptive quick-emoji system, full emoji picker popup, reaction row persistence
+- `src/adapters/social/messages/routes.ts` — new `GET/POST /api/v1/social/messages/emoji-usage` routes; adaptive quick-emoji system, full emoji picker popup, reaction row persistence
 - `src/adapters/social/messages/ui/app.js` — server-backed emoji usage, i18n emoji name resolution, no hardcoded defaults
 - `src/adapters/social/messages/ui/messages.css` — CSS split: chips always-visible when present, add-wrap hover-only, emoji picker styles
 - `src/adapters/social/messages/ui/languages/en/strings.xml` — new i18n keys: emoji_more, emoji_search_placeholder

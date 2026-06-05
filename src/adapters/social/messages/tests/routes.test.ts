@@ -170,7 +170,9 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/requests/req-1/reject"),
+        new URL(
+            "http://localhost/api/v1/social/messages/requests/req-1/reject",
+        ),
     );
 
     assert.equal(handled, true);
@@ -266,7 +268,7 @@ test("admin can create DM with hidden recipient without a message request", asyn
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms"),
+        new URL("http://localhost/api/v1/social/messages/rooms"),
     );
 
     assert.equal(handled, true);
@@ -354,7 +356,7 @@ test("GET /messages/rooms includes member avatar keys from profiles", async () =
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms"),
+        new URL("http://localhost/api/v1/social/messages/rooms"),
     );
 
     assert.equal(handled, true);
@@ -456,7 +458,9 @@ test("GET /messages/rooms/:id/messages hides messages when room fallback detects
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms/room-1/messages"),
+        new URL(
+            "http://localhost/api/v1/social/messages/rooms/room-1/messages",
+        ),
     );
 
     assert.equal(handled, true);
@@ -532,7 +536,9 @@ test("GET /messages/rooms/:id/messages hides messages when incoming pending look
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms/room-1/messages"),
+        new URL(
+            "http://localhost/api/v1/social/messages/rooms/room-1/messages",
+        ),
     );
 
     assert.equal(handled, true);
@@ -634,7 +640,9 @@ test("GET /messages/rooms/:id/messages returns messages when no pending request 
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/messages/rooms/room-1/messages"),
+        new URL(
+            "http://localhost/api/v1/social/messages/rooms/room-1/messages",
+        ),
     );
 
     assert.equal(handled, true);
@@ -742,7 +750,7 @@ test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction
             },
         } as any,
         new URL(
-            "http://localhost/api/v1/messages/rooms/room-1/messages/msg-1/reactions",
+            "http://localhost/api/v1/social/messages/rooms/room-1/messages/msg-1/reactions",
         ),
     );
 

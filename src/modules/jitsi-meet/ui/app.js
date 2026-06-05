@@ -821,7 +821,7 @@ export async function mount(root, { signal } = {}) {
                         roomKey,
                     );
                     const response = await apiFetch(
-                        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages`,
+                        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages`,
                         {
                             method: "POST",
                             headers: {

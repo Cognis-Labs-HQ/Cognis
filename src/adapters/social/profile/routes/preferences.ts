@@ -19,7 +19,7 @@ export function createPreferencesRoutes(
         url: URL,
     ): Promise<boolean> => {
         const match = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/preferences\/([^/]+)$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/preferences\/([^/]+)$/,
         );
         if (!match) return false;
         const claims = ctx.requireAuth(req, res, "user");

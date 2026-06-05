@@ -22,7 +22,7 @@ function createDefaultBannerLayout() {
 
 export async function loadOwnProfile() {
     try {
-        const response = await apiFetch("/api/v1/profile");
+        const response = await apiFetch("/api/v1/social/profile");
         if (!response.ok) return null;
         return (await response.json()).data ?? null;
     } catch {
@@ -34,7 +34,7 @@ export async function loadFollowers(handle) {
     if (!handle) return [];
     try {
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(handle)}/followers`,
+            `/api/v1/social/users/${encodeURIComponent(handle)}/followers`,
         );
         if (!response.ok) return [];
         return (await response.json()).data ?? [];
@@ -47,7 +47,7 @@ export async function loadFollowing(handle) {
     if (!handle) return [];
     try {
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(handle)}/following`,
+            `/api/v1/social/users/${encodeURIComponent(handle)}/following`,
         );
         if (!response.ok) return [];
         return (await response.json()).data ?? [];
@@ -58,7 +58,7 @@ export async function loadFollowing(handle) {
 
 export async function loadOwnPosts() {
     try {
-        const response = await apiFetch("/api/v1/posts");
+        const response = await apiFetch("/api/v1/social/posts");
         if (!response.ok) return [];
         return (await response.json()).data ?? [];
     } catch {
@@ -69,7 +69,7 @@ export async function loadOwnPosts() {
 export async function loadUserProfile(handle) {
     try {
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(handle)}/profile`,
+            `/api/v1/social/users/${encodeURIComponent(handle)}/profile`,
         );
         if (response.status === 404) return { notFound: true };
         if (!response.ok) return null;
@@ -83,7 +83,7 @@ export async function loadUserPosts(handle) {
     if (!handle) return [];
     try {
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(handle)}/posts`,
+            `/api/v1/social/users/${encodeURIComponent(handle)}/posts`,
         );
         if (!response.ok) return [];
         return (await response.json()).data ?? [];
@@ -107,7 +107,7 @@ export async function loadBannerLayoutPreference(accountId) {
     if (!accountId) return createDefaultBannerLayout();
     try {
         const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(accountId)}/preferences/profile-banner`,
+            `/api/v1/social/users/${encodeURIComponent(accountId)}/preferences/profile-banner`,
         );
         if (!response.ok) return createDefaultBannerLayout();
         const payload = await response.json();
@@ -128,7 +128,7 @@ export async function saveBannerLayoutPreference({ height, panX, panY }) {
     const account = localStorage.getItem("cognis_account");
     if (!account) return;
     await apiFetch(
-        `/api/v1/users/${encodeURIComponent(account)}/preferences/profile-banner`,
+        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/profile-banner`,
         {
             method: "PUT",
             headers: { "content-type": "application/json" },

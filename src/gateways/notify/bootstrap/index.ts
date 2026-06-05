@@ -140,10 +140,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         component: "notify-gateway",
     });
 
+    ctx.routeRegistry.registerPrefix("/api/v1/notify", "notify");
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.8",
+        version: "1.4.9",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,

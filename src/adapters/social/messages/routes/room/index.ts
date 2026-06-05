@@ -20,7 +20,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         url: URL,
     ): Promise<boolean> => {
         const roomMatch = url.pathname.match(
-            /^\/api\/v1\/messages\/rooms\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?(?:\/([^/]+))?$/,
+            /^\/api\/v1\/social\/messages\/rooms\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?(?:\/([^/]+))?$/,
         );
         if (!roomMatch) return false;
 

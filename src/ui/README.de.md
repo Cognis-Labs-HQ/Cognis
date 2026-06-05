@@ -15,7 +15,7 @@ Seiten (außer Login) sollen über ein Layout-Modul gerendert werden, damit Row/
 
 - Login verwendet `/api/v1/auth/login`.
 - Die Produktdokumentation liest `/api/v1/docs`.
-- Benutzerseiteneinstellungen verwenden `/api/v1/users/:accountId/preferences/:pageId`.
+- Benutzerseiteneinstellungen verwenden `/api/v1/social/users/:accountId/preferences/:pageId`.
 
 ## Internationalisierung (i18n)
 

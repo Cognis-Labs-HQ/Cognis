@@ -16,9 +16,9 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
         url: URL,
     ): Promise<boolean> => {
         const isRequestsCollection =
-            url.pathname === "/api/v1/messages/requests";
+            url.pathname === "/api/v1/social/messages/requests";
         const requestMatch = url.pathname.match(
-            /^\/api\/v1\/messages\/requests\/([^/]+)\/(approve|reject)$/,
+            /^\/api\/v1\/social\/messages\/requests\/([^/]+)\/(approve|reject)$/,
         );
         if (!isRequestsCollection && !requestMatch) {
             return false;

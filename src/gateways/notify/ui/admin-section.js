@@ -19,7 +19,7 @@
  */
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     async function loadCategories() {
-        const response = await apiFetch("/api/v1/notifications/categories");
+        const response = await apiFetch("/api/v1/notify/categories");
         if (!response.ok) return [];
         const payload = await response.json();
         return payload.data ?? [];
@@ -130,7 +130,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 return;
             }
 
-            const response = await apiFetch("/api/v1/notifications/send", {
+            const response = await apiFetch("/api/v1/notify/send", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({

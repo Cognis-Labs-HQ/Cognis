@@ -36,14 +36,14 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     }
 
     async function loadProviders() {
-        const res = await apiFetch("/api/v1/notifications/providers");
+        const res = await apiFetch("/api/v1/notify/providers");
         if (!res.ok) return;
         const payload = await res.json();
         providers = payload.data ?? [];
     }
 
     async function loadCategories() {
-        const res = await apiFetch("/api/v1/notifications/categories");
+        const res = await apiFetch("/api/v1/notify/categories");
         if (!res.ok) return;
         const payload = await res.json();
         categories = payload.data ?? [];
@@ -51,7 +51,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
 
     async function loadPrefs() {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/notification-prefs`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/notification-prefs`,
         );
         if (!res.ok) return;
         const payload = await res.json();
@@ -65,7 +65,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
 
     async function loadUserEmails() {
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails`,
+            `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
         if (!res.ok) return;
         const payload = await res.json();
@@ -239,7 +239,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             if (!notifPrefs?.isDirty()) return;
             const account = localStorage.getItem("cognis_account") ?? "";
             await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/notification-prefs`,
+                `/api/v1/notify/users/${encodeURIComponent(account)}/notification-prefs`,
                 {
                     method: "PUT",
                     headers: { "content-type": "application/json" },

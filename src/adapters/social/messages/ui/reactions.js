@@ -130,7 +130,9 @@ export function createMessageReactionsController({
 
     async function loadEmojiUsage() {
         try {
-            const response = await apiFetch("/api/v1/messages/emoji-usage");
+            const response = await apiFetch(
+                "/api/v1/social/messages/emoji-usage",
+            );
             if (!response.ok) {
                 stateCache.emojiUsage = [];
                 return [];
@@ -163,7 +165,7 @@ export function createMessageReactionsController({
         stateCache.emojiUsage.sort(
             (left, right) => right.usageCount - left.usageCount,
         );
-        apiFetch("/api/v1/messages/emoji-usage", {
+        apiFetch("/api/v1/social/messages/emoji-usage", {
             method: "POST",
             body: JSON.stringify({ emoji: normalizedEmoji }),
         }).catch(() => undefined);
@@ -272,7 +274,7 @@ export function createMessageReactionsController({
         const normalizedEmoji = normalizeReactionEmoji(emoji);
         if (!normalizedEmoji) return;
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
             {
                 method: "POST",
                 body: JSON.stringify({ emoji: normalizedEmoji }),

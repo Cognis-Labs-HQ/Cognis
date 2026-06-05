@@ -50,7 +50,7 @@ if (!token) {
     showResult(false);
 } else {
     try {
-        const res = await fetch("/api/v1/verify-email", {
+        const res = await fetch("/api/v1/notify/verify-email", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ token }),

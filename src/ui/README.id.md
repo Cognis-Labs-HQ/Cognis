@@ -15,7 +15,7 @@ Halaman (kecuali login) harus dirender melalui modul layout agar pembatas baris/
 
 - Login menggunakan `/api/v1/auth/login`.
 - UI dokumentasi produk membaca `/api/v1/docs`.
-- Preferensi halaman pengguna menggunakan `/api/v1/users/:accountId/preferences/:pageId`.
+- Preferensi halaman pengguna menggunakan `/api/v1/social/users/:accountId/preferences/:pageId`.
 
 ## Internasionalisasi (i18n)
 

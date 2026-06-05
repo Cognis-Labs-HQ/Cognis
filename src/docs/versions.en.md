@@ -27,7 +27,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.1` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.5` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4` |
@@ -41,25 +41,25 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.7` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.5` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.8` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.6` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.3` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
 ## Gateways
 
-| Component             | Path                         | Version |
-| --------------------- | ---------------------------- | ------- |
-| Database (db)         | `src/gateways/db/`           | `1.2.1` |
-| Authentication (auth) | `src/gateways/auth/`         | `1.4.9` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1` |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.8` |
-| Social                | `src/gateways/social/`       | `1.2.6` |
-| File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
-| Registration          | `src/gateways/registration/` | `1.1.9` |
-| Logging               | `src/gateways/logging/`      | `1.5.1` |
-| Study                 | `src/gateways/study/`        | `1.5.7` |
-| Calendar              | `src/gateways/calendar/`     | `1.1.5` |
+| Component             | Path                         | Version  |
+| --------------------- | ---------------------------- | -------- |
+| Database (db)         | `src/gateways/db/`           | `1.2.1`  |
+| Authentication (auth) | `src/gateways/auth/`         | `1.4.9`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
+| Social                | `src/gateways/social/`       | `1.2.7`  |
+| File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
+| Registration          | `src/gateways/registration/` | `1.1.10` |
+| Logging               | `src/gateways/logging/`      | `1.5.1`  |
+| Study                 | `src/gateways/study/`        | `1.5.7`  |
+| Calendar              | `src/gateways/calendar/`     | `1.1.5`  |
 
 ## Core contracts
 

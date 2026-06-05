@@ -4,14 +4,14 @@ import { fetchProfileAvatarBlobUrl } from "/static/gateways/social/reuse/profile
 
 registerAvatarProvider(async function profileAvatarProvider() {
     try {
-        const pingRes = await apiFetch("/api/v1/profile/ping");
+        const pingRes = await apiFetch("/api/v1/social/profile/ping");
         if (!pingRes.ok) return { profileAvailable: false };
     } catch {
         return { profileAvailable: false };
     }
 
     try {
-        const res = await apiFetch("/api/v1/profile");
+        const res = await apiFetch("/api/v1/social/profile");
         if (!res.ok) return { profileAvailable: true };
         const payload = await res.json();
         const avatarKey = payload?.data?.avatarKey;

@@ -21,7 +21,7 @@ export async function loadAllEmojis() {
 
 export async function fetchEmojiUsage(apiFetch) {
     try {
-        const response = await apiFetch("/api/v1/messages/emoji-usage");
+        const response = await apiFetch("/api/v1/social/messages/emoji-usage");
         if (!response.ok) {
             cachedEmojiUsage = [];
             return [];
@@ -49,7 +49,7 @@ export function recordEmojiUsage(apiFetch, emoji, normalizeReactionEmoji) {
     cachedEmojiUsage.sort(
         (entryA, entryB) => entryB.usageCount - entryA.usageCount,
     );
-    apiFetch("/api/v1/messages/emoji-usage", {
+    apiFetch("/api/v1/social/messages/emoji-usage", {
         method: "POST",
         body: JSON.stringify({ emoji: normalized }),
     }).catch(() => undefined);

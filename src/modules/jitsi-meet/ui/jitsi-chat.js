@@ -29,7 +29,7 @@ export function createChatHandlers({
             return state.chatRoomKey;
         }
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
         );
         if (!response.ok) return null;
         const payload = await response.json().catch(() => ({ data: null }));
@@ -241,7 +241,7 @@ export function createChatHandlers({
             return;
         }
         const response = await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
         );
         if (!response.ok) {
             setNativeChatReady(false);
@@ -303,7 +303,7 @@ export function createChatHandlers({
             );
             return;
         }
-        const response = await apiFetch("/api/v1/messages/rooms", {
+        const response = await apiFetch("/api/v1/social/messages/rooms", {
             method: "POST",
             body: JSON.stringify({
                 handles: [normalizedUsername],

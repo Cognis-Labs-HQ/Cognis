@@ -26,7 +26,7 @@ test("preferences routes save and load layout preferences", async () => {
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/u1/preferences/home"),
+        new URL("http://localhost/api/v1/social/users/u1/preferences/home"),
     );
     assert.match(body, /"saved":true/);
 
@@ -38,7 +38,7 @@ test("preferences routes save and load layout preferences", async () => {
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/u1/preferences/home"),
+        new URL("http://localhost/api/v1/social/users/u1/preferences/home"),
     );
     assert.match(body, /layoutJson/);
 });
@@ -67,7 +67,9 @@ test("preferences routes allow reading another user's profile-banner layout", as
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/users/u1/preferences/profile-banner"),
+        new URL(
+            "http://localhost/api/v1/social/users/u1/preferences/profile-banner",
+        ),
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
@@ -94,7 +96,7 @@ test("preferences routes still deny reading another user's non-banner preference
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/u1/preferences/home"),
+        new URL("http://localhost/api/v1/social/users/u1/preferences/home"),
     );
     assert.equal(status, 403);
 });

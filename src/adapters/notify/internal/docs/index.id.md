@@ -13,14 +13,14 @@ Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikas
 
 ## Rute API
 
-| Metode   | Path                                   | Deskripsi                           | Auth     |
-| -------- | -------------------------------------- | ----------------------------------- | -------- |
-| `GET`    | `/api/v1/notifications/inbox`          | Daftar notifikasi pengguna          | Pengguna |
-| `GET`    | `/api/v1/notifications/inbox/count`    | Jumlah notifikasi yang belum dibaca | Pengguna |
-| `PUT`    | `/api/v1/notifications/inbox/read`     | Tandai semua sebagai sudah dibaca   | Pengguna |
-| `PUT`    | `/api/v1/notifications/inbox/:id/read` | Tandai satu notifikasi sudah dibaca | Pengguna |
-| `DELETE` | `/api/v1/notifications/inbox/:id`      | Hapus satu notifikasi               | Pengguna |
-| `DELETE` | `/api/v1/notifications/inbox`          | Hapus semua notifikasi pengguna     | Pengguna |
+| Metode   | Path                            | Deskripsi                           | Auth     |
+| -------- | ------------------------------- | ----------------------------------- | -------- |
+| `GET`    | `/api/v1/notify/inbox`          | Daftar notifikasi pengguna          | Pengguna |
+| `GET`    | `/api/v1/notify/inbox/count`    | Jumlah notifikasi yang belum dibaca | Pengguna |
+| `PUT`    | `/api/v1/notify/inbox/read`     | Tandai semua sebagai sudah dibaca   | Pengguna |
+| `PUT`    | `/api/v1/notify/inbox/:id/read` | Tandai satu notifikasi sudah dibaca | Pengguna |
+| `DELETE` | `/api/v1/notify/inbox/:id`      | Hapus satu notifikasi               | Pengguna |
+| `DELETE` | `/api/v1/notify/inbox`          | Hapus semua notifikasi pengguna     | Pengguna |
 
 ## Konfigurasi
 

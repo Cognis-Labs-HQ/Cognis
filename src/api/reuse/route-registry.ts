@@ -19,13 +19,35 @@ export interface RouteEntry {
  */
 export class RouteRegistry {
     private readonly entries: RouteEntry[] = [];
+    private readonly prefixEntries: Array<{
+        prefix: string;
+        gatewayId: string;
+    }> = [];
 
     register(handler: RouteHandler, gatewayId?: string): void {
         this.entries.push({ handler, gatewayId });
     }
 
+    registerPrefix(prefix: string, gatewayId: string): void {
+        this.prefixEntries.push({ prefix, gatewayId });
+    }
+
+    findOwner(
+        pathname: string,
+    ): { gatewayId: string; prefix: string } | undefined {
+        return this.prefixEntries
+            .filter(
+                ({ prefix }) =>
+                    pathname === prefix || pathname.startsWith(`${prefix}/`),
+            )
+            .sort(
+                (leftEntry, rightEntry) =>
+                    rightEntry.prefix.length - leftEntry.prefix.length,
+            )[0];
+    }
+
     getHandlers(): readonly RouteHandler[] {
-        return this.entries.map((e) => e.handler);
+        return this.entries.map((entry) => entry.handler);
     }
 
     getEntries(): readonly RouteEntry[] {

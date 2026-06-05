@@ -15,7 +15,7 @@
 
 - login は `/api/v1/auth/login` を使用。
 - 製品 docs UI は `/api/v1/docs` を読み込み。
-- ユーザーページ設定は `/api/v1/users/:accountId/preferences/:pageId` を使用。
+- ユーザーページ設定は `/api/v1/social/users/:accountId/preferences/:pageId` を使用。
 
 ## 国際化（i18n）
 

@@ -67,7 +67,7 @@ export function createPostRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === "/api/v1/posts" && req.method === "POST") {
+        if (url.pathname === "/api/v1/social/posts" && req.method === "POST") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const profile = await profileStore.getProfile(claims.sub);
@@ -145,7 +145,7 @@ export function createPostRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/posts" && req.method === "GET") {
+        if (url.pathname === "/api/v1/social/posts" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const posts = await profileStore.getPostsByAccount(claims.sub);
@@ -154,7 +154,9 @@ export function createPostRoutes(
             return true;
         }
 
-        const deleteMatch = url.pathname.match(/^\/api\/v1\/posts\/([^/]+)$/);
+        const deleteMatch = url.pathname.match(
+            /^\/api\/v1\/social\/posts\/([^/]+)$/,
+        );
         if (deleteMatch && req.method === "DELETE") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
@@ -191,7 +193,7 @@ export function createPostRoutes(
         }
 
         const userPostsMatch = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)\/posts$/,
+            /^\/api\/v1\/social\/users\/([^/]+)\/posts$/,
         );
         if (userPostsMatch && req.method === "GET") {
             const claims = ctx.getAuthClaims(req);

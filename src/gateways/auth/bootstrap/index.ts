@@ -233,6 +233,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         component: "auth-gateway",
     });
 
+    ctx.routeRegistry.registerPrefix("/api/v1/auth", "auth");
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",

@@ -55,7 +55,7 @@ class QueueAwareSender implements NotificationSender {
     }
 }
 
-test("GET /api/v1/notifications/queue returns queue entries to admin", async () => {
+test("GET /api/v1/notify/queue returns queue entries to admin", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
@@ -70,7 +70,7 @@ test("GET /api/v1/notifications/queue returns queue entries to admin", async () 
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/queue"),
+        new URL("http://localhost/api/v1/notify/queue"),
     );
 
     assert.equal(res.status, 200);
@@ -79,7 +79,7 @@ test("GET /api/v1/notifications/queue returns queue entries to admin", async () 
     assert.equal(data.data[0]?.notificationId, "smtp-1");
 });
 
-test("GET /api/v1/notifications/queue returns 403 for non-admin users", async () => {
+test("GET /api/v1/notify/queue returns 403 for non-admin users", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
@@ -94,13 +94,13 @@ test("GET /api/v1/notifications/queue returns 403 for non-admin users", async ()
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/queue"),
+        new URL("http://localhost/api/v1/notify/queue"),
     );
 
     assert.equal(res.status, 403);
 });
 
-test("GET /api/v1/notifications/queue/:id returns queue item details", async () => {
+test("GET /api/v1/notify/queue/:id returns queue item details", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
@@ -115,7 +115,7 @@ test("GET /api/v1/notifications/queue/:id returns queue item details", async () 
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/queue/smtp-1"),
+        new URL("http://localhost/api/v1/notify/queue/smtp-1"),
     );
 
     assert.equal(res.status, 200);
@@ -123,7 +123,7 @@ test("GET /api/v1/notifications/queue/:id returns queue item details", async () 
     assert.equal(data.data.notificationId, "smtp-1");
 });
 
-test("GET /api/v1/notifications/queue/:id returns 404 for unknown item", async () => {
+test("GET /api/v1/notify/queue/:id returns 404 for unknown item", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
@@ -138,14 +138,14 @@ test("GET /api/v1/notifications/queue/:id returns 404 for unknown item", async (
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/queue/unknown"),
+        new URL("http://localhost/api/v1/notify/queue/unknown"),
     );
 
     assert.equal(res.status, 404);
     assert.match(res.payload, /not_found/);
 });
 
-test("GET /api/v1/notifications/queue/:id returns 400 for invalid ID", async () => {
+test("GET /api/v1/notify/queue/:id returns 400 for invalid ID", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
@@ -160,7 +160,7 @@ test("GET /api/v1/notifications/queue/:id returns 400 for invalid ID", async () 
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         res,
-        new URL("http://localhost/api/v1/notifications/queue/%20"),
+        new URL("http://localhost/api/v1/notify/queue/%20"),
     );
 
     assert.equal(res.status, 400);

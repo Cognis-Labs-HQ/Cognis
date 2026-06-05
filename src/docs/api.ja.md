@@ -126,46 +126,46 @@
 
 ### プロファイル
 
-| メソッド | パス                            | 説明                               | 認証   |
-| -------- | ------------------------------- | ---------------------------------- | ------ |
-| `GET`    | `/api/v1/profile/ping`          | 機能確認                           | Bearer |
-| `GET`    | `/api/v1/profile`               | 自分のプロファイル                 | Bearer |
-| `PATCH`  | `/api/v1/profile`               | 自分のプロファイルフィールドを更新 | Bearer |
-| `PUT`    | `/api/v1/profile/avatar`        | アバターをアップロード             | Bearer |
-| `DELETE` | `/api/v1/profile/avatar`        | 自分のアバターを削除               | Bearer |
-| `PUT`    | `/api/v1/profile/banner`        | バナーをアップロード               | Bearer |
-| `DELETE` | `/api/v1/profile/banner`        | 自分のバナーを削除                 | Bearer |
-| `GET`    | `/api/v1/users/:handle/profile` | 公開プロファイル (可視性でゲート)  | Bearer |
+| メソッド | パス                                   | 説明                               | 認証   |
+| -------- | -------------------------------------- | ---------------------------------- | ------ |
+| `GET`    | `/api/v1/social/profile/ping`          | 機能確認                           | Bearer |
+| `GET`    | `/api/v1/social/profile`               | 自分のプロファイル                 | Bearer |
+| `PATCH`  | `/api/v1/social/profile`               | 自分のプロファイルフィールドを更新 | Bearer |
+| `PUT`    | `/api/v1/social/profile/avatar`        | アバターをアップロード             | Bearer |
+| `DELETE` | `/api/v1/social/profile/avatar`        | 自分のアバターを削除               | Bearer |
+| `PUT`    | `/api/v1/social/profile/banner`        | バナーをアップロード               | Bearer |
+| `DELETE` | `/api/v1/social/profile/banner`        | 自分のバナーを削除                 | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/profile` | 公開プロファイル (可視性でゲート)  | Bearer |
 
 ### ソーシャルグラフ
 
-| メソッド | パス                              | 説明                              | 認証   |
-| -------- | --------------------------------- | --------------------------------- | ------ |
-| `POST`   | `/api/v1/users/:handle/follow`    | ユーザーをフォロー                | Bearer |
-| `DELETE` | `/api/v1/users/:handle/follow`    | フォロー解除                      | Bearer |
-| `POST`   | `/api/v1/users/:handle/block`     | ユーザーをブロック                | Bearer |
-| `DELETE` | `/api/v1/users/:handle/block`     | ブロック解除                      | Bearer |
-| `GET`    | `/api/v1/users/:handle/followers` | フォロワーリスト (可視性でゲート) | Bearer |
-| `GET`    | `/api/v1/users/:handle/following` | フォローリスト (可視性でゲート)   | Bearer |
+| メソッド | パス                                     | 説明                              | 認証   |
+| -------- | ---------------------------------------- | --------------------------------- | ------ |
+| `POST`   | `/api/v1/social/users/:handle/follow`    | ユーザーをフォロー                | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/follow`    | フォロー解除                      | Bearer |
+| `POST`   | `/api/v1/social/users/:handle/block`     | ユーザーをブロック                | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/block`     | ブロック解除                      | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/followers` | フォロワーリスト (可視性でゲート) | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/following` | フォローリスト (可視性でゲート)   | Bearer |
 
 ### 投稿
 
-| メソッド | パス                          | 説明                                            | 認証   |
-| -------- | ----------------------------- | ----------------------------------------------- | ------ |
-| `POST`   | `/api/v1/posts`               | 投稿を作成                                      | Bearer |
-| `GET`    | `/api/v1/posts`               | 自分の投稿を一覧表示                            | Bearer |
-| `DELETE` | `/api/v1/posts/:id`           | 投稿を削除 (所有者、モデレーター、または管理者) | Bearer |
-| `GET`    | `/api/v1/users/:handle/posts` | ユーザーの投稿を一覧表示                        | Bearer |
+| メソッド | パス                                 | 説明                                            | 認証   |
+| -------- | ------------------------------------ | ----------------------------------------------- | ------ |
+| `POST`   | `/api/v1/social/posts`               | 投稿を作成                                      | Bearer |
+| `GET`    | `/api/v1/social/posts`               | 自分の投稿を一覧表示                            | Bearer |
+| `DELETE` | `/api/v1/social/posts/:id`           | 投稿を削除 (所有者、モデレーター、または管理者) | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/posts` | ユーザーの投稿を一覧表示                        | Bearer |
 
 ### ファイル
 
-| メソッド | パス                                  | 説明                           | 認証   |
-| -------- | ------------------------------------- | ------------------------------ | ------ |
-| `PUT`    | `/api/v1/files/:bucket/:key`          | ファイルをアップロード         | Bearer |
-| `GET`    | `/api/v1/files/:bucket/:key`          | ファイルをダウンロード         | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key`          | ファイルを削除                 | Admin  |
-| `GET`    | `/api/v1/admin/file-limits`           | カテゴリ別サイズ制限を一覧表示 | Admin  |
-| `PUT`    | `/api/v1/admin/file-limits/:category` | サイズ制限を設定               | Admin  |
+| メソッド | パス                                         | 説明                           | 認証   |
+| -------- | -------------------------------------------- | ------------------------------ | ------ |
+| `PUT`    | `/api/v1/files/:bucket/:key`                 | ファイルをアップロード         | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key`                 | ファイルをダウンロード         | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key`                 | ファイルを削除                 | Admin  |
+| `GET`    | `/api/v1/social/admin/file-limits`           | カテゴリ別サイズ制限を一覧表示 | Admin  |
+| `PUT`    | `/api/v1/social/admin/file-limits/:category` | サイズ制限を設定               | Admin  |
 
 ### ユーザー (管理者)
 

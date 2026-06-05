@@ -46,17 +46,20 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (!url.pathname.startsWith("/api/v1/messages")) return false;
+        if (!url.pathname.startsWith("/api/v1/social/messages")) return false;
         if (!isAdapterEnabled()) return false;
 
-        if (url.pathname === "/api/v1/messages/ping" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/social/messages/ping" &&
+            req.method === "GET"
+        ) {
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ready: true } }));
             return true;
         }
 
         if (
-            url.pathname === "/api/v1/messages/users/lookup" &&
+            url.pathname === "/api/v1/social/messages/users/lookup" &&
             req.method === "GET"
         ) {
             const claims = ctx.requireAuth(req, res, "user");
@@ -130,7 +133,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         }
 
         if (
-            url.pathname === "/api/v1/messages/emoji-usage" &&
+            url.pathname === "/api/v1/social/messages/emoji-usage" &&
             req.method === "GET"
         ) {
             const claims = ctx.requireAuth(req, res, "user");
@@ -145,7 +148,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         }
 
         if (
-            url.pathname === "/api/v1/messages/emoji-usage" &&
+            url.pathname === "/api/v1/social/messages/emoji-usage" &&
             req.method === "POST"
         ) {
             const claims = ctx.requireAuth(req, res, "user");
