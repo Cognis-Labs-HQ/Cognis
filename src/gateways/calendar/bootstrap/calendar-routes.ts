@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { hasMinRole, type FlowApi } from "@cognis/core";
+import { hasMinRole } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
     resolveRouteContext,
@@ -34,7 +34,7 @@ import { handleCalendarResponseRoute } from "./respond-route.js";
 export function createCalendarCoreRoutes({
     gateway,
     routeContext,
-    flow,
+    resolveMeetingsProviderAvailability,
     resolveAccountId,
     log,
     getDispatchNotification,
@@ -42,7 +42,9 @@ export function createCalendarCoreRoutes({
 }: {
     gateway: CoreCalendarGateway;
     routeContext?: RouteContext;
-    flow: FlowApi;
+    resolveMeetingsProviderAvailability:
+        | ((providerId: string) => Promise<boolean> | boolean)
+        | null;
     resolveAccountId: ResolveAccountId | null;
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
@@ -171,19 +173,11 @@ export function createCalendarCoreRoutes({
         ) {
             return cachedJitsiAvailability;
         }
-        if (!flow.exists("construct-meetings-ui")) return false;
+        if (!resolveMeetingsProviderAvailability) return false;
         try {
-            const result = await flow.run("construct-meetings-ui", {});
-            const providerResults =
-                result.stageResults["resolve-providers"] ?? [];
-            if (!Array.isArray(providerResults)) return false;
-            cachedJitsiAvailability = providerResults.some((entry) => {
-                if (!entry || typeof entry !== "object") return false;
-                const providerId = String(
-                    (entry as { providerId?: unknown }).providerId ?? "",
-                ).trim();
-                return providerId === "jitsi-meet";
-            });
+            cachedJitsiAvailability = Boolean(
+                await resolveMeetingsProviderAvailability("jitsi-meet"),
+            );
             cachedJitsiAvailabilityAtMs = now;
             return cachedJitsiAvailability;
         } catch (error) {

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Ctx } from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -35,6 +36,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    const resolveMeetingsProviderAvailability = systemCtx?.getCapability<
+        (providerId: string) => Promise<boolean> | boolean
+    >("meetings:isProviderAvailable");
     const resolveAccountId = ctx.capabilities.get<ResolveAccountId>(
         "auth:resolveAccountId",
     );
@@ -119,7 +124,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createCalendarCoreRoutes({
             gateway,
             routeContext,
-            flow: ctx.flow,
+            resolveMeetingsProviderAvailability:
+                resolveMeetingsProviderAvailability ?? null,
             resolveAccountId: resolveAccountId ?? null,
             log: ctx.log,
             getDispatchNotification: () =>

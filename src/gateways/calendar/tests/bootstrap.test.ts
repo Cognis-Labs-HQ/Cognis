@@ -166,7 +166,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     assert.ok(routes.length > 0);
 });
 
-test("calendar calendars metadata resolves meetings availability via ctx flow providers", async () => {
+test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -175,17 +175,12 @@ test("calendar calendars metadata resolves meetings availability via ctx flow pr
     const authContext = createAuthContext(
         new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
     );
-    const flowCtx = createCtx();
-    flowCtx.registerFlow({
-        id: "construct-meetings-ui",
-        stages: ["resolve-providers", "resolve-panels", "compose-surface"],
-    });
-    flowCtx.flow.extend(
-        "construct-meetings-ui",
-        "resolve-providers",
-        { id: "test:jitsi-provider" },
-        () => ({ providerId: "jitsi-meet", providerName: "Jitsi Meet" }),
+    const systemCtx = createCtx();
+    systemCtx.contributePublicCapability(
+        "meetings:isProviderAvailable",
+        (providerId: string) => providerId === "jitsi-meet",
     );
+    capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("auth:routeContext", authContext);
 
     await bootstrap({
@@ -194,7 +189,7 @@ test("calendar calendars metadata resolves meetings availability via ctx flow pr
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: flowCtx.flow,
+        flow: createCtx().flow,
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
