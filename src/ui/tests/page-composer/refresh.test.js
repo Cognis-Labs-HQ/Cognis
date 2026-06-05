@@ -44,7 +44,7 @@ test("page composer refresh restores window scroll position after re-render", ()
 test("page composer invokes element-level onRender callbacks", () => {
     const source = readPageComposerBundle();
 
-    assert.match(source, /element\?\.state\.onRender\?\.\(\);/);
+    assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
 test("page composer includes mobile toolbar drawer behavior", () => {

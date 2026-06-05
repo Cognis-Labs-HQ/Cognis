@@ -662,7 +662,7 @@ export function createComposerRenderer({
         const renderedElementIds = visiblePlacements.map((p) => p.id);
         for (const id of renderedElementIds) {
             const element = state.elements.find((entry) => entry.id === id);
-            element?.state.onRender?.();
+            element?.onRender?.();
         }
 
         state.onRender?.();
@@ -775,7 +775,7 @@ export function createComposerRenderer({
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
             const element = state.elements.find((entry) => entry.id === id);
-            element?.state.onRender?.();
+            element?.onRender?.();
         }
         state.onRender?.();
         const activeEl = state.elements.find(
