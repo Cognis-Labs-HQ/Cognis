@@ -424,21 +424,26 @@ export function createProfileRoutes(
                     );
                     return true;
                 }
-                if (!persistResult?.persisted || !persistResult.storedKey) {
-                    res.writeHead(500, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "upload_failed",
-                                message: "Failed to upload avatar.",
-                            },
-                        }),
+                if (persistResult?.persisted && persistResult.storedKey) {
+                    updated = persistResult.updated ?? null;
+                    storedKey = persistResult.storedKey;
+                } else {
+                    const fallbackReason = !persistResult
+                        ? "missing_persist_result"
+                        : !persistResult.persisted
+                          ? (persistResult.reason ?? "persist_failed")
+                          : "missing_stored_key";
+                    log?.(
+                        "warn",
+                        "Avatar upload flow did not persist media; falling back to direct persistence.",
+                        {
+                            ...logMeta,
+                            reason: fallbackReason,
+                        },
                     );
-                    return true;
                 }
-                updated = persistResult.updated ?? null;
-                storedKey = persistResult.storedKey;
-            } else {
+            }
+            if (!storedKey) {
                 const result = await replaceProfileMedia(
                     profileStore,
                     fileGateway,
@@ -678,21 +683,26 @@ export function createProfileRoutes(
                     );
                     return true;
                 }
-                if (!persistResult?.persisted || !persistResult.storedKey) {
-                    res.writeHead(500, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "upload_failed",
-                                message: "Failed to upload banner.",
-                            },
-                        }),
+                if (persistResult?.persisted && persistResult.storedKey) {
+                    updated = persistResult.updated ?? null;
+                    storedKey = persistResult.storedKey;
+                } else {
+                    const fallbackReason = !persistResult
+                        ? "missing_persist_result"
+                        : !persistResult.persisted
+                          ? (persistResult.reason ?? "persist_failed")
+                          : "missing_stored_key";
+                    log?.(
+                        "warn",
+                        "Banner upload flow did not persist media; falling back to direct persistence.",
+                        {
+                            ...logMeta,
+                            reason: fallbackReason,
+                        },
                     );
-                    return true;
                 }
-                updated = persistResult.updated ?? null;
-                storedKey = persistResult.storedKey;
-            } else {
+            }
+            if (!storedKey) {
                 const result = await replaceProfileMedia(
                     profileStore,
                     fileGateway,

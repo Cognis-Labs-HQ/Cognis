@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { VolatileProfileStore } from "../../store-contract.js";
 import { createProfileRoutes } from "../index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
+import { createDefaultRouteContext } from "../../../../../api/reuse/route-context.js";
 
 function fakeFileGateway() {
     const store = new Map<string, Buffer>();
@@ -645,6 +646,51 @@ test("profile routes - banner upload allows gif", async () => {
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
     assert.match(parsed.data.bannerKey, /\.gif$/);
+});
+
+test("profile routes - banner upload falls back to direct persistence when flow stage result is missing", async () => {
+    const profileStore = new VolatileProfileStore();
+    await setupUser(profileStore, "alice");
+    const gateway = fakeFileGateway();
+    const flow = {
+        exists(flowId: string) {
+            return flowId === "upload-profile-media";
+        },
+        async run() {
+            return {
+                flowId: "upload-profile-media",
+                data: {},
+                stageResults: {},
+            };
+        },
+    } as any;
+    const routeContext = createDefaultRouteContext({ flow });
+    const route = createProfileRoutes(
+        profileStore,
+        gateway,
+        undefined,
+        undefined,
+        undefined,
+        routeContext,
+    );
+    const token = issueAccessToken("alice", "user", 60);
+    let status = 0;
+    let body = "";
+    await route(
+        makeReq("PUT", token, Buffer.from("fake png data"), "image/png"),
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end(p: string) {
+                body = p;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/social/profile/banner"),
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.match(parsed.data.bannerKey, /\.png$/);
 });
 
 test("profile routes - banner upload rejects unsupported type", async () => {

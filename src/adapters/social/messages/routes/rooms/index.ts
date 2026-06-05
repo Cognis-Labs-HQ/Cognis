@@ -34,16 +34,37 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             const rooms = await messagesStore.listRoomsForAccount(accountId);
             const enriched = await Promise.all(
                 rooms.map(async (room) => {
-                    const [members, lastList, unread, pendingIncoming] =
-                        await Promise.all([
-                            messagesStore.listMembers(room.id),
-                            messagesStore.listMessages(room.id, 1),
-                            messagesStore.unreadCount(room.id, accountId),
-                            messagesStore.getPendingIncomingRoomMessageRequest(
-                                room.id,
-                                accountId,
-                            ),
-                        ]);
+                    const [members, lastList, unread] = await Promise.all([
+                        messagesStore.listMembers(room.id),
+                        messagesStore.listMessages(room.id, 1),
+                        messagesStore.unreadCount(room.id, accountId),
+                    ]);
+                    const pendingIncoming = await messagesStore
+                        .getPendingIncomingRoomMessageRequest(
+                            room.id,
+                            accountId,
+                        )
+                        .catch((error) => {
+                            const errorCode =
+                                typeof error === "object" &&
+                                error !== null &&
+                                "code" in error
+                                    ? String(error.code)
+                                    : "";
+                            const message =
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error);
+                            if (
+                                errorCode === "SQLITE_ERROR" &&
+                                /(no such table:\s*chat_message_requests|no such column:\s*(chat_message_requests\.)?(to_account_id|room_id))/i.test(
+                                    message,
+                                )
+                            ) {
+                                return null;
+                            }
+                            throw error;
+                        });
                     const last = lastList[0] ?? null;
                     const enrichedMembers = await enrichMembersWithProfiles(
                         members,
