@@ -111,10 +111,8 @@ export function shouldSuppressConnectionRecoveryPopup(error) {
 }
 
 export async function apiFetch(path, options = {}) {
-    const {
-        suppressConnectionRecoveryToast = false,
-        ...requestOptions
-    } = options;
+    const { suppressConnectionRecoveryToast = false, ...requestOptions } =
+        options;
     const token = localStorage.getItem("cognis_access_token");
     const headers = {
         ...(requestOptions.headers ?? {}),

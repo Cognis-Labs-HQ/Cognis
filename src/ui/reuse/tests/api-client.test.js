@@ -121,9 +121,12 @@ test("apiFetch shows a permanent warning toast for retryable API server response
         });
         apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
 
-        const response = await apiClient.apiFetch("/api/v1/modules/jitsi-meet/ping", {
-            suppressConnectionRecoveryToast: true,
-        });
+        const response = await apiClient.apiFetch(
+            "/api/v1/modules/jitsi-meet/ping",
+            {
+                suppressConnectionRecoveryToast: true,
+            },
+        );
 
         assert.equal(response.status, 503);
         assert.equal(showToastCalls.length, 0);
