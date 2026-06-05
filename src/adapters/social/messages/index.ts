@@ -360,7 +360,7 @@ export async function bootstrapSocialAdapter(
     if (!persistHookRegistered) {
         ctx.log?.(
             "warn",
-            "Messages adapter: failed to register send-message persist hook.",
+            "Messages adapter: failed to register send-message persist hook (send-message flow/stage may be missing during bootstrap).",
             { component: "social-messages-adapter" },
         );
     }
@@ -424,7 +424,7 @@ export async function bootstrapSocialAdapter(
     if (!fanOutHookRegistered) {
         ctx.log?.(
             "warn",
-            "Messages adapter: failed to register send-message fan-out hook.",
+            "Messages adapter: failed to register send-message fan-out hook (send-message flow/stage may be missing during bootstrap).",
             { component: "social-messages-adapter" },
         );
     }
