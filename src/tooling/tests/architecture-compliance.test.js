@@ -231,6 +231,7 @@ test("api and core avoid new direct gateway imports", () => {
 
 const REQUIRED_INSTRUCTION_SNIPPETS = [
     "Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions.",
+    'For gateway-owned API spaces, each gateway must claim its canonical API prefix with `ctx.routeRegistry.registerPrefix("/api/v1/<gateway-id>", "<gateway-id>")` during bootstrap,',
     "Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness.",
     "Any safe opportunity to reduce LOC through consolidation and reusable abstractions should be taken",
     "Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.",
@@ -246,6 +247,50 @@ test("ai instructions keep the compliance guardrails explicit", () => {
             `missing required instruction snippet: ${snippet}`,
         );
     }
+});
+
+const GATEWAY_COMPLIANCE_EXEMPTIONS = new Set(["db", "reuse", "tests"]);
+
+test("gateways with API routes claim canonical /api/v1/<gateway-id> prefixes", () => {
+    const gatewaysRoot = resolve(ROOT, "src/gateways");
+    const violations = [];
+
+    for (const entryName of readdirSync(gatewaysRoot)) {
+        if (GATEWAY_COMPLIANCE_EXEMPTIONS.has(entryName)) continue;
+
+        const gatewayPath = join(gatewaysRoot, entryName);
+        const gatewayStats = statSync(gatewayPath);
+        if (!gatewayStats.isDirectory()) continue;
+
+        const sourceFiles = walk(gatewayPath).filter(
+            (filePath) =>
+                (filePath.endsWith(".js") || filePath.endsWith(".ts")) &&
+                !filePath.includes("/tests/"),
+        );
+        const hasRouteRegistration = sourceFiles.some((filePath) =>
+            readFileSync(filePath, "utf8").includes("routeRegistry.register("),
+        );
+        if (!hasRouteRegistration) continue;
+
+        const canonicalPrefixSnippet = `ctx.routeRegistry.registerPrefix("/api/v1/${entryName}", "${entryName}")`;
+        const hasCanonicalPrefix = sourceFiles.some((filePath) =>
+            readFileSync(filePath, "utf8").includes(canonicalPrefixSnippet),
+        );
+        if (!hasCanonicalPrefix) {
+            violations.push(
+                `${entryName} gateway must register ${canonicalPrefixSnippet}; see ${relative(ROOT, gatewayPath).replace(/\\/g, "/")}`,
+            );
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        [
+            "Gateway route prefixes must match their canonical /api/v1/<gateway-id> ownership.",
+            ...violations,
+        ].join("\n"),
+    );
 });
 
 const MODULE_STRUCTURE_EXEMPTIONS = new Set([
