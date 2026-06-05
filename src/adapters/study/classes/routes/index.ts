@@ -16,6 +16,15 @@
  *   GET    /api/v1/study/classrooms                                            — list classroom snapshots for caller (supports ?language=)
  *   PATCH  /api/v1/study/classrooms/:classId/layout                            — update classroom layout and student limit (teacher)
  *   DELETE /api/v1/study/classrooms/:classId/students/:studentId               — remove student from class (teacher)
+ *   GET    /api/v1/study/classes/:classId/resources                             — read class materials and homework text (teacher/student member)
+ *   PUT    /api/v1/study/classes/:classId/resources                             — update class materials/homework (teacher)
+ *   GET    /api/v1/study/classes/:classId/notebook                              — read caller notebook text
+ *   PUT    /api/v1/study/classes/:classId/notebook                              — save caller notebook text
+ *   GET    /api/v1/study/classes/:classId/notebooks/:studentId                  — read another student's notebook (friends or approved request)
+ *   POST   /api/v1/study/classes/:classId/notebooks/:studentId/request          — request notebook access from a classmate
+ *   GET    /api/v1/study/classes/:classId/notebook-requests                     — list incoming notebook-access requests for caller
+ *   POST   /api/v1/study/classes/:classId/notebooks/:ownerId/requests/:viewerId/:action
+ *                                                                               — owner approves/rejects notebook-access request
  *   GET    /api/v1/study/classes/:classId/members                             — list class members (teacher, supports ?search=)
  *   GET    /api/v1/study/classes/:classId/join-requests                       — list pending join requests (teacher)
  *   POST   /api/v1/study/classes/:classId/invite                              — invite a student directly (teacher)
@@ -53,6 +62,7 @@ export interface ClassesRouteOptions {
     setProfileRole?: SetRole;
     dispatchToRole?: DispatchToRole;
     accountExists?: (accountId: string) => Promise<boolean>;
+    isFriends?: (accountA: string, accountB: string) => Promise<boolean>;
     log?: (
         level: string,
         message: string,
@@ -583,6 +593,322 @@ export function createClassesRoutes(
                     500,
                     "internal_error",
                     "Failed to remove class member.",
+                );
+            }
+            return true;
+        }
+
+        const classroomResourcesMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/resources$/,
+        );
+        if (
+            classroomResourcesMatch &&
+            (req.method === "GET" || req.method === "PUT")
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(classroomResourcesMatch[1]);
+            try {
+                if (req.method === "GET") {
+                    const resources = await store.getClassroomResourcesForViewer(
+                        classId,
+                        claims.sub,
+                    );
+                    jsonOk(res, resources);
+                    return true;
+                }
+                if (claims.role !== "teacher") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Only teachers can edit class resources.",
+                    );
+                    return true;
+                }
+                const body = (await readJson(req)) as {
+                    materials?: unknown;
+                    homework?: unknown;
+                };
+                const materials =
+                    typeof body.materials === "string" ? body.materials : "";
+                const homework =
+                    typeof body.homework === "string" ? body.homework : "";
+                const resources =
+                    await store.updateClassroomResourcesForTeacher(
+                        classId,
+                        claims.sub,
+                        { materials, homework },
+                    );
+                jsonOk(res, resources);
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to handle class resources.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to handle class resources.",
+                );
+            }
+            return true;
+        }
+
+        const ownNotebookMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/notebook$/,
+        );
+        if (ownNotebookMatch && (req.method === "GET" || req.method === "PUT")) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(ownNotebookMatch[1]);
+            try {
+                if (req.method === "GET") {
+                    const notebook = await store.getOwnNotebook(
+                        classId,
+                        claims.sub,
+                    );
+                    jsonOk(res, notebook);
+                    return true;
+                }
+                const body = (await readJson(req)) as { noteText?: unknown };
+                const noteText =
+                    typeof body.noteText === "string" ? body.noteText : "";
+                const notebook = await store.updateOwnNotebook(
+                    classId,
+                    claims.sub,
+                    noteText,
+                );
+                jsonOk(res, notebook);
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to handle own notebook.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(res, 500, "internal_error", "Failed to handle notebook.");
+            }
+            return true;
+        }
+
+        const notebookViewMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/notebooks\/([^/]+)$/,
+        );
+        if (notebookViewMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(notebookViewMatch[1]);
+            const ownerStudentAccountId = decodeURIComponent(notebookViewMatch[2]);
+            try {
+                const notebook = await store.getNotebookForViewer(
+                    classId,
+                    ownerStudentAccountId,
+                    claims.sub,
+                    options.isFriends,
+                );
+                jsonOk(res, notebook);
+            } catch (err) {
+                if (
+                    err instanceof Error &&
+                    err.message === "access_request_required"
+                ) {
+                    jsonError(
+                        res,
+                        403,
+                        "access_request_required",
+                        "Notebook access approval required.",
+                    );
+                    return true;
+                }
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to load notebook.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    ownerStudentAccountId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(res, 500, "internal_error", "Failed to load notebook.");
+            }
+            return true;
+        }
+
+        const notebookRequestMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/notebooks\/([^/]+)\/request$/,
+        );
+        if (notebookRequestMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(notebookRequestMatch[1]);
+            const ownerStudentAccountId = decodeURIComponent(notebookRequestMatch[2]);
+            try {
+                const request = await store.requestNotebookAccess(
+                    classId,
+                    ownerStudentAccountId,
+                    claims.sub,
+                );
+                res.writeHead(201, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: request }));
+            } catch (err) {
+                if (err instanceof Error && err.message === "bad_request") {
+                    jsonError(
+                        res,
+                        400,
+                        "bad_request",
+                        "Cannot request access to your own notebook.",
+                    );
+                    return true;
+                }
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to request notebook access.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    ownerStudentAccountId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to request notebook access.",
+                );
+            }
+            return true;
+        }
+
+        const notebookRequestsForOwnerMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/notebook-requests$/,
+        );
+        if (notebookRequestsForOwnerMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(notebookRequestsForOwnerMatch[1]);
+            try {
+                const requests = await store.listIncomingNotebookAccessRequests(
+                    classId,
+                    claims.sub,
+                );
+                jsonOk(res, requests);
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.(
+                    "error",
+                    "Failed to list incoming notebook requests.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        classId,
+                        error: err instanceof Error ? err.message : String(err),
+                    },
+                );
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to list notebook requests.",
+                );
+            }
+            return true;
+        }
+
+        const notebookReviewMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/notebooks\/([^/]+)\/requests\/([^/]+)\/(approve|reject)$/,
+        );
+        if (notebookReviewMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(notebookReviewMatch[1]);
+            const ownerStudentAccountId = decodeURIComponent(notebookReviewMatch[2]);
+            const viewerStudentAccountId = decodeURIComponent(notebookReviewMatch[3]);
+            const action = notebookReviewMatch[4] as "approve" | "reject";
+            if (ownerStudentAccountId !== claims.sub) {
+                jsonError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Only notebook owners can review access requests.",
+                );
+                return true;
+            }
+            try {
+                const reviewed = await store.reviewNotebookAccessRequest(
+                    classId,
+                    ownerStudentAccountId,
+                    viewerStudentAccountId,
+                    action === "approve",
+                );
+                jsonOk(res, reviewed);
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to review notebook access.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    ownerStudentAccountId,
+                    viewerStudentAccountId,
+                    action,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to review notebook access.",
                 );
             }
             return true;

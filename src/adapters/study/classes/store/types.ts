@@ -23,6 +23,31 @@ export interface ClassroomStateRow {
     updatedAt: string;
 }
 
+export interface ClassroomResourceRow {
+    classId: string;
+    materials: string;
+    homework: string;
+    updatedBy: string | null;
+    updatedAt: string;
+}
+
+export interface ClassroomNotebookRow {
+    classId: string;
+    studentAccountId: string;
+    noteText: string;
+    updatedAt: string;
+}
+
+export type ClassroomNotebookAccessStatus = "pending" | "approved" | "rejected";
+
+export interface ClassroomNotebookAccessRequestRow {
+    classId: string;
+    ownerStudentAccountId: string;
+    viewerStudentAccountId: string;
+    status: ClassroomNotebookAccessStatus;
+    updatedAt: string;
+}
+
 export interface TeacherRequestRow {
     id: string;
     accountId: string;

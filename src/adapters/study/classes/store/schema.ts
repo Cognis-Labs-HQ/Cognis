@@ -198,6 +198,79 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
         ],
     });
 
+    await db.ensureTable({
+        name: "classroom_resources",
+        columns: [
+            { name: "class_id", type: "text", primaryKey: true },
+            {
+                name: "materials",
+                type: "text",
+                notNull: true,
+                default: "",
+            },
+            {
+                name: "homework",
+                type: "text",
+                notNull: true,
+                default: "",
+            },
+            { name: "updated_by", type: "text" },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+    });
+
+    await db.ensureTable({
+        name: "classroom_notebooks",
+        columns: [
+            { name: "class_id", type: "text", notNull: true },
+            { name: "student_account_id", type: "text", notNull: true },
+            {
+                name: "note_text",
+                type: "text",
+                notNull: true,
+                default: "",
+            },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+        primaryKey: ["class_id", "student_account_id"],
+    });
+
+    await db.ensureTable({
+        name: "classroom_note_access_requests",
+        columns: [
+            { name: "class_id", type: "text", notNull: true },
+            { name: "owner_student_account_id", type: "text", notNull: true },
+            { name: "viewer_student_account_id", type: "text", notNull: true },
+            {
+                name: "status",
+                type: "text",
+                notNull: true,
+                default: "pending",
+            },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+        primaryKey: [
+            "class_id",
+            "owner_student_account_id",
+            "viewer_student_account_id",
+        ],
+    });
+
     await ensureStudyLanguagesSchema(db);
 }
 

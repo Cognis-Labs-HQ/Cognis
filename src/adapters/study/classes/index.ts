@@ -31,6 +31,38 @@ export function createStudyAdapter(): StudyAdapter {
 }
 
 /**
+ * Page-serving route for `/classroom`. Serves the classroom hub SPA page.
+ */
+function createClassroomHubPageRoute(
+    routeContext: RouteContext | undefined,
+    isAdapterEnabled: () => boolean,
+) {
+    const ctx = resolveRouteContext(routeContext);
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (req.method && req.method !== "GET") return false;
+        if (!isAdapterEnabled()) return false;
+        if (url.pathname !== "/classroom") return false;
+        const session = ctx.getCookieSession(req);
+        if (!session) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        ctx.setPageSecurityHeaders(res);
+        const html = await import("node:fs/promises").then((fs) =>
+            fs.readFile(path.join(ADAPTER_UI_ROOT, "classroom.html"), "utf8"),
+        );
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return true;
+    };
+}
+
+/**
  * Page-serving route for `/classes`. Serves the classes SPA page.
  */
 function createClassesPageRoute(
@@ -164,6 +196,10 @@ export async function bootstrapStudyAdapter(
         getProfile: (
             accountId: string,
         ) => Promise<{ handle?: string | null } | null>;
+        isFollowing?: (
+            followerId: string,
+            followingId: string,
+        ) => Promise<boolean>;
     }>("social:profileStore");
     const setProfileRole = ctx.capabilities.get<
         (handle: string, role: "teacher") => Promise<void>
@@ -217,6 +253,10 @@ export async function bootstrapStudyAdapter(
         "study",
     );
     ctx.registerRoute(
+        createClassroomHubPageRoute(routeContext, isEnabled),
+        "study",
+    );
+    ctx.registerRoute(
         createClassesRoutes(store, {
             requireTeacherManualApproval: readTeacherManualApproval,
             setRole: accountStore
@@ -226,6 +266,14 @@ export async function bootstrapStudyAdapter(
             accountExists: accountStore
                 ? (id) => accountStore.exists(id)
                 : undefined,
+            isFriends: async (accountA, accountB) => {
+                if (!profileStore?.isFollowing) return false;
+                const [aFollowsB, bFollowsA] = await Promise.all([
+                    profileStore.isFollowing(accountA, accountB),
+                    profileStore.isFollowing(accountB, accountA),
+                ]);
+                return aFollowsB && bFollowsA;
+            },
             routeContext,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<
@@ -247,8 +295,24 @@ export async function bootstrapStudyAdapter(
         scriptUrl: "/static/gateways/study/classes-dashboard-element.js",
         isEnabled: () => ctx.isAdapterEnabled(),
     });
+    ctx.registerSpaRoute?.({
+        id: "study-classes-classroom-hub-page",
+        pattern: "^/classroom$",
+        base: "/classroom",
+        scriptUrl: "/static/adapters/study/classes/classroom.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/study/classes/classes.css",
+        ],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
 
     ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
+    ctx.registerNavbarPlugin(
+        "/static/adapters/study/classes/nav-link.js",
+        () => ctx.isAdapterEnabled(),
+    );
     ctx.registerSpaRoute?.({
         id: "study-classes-teacher-page",
         pattern: "^/classes$",

@@ -20,6 +20,16 @@ import {
     requestJoinClass,
     reviewJoinRequest,
 } from "./memberships.js";
+import {
+    getClassroomResourcesForViewer,
+    getNotebookForViewer,
+    getOwnNotebook,
+    listIncomingNotebookAccessRequests,
+    requestNotebookAccess,
+    reviewNotebookAccessRequest,
+    updateClassroomResourcesForTeacher,
+    updateOwnNotebook,
+} from "./notebooks.js";
 import { getStudyPreferences, saveStudyPreferences } from "./preferences.js";
 import { ensureSchema, ensureStudyLanguagesSchema } from "./schema.js";
 import {
@@ -33,6 +43,9 @@ import type {
     ClassMembershipRow,
     ClassRow,
     ClassroomStateRow,
+    ClassroomResourceRow,
+    ClassroomNotebookRow,
+    ClassroomNotebookAccessRequestRow,
     StudyLanguageRow,
     StudyPreferencesRow,
     TeacherRequestRow,
@@ -90,6 +103,95 @@ export class DbClassesStore {
 
     async getClassroomState(classId: string): Promise<ClassroomStateRow> {
         return getClassroomState(this.db, classId);
+    }
+
+    async getClassroomResourcesForViewer(
+        classId: string,
+        viewerAccountId: string,
+    ): Promise<ClassroomResourceRow> {
+        return getClassroomResourcesForViewer(this.db, classId, viewerAccountId);
+    }
+
+    async updateClassroomResourcesForTeacher(
+        classId: string,
+        teacherAccountId: string,
+        input: { materials?: string; homework?: string },
+    ): Promise<ClassroomResourceRow> {
+        return updateClassroomResourcesForTeacher(
+            this.db,
+            classId,
+            teacherAccountId,
+            input,
+        );
+    }
+
+    async getOwnNotebook(
+        classId: string,
+        studentAccountId: string,
+    ): Promise<ClassroomNotebookRow> {
+        return getOwnNotebook(this.db, classId, studentAccountId);
+    }
+
+    async updateOwnNotebook(
+        classId: string,
+        studentAccountId: string,
+        noteText: string,
+    ): Promise<ClassroomNotebookRow> {
+        return updateOwnNotebook(this.db, classId, studentAccountId, noteText);
+    }
+
+    async getNotebookForViewer(
+        classId: string,
+        ownerStudentAccountId: string,
+        viewerAccountId: string,
+        isFriends?: (accountA: string, accountB: string) => Promise<boolean>,
+    ): Promise<ClassroomNotebookRow> {
+        return getNotebookForViewer(
+            this.db,
+            classId,
+            ownerStudentAccountId,
+            viewerAccountId,
+            isFriends,
+        );
+    }
+
+    async requestNotebookAccess(
+        classId: string,
+        ownerStudentAccountId: string,
+        viewerStudentAccountId: string,
+    ): Promise<ClassroomNotebookAccessRequestRow> {
+        return requestNotebookAccess(
+            this.db,
+            classId,
+            ownerStudentAccountId,
+            viewerStudentAccountId,
+        );
+    }
+
+    async listIncomingNotebookAccessRequests(
+        classId: string,
+        ownerStudentAccountId: string,
+    ): Promise<ClassroomNotebookAccessRequestRow[]> {
+        return listIncomingNotebookAccessRequests(
+            this.db,
+            classId,
+            ownerStudentAccountId,
+        );
+    }
+
+    async reviewNotebookAccessRequest(
+        classId: string,
+        ownerStudentAccountId: string,
+        viewerStudentAccountId: string,
+        approve: boolean,
+    ): Promise<ClassroomNotebookAccessRequestRow> {
+        return reviewNotebookAccessRequest(
+            this.db,
+            classId,
+            ownerStudentAccountId,
+            viewerStudentAccountId,
+            approve,
+        );
     }
 
     async updateClassroomStateForTeacher(
