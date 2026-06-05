@@ -22,6 +22,8 @@ import {
 export function createComposerRenderer({
     state,
     UNIT,
+    MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT,
+    COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS,
     i18n,
     escapeHtml,
     getGridSize,
