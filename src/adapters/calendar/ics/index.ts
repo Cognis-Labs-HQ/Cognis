@@ -25,19 +25,53 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
+    const isMetadataProbeMethod = (method: string | undefined) =>
+        method === "HEAD" || method === "OPTIONS" || method === "PROPFIND";
 
     const buildCalendarExportHeaders = (calendarName: string) => ({
         "content-type": "text/calendar; charset=utf-8",
         "x-cognis-calendar-name": sanitizeHeaderValue(calendarName),
     });
+    const respondCalendarPayload = (
+        reqMethod: string | undefined,
+        res: {
+            writeHead: (statusCode: number, headers?: Record<string, string>) => void;
+            end: (chunk?: string) => void;
+        },
+        payload: string,
+        calendarName: string,
+    ) => {
+        const headers = buildCalendarExportHeaders(calendarName);
+        if (reqMethod === "OPTIONS") {
+            res.writeHead(204, {
+                ...headers,
+                allow: "GET,HEAD,OPTIONS,PROPFIND",
+            });
+            res.end();
+            return;
+        }
+        if (reqMethod === "HEAD" || reqMethod === "PROPFIND") {
+            res.writeHead(200, headers);
+            res.end();
+            return;
+        }
+        res.writeHead(200, headers);
+        res.end(payload);
+    };
 
     return async (req, res, url): Promise<boolean> => {
         const publicMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/ics\/public\/([^/]+)$/,
         );
-        if (publicMatch && req.method === "GET") {
-            const calendarId = decodeURIComponent(publicMatch[1]);
-            const calendar = ctx.gateway.getCalendar(calendarId);
+        if (publicMatch && (req.method === "GET" || isMetadataProbeMethod(req.method))) {
+            const encodedName = decodeURIComponent(publicMatch[1]);
+            const calendarIdFromQuery = String(
+                url.searchParams.get("calendarId") ?? "",
+            ).trim();
+            const calendar =
+                (calendarIdFromQuery
+                    ? ctx.gateway.getCalendar(calendarIdFromQuery)
+                    : null) ?? ctx.gateway.getCalendar(encodedName);
             if (!calendar || calendar.visibility !== "public") {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -50,17 +84,19 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
-            res.end(ics);
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            respondCalendarPayload(req.method, res, ics, calendar.name);
             return true;
         }
 
         const privateMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/ics\/private\/([^/]+)$/,
         );
-        if (privateMatch && req.method === "GET") {
+        if (
+            privateMatch &&
+            (req.method === "GET" || isMetadataProbeMethod(req.method))
+        ) {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const token = decodeURIComponent(privateMatch[1]);
@@ -91,8 +127,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
-            res.end(ics);
+            respondCalendarPayload(req.method, res, ics, calendar.name);
             return true;
         }
 

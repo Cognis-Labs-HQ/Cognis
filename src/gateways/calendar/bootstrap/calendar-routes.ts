@@ -11,6 +11,7 @@ import {
     buildCalendarShareData,
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
+    dispatchReminderNotifications,
     errorMessage,
     normalizeAttendeesForOwner,
     normalizeReminderOffsets,
@@ -382,17 +383,25 @@ export function createCalendarCoreRoutes({
                 await gateway.flushStore();
                 await Promise.all(
                     createdSeries.map((event) =>
-                        dispatchInviteNotifications({
-                            gateway,
-                            event,
-                            dispatchNotification,
-                            canInviteByEmail,
-                            externalHost,
-                            inviterAccountId: claims.sub,
-                            calendarId,
-                            resolveAccountId,
-                            log,
-                        }),
+                        Promise.all([
+                            dispatchInviteNotifications({
+                                gateway,
+                                event,
+                                dispatchNotification,
+                                canInviteByEmail,
+                                externalHost,
+                                inviterAccountId: claims.sub,
+                                calendarId,
+                                resolveAccountId,
+                                log,
+                            }),
+                            dispatchReminderNotifications({
+                                dispatchNotification,
+                                event,
+                                resolveAccountId,
+                                log,
+                            }),
+                        ]),
                     ),
                 );
                 sendJson(res, 201, { data: createdEvent });
@@ -581,6 +590,16 @@ export function createCalendarCoreRoutes({
                     updatedEvent,
                 );
                 await gateway.flushStore();
+                await Promise.all(
+                    updatedSeries.map((event) =>
+                        dispatchReminderNotifications({
+                            dispatchNotification,
+                            event,
+                            resolveAccountId,
+                            log,
+                        }),
+                    ),
+                );
                 sendJson(res, 200, { data: updatedEvent });
             } catch (error) {
                 const message = errorMessage(error);

@@ -41,9 +41,14 @@ function createAuthContext(
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
     payload = "";
+    headers: Record<string, string> = {};
 
-    writeHead(code: number) {
+    writeHead(code: number, headers?: Record<string, string>) {
         this.statusCode = code;
+        this.headers = {
+            ...this.headers,
+            ...(headers ?? {}),
+        };
     }
 
     end(chunk?: string | Buffer) {
@@ -59,11 +64,13 @@ class RequestRecorder {
     headers: Record<string, string>;
     private readonly body: string;
 
-    constructor(options: { method: string; token: string; body?: string }) {
+    constructor(options: { method: string; token?: string; body?: string }) {
         this.method = options.method;
         this.body = options.body ?? "";
         this.headers = {
-            authorization: "Bearer " + options.token,
+            ...(options.token
+                ? { authorization: "Bearer " + options.token }
+                : {}),
         };
     }
 
@@ -291,6 +298,7 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     );
     assert.ok(defaultCalendar);
     const defaultCalendarId = defaultCalendar.id;
+    const defaultCalendarName = defaultCalendar.name;
 
     const shareResponse = await dispatchJson(
         "POST",
@@ -332,6 +340,82 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
         new URL(`http://localhost${privateIcsPath}`),
     );
     assert.equal(unauthenticatedIcsResponse.statusCode, 401);
+
+    const unauthenticatedPrivateCaldavProbeRequest = new RequestRecorder({
+        method: "PROPFIND",
+    });
+    const unauthenticatedPrivateCaldavProbeResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        unauthenticatedPrivateCaldavProbeRequest,
+        unauthenticatedPrivateCaldavProbeResponse,
+        new URL(`http://localhost${privateCaldavPath}`),
+    );
+    assert.equal(unauthenticatedPrivateCaldavProbeResponse.statusCode, 401);
+
+    const makePublicResponse = await dispatchJson(
+        "PATCH",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}`,
+        { visibility: "public" },
+    );
+    assert.equal(makePublicResponse.statusCode, 200);
+    assert.equal(makePublicResponse.body.data.visibility, "public");
+
+    const publicShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { permission: "read", expiresInHours: null },
+    );
+    assert.equal(publicShareResponse.statusCode, 200);
+    assert.match(
+        publicShareResponse.body.data.caldavUrl,
+        new RegExp(
+            "^/api/v1/calendar/caldav/public/" +
+                encodeURIComponent(defaultCalendarName).replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                ) +
+                "\\?calendarId=" +
+                encodeURIComponent(defaultCalendarId).replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                ) +
+                "$",
+        ),
+    );
+    assert.match(
+        publicShareResponse.body.data.icsUrl,
+        new RegExp(
+            "^/api/v1/calendar/ics/public/" +
+                encodeURIComponent(defaultCalendarName).replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                ) +
+                "\\?calendarId=" +
+                encodeURIComponent(defaultCalendarId).replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                ) +
+                "$",
+        ),
+    );
+
+    const publicCaldavRequest = new RequestRecorder({
+        method: "GET",
+        token: adminToken,
+    });
+    const publicCaldavResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        publicCaldavRequest,
+        publicCaldavResponse,
+        new URL(`http://localhost${publicShareResponse.body.data.caldavUrl}`),
+    );
+    assert.equal(publicCaldavResponse.statusCode, 200);
+    assert.equal(
+        publicCaldavResponse.headers["x-cognis-calendar-name"],
+        defaultCalendarName,
+    );
 });
 
 test("calendar invite dispatch resolves notify capability after bootstrap", async () => {
@@ -410,6 +494,92 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
             senderName: "alice",
         },
     ]);
+});
+
+test("calendar reminders dispatch notification entries for default and event-specific reminders", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([[aliceToken, { sub: "alice", role: "admin" }]]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    const dispatchedSubjects: string[] = [];
+    capabilities.contribute("notify:dispatch", async (envelope: any) => {
+        dispatchedSubjects.push(String(envelope.subject ?? ""));
+        return { dispatched: ["internal"] };
+    });
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+    const calendars = await dispatchJson("GET", aliceToken, "/api/v1/calendar/calendars");
+    const defaultCalendarId = calendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const updateCalendarResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}`,
+        { defaultReminderOffsetsMinutes: [10] },
+    );
+    assert.equal(updateCalendarResponse.statusCode, 200);
+
+    const eventUsingDefaultReminders = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/events`,
+        {
+            title: "Default reminder event",
+            startAt: "2026-06-02T09:00:00.000Z",
+            endAt: "2026-06-02T10:00:00.000Z",
+            attendees: ["alice"],
+        },
+    );
+    assert.equal(eventUsingDefaultReminders.statusCode, 201);
+    assert.deepEqual(
+        eventUsingDefaultReminders.body.data.reminderOffsetsMinutes,
+        [10],
+    );
+
+    const eventWithExplicitReminders = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/events`,
+        {
+            title: "Explicit reminder event",
+            startAt: "2026-06-03T09:00:00.000Z",
+            endAt: "2026-06-03T10:00:00.000Z",
+            attendees: ["alice"],
+            reminderOffsetsMinutes: [5, 30],
+        },
+    );
+    assert.equal(eventWithExplicitReminders.statusCode, 201);
+    assert.deepEqual(
+        eventWithExplicitReminders.body.data.reminderOffsetsMinutes,
+        [5, 30],
+    );
+
+    const reminderSubjects = dispatchedSubjects.filter((subject) =>
+        subject.startsWith("Calendar reminder: "),
+    );
+    assert.ok(
+        reminderSubjects.includes("Calendar reminder: Default reminder event"),
+    );
+    assert.ok(
+        reminderSubjects.includes("Calendar reminder: Explicit reminder event"),
+    );
 });
 
 test("calendar accept response via invitations API saves copy into chosen calendar and returns movedTo", async () => {

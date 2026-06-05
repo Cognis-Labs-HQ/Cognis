@@ -232,6 +232,22 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-generate/);
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /void loadCalendarShareLinks\(\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /<div id="calendar-share-results" class="calendar-share-results"><\/div>/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /class="btn-no-animation" data-calendar-share-copy/,
+    );
+    assert.doesNotMatch(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /btn-cancel btn-no-animation" data-calendar-share-copy/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /const name = calendar\.isDefault\s*\?\s*undefined/,
     );
 });

@@ -102,13 +102,13 @@ export function buildCalendarShareData(input: {
               }).token;
     const caldavPath =
         calendar.visibility === "public"
-            ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.id)}`
+            ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.name)}?calendarId=${encodeURIComponent(calendar.id)}`
             : `/api/v1/calendar/caldav/private/${encodeURIComponent(
                   String(privateExportToken),
               )}`;
     const icsPath =
         calendar.visibility === "public"
-            ? `/api/v1/calendar/ics/public/${encodeURIComponent(calendar.id)}`
+            ? `/api/v1/calendar/ics/public/${encodeURIComponent(calendar.name)}?calendarId=${encodeURIComponent(calendar.id)}`
             : `/api/v1/calendar/ics/private/${encodeURIComponent(
                   String(privateExportToken),
               )}`;
@@ -288,6 +288,21 @@ export function buildCancellationNotificationBody(
         "",
         `Starts: ${event.startAt}`,
         `Ends: ${event.endAt}`,
+        ...(event.description ? [`Description: ${event.description}`] : []),
+        ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
+    ].join("\n");
+}
+
+export function buildReminderNotificationBody(
+    event: CalendarEventRecord,
+    reminderOffsetMinutes: number,
+): string {
+    return [
+        `Reminder set for ${event.title}.`,
+        "",
+        `Starts: ${event.startAt}`,
+        `Ends: ${event.endAt}`,
+        `Reminder: ${reminderOffsetMinutes} minutes before`,
         ...(event.description ? [`Description: ${event.description}`] : []),
         ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
     ].join("\n");
@@ -501,6 +516,79 @@ export async function dispatchCancellationNotifications({
                                 ? error.message
                                 : String(error),
                     },
+                );
+            }
+
+            export async function dispatchReminderNotifications({
+                dispatchNotification,
+                event,
+                resolveAccountId,
+                log,
+            }: {
+                dispatchNotification: NotificationDispatcher | null;
+                event: CalendarEventRecord;
+                resolveAccountId: ResolveAccountId | null;
+                log?: CalendarLogger;
+            }): Promise<void> {
+                if (!dispatchNotification) return;
+                if (!Array.isArray(event.reminderOffsetsMinutes)) return;
+                if (event.reminderOffsetsMinutes.length === 0) return;
+                const reminders = Array.from(new Set(event.reminderOffsetsMinutes))
+                    .filter((offset) => Number.isFinite(offset) && offset > 0)
+                    .map((offset) => Math.trunc(offset))
+                    .sort((left, right) => left - right);
+                if (reminders.length === 0) return;
+                await Promise.all(
+                    event.attendees.map(async (attendee) => {
+                        const recipientUsername =
+                            await resolveNotificationRecipientUsername(
+                                attendee,
+                                resolveAccountId,
+                            );
+                        await Promise.all(
+                            reminders.map(async (reminderOffsetMinutes) => {
+                                const startAtMs = Date.parse(event.startAt);
+                                const reminderAt = Number.isFinite(startAtMs)
+                                    ? new Date(
+                                          startAtMs - reminderOffsetMinutes * 60_000,
+                                      ).toISOString()
+                                    : null;
+                                try {
+                                    await dispatchNotification({
+                                        category: "calendar",
+                                        recipientUsername,
+                                        subject: `Calendar reminder: ${event.title}`,
+                                        body: buildReminderNotificationBody(
+                                            event,
+                                            reminderOffsetMinutes,
+                                        ),
+                                        actionUrl: buildEventActionUrl(
+                                            event.calendarId,
+                                            event.id,
+                                        ),
+                                        senderName: event.createdBy,
+                                        metadata: {
+                                            eventId: event.id,
+                                            calendarId: event.calendarId,
+                                            reminderOffsetMinutes,
+                                            ...(reminderAt ? { reminderAt } : {}),
+                                        },
+                                    });
+                                } catch (error) {
+                                    log?.("error", "Calendar reminder notification failed.", {
+                                        component: "calendar-gateway",
+                                        attendee: recipientUsername,
+                                        eventId: event.id,
+                                        reminderOffsetMinutes,
+                                        error:
+                                            error instanceof Error
+                                                ? error.message
+                                                : String(error),
+                                    });
+                                }
+                            }),
+                        );
+                    }),
                 );
             }
         }),

@@ -9,14 +9,14 @@ function renderCalendarShareResults({ i18n, escapeHtml, shareData }) {
         <span>CalDAV</span>
         <div class="calendar-share-result-row">
           <input type="text" readonly value="${escapeHtml(shareData.caldavUrl)}" />
-          <button type="button" class="btn-cancel btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.caldavUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+          <button type="button" class="btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.caldavUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
         </div>
       </label>
       <label class="calendar-share-result">
         <span>ICS</span>
         <div class="calendar-share-result-row">
           <input type="text" readonly value="${escapeHtml(shareData.icsUrl)}" />
-          <button type="button" class="btn-cancel btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.icsUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+          <button type="button" class="btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.icsUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
         </div>
       </label>`;
 }
@@ -37,7 +37,7 @@ function bindCalendarShareControls({
         );
         return;
     }
-    shareGenerateBtn.addEventListener("click", async () => {
+    const loadCalendarShareLinks = async () => {
         const permission = String(
             overlay.querySelector("#calendar-share-permission")?.value ??
                 "read",
@@ -65,6 +65,7 @@ function bindCalendarShareControls({
         );
         if (!response.ok) {
             showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
+            shareResults.hidden = true;
             return;
         }
         const payload = await response.json().catch(() => null);
@@ -74,6 +75,7 @@ function bindCalendarShareControls({
             typeof shareData?.icsUrl !== "string"
         ) {
             showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
+            shareResults.hidden = true;
             return;
         }
         shareResults.innerHTML = renderCalendarShareResults({
@@ -82,7 +84,11 @@ function bindCalendarShareControls({
             shareData,
         });
         shareResults.hidden = false;
+    };
+    shareGenerateBtn.addEventListener("click", () => {
+        void loadCalendarShareLinks();
     });
+    void loadCalendarShareLinks();
     shareResults.addEventListener("click", async (event) => {
         const copyButton = event.target.closest("[data-calendar-share-copy]");
         if (!(copyButton instanceof HTMLElement)) return;
@@ -151,7 +157,7 @@ export function createCalendarEditPopupHandler({
               <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
             </div>
-            <div id="calendar-share-results" class="calendar-share-results" hidden></div>
+            <div id="calendar-share-results" class="calendar-share-results"></div>
           </div>
           ${renderReminderField({
               i18n,
