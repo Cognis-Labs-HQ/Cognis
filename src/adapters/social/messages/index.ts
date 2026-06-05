@@ -377,7 +377,10 @@ export async function bootstrapSocialAdapter(
             const senderHandle = sender?.handle ?? sender?.accountId;
             const members = await messagesStore.listMembers(input.roomId);
             for (const otherMember of members) {
-                if (otherMember.accountId === input.senderId || otherMember.muted) {
+                if (
+                    otherMember.accountId === input.senderId ||
+                    otherMember.muted
+                ) {
                     continue;
                 }
                 const pendingIncoming =
