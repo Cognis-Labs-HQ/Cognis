@@ -7,7 +7,7 @@
  *   const res = await apiFetch('/api/v1/items', { method: 'POST', ... });
  *
  * @param {string} path
- * @param {RequestInit} [options]
+ * @param {(RequestInit & { suppressConnectionRecoveryToast?: boolean })} [options]
  * @returns {Promise<Response>}
  */
 import { showToast } from "./toast.js";
@@ -111,16 +111,21 @@ export function shouldSuppressConnectionRecoveryPopup(error) {
 }
 
 export async function apiFetch(path, options = {}) {
+    const {
+        suppressConnectionRecoveryToast = false,
+        ...requestOptions
+    } = options;
     const token = localStorage.getItem("cognis_access_token");
     const headers = {
-        ...(options.headers ?? {}),
+        ...(requestOptions.headers ?? {}),
     };
     if (token) {
         headers.authorization = `Bearer ${token}`;
     }
     try {
-        const response = await fetch(path, { ...options, headers });
+        const response = await fetch(path, { ...requestOptions, headers });
         if (
+            !suppressConnectionRecoveryToast &&
             token &&
             requestTargetsApi(path) &&
             RETRYABLE_SERVER_STATUS_CODES.has(response.status)
@@ -129,7 +134,12 @@ export async function apiFetch(path, options = {}) {
         }
         return response;
     } catch (error) {
-        if (token && requestTargetsApi(path) && error?.name !== "AbortError") {
+        if (
+            !suppressConnectionRecoveryToast &&
+            token &&
+            requestTargetsApi(path) &&
+            error?.name !== "AbortError"
+        ) {
             showConnectionRecoveryToast();
             markConnectionRecoveryFailure(error);
         }

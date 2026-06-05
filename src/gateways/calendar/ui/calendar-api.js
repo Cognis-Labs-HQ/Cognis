@@ -84,7 +84,9 @@ async function respondToEvent(
 }
 
 async function probeJitsiAvailability() {
-    const response = await apiFetch("/api/v1/modules/jitsi-meet/ping");
+    const response = await apiFetch("/api/v1/modules/jitsi-meet/ping", {
+        suppressConnectionRecoveryToast: true,
+    });
     if (!response.ok) return false;
     const payload = await response.json();
     return (
