@@ -12,6 +12,22 @@ import {
 } from "../shared.js";
 import type { SocialMessagesProfile } from "../../profile-store-contract.js";
 
+function isPendingRequestLookupSchemaError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+        /no such table:\s*chat_message_requests/i.test(message) ||
+        /no such column:\s*(chat_message_requests\.)?(to_account_id|room_id|status|created_at)\b/i.test(
+            message,
+        ) ||
+        /unknown column\s+'(to_account_id|room_id|status|created_at)'\s+in\s+'(?:where clause|order clause|field list)'/i.test(
+            message,
+        ) ||
+        /column\s+"?(to_account_id|room_id|status|created_at)"?\s+does not exist/i.test(
+            message,
+        )
+    );
+}
+
 export function createRoomListHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch } = deps;
     const ctx = resolveRouteContext(deps.routeContext);
@@ -45,22 +61,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                             accountId,
                         )
                         .catch((error) => {
-                            const errorCode =
-                                typeof error === "object" &&
-                                error !== null &&
-                                "code" in error
-                                    ? String(error.code)
-                                    : "";
-                            const message =
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error);
-                            if (
-                                errorCode === "SQLITE_ERROR" &&
-                                /(no such table:\s*chat_message_requests|no such column:\s*(chat_message_requests\.)?(to_account_id|room_id))/i.test(
-                                    message,
-                                )
-                            ) {
+                            if (isPendingRequestLookupSchemaError(error)) {
                                 return null;
                             }
                             throw error;

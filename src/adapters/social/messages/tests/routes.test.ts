@@ -434,6 +434,71 @@ test("GET /messages/rooms tolerates pending-request lookup failures", async () =
     assert.equal(payload.data[0].pendingRequest, null);
 });
 
+test("GET /messages/rooms tolerates pending-request missing status column failures", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const messagesStore = {
+        async listRoomsForAccount() {
+            return [{ id: "room-1", kind: "dm", title: null, avatarKey: null }];
+        },
+        async listMembers(roomId: string) {
+            return [
+                {
+                    roomId,
+                    accountId: "alice",
+                    role: "member",
+                    muted: false,
+                    archived: false,
+                },
+            ];
+        },
+        async listMessages() {
+            return [];
+        },
+        async unreadCount() {
+            return 0;
+        },
+        async getPendingIncomingRoomMessageRequest() {
+            throw new Error("no such column: chat_message_requests.status");
+        },
+    };
+    const profileStore = {
+        async getProfile() {
+            return {
+                accountId: "alice",
+                handle: "alice",
+                displayName: "Alice",
+                avatarKey: "avatars/alice.png",
+                visibility: "community",
+            };
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: null,
+        isAdapterEnabled: () => true,
+    });
+    let statusCode = 0;
+    let responseBody = "";
+    const handled = await route(
+        makeReq("GET", token),
+        {
+            writeHead(status: number) {
+                statusCode = status;
+            },
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/social/messages/rooms"),
+    );
+    assert.equal(handled, true);
+    assert.equal(statusCode, 200);
+    const payload = JSON.parse(responseBody);
+    assert.equal(payload.data.length, 1);
+    assert.equal(payload.data[0].pendingRequest, null);
+});
+
 test("GET /messages/rooms/:id/messages hides messages when room fallback detects incoming pending request", async () => {
     const token = issueAccessToken("alice", "user", 60);
     let listMessagesCalled = false;
