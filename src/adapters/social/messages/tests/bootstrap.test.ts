@@ -50,6 +50,24 @@ test("messages polling does not rerender for read timestamp churn", () => {
     assert.match(source, /if \(!force && !selectedRoomHasUnread\(\)\) return;/);
 });
 
+test("messages adapter ensures send-message flow before hook registration", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+
+    assert.match(source, /if \(!ctx\.flow\.exists\("send-message"\)\)/);
+    assert.match(source, /registerCanonicalFlow\(systemCtx, sendMessageFlow\)/);
+    assert.match(
+        source,
+        /const persistHookRegistered = ctx\.flow\.extend\(\s*"send-message",\s*"persist-message"/,
+    );
+    assert.match(
+        source,
+        /const fanOutHookRegistered = ctx\.flow\.extend\(\s*"send-message",\s*"fan-out"/,
+    );
+});
+
 test("messages avatars fall back after failed image loads", () => {
     const appSource = readMessagesUiBundle();
     const sharedSource = readFileSync(
