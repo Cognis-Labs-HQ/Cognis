@@ -523,7 +523,11 @@ test("calendar reminders dispatch notification entries for default and event-spe
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
-    const calendars = await dispatchJson("GET", aliceToken, "/api/v1/calendar/calendars");
+    const calendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
     const defaultCalendarId = calendars.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
     ).id;
@@ -574,6 +578,7 @@ test("calendar reminders dispatch notification entries for default and event-spe
     const reminderSubjects = dispatchedSubjects.filter((subject) =>
         subject.startsWith("Calendar reminder: "),
     );
+    assert.equal(reminderSubjects.length, 3);
     assert.ok(
         reminderSubjects.includes("Calendar reminder: Default reminder event"),
     );

@@ -35,7 +35,10 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const respondCalendarPayload = (
         reqMethod: string | undefined,
         res: {
-            writeHead: (statusCode: number, headers?: Record<string, string>) => void;
+            writeHead: (
+                statusCode: number,
+                headers?: Record<string, string>,
+            ) => void;
             end: (chunk?: string) => void;
         },
         payload: string,
@@ -63,7 +66,10 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         const publicMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/ics\/public\/([^/]+)$/,
         );
-        if (publicMatch && (req.method === "GET" || isMetadataProbeMethod(req.method))) {
+        if (
+            publicMatch &&
+            (req.method === "GET" || isMetadataProbeMethod(req.method))
+        ) {
             const encodedName = decodeURIComponent(publicMatch[1]);
             const calendarIdFromQuery = String(
                 url.searchParams.get("calendarId") ?? "",
@@ -84,7 +90,6 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
             respondCalendarPayload(req.method, res, ics, calendar.name);
             return true;
