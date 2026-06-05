@@ -414,6 +414,201 @@ test("logging stream route applies time range filtering", async () => {
     }
 });
 
+test("logging stream route returns false for non-matching pathname", async () => {
+    const ctx = await makeContext();
+    await bootstrap(ctx as any);
+
+    const handlers = ctx.routeRegistry.getHandlers();
+    const streamHandler = handlers[0];
+    const token = issueAccessToken("admin-test", "admin", 300);
+    const req = new RequestRecorder("GET", token);
+    const res = new ResponseRecorder();
+
+    const handled = await streamHandler(
+        req as any,
+        res as any,
+        new URL("/api/v1/logging/entries", "http://localhost"),
+    );
+
+    assert.equal(handled, false);
+    assert.equal(res.statusCode, 0);
+});
+
+test("logging stream route returns false for non-GET method", async () => {
+    const ctx = await makeContext();
+    await bootstrap(ctx as any);
+
+    const handlers = ctx.routeRegistry.getHandlers();
+    const streamHandler = handlers[0];
+    const token = issueAccessToken("admin-test", "admin", 300);
+    const req = new RequestRecorder("POST", token);
+    const res = new ResponseRecorder();
+
+    const handled = await streamHandler(
+        req as any,
+        res as any,
+        new URL("/api/v1/logging/stream", "http://localhost"),
+    );
+
+    assert.equal(handled, false);
+    assert.equal(res.statusCode, 0);
+});
+
+test("logging stream route emits snapshot_error when log file does not exist", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
+    const logPath = path.join(tempRoot, "nonexistent.log");
+    const previousLogFile = process.env.LOG_FILE;
+    process.env.LOG_FILE = logPath;
+
+    try {
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+
+        const handlers = ctx.routeRegistry.getHandlers();
+        const streamHandler = handlers[0];
+        const token = issueAccessToken("admin-test", "admin", 300);
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
+
+        const handled = await streamHandler(
+            req as any,
+            res as any,
+            new URL("/api/v1/logging/stream", "http://localhost"),
+        );
+
+        assert.equal(handled, true);
+        assert.equal(res.statusCode, 200);
+        assert.match(res.payload, /event: snapshot_error/);
+        assert.match(res.payload, /snapshot_unavailable/);
+
+        req.emit("close");
+        res.emit("close");
+    } finally {
+        if (previousLogFile === undefined) {
+            delete process.env.LOG_FILE;
+        } else {
+            process.env.LOG_FILE = previousLogFile;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
+test("logging stream route emits reset event when log file shrinks during poll", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
+    const logPath = path.join(tempRoot, "app.log");
+    const previousLogFile = process.env.LOG_FILE;
+    process.env.LOG_FILE = logPath;
+
+    try {
+        await writeFile(
+            logPath,
+            `${JSON.stringify({
+                ts: "2026-05-09T00:00:00.000Z",
+                level: "info",
+                message: "Initial entry before rotation",
+            })}\n`,
+            "utf8",
+        );
+
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+
+        const handlers = ctx.routeRegistry.getHandlers();
+        const streamHandler = handlers[0];
+        const token = issueAccessToken("admin-test", "admin", 300);
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
+
+        const handled = await streamHandler(
+            req as any,
+            res as any,
+            new URL("/api/v1/logging/stream", "http://localhost"),
+        );
+
+        assert.equal(handled, true);
+        assert.match(res.payload, /Initial entry before rotation/);
+
+        await writeFile(logPath, "", "utf8");
+
+        await new Promise((resolve) => setTimeout(resolve, 1700));
+
+        assert.match(res.payload, /event: reset/);
+        assert.match(res.payload, /log_rotated/);
+
+        req.emit("close");
+        res.emit("close");
+    } finally {
+        if (previousLogFile === undefined) {
+            delete process.env.LOG_FILE;
+        } else {
+            process.env.LOG_FILE = previousLogFile;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
+test("logging stream route applies time range filtering in hours", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
+    const logPath = path.join(tempRoot, "app.log");
+    const previousLogFile = process.env.LOG_FILE;
+    process.env.LOG_FILE = logPath;
+
+    const threeHoursAgo = new Date(
+        Date.now() - 3 * 60 * 60 * 1000,
+    ).toISOString();
+    const thirtyMinutesAgo = new Date(
+        Date.now() - 30 * 60 * 1000,
+    ).toISOString();
+
+    try {
+        await writeFile(
+            logPath,
+            [
+                JSON.stringify({
+                    ts: threeHoursAgo,
+                    level: "error",
+                    message: "Old hourly entry",
+                }),
+                JSON.stringify({
+                    ts: thirtyMinutesAgo,
+                    level: "error",
+                    message: "Recent hourly entry",
+                }),
+            ].join("\n") + "\n",
+            "utf8",
+        );
+
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+
+        const handlers = ctx.routeRegistry.getHandlers();
+        const streamHandler = handlers[0];
+        const token = issueAccessToken("admin-test", "admin", 300);
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
+
+        const handled = await streamHandler(
+            req as any,
+            res as any,
+            new URL("/api/v1/logging/stream?timeRange=1h", "http://localhost"),
+        );
+
+        assert.equal(handled, true);
+        assert.match(res.payload, /Recent hourly entry/);
+        assert.doesNotMatch(res.payload, /Old hourly entry/);
+
+        req.emit("close");
+        res.emit("close");
+    } finally {
+        if (previousLogFile === undefined) {
+            delete process.env.LOG_FILE;
+        } else {
+            process.env.LOG_FILE = previousLogFile;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
 test("logging stream route emits appended log entries during an open stream", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
     const logPath = path.join(tempRoot, "app.log");

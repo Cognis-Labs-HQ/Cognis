@@ -57,7 +57,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Social                | `src/gateways/social/`       | `1.2.7`  |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
-| Logging               | `src/gateways/logging/`      | `1.5.1`  |
+| Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
 | Calendar              | `src/gateways/calendar/`     | `1.1.5`  |
 

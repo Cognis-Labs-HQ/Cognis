@@ -306,8 +306,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                     try {
                         queueLog(JSON.parse(parsed.data));
                         setStatus("");
-                    } catch {
-                        // Ignore malformed events and continue.
+                    } catch (parseError) {
+                        console.warn(
+                            "[logs] Ignoring malformed SSE log event.",
+                            parseError,
+                        );
                     }
                 }
                 marker = buffer.indexOf("\n\n");
@@ -338,7 +341,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             reconnectAttempts = 0;
             setStatus("");
             await consumeStream(response.body, sessionId);
-        } catch {
+        } catch (streamError) {
             if (
                 sessionId !== activeSession ||
                 streamController?.signal.aborted ||
@@ -346,6 +349,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             ) {
                 return;
             }
+            console.warn("[logs] Log stream connection failed.", streamError);
             reconnectAttempts += 1;
             setStatus(i18n.t("ui.app.admin.logs.stream_failed"));
             if (reconnectAttempts > MAX_SILENT_RECONNECT_ATTEMPTS) {

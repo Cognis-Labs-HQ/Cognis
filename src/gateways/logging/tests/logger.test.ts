@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { tmpdir } from "node:os";
-import { Logger, createLogEntry, formatConsoleLog } from "../logger.js";
+import {
+    Logger,
+    createLogEntry,
+    formatConsoleLog,
+    writeConsoleLog,
+} from "../logger.js";
 
 test("formatConsoleLog renders readable pretty output", () => {
     const entry = createLogEntry("info", "Handled request.", {
@@ -220,4 +225,77 @@ test("Logger queue continues processing writes after a failed append", async () 
     assert.equal(persistedWrites.length, 1);
     const secondWrite = JSON.parse(persistedWrites[0]);
     assert.equal(secondWrite.message, "Second write should succeed.");
+});
+
+test("formatConsoleLog serializes entry as compact JSON when format is json", () => {
+    const entry = createLogEntry("warn", "Database connection lost.", {
+        component: "db-gateway",
+        attempt: 3,
+    });
+
+    const rendered = formatConsoleLog(entry, "json");
+    const parsed = JSON.parse(rendered);
+
+    assert.equal(parsed.level, "warn");
+    assert.equal(parsed.message, "Database connection lost.");
+    assert.equal(parsed.component, "db-gateway");
+    assert.equal(parsed.attempt, 3);
+    assert.ok(typeof parsed.ts === "string");
+});
+
+test("createLogEntry omits meta when no meaningful fields are present", () => {
+    const entryWithoutMeta = createLogEntry("info", "Health check passed.");
+    assert.equal(entryWithoutMeta.meta, undefined);
+
+    const entryWithEmptyMeta = createLogEntry(
+        "info",
+        "Health check passed.",
+        {},
+    );
+    assert.equal(entryWithEmptyMeta.meta, undefined);
+
+    const entryWithUndefinedValues = createLogEntry(
+        "info",
+        "Health check passed.",
+        { component: undefined },
+    );
+    assert.equal(entryWithUndefinedValues.meta, undefined);
+});
+
+test("writeConsoleLog writes to stdout for non-error levels and stderr for error level", () => {
+    const stdoutWrites: string[] = [];
+    const stderrWrites: string[] = [];
+    const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+    const originalStderrWrite = process.stderr.write.bind(process.stderr);
+
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+        stdoutWrites.push(String(chunk));
+        return true;
+    }) as typeof process.stdout.write;
+    process.stderr.write = ((chunk: string | Uint8Array) => {
+        stderrWrites.push(String(chunk));
+        return true;
+    }) as typeof process.stderr.write;
+
+    try {
+        writeConsoleLog("info", "Service started.", { port: 3000 });
+        writeConsoleLog("warn", "Deprecated config key detected.");
+        writeConsoleLog("error", "Unhandled exception occurred.", {
+            fatal: true,
+        });
+    } finally {
+        process.stdout.write = originalStdoutWrite;
+        process.stderr.write = originalStderrWrite;
+    }
+
+    const stdoutAll = stdoutWrites.join("");
+    const stderrAll = stderrWrites.join("");
+
+    assert.match(stdoutAll, /INFO\s+Service started\./);
+    assert.match(stdoutAll, /port: 3000/);
+    assert.match(stdoutAll, /WARN\s+Deprecated config key detected\./);
+    assert.doesNotMatch(stdoutAll, /ERROR/);
+    assert.match(stderrAll, /ERROR\s+Unhandled exception occurred\./);
+    assert.match(stderrAll, /fatal: true/);
+    assert.doesNotMatch(stderrAll, /INFO/);
 });

@@ -499,7 +499,12 @@ export function installRuntimeErrorHandlers() {
                 contextKey: resourceLoadError
                     ? "ui.reuse.runtime_error_context_window_resource"
                     : "ui.reuse.runtime_error_context_window_runtime",
-            }).catch(() => {});
+            }).catch((popupError) => {
+                log(
+                    "Failed to open runtime error popup for window error.",
+                    popupError,
+                );
+            });
         },
         true,
     );
@@ -511,6 +516,11 @@ export function installRuntimeErrorHandlers() {
         openRuntimeErrorPopup({
             error: event.reason,
             contextKey: "ui.reuse.runtime_error_context_unhandled_rejection",
-        }).catch(() => {});
+        }).catch((popupError) => {
+            log(
+                "Failed to open runtime error popup for unhandled rejection.",
+                popupError,
+            );
+        });
     });
 }

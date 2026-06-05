@@ -115,7 +115,11 @@ async function readAuthSetupRequirement() {
         _authSetupRequirementExpiresAt =
             Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
         return _authSetupRequired;
-    } catch {
+    } catch (setupCheckError) {
+        console.warn(
+            "[router] Failed to read auth setup requirement.",
+            setupCheckError,
+        );
         _authSetupRequired = false;
         _authSetupRequirementExpiresAt =
             Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
@@ -174,7 +178,14 @@ async function loadStudyChildComponents() {
                 languages.map((language) =>
                     fetchJson(
                         `/api/v1/study/languages/${encodeURIComponent(String(language.code ?? ""))}/modules`,
-                    ).catch(() => ({ data: [] })),
+                    ).catch((fetchError) => {
+                        console.warn(
+                            "[router] Failed to load Study child components for language.",
+                            language.code,
+                            fetchError,
+                        );
+                        return { data: [] };
+                    }),
                 ),
             );
             const components = moduleResponses.flatMap((modulesResponse) =>

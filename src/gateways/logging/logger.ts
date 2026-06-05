@@ -77,17 +77,21 @@ export function createLogEntry(
     message: string,
     meta?: Record<string, unknown>,
 ): LogEntry {
+    const filteredMeta =
+        meta && Object.keys(meta).length > 0
+            ? Object.fromEntries(
+                  Object.entries(meta).filter(
+                      ([, value]) => value !== undefined,
+                  ),
+              )
+            : undefined;
     return {
         ts: new Date().toISOString(),
         level,
         message,
         meta:
-            meta && Object.keys(meta).length > 0
-                ? Object.fromEntries(
-                      Object.entries(meta).filter(
-                          ([, value]) => value !== undefined,
-                      ),
-                  )
+            filteredMeta && Object.keys(filteredMeta).length > 0
+                ? filteredMeta
                 : undefined,
     };
 }
