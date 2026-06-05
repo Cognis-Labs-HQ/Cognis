@@ -23,6 +23,18 @@ function walk(directoryPath) {
     return files;
 }
 
+function walkDirectories(directoryPath) {
+    const directories = [];
+    for (const entryName of readdirSync(directoryPath)) {
+        const entryPath = join(directoryPath, entryName);
+        const entryStats = statSync(entryPath);
+        if (!entryStats.isDirectory()) continue;
+        directories.push(entryPath);
+        directories.push(...walkDirectories(entryPath));
+    }
+    return directories;
+}
+
 function collectMissingIndexViolations({
     rootPath,
     indexFileName,
@@ -73,6 +85,25 @@ function hasSourceExtension(filePath) {
     return Array.from(SOURCE_EXTENSIONS).some((extension) =>
         filePath.endsWith(extension),
     );
+}
+
+function extractImportPaths(source) {
+    const importPaths = new Set();
+    const patterns = [
+        /(?:^|\n)\s*import\s+["']([^"']+)["']/g,
+        /(?:^|\n)\s*(?:import|export)\s+(?:type\s+)?(?:[\w*\s{},]+)\s+from\s+["']([^"']+)["']/g,
+        /\bimport\(\s*["']([^"']+)["']\s*\)/g,
+    ];
+
+    for (const pattern of patterns) {
+        let match;
+        pattern.lastIndex = 0;
+        while ((match = pattern.exec(source)) !== null) {
+            importPaths.add(match[1]);
+        }
+    }
+
+    return Array.from(importPaths);
 }
 
 test("source files stay under the 1000-line guardrail", () => {
@@ -229,8 +260,45 @@ test("api and core avoid new direct gateway imports", () => {
     );
 });
 
+test("route handlers and module routers avoid direct gateway or adapter imports", () => {
+    const scanRoots = [
+        resolve(ROOT, "src/api/routes"),
+        resolve(ROOT, "src/modules/routes"),
+    ];
+    const violations = [];
+
+    for (const scanRoot of scanRoots) {
+        for (const filePath of walk(scanRoot)) {
+            if (!filePath.endsWith(".ts") && !filePath.endsWith(".js")) {
+                continue;
+            }
+            if (filePath.includes("/tests/")) continue;
+
+            const source = readFileSync(filePath, "utf8");
+            const importPaths = extractImportPaths(source);
+            const hasDirectComponentImport = importPaths.some((importPath) =>
+                /(?:^|\/)(gateways|adapters)\//.test(importPath),
+            );
+            if (!hasDirectComponentImport) continue;
+
+            violations.push(relative(ROOT, filePath).replace(/\\/g, "/"));
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        [
+            "Route handlers and module routers must consume capabilities through route context instead of importing gateway or adapter internals.",
+            ...violations,
+        ].join("\n"),
+    );
+});
+
 const REQUIRED_INSTRUCTION_SNIPPETS = [
     "Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions.",
+    "Route files must not import auth gateway internals directly; they consume `requireAuth`, session lookups, token lookups, and similar helpers through the injected route context.",
+    "Never name such a directory `shared/`, `utils/`, `helpers/`, or `common/`",
     'For gateway-owned API spaces, each gateway must claim its canonical API prefix with `ctx.routeRegistry.registerPrefix("/api/v1/<gateway-id>", "<gateway-id>")` during bootstrap,',
     "Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness.",
     "Any safe opportunity to reduce LOC through consolidation and reusable abstractions should be taken",
@@ -368,6 +436,29 @@ test("adapter directories do not introduce internal reuse folders", () => {
         violations,
         [],
         `Adapters must keep adapter-local logic at adapter root instead of reuse/:\n${violations.join("\n")}`,
+    );
+});
+
+test("source tree avoids generic helper directory names", () => {
+    const forbiddenDirectoryNames = new Set([
+        "shared",
+        "utils",
+        "helpers",
+        "common",
+    ]);
+    const violations = walkDirectories(resolve(ROOT, "src"))
+        .map((directoryPath) => relative(ROOT, directoryPath).replace(/\\/g, "/"))
+        .filter((directoryPath) =>
+            forbiddenDirectoryNames.has(directoryPath.split("/").at(-1)),
+        );
+
+    assert.deepEqual(
+        violations,
+        [],
+        [
+            "Use `reuse/` instead of generic helper directory names under src.",
+            ...violations,
+        ].join("\n"),
     );
 });
 
