@@ -250,6 +250,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "security",
         label: "Security",
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
+        stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
     const routeContext: RouteContext = createDefaultRouteContext({

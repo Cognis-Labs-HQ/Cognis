@@ -127,6 +127,7 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
             gatewayId: "auth",
             sectionId: "security",
             scriptUrl: "/static/gateways/auth/security-prefs/index.js",
+            stringsBaseUrl: "/static/gateways/auth/languages",
         },
     ]);
     const settingsSections = settingsResult.data["sections"] as unknown[];

@@ -241,6 +241,7 @@ export async function registerAuthBootstrapHook(
             gatewayId: "auth",
             sectionId: "security",
             scriptUrl: "/static/gateways/auth/security-prefs/index.js",
+            stringsBaseUrl: "/static/gateways/auth/languages",
         }),
     );
 
@@ -255,7 +256,27 @@ export async function registerAuthBootstrapHook(
                 | { listSettingsSections?: () => unknown[] }
                 | undefined;
             const registrySections = uiRegistry?.listSettingsSections?.() ?? [];
-            const allSections = [...flowSections, ...registrySections];
+            const mergedById = new Map<string, Record<string, unknown>>();
+            for (const section of [...flowSections, ...registrySections]) {
+                if (!section || typeof section !== "object") {
+                    continue;
+                }
+                const sectionRecord = section as Record<string, unknown>;
+                const id = String(
+                    sectionRecord["id"] ?? sectionRecord["sectionId"] ?? "",
+                ).trim();
+                if (!id) {
+                    continue;
+                }
+                const existing = mergedById.get(id) ?? {};
+                mergedById.set(id, {
+                    ...existing,
+                    ...sectionRecord,
+                    id,
+                    sectionId: id,
+                });
+            }
+            const allSections = Array.from(mergedById.values());
             stageCtx.data["sections"] = allSections;
             return { sections: allSections };
         },
