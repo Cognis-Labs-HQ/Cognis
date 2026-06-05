@@ -8,6 +8,7 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
+import { isSmtpAdapterActive } from "../../reuse/notify-smtp-adapter.js";
 import {
     ACCESS_ROLES,
     getRoleLabel,
@@ -90,18 +91,6 @@ async function loadRegistrationGatewayState() {
     return inviteAdapter?.enabled === true;
 }
 
-async function loadSmtpAdapterState() {
-    const response = await apiFetch("/api/v1/gateways/notify/adapters");
-    if (!response.ok) return false;
-    const payload = await response.json();
-    const adapters = Array.isArray(payload?.data) ? payload.data : [];
-    return adapters.some(
-        (entry) =>
-            (entry.id === "smtp" || entry.senderId === "smtp") &&
-            (entry.enabled === true || entry.active === true),
-    );
-}
-
 async function fetchUserInfo(username) {
     const response = await apiFetch(
         `/api/v1/users/${encodeURIComponent(username)}/info`,
@@ -161,7 +150,7 @@ async function refreshData() {
     [users, registrationGatewayActive, smtpAdapterActive] = await Promise.all([
         loadUsers(),
         loadRegistrationGatewayState(),
-        loadSmtpAdapterState(),
+        isSmtpAdapterActive(apiFetch),
     ]);
     buildElements();
 }
@@ -171,11 +160,12 @@ function renderUsersTable() {
     const currentUser = users.find((user) => user.username === currentUsername);
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    const inviteButtonHtml = registrationGatewayActive && smtpAdapterActive
-        ? `<div class="controls">
+    const inviteButtonHtml =
+        registrationGatewayActive && smtpAdapterActive
+            ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
         </div>`
-        : "";
+            : "";
     return `
     ${inviteButtonHtml}
     <div class="users-table-wrap">
@@ -561,7 +551,11 @@ export async function mount(rootEl, { signal } = {}) {
     await composer.init();
 
     const pageAction = new URL(location.href).searchParams.get("action");
-    if (pageAction === "invite" && registrationGatewayActive && smtpAdapterActive) {
+    if (
+        pageAction === "invite" &&
+        registrationGatewayActive &&
+        smtpAdapterActive
+    ) {
         await triggerInviteFlow();
     }
 }

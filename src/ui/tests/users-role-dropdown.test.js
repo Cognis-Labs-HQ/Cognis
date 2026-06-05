@@ -127,11 +127,11 @@ test("users invite flow is gated by registration and smtp adapter availability",
 
     assert.match(
         source,
-        /inviteButtonHtml = registrationGatewayActive && smtpAdapterActive/,
+        /inviteButtonHtml =[\s\S]*registrationGatewayActive\s*&&\s*smtpAdapterActive/,
     );
     assert.match(
         source,
-        /pageAction === "invite" && registrationGatewayActive && smtpAdapterActive/,
+        /pageAction === "invite"[\s\S]*registrationGatewayActive\s*&&\s*smtpAdapterActive/,
     );
 });
 
@@ -142,8 +142,5 @@ test("users resend verification action is hidden when smtp adapter is disabled",
     );
 
     assert.match(source, /if \(!smtpAdapterActive\) return;/);
-    assert.match(
-        source,
-        /const emails = smtpAdapterActive\s*\?[\s\S]*: \[\];/,
-    );
+    assert.match(source, /const emails = smtpAdapterActive\s*\?[\s\S]*: \[\];/);
 });

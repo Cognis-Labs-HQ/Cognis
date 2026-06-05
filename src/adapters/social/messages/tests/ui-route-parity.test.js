@@ -7,13 +7,13 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const SOCIAL_MESSAGES_BASE = "/api/v1/social/messages";
 
-function walk(directoryPath) {
+function collectFilePathsRecursively(directoryPath) {
     const files = [];
     for (const entryName of readdirSync(directoryPath)) {
         const entryPath = join(directoryPath, entryName);
         const entryStats = statSync(entryPath);
         if (entryStats.isDirectory()) {
-            files.push(...walk(entryPath));
+            files.push(...collectFilePathsRecursively(entryPath));
             continue;
         }
         files.push(entryPath);
@@ -22,17 +22,17 @@ function walk(directoryPath) {
 }
 
 function extractSocialMessagesApiPaths(source) {
-    const extracted = new Set();
+    const matchedPaths = new Set();
     const normalizedSource = source.replace(/\\\//g, "/");
     const pattern = /\/api\/v1\/social\/messages[\w/-]*/g;
     let match;
     while ((match = pattern.exec(normalizedSource)) !== null) {
         const normalizedPath = match[0].replace(/\/+$/, "");
         if (normalizedPath.startsWith(SOCIAL_MESSAGES_BASE)) {
-            extracted.add(normalizedPath);
+            matchedPaths.add(normalizedPath);
         }
     }
-    return extracted;
+    return matchedPaths;
 }
 
 function collectPaths(filePaths) {
@@ -54,24 +54,31 @@ function hasRouteCoverage(firstPath, secondPath) {
     );
 }
 
-const ROUTE_FILES = walk(resolve(ROOT, "src/adapters/social/messages/routes")).filter(
-    (filePath) => filePath.endsWith(".ts") || filePath.endsWith(".js"),
-);
-const CALLER_FILES = [
-    ...walk(resolve(ROOT, "src/adapters/social/messages/ui")).filter(
-        (filePath) =>
-            filePath.endsWith(".js") ||
-            filePath.endsWith(".ts") ||
-            filePath.endsWith(".mjs"),
+function isUiSourceFile(filePath) {
+    if (!filePath.includes("/ui/")) return false;
+    if (filePath.includes("/tests/")) return false;
+    return (
+        filePath.endsWith(".js") ||
+        filePath.endsWith(".ts") ||
+        filePath.endsWith(".mjs")
+    );
+}
+
+const ROUTE_FILE_PATHS = collectFilePathsRecursively(
+    resolve(ROOT, "src/adapters/social/messages/routes"),
+).filter((filePath) => filePath.endsWith(".ts") || filePath.endsWith(".js"));
+const CALLER_FILE_PATHS = [
+    ...collectFilePathsRecursively(resolve(ROOT, "src/adapters")).filter(
+        isUiSourceFile,
     ),
-    resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
-    resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
-    resolve(ROOT, "src/adapters/social/profile/ui/profile-post-actions.js"),
+    ...collectFilePathsRecursively(resolve(ROOT, "src/modules")).filter(
+        isUiSourceFile,
+    ),
 ];
 
 test("social messages UI callers only reference defined API routes", () => {
-    const calledPaths = collectPaths(CALLER_FILES);
-    const definedPaths = collectPaths(ROUTE_FILES);
+    const calledPaths = collectPaths(CALLER_FILE_PATHS);
+    const definedPaths = collectPaths(ROUTE_FILE_PATHS);
     const undefinedCalls = calledPaths.filter(
         (calledPath) =>
             !definedPaths.some((definedPath) =>
@@ -86,8 +93,8 @@ test("social messages UI callers only reference defined API routes", () => {
 });
 
 test("social messages route definitions are referenced by UI callers", () => {
-    const calledPaths = collectPaths(CALLER_FILES);
-    const definedPaths = collectPaths(ROUTE_FILES).filter(
+    const calledPaths = collectPaths(CALLER_FILE_PATHS);
+    const definedPaths = collectPaths(ROUTE_FILE_PATHS).filter(
         (definedPath) => definedPath !== SOCIAL_MESSAGES_BASE,
     );
     const unusedDefinitions = definedPaths.filter(

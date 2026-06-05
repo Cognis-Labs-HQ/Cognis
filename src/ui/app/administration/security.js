@@ -10,6 +10,7 @@ import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
+import { isSmtpAdapterActive } from "../../reuse/notify-smtp-adapter.js";
 
 const POLICY_FIELDS = [
     {
@@ -72,22 +73,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalTeacherManualApproval = true;
     let originalEnforceTfaForAllUsers = false;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
-
-    async function loadSmtpAdapterActive() {
-        try {
-            const response = await apiFetch("/api/v1/gateways/notify/adapters");
-            if (!response.ok) return false;
-            const payload = await response.json();
-            const adapters = Array.isArray(payload?.data) ? payload.data : [];
-            return adapters.some(
-                (adapter) =>
-                    (adapter.senderId === "smtp" || adapter.id === "smtp") &&
-                    (adapter.active === true || adapter.enabled === true),
-            );
-        } catch {
-            return false;
-        }
-    }
+    let smtpAdapterActive = false;
 
     async function loadSettings() {
         const response = await apiFetch("/api/v1/system/security");
@@ -166,6 +152,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function getValidationModeValue() {
+        if (!smtpAdapterActive) return "none";
         const select = root.querySelector("#security-user-validation-mode");
         if (!(select instanceof HTMLSelectElement)) return "none";
         return select.value === "smtp" ? "smtp" : "none";
@@ -217,8 +204,12 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     function markDirtyState() {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
+        const effectiveOriginalValidationMode =
+            !smtpAdapterActive && originalUserValidationMode === "smtp"
+                ? "none"
+                : originalUserValidationMode;
         const modeChanged =
-            getValidationModeValue() !== originalUserValidationMode;
+            getValidationModeValue() !== effectiveOriginalValidationMode;
         const registrationsChanged =
             getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         const teacherApprovalChanged =
@@ -238,6 +229,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     function bindSecurityInputs(settings, passwordPolicy, smtpActive) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
+        smtpAdapterActive = smtpActive;
 
         originalDomains = settings.trustedDomains ?? [];
         currentPublicRegistrationEnabled =
@@ -270,16 +262,18 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const smtpOption = validationSelect.querySelector(
                 "option[value='smtp']",
             );
+            const effectiveValidationMode =
+                !smtpAdapterActive && currentUserValidationMode === "smtp"
+                    ? "none"
+                    : currentUserValidationMode;
             if (smtpOption instanceof HTMLOptionElement && !smtpActive) {
                 smtpOption.disabled = true;
                 smtpOption.hidden = true;
                 smtpOption.textContent = i18n.t(
                     "ui.app.admin.security.user_validation_mode.smtp_unavailable",
                 );
-                currentUserValidationMode = "none";
-                originalUserValidationMode = "none";
             }
-            validationSelect.value = currentUserValidationMode;
+            validationSelect.value = effectiveValidationMode;
         }
         if (registrationsToggle instanceof HTMLInputElement) {
             registrationsToggle.checked = currentPublicRegistrationEnabled;
@@ -316,7 +310,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 loadSettings(),
                 loadPublicRegistrationAdapterState(),
                 loadPasswordPolicy(),
-                loadSmtpAdapterActive(),
+                isSmtpAdapterActive(apiFetch),
             ]);
             settings.registrationsEnabled = publicRegistrationEnabled;
             bindSecurityInputs(settings, passwordPolicy, smtpActive);
@@ -324,7 +318,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
         async save() {
             const domains = parseDomains(getInputValue());
-            const validationMode = getValidationModeValue();
+            const validationMode = smtpAdapterActive
+                ? getValidationModeValue()
+                : originalUserValidationMode;
             const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
@@ -364,7 +360,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 "#security-user-validation-mode",
             );
             if (validationSelect instanceof HTMLSelectElement) {
-                validationSelect.value = originalUserValidationMode;
+                validationSelect.value =
+                    !smtpAdapterActive && originalUserValidationMode === "smtp"
+                        ? "none"
+                        : originalUserValidationMode;
             }
             const registrationsToggle = root.querySelector(
                 "#security-enable-registrations",

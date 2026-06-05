@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-function readZIndex(source, selector) {
+function parseZIndexValue(source, selector) {
     const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pattern = new RegExp(
         `${escapedSelector}\\s*\\{[\\s\\S]*?z-index:\\s*(\\d+)`,
@@ -30,9 +30,9 @@ test("user menu dropdown stacks above notification popups", () => {
         "utf8",
     );
 
-    const dropdownZIndex = readZIndex(layoutSource, ".dropdown");
-    const popupZIndex = readZIndex(popupSource, ".popup-overlay");
-    const toastZIndex = readZIndex(toastSource, ".toast-tray");
+    const dropdownZIndex = parseZIndexValue(layoutSource, ".dropdown");
+    const popupZIndex = parseZIndexValue(popupSource, ".popup-overlay");
+    const toastZIndex = parseZIndexValue(toastSource, ".toast-tray");
 
     assert.ok(
         dropdownZIndex > popupZIndex,

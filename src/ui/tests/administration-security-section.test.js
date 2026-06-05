@@ -32,6 +32,9 @@ test("administration security section hides smtp mode when smtp adapter is unava
     );
 
     assert.match(source, /smtpOption\.hidden = true/);
-    assert.match(source, /currentUserValidationMode = "none"/);
-    assert.match(source, /originalUserValidationMode = "none"/);
+    assert.match(source, /if \(!smtpAdapterActive\) return "none"/);
+    assert.match(
+        source,
+        /const validationMode = smtpAdapterActive[\s\S]*: originalUserValidationMode/,
+    );
 });
