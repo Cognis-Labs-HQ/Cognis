@@ -256,7 +256,10 @@ export async function registerAuthBootstrapHook(
                 | { listSettingsSections?: () => unknown[] }
                 | undefined;
             const registrySections = uiRegistry?.listSettingsSections?.() ?? [];
-            const uniqueSectionsById = new Map<string, Record<string, unknown>>();
+            const uniqueSectionsById = new Map<
+                string,
+                Record<string, unknown>
+            >();
             for (const section of [...flowSections, ...registrySections]) {
                 if (!section || typeof section !== "object") {
                     continue;
