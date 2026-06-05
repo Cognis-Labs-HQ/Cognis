@@ -49,26 +49,45 @@ export function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
+    const JITSI_AVAILABILITY_CACHE_TTL_MS = 60 * 1000;
+    let cachedJitsiAvailability: boolean | null = null;
+    let cachedJitsiAvailabilityAtMs = 0;
 
     const resolveJitsiAvailability = async (): Promise<boolean> => {
+        const now = Date.now();
+        if (
+            cachedJitsiAvailability !== null &&
+            now - cachedJitsiAvailabilityAtMs < JITSI_AVAILABILITY_CACHE_TTL_MS
+        ) {
+            return cachedJitsiAvailability;
+        }
         if (!flow.exists("construct-meetings-ui")) return false;
         try {
             const result = await flow.run("construct-meetings-ui", {});
             const providerResults =
                 result.stageResults["resolve-providers"] ?? [];
             if (!Array.isArray(providerResults)) return false;
-            return providerResults.some((entry) => {
+            cachedJitsiAvailability = providerResults.some((entry) => {
                 if (!entry || typeof entry !== "object") return false;
                 const providerId = String(
                     (entry as { providerId?: unknown }).providerId ?? "",
                 ).trim();
                 return providerId === "jitsi-meet";
             });
+            cachedJitsiAvailabilityAtMs = now;
+            return cachedJitsiAvailability;
         } catch (error) {
-            log?.("warn", "Failed to resolve meetings provider availability.", {
-                component: "calendar-gateway",
-                error: error instanceof Error ? error.message : String(error),
-            });
+            log?.(
+                "warn",
+                "Failed to resolve meetings provider availability; defaulting to unavailable.",
+                {
+                    component: "calendar-gateway",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+            cachedJitsiAvailability = false;
+            cachedJitsiAvailabilityAtMs = now;
             return false;
         }
     };
