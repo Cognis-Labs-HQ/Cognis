@@ -236,7 +236,7 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /<div id="calendar-share-results" class="calendar-share-results"><\/div>/,
+        /<div id="calendar-share-results" class="calendar-share-results" hidden><\/div>/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,

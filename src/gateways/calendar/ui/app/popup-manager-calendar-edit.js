@@ -156,7 +156,7 @@ export function createCalendarEditPopupHandler({
               <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
             </div>
-            <div id="calendar-share-results" class="calendar-share-results"></div>
+            <div id="calendar-share-results" class="calendar-share-results" hidden></div>
           </div>
           ${renderReminderField({
               i18n,

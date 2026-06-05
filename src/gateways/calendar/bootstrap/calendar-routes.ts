@@ -6,7 +6,10 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import { normalizeCalendarColor } from "../color.js";
-import { CoreCalendarGateway, type CalendarEventRecord } from "../gateway/index.js";
+import {
+    CoreCalendarGateway,
+    type CalendarEventRecord,
+} from "../gateway/index.js";
 import {
     buildCalendarShareData,
     dispatchCancellationNotifications,
@@ -50,20 +53,33 @@ export function createCalendarCoreRoutes({
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
     const JITSI_AVAILABILITY_CACHE_TTL_MS = 60 * 1000;
-    const MAX_TIMER_DELAY_MS = 2_147_483_647;
+    const MAX_SET_TIMEOUT_DELAY_MS = 2_147_483_647;
     let cachedJitsiAvailability: boolean | null = null;
     let cachedJitsiAvailabilityAtMs = 0;
     const scheduledReminderTimers = new Map<
         string,
         ReturnType<typeof setTimeout>
     >();
+    const reminderKeysByEventId = new Map<string, Set<string>>();
+
+    const removeReminderKey = (eventId: string, reminderKey: string) => {
+        const reminderKeys = reminderKeysByEventId.get(eventId);
+        if (!reminderKeys) return;
+        reminderKeys.delete(reminderKey);
+        if (reminderKeys.size === 0) {
+            reminderKeysByEventId.delete(eventId);
+        }
+    };
 
     const clearScheduledReminderTimersForEvent = (eventId: string) => {
-        const keyPrefix = `${eventId}:`;
-        for (const [reminderKey, timer] of scheduledReminderTimers.entries()) {
-            if (!reminderKey.startsWith(keyPrefix)) continue;
+        const reminderKeys = reminderKeysByEventId.get(eventId);
+        if (!reminderKeys) return;
+        for (const reminderKey of reminderKeys) {
+            const timer = scheduledReminderTimers.get(reminderKey);
+            if (!timer) continue;
             clearTimeout(timer);
             scheduledReminderTimers.delete(reminderKey);
+            removeReminderKey(eventId, reminderKey);
         }
     };
 
@@ -81,23 +97,28 @@ export function createCalendarCoreRoutes({
         if (!Number.isFinite(eventStartAtMs)) return;
         for (const attendee of event.attendees) {
             for (const reminderOffsetMinutes of reminderOffsets) {
-                const reminderAtMs = eventStartAtMs - reminderOffsetMinutes * 60_000;
+                const reminderAtMs =
+                    eventStartAtMs - reminderOffsetMinutes * 60_000;
                 const initialDelayMs = reminderAtMs - Date.now();
                 if (!Number.isFinite(initialDelayMs) || initialDelayMs <= 0) {
                     continue;
                 }
                 const reminderKey = `${event.id}:${attendee}:${reminderOffsetMinutes}`;
                 const scheduleDispatch = (remainingDelayMs: number) => {
-                    const delayMs = Math.min(remainingDelayMs, MAX_TIMER_DELAY_MS);
+                    const delayMs = Math.min(
+                        remainingDelayMs,
+                        MAX_SET_TIMEOUT_DELAY_MS,
+                    );
                     const timer = setTimeout(async () => {
                         if (!scheduledReminderTimers.has(reminderKey)) return;
-                        if (remainingDelayMs > MAX_TIMER_DELAY_MS) {
+                        if (remainingDelayMs > MAX_SET_TIMEOUT_DELAY_MS) {
                             scheduleDispatch(
-                                remainingDelayMs - MAX_TIMER_DELAY_MS,
+                                remainingDelayMs - MAX_SET_TIMEOUT_DELAY_MS,
                             );
                             return;
                         }
                         scheduledReminderTimers.delete(reminderKey);
+                        removeReminderKey(event.id, reminderKey);
                         const dispatchNotification = getDispatchNotification();
                         if (!dispatchNotification) return;
                         await dispatchReminderNotifications({
@@ -111,8 +132,14 @@ export function createCalendarCoreRoutes({
                             log,
                         });
                     }, delayMs);
-                    timer.unref?.();
+                    if (typeof timer.unref === "function") {
+                        timer.unref();
+                    }
                     scheduledReminderTimers.set(reminderKey, timer);
+                    const eventReminderKeys =
+                        reminderKeysByEventId.get(event.id) ?? new Set();
+                    eventReminderKeys.add(reminderKey);
+                    reminderKeysByEventId.set(event.id, eventReminderKeys);
                 };
                 scheduleDispatch(initialDelayMs);
             }
@@ -333,26 +360,31 @@ export function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(deleteCalendarMatch[1]);
             try {
-            const ownedCalendar = gateway.getOwnedCalendar(
-                claims.sub,
-                calendarId,
-            );
-            if (!ownedCalendar) {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
-                return true;
-            }
-            const deletedEventIds = gateway
-                .listEvents(calendarId)
-                .map((event) => event.id);
-            gateway.deleteCalendar({
-                ownerAccountId: claims.sub,
-                calendarId,
-            });
-            deletedEventIds.forEach((eventId) => {
-                clearScheduledReminderTimersForEvent(eventId);
-            });
-            await gateway.flushStore();
-            sendJson(res, 200, { data: { deleted: true } });
+                const ownedCalendar = gateway.getOwnedCalendar(
+                    claims.sub,
+                    calendarId,
+                );
+                if (!ownedCalendar) {
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Calendar not found.",
+                        404,
+                    );
+                    return true;
+                }
+                const deletedEventIds = gateway
+                    .listEvents(calendarId)
+                    .map((event) => event.id);
+                gateway.deleteCalendar({
+                    ownerAccountId: claims.sub,
+                    calendarId,
+                });
+                deletedEventIds.forEach((eventId) => {
+                    clearScheduledReminderTimersForEvent(eventId);
+                });
+                await gateway.flushStore();
+                sendJson(res, 200, { data: { deleted: true } });
             } catch (error) {
                 const message = errorMessage(error);
                 if (message === "calendar_not_found") {
