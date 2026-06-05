@@ -106,29 +106,29 @@ function extractImportPaths(source) {
         while ((match = pattern.exec(source)) !== null) {
             importPaths.add(match[1]);
         }
-
-        function isDirectComponentImport(sourceFilePath, importPath) {
-            if (importPath.startsWith(".")) {
-                const resolvedImportPath = resolve(dirname(sourceFilePath), importPath);
-                const normalizedImportPath = normalizePath(resolvedImportPath);
-                return (
-                    normalizedImportPath.startsWith(
-                        `${normalizePath(resolve(ROOT, "src/gateways"))}/`,
-                    ) ||
-                    normalizedImportPath.startsWith(
-                        `${normalizePath(resolve(ROOT, "src/adapters"))}/`,
-                    )
-                );
-            }
-
-            return (
-                importPath.startsWith("/static/gateways/") ||
-                importPath.startsWith("/static/adapters/")
-            );
-        }
     }
 
     return Array.from(importPaths);
+}
+
+function isDirectComponentImport(sourceFilePath, importPath) {
+    if (importPath.startsWith(".")) {
+        const resolvedImportPath = resolve(dirname(sourceFilePath), importPath);
+        const normalizedImportPath = normalizePath(resolvedImportPath);
+        return (
+            normalizedImportPath.startsWith(
+                `${normalizePath(resolve(ROOT, "src/gateways"))}/`,
+            ) ||
+            normalizedImportPath.startsWith(
+                `${normalizePath(resolve(ROOT, "src/adapters"))}/`,
+            )
+        );
+    }
+
+    return (
+        importPath.startsWith("/static/gateways/") ||
+        importPath.startsWith("/static/adapters/")
+    );
 }
 
 test("source files stay under the 1000-line guardrail", () => {
