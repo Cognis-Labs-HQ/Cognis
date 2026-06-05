@@ -447,7 +447,9 @@ test("source tree avoids generic helper directory names", () => {
         "common",
     ]);
     const violations = walkDirectories(resolve(ROOT, "src"))
-        .map((directoryPath) => relative(ROOT, directoryPath).replace(/\\/g, "/"))
+        .map((directoryPath) =>
+            relative(ROOT, directoryPath).replace(/\\/g, "/"),
+        )
         .filter((directoryPath) =>
             forbiddenDirectoryNames.has(directoryPath.split("/").at(-1)),
         );
