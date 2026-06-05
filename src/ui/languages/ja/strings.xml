@@ -567,6 +567,9 @@
   <string name="module.study.classes.page_subtitle">担当する語学クラスを管理します。</string>
   <string name="module.study.classes.classroom_page_title">教室ハブ</string>
   <string name="module.study.classes.classroom_page_subtitle">クラスを選択し、座席・教材・ノートを管理します。</string>
+  <string name="module.study.classes.classroom_select_class">クラス</string>
+  <string name="module.study.classes.classroom_seat">席</string>
+  <string name="module.study.classes.classroom_blackboard">黒板</string>
   <string name="module.study.classes.empty">まだクラスが割り当てられていません。</string>
   <string name="module.study.classes.request_teacher">教師ステータスをリクエスト</string>
   <string name="module.study.classes.request_sent">申請が管理者のレビューに送信されました。</string>

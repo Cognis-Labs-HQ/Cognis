@@ -266,7 +266,7 @@ export async function bootstrapStudyAdapter(
             accountExists: accountStore
                 ? (id) => accountStore.exists(id)
                 : undefined,
-            isFriends: async (accountA, accountB) => {
+            areFriends: async (accountA, accountB) => {
                 if (!profileStore?.isFollowing) return false;
                 const [aFollowsB, bFollowsA] = await Promise.all([
                     profileStore.isFollowing(accountA, accountB),
@@ -309,9 +309,8 @@ export async function bootstrapStudyAdapter(
     });
 
     ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
-    ctx.registerNavbarPlugin(
-        "/static/adapters/study/classes/nav-link.js",
-        () => ctx.isAdapterEnabled(),
+    ctx.registerNavbarPlugin("/static/adapters/study/classes/nav-link.js", () =>
+        ctx.isAdapterEnabled(),
     );
     ctx.registerSpaRoute?.({
         id: "study-classes-teacher-page",

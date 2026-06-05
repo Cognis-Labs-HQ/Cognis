@@ -567,6 +567,9 @@
   <string name="module.study.classes.page_subtitle">Verwalten Sie Ihre zugewiesenen Sprachklassen.</string>
   <string name="module.study.classes.classroom_page_title">Klassenraum-Hub</string>
   <string name="module.study.classes.classroom_page_subtitle">Wählen Sie eine Klasse und verwalten Sie Sitzplätze, Materialien und Notizbücher.</string>
+  <string name="module.study.classes.classroom_select_class">Klasse</string>
+  <string name="module.study.classes.classroom_seat">Sitz</string>
+  <string name="module.study.classes.classroom_blackboard">Tafel</string>
   <string name="module.study.classes.empty">Noch keine Klassen zugewiesen.</string>
   <string name="module.study.classes.request_teacher">Lehrerstatus beantragen</string>
   <string name="module.study.classes.request_sent">Ihr Antrag wurde zur Überprüfung durch einen Administrator eingereicht.</string>

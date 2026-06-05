@@ -567,6 +567,9 @@
   <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>
   <string name="module.study.classes.classroom_page_title">Classroom Hub</string>
   <string name="module.study.classes.classroom_page_subtitle">Pick a class and manage classroom desks, materials, and notebooks.</string>
+  <string name="module.study.classes.classroom_select_class">Class</string>
+  <string name="module.study.classes.classroom_seat">Seat</string>
+  <string name="module.study.classes.classroom_blackboard">Blackboard</string>
   <string name="module.study.classes.empty">No classes assigned yet.</string>
   <string name="module.study.classes.request_teacher">Request Teacher Status</string>
   <string name="module.study.classes.request_sent">Your request has been submitted for admin review.</string>

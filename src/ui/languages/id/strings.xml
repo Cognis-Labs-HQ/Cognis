@@ -567,6 +567,9 @@
   <string name="module.study.classes.page_subtitle">Kelola kelas bahasa yang ditetapkan untuk Anda.</string>
   <string name="module.study.classes.classroom_page_title">Pusat Kelas</string>
   <string name="module.study.classes.classroom_page_subtitle">Pilih kelas dan kelola kursi, materi, serta buku catatan kelas.</string>
+  <string name="module.study.classes.classroom_select_class">Kelas</string>
+  <string name="module.study.classes.classroom_seat">Kursi</string>
+  <string name="module.study.classes.classroom_blackboard">Papan Tulis</string>
   <string name="module.study.classes.empty">Belum ada kelas yang ditetapkan.</string>
   <string name="module.study.classes.request_teacher">Minta Status Pengajar</string>
   <string name="module.study.classes.request_sent">Permintaan Anda telah dikirim untuk ditinjau admin.</string>

@@ -50,7 +50,13 @@ export async function getClassroomResourcesForViewer(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "classroom_resources",
-        columns: ["class_id", "materials", "homework", "updated_by", "updated_at"],
+        columns: [
+            "class_id",
+            "materials",
+            "homework",
+            "updated_by",
+            "updated_at",
+        ],
         where: [{ column: "class_id", value: classId }],
     });
     const row = result.rows?.[0] as Record<string, unknown> | undefined;
@@ -192,14 +198,24 @@ async function getNotebookAccessStatus(
         columns: ["status"],
         where: [
             { column: "class_id", value: classId },
-            { column: "owner_student_account_id", value: ownerStudentAccountId },
-            { column: "viewer_student_account_id", value: viewerStudentAccountId },
+            {
+                column: "owner_student_account_id",
+                value: ownerStudentAccountId,
+            },
+            {
+                column: "viewer_student_account_id",
+                value: viewerStudentAccountId,
+            },
         ],
     });
     const row = result.rows?.[0] as Record<string, unknown> | undefined;
     if (!row) return null;
     const status = String(row.status ?? "");
-    if (status === "pending" || status === "approved" || status === "rejected") {
+    if (
+        status === "pending" ||
+        status === "approved" ||
+        status === "rejected"
+    ) {
         return status;
     }
     return null;
@@ -210,7 +226,7 @@ export async function getNotebookForViewer(
     classId: string,
     ownerStudentAccountId: string,
     viewerAccountId: string,
-    isFriends?: (accountA: string, accountB: string) => Promise<boolean>,
+    areFriends?: (accountA: string, accountB: string) => Promise<boolean>,
 ): Promise<ClassroomNotebookRow> {
     const { isTeacher } = await assertViewerHasClassAccess(
         db,
@@ -225,7 +241,8 @@ export async function getNotebookForViewer(
     if (ownerStatus !== "member") throw new Error("not_authorized");
     if (viewerAccountId !== ownerStudentAccountId && !isTeacher) {
         const friendsAllowed =
-            (await isFriends?.(viewerAccountId, ownerStudentAccountId)) === true;
+            (await areFriends?.(viewerAccountId, ownerStudentAccountId)) ===
+            true;
         if (!friendsAllowed) {
             const accessStatus = await getNotebookAccessStatus(
                 db,
@@ -311,7 +328,10 @@ export async function listIncomingNotebookAccessRequests(
         ],
         where: [
             { column: "class_id", value: classId },
-            { column: "owner_student_account_id", value: ownerStudentAccountId },
+            {
+                column: "owner_student_account_id",
+                value: ownerStudentAccountId,
+            },
             { column: "status", value: "pending" },
         ],
         orderBy: [{ column: "updated_at", direction: "DESC" }],

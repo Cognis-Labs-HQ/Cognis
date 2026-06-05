@@ -7,12 +7,18 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { isTeacherScope } from "/static/reuse/access-role.js";
 
+const DEFAULT_CLASSROOM_CAPACITY = 30;
+
 function normalizeSeatAssignments(rawSeatAssignments) {
-    if (!rawSeatAssignments || typeof rawSeatAssignments !== "object") return {};
+    if (!rawSeatAssignments || typeof rawSeatAssignments !== "object")
+        return {};
     const seatAssignments = {};
     for (const [accountId, seatNumber] of Object.entries(rawSeatAssignments)) {
         const normalizedSeatNumber = Number(seatNumber);
-        if (!Number.isInteger(normalizedSeatNumber) || normalizedSeatNumber < 0) {
+        if (
+            !Number.isInteger(normalizedSeatNumber) ||
+            normalizedSeatNumber < 0
+        ) {
             continue;
         }
         seatAssignments[String(accountId)] = normalizedSeatNumber;
@@ -20,7 +26,7 @@ function normalizeSeatAssignments(rawSeatAssignments) {
     return seatAssignments;
 }
 
-function initials(accountId) {
+function buildAccountAbbreviation(accountId) {
     const normalized = String(accountId ?? "").trim();
     if (!normalized) return "??";
     return normalized.slice(0, 2).toUpperCase();
@@ -44,8 +50,9 @@ export async function mount(root, { signal } = {}) {
 
     function selectedSnapshot() {
         return (
-            classroomSnapshots.find((snapshot) => snapshot.id === selectedClassId) ??
-            null
+            classroomSnapshots.find(
+                (snapshot) => snapshot.id === selectedClassId,
+            ) ?? null
         );
     }
 
@@ -56,7 +63,9 @@ export async function mount(root, { signal } = {}) {
         classroomSnapshots = Array.isArray(payload?.data) ? payload.data : [];
         if (
             !selectedClassId ||
-            !classroomSnapshots.some((snapshot) => snapshot.id === selectedClassId)
+            !classroomSnapshots.some(
+                (snapshot) => snapshot.id === selectedClassId,
+            )
         ) {
             selectedClassId = String(classroomSnapshots[0]?.id ?? "");
             selectedSeatNumber = null;
@@ -103,7 +112,8 @@ export async function mount(root, { signal } = {}) {
         }
         return classroomSnapshots
             .map((snapshot) => {
-                const selected = snapshot.id === selectedClassId ? " selected" : "";
+                const selected =
+                    snapshot.id === selectedClassId ? " selected" : "";
                 return `<option value="${escapeHtml(snapshot.id)}"${selected}>${escapeHtml(snapshot.languageCode)} · ${escapeHtml(snapshot.id)}</option>`;
             })
             .join("");
@@ -137,9 +147,13 @@ export async function mount(root, { signal } = {}) {
         if (!snapshot) {
             return `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_enrolled_classes"))}</p>`;
         }
-        const studentLimit = Number(snapshot?.classroom?.studentLimit ?? 30);
+        const studentLimit = Number(
+            snapshot?.classroom?.studentLimit ?? DEFAULT_CLASSROOM_CAPACITY,
+        );
         const normalizedStudentLimit =
-            Number.isInteger(studentLimit) && studentLimit > 0 ? studentLimit : 30;
+            Number.isInteger(studentLimit) && studentLimit > 0
+                ? studentLimit
+                : DEFAULT_CLASSROOM_CAPACITY;
         const seatAssignments = normalizeSeatAssignments(
             snapshot?.classroom?.seatAssignments,
         );
@@ -156,7 +170,9 @@ export async function mount(root, { signal } = {}) {
             .map((_, seatNumber) => {
                 const studentAccountId = studentBySeat.get(seatNumber) ?? "";
                 const selectedClass =
-                    Number(selectedSeatNumber) === seatNumber ? " selected" : "";
+                    Number(selectedSeatNumber) === seatNumber
+                        ? " selected"
+                        : "";
                 const occupiedClass = studentAccountId ? " occupied" : "";
                 return `
               <button
@@ -166,9 +182,9 @@ export async function mount(root, { signal } = {}) {
                 data-student-id="${escapeHtml(studentAccountId)}"
               >
                 <span class="classes-classroom-seat-icon">🪑</span>
-                <span class="classes-classroom-seat-label">${escapeHtml(i18n.t("gateway.study.classroom_seat"))} ${seatNumber + 1}</span>
+                <span class="classes-classroom-seat-label">${escapeHtml(i18n.t("module.study.classes.classroom_seat"))} ${seatNumber + 1}</span>
                 <span class="classes-classroom-seat-icon">🧑‍🎓</span>
-                <span class="classes-classroom-seat-avatar">${studentAccountId ? escapeHtml(initials(studentAccountId)) : "—"}</span>
+                <span class="classes-classroom-seat-avatar">${studentAccountId ? escapeHtml(buildAccountAbbreviation(studentAccountId)) : "—"}</span>
                 <span class="classes-classroom-seat-desk">🧾</span>
               </button>
             `;
@@ -176,8 +192,12 @@ export async function mount(root, { signal } = {}) {
             .join("");
 
         const selectedStudentId =
-            selectedSeatNumber == null ? "" : studentBySeat.get(selectedSeatNumber) ?? "";
-        const isOwnDesk = Boolean(selectedStudentId && selectedStudentId === viewerAccountId);
+            selectedSeatNumber == null
+                ? ""
+                : (studentBySeat.get(selectedSeatNumber) ?? "");
+        const isOwnDesk = Boolean(
+            selectedStudentId && selectedStudentId === viewerAccountId,
+        );
 
         const deskPanel = selectedStudentId
             ? `
@@ -209,7 +229,7 @@ export async function mount(root, { signal } = {}) {
         return `
           <div class="classes-classroom-board-area">
             <div class="classes-classroom-blackboard">
-              <h4>${escapeHtml(i18n.t("gateway.study.classroom_blackboard"))}</h4>
+              <h4>${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}</h4>
               <label class="classes-section-heading" for="classes-materials">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</label>
               <textarea id="classes-materials" class="classes-classroom-editor"${isTeacher ? "" : " readonly"}>${escapeHtml(classResources.materials ?? "")}</textarea>
               <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
@@ -217,7 +237,7 @@ export async function mount(root, { signal } = {}) {
               ${teacherMaterialsActions}
             </div>
             <div class="classes-classroom-teacher">
-              <span class="classes-classroom-seat-avatar">${escapeHtml(initials(snapshot.teacherAccountId))}</span>
+              <span class="classes-classroom-seat-avatar">${escapeHtml(buildAccountAbbreviation(snapshot.teacherAccountId))}</span>
               <span>${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(snapshot.teacherAccountId)}</span>
             </div>
           </div>
@@ -236,7 +256,7 @@ export async function mount(root, { signal } = {}) {
                 return `
             <section class="classes-section classes-classroom-hub">
               <div class="classes-request-form">
-                <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t("gateway.study.classroom_select_class"))}</label>
+                <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t("module.study.classes.classroom_select_class"))}</label>
                 <select id="classes-class-select" class="classes-language-input">
                   ${renderClassSelectOptions()}
                 </select>
@@ -252,7 +272,9 @@ export async function mount(root, { signal } = {}) {
                 section.dataset.bound = "true";
 
                 function refresh() {
-                    const content = section.querySelector(".classes-classroom-content");
+                    const content = section.querySelector(
+                        ".classes-classroom-content",
+                    );
                     if (content instanceof HTMLElement) {
                         content.innerHTML = renderClassroom();
                     }
@@ -262,7 +284,9 @@ export async function mount(root, { signal } = {}) {
                     "change",
                     async (event) => {
                         if (!(event.target instanceof Element)) return;
-                        const classSelect = event.target.closest("#classes-class-select");
+                        const classSelect = event.target.closest(
+                            "#classes-class-select",
+                        );
                         if (!(classSelect instanceof HTMLSelectElement)) return;
                         selectedClassId = String(classSelect.value ?? "");
                         selectedSeatNumber = null;
@@ -296,7 +320,9 @@ export async function mount(root, { signal } = {}) {
                         );
                         if (openHomeworkButton instanceof HTMLElement) {
                             await openPopup({
-                                title: i18n.t("module.study.classes.open_textbook"),
+                                title: i18n.t(
+                                    "module.study.classes.open_textbook",
+                                ),
                                 body: `<p>${escapeHtml(classResources.homework || i18n.t("module.study.classes.no_homework_assigned"))}</p>`,
                                 actions: [
                                     {
@@ -316,12 +342,15 @@ export async function mount(root, { signal } = {}) {
                             const noteInput = section.querySelector(
                                 "#classes-own-notebook",
                             );
-                            if (!(noteInput instanceof HTMLTextAreaElement)) return;
+                            if (!(noteInput instanceof HTMLTextAreaElement))
+                                return;
                             const response = await apiFetch(
                                 `/api/v1/study/classes/${encodeURIComponent(classId)}/notebook`,
                                 {
                                     method: "PUT",
-                                    headers: { "content-type": "application/json" },
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
                                     body: JSON.stringify({
                                         noteText: noteInput.value ?? "",
                                     }),
@@ -347,9 +376,13 @@ export async function mount(root, { signal } = {}) {
                         if (saveMaterialsButton instanceof HTMLElement) {
                             const materialsInput =
                                 section.querySelector("#classes-materials");
-                            const homeworkInput = section.querySelector("#classes-homework");
+                            const homeworkInput =
+                                section.querySelector("#classes-homework");
                             if (
-                                !(materialsInput instanceof HTMLTextAreaElement) ||
+                                !(
+                                    materialsInput instanceof
+                                    HTMLTextAreaElement
+                                ) ||
                                 !(homeworkInput instanceof HTMLTextAreaElement)
                             )
                                 return;
@@ -357,7 +390,9 @@ export async function mount(root, { signal } = {}) {
                                 `/api/v1/study/classes/${encodeURIComponent(classId)}/resources`,
                                 {
                                     method: "PUT",
-                                    headers: { "content-type": "application/json" },
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
                                     body: JSON.stringify({
                                         materials: materialsInput.value ?? "",
                                         homework: homeworkInput.value ?? "",
@@ -373,8 +408,10 @@ export async function mount(root, { signal } = {}) {
                                 { variant: response.ok ? "success" : "error" },
                             );
                             if (response.ok) {
-                                classResources.materials = materialsInput.value ?? "";
-                                classResources.homework = homeworkInput.value ?? "";
+                                classResources.materials =
+                                    materialsInput.value ?? "";
+                                classResources.homework =
+                                    homeworkInput.value ?? "";
                             }
                             return;
                         }
@@ -391,7 +428,9 @@ export async function mount(root, { signal } = {}) {
                             if (response.ok) {
                                 const notePayload = await response.json();
                                 await openPopup({
-                                    title: i18n.t("module.study.classes.open_notebook"),
+                                    title: i18n.t(
+                                        "module.study.classes.open_notebook",
+                                    ),
                                     body: `<p>${escapeHtml(notePayload?.data?.noteText || i18n.t("module.study.classes.empty_notebook"))}</p>`,
                                     actions: [
                                         {
@@ -403,7 +442,10 @@ export async function mount(root, { signal } = {}) {
                                 });
                                 return;
                             }
-                            if (response.status === 403 && studentId !== viewerAccountId) {
+                            if (
+                                response.status === 403 &&
+                                studentId !== viewerAccountId
+                            ) {
                                 const requestResponse = await apiFetch(
                                     `/api/v1/study/classes/${encodeURIComponent(classId)}/notebooks/${encodeURIComponent(studentId)}/request`,
                                     { method: "POST" },
@@ -423,7 +465,9 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
                             showToast(
-                                i18n.t("module.study.classes.notebook_load_failed"),
+                                i18n.t(
+                                    "module.study.classes.notebook_load_failed",
+                                ),
                                 { variant: "error" },
                             );
                             return;
@@ -435,7 +479,8 @@ export async function mount(root, { signal } = {}) {
                         if (noteReviewButton instanceof HTMLElement) {
                             const viewerStudentId =
                                 noteReviewButton.dataset.viewerId ?? "";
-                            const action = noteReviewButton.dataset.action ?? "reject";
+                            const action =
+                                noteReviewButton.dataset.action ?? "reject";
                             const response = await apiFetch(
                                 `/api/v1/study/classes/${encodeURIComponent(classId)}/notebooks/${encodeURIComponent(viewerAccountId)}/requests/${encodeURIComponent(viewerStudentId)}/${action}`,
                                 { method: "POST" },
@@ -463,7 +508,13 @@ export async function mount(root, { signal } = {}) {
     try {
         await loadClassrooms();
         await loadClassMeta();
-    } catch {
+    } catch (error) {
+        console.error(
+            "[classes-classroom] failed to initialize classroom hub",
+            {
+                error,
+            },
+        );
         showToast(i18n.t("module.study.classes.load_failed"), {
             variant: "error",
         });

@@ -109,7 +109,11 @@ export class DbClassesStore {
         classId: string,
         viewerAccountId: string,
     ): Promise<ClassroomResourceRow> {
-        return getClassroomResourcesForViewer(this.db, classId, viewerAccountId);
+        return getClassroomResourcesForViewer(
+            this.db,
+            classId,
+            viewerAccountId,
+        );
     }
 
     async updateClassroomResourcesForTeacher(
@@ -144,14 +148,14 @@ export class DbClassesStore {
         classId: string,
         ownerStudentAccountId: string,
         viewerAccountId: string,
-        isFriends?: (accountA: string, accountB: string) => Promise<boolean>,
+        areFriends?: (accountA: string, accountB: string) => Promise<boolean>,
     ): Promise<ClassroomNotebookRow> {
         return getNotebookForViewer(
             this.db,
             classId,
             ownerStudentAccountId,
             viewerAccountId,
-            isFriends,
+            areFriends,
         );
     }
 
