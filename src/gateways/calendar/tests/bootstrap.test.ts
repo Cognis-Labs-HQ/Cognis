@@ -538,7 +538,7 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
     ]);
 });
 
-test("calendar reminders dispatch notification entries for default and event-specific reminders", async () => {
+test("calendar reminders are scheduled instead of dispatched immediately", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -620,13 +620,7 @@ test("calendar reminders dispatch notification entries for default and event-spe
     const reminderSubjects = dispatchedSubjects.filter((subject) =>
         subject.startsWith("Calendar reminder: "),
     );
-    assert.equal(reminderSubjects.length, 3);
-    assert.ok(
-        reminderSubjects.includes("Calendar reminder: Default reminder event"),
-    );
-    assert.ok(
-        reminderSubjects.includes("Calendar reminder: Explicit reminder event"),
-    );
+    assert.equal(reminderSubjects.length, 0);
 });
 
 test("calendar accept response via invitations API saves copy into chosen calendar and returns movedTo", async () => {

@@ -88,7 +88,6 @@ function bindCalendarShareControls({
     shareGenerateBtn.addEventListener("click", () => {
         void loadCalendarShareLinks();
     });
-    void loadCalendarShareLinks();
     shareResults.addEventListener("click", async (event) => {
         const copyButton = event.target.closest("[data-calendar-share-copy]");
         if (!(copyButton instanceof HTMLElement)) return;

@@ -230,9 +230,9 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
     assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-generate/);
-    assert.match(
+    assert.doesNotMatch(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /void loadCalendarShareLinks\(\);/,
+        /void loadCalendarShareLinks\(\);\s*shareResults\.addEventListener/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
