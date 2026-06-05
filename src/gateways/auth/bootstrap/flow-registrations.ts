@@ -256,7 +256,7 @@ export async function registerAuthBootstrapHook(
                 | { listSettingsSections?: () => unknown[] }
                 | undefined;
             const registrySections = uiRegistry?.listSettingsSections?.() ?? [];
-            const mergedById = new Map<string, Record<string, unknown>>();
+            const uniqueSectionsById = new Map<string, Record<string, unknown>>();
             for (const section of [...flowSections, ...registrySections]) {
                 if (!section || typeof section !== "object") {
                     continue;
@@ -268,24 +268,33 @@ export async function registerAuthBootstrapHook(
                 if (!id) {
                     continue;
                 }
-                const existing = mergedById.get(id);
+                const existing = uniqueSectionsById.get(id);
                 if (
                     existing &&
                     (existing["scriptUrl"] !== sectionRecord["scriptUrl"] ||
                         existing["label"] !== sectionRecord["label"])
                 ) {
-                    console.warn(
-                        `[auth-gateway] Duplicate settings section '${id}' has conflicting descriptor fields.`,
+                    context.ctx.log?.(
+                        "warn",
+                        "Duplicate settings section has conflicting descriptor fields.",
+                        {
+                            component: "auth-gateway",
+                            sectionId: id,
+                            existingScriptUrl: existing["scriptUrl"],
+                            nextScriptUrl: sectionRecord["scriptUrl"],
+                            existingLabel: existing["label"],
+                            nextLabel: sectionRecord["label"],
+                        },
                     );
                 }
-                mergedById.set(id, {
+                uniqueSectionsById.set(id, {
                     ...(existing ?? {}),
                     ...sectionRecord,
                     id,
                     sectionId: id,
                 });
             }
-            const allSections = Array.from(mergedById.values());
+            const allSections = Array.from(uniqueSectionsById.values());
             stageCtx.data["sections"] = allSections;
             return { sections: allSections };
         },
