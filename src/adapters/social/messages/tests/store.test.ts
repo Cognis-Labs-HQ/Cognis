@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { DbMessagesStore } from "../store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { StructuredDbSelectCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbUpdateCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
 
@@ -233,4 +234,54 @@ test("getTopEmojiUsage queries chat_emoji_usage by account", async () => {
         ),
     );
     assert.equal(selectCmd.limit, 5);
+});
+
+test("unreadCount normalizes Date last_read_at to ISO before filtering", async () => {
+    const commandCalls: Array<StructuredDbCommand> = [];
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command: StructuredDbCommand) {
+            commandCalls.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "chatroom_members"
+            ) {
+                return {
+                    rows: [
+                        {
+                            chatroom_id: "room-1",
+                            account_id: "account-1",
+                            role: "member",
+                            joined_at: new Date("2026-06-05T11:00:00.000Z"),
+                            last_read_at: new Date("2026-06-05T11:32:07.000Z"),
+                            muted: 0,
+                            archived: 0,
+                        },
+                    ],
+                };
+            }
+            if (command.option === "SELECT" && command.table === "chat_messages") {
+                return { rows: [{ cnt: 3 }] };
+            }
+            return { rows: [] };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    const unread = await store.unreadCount("room-1", "account-1");
+
+    assert.equal(unread, 3);
+    const unreadSelect = commandCalls.find(
+        (cmd): cmd is StructuredDbSelectCommand =>
+            cmd.option === "SELECT" && cmd.table === "chat_messages",
+    );
+    assert.ok(unreadSelect);
+    const createdAfterClause = unreadSelect.where?.find(
+        (clause) => clause.column === "created_at" && clause.operator === ">",
+    );
+    assert.ok(createdAfterClause);
+    assert.equal(createdAfterClause.value, "2026-06-05T11:32:07.000Z");
 });
