@@ -244,9 +244,9 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                 await Promise.all([
                     messagesStore.setArchived(room.id, accountId, false),
                     messagesStore.setArchived(
-                    room.id,
-                    primaryTarget.accountId,
-                    false,
+                        room.id,
+                        primaryTarget.accountId,
+                        false,
                     ),
                 ]);
                 const pending = await messagesStore.findPendingMessageRequest(

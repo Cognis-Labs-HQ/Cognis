@@ -175,6 +175,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
             };
         },
         async addMember() {},
+        async setArchived() {},
         async generateAndStoreRoomKey() {},
         async appendRoomEvent() {},
         async findPendingMessageRequest() {
