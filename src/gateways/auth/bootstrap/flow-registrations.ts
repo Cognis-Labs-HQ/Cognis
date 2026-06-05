@@ -268,9 +268,18 @@ export async function registerAuthBootstrapHook(
                 if (!id) {
                     continue;
                 }
-                const existing = mergedById.get(id) ?? {};
+                const existing = mergedById.get(id);
+                if (
+                    existing &&
+                    (existing["scriptUrl"] !== sectionRecord["scriptUrl"] ||
+                        existing["label"] !== sectionRecord["label"])
+                ) {
+                    console.warn(
+                        `[auth-gateway] Duplicate settings section '${id}' has conflicting descriptor fields.`,
+                    );
+                }
                 mergedById.set(id, {
-                    ...existing,
+                    ...(existing ?? {}),
                     ...sectionRecord,
                     id,
                     sectionId: id,
