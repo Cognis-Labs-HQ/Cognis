@@ -189,6 +189,7 @@ export async function registerAuthBootstrapHook(
                 role,
                 isFounder,
                 userValidationMode: securitySettings.userValidationMode,
+                // Baseline default; optional notify flow hooks can override this.
                 requiredUserValidation: false,
             };
             const token = issueAccessToken(

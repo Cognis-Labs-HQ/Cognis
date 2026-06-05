@@ -10,6 +10,17 @@ import { CoreTfaGateway } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
 
+type PendingLoginAttemptInput = {
+    accountId: string;
+    role: "user" | "teacher" | "moderator" | "admin" | "owner";
+    isFounder: boolean;
+    provider: string;
+    providerId: string;
+    displayName: string;
+    userValidationMode: "none" | "smtp";
+    requiredUserValidation: boolean;
+};
+
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
 
@@ -269,24 +280,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                             ),
                         );
                     if (methods.length < 1) {
-                        const unavailableResult = { outcome: "tfa_unavailable" };
+                        const unavailableResult = {
+                            outcome: "tfa_unavailable",
+                        };
                         stageCtx.data["sessionResult"] = unavailableResult;
                         return { sessionResult: unavailableResult };
                     }
                     const createPendingLoginAttempt = ctx.capabilities.get<
-                        (input: {
-                            accountId: string;
-                            role: "user" | "teacher" | "moderator" | "admin" | "owner";
-                            isFounder: boolean;
-                            provider: string;
-                            providerId: string;
-                            displayName: string;
-                            userValidationMode: "none" | "smtp";
-                            requiredUserValidation: boolean;
-                        }) => { id: string }
+                        (input: PendingLoginAttemptInput) => { id: string }
                     >("tfa:createPendingLoginAttempt");
                     if (!createPendingLoginAttempt) {
-                        const unavailableResult = { outcome: "tfa_unavailable" };
+                        const unavailableResult = {
+                            outcome: "tfa_unavailable",
+                        };
                         stageCtx.data["sessionResult"] = unavailableResult;
                         return { sessionResult: unavailableResult };
                     }
@@ -301,7 +307,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                                 | "owner") ?? "user",
                         isFounder: currentSessionResult.isFounder === true,
                         provider: String(currentSessionResult.provider ?? ""),
-                        providerId: String(currentSessionResult.providerId ?? ""),
+                        providerId: String(
+                            currentSessionResult.providerId ?? "",
+                        ),
                         displayName: String(
                             currentSessionResult.displayName ?? accountId,
                         ),
@@ -310,7 +318,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                                 ? "smtp"
                                 : "none",
                         requiredUserValidation:
-                            currentSessionResult.requiredUserValidation === true,
+                            currentSessionResult.requiredUserValidation ===
+                            true,
                     });
                     const tfaRequiredResult = {
                         ...currentSessionResult,
@@ -339,7 +348,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         ) => string
                     >("auth:issueAccessToken");
                     if (!ttlSecondsGetter || !issueAccessTokenFn) {
-                        const unavailableResult = { outcome: "tfa_unavailable" };
+                        const unavailableResult = {
+                            outcome: "tfa_unavailable",
+                        };
                         stageCtx.data["sessionResult"] = unavailableResult;
                         return { sessionResult: unavailableResult };
                     }

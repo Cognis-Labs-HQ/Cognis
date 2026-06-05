@@ -4,10 +4,7 @@ import {
     extractCookieToken,
     shouldSetSecureCookie,
 } from "../../../../api/reuse/access-token-http.js";
-import {
-    issueAccessToken,
-    revokeAccessToken,
-} from "../../access-tokens.js";
+import { issueAccessToken, revokeAccessToken } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
 import type {
     AuthAccountStore,
@@ -19,7 +16,7 @@ import {
     requireAuth,
     type CapabilityStore,
 } from "../../../shared.js";
-import type { Ctx } from "@cognis/core";
+import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../../shared.js";
 import type {
     AuthGatewayRouteHandler,
@@ -52,12 +49,12 @@ export function createSessionRoutes({
             stringsBaseUrl?: string | string[];
         }>;
     }> {
-        const fallbackMethods = authGateway.getEnabledAdapters().map(
-            (adapter) => ({
+        const fallbackMethods = authGateway
+            .getEnabledAdapters()
+            .map((adapter) => ({
                 id: adapter.id,
                 name: adapter.name,
-            }),
-        );
+            }));
         if (!systemCtx.flow.exists("construct-login-ui")) {
             return { methods: fallbackMethods, integrations: [] };
         }
@@ -70,7 +67,9 @@ export function createSessionRoutes({
             const methods =
                 (stageResult as { methods?: unknown[] })?.methods ?? [];
             for (const method of methods) {
-                const id = String((method as { id?: unknown })?.id ?? "").trim();
+                const id = String(
+                    (method as { id?: unknown })?.id ?? "",
+                ).trim();
                 const name = String(
                     (method as { name?: unknown })?.name ?? "",
                 ).trim();
@@ -80,7 +79,11 @@ export function createSessionRoutes({
         }
         const integrationById = new Map<
             string,
-            { id: string; scriptUrl: string; stringsBaseUrl?: string | string[] }
+            {
+                id: string;
+                scriptUrl: string;
+                stringsBaseUrl?: string | string[];
+            }
         >();
         for (const stageResult of result.stageResults["compose-form"] ?? []) {
             const integrations =
@@ -115,13 +118,22 @@ export function createSessionRoutes({
         data: Record<string, unknown>;
         stageResults: Record<string, unknown[]>;
     }): LoginFlowSessionResult | null {
-        const dataSessionResult = flowResult.data["sessionResult"];
-        if (dataSessionResult && typeof dataSessionResult === "object") {
-            return dataSessionResult as LoginFlowSessionResult;
+        const flowDataSessionResult = flowResult.data["sessionResult"];
+        if (
+            flowDataSessionResult &&
+            typeof flowDataSessionResult === "object"
+        ) {
+            return flowDataSessionResult as LoginFlowSessionResult;
         }
         const establishStageResults =
             flowResult.stageResults["establish-session"] ?? [];
-        for (let index = establishStageResults.length - 1; index >= 0; index -= 1) {
+        // Walk newest-first so later gateway hooks can override earlier
+        // `sessionResult` values in the same establish-session stage.
+        for (
+            let index = establishStageResults.length - 1;
+            index >= 0;
+            index -= 1
+        ) {
             const stageResult = establishStageResults[index] as
                 | { sessionResult?: unknown }
                 | undefined;
@@ -320,7 +332,7 @@ export function createSessionRoutes({
             url.pathname === "/api/v1/auth/login-methods" &&
             req.method === "GET"
         ) {
-            const systemCtx = capabilities.get<Ctx>("system:ctx");
+            const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             const methods = systemCtx
                 ? (await resolveLoginUiConfig(systemCtx)).methods
                 : authGateway.getEnabledAdapters().map((adapter) => ({
@@ -337,7 +349,7 @@ export function createSessionRoutes({
         }
 
         if (url.pathname === "/api/v1/auth/login-ui" && req.method === "GET") {
-            const systemCtx = capabilities.get<Ctx>("system:ctx");
+            const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             const data = systemCtx
                 ? await resolveLoginUiConfig(systemCtx)
                 : {
@@ -366,7 +378,7 @@ export function createSessionRoutes({
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
 
-            const systemCtx = capabilities.get<Ctx>("system:ctx");
+            const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             if (systemCtx?.flow.exists("login")) {
                 const result = await systemCtx.flow.run("login", {
                     provider,

@@ -190,7 +190,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.flow.extend(
             "construct-login-ui",
             "compose-form",
-            { id: "notify-gateway:login-ui-required-email-integration", order: 50 },
+            {
+                id: "notify-gateway:login-ui-required-email-integration",
+                order: 50,
+            },
             () => ({
                 integrations: isGatewayEnabled()
                     ? [
@@ -198,7 +201,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                               id: "required-email-enforcement",
                               scriptUrl:
                                   "/static/gateways/notify/login-required-email-flow.js",
-                              stringsBaseUrl: "/static/gateways/notify/languages",
+                              stringsBaseUrl:
+                                  "/static/gateways/notify/languages",
                           },
                       ]
                     : [],

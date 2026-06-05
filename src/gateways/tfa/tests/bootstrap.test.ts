@@ -183,12 +183,10 @@ test("tfa login UI integration unhooks when gateway is disabled", async () => {
     const integrationsWhenEnabled = (
         await systemCtx.runFlow("construct-login-ui")
     ).stageResults["compose-form"]
-        .flatMap(
-            (entry) =>
-                ((entry as { integrations?: unknown[] }).integrations ?? []).map(
-                    (integration) =>
-                        (integration as { id?: string }).id ?? null,
-                ),
+        .flatMap((entry) =>
+            ((entry as { integrations?: unknown[] }).integrations ?? []).map(
+                (integration) => (integration as { id?: string }).id ?? null,
+            ),
         )
         .filter((id): id is string => typeof id === "string");
     assert.ok(integrationsWhenEnabled.includes("tfa"));
@@ -197,12 +195,10 @@ test("tfa login UI integration unhooks when gateway is disabled", async () => {
     const integrationsWhenDisabled = (
         await systemCtx.runFlow("construct-login-ui")
     ).stageResults["compose-form"]
-        .flatMap(
-            (entry) =>
-                ((entry as { integrations?: unknown[] }).integrations ?? []).map(
-                    (integration) =>
-                        (integration as { id?: string }).id ?? null,
-                ),
+        .flatMap((entry) =>
+            ((entry as { integrations?: unknown[] }).integrations ?? []).map(
+                (integration) => (integration as { id?: string }).id ?? null,
+            ),
         )
         .filter((id): id is string => typeof id === "string");
     assert.equal(integrationsWhenDisabled.includes("tfa"), false);

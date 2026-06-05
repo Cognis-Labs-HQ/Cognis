@@ -27,7 +27,7 @@ export async function mount(root) {
     let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
-    let loginUiConfigPromise = null;
+    let loginUiConfigLoadPromise = null;
     let passwordResetTokenHandled = false;
     let submitPasswordReset = null;
 
@@ -67,8 +67,8 @@ export async function mount(root) {
     }
 
     async function loadLoginUiConfig() {
-        if (!loginUiConfigPromise) {
-            loginUiConfigPromise = fetch("/api/v1/auth/login-ui")
+        if (!loginUiConfigLoadPromise) {
+            loginUiConfigLoadPromise = fetch("/api/v1/auth/login-ui")
                 .then(async (response) => {
                     if (!response.ok) {
                         throw new Error("login_ui_unavailable");
@@ -88,7 +88,7 @@ export async function mount(root) {
                     integrations: [],
                 }));
         }
-        return loginUiConfigPromise;
+        return loginUiConfigLoadPromise;
     }
 
     async function resolveLoginIntegration(id) {
@@ -104,42 +104,37 @@ export async function mount(root) {
         );
     }
 
+    function loadLoginIntegrationClient(integrationId, createClient) {
+        return resolveLoginIntegration(integrationId)
+            .then((integration) => {
+                if (!integration) {
+                    return null;
+                }
+                return import(integration.scriptUrl).then((mod) =>
+                    createClient(mod),
+                );
+            })
+            .catch((error) => {
+                console.error(error);
+                return null;
+            });
+    }
+
     async function loadTfaLoginClient() {
         if (!tfaLoginClientPromise) {
-            tfaLoginClientPromise = resolveLoginIntegration("tfa")
-                .then((integration) => {
-                    if (!integration) {
-                        return null;
-                    }
-                    return import(integration.scriptUrl).then((mod) =>
-                        mod.createTfaLoginClient({ baseI18n: i18n, root }),
-                    );
-                })
-                .catch((error) => {
-                    console.error(error);
-                    return null;
-                });
+            tfaLoginClientPromise = loadLoginIntegrationClient("tfa", (mod) =>
+                mod.createTfaLoginClient({ baseI18n: i18n, root }),
+            );
         }
         return tfaLoginClientPromise;
     }
 
     async function loadRequiredEmailEnforcementClient() {
         if (!requiredEmailEnforcementClientPromise) {
-            requiredEmailEnforcementClientPromise = resolveLoginIntegration(
+            requiredEmailEnforcementClientPromise = loadLoginIntegrationClient(
                 "required-email-enforcement",
-            )
-                .then((integration) => {
-                    if (!integration) {
-                        return null;
-                    }
-                    return import(integration.scriptUrl).then((mod) =>
-                        mod.createRequiredEmailEnforcementClient(),
-                    );
-                })
-                .catch((error) => {
-                    console.error(error);
-                    return null;
-                });
+                (mod) => mod.createRequiredEmailEnforcementClient(),
+            );
         }
         return requiredEmailEnforcementClientPromise;
     }
@@ -275,7 +270,8 @@ export async function mount(root) {
             }
             if (data.tfaRequired === true) {
                 lastTfaPayload = data;
-                currentTfaLoginAttemptId = tfaLoginClient.switchToTfaPrompt(data);
+                currentTfaLoginAttemptId =
+                    tfaLoginClient.switchToTfaPrompt(data);
             } else {
                 tfaLoginClient.handleSetupRequired(persistSession, data);
             }

@@ -175,7 +175,7 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     assert.equal(payload.data.requiredUserValidation, false);
 });
 
-test("login fails closed when TFA is required but no challenge methods are available", async () => {
+test("login ignores standalone TFA capabilities when TFA gateway flow hook is not active", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -247,15 +247,16 @@ test("login fails closed when TFA is required but no challenge methods are avail
         "/api/v1/auth/login",
     );
     assert.ok(loginResult.handled);
-    assert.equal(loginResult.res.status, 503);
+    assert.equal(loginResult.res.status, 200);
     const payload = JSON.parse(loginResult.res.payload) as {
-        error: { code: string };
+        data: { token?: string; tfaRequired?: boolean };
     };
-    assert.equal(payload.error.code, "tfa_unavailable");
-    assert.equal(loginResult.res.headers["set-cookie"], undefined);
+    assert.equal(typeof payload.data.token, "string");
+    assert.equal(payload.data.tfaRequired, undefined);
+    assert.equal(typeof loginResult.res.headers["set-cookie"], "string");
 });
 
-test("login fails closed when TFA is required but getLoginMethods capability is absent", async () => {
+test("login succeeds without TFA flow hook even when tfa:getLoginMethods is absent", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -326,10 +327,11 @@ test("login fails closed when TFA is required but getLoginMethods capability is 
         "/api/v1/auth/login",
     );
     assert.ok(loginResult.handled);
-    assert.equal(loginResult.res.status, 503);
+    assert.equal(loginResult.res.status, 200);
     const payload = JSON.parse(loginResult.res.payload) as {
-        error: { code: string };
+        data: { token?: string; tfaRequired?: boolean };
     };
-    assert.equal(payload.error.code, "tfa_unavailable");
-    assert.equal(loginResult.res.headers["set-cookie"], undefined);
+    assert.equal(typeof payload.data.token, "string");
+    assert.equal(payload.data.tfaRequired, undefined);
+    assert.equal(typeof loginResult.res.headers["set-cookie"], "string");
 });
