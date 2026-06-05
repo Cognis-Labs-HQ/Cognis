@@ -111,17 +111,19 @@ function extractImportPaths(source) {
     return Array.from(importPaths);
 }
 
+const FORBIDDEN_COMPONENT_IMPORT_ROOTS = [
+    normalizePath(resolve(ROOT, "src/gateways")),
+    normalizePath(resolve(ROOT, "src/adapters")),
+];
+
 function isDirectComponentImport(sourceFilePath, importPath) {
     if (importPath.startsWith(".")) {
         const resolvedImportPath = resolve(dirname(sourceFilePath), importPath);
         const normalizedImportPath = normalizePath(resolvedImportPath);
-        return (
-            normalizedImportPath.startsWith(
-                `${normalizePath(resolve(ROOT, "src/gateways"))}/`,
-            ) ||
-            normalizedImportPath.startsWith(
-                `${normalizePath(resolve(ROOT, "src/adapters"))}/`,
-            )
+        return FORBIDDEN_COMPONENT_IMPORT_ROOTS.some(
+            (forbiddenRoot) =>
+                normalizedImportPath === forbiddenRoot ||
+                normalizedImportPath.startsWith(`${forbiddenRoot}/`),
         );
     }
 
@@ -322,7 +324,7 @@ test("route handlers and module routers avoid direct gateway or adapter imports"
 
 const REQUIRED_INSTRUCTION_SNIPPETS = [
     "Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions.",
-    "Route files must not import auth gateway internals directly; they consume `requireAuth`, session lookups, token lookups, and similar helpers through the injected route context.",
+    "A gateway is the only component that may interact directly with its adapters.",
     "Never name such a directory `shared/`, `utils/`, `helpers/`, or `common/`",
     'For gateway-owned API spaces, each gateway must claim its canonical API prefix with `ctx.routeRegistry.registerPrefix("/api/v1/<gateway-id>", "<gateway-id>")` during bootstrap,',
     "Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness.",
