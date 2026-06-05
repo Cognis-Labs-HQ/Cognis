@@ -19,6 +19,7 @@ let i18n = null;
 let reprompt = null;
 let users = [];
 let registrationGatewayActive = false;
+let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
 
@@ -89,6 +90,18 @@ async function loadRegistrationGatewayState() {
     return inviteAdapter?.enabled === true;
 }
 
+async function loadSmtpAdapterState() {
+    const response = await apiFetch("/api/v1/gateways/notify/adapters");
+    if (!response.ok) return false;
+    const payload = await response.json();
+    const adapters = Array.isArray(payload?.data) ? payload.data : [];
+    return adapters.some(
+        (entry) =>
+            (entry.id === "smtp" || entry.senderId === "smtp") &&
+            (entry.enabled === true || entry.active === true),
+    );
+}
+
 async function fetchUserInfo(username) {
     const response = await apiFetch(
         `/api/v1/users/${encodeURIComponent(username)}/info`,
@@ -145,9 +158,10 @@ async function promptInput({ title, label, type = "text", placeholder = "" }) {
 }
 
 async function refreshData() {
-    [users, registrationGatewayActive] = await Promise.all([
+    [users, registrationGatewayActive, smtpAdapterActive] = await Promise.all([
         loadUsers(),
         loadRegistrationGatewayState(),
+        loadSmtpAdapterState(),
     ]);
     buildElements();
 }
@@ -157,7 +171,7 @@ function renderUsersTable() {
     const currentUser = users.find((user) => user.username === currentUsername);
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    const inviteButtonHtml = registrationGatewayActive
+    const inviteButtonHtml = registrationGatewayActive && smtpAdapterActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
         </div>`
@@ -247,6 +261,7 @@ async function runUserMenuAction(action, username) {
     }
 
     if (action === "resend") {
+        if (!smtpAdapterActive) return;
         const emails = await fetchUserEmails(username);
         const unverifiedEmail =
             emails.find((e) => e.isPrimary && !e.verified) ??
@@ -388,7 +403,9 @@ function bindUsersInteractions() {
             const username = btn.dataset.username;
             if (!username || !(btn instanceof HTMLButtonElement)) return;
             const user = users.find((entry) => entry.username === username);
-            const emails = await fetchUserEmails(username);
+            const emails = smtpAdapterActive
+                ? await fetchUserEmails(username)
+                : [];
             const hasUnverifiedEmails = emails.some((e) => !e.verified);
             const menuItems = [
                 {
@@ -522,6 +539,7 @@ export async function mount(rootEl, { signal } = {}) {
     reprompt = createRepromptGuard({ i18n });
     users = [];
     registrationGatewayActive = false;
+    smtpAdapterActive = false;
 
     await refreshData();
 
@@ -543,7 +561,7 @@ export async function mount(rootEl, { signal } = {}) {
     await composer.init();
 
     const pageAction = new URL(location.href).searchParams.get("action");
-    if (pageAction === "invite" && registrationGatewayActive) {
+    if (pageAction === "invite" && registrationGatewayActive && smtpAdapterActive) {
         await triggerInviteFlow();
     }
 }

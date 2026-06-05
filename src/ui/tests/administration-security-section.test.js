@@ -24,3 +24,14 @@ test("administration security section renders password policy controls", () => {
     assert.match(source, /id="security-enforce-tfa-for-all-users"/);
     assert.match(source, /enforceTfaForAllUsers/);
 });
+
+test("administration security section hides smtp mode when smtp adapter is unavailable", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/security.js"),
+        "utf8",
+    );
+
+    assert.match(source, /smtpOption\.hidden = true/);
+    assert.match(source, /currentUserValidationMode = "none"/);
+    assert.match(source, /originalUserValidationMode = "none"/);
+});

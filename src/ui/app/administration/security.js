@@ -81,7 +81,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const adapters = Array.isArray(payload?.data) ? payload.data : [];
             return adapters.some(
                 (adapter) =>
-                    adapter.senderId === "smtp" && adapter.active === true,
+                    (adapter.senderId === "smtp" || adapter.id === "smtp") &&
+                    (adapter.active === true || adapter.enabled === true),
             );
         } catch {
             return false;
@@ -266,16 +267,19 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             "#security-enforce-tfa-for-all-users",
         );
         if (validationSelect instanceof HTMLSelectElement) {
-            validationSelect.value = currentUserValidationMode;
             const smtpOption = validationSelect.querySelector(
                 "option[value='smtp']",
             );
             if (smtpOption instanceof HTMLOptionElement && !smtpActive) {
                 smtpOption.disabled = true;
+                smtpOption.hidden = true;
                 smtpOption.textContent = i18n.t(
                     "ui.app.admin.security.user_validation_mode.smtp_unavailable",
                 );
+                currentUserValidationMode = "none";
+                originalUserValidationMode = "none";
             }
+            validationSelect.value = currentUserValidationMode;
         }
         if (registrationsToggle instanceof HTMLInputElement) {
             registrationsToggle.checked = currentPublicRegistrationEnabled;
