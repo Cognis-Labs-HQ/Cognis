@@ -80,7 +80,9 @@ export async function mount(root, { signal } = {}) {
 
     async function loadStudyLanguages() {
         try {
-            const response = await apiFetch("/api/v1/study/registered-languages");
+            const response = await apiFetch(
+                "/api/v1/study/registered-languages",
+            );
             if (response.ok) {
                 const payload = await response.json();
                 availableStudyLanguages = Array.isArray(payload?.data)
@@ -285,14 +287,15 @@ export async function mount(root, { signal } = {}) {
             })
             .filter(Boolean)
             .join("");
+        const languageDisabledAttr = options ? "" : " disabled";
         return `
           <div class="classes-request-form">
             <h3 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.create_class"))}</h3>
             <div class="classes-request-row">
-              <select class="theme-select classes-language-select"${options ? "" : " disabled"}>
+              <select class="theme-select classes-language-select" aria-label="${escapeHtml(i18n.t("ui.reuse.language"))}"${languageDisabledAttr}>
                 ${options}
               </select>
-              <button type="button" class="btn-confirm btn-animated classes-create-class-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_class"))}" title="${escapeHtml(i18n.t("module.study.classes.create_class"))}"${options ? "" : " disabled"}>
+              <button type="button" class="btn-confirm btn-animated classes-create-class-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_class"))}" title="${escapeHtml(i18n.t("module.study.classes.create_class"))}"${languageDisabledAttr}>
                 +
               </button>
             </div>
@@ -372,8 +375,7 @@ export async function mount(root, { signal } = {}) {
         title: i18n.t("module.study.classes.page_title"),
         render() {
             return `<div class="classes-section">${
-                (isTeacher ? renderClassList() : "") +
-                renderRequestForm()
+                (isTeacher ? renderClassList() : "") + renderRequestForm()
             }</div>`;
         },
         onRender() {
@@ -384,8 +386,7 @@ export async function mount(root, { signal } = {}) {
 
             function refreshSection() {
                 section.innerHTML =
-                    (isTeacher ? renderClassList() : "") +
-                    renderRequestForm();
+                    (isTeacher ? renderClassList() : "") + renderRequestForm();
             }
 
             section.addEventListener(

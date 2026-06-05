@@ -134,39 +134,6 @@ function createMyClassesPageRoute(
             return true;
         }
 
-        function createRequestsPageRoute(
-            routeContext: RouteContext | undefined,
-            isAdapterEnabled: () => boolean,
-        ) {
-            const ctx = resolveRouteContext(routeContext);
-            return async (
-                req: IncomingMessage,
-                res: ServerResponse,
-                url: URL,
-            ): Promise<boolean> => {
-                if (req.method && req.method !== "GET") return false;
-                if (!isAdapterEnabled()) return false;
-                if (url.pathname !== "/requests") return false;
-                const session = ctx.getCookieSession(req);
-                if (!session) {
-                    res.writeHead(302, { location: "/login" });
-                    res.end();
-                    return true;
-                }
-                if (!ctx.hasMinRole(session.role, "admin")) {
-                    res.writeHead(302, { location: "/dashboard" });
-                    res.end();
-                    return true;
-                }
-                ctx.setPageSecurityHeaders(res);
-                const html = await import("node:fs/promises").then((fs) =>
-                    fs.readFile(path.join(ADAPTER_UI_ROOT, "requests.html"), "utf8"),
-                );
-                res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-                res.end(html);
-                return true;
-            };
-        }
         if (session.role === "teacher") {
             res.writeHead(302, { location: "/classes" });
             res.end();
@@ -175,6 +142,40 @@ function createMyClassesPageRoute(
         ctx.setPageSecurityHeaders(res);
         const html = await import("node:fs/promises").then((fs) =>
             fs.readFile(path.join(ADAPTER_UI_ROOT, "my-classes.html"), "utf8"),
+        );
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return true;
+    };
+}
+
+function createRequestsPageRoute(
+    routeContext: RouteContext | undefined,
+    isAdapterEnabled: () => boolean,
+) {
+    const ctx = resolveRouteContext(routeContext);
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (req.method && req.method !== "GET") return false;
+        if (!isAdapterEnabled()) return false;
+        if (url.pathname !== "/requests") return false;
+        const session = ctx.getCookieSession(req);
+        if (!session) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        if (!ctx.hasMinRole(session.role, "admin")) {
+            res.writeHead(302, { location: "/dashboard" });
+            res.end();
+            return true;
+        }
+        ctx.setPageSecurityHeaders(res);
+        const html = await import("node:fs/promises").then((fs) =>
+            fs.readFile(path.join(ADAPTER_UI_ROOT, "requests.html"), "utf8"),
         );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
@@ -223,12 +224,20 @@ export async function bootstrapStudyAdapter(
     };
     const loadTeacherManualApproval = async (): Promise<boolean> => {
         if (!preferenceStore) return true;
-        const raw = await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY);
-        return parseSecuritySettings(raw)?.requireTeacherManualApproval !== false;
+        const raw = await preferenceStore.get(
+            "__system__",
+            SECURITY_SETTINGS_KEY,
+        );
+        return (
+            parseSecuritySettings(raw)?.requireTeacherManualApproval !== false
+        );
     };
     persistTeacherManualApproval = async (value) => {
         if (!preferenceStore) return;
-        const raw = await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY);
+        const raw = await preferenceStore.get(
+            "__system__",
+            SECURITY_SETTINGS_KEY,
+        );
         const settings = parseSecuritySettings(raw);
         await preferenceStore.set(
             "__system__",
@@ -308,7 +317,10 @@ export async function bootstrapStudyAdapter(
         createMyClassesPageRoute(routeContext, isEnabled),
         "study",
     );
-    ctx.registerRoute(createRequestsPageRoute(routeContext, isEnabled), "study");
+    ctx.registerRoute(
+        createRequestsPageRoute(routeContext, isEnabled),
+        "study",
+    );
     ctx.registerRoute(
         createClassroomHubPageRoute(routeContext, isEnabled),
         "study",
