@@ -409,6 +409,7 @@ export function createPageComposer(
         computeSubViewPlacements: (subState) =>
             renderer.computeSubViewPlacements(subState),
         syncSubEditToggle,
+        applySubLayoutForCurrentGridColumns,
     });
 
     renderer = createComposerRenderer({

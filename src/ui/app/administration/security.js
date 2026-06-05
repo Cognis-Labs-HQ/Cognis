@@ -10,7 +10,7 @@ import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
-import { isSmtpAdapterActive } from "../../reuse/notify-smtp-adapter.js";
+import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
 
 const POLICY_FIELDS = [
     {

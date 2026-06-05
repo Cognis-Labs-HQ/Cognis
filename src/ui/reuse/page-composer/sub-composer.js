@@ -31,6 +31,7 @@ export function createSubComposerHandlers({
     bindFormDraftPersistence,
     computeSubViewPlacements,
     syncSubEditToggle,
+    applySubLayoutForCurrentGridColumns,
 }) {
     const subStates = new Map();
     function computeSubGridDimensions(state) {

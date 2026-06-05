@@ -129,6 +129,21 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
             scriptUrl: "/static/gateways/auth/security-prefs/index.js",
         },
     ]);
+    const settingsSections = settingsResult.data["sections"] as unknown[];
+    assert.ok(
+        Array.isArray(settingsSections),
+        "data.sections must be an array",
+    );
+    assert.ok(
+        settingsSections.some(
+            (section) =>
+                typeof section === "object" &&
+                section !== null &&
+                (section as Record<string, unknown>)["scriptUrl"] ===
+                    "/static/gateways/auth/security-prefs/index.js",
+        ),
+        "data.sections must include the security section",
+    );
 });
 
 test("auth bootstrap hook directory contributes route-level TFA login capabilities", async () => {

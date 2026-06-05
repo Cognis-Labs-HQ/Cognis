@@ -8,7 +8,7 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
-import { isSmtpAdapterActive } from "../../reuse/notify-smtp-adapter.js";
+import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
 import {
     ACCESS_ROLES,
     getRoleLabel,

@@ -256,6 +256,7 @@ export async function registerAuthBootstrapHook(
                 | undefined;
             const registrySections = uiRegistry?.listSettingsSections?.() ?? [];
             const allSections = [...flowSections, ...registrySections];
+            stageCtx.data["sections"] = allSections;
             return { sections: allSections };
         },
     );
