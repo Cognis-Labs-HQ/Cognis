@@ -63,7 +63,7 @@ diterbitkan setelah kapabilitas auth berhasil diambil dari ctx, sehingga
     - `src/gateways/study/gateway.ts`
 - Instruksi dan pelacakan versi:
     - `.github/copilot-instructions.md`
-    - `src/api/gateway-bootstrap.ts`
+    - `src/api/bootstrap/gateway.ts`
     - `src/docs/versions.en.md`
     - manifes `package.json` adaptor/modul yang kini menunjuk ke `@cognis/core@0.1.1` lokal
 

@@ -365,7 +365,7 @@ To add a new gateway:
 
 1. Create `src/gateways/<id>/` with `manifest.json`, `bootstrap.ts`, and `gateway.ts`.
 2. Add `docs/index.en.md` (and DE/JA/ID variants).
-3. Add the gateway to `src/components/docs/versions.en.md`.
+3. Add the gateway to `src/docs/versions.en.md`.
 4. Add an entry to each language variant of `src/docs/index.<lang>.md` under the Gateways table.
 
 The `GatewayService` discovers the gateway directory at startup — no import in

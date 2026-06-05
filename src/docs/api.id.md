@@ -34,13 +34,13 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 
 ### Lokasi Sumber Utama
 
-| Path                           | Tujuan                                           |
-| ------------------------------ | ------------------------------------------------ |
-| `src/api/main.ts`              | Titik masuk server                               |
-| `src/api/server.ts`            | Setup server HTTP dan dispatch route             |
-| `src/api/route-registry.ts`    | Registry route untuk pendaftaran mandiri gateway |
-| `src/api/gateway-bootstrap.ts` | Memuat dan mem-bootstrap semua gateway           |
-| `src/gateways/auth/guard.ts`   | Middleware `requireAuth`, `getAuthClaims`        |
+| Path                              | Tujuan                                           |
+| --------------------------------- | ------------------------------------------------ |
+| `src/api/main.ts`                 | Titik masuk server                               |
+| `src/api/server.ts`               | Setup server HTTP dan dispatch route             |
+| `src/api/reuse/route-registry.ts` | Registry route untuk pendaftaran mandiri gateway |
+| `src/api/bootstrap/gateway.ts`    | Konteks bootstrap gateway dan kontrak bootstrap  |
+| `src/gateways/auth/guard.ts`      | Middleware `requireAuth`, `getAuthClaims`        |
 
 ## Konfigurasi
 

@@ -13,7 +13,7 @@ Die Authentifizierung verwendet undurchsichtige Bearer-Token, die bei der Anmeld
 - Den HTTP-Server hosten und die Routen-Registry in die Anfrageverarbeitung einbinden.
 - Die Middleware `requireAuth` und `getAuthClaims` bereitstellen, die von allen geschützten Routen-Handlern verwendet wird.
 - Die Antwort-Umschlag-Konvention `{ data }` / `{ error }` durchsetzen.
-- Alle Gateways in Abhängigkeitsreihenfolge über `src/api/gateway-bootstrap.ts` booten.
+- Alle Gateways in Abhängigkeitsreihenfolge über `src/api/bootstrap/gateway.ts` booten.
 - Das Datenbankschema beim Start über `src/api/bootstrap/db-init.ts` initialisieren.
 - Wiederverwendbare Hilfsprogramme für Routen-Handler bereitstellen: `src/api/reuse/`.
 
@@ -54,8 +54,8 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 | ------------------------------------ | ------------------------------------------------------------------------ |
 | `src/api/main.ts`                    | Server-Einstiegspunkt                                                    |
 | `src/api/server.ts`                  | HTTP-Server-Einrichtung und Routen-Verteilung                            |
-| `src/api/route-registry.ts`          | Routen-Registry, die von Gateways zur Selbstregistrierung verwendet wird |
-| `src/api/gateway-bootstrap.ts`       | Lädt und bootet alle Gateways                                            |
+| `src/api/reuse/route-registry.ts`    | Routen-Registry, die von Gateways zur Selbstregistrierung verwendet wird |
+| `src/api/bootstrap/gateway.ts`       | Gateway-Bootstrap-Kontext und Bootstrap-Verträge                         |
 | `src/gateways/auth/guard.ts`         | Middleware `requireAuth`, `getAuthClaims`                                |
 | `src/gateways/auth/access-tokens.ts` | Token-Ausstellung und -Validierung                                       |
 | `src/api/bootstrap/db-init.ts`       | Schema-Initialisierung beim Start                                        |

@@ -62,7 +62,7 @@ startup-time `ReferenceError` in `src/api/main.ts`.
     - `src/gateways/study/gateway.ts`
 - Instructions and version tracking:
     - `.github/copilot-instructions.md`
-    - `src/api/gateway-bootstrap.ts`
+    - `src/api/bootstrap/gateway.ts`
     - `src/docs/versions.en.md`
     - adapter/module `package.json` manifests that now point to local `@cognis/core@0.1.1`
 

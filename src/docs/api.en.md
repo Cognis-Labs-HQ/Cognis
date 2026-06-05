@@ -13,7 +13,7 @@ Authentication uses opaque bearer tokens issued at login. The same token is also
 - Host the HTTP server and wire the route registry into request handling.
 - Provide `requireAuth` and `getAuthClaims` middleware used by all protected route handlers.
 - Enforce the `{ data }` / `{ error }` response envelope convention.
-- Bootstrap all gateways in dependency order via `src/api/gateway-bootstrap.ts`.
+- Bootstrap all gateways in dependency order via `src/api/bootstrap/gateway.ts`.
 - Initialize the database schema at startup via `src/api/bootstrap/db-init.ts`.
 - Provide reuse utilities for route handlers: `src/api/reuse/`.
 
@@ -54,8 +54,8 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 | ------------------------------------ | ------------------------------------------------------ |
 | `src/api/main.ts`                    | Server entry point                                     |
 | `src/api/server.ts`                  | HTTP server setup and route dispatch                   |
-| `src/api/route-registry.ts`          | Route registry used by gateways to self-register       |
-| `src/api/gateway-bootstrap.ts`       | Loads and bootstraps all gateways                      |
+| `src/api/reuse/route-registry.ts`    | Route registry used by gateways to self-register       |
+| `src/api/bootstrap/gateway.ts`       | Gateway bootstrap context and bootstrap contracts      |
 | `src/gateways/auth/guard.ts`         | `requireAuth`, `getAuthClaims` middleware              |
 | `src/gateways/auth/access-tokens.ts` | Token issuance and validation                          |
 | `src/api/bootstrap/db-init.ts`       | Schema initialization at startup                       |

@@ -51,17 +51,17 @@ Modul ditemukan dari `src/modules/` (internal, tepercaya) dan `COGNIS_MODULES_RO
 
 ### Lokasi sumber utama
 
-| Area                     | Jalur                          |
-| ------------------------ | ------------------------------ |
-| Kontrak inti             | `src/core/contracts/`          |
-| Layanan inti             | `src/core/services/`           |
-| Entri server HTTP        | `src/api/main.ts`              |
-| Registri rute            | `src/api/route-registry.ts`    |
-| Utilitas bersama gateway | `src/gateways/shared.ts`       |
-| Bootstrapper gateway     | `src/api/gateway-bootstrap.ts` |
-| Titik entri UI           | `src/ui/app/`                  |
-| Utilitas reuse UI        | `src/ui/reuse/`                |
-| Dokumen platform         | `src/docs/`                    |
+| Area                     | Jalur                             |
+| ------------------------ | --------------------------------- |
+| Kontrak inti             | `src/core/contracts/`             |
+| Layanan inti             | `src/core/services/`              |
+| Entri server HTTP        | `src/api/main.ts`                 |
+| Registri rute            | `src/api/reuse/route-registry.ts` |
+| Utilitas bersama gateway | `src/gateways/shared.ts`          |
+| Bootstrapper gateway     | `src/api/bootstrap/gateway.ts`    |
+| Titik entri UI           | `src/ui/app/`                     |
+| Utilitas reuse UI        | `src/ui/reuse/`                   |
+| Dokumen platform         | `src/docs/`                       |
 
 ## Titik Ekstensi
 

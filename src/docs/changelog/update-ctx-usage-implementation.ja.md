@@ -61,7 +61,7 @@ gateway 所有の UI/API ルートまで広げ、capability の提供箇所で�
     - `src/gateways/study/gateway.ts`
 - 指示とバージョン管理:
     - `.github/copilot-instructions.md`
-    - `src/api/gateway-bootstrap.ts`
+    - `src/api/bootstrap/gateway.ts`
     - `src/docs/versions.en.md`
     - ローカル `@cognis/core@0.1.1` を参照する adapter/module の `package.json`
 

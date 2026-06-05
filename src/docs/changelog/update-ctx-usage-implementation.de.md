@@ -63,7 +63,7 @@ aufgelöst wurde. Dadurch tritt der Startup-`ReferenceError` in
     - `src/gateways/study/gateway.ts`
 - Anweisungen und Versionspflege:
     - `.github/copilot-instructions.md`
-    - `src/api/gateway-bootstrap.ts`
+    - `src/api/bootstrap/gateway.ts`
     - `src/docs/versions.en.md`
     - Adapter-/Modul-`package.json`-Manifeste mit lokalem `@cognis/core@0.1.1`
 

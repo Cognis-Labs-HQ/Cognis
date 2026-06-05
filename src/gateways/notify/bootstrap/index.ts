@@ -59,7 +59,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway,
         capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
-            ctx.routeRegistry.register(handler, gatewayId),
+            ctx.routeRegistry.register(handler, gatewayId ?? "notify"),
         registerNavbarPlugin: (scriptUrl) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
         registerStaticDir: (prefix, dir) =>

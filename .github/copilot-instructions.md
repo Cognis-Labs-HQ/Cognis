@@ -152,6 +152,8 @@ In `src/core/contracts/`, use domain subdirectories instead of feature prefixes 
 
 Routes must be granular enough that disabling or removing a gateway, adapter, or module cannot create dead code or crashes elsewhere. Gateways and adapters should be able to register their own API routes as part of their setup, so that removing a component is as simple as not loading it. The server assembles the full route table from what is present, rather than from a hardcoded list of known subsystems. Avoid presumptive checks in server.ts for a specific named gateway or module.
 
+For gateway-owned API spaces, each gateway must claim its canonical API prefix with `ctx.routeRegistry.registerPrefix("/api/v1/<gateway-id>", "<gateway-id>")` during bootstrap, and all gateway/adapter route registrations must carry a gateway ID (or default to the owning gateway ID). This guarantees disabled gateways return a deterministic `503 gateway_disabled` response for any request under their owned prefix instead of silently falling through to 404.
+
 ### Adapter directory structure
 
 Adapters live under `src/adapters/<gateway-id>/<adapter-id>/`. For example, the SMTP notification adapter lives at `src/adapters/notify/smtp/`, and the MariaDB database adapter at `src/adapters/db/mariadb/`. This lets a gateway find all of its adapters consistently by scanning `src/adapters/<gateway-id>/`. Never nest an adapter under a flat path like `src/adapters/notify-smtp/`.

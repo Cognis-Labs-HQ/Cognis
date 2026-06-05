@@ -13,7 +13,7 @@
 - HTTP サーバーをホストし、ルートレジストリをリクエスト処理に組み込む。
 - すべての保護されたルートハンドラーが使用する `requireAuth` および `getAuthClaims` ミドルウェアを提供する。
 - `{ data }` / `{ error }` レスポンスエンベロープ規約を適用する。
-- `src/api/gateway-bootstrap.ts` を介してすべてのゲートウェイを依存順にブートストラップする。
+- `src/api/bootstrap/gateway.ts` を介してすべてのゲートウェイを依存順にブートストラップする。
 - `src/api/bootstrap/db-init.ts` を介して起動時にデータベーススキーマを初期化する。
 - ルートハンドラー用の再利用ユーティリティを提供する: `src/api/reuse/`。
 
@@ -54,8 +54,8 @@
 | ------------------------------------ | -------------------------------------------------------- |
 | `src/api/main.ts`                    | サーバーエントリポイント                                 |
 | `src/api/server.ts`                  | HTTP サーバーのセットアップとルートディスパッチ          |
-| `src/api/route-registry.ts`          | ゲートウェイが自己登録に使用するルートレジストリ         |
-| `src/api/gateway-bootstrap.ts`       | すべてのゲートウェイのロードとブートストラップ           |
+| `src/api/reuse/route-registry.ts`    | ゲートウェイが自己登録に使用するルートレジストリ         |
+| `src/api/bootstrap/gateway.ts`       | ゲートウェイブートストラップ文脈とブートストラップ契約   |
 | `src/gateways/auth/guard.ts`         | `requireAuth`、`getAuthClaims` ミドルウェア              |
 | `src/gateways/auth/access-tokens.ts` | トークンの発行と検証                                     |
 | `src/api/bootstrap/db-init.ts`       | 起動時のスキーマ初期化                                   |
