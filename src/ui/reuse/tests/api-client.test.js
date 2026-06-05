@@ -125,6 +125,26 @@ test("apiFetch shows a permanent warning toast for retryable API server response
     assert.equal(showToastCalls[0].options.permanent, true);
 });
 
+test("apiFetch allows suppressing connection recovery toasts per request", async () => {
+    const networkError = new Error("network down");
+    networkError.name = "TypeError";
+    const { apiClient, showToastCalls } = loadApiClientForTests({
+        fetchImpl: async () => {
+            throw networkError;
+        },
+    });
+    apiClient.configureConnectionRecoveryPrompt("Connection interrupted.");
+
+    await assert.rejects(
+        apiClient.apiFetch("/api/v1/modules/jitsi-meet/ping", {
+            suppressConnectionRecoveryToast: true,
+        }),
+        networkError,
+    );
+
+    assert.equal(showToastCalls.length, 0);
+});
+
 test("apiFetch marks toast-triggering network failures for crash popup suppression", async () => {
     const networkError = new Error("Failed to fetch");
     networkError.name = "TypeError";
