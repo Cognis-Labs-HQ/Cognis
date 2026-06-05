@@ -190,6 +190,14 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                 primaryTarget.accountId,
             );
             if (existing) {
+                await Promise.all([
+                    messagesStore.setArchived(existing.id, accountId, false),
+                    messagesStore.setArchived(
+                        existing.id,
+                        primaryTarget.accountId,
+                        false,
+                    ),
+                ]);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: existing }));
                 return true;
@@ -233,6 +241,14 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                             requesterProfile?.displayName ?? null,
                     });
                 }
+                await Promise.all([
+                    messagesStore.setArchived(room.id, accountId, false),
+                    messagesStore.setArchived(
+                    room.id,
+                    primaryTarget.accountId,
+                    false,
+                    ),
+                ]);
                 const pending = await messagesStore.findPendingMessageRequest(
                     accountId,
                     primaryTarget.accountId,

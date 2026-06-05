@@ -149,6 +149,10 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
             );
             await messagesStore.generateAndStoreRoomKey(room.id);
         }
+        await Promise.all([
+            messagesStore.setArchived(room.id, request.fromAccountId, false),
+            messagesStore.setArchived(room.id, request.toAccountId, false),
+        ]);
         await messagesStore.updateMessageRequestStatus(
             request.id,
             "approved",
