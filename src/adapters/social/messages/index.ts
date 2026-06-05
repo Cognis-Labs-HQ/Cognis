@@ -317,6 +317,18 @@ export async function bootstrapSocialAdapter(
         );
         if (systemCtx && sendMessageFlow) {
             registerCanonicalFlow(systemCtx, sendMessageFlow);
+        } else if (!systemCtx) {
+            ctx.log?.(
+                "warn",
+                "Messages adapter: cannot register send-message flow because CTX capability is unavailable.",
+                { component: "social-messages-adapter" },
+            );
+        } else {
+            ctx.log?.(
+                "warn",
+                "Messages adapter: send-message canonical flow missing from flow catalog.",
+                { component: "social-messages-adapter" },
+            );
         }
     }
 
