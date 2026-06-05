@@ -28,6 +28,7 @@
   <string name="module.social.messages.new">New Conversation</string>
   <string name="module.social.messages.load_earlier">Load earlier</string>
   <string name="module.social.messages.start_failed">Failed to start conversation.</string>
+  <string name="module.social.messages.start_failed_forbidden">You cannot message this user.</string>
   <string name="module.social.messages.request_action_failed">Failed to update message request.</string>
   <string name="module.social.messages.members">members</string>
   <string name="module.social.messages.set_avatar">Set avatar</string>
@@ -40,6 +41,7 @@
   <string name="module.social.messages.archived_cannot_send">This conversation is archived. Start a new conversation to message again.</string>
   <string name="module.social.messages.not_member_cannot_send">You are no longer a member of this conversation.</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
+  <string name="module.social.messages.send_failed">Failed to send message.</string>
   <string name="module.social.messages.page_subtitle">Your conversations and direct messages.</string>
   <string name="module.social.messages.request_sent">Message request sent.</string>
   <string name="module.social.messages.read_by">Read by</string>

@@ -624,6 +624,10 @@ export async function mount(root, { signal } = {}) {
                             await roomState.reloadRoomsList();
                             return;
                         }
+                        showToast(
+                            i18n.t("module.social.messages.send_failed"),
+                            { variant: "error" },
+                        );
                         return;
                     }
                     if (composerInput instanceof HTMLTextAreaElement) {

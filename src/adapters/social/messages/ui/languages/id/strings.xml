@@ -28,6 +28,7 @@
   <string name="module.social.messages.new">Percakapan Baru</string>
   <string name="module.social.messages.load_earlier">Muat lebih awal</string>
   <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>
+  <string name="module.social.messages.start_failed_forbidden">Anda tidak dapat mengirim pesan ke pengguna ini.</string>
   <string name="module.social.messages.request_action_failed">Gagal memperbarui permintaan pesan.</string>
   <string name="module.social.messages.members">anggota</string>
   <string name="module.social.messages.set_avatar">Atur avatar</string>
@@ -40,6 +41,7 @@
   <string name="module.social.messages.archived_cannot_send">Percakapan ini diarsipkan. Mulai percakapan baru untuk mengirim pesan lagi.</string>
   <string name="module.social.messages.not_member_cannot_send">Anda bukan lagi anggota percakapan ini.</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
+  <string name="module.social.messages.send_failed">Gagal mengirim pesan.</string>
   <string name="module.social.messages.page_subtitle">Percakapan dan pesan langsung Anda.</string>
   <string name="module.social.messages.request_sent">Permintaan pesan telah dikirim.</string>
   <string name="module.social.messages.read_by">Dibaca oleh</string>

@@ -28,6 +28,7 @@
   <string name="module.social.messages.new">新しい会話</string>
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
+  <string name="module.social.messages.start_failed_forbidden">このユーザーにメッセージを送ることはできません。</string>
   <string name="module.social.messages.request_action_failed">メッセージリクエストを更新できませんでした。</string>
   <string name="module.social.messages.members">メンバー</string>
   <string name="module.social.messages.set_avatar">アバターを設定</string>
@@ -40,6 +41,7 @@
   <string name="module.social.messages.archived_cannot_send">この会話はアーカイブされています。もう一度送信するには新しい会話を開始してください。</string>
   <string name="module.social.messages.not_member_cannot_send">この会話のメンバーではなくなりました。</string>
   <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
+  <string name="module.social.messages.send_failed">メッセージを送信できませんでした。</string>
   <string name="module.social.messages.page_subtitle">会話とダイレクトメッセージ。</string>
   <string name="module.social.messages.request_sent">メッセージリクエストを送信しました。</string>
   <string name="module.social.messages.read_by">既読</string>

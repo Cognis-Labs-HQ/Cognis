@@ -726,14 +726,18 @@ export function createMessagesRoomState({
             body: JSON.stringify({ handles: [handle] }),
         });
         if (!createResponse.ok) {
-            showToast(i18n.t("module.social.messages.start_failed"), {
-                variant: "error",
-            });
+            const errorPayload = await createResponse.json().catch(() => null);
+            const code = errorPayload?.error?.code;
+            const toastKey =
+                code === "forbidden"
+                    ? "module.social.messages.start_failed_forbidden"
+                    : "module.social.messages.start_failed";
+            showToast(i18n.t(toastKey), { variant: "error" });
             return;
         }
         const createPayload = await createResponse.json();
         const newRoomId = createPayload?.data?.id;
-        if (!newRoomId && createPayload?.data?.requiresApproval) {
+        if (createPayload?.data?.requiresApproval) {
             showToast(i18n.t("module.social.messages.request_sent"), {
                 variant: "info",
             });
