@@ -166,6 +166,48 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     assert.ok(routes.length > 0);
 });
 
+test("calendar calendars metadata resolves meetings availability via ctx flow providers", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const adminToken = issueAccessToken("calendar-admin", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
+    );
+    const flowCtx = createCtx();
+    flowCtx.registerFlow({
+        id: "construct-meetings-ui",
+        stages: ["resolve-providers", "resolve-panels", "compose-surface"],
+    });
+    flowCtx.flow.extend(
+        "construct-meetings-ui",
+        "resolve-providers",
+        { id: "test:jitsi-provider" },
+        () => ({ providerId: "jitsi-meet", providerName: "Jitsi Meet" }),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: flowCtx.flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+    const calendarsResponse = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/calendar/calendars",
+    );
+
+    assert.equal(calendarsResponse.statusCode, 200);
+    assert.equal(calendarsResponse.body.meta.jitsiAvailable, true);
+});
+
 test("calendar invitations endpoint returns pending invited events for attendee", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

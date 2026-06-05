@@ -271,6 +271,11 @@ test("calendar main view and summaries aggregate events across calendars", () =>
     );
 });
 
+test("calendar app reads jitsi availability from calendar metadata", () => {
+    assert.match(APP_SOURCE, /calendarState\.meta\?\.jitsiAvailable/);
+    assert.doesNotMatch(APP_SOURCE, /probeJitsiAvailability/);
+});
+
 test("calendar deep-link event popup does not block mount completion", () => {
     assert.match(
         APP_SOURCE,

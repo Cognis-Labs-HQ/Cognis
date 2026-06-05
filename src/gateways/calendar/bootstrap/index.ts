@@ -119,6 +119,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createCalendarCoreRoutes({
             gateway,
             routeContext,
+            flow: ctx.flow,
             resolveAccountId: resolveAccountId ?? null,
             log: ctx.log,
             getDispatchNotification: () =>

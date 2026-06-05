@@ -14,7 +14,6 @@ import {
     updateEvent,
     deleteEvent,
     respondToEvent,
-    probeJitsiAvailability,
     createJitsiMeeting,
 } from "./calendar-api.js";
 
@@ -958,7 +957,6 @@ export {
     updateEvent,
     deleteEvent,
     respondToEvent,
-    probeJitsiAvailability,
     createJitsiMeeting,
     getStatusLabelKey,
     getRecurrenceLabelKey,

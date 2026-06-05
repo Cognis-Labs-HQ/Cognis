@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { hasMinRole } from "@cognis/core";
+import { hasMinRole, type FlowApi } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
     resolveRouteContext,
@@ -31,6 +31,7 @@ import { handleCalendarResponseRoute } from "./respond-route.js";
 export function createCalendarCoreRoutes({
     gateway,
     routeContext,
+    flow,
     resolveAccountId,
     log,
     getDispatchNotification,
@@ -38,6 +39,7 @@ export function createCalendarCoreRoutes({
 }: {
     gateway: CoreCalendarGateway;
     routeContext?: RouteContext;
+    flow: FlowApi;
     resolveAccountId: ResolveAccountId | null;
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
@@ -47,6 +49,30 @@ export function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
+
+    const resolveJitsiAvailability = async (): Promise<boolean> => {
+        if (!flow.exists("construct-meetings-ui")) return false;
+        try {
+            const result = await flow.run("construct-meetings-ui", {});
+            const providerResults =
+                result.stageResults["resolve-providers"] ?? [];
+            if (!Array.isArray(providerResults)) return false;
+            return providerResults.some((entry) => {
+                if (!entry || typeof entry !== "object") return false;
+                const providerId = String(
+                    (entry as { providerId?: unknown }).providerId ?? "",
+                ).trim();
+                return providerId === "jitsi-meet";
+            });
+        } catch (error) {
+            log?.("warn", "Failed to resolve meetings provider availability.", {
+                component: "calendar-gateway",
+                error: error instanceof Error ? error.message : String(error),
+            });
+            return false;
+        }
+    };
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -61,11 +87,13 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             gateway.ensureDefaultCalendar(claims.sub);
+            const jitsiAvailable = await resolveJitsiAvailability();
             sendJson(res, 200, {
                 data: gateway.listCalendars(claims.sub),
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
                     currentAccountId: claims.sub,
+                    jitsiAvailable,
                 },
             });
             return true;
