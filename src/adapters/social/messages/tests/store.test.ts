@@ -260,7 +260,10 @@ test("unreadCount normalizes Date last_read_at to ISO before filtering", async (
                     ],
                 };
             }
-            if (command.option === "SELECT" && command.table === "chat_messages") {
+            if (
+                command.option === "SELECT" &&
+                command.table === "chat_messages"
+            ) {
                 return { rows: [{ cnt: 3 }] };
             }
             return { rows: [] };
