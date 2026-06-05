@@ -181,34 +181,6 @@ export async function registerAuthBootstrapHook(
                     registrationsEnabled: false,
                     userValidationMode: "none" as const,
                 }));
-            const canSendVerificationEmail = capabilities.get<() => boolean>(
-                "notify:canSendVerificationEmail",
-            );
-            const isInitialAdmin =
-                (role === "admin" || role === "owner") && isFounder;
-            const requiresUserValidation =
-                securitySettings.userValidationMode === "smtp" &&
-                !isInitialAdmin
-                    ? Boolean(canSendVerificationEmail?.())
-                    : false;
-
-            const getTfaUserStatus = capabilities.get<
-                (accountId: string) => Promise<{
-                    requiresSetup: boolean;
-                    hasConfiguredMethod: boolean;
-                }>
-            >("tfa:getUserStatus");
-            const getTfaLoginMethods = capabilities.get<
-                (
-                    accountId: string,
-                ) => Promise<Array<{ id: string; name: string }>>
-            >("tfa:getLoginMethods");
-            const tfaStatus = getTfaUserStatus
-                ? await getTfaUserStatus(session.accountId).catch(() => null)
-                : null;
-            const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
-            const requiresTfaSetup = tfaStatus?.requiresSetup === true;
-
             const sharedPayload = {
                 accountId: session.accountId,
                 displayName: displayName ?? session.accountId,
@@ -217,68 +189,8 @@ export async function registerAuthBootstrapHook(
                 role,
                 isFounder,
                 userValidationMode: securitySettings.userValidationMode,
-                requiredUserValidation: requiresUserValidation,
+                requiredUserValidation: false,
             };
-
-            if (requiresTfa) {
-                const methods = getTfaLoginMethods
-                    ? await getTfaLoginMethods(session.accountId)
-                          .catch(() => [])
-                          .then((items) =>
-                              items.filter(
-                                  (item) =>
-                                      typeof item.id === "string" &&
-                                      typeof item.name === "string",
-                              ),
-                          )
-                    : [];
-                if (methods.length > 0) {
-                    const pendingAttempt =
-                        context.authRouteBootstrapRuntime.createPendingTfaLoginAttempt(
-                            {
-                                accountId: session.accountId,
-                                role,
-                                isFounder,
-                                provider: session.provider,
-                                providerId: adapterId ?? session.provider,
-                                displayName: displayName ?? session.accountId,
-                                userValidationMode:
-                                    securitySettings.userValidationMode,
-                                requiredUserValidation: requiresUserValidation,
-                            },
-                        );
-                    return {
-                        sessionResult: {
-                            outcome: "tfa_required",
-                            loginAttemptId: pendingAttempt.id,
-                            methods,
-                            ...sharedPayload,
-                        },
-                    };
-                }
-                return { sessionResult: { outcome: "tfa_unavailable" } };
-            }
-
-            if (requiresTfaSetup) {
-                const token = issueAccessToken(
-                    session.accountId,
-                    role,
-                    ttlSeconds,
-                    {
-                        providerId: adapterId ?? session.provider,
-                        setupPending: true,
-                    },
-                );
-                return {
-                    sessionResult: {
-                        outcome: "tfa_setup_required",
-                        token,
-                        ttlSeconds,
-                        ...sharedPayload,
-                    },
-                };
-            }
-
             const token = issueAccessToken(
                 session.accountId,
                 role,
@@ -287,12 +199,16 @@ export async function registerAuthBootstrapHook(
                     providerId: adapterId ?? session.provider,
                 },
             );
+            const sessionResult = {
+                outcome: "success",
+                token,
+                ttlSeconds,
+                ...sharedPayload,
+            };
+            stageCtx.data["sessionResult"] = sessionResult;
             return {
                 sessionResult: {
-                    outcome: "success",
-                    token,
-                    ttlSeconds,
-                    ...sharedPayload,
+                    ...sessionResult,
                 },
             };
         },
@@ -304,6 +220,15 @@ export async function registerAuthBootstrapHook(
         { id: "auth-gateway:login-methods" },
         () => ({
             methods: getEnabledLoginMethods(context),
+        }),
+    );
+
+    context.ctx.flow.extend(
+        "construct-login-ui",
+        "compose-form",
+        { id: "auth-gateway:compose-login-form" },
+        () => ({
+            integrations: [],
         }),
     );
 

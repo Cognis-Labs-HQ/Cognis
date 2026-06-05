@@ -2,11 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    CTX_CAPABILITY,
+    createCtx,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
+import { bootstrap as bootstrapAuth } from "../../auth/bootstrap/index.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
@@ -145,4 +151,59 @@ test("setup verification route rotates setup-pending tokens", () => {
     assert.match(tfaRoutesSource, /auth:issueAccessToken/);
     assert.match(tfaRoutesSource, /setupPending:\s*false/);
     assert.match(tfaRoutesSource, /responseData\.token\s*=\s*refreshedToken/);
+});
+
+test("tfa login UI integration unhooks when gateway is disabled", async () => {
+    const db = new InMemoryTestExecutor();
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const systemCtx = createCtx();
+    capabilities.contribute("db:executor", db);
+    capabilities.contribute(CTX_CAPABILITY, systemCtx);
+
+    await bootstrapAuth({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow: systemCtx.flow,
+        uiRegistry,
+    });
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow: systemCtx.flow,
+        uiRegistry,
+    });
+
+    const integrationsWhenEnabled = (
+        await systemCtx.runFlow("construct-login-ui")
+    ).stageResults["compose-form"]
+        .flatMap(
+            (entry) =>
+                ((entry as { integrations?: unknown[] }).integrations ?? []).map(
+                    (integration) =>
+                        (integration as { id?: string }).id ?? null,
+                ),
+        )
+        .filter((id): id is string => typeof id === "string");
+    assert.ok(integrationsWhenEnabled.includes("tfa"));
+
+    gatewayRegistry.disable("tfa");
+    const integrationsWhenDisabled = (
+        await systemCtx.runFlow("construct-login-ui")
+    ).stageResults["compose-form"]
+        .flatMap(
+            (entry) =>
+                ((entry as { integrations?: unknown[] }).integrations ?? []).map(
+                    (integration) =>
+                        (integration as { id?: string }).id ?? null,
+                ),
+        )
+        .filter((id): id is string => typeof id === "string");
+    assert.equal(integrationsWhenDisabled.includes("tfa"), false);
 });

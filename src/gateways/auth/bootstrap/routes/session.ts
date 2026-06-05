@@ -7,7 +7,6 @@ import {
 import {
     issueAccessToken,
     revokeAccessToken,
-    type AccessRole,
 } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
 import type {
@@ -15,7 +14,6 @@ import type {
     AuthRouteBootstrapRuntime,
     SecuritySettings,
 } from "../index.js";
-import { resolveRole } from "../local-account.js";
 import {
     readJson,
     requireAuth,
@@ -43,258 +41,98 @@ export function createSessionRoutes({
     accountStore,
     capabilities,
     authRouteBootstrapRuntime,
-    readSecuritySettings,
+    readSecuritySettings: _readSecuritySettings,
     log,
 }: SessionRouteDependencies): AuthGatewayRouteHandler {
-    async function respondToSuccessfulLogin(
-        req: import("node:http").IncomingMessage,
-        res: import("node:http").ServerResponse,
-        session: {
-            accountId: string;
-            provider: string;
-            role?: string;
-        },
-        providerId: string,
-        logMeta: AuthRouteLogMeta,
-    ): Promise<true> {
-        let role: AccessRole = resolveRole(session.role);
-        const profileStore = capabilities.get<{
-            getProfile(accountId: string): Promise<{ role?: string } | null>;
-        }>("social:profileStore");
-        if (profileStore) {
-            const existingProfile = await profileStore
-                .getProfile(session.accountId)
-                .catch(() => null);
-            if (existingProfile?.role === "owner") {
-                role = "owner";
-            }
-        }
-        const isFounder = await accountStore
-            .isFounder(session.accountId)
-            .catch((error) => {
-                log?.(
-                    "warn",
-                    "Failed to resolve founder status during login.",
-                    {
-                        component: "auth-gateway",
-                        accountId: session.accountId,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    },
-                );
-                return false;
-            });
-        if (isFounder && (role === "admin" || role === "owner")) {
-            role = "owner";
-        }
-        const accessTokenTtlSeconds =
-            authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
-        const localAdapter = authGateway.getLocalAdapter();
-        if (localAdapter) {
-            await localAdapter
-                .updateLastLogin(session.accountId)
-                .catch(() => undefined);
-        }
-        const createProfile = capabilities.get<
-            (
-                accountId: string,
-                handle: string,
-                role?: string,
-                displayName?: string,
-            ) => Promise<void>
-        >("profile:createProfile");
-        const accountDisplayName =
-            (await accountStore.getDisplayName(session.accountId))?.trim() ||
-            undefined;
-        await createProfile?.(
-            session.accountId,
-            session.accountId,
-            role,
-            accountDisplayName,
-        );
-        const securitySettings = await readSecuritySettings();
-        const canSendVerificationEmail = capabilities.get<() => boolean>(
-            "notify:canSendVerificationEmail",
-        );
-        const isInitialAdmin =
-            (role === "admin" || role === "owner") && isFounder;
-        const shouldRequireSmtpValidation =
-            securitySettings.userValidationMode === "smtp" && !isInitialAdmin;
-        const requiresUserValidation = shouldRequireSmtpValidation
-            ? Boolean(canSendVerificationEmail?.())
-            : false;
-        const getTfaUserStatus = capabilities.get<
-            (accountId: string) => Promise<{
-                requiresSetup: boolean;
-                hasConfiguredMethod: boolean;
-            }>
-        >("tfa:getUserStatus");
-        const getTfaLoginMethods = capabilities.get<
-            (accountId: string) => Promise<Array<{ id: string; name: string }>>
-        >("tfa:getLoginMethods");
-        const tfaStatus = getTfaUserStatus
-            ? await getTfaUserStatus(session.accountId).catch(() => null)
-            : null;
-        const requiresTfa = tfaStatus?.hasConfiguredMethod === true;
-        const requiresTfaSetup = tfaStatus?.requiresSetup === true;
-        if (requiresTfa) {
-            const methods = getTfaLoginMethods
-                ? await getTfaLoginMethods(session.accountId)
-                      .catch(() => [])
-                      .then((items) =>
-                          items.filter(
-                              (item) =>
-                                  typeof item.id === "string" &&
-                                  typeof item.name === "string",
-                          ),
-                      )
-                : [];
-            if (methods.length > 0) {
-                const pendingAttempt =
-                    authRouteBootstrapRuntime.createPendingTfaLoginAttempt({
-                        accountId: session.accountId,
-                        role,
-                        isFounder,
-                        provider: session.provider,
-                        providerId,
-                        displayName: accountDisplayName ?? session.accountId,
-                        userValidationMode: securitySettings.userValidationMode,
-                        requiredUserValidation: requiresUserValidation,
-                    });
-                log?.("info", "Login entered TFA challenge flow.", {
-                    ...logMeta,
-                    accountId: session.accountId,
-                    provider: session.provider,
-                    role,
-                    methodCount: methods.length,
-                });
-                res.writeHead(200, {
-                    "content-type": "application/json",
-                });
-                res.end(
-                    JSON.stringify({
-                        data: {
-                            tfaRequired: true,
-                            loginAttemptId: pendingAttempt.id,
-                            methods,
-                            accountId: session.accountId,
-                            displayName:
-                                accountDisplayName ?? session.accountId,
-                            provider: session.provider,
-                            providerId,
-                            role,
-                            isFounder,
-                            userValidationMode:
-                                securitySettings.userValidationMode,
-                            requiredUserValidation: requiresUserValidation,
-                        },
-                    }),
-                );
-                return true;
-            }
-            log?.(
-                "warn",
-                "Login denied because configured TFA challenges are unavailable.",
-                {
-                    ...logMeta,
-                    accountId: session.accountId,
-                    provider: session.provider,
-                    role,
-                },
-            );
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    error: {
-                        code: "tfa_unavailable",
-                        message:
-                            "Two-factor authentication is temporarily unavailable. Please try again.",
-                    },
-                }),
-            );
-            return true;
-        }
-        if (requiresTfaSetup) {
-            const pendingSetupToken = issueAccessToken(
-                session.accountId,
-                role,
-                accessTokenTtlSeconds,
-                {
-                    providerId,
-                    setupPending: true,
-                },
-            );
-            log?.("info", "Login succeeded with pending TFA setup gate.", {
-                ...logMeta,
-                accountId: session.accountId,
-                provider: session.provider,
-                role,
-            });
-            res.writeHead(200, {
-                "content-type": "application/json",
-                "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                    req,
-                    pendingSetupToken,
-                    accessTokenTtlSeconds,
-                ),
-            });
-            res.end(
-                JSON.stringify({
-                    data: {
-                        accountId: session.accountId,
-                        displayName: accountDisplayName ?? session.accountId,
-                        provider: session.provider,
-                        providerId,
-                        role,
-                        isFounder,
-                        token: pendingSetupToken,
-                        userValidationMode: securitySettings.userValidationMode,
-                        requiredUserValidation: requiresUserValidation,
-                        tfaSetupRequired: true,
-                    },
-                }),
-            );
-            return true;
-        }
-        log?.("info", "Login succeeded.", {
-            ...logMeta,
-            accountId: session.accountId,
-            provider: session.provider,
-            role,
-            requiresUserValidation,
-        });
-        const apiToken = issueAccessToken(
-            session.accountId,
-            role,
-            accessTokenTtlSeconds,
-            { providerId },
-        );
-        res.writeHead(200, {
-            "content-type": "application/json",
-            "set-cookie": authRouteBootstrapRuntime.buildAccessTokenCookie(
-                req,
-                apiToken,
-                accessTokenTtlSeconds,
-            ),
-        });
-        res.end(
-            JSON.stringify({
-                data: {
-                    accountId: session.accountId,
-                    displayName: accountDisplayName ?? session.accountId,
-                    provider: session.provider,
-                    providerId,
-                    role,
-                    isFounder,
-                    token: apiToken,
-                    userValidationMode: securitySettings.userValidationMode,
-                    requiredUserValidation: requiresUserValidation,
-                },
+    async function resolveLoginUiConfig(systemCtx: Ctx): Promise<{
+        methods: Array<{ id: string; name: string }>;
+        integrations: Array<{
+            id: string;
+            scriptUrl: string;
+            stringsBaseUrl?: string | string[];
+        }>;
+    }> {
+        const fallbackMethods = authGateway.getEnabledAdapters().map(
+            (adapter) => ({
+                id: adapter.id,
+                name: adapter.name,
             }),
         );
-        return true;
+        if (!systemCtx.flow.exists("construct-login-ui")) {
+            return { methods: fallbackMethods, integrations: [] };
+        }
+        const result = await systemCtx.flow.run("construct-login-ui");
+        const methodById = new Map<string, { id: string; name: string }>();
+        for (const stageResult of [
+            ...(result.stageResults["resolve-methods"] ?? []),
+            ...(result.stageResults["augment-methods"] ?? []),
+        ]) {
+            const methods =
+                (stageResult as { methods?: unknown[] })?.methods ?? [];
+            for (const method of methods) {
+                const id = String((method as { id?: unknown })?.id ?? "").trim();
+                const name = String(
+                    (method as { name?: unknown })?.name ?? "",
+                ).trim();
+                if (!id || !name) continue;
+                methodById.set(id, { id, name });
+            }
+        }
+        const integrationById = new Map<
+            string,
+            { id: string; scriptUrl: string; stringsBaseUrl?: string | string[] }
+        >();
+        for (const stageResult of result.stageResults["compose-form"] ?? []) {
+            const integrations =
+                (stageResult as { integrations?: unknown[] })?.integrations ??
+                [];
+            for (const integration of integrations) {
+                const id = String(
+                    (integration as { id?: unknown })?.id ?? "",
+                ).trim();
+                const scriptUrl = String(
+                    (integration as { scriptUrl?: unknown })?.scriptUrl ?? "",
+                ).trim();
+                if (!id || !scriptUrl) continue;
+                const stringsBaseUrl = (
+                    integration as {
+                        stringsBaseUrl?: string | string[];
+                    }
+                ).stringsBaseUrl;
+                integrationById.set(id, { id, scriptUrl, stringsBaseUrl });
+            }
+        }
+        return {
+            methods:
+                methodById.size > 0
+                    ? Array.from(methodById.values())
+                    : fallbackMethods,
+            integrations: Array.from(integrationById.values()),
+        };
+    }
+
+    function resolveFlowSessionResult(flowResult: {
+        data: Record<string, unknown>;
+        stageResults: Record<string, unknown[]>;
+    }): LoginFlowSessionResult | null {
+        const dataSessionResult = flowResult.data["sessionResult"];
+        if (dataSessionResult && typeof dataSessionResult === "object") {
+            return dataSessionResult as LoginFlowSessionResult;
+        }
+        const establishStageResults =
+            flowResult.stageResults["establish-session"] ?? [];
+        for (let index = establishStageResults.length - 1; index >= 0; index -= 1) {
+            const stageResult = establishStageResults[index] as
+                | { sessionResult?: unknown }
+                | undefined;
+            if (
+                stageResult?.sessionResult &&
+                typeof stageResult.sessionResult === "object"
+            ) {
+                return stageResult.sessionResult as LoginFlowSessionResult;
+            }
+        }
+        return null;
     }
 
     function dispatchLoginFlowResult(
@@ -482,16 +320,42 @@ export function createSessionRoutes({
             url.pathname === "/api/v1/auth/login-methods" &&
             req.method === "GET"
         ) {
-            const methods = authGateway.getEnabledAdapters().map((adapter) => ({
-                id: adapter.id,
-                name: adapter.name,
-            }));
+            const systemCtx = capabilities.get<Ctx>("system:ctx");
+            const methods = systemCtx
+                ? (await resolveLoginUiConfig(systemCtx)).methods
+                : authGateway.getEnabledAdapters().map((adapter) => ({
+                      id: adapter.id,
+                      name: adapter.name,
+                  }));
             log?.("debug", "Listed login methods.", {
                 ...logMeta,
                 count: methods.length,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: methods }));
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/login-ui" && req.method === "GET") {
+            const systemCtx = capabilities.get<Ctx>("system:ctx");
+            const data = systemCtx
+                ? await resolveLoginUiConfig(systemCtx)
+                : {
+                      methods: authGateway
+                          .getEnabledAdapters()
+                          .map((adapter) => ({
+                              id: adapter.id,
+                              name: adapter.name,
+                          })),
+                      integrations: [],
+                  };
+            log?.("debug", "Resolved login UI flow configuration.", {
+                ...logMeta,
+                methodCount: data.methods.length,
+                integrationCount: data.integrations.length,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
             return true;
         }
 
@@ -508,9 +372,7 @@ export function createSessionRoutes({
                     provider,
                     credentials,
                 });
-                const sessionResult = result.data["sessionResult"] as
-                    | LoginFlowSessionResult
-                    | undefined;
+                const sessionResult = resolveFlowSessionResult(result);
                 if (sessionResult) {
                     return dispatchLoginFlowResult(
                         req,
@@ -519,55 +381,38 @@ export function createSessionRoutes({
                         logMeta,
                     );
                 }
-            }
-
-            const adapter =
-                authGateway.getEnabledAdapter(provider) ??
-                authGateway.getEnabledAdapter("local");
-            if (!adapter) {
-                log?.(
-                    "warn",
-                    "Login failed because no authentication adapter was available.",
-                    {
-                        ...logMeta,
-                        provider,
-                    },
-                );
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "provider_unavailable",
-                            message: "Auth provider not available",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const session = await adapter.authenticate(credentials);
-            if (!session) {
-                log?.("warn", "Login failed due to invalid credentials.", {
+                log?.("warn", "Login flow did not produce a session outcome.", {
                     ...logMeta,
                     provider,
                 });
-                res.writeHead(401, { "content-type": "application/json" });
+                res.writeHead(500, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "invalid_credentials",
-                            message: "Invalid credentials",
+                            code: "internal_error",
+                            message:
+                                "An unexpected error occurred during login.",
                         },
                     }),
                 );
                 return true;
             }
-            return respondToSuccessfulLogin(
-                req,
-                res,
-                session,
-                adapter.id,
-                logMeta,
+
+            log?.(
+                "error",
+                "Login flow is unavailable because canonical flow registration is missing.",
+                { ...logMeta, provider },
             );
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "login_unavailable",
+                        message: "Login flow is temporarily unavailable",
+                    },
+                }),
+            );
+            return true;
         }
 
         if (

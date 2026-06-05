@@ -171,6 +171,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Notifications",
         scriptUrl: "/static/gateways/notify/notification-prefs.js",
     });
+    const isGatewayEnabled = () =>
+        ctx.gatewayRegistry.get("notify")?.status !== "disabled";
 
     if (ctx.flow.exists("construct-settings-ui")) {
         ctx.flow.extend(
@@ -182,6 +184,56 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 sectionId: "notifications",
                 scriptUrl: "/static/gateways/notify/notification-prefs.js",
             }),
+        );
+    }
+    if (ctx.flow.exists("construct-login-ui")) {
+        ctx.flow.extend(
+            "construct-login-ui",
+            "compose-form",
+            { id: "notify-gateway:login-ui-required-email-integration", order: 50 },
+            () => ({
+                integrations: isGatewayEnabled()
+                    ? [
+                          {
+                              id: "required-email-enforcement",
+                              scriptUrl:
+                                  "/static/gateways/notify/login-required-email-flow.js",
+                              stringsBaseUrl: "/static/gateways/notify/languages",
+                          },
+                      ]
+                    : [],
+            }),
+        );
+    }
+    if (ctx.flow.exists("login")) {
+        ctx.flow.extend(
+            "login",
+            "establish-session",
+            { id: "notify-gateway:smtp-enforcement", order: 50 },
+            (stageCtx) => {
+                const sessionResult = stageCtx.data["sessionResult"] as
+                    | Record<string, unknown>
+                    | undefined;
+                if (sessionResult?.outcome !== "success") {
+                    return null;
+                }
+                const role = String(sessionResult.role ?? "user");
+                const isFounder = sessionResult.isFounder === true;
+                const isInitialAdmin =
+                    (role === "admin" || role === "owner") && isFounder;
+                const requiresUserValidation =
+                    isGatewayEnabled() &&
+                    sessionResult.userValidationMode === "smtp" &&
+                    !isInitialAdmin
+                        ? gateway.canSendVerificationEmail()
+                        : false;
+                const nextSessionResult = {
+                    ...sessionResult,
+                    requiredUserValidation: requiresUserValidation,
+                };
+                stageCtx.data["sessionResult"] = nextSessionResult;
+                return { sessionResult: nextSessionResult };
+            },
         );
     }
 
@@ -349,6 +401,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:getAccountIdByEmail",
         async (email: string) => notifStore.getAccountIdByEmail(email),
     );
+    if (ctx.flow.exists("bootstrap-platform")) {
+        ctx.flow.extend(
+            "bootstrap-platform",
+            "register-flows",
+            { id: "notify-gateway:bootstrap-registration" },
+            () => ({
+                gatewayId: "notify",
+                registeredFlowIds: ["login", "construct-login-ui"],
+            }),
+        );
+    }
     ctx.log?.("info", "Notification gateway initialized.", {
         component: "notify-gateway",
         senderCount: gateway.listSenders().length,

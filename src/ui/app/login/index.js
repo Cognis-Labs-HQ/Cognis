@@ -27,6 +27,7 @@ export async function mount(root) {
     let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
+    let loginUiConfigPromise = null;
     let passwordResetTokenHandled = false;
     let submitPasswordReset = null;
 
@@ -65,12 +66,55 @@ export async function mount(root) {
         });
     }
 
+    async function loadLoginUiConfig() {
+        if (!loginUiConfigPromise) {
+            loginUiConfigPromise = fetch("/api/v1/auth/login-ui")
+                .then(async (response) => {
+                    if (!response.ok) {
+                        throw new Error("login_ui_unavailable");
+                    }
+                    const payload = await response.json().catch(() => null);
+                    const data = payload?.data ?? {};
+                    const methods = Array.isArray(data.methods)
+                        ? data.methods
+                        : [];
+                    const integrations = Array.isArray(data.integrations)
+                        ? data.integrations
+                        : [];
+                    return { methods, integrations };
+                })
+                .catch(() => ({
+                    methods: [],
+                    integrations: [],
+                }));
+        }
+        return loginUiConfigPromise;
+    }
+
+    async function resolveLoginIntegration(id) {
+        const config = await loadLoginUiConfig();
+        return (
+            config.integrations.find(
+                (integration) =>
+                    integration &&
+                    integration.id === id &&
+                    typeof integration.scriptUrl === "string" &&
+                    integration.scriptUrl.trim().length > 0,
+            ) ?? null
+        );
+    }
+
     async function loadTfaLoginClient() {
         if (!tfaLoginClientPromise) {
-            tfaLoginClientPromise = import("/static/gateways/tfa/login-flow.js")
-                .then((mod) =>
-                    mod.createTfaLoginClient({ baseI18n: i18n, root }),
-                )
+            tfaLoginClientPromise = resolveLoginIntegration("tfa")
+                .then((integration) => {
+                    if (!integration) {
+                        return null;
+                    }
+                    return import(integration.scriptUrl).then((mod) =>
+                        mod.createTfaLoginClient({ baseI18n: i18n, root }),
+                    );
+                })
                 .catch((error) => {
                     console.error(error);
                     return null;
@@ -81,23 +125,29 @@ export async function mount(root) {
 
     async function loadRequiredEmailEnforcementClient() {
         if (!requiredEmailEnforcementClientPromise) {
-            requiredEmailEnforcementClientPromise =
-                import("/static/gateways/notify/login-required-email-flow.js")
-                    .then((mod) => mod.createRequiredEmailEnforcementClient())
-                    .catch((error) => {
-                        console.error(error);
+            requiredEmailEnforcementClientPromise = resolveLoginIntegration(
+                "required-email-enforcement",
+            )
+                .then((integration) => {
+                    if (!integration) {
                         return null;
-                    });
+                    }
+                    return import(integration.scriptUrl).then((mod) =>
+                        mod.createRequiredEmailEnforcementClient(),
+                    );
+                })
+                .catch((error) => {
+                    console.error(error);
+                    return null;
+                });
         }
         return requiredEmailEnforcementClientPromise;
     }
 
     async function loadLoginMethods() {
         try {
-            const res = await fetch("/api/v1/auth/login-methods");
-            if (!res.ok) return;
-            const body = await res.json();
-            const methods = body.data ?? [];
+            const flowConfig = await loadLoginUiConfig();
+            const methods = flowConfig.methods;
 
             const providerInput = document.querySelector("#login-provider");
             const toggleContainer = document.querySelector(
@@ -217,12 +267,17 @@ export async function mount(root) {
     async function handleAuthResult(data) {
         if (data.tfaRequired === true || data.tfaSetupRequired === true) {
             const tfaLoginClient = await loadTfaLoginClient();
+            if (!tfaLoginClient) {
+                showToast(i18n.t("ui.app.login.error.generic"), {
+                    variant: "error",
+                });
+                return;
+            }
             if (data.tfaRequired === true) {
                 lastTfaPayload = data;
-                currentTfaLoginAttemptId =
-                    tfaLoginClient?.switchToTfaPrompt(data) ?? null;
+                currentTfaLoginAttemptId = tfaLoginClient.switchToTfaPrompt(data);
             } else {
-                tfaLoginClient?.handleSetupRequired(persistSession, data);
+                tfaLoginClient.handleSetupRequired(persistSession, data);
             }
             return;
         }
@@ -603,7 +658,11 @@ export async function mount(root) {
                                         client.switchToTfaPrompt(
                                             lastTfaPayload,
                                         ) ?? null;
+                                    return;
                                 }
+                                lastTfaPayload = null;
+                                loadLoginMethods();
+                                runTypingShowcase(typingSamples);
                             })
                             .catch((error) => {
                                 console.error(error);
@@ -676,6 +735,13 @@ export async function mount(root) {
                                 };
                                 const tfaLoginClient =
                                     await loadTfaLoginClient();
+                                if (!tfaLoginClient) {
+                                    showToast(
+                                        i18n.t("ui.app.login.error.generic"),
+                                        { variant: "error" },
+                                    );
+                                    return;
+                                }
                                 const { response: tfaResponse, body: tfaBody } =
                                     await tfaLoginClient.verifyCode(payload);
                                 if (tfaResponse.ok && tfaBody?.data) {

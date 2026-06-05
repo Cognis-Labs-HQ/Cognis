@@ -74,6 +74,49 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.ok(Array.isArray(body.data));
 });
 
+test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+    });
+
+    const handlers = routeRegistry.getHandlers();
+    const req = {
+        method: "GET",
+        headers: {},
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const handler of handlers) {
+        handled = await handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/login-ui", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
+        data: { methods: unknown[]; integrations: unknown[] };
+    };
+    assert.ok(Array.isArray(body.data.methods));
+    assert.ok(Array.isArray(body.data.integrations));
+});
+
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
