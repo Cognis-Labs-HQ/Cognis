@@ -64,13 +64,19 @@ class RequestRecorder {
     headers: Record<string, string>;
     private readonly body: string;
 
-    constructor(options: { method: string; token?: string; body?: string }) {
+    constructor(options: {
+        method: string;
+        token?: string;
+        body?: string;
+        headers?: Record<string, string>;
+    }) {
         this.method = options.method;
         this.body = options.body ?? "";
         this.headers = {
             ...(options.token
                 ? { authorization: "Bearer " + options.token }
                 : {}),
+            ...(options.headers ?? {}),
         };
     }
 
@@ -299,7 +305,7 @@ test("calendar invitations endpoint returns pending invited events for attendee"
     assert.ok(cancellationDispatchCount > dispatchCountBeforeOrganizerDelete);
 });
 
-test("calendar share endpoint returns ICS and CalDAV links", async () => {
+test("calendar share endpoint returns multiple expiring ICS and CalDAV links", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -337,46 +343,54 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     const defaultCalendarId = defaultCalendar.id;
     const defaultCalendarName = defaultCalendar.name;
 
+    const initialShareResponse = await dispatchJson(
+        "GET",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+    );
+    assert.equal(initialShareResponse.statusCode, 200);
+    assert.deepEqual(initialShareResponse.body.data, []);
+
     const shareResponse = await dispatchJson(
         "POST",
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
-        { permission: "read", expiresInHours: null },
+        { name: "Kitchen Tablet", expiresInHours: 24 },
     );
     assert.equal(shareResponse.statusCode, 200);
-    assert.match(
-        shareResponse.body.data.caldavUrl,
-        /^\/api\/v1\/calendar\/caldav\/private\/[^/]+$/,
-    );
-    assert.match(
-        shareResponse.body.data.icsUrl,
-        /^\/api\/v1\/calendar\/ics\/private\/[^/]+$/,
-    );
+    assert.equal(shareResponse.body.data.length, 1);
+    assert.match(shareResponse.body.data[0].caldavUrl, /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/);
+    assert.match(shareResponse.body.data[0].icsUrl, /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/);
     assert.equal(
-        shareResponse.body.data.shareUrl,
-        shareResponse.body.data.caldavUrl,
+        shareResponse.body.data[0].shareUrl,
+        shareResponse.body.data[0].caldavUrl,
     );
+    assert.equal(shareResponse.body.data[0].name, "Kitchen Tablet");
+    assert.equal(typeof shareResponse.body.data[0].passphrase, "string");
+    assert.ok(shareResponse.body.data[0].passphrase.length >= 20);
+    assert.ok(Date.parse(shareResponse.body.data[0].expiresAt) > Date.now());
+
     const repeatedShareResponse = await dispatchJson(
         "POST",
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
-        { permission: "write", expiresInHours: null },
+        { name: "Office Laptop", expiresInHours: null },
     );
     assert.equal(repeatedShareResponse.statusCode, 200);
-    assert.equal(
-        repeatedShareResponse.body.data.caldavUrl,
-        shareResponse.body.data.caldavUrl,
+    assert.equal(repeatedShareResponse.body.data.length, 2);
+    assert.notEqual(
+        repeatedShareResponse.body.data[0].caldavUrl,
+        repeatedShareResponse.body.data[1].caldavUrl,
     );
+    assert.equal(repeatedShareResponse.body.data[0].name, "Office Laptop");
+    assert.equal(repeatedShareResponse.body.data[0].expiresAt, "");
     const getShareResponse = await dispatchJson(
         "GET",
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
     );
     assert.equal(getShareResponse.statusCode, 200);
-    assert.equal(
-        getShareResponse.body.data.caldavUrl,
-        shareResponse.body.data.caldavUrl,
-    );
+    assert.equal(getShareResponse.body.data.length, 2);
 
-    const privateCaldavPath = shareResponse.body.data.caldavUrl;
-    const privateIcsPath = shareResponse.body.data.icsUrl;
+    const privateCaldavPath = shareResponse.body.data[0].caldavUrl;
+    const privateIcsPath = shareResponse.body.data[0].icsUrl;
+    const privatePassphrase = shareResponse.body.data[0].passphrase;
     const unauthenticatedRequest = new RequestRecorder({ method: "GET" });
     const unauthenticatedResponse = new ResponseRecorder();
     await dispatchRoute(
@@ -397,17 +411,63 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     );
     assert.equal(unauthenticatedIcsResponse.statusCode, 401);
 
-    const unauthenticatedPrivateCaldavProbeRequest = new RequestRecorder({
-        method: "PROPFIND",
+    const privateCaldavRequest = new RequestRecorder({
+        method: "GET",
+        headers: {
+            "x-cognis-calendar-passphrase": privatePassphrase,
+        },
     });
-    const unauthenticatedPrivateCaldavProbeResponse = new ResponseRecorder();
+    const privateCaldavResponse = new ResponseRecorder();
     await dispatchRoute(
         routeRegistry,
-        unauthenticatedPrivateCaldavProbeRequest,
-        unauthenticatedPrivateCaldavProbeResponse,
+        privateCaldavRequest,
+        privateCaldavResponse,
         new URL(`http://localhost${privateCaldavPath}`),
     );
-    assert.equal(unauthenticatedPrivateCaldavProbeResponse.statusCode, 401);
+    assert.equal(privateCaldavResponse.statusCode, 200);
+
+    const privateIcsRequest = new RequestRecorder({
+        method: "GET",
+        headers: {
+            authorization:
+                "Basic " +
+                Buffer.from(`calendar:${privatePassphrase}`).toString("base64"),
+        },
+    });
+    const privateIcsResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        privateIcsRequest,
+        privateIcsResponse,
+        new URL(`http://localhost${privateIcsPath}`),
+    );
+    assert.equal(privateIcsResponse.statusCode, 200);
+
+    const expiringShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { name: "Short Lived", expiresInHours: 1 / 3600 },
+    );
+    assert.equal(expiringShareResponse.statusCode, 200);
+    const expiringShare = expiringShareResponse.body.data.find(
+        (shareLink: { name?: string }) => shareLink.name === "Short Lived",
+    );
+    assert.ok(expiringShare);
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    const expiredCaldavRequest = new RequestRecorder({
+        method: "GET",
+        headers: {
+            "x-cognis-calendar-passphrase": expiringShare.passphrase,
+        },
+    });
+    const expiredCaldavResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        expiredCaldavRequest,
+        expiredCaldavResponse,
+        new URL(`http://localhost${expiringShare.caldavUrl}`),
+    );
+    assert.equal(expiredCaldavResponse.statusCode, 404);
 
     const makePublicResponse = await dispatchJson(
         "PATCH",
@@ -420,52 +480,26 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     const publicShareResponse = await dispatchJson(
         "POST",
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
-        { permission: "read", expiresInHours: null },
+        { name: "Website Feed", expiresInHours: 24 },
     );
     assert.equal(publicShareResponse.statusCode, 200);
-    assert.match(
-        publicShareResponse.body.data.caldavUrl,
-        new RegExp(
-            "^/api/v1/calendar/caldav/public/" +
-                encodeURIComponent(defaultCalendarName).replace(
-                    /[.*+?^${}()|[\]\\]/g,
-                    "\\$&",
-                ) +
-                "\\?calendarId=" +
-                encodeURIComponent(defaultCalendarId).replace(
-                    /[.*+?^${}()|[\]\\]/g,
-                    "\\$&",
-                ) +
-                "$",
-        ),
+    const publicShare = publicShareResponse.body.data.find(
+        (shareLink: { name?: string }) => shareLink.name === "Website Feed",
     );
-    assert.match(
-        publicShareResponse.body.data.icsUrl,
-        new RegExp(
-            "^/api/v1/calendar/ics/public/" +
-                encodeURIComponent(defaultCalendarName).replace(
-                    /[.*+?^${}()|[\]\\]/g,
-                    "\\$&",
-                ) +
-                "\\?calendarId=" +
-                encodeURIComponent(defaultCalendarId).replace(
-                    /[.*+?^${}()|[\]\\]/g,
-                    "\\$&",
-                ) +
-                "$",
-        ),
-    );
+    assert.ok(publicShare);
+    assert.match(publicShare.caldavUrl, /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/);
+    assert.match(publicShare.icsUrl, /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/);
+    assert.equal(publicShare.passphrase, null);
 
     const publicCaldavRequest = new RequestRecorder({
         method: "GET",
-        token: adminToken,
     });
     const publicCaldavResponse = new ResponseRecorder();
     await dispatchRoute(
         routeRegistry,
         publicCaldavRequest,
         publicCaldavResponse,
-        new URL(`http://localhost${publicShareResponse.body.data.caldavUrl}`),
+        new URL(`http://localhost${publicShare.caldavUrl}`),
     );
     assert.equal(publicCaldavResponse.statusCode, 200);
     assert.equal(

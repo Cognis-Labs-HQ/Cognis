@@ -4,7 +4,9 @@ import { normalizeCalendarColor } from "../color.js";
 import type { CoreCalendarGateway } from "../gateway/index.js";
 import {
     buildCalendarShareData,
+    createCalendarSharePassphrase,
     errorMessage,
+    resolveShareExpiry,
     sendCalendarError,
     sendJson,
 } from "./helpers.js";
@@ -34,77 +36,31 @@ export async function handleCalendarShareRoutes(input: {
     );
     if (shareCalendarMatch && input.req.method === "GET") {
         const calendarId = decodeURIComponent(shareCalendarMatch[1]);
-        const shareLink = await input.shareRegistry.getShareLink(
+        const shareLinks = await input.shareRegistry.listShareLinks(
             input.claims.sub,
             calendarId,
         );
-        if (!shareLink) {
-            sendJson(input.res, 200, { data: null });
-            return true;
-        }
-        const shareData = buildCalendarShareData({
-            gateway: input.gateway,
-            ownerAccountId: input.claims.sub,
-            calendarId,
-            permission: "read",
-            expiresInHours: null,
-            tokenOverride: shareLink.token,
-            externalHost: input.externalHost,
+        sendJson(input.res, 200, {
+            data: shareLinks.map((shareLink) =>
+                buildCalendarShareData({
+                    shareLink,
+                    externalHost: input.externalHost,
+                }),
+            ),
         });
-        sendJson(input.res, 200, { data: shareData });
         return true;
     }
     if (shareCalendarMatch && input.req.method === "POST") {
         const calendarId = decodeURIComponent(shareCalendarMatch[1]);
         const body = (await readJson(input.req)) as {
-            permission?: unknown;
             expiresInHours?: unknown;
             name?: unknown;
         };
-        let shareLink = await input.shareRegistry.getShareLink(
+        const calendar = input.gateway.getOwnedCalendar(
             input.claims.sub,
             calendarId,
         );
-        if (!shareLink) {
-            const calendar = input.gateway.getOwnedCalendar(
-                input.claims.sub,
-                calendarId,
-            );
-            if (!calendar) {
-                sendCalendarError(
-                    input.res,
-                    "not_found",
-                    "Calendar not found.",
-                    404,
-                );
-                return true;
-            }
-            const token =
-                calendar.visibility === "public"
-                    ? null
-                    : input.gateway.issuePrivateExportToken({
-                          ownerAccountId: input.claims.sub,
-                          calendarId,
-                          ttlSeconds: null,
-                      }).token;
-            shareLink = { token };
-            await input.shareRegistry.saveShareLink({
-                ownerAccountId: input.claims.sub,
-                calendarId,
-                token,
-            });
-        }
-        const shareData = buildCalendarShareData({
-            gateway: input.gateway,
-            ownerAccountId: input.claims.sub,
-            calendarId,
-            permission: body.permission,
-            expiresInHours: body.expiresInHours,
-            name: typeof body.name === "string" ? body.name : undefined,
-            tokenOverride: shareLink.token,
-            externalHost: input.externalHost,
-        });
-        if (!shareData) {
+        if (!calendar) {
             sendCalendarError(
                 input.res,
                 "not_found",
@@ -113,7 +69,28 @@ export async function handleCalendarShareRoutes(input: {
             );
             return true;
         }
-        sendJson(input.res, 200, { data: shareData });
+        await input.shareRegistry.createShareLink({
+            ownerAccountId: input.claims.sub,
+            calendarId,
+            name: typeof body.name === "string" ? body.name : null,
+            passphrase:
+                calendar.visibility === "private"
+                    ? createCalendarSharePassphrase()
+                    : null,
+            expiresAt: resolveShareExpiry(body.expiresInHours),
+        });
+        const shareLinks = await input.shareRegistry.listShareLinks(
+            input.claims.sub,
+            calendarId,
+        );
+        sendJson(input.res, 200, {
+            data: shareLinks.map((shareLink) =>
+                buildCalendarShareData({
+                    shareLink,
+                    externalHost: input.externalHost,
+                }),
+            ),
+        });
         return true;
     }
 

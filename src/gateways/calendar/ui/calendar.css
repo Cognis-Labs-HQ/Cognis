@@ -94,7 +94,7 @@
 
 .calendar-share-results {
     display: grid;
-    gap: 0.35rem;
+    gap: 0.5rem;
 }
 
 .calendar-share-links-details {
@@ -103,9 +103,53 @@
     opacity: 0.8;
 }
 
-.calendar-share-result {
+.calendar-share-entry {
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    background: var(--surface, transparent);
+    overflow: hidden;
+}
+
+.calendar-share-entry-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.55rem 0.65rem;
+    font-weight: 600;
+}
+
+.calendar-share-entry[open] .calendar-share-entry-summary {
+    border-bottom: 1px solid var(--field-border);
+}
+
+.calendar-share-entry-title,
+.calendar-share-entry-meta {
+    min-width: 0;
+}
+
+.calendar-share-entry-meta {
+    font-size: 0.78rem;
+    font-weight: 500;
+    opacity: 0.8;
+    text-align: right;
+}
+
+.calendar-share-entry-body {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.6rem 0.65rem 0.65rem;
+}
+
+.calendar-share-copy-field {
     display: grid;
     gap: 0.2rem;
+}
+
+.calendar-share-copy-label {
+    font-size: 0.78rem;
+    font-weight: 600;
 }
 
 .calendar-share-result-row {

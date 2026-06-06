@@ -136,6 +136,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
     const shareRegistry = new CalendarShareRegistry(dbExecutor ?? null);
     await shareRegistry.ensureSchema();
+    ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
+        shareRegistry.resolveShareLink(token),
+    );
 
     await gateway.discoverAdapters(adaptersRoot);
 

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import type {
     CalendarAdapter,
     CalendarAdapterBootstrapCtx,
@@ -21,10 +22,54 @@ function sanitizeHeaderValue(value: string): string {
         .trim();
 }
 
+function readSharePassphrase(
+    req: { headers?: Record<string, string | string[]> },
+    url: URL,
+): string {
+    const queryPassphrase = String(url.searchParams.get("passphrase") ?? "").trim();
+    if (queryPassphrase) return queryPassphrase;
+    const headerValue = req.headers?.["x-cognis-calendar-passphrase"];
+    const headerPassphrase = Array.isArray(headerValue)
+        ? String(headerValue[0] ?? "").trim()
+        : String(headerValue ?? "").trim();
+    if (headerPassphrase) return headerPassphrase;
+    const authorizationHeader = Array.isArray(req.headers?.authorization)
+        ? String(req.headers?.authorization[0] ?? "")
+        : String(req.headers?.authorization ?? "");
+    if (!authorizationHeader.startsWith("Basic ")) return "";
+    try {
+        const decoded = Buffer.from(
+            authorizationHeader.slice("Basic ".length),
+            "base64",
+        ).toString("utf8");
+        return decoded.includes(":") ? decoded.split(":").slice(1).join(":") : "";
+    } catch {
+        return "";
+    }
+}
+
+function passphrasesMatch(expectedPassphrase: string, receivedPassphrase: string): boolean {
+    const expectedBuffer = Buffer.from(expectedPassphrase);
+    const receivedBuffer = Buffer.from(receivedPassphrase);
+    return (
+        expectedBuffer.length === receivedBuffer.length &&
+        timingSafeEqual(expectedBuffer, receivedBuffer)
+    );
+}
+
 function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
+    const resolveShareLink = ctx.capabilities.get<
+        (token: string) => Promise<
+            | {
+                  calendarId: string;
+                  passphrase: string | null;
+              }
+            | null
+        >
+    >("calendar:resolveShareLink");
     const isMetadataProbeMethod = (method: string | undefined) =>
         method === "HEAD" || method === "OPTIONS" || method === "PROPFIND";
 
@@ -79,6 +124,68 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     ? ctx.gateway.getCalendar(calendarIdFromQuery)
                     : null) ?? ctx.gateway.getCalendar(encodedName);
             if (!calendar || calendar.visibility !== "public") {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Calendar export not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            respondCalendarPayload(req.method, res, ics, calendar.name);
+            return true;
+        }
+
+        const shareMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/ics\/share\/([^/]+)$/,
+        );
+        if (
+            shareMatch &&
+            (req.method === "GET" || isMetadataProbeMethod(req.method))
+        ) {
+            const token = decodeURIComponent(shareMatch[1]);
+            const shareLink = resolveShareLink
+                ? await resolveShareLink(token)
+                : null;
+            if (!shareLink) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Calendar export not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (shareLink.passphrase) {
+                const receivedPassphrase = readSharePassphrase(req, url);
+                if (
+                    !receivedPassphrase ||
+                    !passphrasesMatch(shareLink.passphrase, receivedPassphrase)
+                ) {
+                    res.writeHead(401, {
+                        "content-type": "application/json",
+                        "www-authenticate": 'Basic realm="Calendar Share"',
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "unauthorized",
+                                message: "Valid calendar share passphrase required.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
+            const calendar = ctx.gateway.getCalendar(shareLink.calendarId);
+            if (!calendar) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

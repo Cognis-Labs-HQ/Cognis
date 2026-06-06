@@ -252,6 +252,22 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-name/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-expiry/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /gateway\.calendar\.share_link_regenerate/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-entry-summary/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /class="btn-no-animation" data-calendar-share-copy/,
     );
     assert.doesNotMatch(

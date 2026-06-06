@@ -125,10 +125,13 @@
   <string name="gateway.calendar.share_link_expiry_7d">Läuft in 7 Tagen ab</string>
   <string name="gateway.calendar.share_link_expiry_30d">Läuft in 30 Tagen ab</string>
   <string name="gateway.calendar.share_link_expiry_never">Läuft nie ab</string>
-  <string name="gateway.calendar.share_link_generate">Link Generieren</string>
+  <string name="gateway.calendar.share_link_generate">Links Generieren</string>
+  <string name="gateway.calendar.share_link_regenerate">Links Neu Generieren</string>
   <string name="gateway.calendar.share_links_details">Kalender-Client-Links</string>
   <string name="gateway.calendar.share_link_copy">Kopieren</string>
   <string name="gateway.calendar.share_link_copied">Link kopiert!</string>
   <string name="gateway.calendar.share_link_failed">Freigabelink konnte nicht erstellt werden.</string>
+  <string name="gateway.calendar.share_link_name_fallback">Freigabelink</string>
   <string name="gateway.calendar.share_link_name_placeholder">Linkname (optional)</string>
+  <string name="gateway.calendar.share_link_passphrase">Passphrase</string>
 </resources>

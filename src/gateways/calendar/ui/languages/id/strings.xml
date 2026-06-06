@@ -126,9 +126,12 @@
   <string name="gateway.calendar.share_link_expiry_30d">Kedaluwarsa dalam 30 hari</string>
   <string name="gateway.calendar.share_link_expiry_never">Tidak Pernah Kedaluwarsa</string>
   <string name="gateway.calendar.share_link_generate">Buat Tautan</string>
+  <string name="gateway.calendar.share_link_regenerate">Buat Ulang Tautan</string>
   <string name="gateway.calendar.share_links_details">Tautan klien kalender</string>
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>
   <string name="gateway.calendar.share_link_failed">Tidak dapat membuat tautan berbagi.</string>
+  <string name="gateway.calendar.share_link_name_fallback">Tautan Berbagi</string>
   <string name="gateway.calendar.share_link_name_placeholder">Nama Tautan (opsional)</string>
+  <string name="gateway.calendar.share_link_passphrase">Frasa Sandi</string>
 </resources>

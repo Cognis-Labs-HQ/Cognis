@@ -1,3 +1,4 @@
+import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
     getSelectedReminderOffsets,
     renderReminderField,
@@ -8,22 +9,86 @@ import {
     hydrateProfileAvatars,
 } from "./popup-manager-participant-utils.js";
 
-function renderCalendarShareResults({ i18n, escapeHtml, shareData }) {
+const SHARE_EXPIRY_OPTIONS = [
+    {
+        value: "1",
+        labelKey: "gateway.calendar.share_link_expiry_1h",
+    },
+    {
+        value: "24",
+        labelKey: "gateway.calendar.share_link_expiry_24h",
+    },
+    {
+        value: "168",
+        labelKey: "gateway.calendar.share_link_expiry_7d",
+    },
+    {
+        value: "720",
+        labelKey: "gateway.calendar.share_link_expiry_30d",
+    },
+    {
+        value: "never",
+        labelKey: "gateway.calendar.share_link_expiry_never",
+    },
+];
+
+function renderCalendarShareCopyField({ i18n, escapeHtml, label, value }) {
+    return `<div class="calendar-share-copy-field">
+      <span class="calendar-share-copy-label">${escapeHtml(label)}</span>
+      <div class="calendar-share-result-row">
+        <input type="text" readonly value="${escapeHtml(value)}" />
+        <button type="button" class="btn-no-animation" data-calendar-share-copy="${escapeHtml(value)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+      </div>
+    </div>`;
+}
+
+function renderCalendarShareResults({ i18n, escapeHtml, shareLinks }) {
+    if (!Array.isArray(shareLinks) || shareLinks.length === 0) {
+        return "";
+    }
     return `<p class="calendar-share-links-details">${escapeHtml(i18n.t("gateway.calendar.share_links_details"))}</p>
-      <label class="calendar-share-result">
-        <span>CalDAV</span>
-        <div class="calendar-share-result-row">
-          <input type="text" readonly value="${escapeHtml(shareData.caldavUrl)}" />
-          <button type="button" class="btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.caldavUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
-        </div>
-      </label>
-      <label class="calendar-share-result">
-        <span>ICS</span>
-        <div class="calendar-share-result-row">
-          <input type="text" readonly value="${escapeHtml(shareData.icsUrl)}" />
-          <button type="button" class="btn-no-animation" data-calendar-share-copy="${escapeHtml(shareData.icsUrl)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
-        </div>
-      </label>`;
+      ${shareLinks
+          .map((shareLink) => {
+              const name =
+                  String(shareLink.name ?? "").trim() ||
+                  i18n.t("gateway.calendar.share_link_name_fallback");
+              const expiresAt = String(shareLink.expiresAt ?? "").trim();
+              const expiryLabel = expiresAt
+                  ? formatDateTime(expiresAt)
+                  : i18n.t("gateway.calendar.share_link_expiry_never");
+              const passphraseMarkup =
+                  typeof shareLink.passphrase === "string" && shareLink.passphrase
+                      ? renderCalendarShareCopyField({
+                            i18n,
+                            escapeHtml,
+                            label: i18n.t("gateway.calendar.share_link_passphrase"),
+                            value: shareLink.passphrase,
+                        })
+                      : "";
+              const openAttr = shareLinks.length === 1 ? " open" : "";
+              return `<details class="calendar-share-entry"${openAttr}>
+                <summary class="calendar-share-entry-summary">
+                  <span class="calendar-share-entry-title">${escapeHtml(name)}</span>
+                  <span class="calendar-share-entry-meta">${escapeHtml(expiryLabel)}</span>
+                </summary>
+                <div class="calendar-share-entry-body">
+                  ${renderCalendarShareCopyField({
+                      i18n,
+                      escapeHtml,
+                      label: "CalDAV",
+                      value: shareLink.caldavUrl,
+                  })}
+                  ${renderCalendarShareCopyField({
+                      i18n,
+                      escapeHtml,
+                      label: "ICS",
+                      value: shareLink.icsUrl,
+                  })}
+                  ${passphraseMarkup}
+                </div>
+              </details>`;
+          })
+          .join("")}`;
 }
 
 function bindCalendarShareControls({
@@ -36,9 +101,8 @@ function bindCalendarShareControls({
 }) {
     const shareGenerateBtn = overlay.querySelector("#calendar-share-generate");
     const shareResults = overlay.querySelector("#calendar-share-results");
-    const shareControls = overlay.querySelector(
-        "#calendar-share-generate-controls",
-    );
+    const shareNameInput = overlay.querySelector("#calendar-share-name");
+    const shareExpiryInput = overlay.querySelector("#calendar-share-expiry");
     const userSearchInput = overlay.querySelector(
         "#calendar-share-user-search",
     );
@@ -61,6 +125,24 @@ function bindCalendarShareControls({
     let shareUserOptions = [];
     let selectedShareUsers = [];
     let userSearchAbortController = null;
+
+    const updateShareGenerateButton = (shareLinks) => {
+        if (!(shareGenerateBtn instanceof HTMLElement)) return;
+        shareGenerateBtn.textContent = i18n.t(
+            Array.isArray(shareLinks) && shareLinks.length > 0
+                ? "gateway.calendar.share_link_regenerate"
+                : "gateway.calendar.share_link_generate",
+        );
+    };
+
+    const normalizeShareLinks = (payload) =>
+        Array.isArray(payload?.data)
+            ? payload.data.filter(
+                  (shareLink) =>
+                      typeof shareLink?.caldavUrl === "string" &&
+                      typeof shareLink?.icsUrl === "string",
+              )
+            : [];
 
     const renderSelectedShareUsers = () => {
         if (!(userChips instanceof HTMLElement)) return;
@@ -191,22 +273,41 @@ function bindCalendarShareControls({
         renderShareUserOptions();
     };
 
-    const renderShareResults = (shareData) => {
+    const renderShareResults = (shareLinks) => {
         shareResults.innerHTML = renderCalendarShareResults({
             i18n,
             escapeHtml,
-            shareData,
+            shareLinks,
         });
-        shareResults.hidden = false;
-        if (shareControls instanceof HTMLElement) {
-            shareControls.hidden = true;
-        }
+        shareResults.hidden = !Array.isArray(shareLinks) || shareLinks.length === 0;
+        updateShareGenerateButton(shareLinks);
     };
 
     const loadCalendarShareLinks = async () => {
+        const expiresInHours =
+            shareExpiryInput instanceof HTMLSelectElement &&
+            shareExpiryInput.value === "never"
+                ? null
+                : Number.parseFloat(
+                      String(
+                          shareExpiryInput instanceof HTMLSelectElement
+                              ? shareExpiryInput.value
+                              : "24",
+                      ),
+                  );
         const response = await apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share`,
-            { method: "POST", headers: { "content-type": "application/json" } },
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    name:
+                        shareNameInput instanceof HTMLInputElement
+                            ? shareNameInput.value
+                            : "",
+                    expiresInHours,
+                }),
+            },
         );
         if (!response.ok) {
             showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
@@ -214,30 +315,27 @@ function bindCalendarShareControls({
             return;
         }
         const payload = await response.json().catch(() => null);
-        const shareData = payload?.data;
-        if (
-            typeof shareData?.caldavUrl !== "string" ||
-            typeof shareData?.icsUrl !== "string"
-        ) {
+        const shareLinks = normalizeShareLinks(payload);
+        if (shareLinks.length === 0) {
             showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
             shareResults.hidden = true;
             return;
         }
-        renderShareResults(shareData);
+        renderShareResults(shareLinks);
+        if (shareNameInput instanceof HTMLInputElement) {
+            shareNameInput.value = "";
+        }
     };
     const loadExistingShareLinks = async () => {
         const response = await apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share`,
         );
-        if (!response.ok) return;
-        const payload = await response.json().catch(() => null);
-        const shareData = payload?.data;
-        if (
-            typeof shareData?.caldavUrl === "string" &&
-            typeof shareData?.icsUrl === "string"
-        ) {
-            renderShareResults(shareData);
+        if (!response.ok) {
+            updateShareGenerateButton([]);
+            return;
         }
+        const payload = await response.json().catch(() => null);
+        renderShareResults(normalizeShareLinks(payload));
     };
     shareGenerateBtn.addEventListener("click", () => {
         void loadCalendarShareLinks();
@@ -321,6 +419,11 @@ export function createCalendarEditPopupHandler({
             <div id="calendar-share-user-options" class="calendar-participant-options"></div>
             <div id="calendar-share-user-chips" class="calendar-participant-list"></div>
             <div id="calendar-share-generate-controls" class="calendar-share-input-row">
+              <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
+              <select id="calendar-share-expiry">${SHARE_EXPIRY_OPTIONS.map(
+                  (option) =>
+                      `<option value="${escapeHtml(option.value)}"${option.value === "24" ? " selected" : ""}>${escapeHtml(i18n.t(option.labelKey))}</option>`,
+              ).join("")}</select>
               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
             </div>
             <div id="calendar-share-results" class="calendar-share-results" hidden></div>

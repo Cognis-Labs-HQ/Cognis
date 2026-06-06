@@ -1,10 +1,11 @@
+import { randomBytes } from "node:crypto";
 import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
-import type { CoreCalendarGateway } from "../gateway/index.js";
 import type {
     CalendarEventRecord,
     CalendarEventResponse,
     CalendarVisibility,
 } from "../gateway/index.js";
+import type { CalendarShareLinkRegistryRecord } from "./share-registry.js";
 
 const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 
@@ -72,48 +73,23 @@ export function normalizeReminderOffsets(value: unknown): number[] {
 }
 
 export function buildCalendarShareData(input: {
-    gateway: CoreCalendarGateway;
-    ownerAccountId: string;
-    calendarId: string;
-    permission: unknown;
-    expiresInHours: unknown;
-    name?: string;
-    tokenOverride?: string | null;
+    shareLink: CalendarShareLinkRegistryRecord;
     externalHost: string;
 }): {
-    permission: "read" | "write";
+    id: string;
+    name: string | null;
+    passphrase: string | null;
+    expiresAt: string;
     shareUrl: string;
     caldavUrl: string;
     icsUrl: string;
-} | null {
-    const calendar = input.gateway.getOwnedCalendar(
-        input.ownerAccountId,
-        input.calendarId,
-    );
-    if (!calendar) return null;
-    const permission = input.permission === "write" ? "write" : "read";
-    const privateExportToken =
-        calendar.visibility === "public"
-            ? null
-            : (input.tokenOverride ??
-              input.gateway.issuePrivateExportToken({
-                  ownerAccountId: input.ownerAccountId,
-                  calendarId: calendar.id,
-                  ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
-                  ...(input.name ? { name: input.name } : {}),
-              }).token);
-    const caldavPath =
-        calendar.visibility === "public"
-            ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.name)}?calendarId=${encodeURIComponent(calendar.id)}`
-            : `/api/v1/calendar/caldav/private/${encodeURIComponent(
-                  String(privateExportToken),
-              )}`;
-    const icsPath =
-        calendar.visibility === "public"
-            ? `/api/v1/calendar/ics/public/${encodeURIComponent(calendar.name)}?calendarId=${encodeURIComponent(calendar.id)}`
-            : `/api/v1/calendar/ics/private/${encodeURIComponent(
-                  String(privateExportToken),
-              )}`;
+} {
+    const caldavPath = `/api/v1/calendar/caldav/share/${encodeURIComponent(
+        input.shareLink.token,
+    )}`;
+    const icsPath = `/api/v1/calendar/ics/share/${encodeURIComponent(
+        input.shareLink.token,
+    )}`;
     const toAbsoluteOrPath = (relativePath: string) =>
         input.externalHost
             ? `${input.externalHost}${relativePath}`
@@ -121,23 +97,37 @@ export function buildCalendarShareData(input: {
     const caldavUrl = toAbsoluteOrPath(caldavPath);
     const icsUrl = toAbsoluteOrPath(icsPath);
     return {
-        permission,
+        id: input.shareLink.id,
+        name: input.shareLink.name,
+        passphrase: input.shareLink.passphrase,
+        expiresAt: input.shareLink.expiresAt,
         shareUrl: caldavUrl,
         caldavUrl,
         icsUrl,
     };
 }
 
-function resolveShareTtlSeconds(expiresInHours: unknown): number | null {
-    if (expiresInHours === null) return null;
+export function createCalendarSharePassphrase(): string {
+    return randomBytes(12).toString("hex");
+}
+
+export function resolveShareExpiry(expiresInHours: unknown): string {
+    if (expiresInHours === null) return "";
     if (
         typeof expiresInHours !== "number" ||
         !Number.isFinite(expiresInHours)
     ) {
-        return DEFAULT_SHARE_TTL_SECONDS;
+        return new Date(
+            Date.now() + DEFAULT_SHARE_TTL_SECONDS * 1000,
+        ).toISOString();
     }
-    if (expiresInHours <= 0) return DEFAULT_SHARE_TTL_SECONDS;
-    return Math.round(expiresInHours * 3600);
+    if (expiresInHours <= 0) {
+        return new Date(
+            Date.now() + DEFAULT_SHARE_TTL_SECONDS * 1000,
+        ).toISOString();
+    }
+    const ttlSeconds = Math.max(1, Math.round(expiresInHours * 3600));
+    return new Date(Date.now() + ttlSeconds * 1000).toISOString();
 }
 
 export async function normalizeAttendeesForOwner(
