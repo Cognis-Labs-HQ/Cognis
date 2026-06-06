@@ -63,38 +63,6 @@ export class CalendarShareRegistry {
         ) => void,
     ) {}
 
-    private static normalizeStoredSharePermission(
-        value: unknown,
-    ): "read" | "write" {
-        const normalizedPermission = String(value ?? "")
-            .trim()
-            .toLowerCase();
-        if (
-            normalizedPermission === "write" ||
-            normalizedPermission === "read_write" ||
-            normalizedPermission === "read-write"
-        ) {
-            return "write";
-        }
-        return "read";
-    }
-
-    private static shouldRetryWithLegacyWritePermission(
-        error: unknown,
-    ): boolean {
-        const message = String(error instanceof Error ? error.message : error)
-            .trim()
-            .toLowerCase();
-        if (!message) return false;
-        return (
-            message.includes("permission") &&
-            (message.includes("enum") ||
-                message.includes("constraint") ||
-                message.includes("check") ||
-                message.includes("invalid input value"))
-        );
-    }
-
     async ensureSchema(): Promise<void> {
         if (!this.db) return;
         await this.db.ensureTable({
@@ -318,9 +286,7 @@ export class CalendarShareRegistry {
                 row.recipient_avatar_key == null
                     ? null
                     : String(row.recipient_avatar_key),
-            permission: CalendarShareRegistry.normalizeStoredSharePermission(
-                row.permission,
-            ),
+            permission: row.permission === "write" ? "write" : "read",
             expiresAt: String(row.expires_at ?? "").trim(),
             createdAt: String(row.created_at ?? ""),
             updatedAt: String(row.updated_at ?? ""),
@@ -444,49 +410,16 @@ export class CalendarShareRegistry {
             this.memoryUserShares.set(nextShare.id, nextShare);
             return nextShare;
         }
-        if (nextShare.permission !== "write") {
-            await this.db.executeCommand({
-                option: "UPDATE",
-                table: "calendar_user_shares",
-                values: {
-                    permission: nextShare.permission,
-                    expires_at: nextShare.expiresAt,
-                    updated_at: nextShare.updatedAt,
-                },
-                where: [{ column: "id", value: nextShare.id }],
-            });
-            return nextShare;
-        }
-        try {
-            await this.db.executeCommand({
-                option: "UPDATE",
-                table: "calendar_user_shares",
-                values: {
-                    permission: nextShare.permission,
-                    expires_at: nextShare.expiresAt,
-                    updated_at: nextShare.updatedAt,
-                },
-                where: [{ column: "id", value: nextShare.id }],
-            });
-        } catch (error) {
-            if (
-                !CalendarShareRegistry.shouldRetryWithLegacyWritePermission(
-                    error,
-                )
-            ) {
-                throw error;
-            }
-            await this.db.executeCommand({
-                option: "UPDATE",
-                table: "calendar_user_shares",
-                values: {
-                    permission: "read_write",
-                    expires_at: nextShare.expiresAt,
-                    updated_at: nextShare.updatedAt,
-                },
-                where: [{ column: "id", value: nextShare.id }],
-            });
-        }
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "calendar_user_shares",
+            values: {
+                permission: nextShare.permission,
+                expires_at: nextShare.expiresAt,
+                updated_at: nextShare.updatedAt,
+            },
+            where: [{ column: "id", value: nextShare.id }],
+        });
         return nextShare;
     }
 
@@ -558,9 +491,7 @@ export class CalendarShareRegistry {
                 row.recipient_avatar_key == null
                     ? null
                     : String(row.recipient_avatar_key),
-            permission: CalendarShareRegistry.normalizeStoredSharePermission(
-                row.permission,
-            ),
+            permission: row.permission === "write" ? "write" : "read",
             expiresAt: String(row.expires_at ?? "").trim(),
             createdAt: String(row.created_at ?? ""),
             updatedAt: String(row.updated_at ?? ""),

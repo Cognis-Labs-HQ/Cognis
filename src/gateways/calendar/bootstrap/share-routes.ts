@@ -201,11 +201,23 @@ export async function handleCalendarShareRoutes(input: {
             return true;
         }
         const body = (await readJson(input.req)) as Record<string, unknown>;
+        const normalizedPermission =
+            typeof body.permission === "string"
+                ? body.permission.trim().toLowerCase()
+                : undefined;
         const updatedShare = await input.shareRegistry.updateCalendarUserShare({
             ownerAccountId: input.claims.sub,
             ownerCalendarId,
             shareId: targetShare.id,
-            permission: body.permission === "write" ? "write" : "read",
+            permission:
+                normalizedPermission === undefined
+                    ? undefined
+                    : normalizedPermission === "write" ||
+                        normalizedPermission === "read&write" ||
+                        normalizedPermission === "read_and_write" ||
+                        normalizedPermission === "read-write"
+                      ? "write"
+                      : "read",
             expiresAt:
                 body.expiresInHours === undefined
                     ? undefined

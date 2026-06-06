@@ -625,6 +625,14 @@ test("calendar shared write access appears in recipient list and supports event 
     );
     assert.equal(elevateByAccountResponse.statusCode, 200);
     assert.equal(elevateByAccountResponse.body.data.permission, "write");
+    const elevateByDisplayPermissionResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent(shareId)}`,
+        { permission: "Read & Write" },
+    );
+    assert.equal(elevateByDisplayPermissionResponse.statusCode, 200);
+    assert.equal(elevateByDisplayPermissionResponse.body.data.permission, "write");
 
     const bobCalendars = await dispatchJson(
         "GET",
