@@ -649,6 +649,8 @@
   <string name="module.study.classes.meeting_failed">授業ミーティングを開始できませんでした。</string>
   <string name="module.study.classes.empty_seat">生徒を招待</string>
   <string name="module.study.classes.join_mode_label">参加方式</string>
+  <string name="module.study.classes.class_name_label">クラス名</string>
+  <string name="module.study.classes.class_cap_label">定員</string>
   <string name="module.study.classes.join_mode_open">オープン</string>
   <string name="module.study.classes.join_mode_on_request">申請制</string>
   <string name="module.study.classes.join_mode_invite_only">招待制</string>
@@ -671,6 +673,11 @@
   <string name="module.study.classes.note_requests">ノート閲覧リクエスト</string>
   <string name="module.study.classes.note_request_reviewed">ノート閲覧リクエストを確認しました。</string>
   <string name="module.study.classes.note_request_review_failed">ノート閲覧リクエストの確認に失敗しました。</string>
+  <string name="module.study.classes.disband_class_title">クラスを解散</string>
+  <string name="module.study.classes.disband_class_confirm_body">教師として退出すると、このクラスは解散され、カレンダーとミーティングリンクが削除され、クラスチャットがアーカイブされます。続行しますか？</string>
+  <string name="module.study.classes.disband_class_action">クラスを解散</string>
+  <string name="module.study.classes.disband_class_success">クラスを解散しました。</string>
+  <string name="module.study.classes.disband_class_failed">クラスの解散に失敗しました。</string>
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>
   <string name="ui.app.dashboard.element.student_classes.cta">参加しているクラスを確認・管理できます。</string>
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>

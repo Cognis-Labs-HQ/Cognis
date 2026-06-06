@@ -42,6 +42,7 @@ export interface ClassesRouteOptions {
     listCalendars?: (
         ownerAccountId: string,
     ) => Array<{ id: string; name: string }>;
+    deleteCalendar?: (ownerAccountId: string, calendarId: string) => void;
     addEvent?: (input: {
         ownerAccountId: string;
         calendarId: string;
@@ -71,6 +72,11 @@ export interface ClassesRouteOptions {
         endAt: string;
         meetingUrl?: string | null;
     }>;
+    archiveClassroomChat?: (input: { classId: string }) => Promise<void>;
+    archiveClassroomMeetings?: (input: { classId: string }) => Promise<void>;
+    getPresenceStatuses?: (
+        accountIds: string[],
+    ) => Promise<Record<string, "online" | "away" | "offline">>;
     log?: (
         level: string,
         message: string,
@@ -118,7 +124,12 @@ export function resolveClassroomMode(
 }
 
 export function filterClassesBySearchQuery<
-    T extends { languageCode?: string; teacherAccountId?: string; id?: string },
+    T extends {
+        name?: string;
+        languageCode?: string;
+        teacherAccountId?: string;
+        id?: string;
+    },
 >(classes: T[], searchQuery: string): T[] {
     if (!searchQuery) {
         return classes;
@@ -126,6 +137,7 @@ export function filterClassesBySearchQuery<
     const normalizedQuery = searchQuery.toLowerCase();
     return classes.filter((classRow) =>
         [
+            classRow.name ?? "",
             classRow.languageCode ?? "",
             classRow.teacherAccountId ?? "",
             classRow.id ?? "",
@@ -143,6 +155,11 @@ export async function decorateMemberships(
         [key: string]: unknown;
     }>,
 ) {
+    const presenceByAccountId = options.getPresenceStatuses
+        ? await options.getPresenceStatuses(
+              memberships.map((membership) => membership.studentAccountId),
+          )
+        : {};
     return Promise.all(
         memberships.map(async (membership) => {
             const profile = await options.getProfileSummary?.(
@@ -153,6 +170,9 @@ export async function decorateMemberships(
                 handle: profile?.handle ?? null,
                 displayName: profile?.displayName ?? null,
                 avatarKey: profile?.avatarKey ?? null,
+                presence:
+                    presenceByAccountId[membership.studentAccountId] ??
+                    "offline",
             };
         }),
     );
@@ -172,11 +192,21 @@ export async function syncClassroomArtifacts(
     );
     const chat = await options.resolveClassroomChatUrl?.({
         classId: classRow.id,
-        title: `Classroom ${classRow.languageCode}`,
+        title: classRow.name || `Classroom ${classRow.languageCode}`,
         teacherAccountId: classRow.teacherAccountId,
         memberAccountIds: members.map((member) => member.studentAccountId),
     });
     return { classRow, chat };
+}
+
+export function buildDefaultClassName(input: {
+    teacherDisplayName: string;
+    languageName: string;
+}) {
+    const teacherDisplayName =
+        String(input.teacherDisplayName ?? "").trim() || "Teacher";
+    const languageName = String(input.languageName ?? "").trim() || "Language";
+    return `${teacherDisplayName}'s ${languageName} class`;
 }
 
 export async function resolveAgendaCalendarId(

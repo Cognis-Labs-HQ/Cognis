@@ -25,7 +25,23 @@ export async function handleAvailableClassesRequest(
             ),
             input.searchQuery,
         );
-        jsonOk(response, filteredClasses);
+        const languages = await store.listStudyLanguages(false);
+        const languageNameByCode = new Map(
+            languages.map((language) => [
+                String(language.code ?? "").trim().toLowerCase(),
+                String(language.name ?? "").trim(),
+            ]),
+        );
+        jsonOk(
+            response,
+            filteredClasses.map((classRow) => ({
+                ...classRow,
+                languageName:
+                    languageNameByCode.get(
+                        String(classRow.languageCode ?? "").toLowerCase(),
+                    ) ?? classRow.languageCode,
+            })),
+        );
     } catch (err) {
         options.log?.("error", "Failed to load available classes.", {
             ...input.logMeta,

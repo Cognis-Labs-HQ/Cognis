@@ -76,6 +76,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (ownerAccountId: string) => gateway.listCalendars(ownerAccountId),
     );
     ctx.capabilities.contribute(
+        "calendar:deleteCalendar",
+        (ownerAccountId: string, calendarId: string) =>
+            gateway.deleteCalendar({ ownerAccountId, calendarId }),
+    );
+    ctx.capabilities.contribute(
         "calendar:addEvent",
         (input: {
             ownerAccountId: string;

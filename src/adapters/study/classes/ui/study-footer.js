@@ -3,9 +3,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
     applyClassroomViewModeFromUrl,
-    canToggleClassroomView,
     getClassroomViewMode,
-    setClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
 
 function renderClassSelectorContent({
@@ -17,7 +15,13 @@ function renderClassSelectorContent({
     const options = classes
         .map((classRow) => {
             const selected = classRow.id === selectedClassId ? " selected" : "";
-            return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(classRow.languageCode)} · ${escapeHtml(classRow.id)}</option>`;
+            const classLabel = String(
+                classRow.name ??
+                    classRow.languageName ??
+                    classRow.languageCode ??
+                    classRow.id,
+            ).trim();
+            return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(classLabel)}</option>`;
         })
         .join("");
     const createOption = allowCreateOption
@@ -30,15 +34,6 @@ function renderClassSelectorContent({
                 : "module.study.classes.no_enrolled_classes",
         ),
     );
-    const toggleButton = canToggleClassroomView()
-        ? `<button type="button" class="classes-footer-toggle-btn">${escapeHtml(
-              i18n.t(
-                  getClassroomViewMode() === "teacher"
-                      ? "module.study.classes.enter_student_view"
-                      : "module.study.classes.enter_teacher_view",
-              ),
-          )}</button>`
-        : "";
     return `
         <label class="classes-footer-class-label">
             ${escapeHtml(i18n.t("module.study.classes.classroom_select_class"))}:
@@ -46,7 +41,6 @@ function renderClassSelectorContent({
                 ${options || `<option value="">${emptyLabel}</option>`}${createOption}
             </select>
         </label>
-        ${toggleButton}
     `;
 }
 
@@ -87,9 +81,6 @@ export function createClassFooterItem({
             }),
         onRender: (slot) => {
             const selectElement = slot.querySelector(".classes-footer-select");
-            const toggleButton = slot.querySelector(
-                ".classes-footer-toggle-btn",
-            );
             if (selectElement instanceof HTMLSelectElement) {
                 selectElement.addEventListener(
                     "change",
@@ -108,22 +99,6 @@ export function createClassFooterItem({
                         }
                         navigateTo(
                             `/classroom?classId=${encodeURIComponent(nextValue)}`,
-                        );
-                    },
-                    { signal },
-                );
-            }
-            if (toggleButton instanceof HTMLButtonElement) {
-                toggleButton.addEventListener(
-                    "click",
-                    () => {
-                        const nextMode =
-                            getClassroomViewMode() === "teacher"
-                                ? "student"
-                                : "teacher";
-                        setClassroomViewMode(nextMode);
-                        navigateTo(
-                            `${window.location.pathname}?classroomView=${encodeURIComponent(nextMode)}`,
                         );
                     },
                     { signal },

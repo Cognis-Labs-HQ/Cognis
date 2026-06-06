@@ -649,6 +649,8 @@
   <string name="module.study.classes.meeting_failed">Failed to start the class meeting.</string>
   <string name="module.study.classes.empty_seat">Invite Student</string>
   <string name="module.study.classes.join_mode_label">Join Mode</string>
+  <string name="module.study.classes.class_name_label">Class Name</string>
+  <string name="module.study.classes.class_cap_label">Class Cap</string>
   <string name="module.study.classes.join_mode_open">Open</string>
   <string name="module.study.classes.join_mode_on_request">On Request</string>
   <string name="module.study.classes.join_mode_invite_only">Invite Only</string>
@@ -671,6 +673,11 @@
   <string name="module.study.classes.note_requests">Notebook Access Requests</string>
   <string name="module.study.classes.note_request_reviewed">Notebook access request reviewed.</string>
   <string name="module.study.classes.note_request_review_failed">Failed to review notebook access request.</string>
+  <string name="module.study.classes.disband_class_title">Disband Class</string>
+  <string name="module.study.classes.disband_class_confirm_body">Leaving as the teacher will disband this class, remove its calendar and meeting links, and archive the classroom chat. Continue?</string>
+  <string name="module.study.classes.disband_class_action">Disband Class</string>
+  <string name="module.study.classes.disband_class_success">Class disbanded.</string>
+  <string name="module.study.classes.disband_class_failed">Failed to disband class.</string>
   <string name="ui.app.dashboard.element.student_classes.label">My Classes</string>
   <string name="ui.app.dashboard.element.student_classes.cta">View and manage the classes you are enrolled in.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Go to My Classes</string>

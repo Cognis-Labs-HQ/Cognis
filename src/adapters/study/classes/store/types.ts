@@ -12,6 +12,7 @@ export interface StudyLanguageRow {
 
 export interface ClassRow {
     id: string;
+    name: string;
     languageCode: string;
     teacherAccountId: string;
     joinMode: ClassJoinMode;
@@ -55,6 +56,8 @@ export interface TeacherRequestRow {
     id: string;
     accountId: string;
     languageCode: string;
+    className: string;
+    studentLimit: number;
     joinMode: ClassJoinMode;
     isListed: boolean;
     status: TeacherRequestStatus;

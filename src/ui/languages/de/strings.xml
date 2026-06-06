@@ -649,6 +649,8 @@
   <string name="module.study.classes.meeting_failed">Das Klassenmeeting konnte nicht gestartet werden.</string>
   <string name="module.study.classes.empty_seat">Schüler einladen</string>
   <string name="module.study.classes.join_mode_label">Beitrittsmodus</string>
+  <string name="module.study.classes.class_name_label">Klassenname</string>
+  <string name="module.study.classes.class_cap_label">Maximale Klassengröße</string>
   <string name="module.study.classes.join_mode_open">Offen</string>
   <string name="module.study.classes.join_mode_on_request">Auf Anfrage</string>
   <string name="module.study.classes.join_mode_invite_only">Nur mit Einladung</string>
@@ -671,6 +673,11 @@
   <string name="module.study.classes.note_requests">Notizbuchzugriffsanfragen</string>
   <string name="module.study.classes.note_request_reviewed">Notizbuchzugriffsanfrage geprüft.</string>
   <string name="module.study.classes.note_request_review_failed">Notizbuchzugriffsanfrage konnte nicht geprüft werden.</string>
+  <string name="module.study.classes.disband_class_title">Klasse auflösen</string>
+  <string name="module.study.classes.disband_class_confirm_body">Wenn Sie als Lehrkraft gehen, wird die Klasse aufgelöst, Kalender- und Meeting-Links werden entfernt und der Klassenchat archiviert. Fortfahren?</string>
+  <string name="module.study.classes.disband_class_action">Klasse auflösen</string>
+  <string name="module.study.classes.disband_class_success">Klasse wurde aufgelöst.</string>
+  <string name="module.study.classes.disband_class_failed">Klasse konnte nicht aufgelöst werden.</string>
   <string name="ui.app.dashboard.element.student_classes.label">Meine Klassen</string>
   <string name="ui.app.dashboard.element.student_classes.cta">Sehen und verwalten Sie die Klassen, in denen Sie eingeschrieben sind.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Zu meinen Klassen</string>

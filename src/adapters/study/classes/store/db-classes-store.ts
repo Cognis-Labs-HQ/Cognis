@@ -1,6 +1,7 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 import {
+    disbandClassForTeacher,
     getAvailableClasses,
     getClassById,
     getClassroomState,
@@ -96,6 +97,13 @@ export class DbClassesStore {
 
     async getClassesForTeacher(teacherAccountId: string): Promise<ClassRow[]> {
         return getClassesForTeacher(this.db, teacherAccountId);
+    }
+
+    async disbandClassForTeacher(
+        classId: string,
+        teacherAccountId: string,
+    ): Promise<ClassRow | null> {
+        return disbandClassForTeacher(this.db, classId, teacherAccountId);
     }
 
     async getClassById(classId: string): Promise<ClassRow | null> {
@@ -336,6 +344,8 @@ export class DbClassesStore {
     async submitTeacherRequest(
         accountId: string,
         languageCode: string,
+        className: string,
+        studentLimit: number,
         reason: string | null,
         joinMode: ClassRow["joinMode"],
         isListed: boolean,
@@ -344,6 +354,8 @@ export class DbClassesStore {
             this.db,
             accountId,
             languageCode,
+            className,
+            studentLimit,
             reason,
             joinMode,
             isListed,

@@ -1,6 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const DEFAULT_CLASSROOM_CAPACITY = 30;
+const DEFAULT_CLASSROOM_CAPACITY = 20;
 
 /** @param {unknown} rawSeatAssignments */
 function normalizeSeatAssignments(rawSeatAssignments) {
@@ -71,6 +71,8 @@ function renderBlackboard({
     activeAgendaItems,
     i18n,
     isTeacherView,
+    canToggleView,
+    currentViewMode,
 }) {
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
@@ -85,8 +87,27 @@ function renderBlackboard({
                         aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
                         title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
                     ${
-                        isTeacherView
-                            ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
+                       canToggleView
+                           ? `<button type="button" class="classes-icon-btn classes-toggle-view-btn"
+                                aria-label="${escapeHtml(
+                                    i18n.t(
+                                        currentViewMode === "teacher"
+                                            ? "module.study.classes.enter_student_view"
+                                            : "module.study.classes.enter_teacher_view",
+                                    ),
+                                )}"
+                                title="${escapeHtml(
+                                    i18n.t(
+                                        currentViewMode === "teacher"
+                                            ? "module.study.classes.enter_student_view"
+                                            : "module.study.classes.enter_teacher_view",
+                                    ),
+                                )}">👁️</button>`
+                           : ""
+                    }
+                    ${
+                       isTeacherView
+                           ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
                                    aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
                                    title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
                             : ""
@@ -95,6 +116,7 @@ function renderBlackboard({
             </div>
             <div class="classes-blackboard-surface">
                 ${renderChalkAgenda({ activeAgendaItems, i18n })}
+                ${renderStudentRoster({ snapshot, i18n })}
             </div>
             <div class="classes-blackboard-ledge"></div>
         </div>
@@ -139,6 +161,12 @@ function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
              title="${occupied ? escapeHtml(buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}">
             <div class="classes-desk-surface">
                 ${occupied ? `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(buildAccountAbbreviation(member))}</span>` : ""}
+            </div>
+            <div class="classes-desk-nameplate">
+                <span class="classes-status-light classes-status-light--${escapeHtml(
+                    String(member?.presence ?? "offline"),
+                )}"></span>
+                <span class="classes-desk-name">${escapeHtml(occupied ? buildAccountLabel(member) : i18n.t("module.study.classes.empty_seat"))}</span>
             </div>
             <div class="classes-chair-element"></div>
         </div>
@@ -206,10 +234,10 @@ function renderRoomDoor({ i18n, isTeacherView }) {
         <div class="classes-room-doorwall">
             <div class="classes-room-door" id="study-classroom-door"
                  role="button" tabindex="0"
-                 title="${escapeHtml(i18n.t(isTeacherView ? "module.study.classes.kick_student" : "module.study.classes.leave_class"))}">
-                <div class="classes-door-frame">
-                    <div class="classes-door-leaf"></div>
-                    <div class="classes-door-arc"></div>
+                 title="${escapeHtml(i18n.t(isTeacherView ? "module.study.classes.disband_class_action" : "module.study.classes.leave_class"))}">
+                <div class="classes-door-topdown">
+                   <div class="classes-door-swing"></div>
+                   <div class="classes-door-knob"></div>
                 </div>
             </div>
         </div>
@@ -299,7 +327,7 @@ function renderStudentAvailableClasses({
                             .map(
                                 (classRow) => `
                                     <li class="classes-item">
-                                        <span class="classes-language">${escapeHtml(classRow.languageCode)}</span>
+                                        <span class="classes-language">${escapeHtml(classRow.name || classRow.languageName || classRow.languageCode)}</span>
                                         <button type="button" class="btn-confirm btn-animated classes-join-btn" data-class-id="${escapeHtml(classRow.id)}" data-join-mode="${escapeHtml(classRow.joinMode ?? "on_request")}">${escapeHtml(
                                             classRow.joinMode === "open"
                                                 ? i18n.t(
@@ -331,6 +359,8 @@ function renderClassroomView({
     availableClasses,
     selectedLanguageFilter,
     searchQuery,
+    canToggleView,
+    currentViewMode,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -342,15 +372,11 @@ function renderClassroomView({
                   i18n,
               });
     }
-    const seatAssignments = normalizeSeatAssignments(
-        snapshot?.classroom?.seatAssignments,
-    );
     return `
         <section class="classes-section classes-classroom-hub">
             <div class="classes-room">
                 <div class="classes-room-top">
-                    ${renderStudentRoster({ snapshot, seatAssignments, i18n })}
-                    ${renderBlackboard({ snapshot, activeAgendaItems, i18n, isTeacherView })}
+                    ${renderBlackboard({ snapshot, activeAgendaItems, i18n, isTeacherView, canToggleView, currentViewMode })}
                     ${renderRoomDoor({ i18n, isTeacherView })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}

@@ -272,6 +272,9 @@ export async function bootstrapStudyAdapter(
     const listCalendars = ctx.capabilities.get<
         (ownerAccountId: string) => Array<{ id: string; name: string }>
     >("calendar:listCalendars");
+    const deleteCalendar = ctx.capabilities.get<
+        (ownerAccountId: string, calendarId: string) => void
+    >("calendar:deleteCalendar");
     const addCalendarEvent = ctx.capabilities.get<
         (input: {
             ownerAccountId: string;
@@ -305,6 +308,58 @@ export async function bootstrapStudyAdapter(
             meetingUrl?: string | null;
         }>
     >("calendar:listEvents");
+    const archiveClassroomChat = ctx.capabilities.get<
+        (input: { classId: string }) => Promise<void>
+    >("social:messages:archiveClassroomChat");
+    const getPresenceStatuses = ctx.capabilities.get<
+        (
+            accountIds: string[],
+        ) => Promise<Record<string, "online" | "away" | "offline">>
+    >("social:presence:getStatuses");
+    const archiveClassroomMeetings = async (input: { classId: string }) => {
+        const classId = String(input?.classId ?? "").trim();
+        if (!classId) return;
+        await dbExecutor.transaction(async (executor) => {
+            const meetingResult = await executor.executeCommand({
+                option: "SELECT",
+                table: "jitsi_meetings",
+                columns: ["id"],
+                where: [{ column: "classroom_id", value: classId }],
+            });
+            const meetingIds = (meetingResult.rows ?? [])
+                .map((row) => String(row.id ?? "").trim())
+                .filter(Boolean);
+            if (!meetingIds.length) return;
+            for (const table of [
+                "jitsi_meeting_presence",
+                "jitsi_meeting_state",
+                "jitsi_meeting_participants",
+            ]) {
+                await executor.executeCommand({
+                    option: "DELETE",
+                    table,
+                    where: [
+                        {
+                            column: "meeting_id",
+                            operator: "IN",
+                            value: meetingIds,
+                        },
+                    ],
+                });
+            }
+            await executor.executeCommand({
+                option: "DELETE",
+                table: "jitsi_meetings",
+                where: [
+                    {
+                        column: "id",
+                        operator: "IN",
+                        value: meetingIds,
+                    },
+                ],
+            });
+        });
+    };
 
     /**
      * study:classroom:listParticipantHandles — resolves normalized participant
@@ -393,8 +448,12 @@ export async function bootstrapStudyAdapter(
             resolveClassroomChatUrl,
             createCalendar,
             listCalendars,
+            deleteCalendar,
             addEvent: addCalendarEvent,
             listEvents: listCalendarEvents,
+            archiveClassroomChat,
+            archiveClassroomMeetings,
+            getPresenceStatuses,
             routeContext,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<

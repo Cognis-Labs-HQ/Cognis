@@ -317,6 +317,14 @@ export async function bootstrapSocialAdapter(
             };
         },
     );
+    ctx.capabilities.contribute(
+        "social:messages:archiveClassroomChat",
+        async (input: { classId: string }): Promise<void> => {
+            const classId = String(input?.classId ?? "").trim();
+            if (!classId) return;
+            await messagesStore.archiveClassroomRoomMembers(classId);
+        },
+    );
 
     ctx.capabilities.contribute("social:messages:uiResources", {
         languageBaseUrls: [

@@ -3,11 +3,13 @@ import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
+import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "../store/constants.js";
 import { handleClassroomNotebookRoutes } from "./classroom-notebooks.js";
 import { handleAvailableClassesRequest } from "./available-classes-route.js";
 import { handleEnrolledClassesRequest } from "./enrolled-classes-route.js";
 import {
     decorateMemberships,
+    buildDefaultClassName,
     normalizeJoinMode,
     normalizeLanguageList,
     resolveAgendaCalendarId,
@@ -21,6 +23,23 @@ export function createClassesRoutes(
     options: ClassesRouteOptions = {},
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(options.routeContext);
+    const languageNameCache = new Map<string, string>();
+
+    const resolveStudyLanguageName = async (languageCode: string) => {
+        const normalizedCode = String(languageCode ?? "").trim().toLowerCase();
+        if (!normalizedCode) return "";
+        if (languageNameCache.has(normalizedCode)) {
+            return languageNameCache.get(normalizedCode) ?? "";
+        }
+        const languages = await store.listStudyLanguages(false);
+        for (const language of languages) {
+            languageNameCache.set(
+                String(language.code ?? "").trim().toLowerCase(),
+                String(language.name ?? "").trim(),
+            );
+        }
+        return languageNameCache.get(normalizedCode) ?? "";
+    };
 
     return async (
         req: IncomingMessage,
@@ -127,6 +146,8 @@ export function createClassesRoutes(
 
             const body = (await readJson(req)) as {
                 languageCode?: unknown;
+                className?: unknown;
+                studentLimit?: unknown;
                 reason?: unknown;
                 joinMode?: unknown;
             };
@@ -136,6 +157,15 @@ export function createClassesRoutes(
                     : "";
             const reason =
                 typeof body?.reason === "string" ? body.reason.trim() : "";
+            const customClassName =
+                typeof body?.className === "string" ? body.className.trim() : "";
+            const rawStudentLimit = Number(body?.studentLimit);
+            const studentLimit =
+                Number.isInteger(rawStudentLimit) &&
+                rawStudentLimit > 0 &&
+                rawStudentLimit <= MAX_STUDENT_LIMIT
+                    ? rawStudentLimit
+                    : DEFAULT_STUDENT_LIMIT;
             const joinMode = normalizeJoinMode(body?.joinMode);
             const isListed = joinMode !== "invite_only";
             if (!languageCode) {
@@ -166,6 +196,17 @@ export function createClassesRoutes(
                 return true;
             }
 
+            const profile = await options.getProfileSummary?.(claims.sub);
+            const languageName =
+                (await resolveStudyLanguageName(languageCode)) || languageCode;
+            const className =
+                customClassName ||
+                buildDefaultClassName({
+                    teacherDisplayName:
+                        profile?.displayName || profile?.handle || claims.sub,
+                    languageName,
+                });
+
             const requiresApproval =
                 (await options.requireTeacherManualApproval?.()) ?? true;
             if (!requiresApproval) {
@@ -174,6 +215,8 @@ export function createClassesRoutes(
                     (await store.submitTeacherRequest(
                         claims.sub,
                         languageCode,
+                        className,
+                        studentLimit,
                         reason || null,
                         joinMode,
                         isListed,
@@ -204,6 +247,8 @@ export function createClassesRoutes(
             const request = await store.submitTeacherRequest(
                 claims.sub,
                 languageCode,
+                className,
+                studentLimit,
                 reason,
                 joinMode,
                 isListed,
@@ -358,6 +403,10 @@ export function createClassesRoutes(
                               }));
                 const snapshots = await Promise.all(
                     classroomClasses.map(async (classRow) => {
+                        const languageName =
+                            (await resolveStudyLanguageName(
+                                classRow.languageCode,
+                            )) || classRow.languageCode;
                         const [classroomState, members, synced] =
                             await Promise.all([
                                 store.getClassroomState(classRow.id),
@@ -377,6 +426,7 @@ export function createClassesRoutes(
                         );
                         return {
                             ...classRow,
+                            languageName,
                             classroom: classroomState,
                             members: decoratedMembers,
                             chatUrl: synced?.chat?.url ?? null,
@@ -419,13 +469,13 @@ export function createClassesRoutes(
                 studentLimit != null &&
                 (!Number.isInteger(studentLimit) ||
                     studentLimit < 1 ||
-                    studentLimit > 300)
+                    studentLimit > MAX_STUDENT_LIMIT)
             ) {
                 jsonError(
                     res,
                     400,
                     "bad_request",
-                    "studentLimit must be an integer between 1 and 300.",
+                    `studentLimit must be an integer between 1 and ${MAX_STUDENT_LIMIT}.`,
                 );
                 return true;
             }
@@ -772,6 +822,57 @@ export function createClassesRoutes(
         const membershipMatch = url.pathname.match(
             /^\/api\/v1\/study\/classes\/([^/]+)\/membership$/,
         );
+        const disbandMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/disband$/,
+        );
+        if (disbandMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "teacher");
+            if (!claims) return true;
+            const classId = decodeURIComponent(disbandMatch[1]);
+            try {
+                await store.disbandClassForTeacher(classId, claims.sub);
+                const calendarName = `class-agenda-${classId}`;
+                const calendarId =
+                    options
+                        .listCalendars?.(claims.sub)
+                        ?.find((calendar) => calendar.name === calendarName)
+                        ?.id ?? null;
+                if (calendarId) {
+                    options.deleteCalendar?.(claims.sub, calendarId);
+                }
+                await options.archiveClassroomMeetings?.({ classId });
+                await options.archiveClassroomChat?.({ classId });
+                options.log?.("info", "Teacher disbanded class.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                });
+                jsonOk(res, { disbanded: true });
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to disband class.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to disband class.",
+                );
+            }
+            return true;
+        }
         if (membershipMatch && req.method === "DELETE") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;

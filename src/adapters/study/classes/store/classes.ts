@@ -1,5 +1,5 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
+import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "./constants.js";
 import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
 
@@ -12,6 +12,7 @@ export async function getClassesForTeacher(
         table: "study_classes",
         columns: [
             "id",
+            "name",
             "language_code",
             "teacher_account_id",
             "join_mode",
@@ -35,6 +36,7 @@ export async function getClassById(
         table: "study_classes",
         columns: [
             "id",
+            "name",
             "language_code",
             "teacher_account_id",
             "join_mode",
@@ -59,6 +61,7 @@ export async function getTeacherClassForLanguage(
         table: "study_classes",
         columns: [
             "id",
+            "name",
             "language_code",
             "teacher_account_id",
             "join_mode",
@@ -145,7 +148,10 @@ export async function updateClassroomStateForTeacher(
     const normalizedStudentLimit = hasStudentLimit
         ? Number(options.studentLimit)
         : currentState.studentLimit;
-    if (normalizedStudentLimit < 1 || normalizedStudentLimit > 300) {
+    if (
+        normalizedStudentLimit < 1 ||
+        normalizedStudentLimit > MAX_STUDENT_LIMIT
+    ) {
         throw new Error("invalid_student_limit");
     }
     const normalizedSeatAssignments =
@@ -222,6 +228,7 @@ export async function getAvailableClasses(
         table: "study_classes",
         columns: [
             "id",
+            "name",
             "language_code",
             "teacher_account_id",
             "join_mode",
@@ -271,6 +278,7 @@ export async function getClassesForTeacherWithFilter(
         table: "study_classes",
         columns: [
             "id",
+            "name",
             "language_code",
             "teacher_account_id",
             "join_mode",
@@ -306,4 +314,53 @@ export async function getClassesForTeacherWithFilter(
             ? result.value
             : { ...classes[index], memberCount: 0 },
     );
+}
+
+export async function disbandClassForTeacher(
+    db: DbExecutor,
+    classId: string,
+    teacherAccountId: string,
+): Promise<ClassRow | null> {
+    const classRow = await getClassById(db, classId);
+    if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+        throw new Error("not_authorized");
+    }
+    await db.transaction(async (executor) => {
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "class_memberships",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_state",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_resources",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_notebooks",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_note_access_requests",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "teacher_assignments",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "study_classes",
+            where: [{ column: "id", value: classId }],
+        });
+    });
+    return classRow;
 }

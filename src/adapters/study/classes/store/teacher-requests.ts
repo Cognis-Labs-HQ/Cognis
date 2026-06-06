@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "./constants.js";
 import { getTeacherClassForLanguage } from "./classes.js";
 import { rowToTeacherRequest } from "./rows.js";
 import type { ClassRow, TeacherRequestRow } from "./types.js";
@@ -16,6 +17,8 @@ export async function getTeacherRequest(
             "id",
             "account_id",
             "language_code",
+            "class_name",
+            "student_limit",
             "join_mode",
             "is_listed",
             "reason",
@@ -45,6 +48,8 @@ export async function listPendingRequests(
             "id",
             "account_id",
             "language_code",
+            "class_name",
+            "student_limit",
             "join_mode",
             "is_listed",
             "reason",
@@ -65,12 +70,20 @@ export async function submitTeacherRequest(
     db: DbExecutor,
     accountId: string,
     languageCode: string,
+    className: string,
+    studentLimit: number,
     reason: string | null,
     joinMode: ClassRow["joinMode"],
     isListed: boolean,
 ): Promise<TeacherRequestRow> {
     const requestId = randomUUID();
     const nowIso = new Date().toISOString();
+    const normalizedStudentLimit =
+        Number.isInteger(studentLimit) &&
+        studentLimit > 0 &&
+        studentLimit <= MAX_STUDENT_LIMIT
+            ? Number(studentLimit)
+            : DEFAULT_STUDENT_LIMIT;
     await db.executeCommand({
         option: "INSERT",
         table: "teacher_requests",
@@ -78,6 +91,8 @@ export async function submitTeacherRequest(
             id: requestId,
             account_id: accountId,
             language_code: languageCode,
+            class_name: className,
+            student_limit: normalizedStudentLimit,
             join_mode: joinMode,
             is_listed: isListed ? 1 : 0,
             reason,
@@ -90,6 +105,8 @@ export async function submitTeacherRequest(
         id: requestId,
         accountId,
         languageCode,
+        className,
+        studentLimit: normalizedStudentLimit,
         joinMode,
         isListed,
         status: "pending",
@@ -113,6 +130,8 @@ export async function approveTeacherRequest(
                 "id",
                 "account_id",
                 "language_code",
+                "class_name",
+                "student_limit",
                 "join_mode",
                 "is_listed",
             ],
@@ -128,6 +147,16 @@ export async function approveTeacherRequest(
         const requestRow = requestResult.rows[0];
         const accountId = String(requestRow.account_id);
         const languageCode = String(requestRow.language_code);
+        const className = String(requestRow.class_name ?? "").trim();
+        const studentLimitRaw = Number(
+            requestRow.student_limit ?? DEFAULT_STUDENT_LIMIT,
+        );
+        const studentLimit =
+            Number.isInteger(studentLimitRaw) &&
+            studentLimitRaw > 0 &&
+            studentLimitRaw <= MAX_STUDENT_LIMIT
+                ? studentLimitRaw
+                : DEFAULT_STUDENT_LIMIT;
         const joinMode = String(requestRow.join_mode ?? "on_request")
             .trim()
             .toLowerCase();
@@ -158,6 +187,7 @@ export async function approveTeacherRequest(
                 table: "study_classes",
                 values: {
                     id: classId,
+                    name: className,
                     language_code: languageCode,
                     teacher_account_id: accountId,
                     join_mode:
@@ -166,6 +196,24 @@ export async function approveTeacherRequest(
                             : "on_request",
                     is_listed: isListed ? 1 : 0,
                     created_at: nowIso,
+                },
+            });
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "classroom_state",
+                values: {
+                    class_id: classId,
+                    student_limit: studentLimit,
+                    seat_assignments: "{}",
+                    updated_at: nowIso,
+                },
+                conflict: {
+                    action: "update",
+                    target: ["class_id"],
+                    update: {
+                        student_limit: studentLimit,
+                        updated_at: nowIso,
+                    },
                 },
             });
         }
@@ -188,6 +236,7 @@ export async function approveTeacherRequest(
 
         return {
             id: classId,
+            name: existingClassRow?.name ?? className,
             languageCode,
             teacherAccountId: accountId,
             joinMode: existingClassRow?.joinMode

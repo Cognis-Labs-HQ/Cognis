@@ -15,6 +15,7 @@ import {
     applyClassroomViewModeFromUrl,
     canToggleClassroomView,
     getClassroomViewMode,
+    setClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
 import {
     buildAccountLabel,
@@ -49,6 +50,9 @@ export async function mount(root, { signal } = {}) {
     let selectedLanguageFilter = "";
     let searchQuery = "";
     let requireTeacherManualApproval = true;
+    const presenceByAccountId = new Map();
+    let presenceHeartbeatTimer = null;
+    let presenceStream = null;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -86,6 +90,17 @@ export async function mount(root, { signal } = {}) {
         }
         const payload = await response.json();
         classroomSnapshots = Array.isArray(payload?.data) ? payload.data : [];
+        for (const snapshot of classroomSnapshots) {
+            const members = Array.isArray(snapshot?.members)
+                ? snapshot.members
+                : [];
+            for (const member of members) {
+                const accountId = String(member?.studentAccountId ?? "").trim();
+                const presence = String(member?.presence ?? "").trim();
+                if (!accountId || !presence) continue;
+                presenceByAccountId.set(accountId, presence);
+            }
+        }
         if (
             !selectedClassId ||
             !classroomSnapshots.some(
@@ -162,6 +177,8 @@ export async function mount(root, { signal } = {}) {
 
     async function openCreateClassPopup() {
         let selectedLanguageCode = "";
+        let className = "";
+        let studentLimit = 20;
         let reason = "";
         let joinMode = "on_request";
         let selectedAction = null;
@@ -182,6 +199,30 @@ export async function mount(root, { signal } = {}) {
             })
             .filter(Boolean)
             .join("");
+        const languageNameByCode = new Map(
+            (Array.isArray(languagesPayload?.data) ? languagesPayload.data : [])
+                .map((language) => [
+                    String(language?.code ?? "").trim(),
+                    String(language?.name ?? "").trim(),
+                ])
+                .filter(([languageCode]) => Boolean(languageCode)),
+        );
+        const teacherDisplayName =
+            String(localStorage.getItem("cognis_display_name") ?? "").trim() ||
+            String(localStorage.getItem("cognis_handle") ?? "").trim() ||
+            String(localStorage.getItem("cognis_username") ?? "").trim() ||
+            "Teacher";
+        const buildDefaultClassName = (languageCode) => {
+            const languageName =
+                languageNameByCode.get(String(languageCode ?? "").trim()) ||
+                String(languageCode ?? "").trim() ||
+                "Language";
+            return `${teacherDisplayName}'s ${languageName} class`;
+        };
+        const initialLanguageCode =
+            String(languagesPayload?.data?.[0]?.code ?? "").trim();
+        selectedLanguageCode = initialLanguageCode;
+        className = buildDefaultClassName(initialLanguageCode);
         const approvalReasonField = requireTeacherManualApproval
             ? `<label class="stack">
                 ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
@@ -194,6 +235,14 @@ export async function mount(root, { signal } = {}) {
                 <label class="stack">
                     ${escapeHtml(i18n.t("ui.reuse.language"))}
                     <select id="classes-create-language" class="theme-select">${languageOptions}</select>
+                </label>
+                <label class="stack">
+                    ${escapeHtml(i18n.t("module.study.classes.class_name_label"))}
+                    <input id="classes-create-name" class="theme-select" type="text" value="${escapeHtml(className)}" maxlength="120" />
+                </label>
+                <label class="stack">
+                    ${escapeHtml(i18n.t("module.study.classes.class_cap_label"))}
+                    <input id="classes-create-student-limit" class="theme-select" type="number" min="1" max="100" step="1" value="20" />
                 </label>
                 <label class="stack">
                     ${escapeHtml(i18n.t("module.study.classes.join_mode_label"))}
@@ -227,18 +276,66 @@ export async function mount(root, { signal } = {}) {
                 const joinModeSelect = overlay.querySelector(
                     "#classes-create-join-mode",
                 );
+                const classNameInput = overlay.querySelector(
+                    "#classes-create-name",
+                );
+                const studentLimitInput = overlay.querySelector(
+                    "#classes-create-student-limit",
+                );
                 const reasonInput = overlay.querySelector(
                     "#classes-create-reason",
                 );
+                if (actionId === "submit") {
+                    const languageSelectForName = overlay.querySelector(
+                        "#classes-create-language",
+                    );
+                    const currentLanguageCode = String(
+                        languageSelectForName?.value ?? "",
+                    ).trim();
+                    if (
+                        classNameInput instanceof HTMLInputElement &&
+                        !classNameInput.value.trim()
+                    ) {
+                        classNameInput.value =
+                            buildDefaultClassName(currentLanguageCode);
+                    }
+                }
                 selectedLanguageCode = String(
                     languageSelect?.value ?? "",
                 ).trim();
                 joinMode = String(joinModeSelect?.value ?? "on_request").trim();
+                className = String(classNameInput?.value ?? "").trim();
+                const parsedStudentLimit = Number(studentLimitInput?.value);
+                studentLimit =
+                    Number.isInteger(parsedStudentLimit) &&
+                    parsedStudentLimit > 0 &&
+                    parsedStudentLimit <= 100
+                        ? parsedStudentLimit
+                        : 20;
                 reason = String(reasonInput?.value ?? "").trim();
                 selectedAction = actionId;
                 if (!selectedLanguageCode) return false;
+                if (!className) return false;
                 if (requireTeacherManualApproval && !reason) return false;
                 return true;
+            },
+            onOpen: (overlay) => {
+                const languageSelect = overlay.querySelector(
+                    "#classes-create-language",
+                );
+                const nameInput = overlay.querySelector("#classes-create-name");
+                if (
+                    languageSelect instanceof HTMLSelectElement &&
+                    nameInput instanceof HTMLInputElement
+                ) {
+                    languageSelect.addEventListener("change", () => {
+                        if (!nameInput.value.trim()) {
+                            nameInput.value = buildDefaultClassName(
+                                languageSelect.value,
+                            );
+                        }
+                    });
+                }
             },
         });
         if (action !== "submit" || selectedAction !== "submit") {
@@ -246,6 +343,8 @@ export async function mount(root, { signal } = {}) {
         }
         return {
             languageCode: selectedLanguageCode,
+            className,
+            studentLimit,
             joinMode,
             reason,
         };
@@ -280,6 +379,94 @@ export async function mount(root, { signal } = {}) {
             { variant: "success" },
         );
         await refreshContent();
+    }
+
+    async function updatePresenceStatus(status) {
+        await apiFetch("/api/v1/social/presence", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ status }),
+        }).catch(() => undefined);
+    }
+
+    async function leaveOrDisbandClass(snapshot) {
+        if (!snapshot) return;
+        if (isTeacherView()) {
+            const action = await openPopup({
+                title: i18n.t("module.study.classes.disband_class_title"),
+                body: `<p>${escapeHtml(i18n.t("module.study.classes.disband_class_confirm_body"))}</p>`,
+                variant: "confirm",
+                actions: [
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "confirm",
+                        label: i18n.t("module.study.classes.disband_class_action"),
+                        variant: "confirm",
+                    },
+                ],
+            });
+            if (action !== "confirm") return;
+            const response = await apiFetch(
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/disband`,
+                { method: "DELETE" },
+            );
+            showToast(
+                i18n.t(
+                    response.ok
+                        ? "module.study.classes.disband_class_success"
+                        : "module.study.classes.disband_class_failed",
+                ),
+                {
+                    variant: response.ok ? "success" : "error",
+                },
+            );
+            if (response.ok) {
+                selectedClassId = "";
+                selectedSeatNumber = null;
+                await refreshContent();
+            }
+            return;
+        }
+
+        const action = await openPopup({
+            title: i18n.t("module.study.classes.leave_confirm_title"),
+            body: `<p>${escapeHtml(i18n.t("module.study.classes.leave_confirm_body"))}</p>`,
+            variant: "confirm",
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "leave",
+                    label: i18n.t("module.study.classes.leave_class"),
+                    variant: "confirm",
+                },
+            ],
+        });
+        if (action !== "leave") return;
+        const response = await apiFetch(
+            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/membership`,
+            { method: "DELETE" },
+        );
+        showToast(
+            i18n.t(
+                response.ok
+                    ? "module.study.classes.leave_success"
+                    : "module.study.classes.leave_failed",
+            ),
+            {
+                variant: response.ok ? "success" : "error",
+            },
+        );
+        if (response.ok) {
+            await refreshContent();
+        }
     }
 
     /** Creates or reuses a classroom meeting and navigates to it on success. */
@@ -503,6 +690,8 @@ export async function mount(root, { signal } = {}) {
             availableClasses,
             selectedLanguageFilter,
             searchQuery,
+            canToggleView: teacherAccount,
+            currentViewMode: getClassroomViewMode(),
         });
     }
 
@@ -515,13 +704,71 @@ export async function mount(root, { signal } = {}) {
 
     async function refreshContent() {
         await refreshData();
+        refreshSnapshotPresence();
         footerClasses = await loadFooterClasses();
         refreshDom();
         composer.refreshFooter();
     }
 
+    function refreshSnapshotPresence() {
+        classroomSnapshots = classroomSnapshots.map((snapshot) => ({
+            ...snapshot,
+            members: Array.isArray(snapshot?.members)
+                ? snapshot.members.map((member) => {
+                      const accountId = String(
+                          member?.studentAccountId ?? "",
+                      ).trim();
+                      return {
+                          ...member,
+                          presence:
+                              presenceByAccountId.get(accountId) ??
+                              member?.presence ??
+                              "offline",
+                      };
+                  })
+                : [],
+        }));
+    }
+
+    async function initializePresenceTracking() {
+        await updatePresenceStatus("online");
+        presenceHeartbeatTimer = window.setInterval(() => {
+            void updatePresenceStatus(document.hidden ? "away" : "online");
+        }, 30_000);
+        document.addEventListener(
+            "visibilitychange",
+            () => {
+                void updatePresenceStatus(document.hidden ? "away" : "online");
+            },
+            { signal },
+        );
+        try {
+            presenceStream = new EventSource("/api/v1/social/presence/stream");
+            presenceStream.addEventListener("presence", (event) => {
+                try {
+                    const payload = JSON.parse(event.data ?? "{}");
+                    const accountId = String(payload?.accountId ?? "").trim();
+                    const status = String(payload?.status ?? "").trim();
+                    if (!accountId || !status) return;
+                    presenceByAccountId.set(accountId, status);
+                    refreshSnapshotPresence();
+                    refreshDom();
+                } catch {}
+            });
+            signal?.addEventListener("abort", () => {
+                presenceStream?.close();
+                if (presenceHeartbeatTimer) {
+                    clearInterval(presenceHeartbeatTimer);
+                }
+                void updatePresenceStatus("offline");
+            });
+        } catch {}
+    }
+
     footerClasses = await loadFooterClasses();
     await refreshData();
+    refreshSnapshotPresence();
+    await initializePresenceTracking();
 
     const footerItem = createClassFooterItem({
         i18n,
@@ -595,6 +842,28 @@ export async function mount(root, { signal } = {}) {
                                 )
                             ) {
                                 await openAgendaPopup();
+                                return;
+                            }
+
+                            if (
+                                event.target.closest(
+                                    ".classes-toggle-view-btn",
+                                ) &&
+                                teacherAccount
+                            ) {
+                                const nextMode =
+                                    getClassroomViewMode() === "teacher"
+                                        ? "student"
+                                        : "teacher";
+                                setClassroomViewMode(nextMode);
+                                navigateTo(
+                                    `${window.location.pathname}?classroomView=${encodeURIComponent(nextMode)}`,
+                                );
+                                return;
+                            }
+
+                            if (event.target.closest("#study-classroom-door")) {
+                                await leaveOrDisbandClass(snapshot);
                                 return;
                             }
 
@@ -770,26 +1039,7 @@ export async function mount(root, { signal } = {}) {
                                     ".classes-leave-classroom-btn",
                                 )
                             ) {
-                                if (!snapshot) return;
-                                const response = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/membership`,
-                                    { method: "DELETE" },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        response.ok
-                                            ? "module.study.classes.leave_success"
-                                            : "module.study.classes.leave_failed",
-                                    ),
-                                    {
-                                        variant: response.ok
-                                            ? "success"
-                                            : "error",
-                                    },
-                                );
-                                if (response.ok) {
-                                    await refreshContent();
-                                }
+                                await leaveOrDisbandClass(snapshot);
                                 return;
                             }
 

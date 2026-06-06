@@ -273,6 +273,29 @@ export async function resolveClassroomRoom(
     return { room, created };
 }
 
+export async function archiveClassroomRoomMembers(
+    db: DbExecutor,
+    classId: string,
+): Promise<void> {
+    const normalizedClassId = String(classId ?? "").trim();
+    if (!normalizedClassId) return;
+    const mappingResult = await db.executeCommand({
+        option: "SELECT",
+        table: "chatroom_classrooms",
+        columns: ["room_id"],
+        where: [{ column: "class_id", value: normalizedClassId }],
+        limit: 1,
+    });
+    const roomId = String(mappingResult.rows?.[0]?.room_id ?? "").trim();
+    if (!roomId) return;
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatroom_members",
+        set: { archived: 1 },
+        where: [{ column: "chatroom_id", value: roomId }],
+    });
+}
+
 export async function findGroupByExactMembers(
     db: DbExecutor,
     memberAccountIds: string[],

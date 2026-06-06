@@ -16,6 +16,7 @@ import {
 } from "./keys.js";
 import {
     addMember,
+    archiveClassroomRoomMembers,
     createRoom,
     findDmBetween,
     findGroupByExactMembers,
@@ -144,6 +145,10 @@ export class DbMessagesStore {
         memberAccountIds: string[],
     ): Promise<RoomRow | null> {
         return findGroupByExactMembers(this.db, memberAccountIds);
+    }
+
+    async archiveClassroomRoomMembers(classId: string): Promise<void> {
+        await archiveClassroomRoomMembers(this.db, classId);
     }
 
     async appendMessage(input: {

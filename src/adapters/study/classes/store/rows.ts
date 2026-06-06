@@ -34,6 +34,7 @@ export function rowToStudyLanguage(
 export function rowToClassRow(row: Record<string, unknown>): ClassRow {
     return {
         id: String(row.id),
+        name: String(row.name ?? ""),
         languageCode: String(row.language_code),
         teacherAccountId: String(row.teacher_account_id),
         joinMode: normalizeJoinMode(row.join_mode),
@@ -49,6 +50,8 @@ export function rowToTeacherRequest(
         id: String(row.id),
         accountId: String(row.account_id),
         languageCode: String(row.language_code),
+        className: String(row.class_name ?? ""),
+        studentLimit: Number(row.student_limit ?? 0),
         joinMode: normalizeJoinMode(row.join_mode),
         isListed: Boolean(row.is_listed),
         status: String(row.status) as TeacherRequestStatus,

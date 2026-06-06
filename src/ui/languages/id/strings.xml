@@ -649,6 +649,8 @@
   <string name="module.study.classes.meeting_failed">Gagal memulai pertemuan kelas.</string>
   <string name="module.study.classes.empty_seat">Undang Siswa</string>
   <string name="module.study.classes.join_mode_label">Mode Bergabung</string>
+  <string name="module.study.classes.class_name_label">Nama Kelas</string>
+  <string name="module.study.classes.class_cap_label">Batas Siswa</string>
   <string name="module.study.classes.join_mode_open">Terbuka</string>
   <string name="module.study.classes.join_mode_on_request">Perlu Permintaan</string>
   <string name="module.study.classes.join_mode_invite_only">Hanya Undangan</string>
@@ -671,6 +673,11 @@
   <string name="module.study.classes.note_requests">Permintaan Akses Buku Catatan</string>
   <string name="module.study.classes.note_request_reviewed">Permintaan akses buku catatan ditinjau.</string>
   <string name="module.study.classes.note_request_review_failed">Gagal meninjau permintaan akses buku catatan.</string>
+  <string name="module.study.classes.disband_class_title">Bubarkan Kelas</string>
+  <string name="module.study.classes.disband_class_confirm_body">Jika Anda keluar sebagai pengajar, kelas ini akan dibubarkan, kalender dan tautan meeting dihapus, dan chat kelas diarsipkan. Lanjutkan?</string>
+  <string name="module.study.classes.disband_class_action">Bubarkan Kelas</string>
+  <string name="module.study.classes.disband_class_success">Kelas dibubarkan.</string>
+  <string name="module.study.classes.disband_class_failed">Gagal membubarkan kelas.</string>
   <string name="ui.app.dashboard.element.student_classes.label">Kelas Saya</string>
   <string name="ui.app.dashboard.element.student_classes.cta">Lihat dan kelola kelas yang Anda ikuti.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Ke Kelas Saya</string>
