@@ -2,6 +2,13 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 
 const DEFAULT_CLASSROOM_CAPACITY = 30;
 
+/**
+ * Normalizes persisted seat assignments into a plain accountId -> seatNumber map
+ * while dropping invalid or negative seat indexes.
+ *
+ * @param {unknown} rawSeatAssignments
+ * @returns {Record<string, number>}
+ */
 export function normalizeSeatAssignments(rawSeatAssignments) {
     if (!rawSeatAssignments || typeof rawSeatAssignments !== "object") {
         return {};

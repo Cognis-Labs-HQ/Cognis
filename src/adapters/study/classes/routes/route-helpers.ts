@@ -137,7 +137,7 @@ export function filterClassesBySearchQuery<
 }
 
 function buildAgendaCalendarName(classId: string): string {
-    return `Class Agenda ${classId}`;
+    return `class-agenda-${classId}`;
 }
 
 export async function decorateMemberships(

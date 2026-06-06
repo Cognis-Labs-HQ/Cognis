@@ -281,6 +281,13 @@ export async function mount(root, { signal } = {}) {
         await refreshContent();
     }
 
+    /**
+     * Creates or reuses a Jitsi meeting for the selected classroom snapshot and
+     * navigates to the resulting meeting route when creation succeeds.
+     *
+     * @param {{ id: string }} snapshot
+     * @returns {Promise<void>}
+     */
     async function openMeeting(snapshot) {
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/meetings/create",

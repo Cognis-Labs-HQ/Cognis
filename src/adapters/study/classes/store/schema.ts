@@ -306,23 +306,104 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
 async function ensureStudyClassesColumns(db: DbExecutor): Promise<void> {
     const rawDb = db as Partial<RawDbExecutor>;
     if (typeof rawDb.execute !== "function") return;
-    await rawDb.execute(
-        "ALTER TABLE study_classes ADD COLUMN IF NOT EXISTS join_mode TEXT NOT NULL DEFAULT 'on_request'",
+    const dialect = detectSqlDialect(rawDb);
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "study_classes",
+        "join_mode",
+        resolveColumnDefinition(dialect, "join_mode"),
     );
-    await rawDb.execute(
-        "ALTER TABLE study_classes ADD COLUMN IF NOT EXISTS is_listed INTEGER NOT NULL DEFAULT 1",
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "study_classes",
+        "is_listed",
+        resolveColumnDefinition(dialect, "is_listed"),
     );
 }
 
 async function ensureTeacherRequestColumns(db: DbExecutor): Promise<void> {
     const rawDb = db as Partial<RawDbExecutor>;
     if (typeof rawDb.execute !== "function") return;
-    await rawDb.execute(
-        "ALTER TABLE teacher_requests ADD COLUMN IF NOT EXISTS join_mode TEXT NOT NULL DEFAULT 'on_request'",
+    const dialect = detectSqlDialect(rawDb);
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "teacher_requests",
+        "join_mode",
+        resolveColumnDefinition(dialect, "join_mode"),
     );
-    await rawDb.execute(
-        "ALTER TABLE teacher_requests ADD COLUMN IF NOT EXISTS is_listed INTEGER NOT NULL DEFAULT 1",
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "teacher_requests",
+        "is_listed",
+        resolveColumnDefinition(dialect, "is_listed"),
     );
+}
+
+type SupportedSqlDialect = "sqlite" | "postgres" | "mariadb";
+
+function detectSqlDialect(db: Partial<RawDbExecutor>): SupportedSqlDialect {
+    const executorName = String(db.constructor?.name ?? "").toLowerCase();
+    if (executorName.includes("sqlite")) return "sqlite";
+    if (executorName.includes("maria")) return "mariadb";
+    return "postgres";
+}
+
+function resolveColumnDefinition(
+    dialect: SupportedSqlDialect,
+    columnName: "join_mode" | "is_listed",
+): string {
+    if (columnName === "join_mode") {
+        return dialect === "mariadb"
+            ? "VARCHAR(32) NOT NULL DEFAULT 'on_request'"
+            : "TEXT NOT NULL DEFAULT 'on_request'";
+    }
+    return dialect === "mariadb"
+        ? "TINYINT(1) NOT NULL DEFAULT 1"
+        : "INTEGER NOT NULL DEFAULT 1";
+}
+
+async function ensureMissingColumn(
+    db: Partial<RawDbExecutor>,
+    dialect: SupportedSqlDialect,
+    tableName: "study_classes" | "teacher_requests",
+    columnName: "join_mode" | "is_listed",
+    columnDefinition: string,
+): Promise<void> {
+    if (!db.execute) return;
+    if (await hasColumn(db, dialect, tableName, columnName)) {
+        return;
+    }
+    await db.execute(
+        `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition}`,
+    );
+}
+
+async function hasColumn(
+    db: Partial<RawDbExecutor>,
+    dialect: SupportedSqlDialect,
+    tableName: "study_classes" | "teacher_requests",
+    columnName: "join_mode" | "is_listed",
+): Promise<boolean> {
+    if (!db.execute) return false;
+    if (dialect === "sqlite") {
+        const result = await db.execute(`PRAGMA table_info(${tableName})`);
+        return (result.rows ?? []).some(
+            (row) =>
+                String((row as Record<string, unknown>).name) === columnName,
+        );
+    }
+    const schemaPredicate =
+        dialect === "mariadb"
+            ? "table_schema = DATABASE()"
+            : "table_schema = current_schema()";
+    const result = await db.execute(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND column_name = '${columnName}' AND ${schemaPredicate}`,
+    );
+    return (result.rows?.length ?? 0) > 0;
 }
 
 export async function ensureStudyLanguagesSchema(
