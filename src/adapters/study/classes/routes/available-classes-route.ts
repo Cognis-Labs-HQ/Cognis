@@ -28,7 +28,9 @@ export async function handleAvailableClassesRequest(
         const languages = await store.listStudyLanguages(false);
         const languageNameByCode = new Map(
             languages.map((language) => [
-                String(language.code ?? "").trim().toLowerCase(),
+                String(language.code ?? "")
+                    .trim()
+                    .toLowerCase(),
                 String(language.name ?? "").trim(),
             ]),
         );

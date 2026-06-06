@@ -87,8 +87,8 @@ function renderBlackboard({
                         aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
                         title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
                     ${
-                       canToggleView
-                           ? `<button type="button" class="classes-icon-btn classes-toggle-view-btn"
+                        canToggleView
+                            ? `<button type="button" class="classes-icon-btn classes-toggle-view-btn"
                                 aria-label="${escapeHtml(
                                     i18n.t(
                                         currentViewMode === "teacher"
@@ -103,11 +103,11 @@ function renderBlackboard({
                                             : "module.study.classes.enter_teacher_view",
                                     ),
                                 )}">👁️</button>`
-                           : ""
+                            : ""
                     }
                     ${
-                       isTeacherView
-                           ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
+                        isTeacherView
+                            ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
                                    aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
                                    title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
                             : ""
@@ -123,7 +123,7 @@ function renderBlackboard({
     `;
 }
 
-function renderStudentRoster({ snapshot, seatAssignments, i18n }) {
+function renderStudentRoster({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const rows = members
         .map(

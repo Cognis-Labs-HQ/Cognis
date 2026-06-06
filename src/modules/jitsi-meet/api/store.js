@@ -581,51 +581,6 @@ export class JitsiMeetStore {
                     return null;
                 }
 
-                async archiveClassroomMeetings(classroomId) {
-                    const normalizedClassroomId = String(classroomId ?? "").trim();
-                    if (!normalizedClassroomId) return;
-                    await this.ensureSchema();
-                    await this.db.transaction(async (executor) => {
-                        const meetingResult = await executor.executeCommand({
-                            option: "SELECT",
-                            table: "jitsi_meetings",
-                            columns: ["id"],
-                            where: [{ column: "classroom_id", value: normalizedClassroomId }],
-                        });
-                        const meetingIds = (meetingResult.rows ?? [])
-                            .map((row) => String(row.id ?? "").trim())
-                            .filter(Boolean);
-                        if (!meetingIds.length) return;
-                        for (const table of [
-                            "jitsi_meeting_presence",
-                            "jitsi_meeting_state",
-                            "jitsi_meeting_participants",
-                        ]) {
-                            await executor.executeCommand({
-                                option: "DELETE",
-                                table,
-                                where: [
-                                    {
-                                        column: "meeting_id",
-                                        operator: "IN",
-                                        value: meetingIds,
-                                    },
-                                ],
-                            });
-                        }
-                        await executor.executeCommand({
-                            option: "DELETE",
-                            table: "jitsi_meetings",
-                            where: [
-                                {
-                                    column: "id",
-                                    operator: "IN",
-                                    value: meetingIds,
-                                },
-                            ],
-                        });
-                    });
-                }
                 const meeting = {
                     id: String(row.id),
                     meetingUrl: String(row.meeting_url),

@@ -153,7 +153,10 @@ function createSocialPresenceRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/social/presence" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/social/presence" &&
+            req.method === "GET"
+        ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const accountIds = String(url.searchParams.get("accountIds") ?? "")
@@ -401,9 +404,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     ctx.capabilities.contribute(
         "social:presence:getStatuses",
-        async (
-            accountIds: string[],
-        ): Promise<Record<string, PresenceState>> =>
+        async (accountIds: string[]): Promise<Record<string, PresenceState>> =>
             presenceTracker.getStatuses(accountIds),
     );
 
