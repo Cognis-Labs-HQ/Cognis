@@ -191,7 +191,7 @@ export async function handleCalendarShareRoutes(input: {
         const createdCalendar = input.gateway.createCalendar({
             ownerAccountId: recipientAccountId,
             name: `${ownerCalendar.name} (Shared by ${input.claims.sub})`,
-            visibility: "shared" as any,
+            visibility: "shared",
             color: normalizeCalendarColor(ownerCalendar.color),
         });
         recipientCalendarId = createdCalendar.id;
