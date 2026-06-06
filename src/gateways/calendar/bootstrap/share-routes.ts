@@ -25,10 +25,7 @@ function normalizeSharePermission(
     value: unknown,
 ): "read" | "write" | undefined {
     if (typeof value !== "string") return undefined;
-    const compactPermission = value
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "");
+    const compactPermission = value.trim().toLowerCase().replace(/\s+/g, "");
     if (!compactPermission) return undefined;
     return WRITE_PERMISSION_VARIANTS.has(compactPermission) ? "write" : "read";
 }
