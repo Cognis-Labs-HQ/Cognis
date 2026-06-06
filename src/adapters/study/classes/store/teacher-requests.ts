@@ -205,8 +205,11 @@ export async function approveTeacherRequest(
             languageCode,
             teacherAccountId: accountId,
             joinMode:
-                existingClassRow && typeof existingClassRow.join_mode === "string"
-                    ? (String(existingClassRow.join_mode) as ClassRow["joinMode"])
+                existingClassRow &&
+                typeof existingClassRow.join_mode === "string"
+                    ? (String(
+                          existingClassRow.join_mode,
+                      ) as ClassRow["joinMode"])
                     : joinMode === "invite_only" || joinMode === "open"
                       ? (joinMode as ClassRow["joinMode"])
                       : "on_request",

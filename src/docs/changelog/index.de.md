@@ -22,3 +22,4 @@ modular und gut prüfbar bleibt.
 
 - [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)
+- [expand-classes-adapter-ui](/changelogs/expand-classes-adapter-ui)

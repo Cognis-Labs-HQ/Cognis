@@ -46,33 +46,33 @@ export async function getClassById(
     if (!result.rows?.length) {
         return null;
     }
+    return rowToClassRow(result.rows[0] as Record<string, unknown>);
+}
 
-    export async function getTeacherClassForLanguage(
-        db: DbExecutor,
-        teacherAccountId: string,
-        languageCode: string,
-    ): Promise<ClassRow | null> {
-        const result = await db.executeCommand({
-            option: "SELECT",
-            table: "study_classes",
-            columns: [
-                "id",
-                "language_code",
-                "teacher_account_id",
-                "join_mode",
-                "is_listed",
-                "created_at",
-            ],
-            where: [
-                { column: "teacher_account_id", value: teacherAccountId },
-                { column: "language_code", value: languageCode },
-            ],
-            limit: 1,
-        });
-        if (!result.rows?.length) {
-            return null;
-        }
-        return rowToClassRow(result.rows[0] as Record<string, unknown>);
+export async function getTeacherClassForLanguage(
+    db: DbExecutor,
+    teacherAccountId: string,
+    languageCode: string,
+): Promise<ClassRow | null> {
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "study_classes",
+        columns: [
+            "id",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
+        where: [
+            { column: "teacher_account_id", value: teacherAccountId },
+            { column: "language_code", value: languageCode },
+        ],
+        limit: 1,
+    });
+    if (!result.rows?.length) {
+        return null;
     }
     return rowToClassRow(result.rows[0] as Record<string, unknown>);
 }

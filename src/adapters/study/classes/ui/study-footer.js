@@ -53,7 +53,9 @@ async function loadFooterClasses(languageCode = "") {
     if (languageCode) {
         params.set("language", languageCode);
     }
-    const response = await apiFetch(`/api/v1/study/classrooms?${params.toString()}`);
+    const response = await apiFetch(
+        `/api/v1/study/classrooms?${params.toString()}`,
+    );
     if (!response.ok) {
         return [];
     }
@@ -98,7 +100,9 @@ export async function mountStudyClassFooter({
                     onSelectClass(nextValue);
                     return;
                 }
-                navigateTo(`/classroom?classId=${encodeURIComponent(nextValue)}`);
+                navigateTo(
+                    `/classroom?classId=${encodeURIComponent(nextValue)}`,
+                );
             },
             { signal },
         );
@@ -108,7 +112,9 @@ export async function mountStudyClassFooter({
             "click",
             () => {
                 const nextMode =
-                    getClassroomViewMode() === "teacher" ? "student" : "teacher";
+                    getClassroomViewMode() === "teacher"
+                        ? "student"
+                        : "teacher";
                 setClassroomViewMode(nextMode);
                 navigateTo(
                     `${window.location.pathname}?classroomView=${encodeURIComponent(nextMode)}`,

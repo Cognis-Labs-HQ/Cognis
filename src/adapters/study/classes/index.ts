@@ -239,9 +239,7 @@ export async function bootstrapStudyAdapter(
         exists(username: string): Promise<boolean>;
     }>("auth:accountStore");
     const profileStore = ctx.capabilities.get<{
-        getProfile: (
-            accountId: string,
-        ) => Promise<{
+        getProfile: (accountId: string) => Promise<{
             handle?: string | null;
             displayName?: string | null;
             avatarKey?: string | null;

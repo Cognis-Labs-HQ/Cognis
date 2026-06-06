@@ -9,7 +9,9 @@ import type {
 } from "./types.js";
 
 function normalizeJoinMode(value: unknown): ClassJoinMode {
-    const joinMode = String(value ?? "").trim().toLowerCase();
+    const joinMode = String(value ?? "")
+        .trim()
+        .toLowerCase();
     if (joinMode === "invite_only" || joinMode === "open") {
         return joinMode;
     }

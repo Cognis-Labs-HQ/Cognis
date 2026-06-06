@@ -13,37 +13,11 @@ import {
     canToggleClassroomView,
     getClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
-
-const DEFAULT_CLASSROOM_CAPACITY = 30;
-
-function normalizeSeatAssignments(rawSeatAssignments) {
-    if (!rawSeatAssignments || typeof rawSeatAssignments !== "object") {
-        return {};
-    }
-    const seatAssignments = {};
-    for (const [accountId, seatNumber] of Object.entries(rawSeatAssignments)) {
-        const normalizedSeatNumber = Number(seatNumber);
-        if (!Number.isInteger(normalizedSeatNumber) || normalizedSeatNumber < 0) {
-            continue;
-        }
-        seatAssignments[String(accountId)] = normalizedSeatNumber;
-    }
-    return seatAssignments;
-}
-
-function buildAccountLabel(member) {
-    return (
-        String(member?.displayName ?? "").trim() ||
-        String(member?.handle ?? "").trim() ||
-        String(member?.studentAccountId ?? "").trim()
-    );
-}
-
-function buildAccountAbbreviation(member) {
-    const accountLabel = buildAccountLabel(member);
-    if (!accountLabel) return "??";
-    return accountLabel.slice(0, 2).toUpperCase();
-}
+import {
+    buildAccountLabel,
+    normalizeSeatAssignments,
+    renderClassroomPage,
+} from "/static/adapters/study/classes/classroom-render.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -80,8 +54,9 @@ export async function mount(root, { signal } = {}) {
 
     function selectedSnapshot() {
         return (
-            classroomSnapshots.find((snapshot) => snapshot.id === selectedClassId) ??
-            null
+            classroomSnapshots.find(
+                (snapshot) => snapshot.id === selectedClassId,
+            ) ?? null
         );
     }
 
@@ -101,7 +76,9 @@ export async function mount(root, { signal } = {}) {
         const queryString = buildQuery({
             mode: isTeacherView() ? "teacher" : "student",
         });
-        const response = await apiFetch(`/api/v1/study/classrooms?${queryString}`);
+        const response = await apiFetch(
+            `/api/v1/study/classrooms?${queryString}`,
+        );
         if (!response.ok) {
             throw new Error("load_failed");
         }
@@ -109,7 +86,9 @@ export async function mount(root, { signal } = {}) {
         classroomSnapshots = Array.isArray(payload?.data) ? payload.data : [];
         if (
             !selectedClassId ||
-            !classroomSnapshots.some((snapshot) => snapshot.id === selectedClassId)
+            !classroomSnapshots.some(
+                (snapshot) => snapshot.id === selectedClassId,
+            )
         ) {
             selectedClassId = String(classroomSnapshots[0]?.id ?? "");
             selectedSeatNumber = null;
@@ -179,219 +158,19 @@ export async function mount(root, { signal } = {}) {
         await loadSelectedClassMeta();
     }
 
-    function buildLanguageFilterOptions() {
-        return [...new Set(availableClasses.map((classRow) => classRow.languageCode))].sort();
-    }
-
-    function renderAgendaItems() {
-        if (!activeAgendaItems.length) {
-            return `<p class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_active_agenda"))}</p>`;
-        }
-        return `
-            <ul class="classes-agenda-list">
-                ${activeAgendaItems
-                    .map(
-                        (item) => `
-                            <li class="classes-agenda-item">
-                                <strong>${escapeHtml(item.title ?? "")}</strong>
-                                <span>${escapeHtml(item.description ?? "")}</span>
-                            </li>
-                        `,
-                    )
-                    .join("")}
-            </ul>
-        `;
-    }
-
-    function renderClassroomBoard(snapshot) {
-        return `
-            <div class="classes-classroom-board-area">
-                <div class="classes-classroom-blackboard">
-                    <div class="classes-classroom-board-header">
-                        <h4>${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}</h4>
-                        <div class="classes-classroom-board-actions">
-                            <button type="button" class="classes-icon-btn classes-open-chat-btn" ${snapshot?.chatUrl ? "" : "disabled"} aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}" title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
-                            <button type="button" class="classes-icon-btn classes-open-meeting-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}" title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
-                            ${
-                                isTeacherView()
-                                    ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}" title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
-                                    : ""
-                            }
-                        </div>
-                    </div>
-                    <label class="classes-section-heading" for="classes-materials">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</label>
-                    <textarea id="classes-materials" class="classes-classroom-editor"${isTeacherView() ? "" : " readonly"}>${escapeHtml(classResources.materials ?? "")}</textarea>
-                    <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
-                    <textarea id="classes-homework" class="classes-classroom-editor"${isTeacherView() ? "" : " readonly"}>${escapeHtml(classResources.homework ?? "")}</textarea>
-                    <div class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</div>
-                    ${renderAgendaItems()}
-                    ${
-                        isTeacherView()
-                            ? `<button type="button" class="btn-confirm btn-animated classes-save-materials-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>`
-                            : ""
-                    }
-                </div>
-                <div class="classes-classroom-teacher">
-                    <span class="classes-classroom-seat-avatar">${escapeHtml(buildAccountAbbreviation({ displayName: snapshot.teacherAccountId }))}</span>
-                    <span>${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(snapshot.teacherAccountId)}</span>
-                </div>
-            </div>
-        `;
-    }
-
-    function renderSeatTiles(snapshot) {
-        const studentLimit = Number(
-            snapshot?.classroom?.studentLimit ?? DEFAULT_CLASSROOM_CAPACITY,
-        );
-        const normalizedStudentLimit =
-            Number.isInteger(studentLimit) && studentLimit > 0
-                ? studentLimit
-                : DEFAULT_CLASSROOM_CAPACITY;
-        const seatAssignments = normalizeSeatAssignments(
-            snapshot?.classroom?.seatAssignments,
-        );
-        const members = Array.isArray(snapshot.members) ? snapshot.members : [];
-        const membersBySeat = new Map();
-        for (const member of members) {
-            const seatNumber = seatAssignments[String(member.studentAccountId ?? "")];
-            if (!Number.isInteger(seatNumber) || seatNumber < 0) continue;
-            membersBySeat.set(seatNumber, member);
-        }
-        return Array.from({ length: normalizedStudentLimit })
-            .map((_, seatNumber) => {
-                const member = membersBySeat.get(seatNumber) ?? null;
-                return `
-                    <button
-                        type="button"
-                        class="classes-classroom-seat${member ? " occupied" : ""}${
-                            Number(selectedSeatNumber) === seatNumber ? " selected" : ""
-                        }"
-                        data-seat-number="${seatNumber}"
-                        data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}"
-                        data-student-handle="${escapeHtml(String(member?.handle ?? ""))}"
-                    >
-                        <span class="classes-classroom-seat-icon">🪑</span>
-                        <span class="classes-classroom-seat-label">${escapeHtml(i18n.t("module.study.classes.classroom_seat"))} ${seatNumber + 1}</span>
-                        <span class="classes-classroom-seat-avatar">${member ? escapeHtml(buildAccountAbbreviation(member)) : "—"}</span>
-                        <span class="classes-classroom-seat-name">${member ? escapeHtml(buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}</span>
-                    </button>
-                `;
-            })
-            .join("");
-    }
-
-    function renderSelectedDeskPanel(snapshot) {
-        if (selectedSeatNumber == null || !snapshot) return "";
-        const seatAssignments = normalizeSeatAssignments(
-            snapshot?.classroom?.seatAssignments,
-        );
-        const selectedMember =
-            (snapshot.members ?? []).find(
-                (member) =>
-                    Number(seatAssignments[String(member.studentAccountId ?? "")]) ===
-                    Number(selectedSeatNumber),
-            ) ?? null;
-        if (!selectedMember) return "";
-        return `
-            <div class="classes-manage-panel">
-                <h4 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.selected_desk"))}</h4>
-                <strong>${escapeHtml(buildAccountLabel(selectedMember))}</strong>
-                <button type="button" class="btn-confirm btn-animated classes-open-notebook-btn" data-student-id="${escapeHtml(selectedMember.studentAccountId)}">${escapeHtml(i18n.t("module.study.classes.open_notebook"))}</button>
-                <button type="button" class="btn-confirm btn-animated classes-open-homework-btn">${escapeHtml(i18n.t("module.study.classes.open_textbook"))}</button>
-                <label class="classes-section-heading" for="classes-own-notebook">${escapeHtml(i18n.t("module.study.classes.my_notebook"))}</label>
-                <textarea id="classes-own-notebook" class="classes-notebook-editor">${escapeHtml(selectedNotebookText)}</textarea>
-                <button type="button" class="btn-confirm btn-animated classes-save-notebook-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
-            </div>
-        `;
-    }
-
-    function renderTeacherEmptyState() {
-        return `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_teacher_classes"))}</p>`;
-    }
-
-    function renderStudentAvailableClasses() {
-        const languagePills = buildLanguageFilterOptions();
-        return `
-            <div class="classes-browse-panel">
-                <div class="classes-filter-row">
-                    <input type="search" class="classes-search-input classes-available-search" placeholder="${escapeHtml(i18n.t("module.study.classes.search_available_classes"))}" value="${escapeHtml(searchQuery)}" />
-                    <button type="button" class="classes-filter-pill${
-                        selectedLanguageFilter ? "" : " active"
-                    }" data-language="">${escapeHtml(i18n.t("module.study.classes.all_languages"))}</button>
-                    ${languagePills
-                        .map(
-                            (languageCode) => `
-                                <button type="button" class="classes-filter-pill${
-                                    selectedLanguageFilter === languageCode
-                                        ? " active"
-                                        : ""
-                                }" data-language="${escapeHtml(languageCode)}">${escapeHtml(languageCode)}</button>
-                            `,
-                        )
-                        .join("")}
-                </div>
-                ${
-                    availableClasses.length
-                        ? `<ul class="classes-list">
-                            ${availableClasses
-                                .map(
-                                    (classRow) => `
-                                        <li class="classes-item">
-                                            <span class="classes-language">${escapeHtml(classRow.languageCode)}</span>
-                                            <span class="classes-member-count">${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(classRow.teacherAccountId)}</span>
-                                            <button type="button" class="btn-confirm btn-animated classes-join-btn" data-class-id="${escapeHtml(classRow.id)}" data-join-mode="${escapeHtml(classRow.joinMode ?? "on_request")}">${escapeHtml(
-                                                classRow.joinMode === "open"
-                                                    ? i18n.t("module.study.classes.join_open")
-                                                    : i18n.t("module.study.classes.join_request"),
-                                            )}</button>
-                                        </li>
-                                    `,
-                                )
-                                .join("")}
-                        </ul>`
-                        : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_available_classes"))}</p>`
-                }
-            </div>
-        `;
-    }
-
-    function renderClassroomView() {
-        const snapshot = selectedSnapshot();
-        if (!snapshot) {
-            return isTeacherView()
-                ? renderTeacherEmptyState()
-                : renderStudentAvailableClasses();
-        }
-        return `
-            <section class="classes-section classes-classroom-hub">
-                ${renderClassroomBoard(snapshot)}
-                <div class="classes-classroom-grid">${renderSeatTiles(snapshot)}</div>
-                ${renderSelectedDeskPanel(snapshot)}
-                ${
-                    !isTeacherView()
-                        ? `<button type="button" class="btn-cancel btn-animated classes-leave-classroom-btn">${escapeHtml(i18n.t("module.study.classes.leave_class"))}</button>`
-                        : ""
-                }
-            </section>
-        `;
-    }
-
-    function renderPage() {
-        return `<div class="classes-classroom-content">${renderClassroomView()}</div>`;
-    }
-
     async function openCreateClassPopup() {
         let selectedLanguageCode = "";
         let reason = "";
         let joinMode = "on_request";
         let selectedAction = null;
-        const languagesResponse = await apiFetch("/api/v1/study/registered-languages");
+        const languagesResponse = await apiFetch(
+            "/api/v1/study/registered-languages",
+        );
         const languagesPayload = languagesResponse.ok
             ? await languagesResponse.json()
             : { data: [] };
-        const languageOptions = (Array.isArray(languagesPayload?.data)
-            ? languagesPayload.data
-            : []
+        const languageOptions = (
+            Array.isArray(languagesPayload?.data) ? languagesPayload.data : []
         )
             .map((language) => {
                 const languageCode = String(language?.code ?? "").trim();
@@ -441,10 +220,18 @@ export async function mount(root, { signal } = {}) {
             closeProtection: true,
             onAction: (actionId, overlay) => {
                 if (actionId !== "submit") return true;
-                const languageSelect = overlay.querySelector("#classes-create-language");
-                const joinModeSelect = overlay.querySelector("#classes-create-join-mode");
-                const reasonInput = overlay.querySelector("#classes-create-reason");
-                selectedLanguageCode = String(languageSelect?.value ?? "").trim();
+                const languageSelect = overlay.querySelector(
+                    "#classes-create-language",
+                );
+                const joinModeSelect = overlay.querySelector(
+                    "#classes-create-join-mode",
+                );
+                const reasonInput = overlay.querySelector(
+                    "#classes-create-reason",
+                );
+                selectedLanguageCode = String(
+                    languageSelect?.value ?? "",
+                ).trim();
                 joinMode = String(joinModeSelect?.value ?? "on_request").trim();
                 reason = String(reasonInput?.value ?? "").trim();
                 selectedAction = actionId;
@@ -593,7 +380,9 @@ export async function mount(root, { signal } = {}) {
                 return;
             }
             const payload = await response.json();
-            navigateTo(`/messages/${encodeURIComponent(payload?.data?.id ?? "")}`);
+            navigateTo(
+                `/messages/${encodeURIComponent(payload?.data?.id ?? "")}`,
+            );
             return;
         }
         if (action === "kick" && selectedClassId) {
@@ -642,7 +431,11 @@ export async function mount(root, { signal } = {}) {
             `,
             variant: "confirm",
             actions: [
-                { id: "cancel", label: i18n.t("ui.reuse.cancel"), variant: "cancel" },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
                 {
                     id: "save",
                     label: i18n.t("module.study.classes.create_agenda"),
@@ -656,7 +449,8 @@ export async function mount(root, { signal } = {}) {
                     overlay.querySelector("#classes-agenda-title")?.value ?? "",
                 ).trim();
                 description = String(
-                    overlay.querySelector("#classes-agenda-description")?.value ?? "",
+                    overlay.querySelector("#classes-agenda-description")
+                        ?.value ?? "",
                 ).trim();
                 startAt = String(
                     overlay.querySelector("#classes-agenda-start")?.value ?? "",
@@ -695,10 +489,25 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    function renderContentMarkup() {
+        return renderClassroomPage({
+            snapshot: selectedSnapshot(),
+            classResources,
+            activeAgendaItems,
+            selectedSeatNumber,
+            selectedNotebookText,
+            i18n,
+            isTeacherView: isTeacherView(),
+            availableClasses,
+            selectedLanguageFilter,
+            searchQuery,
+        });
+    }
+
     function refreshDom() {
         const content = root.querySelector(".classes-classroom-content");
         if (content instanceof HTMLElement) {
-            content.innerHTML = renderClassroomView();
+            content.outerHTML = renderContentMarkup();
         }
     }
 
@@ -733,7 +542,7 @@ export async function mount(root, { signal } = {}) {
                 id: "classroom-page",
                 title: i18n.t("module.study.classes.classroom_page_title"),
                 gridSize: { default: [8, 6], min: [2, 2], max: "full" },
-                render: renderPage,
+                render: renderContentMarkup,
                 onRender() {
                     if (root.dataset.classroomBound === "true") return;
                     root.dataset.classroomBound = "true";
@@ -742,7 +551,9 @@ export async function mount(root, { signal } = {}) {
                         async (event) => {
                             if (!(event.target instanceof Element)) return;
                             const snapshot = selectedSnapshot();
-                            const seatButton = event.target.closest(".classes-classroom-seat");
+                            const seatButton = event.target.closest(
+                                ".classes-classroom-seat",
+                            );
                             if (seatButton instanceof HTMLElement) {
                                 selectedSeatNumber = Number(
                                     seatButton.dataset.seatNumber ?? "-1",
@@ -756,7 +567,9 @@ export async function mount(root, { signal } = {}) {
                             }
 
                             if (
-                                event.target.closest(".classes-open-chat-btn") &&
+                                event.target.closest(
+                                    ".classes-open-chat-btn",
+                                ) &&
                                 snapshot?.chatUrl
                             ) {
                                 navigateTo(snapshot.chatUrl);
@@ -764,25 +577,43 @@ export async function mount(root, { signal } = {}) {
                             }
 
                             if (
-                                event.target.closest(".classes-open-meeting-btn") &&
+                                event.target.closest(
+                                    ".classes-open-meeting-btn",
+                                ) &&
                                 snapshot
                             ) {
                                 await openMeeting(snapshot);
                                 return;
                             }
 
-                            if (event.target.closest(".classes-create-agenda-btn")) {
+                            if (
+                                event.target.closest(
+                                    ".classes-create-agenda-btn",
+                                )
+                            ) {
                                 await openAgendaPopup();
                                 return;
                             }
 
-                            if (event.target.closest(".classes-save-materials-btn")) {
+                            if (
+                                event.target.closest(
+                                    ".classes-save-materials-btn",
+                                )
+                            ) {
                                 if (!snapshot) return;
-                                const materialsInput = root.querySelector("#classes-materials");
-                                const homeworkInput = root.querySelector("#classes-homework");
+                                const materialsInput =
+                                    root.querySelector("#classes-materials");
+                                const homeworkInput =
+                                    root.querySelector("#classes-homework");
                                 if (
-                                    !(materialsInput instanceof HTMLTextAreaElement) ||
-                                    !(homeworkInput instanceof HTMLTextAreaElement)
+                                    !(
+                                        materialsInput instanceof
+                                        HTMLTextAreaElement
+                                    ) ||
+                                    !(
+                                        homeworkInput instanceof
+                                        HTMLTextAreaElement
+                                    )
                                 ) {
                                     return;
                                 }
@@ -790,9 +621,12 @@ export async function mount(root, { signal } = {}) {
                                     `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
                                     {
                                         method: "PUT",
-                                        headers: { "content-type": "application/json" },
+                                        headers: {
+                                            "content-type": "application/json",
+                                        },
                                         body: JSON.stringify({
-                                            materials: materialsInput.value ?? "",
+                                            materials:
+                                                materialsInput.value ?? "",
                                             homework: homeworkInput.value ?? "",
                                         }),
                                     },
@@ -804,7 +638,9 @@ export async function mount(root, { signal } = {}) {
                                             : "module.study.classes.materials_save_failed",
                                     ),
                                     {
-                                        variant: response.ok ? "success" : "error",
+                                        variant: response.ok
+                                            ? "success"
+                                            : "error",
                                     },
                                 );
                                 if (response.ok) {
@@ -814,19 +650,30 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
 
-                            if (event.target.closest(".classes-save-notebook-btn")) {
+                            if (
+                                event.target.closest(
+                                    ".classes-save-notebook-btn",
+                                )
+                            ) {
                                 if (!snapshot) return;
                                 const notebookInput = root.querySelector(
                                     "#classes-own-notebook",
                                 );
-                                if (!(notebookInput instanceof HTMLTextAreaElement)) {
+                                if (
+                                    !(
+                                        notebookInput instanceof
+                                        HTMLTextAreaElement
+                                    )
+                                ) {
                                     return;
                                 }
                                 const response = await apiFetch(
                                     `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
                                     {
                                         method: "PUT",
-                                        headers: { "content-type": "application/json" },
+                                        headers: {
+                                            "content-type": "application/json",
+                                        },
                                         body: JSON.stringify({
                                             noteText: notebookInput.value ?? "",
                                         }),
@@ -839,35 +686,49 @@ export async function mount(root, { signal } = {}) {
                                             : "module.study.classes.notebook_save_failed",
                                     ),
                                     {
-                                        variant: response.ok ? "success" : "error",
+                                        variant: response.ok
+                                            ? "success"
+                                            : "error",
                                     },
                                 );
                                 if (response.ok) {
-                                    selectedNotebookText = notebookInput.value ?? "";
+                                    selectedNotebookText =
+                                        notebookInput.value ?? "";
                                 }
                                 return;
                             }
 
-                            if (event.target.closest(".classes-open-notebook-btn")) {
+                            if (
+                                event.target.closest(
+                                    ".classes-open-notebook-btn",
+                                )
+                            ) {
                                 if (!snapshot) return;
                                 const studentId = String(
-                                    event.target
-                                        .closest(".classes-open-notebook-btn")
-                                        ?.dataset?.studentId ?? "",
+                                    event.target.closest(
+                                        ".classes-open-notebook-btn",
+                                    )?.dataset?.studentId ?? "",
                                 ).trim();
                                 if (!studentId) return;
                                 const response = await apiFetch(
                                     `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebooks/${encodeURIComponent(studentId)}`,
                                 );
                                 if (!response.ok) {
-                                    showToast(i18n.t("module.study.classes.notebook_load_failed"), {
-                                        variant: "error",
-                                    });
+                                    showToast(
+                                        i18n.t(
+                                            "module.study.classes.notebook_load_failed",
+                                        ),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
                                     return;
                                 }
                                 const payload = await response.json();
                                 await openPopup({
-                                    title: i18n.t("module.study.classes.open_notebook"),
+                                    title: i18n.t(
+                                        "module.study.classes.open_notebook",
+                                    ),
                                     body: `<p>${escapeHtml(payload?.data?.noteText || i18n.t("module.study.classes.empty_notebook"))}</p>`,
                                     actions: [
                                         {
@@ -880,9 +741,15 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
 
-                            if (event.target.closest(".classes-open-homework-btn")) {
+                            if (
+                                event.target.closest(
+                                    ".classes-open-homework-btn",
+                                )
+                            ) {
                                 await openPopup({
-                                    title: i18n.t("module.study.classes.open_textbook"),
+                                    title: i18n.t(
+                                        "module.study.classes.open_textbook",
+                                    ),
                                     body: `<p>${escapeHtml(classResources.homework || i18n.t("module.study.classes.no_homework_assigned"))}</p>`,
                                     actions: [
                                         {
@@ -895,7 +762,11 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
 
-                            if (event.target.closest(".classes-leave-classroom-btn")) {
+                            if (
+                                event.target.closest(
+                                    ".classes-leave-classroom-btn",
+                                )
+                            ) {
                                 if (!snapshot) return;
                                 const response = await apiFetch(
                                     `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/membership`,
@@ -908,7 +779,9 @@ export async function mount(root, { signal } = {}) {
                                             : "module.study.classes.leave_failed",
                                     ),
                                     {
-                                        variant: response.ok ? "success" : "error",
+                                        variant: response.ok
+                                            ? "success"
+                                            : "error",
                                     },
                                 );
                                 if (response.ok) {
@@ -917,9 +790,11 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
 
-                            const joinButton = event.target.closest(".classes-join-btn");
+                            const joinButton =
+                                event.target.closest(".classes-join-btn");
                             if (joinButton instanceof HTMLElement) {
-                                const classId = joinButton.dataset.classId ?? "";
+                                const classId =
+                                    joinButton.dataset.classId ?? "";
                                 const response = await apiFetch(
                                     `/api/v1/study/classes/${encodeURIComponent(classId)}/join`,
                                     { method: "POST" },
@@ -931,7 +806,9 @@ export async function mount(root, { signal } = {}) {
                                             : "module.study.classes.join_failed",
                                     ),
                                     {
-                                        variant: response.ok ? "success" : "error",
+                                        variant: response.ok
+                                            ? "success"
+                                            : "error",
                                     },
                                 );
                                 if (response.ok) {
@@ -940,7 +817,8 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
 
-                            const filterButton = event.target.closest("[data-language]");
+                            const filterButton =
+                                event.target.closest("[data-language]");
                             if (filterButton instanceof HTMLElement) {
                                 selectedLanguageFilter =
                                     filterButton.dataset.language ?? "";

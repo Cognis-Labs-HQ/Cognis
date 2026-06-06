@@ -79,8 +79,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     let selectedClassId = "";
     let selectedSeatNumber = null;
 
-    const isTeacher =
-        isTeacherScope() && getClassroomViewMode() === "teacher";
+    const isTeacher = isTeacherScope() && getClassroomViewMode() === "teacher";
     const viewerAccountId = String(
         localStorage.getItem("cognis_account") ?? "",
     ).trim();

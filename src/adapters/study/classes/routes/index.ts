@@ -1,224 +1,26 @@
-/**
- * API routes for the classes adapter.
- *
- * Endpoints:
- *   GET    /api/v1/study/classes                                              — list caller's classes (teacher view, supports ?language= filter)
- *   GET    /api/v1/study/my-classes                                           — list enrolled classes (student view)
- *   GET    /api/v1/study/available-classes                                    — list joinable classes (student view, supports ?language= filter)
- *   GET    /api/v1/study/preferences                                          — read caller's study language preferences
- *   PUT    /api/v1/study/preferences                                          — save caller's study language preferences
- *   POST   /api/v1/study/teacher-requests                                     — submit or auto-approve a teacher request for a language
- *   GET    /api/v1/study/teacher-requests                                     — list all pending requests (admin only)
- *   POST   /api/v1/study/teacher-requests/:id/approve                         — approve a pending request (admin)
- *   POST   /api/v1/study/teacher-requests/:id/reject                          — reject a pending request (admin)
- *   POST   /api/v1/study/classes/:classId/join                                — request to join a class (student)
- *   DELETE /api/v1/study/classes/:classId/membership                          — leave a class (student)
- *   GET    /api/v1/study/classrooms                                            — list classroom snapshots for caller (supports ?language=)
- *   PATCH  /api/v1/study/classrooms/:classId/layout                            — update classroom layout and student limit (teacher)
- *   DELETE /api/v1/study/classrooms/:classId/students/:studentId               — remove student from class (teacher)
- *   GET    /api/v1/study/classes/:classId/resources                             — read class materials and homework text (teacher/student member)
- *   PUT    /api/v1/study/classes/:classId/resources                             — update class materials/homework (teacher)
- *   GET    /api/v1/study/classes/:classId/notebook                              — read caller notebook text
- *   PUT    /api/v1/study/classes/:classId/notebook                              — save caller notebook text
- *   GET    /api/v1/study/classes/:classId/notebooks/:studentId                  — read another student's notebook (friends or approved request)
- *   POST   /api/v1/study/classes/:classId/notebooks/:studentId/request          — request notebook access from a classmate
- *   GET    /api/v1/study/classes/:classId/notebook-requests                     — list incoming notebook-access requests for caller
- *   POST   /api/v1/study/classes/:classId/notebooks/:ownerId/requests/:viewerId/:action
- *                                                                               — owner approves/rejects notebook-access request
- *   GET    /api/v1/study/classes/:classId/members                             — list class members (teacher, supports ?search=)
- *   GET    /api/v1/study/classes/:classId/join-requests                       — list pending join requests (teacher)
- *   POST   /api/v1/study/classes/:classId/invite                              — invite a student directly (teacher)
- *   POST   /api/v1/study/classes/:classId/join-requests/:studentId/approve    — approve a join request (teacher)
- *   POST   /api/v1/study/classes/:classId/join-requests/:studentId/reject     — reject a join request (teacher)
- *
- * @module adapters/study/classes/routes
- */
-
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
-import {
-    resolveRouteContext,
-    type RouteContext,
-} from "../../../../api/reuse/route-context.js";
+import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
 import { handleClassroomNotebookRoutes } from "./classroom-notebooks.js";
-
-type SetRole = (username: string, role: "teacher") => Promise<void>;
-type DispatchToRole = (
-    role: "admin" | "teacher" | "user",
-    envelope: {
-        category: string;
-        subject: string;
-        body: string;
-        senderName?: string;
-        actionUrl?: string;
-        metadata?: Record<string, unknown>;
-    },
-) => Promise<unknown>;
-
-export interface ClassesRouteOptions {
-    requireTeacherManualApproval?: () => Promise<boolean> | boolean;
-    setRole?: SetRole;
-    setProfileRole?: SetRole;
-    dispatchToRole?: DispatchToRole;
-    accountExists?: (accountId: string) => Promise<boolean>;
-    areFriends?: (accountA: string, accountB: string) => Promise<boolean>;
-    getProfileSummary?: (accountId: string) => Promise<{
-        handle?: string | null;
-        displayName?: string | null;
-        avatarKey?: string | null;
-    } | null>;
-    resolveClassroomChatUrl?: (input: {
-        classId: string;
-        title?: string | null;
-        teacherAccountId: string;
-        memberAccountIds: string[];
-    }) => Promise<{ roomId: string; url: string; reused: boolean }>;
-    createCalendar?: (
-        ownerAccountId: string,
-        name: string,
-        visibility?: "private" | "shared" | "public",
-        color?: string,
-        defaultReminderOffsetsMinutes?: number[],
-    ) => { id: string };
-    listCalendars?: (
-        ownerAccountId: string,
-    ) => Array<{ id: string; name: string }>;
-    addEvent?: (input: {
-        ownerAccountId: string;
-        calendarId: string;
-        title: string;
-        description?: string | null;
-        startAt: string;
-        endAt: string;
-        attendees?: string[];
-        inviteEmails?: string[];
-        reminderOffsetsMinutes?: number[];
-        meetingUrl?: string | null;
-        status?: "busy" | "free";
-        recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";
-    }) => {
-        id: string;
-        title: string;
-        description: string | null;
-        startAt: string;
-        endAt: string;
-        meetingUrl: string | null;
-    };
-    listEvents?: (calendarId: string) => Array<{
-        id: string;
-        title: string;
-        description?: string | null;
-        startAt: string;
-        endAt: string;
-        meetingUrl?: string | null;
-    }>;
-    log?: (
-        level: string,
-        message: string,
-        meta?: Record<string, unknown>,
-    ) => void;
-    routeContext?: RouteContext;
-}
-
-function normalizeLanguageList(input: unknown): string[] {
-    if (!Array.isArray(input)) return [];
-    return [
-        ...new Set(
-            input
-                .filter((entry): entry is string => typeof entry === "string")
-                .map((entry) => entry.trim().toLowerCase())
-                .filter(Boolean)
-                .slice(0, 25),
-        ),
-    ];
-}
-
-function normalizeJoinMode(input: unknown): "invite_only" | "on_request" | "open" {
-    const joinMode = String(input ?? "").trim().toLowerCase();
-    if (joinMode === "invite_only" || joinMode === "open") {
-        return joinMode;
-    }
-    return "on_request";
-}
-
-function resolveClassroomMode(
-    role: string,
-    requestedMode: string | null,
-): "teacher" | "student" {
-    const normalizedRole = String(role ?? "").trim().toLowerCase();
-    if (normalizedRole === "teacher" && requestedMode === "student") {
-        return "student";
-    }
-    return normalizedRole === "teacher" ? "teacher" : "student";
-}
-
-function buildAgendaCalendarName(classId: string): string {
-    return `Class Agenda ${classId}`;
-}
+import { handleAvailableClassesRequest } from "./available-classes-route.js";
+import { handleEnrolledClassesRequest } from "./enrolled-classes-route.js";
+import {
+    decorateMemberships,
+    normalizeJoinMode,
+    normalizeLanguageList,
+    resolveAgendaCalendarId,
+    resolveClassroomMode,
+    syncClassroomArtifacts,
+    type ClassesRouteOptions,
+} from "./route-helpers.js";
 
 export function createClassesRoutes(
     store: DbClassesStore,
     options: ClassesRouteOptions = {},
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(options.routeContext);
-
-    async function decorateMemberships(
-        memberships: Array<{
-            studentAccountId: string;
-            [key: string]: unknown;
-        }>,
-    ) {
-        return Promise.all(
-            memberships.map(async (membership) => {
-                const profile = await options.getProfileSummary?.(
-                    membership.studentAccountId,
-                );
-                return {
-                    ...membership,
-                    handle: profile?.handle ?? null,
-                    displayName: profile?.displayName ?? null,
-                    avatarKey: profile?.avatarKey ?? null,
-                };
-            }),
-        );
-    }
-
-    async function syncClassroomArtifacts(classId: string) {
-        const classRow = await store.getClassById(classId);
-        if (!classRow) return null;
-        await store.getClassroomState(classRow.id);
-        const members = await store.getClassMembersForViewer(
-            classRow.id,
-            classRow.teacherAccountId,
-        );
-        const chat = await options.resolveClassroomChatUrl?.({
-            classId: classRow.id,
-            title: `Classroom ${classRow.languageCode}`,
-            teacherAccountId: classRow.teacherAccountId,
-            memberAccountIds: members.map((member) => member.studentAccountId),
-        });
-        return { classRow, chat };
-    }
-
-    async function resolveAgendaCalendarId(ownerAccountId: string, classId: string) {
-        const calendarName = buildAgendaCalendarName(classId);
-        const existingCalendar = options
-            .listCalendars?.(ownerAccountId)
-            ?.find((calendar) => calendar.name === calendarName);
-        if (existingCalendar) {
-            return existingCalendar.id;
-        }
-        return (
-            options.createCalendar?.(
-                ownerAccountId,
-                calendarName,
-                "private",
-                "#2f855a",
-            )?.id ?? null
-        );
-    }
 
     return async (
         req: IncomingMessage,
@@ -250,22 +52,10 @@ export function createClassesRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            try {
-                const classes = await store.getEnrolledClasses(claims.sub);
-                jsonOk(res, classes);
-            } catch (err) {
-                options.log?.("error", "Failed to load enrolled classes.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    error: err instanceof Error ? err.message : String(err),
-                });
-                jsonError(
-                    res,
-                    500,
-                    "internal_error",
-                    "Failed to load classes.",
-                );
-            }
+            await handleEnrolledClassesRequest(store, options, res, {
+                accountId: claims.sub,
+                logMeta,
+            });
             return true;
         }
 
@@ -275,42 +65,14 @@ export function createClassesRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            try {
-                const languageCode =
-                    url.searchParams.get("language") || undefined;
-                const searchQuery = String(
+            await handleAvailableClassesRequest(store, options, res, {
+                accountId: claims.sub,
+                languageCode: url.searchParams.get("language") || undefined,
+                searchQuery: String(
                     url.searchParams.get("search") ?? "",
-                ).trim();
-                const classes = await store.getAvailableClasses(
-                    languageCode,
-                    claims.sub,
-                );
-                const filteredClasses = searchQuery
-                    ? classes.filter((classRow) =>
-                          [
-                              classRow.languageCode,
-                              classRow.teacherAccountId,
-                              classRow.id,
-                          ]
-                              .join(" ")
-                              .toLowerCase()
-                              .includes(searchQuery.toLowerCase()),
-                      )
-                    : classes;
-                jsonOk(res, filteredClasses);
-            } catch (err) {
-                options.log?.("error", "Failed to load available classes.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    error: err instanceof Error ? err.message : String(err),
-                });
-                jsonError(
-                    res,
-                    500,
-                    "internal_error",
-                    "Failed to load classes.",
-                );
-            }
+                ).trim(),
+                logMeta,
+            });
             return true;
         }
 
@@ -421,7 +183,7 @@ export function createClassesRoutes(
                     claims.sub,
                 );
                 if (classRow) {
-                    await syncClassroomArtifacts(classRow.id);
+                    await syncClassroomArtifacts(store, options, classRow.id);
                 }
                 await options.setRole?.(claims.sub, "teacher");
                 await options.setProfileRole?.(claims.sub, "teacher");
@@ -503,7 +265,7 @@ export function createClassesRoutes(
                     );
                     return true;
                 }
-                await syncClassroomArtifacts(classRow.id);
+                await syncClassroomArtifacts(store, options, classRow.id);
                 await options.setRole?.(classRow.teacherAccountId, "teacher");
                 await options.setProfileRole?.(
                     classRow.teacherAccountId,
@@ -598,15 +360,21 @@ export function createClassesRoutes(
                     classroomClasses.map(async (classRow) => {
                         const [classroomState, members, synced] =
                             await Promise.all([
-                            store.getClassroomState(classRow.id),
-                            store.getClassMembersForViewer(
-                               classRow.id,
-                               claims.sub,
-                            ),
-                            syncClassroomArtifacts(classRow.id),
-                        ]);
-                        const decoratedMembers =
-                            await decorateMemberships(members);
+                                store.getClassroomState(classRow.id),
+                                store.getClassMembersForViewer(
+                                    classRow.id,
+                                    claims.sub,
+                                ),
+                                syncClassroomArtifacts(
+                                    store,
+                                    options,
+                                    classRow.id,
+                                ),
+                            ]);
+                        const decoratedMembers = await decorateMemberships(
+                            options,
+                            members,
+                        );
                         return {
                             ...classRow,
                             classroom: classroomState,
@@ -750,7 +518,7 @@ export function createClassesRoutes(
                     claims.sub,
                     studentAccountId,
                 );
-                await syncClassroomArtifacts(classId);
+                await syncClassroomArtifacts(store, options, classId);
                 jsonOk(res, { removed: true });
             } catch (err) {
                 if (err instanceof Error && err.message === "not_authorized") {
@@ -794,10 +562,16 @@ export function createClassesRoutes(
             try {
                 await store.getClassMembersForViewer(classId, claims.sub);
             } catch {
-                jsonError(res, 403, "forbidden", "Class not found or access denied.");
+                jsonError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Class not found or access denied.",
+                );
                 return true;
             }
             const calendarId = await resolveAgendaCalendarId(
+                options,
                 classRow.teacherAccountId,
                 classId,
             );
@@ -835,10 +609,20 @@ export function createClassesRoutes(
             const classId = decodeURIComponent(agendaMatch[1]);
             const classRow = await store.getClassById(classId);
             if (!classRow || classRow.teacherAccountId !== claims.sub) {
-                jsonError(res, 403, "forbidden", "Class not found or access denied.");
+                jsonError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Class not found or access denied.",
+                );
                 return true;
             }
-            if (!options.listCalendars || !options.createCalendar || !options.addEvent || !options.listEvents) {
+            if (
+                !options.listCalendars ||
+                !options.createCalendar ||
+                !options.addEvent ||
+                !options.listEvents
+            ) {
                 jsonError(
                     res,
                     503,
@@ -850,7 +634,9 @@ export function createClassesRoutes(
             const body = (await readJson(req)) as Record<string, unknown>;
             const title = String(body.title ?? "").trim();
             const description =
-                typeof body.description === "string" ? body.description.trim() : "";
+                typeof body.description === "string"
+                    ? body.description.trim()
+                    : "";
             const startAt = String(body.startAt ?? "").trim();
             const endAt = String(body.endAt ?? "").trim();
             if (!title || !startAt || !endAt) {
@@ -877,7 +663,11 @@ export function createClassesRoutes(
                 );
                 return true;
             }
-            const calendarId = await resolveAgendaCalendarId(claims.sub, classId);
+            const calendarId = await resolveAgendaCalendarId(
+                options,
+                claims.sub,
+                classId,
+            );
             if (!calendarId) {
                 jsonError(
                     res,
@@ -887,14 +677,19 @@ export function createClassesRoutes(
                 );
                 return true;
             }
-            const overlappingEvent = options.listEvents(calendarId).find((event) => {
-                const eventStartMs = Date.parse(event.startAt);
-                const eventEndMs = Date.parse(event.endAt);
-                if (!Number.isFinite(eventStartMs) || !Number.isFinite(eventEndMs)) {
-                    return false;
-                }
-                return startMs < eventEndMs && eventStartMs < endMs;
-            });
+            const overlappingEvent = options
+                .listEvents(calendarId)
+                .find((event) => {
+                    const eventStartMs = Date.parse(event.startAt);
+                    const eventEndMs = Date.parse(event.endAt);
+                    if (
+                        !Number.isFinite(eventStartMs) ||
+                        !Number.isFinite(eventEndMs)
+                    ) {
+                        return false;
+                    }
+                    return startMs < eventEndMs && eventStartMs < endMs;
+                });
             if (overlappingEvent) {
                 jsonError(
                     res,
@@ -943,7 +738,7 @@ export function createClassesRoutes(
                     claims.sub,
                 );
                 if (membership.status === "member") {
-                    await syncClassroomArtifacts(classId);
+                    await syncClassroomArtifacts(store, options, classId);
                 }
                 options.log?.("info", "Student requested to join class.", {
                     ...logMeta,
@@ -983,7 +778,7 @@ export function createClassesRoutes(
             const classId = decodeURIComponent(membershipMatch[1]);
             try {
                 await store.leaveClass(classId, claims.sub);
-                await syncClassroomArtifacts(classId);
+                await syncClassroomArtifacts(store, options, classId);
                 options.log?.("info", "Student left class.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -1016,7 +811,7 @@ export function createClassesRoutes(
                     claims.sub,
                     searchQuery || undefined,
                 );
-                jsonOk(res, await decorateMemberships(members));
+                jsonOk(res, await decorateMemberships(options, members));
             } catch (err) {
                 if (err instanceof Error && err.message === "not_authorized") {
                     jsonError(
@@ -1111,7 +906,7 @@ export function createClassesRoutes(
                     accountId,
                     claims.sub,
                 );
-                await syncClassroomArtifacts(classId);
+                await syncClassroomArtifacts(store, options, classId);
                 options.log?.("info", "Teacher invited student to class.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -1162,7 +957,7 @@ export function createClassesRoutes(
                     action === "approve",
                 );
                 if (action === "approve") {
-                    await syncClassroomArtifacts(classId);
+                    await syncClassroomArtifacts(store, options, classId);
                 }
                 options.log?.("info", `Teacher ${action}d join request.`, {
                     ...logMeta,
