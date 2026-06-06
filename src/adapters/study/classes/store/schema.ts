@@ -306,64 +306,34 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
 async function ensureStudyClassesColumns(db: DbExecutor): Promise<void> {
     const rawDb = db as Partial<RawDbExecutor>;
     if (typeof rawDb.execute !== "function") return;
-    const dialect = detectSqlDialect(rawDb);
-    await ensureMissingColumn(
-        rawDb,
-        dialect,
-        "study_classes",
-        "join_mode",
-        resolveColumnDefinition(dialect, "join_mode"),
-    );
-    await ensureMissingColumn(
-        rawDb,
-        dialect,
-        "study_classes",
-        "is_listed",
-        resolveColumnDefinition(dialect, "is_listed"),
-    );
+    const dialect = await detectSqlDialect(rawDb);
+    await ensureMissingColumn(rawDb, dialect, "study_classes", "join_mode");
+    await ensureMissingColumn(rawDb, dialect, "study_classes", "is_listed");
 }
 
 async function ensureTeacherRequestColumns(db: DbExecutor): Promise<void> {
     const rawDb = db as Partial<RawDbExecutor>;
     if (typeof rawDb.execute !== "function") return;
-    const dialect = detectSqlDialect(rawDb);
-    await ensureMissingColumn(
-        rawDb,
-        dialect,
-        "teacher_requests",
-        "join_mode",
-        resolveColumnDefinition(dialect, "join_mode"),
-    );
-    await ensureMissingColumn(
-        rawDb,
-        dialect,
-        "teacher_requests",
-        "is_listed",
-        resolveColumnDefinition(dialect, "is_listed"),
-    );
+    const dialect = await detectSqlDialect(rawDb);
+    await ensureMissingColumn(rawDb, dialect, "teacher_requests", "join_mode");
+    await ensureMissingColumn(rawDb, dialect, "teacher_requests", "is_listed");
 }
 
 type SupportedSqlDialect = "sqlite" | "postgres" | "mariadb";
 
-function detectSqlDialect(db: Partial<RawDbExecutor>): SupportedSqlDialect {
-    const executorName = String(db.constructor?.name ?? "").toLowerCase();
-    if (executorName.includes("sqlite")) return "sqlite";
-    if (executorName.includes("maria")) return "mariadb";
-    return "postgres";
-}
-
-function resolveColumnDefinition(
-    dialect: SupportedSqlDialect,
-    columnName: "join_mode" | "is_listed",
-): string {
-    if (columnName === "join_mode") {
-        return dialect === "mariadb"
-            ? "VARCHAR(32) NOT NULL DEFAULT 'on_request'"
-            : "TEXT NOT NULL DEFAULT 'on_request'";
-    }
-    return dialect === "mariadb"
-        ? "TINYINT(1) NOT NULL DEFAULT 1"
-        : "INTEGER NOT NULL DEFAULT 1";
+async function detectSqlDialect(
+    db: Partial<RawDbExecutor>,
+): Promise<SupportedSqlDialect> {
+    if (!db.execute) return "postgres";
+    try {
+        await db.execute("PRAGMA table_info(study_classes)");
+        return "sqlite";
+    } catch {}
+    try {
+        await db.execute("SELECT current_schema()");
+        return "postgres";
+    } catch {}
+    return "mariadb";
 }
 
 async function ensureMissingColumn(
@@ -371,15 +341,12 @@ async function ensureMissingColumn(
     dialect: SupportedSqlDialect,
     tableName: "study_classes" | "teacher_requests",
     columnName: "join_mode" | "is_listed",
-    columnDefinition: string,
 ): Promise<void> {
     if (!db.execute) return;
     if (await hasColumn(db, dialect, tableName, columnName)) {
         return;
     }
-    await db.execute(
-        `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition}`,
-    );
+    await db.execute(resolveAddColumnStatement(dialect, tableName, columnName));
 }
 
 async function hasColumn(
@@ -404,6 +371,31 @@ async function hasColumn(
         `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND column_name = '${columnName}' AND ${schemaPredicate}`,
     );
     return (result.rows?.length ?? 0) > 0;
+}
+
+function resolveAddColumnStatement(
+    dialect: SupportedSqlDialect,
+    tableName: "study_classes" | "teacher_requests",
+    columnName: "join_mode" | "is_listed",
+): string {
+    if (tableName === "study_classes" && columnName === "join_mode") {
+        return dialect === "mariadb"
+            ? "ALTER TABLE study_classes ADD COLUMN join_mode VARCHAR(32) NOT NULL DEFAULT 'on_request'"
+            : "ALTER TABLE study_classes ADD COLUMN join_mode TEXT NOT NULL DEFAULT 'on_request'";
+    }
+    if (tableName === "study_classes" && columnName === "is_listed") {
+        return dialect === "mariadb"
+            ? "ALTER TABLE study_classes ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"
+            : "ALTER TABLE study_classes ADD COLUMN is_listed INTEGER NOT NULL DEFAULT 1";
+    }
+    if (tableName === "teacher_requests" && columnName === "join_mode") {
+        return dialect === "mariadb"
+            ? "ALTER TABLE teacher_requests ADD COLUMN join_mode VARCHAR(32) NOT NULL DEFAULT 'on_request'"
+            : "ALTER TABLE teacher_requests ADD COLUMN join_mode TEXT NOT NULL DEFAULT 'on_request'";
+    }
+    return dialect === "mariadb"
+        ? "ALTER TABLE teacher_requests ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"
+        : "ALTER TABLE teacher_requests ADD COLUMN is_listed INTEGER NOT NULL DEFAULT 1";
 }
 
 export async function ensureStudyLanguagesSchema(

@@ -15,7 +15,6 @@ import {
 } from "/static/adapters/study/classes/view-mode.js";
 import {
     buildAccountLabel,
-    normalizeSeatAssignments,
     renderClassroomPage,
 } from "/static/adapters/study/classes/classroom-render.js";
 
@@ -180,6 +179,12 @@ export async function mount(root, { signal } = {}) {
             })
             .filter(Boolean)
             .join("");
+        const approvalReasonField = requireTeacherManualApproval
+            ? `<label class="stack">
+                ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
+                <textarea id="classes-create-reason" class="theme-select" rows="5"></textarea>
+            </label>`
+            : "";
         const action = await openPopup({
             title: i18n.t("module.study.classes.create_class"),
             body: `
@@ -195,14 +200,7 @@ export async function mount(root, { signal } = {}) {
                         <option value="invite_only">${escapeHtml(i18n.t("module.study.classes.join_mode_invite_only"))}</option>
                     </select>
                 </label>
-                ${
-                    requireTeacherManualApproval
-                        ? `<label class="stack">
-                            ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
-                            <textarea id="classes-create-reason" class="theme-select" rows="5"></textarea>
-                        </label>`
-                        : ""
-                }
+                ${approvalReasonField}
             `,
             variant: "confirm",
             actions: [
@@ -281,13 +279,7 @@ export async function mount(root, { signal } = {}) {
         await refreshContent();
     }
 
-    /**
-     * Creates or reuses a Jitsi meeting for the selected classroom snapshot and
-     * navigates to the resulting meeting route when creation succeeds.
-     *
-     * @param {{ id: string }} snapshot
-     * @returns {Promise<void>}
-     */
+    /** Creates or reuses a classroom meeting and navigates to it on success. */
     async function openMeeting(snapshot) {
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/meetings/create",

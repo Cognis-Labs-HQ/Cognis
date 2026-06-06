@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import { getTeacherClassForLanguage } from "./classes.js";
 import { rowToTeacherRequest } from "./rows.js";
 import type { ClassRow, TeacherRequestRow } from "./types.js";
 
@@ -133,24 +134,11 @@ export async function approveTeacherRequest(
         const isListed = Boolean(requestRow.is_listed);
         const nowIso = new Date().toISOString();
 
-        const existingClassResult = await executor.executeCommand({
-            option: "SELECT",
-            table: "study_classes",
-            columns: [
-                "id",
-                "language_code",
-                "teacher_account_id",
-                "join_mode",
-                "is_listed",
-                "created_at",
-            ],
-            where: [
-                { column: "teacher_account_id", value: accountId },
-                { column: "language_code", value: languageCode },
-            ],
-            limit: 1,
-        });
-        const existingClassRow = existingClassResult.rows?.[0];
+        const existingClassRow = await getTeacherClassForLanguage(
+            executor,
+            accountId,
+            languageCode,
+        );
 
         await executor.executeCommand({
             option: "UPDATE",
@@ -163,9 +151,7 @@ export async function approveTeacherRequest(
             where: [{ column: "id", value: requestId }],
         });
 
-        const classId = existingClassRow
-            ? String(existingClassRow.id)
-            : randomUUID();
+        const classId = existingClassRow ? existingClassRow.id : randomUUID();
         if (!existingClassRow) {
             await executor.executeCommand({
                 option: "INSERT",
@@ -204,22 +190,16 @@ export async function approveTeacherRequest(
             id: classId,
             languageCode,
             teacherAccountId: accountId,
-            joinMode:
-                existingClassRow &&
-                typeof existingClassRow.join_mode === "string"
-                    ? (String(
-                          existingClassRow.join_mode,
-                      ) as ClassRow["joinMode"])
-                    : joinMode === "invite_only" || joinMode === "open"
-                      ? (joinMode as ClassRow["joinMode"])
-                      : "on_request",
+            joinMode: existingClassRow?.joinMode
+                ? existingClassRow.joinMode
+                : joinMode === "invite_only" || joinMode === "open"
+                  ? (joinMode as ClassRow["joinMode"])
+                  : "on_request",
             isListed:
-                existingClassRow && existingClassRow.is_listed != null
-                    ? Boolean(existingClassRow.is_listed)
+                typeof existingClassRow?.isListed === "boolean"
+                    ? existingClassRow.isListed
                     : isListed,
-            createdAt: existingClassRow
-                ? String(existingClassRow.created_at ?? nowIso)
-                : nowIso,
+            createdAt: existingClassRow ? existingClassRow.createdAt : nowIso,
         };
     });
 }

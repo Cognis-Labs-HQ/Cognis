@@ -30,8 +30,22 @@ function renderFooter({
                 : "module.study.classes.no_enrolled_classes",
         ),
     );
+    const toggleLabel = escapeHtml(
+        i18n.t(
+            getClassroomViewMode() === "teacher"
+                ? "module.study.classes.enter_student_view"
+                : "module.study.classes.enter_teacher_view",
+        ),
+    );
     const toggleButton = canToggleClassroomView()
-        ? `<button type="button" class="btn-confirm btn-animated classes-footer-toggle-btn">${escapeHtml(i18n.t(getClassroomViewMode() === "teacher" ? "module.study.classes.enter_student_view" : "module.study.classes.enter_teacher_view"))}</button>`
+        ? `
+            <button
+                type="button"
+                class="btn-confirm btn-animated classes-footer-toggle-btn"
+            >
+                ${toggleLabel}
+            </button>
+        `
         : "";
     return `
         <div class="classes-footer-bar">

@@ -136,10 +136,6 @@ export function filterClassesBySearchQuery<
     );
 }
 
-function buildAgendaCalendarName(classId: string): string {
-    return `class-agenda-${classId}`;
-}
-
 export async function decorateMemberships(
     options: ClassesRouteOptions,
     memberships: Array<{
@@ -188,7 +184,7 @@ export async function resolveAgendaCalendarId(
     ownerAccountId: string,
     classId: string,
 ) {
-    const calendarName = buildAgendaCalendarName(classId);
+    const calendarName = `class-agenda-${classId}`;
     const existingCalendar = options
         .listCalendars?.(ownerAccountId)
         ?.find((calendar) => calendar.name === calendarName);
