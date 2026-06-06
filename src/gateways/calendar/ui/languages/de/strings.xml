@@ -120,6 +120,8 @@
   <string name="gateway.calendar.delete_calendar_success">Kalender gelöscht.</string>
   <string name="gateway.calendar.delete_calendar_failed">Kalender konnte nicht gelöscht werden.</string>
   <string name="gateway.calendar.share_calendar">Kalender Teilen</string>
+  <string name="gateway.calendar.share_users_heading">Geteilte Benutzer</string>
+  <string name="gateway.calendar.share_links_heading">Freigabelinks</string>
   <string name="gateway.calendar.share_link_permission">Berechtigung</string>
   <string name="gateway.calendar.share_link_permission_read">Nur Lesen</string>
   <string name="gateway.calendar.share_link_permission_write">Lesen &amp; Schreiben</string>

@@ -669,11 +669,13 @@ export function createCalendarEditPopupHandler({
                     ? ""
                     : `<div class="calendar-share-controls">
              <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.share_calendar"))}</p>
+             <p class="calendar-share-section-heading">${escapeHtml(i18n.t("gateway.calendar.share_users_heading"))}</p>
              <div class="calendar-share-input-row">
                <input id="calendar-share-user-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
              </div>
              <div id="calendar-share-user-options" class="calendar-participant-options"></div>
              <div id="calendar-share-user-chips" class="calendar-user-share-list"></div>
+             <p class="calendar-share-section-heading">${escapeHtml(i18n.t("gateway.calendar.share_links_heading"))}</p>
              <div id="calendar-share-generate-controls" class="calendar-share-input-row">
                <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
                <select id="calendar-share-expiry">${SHARE_EXPIRY_OPTIONS.map(

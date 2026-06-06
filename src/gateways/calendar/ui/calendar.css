@@ -68,6 +68,13 @@
     font-weight: 600;
 }
 
+.calendar-share-section-heading {
+    margin: 0.15rem 0 0;
+    font-size: 0.76rem;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
 .calendar-delete-zone {
     border-top: 1px solid var(--field-border);
     padding-top: 0.65rem;
