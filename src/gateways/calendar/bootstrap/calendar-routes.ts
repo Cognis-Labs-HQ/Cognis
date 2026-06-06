@@ -54,10 +54,7 @@ export function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
-    const JITSI_AVAILABILITY_CACHE_TTL_MS = 60 * 1000;
     const MAX_SET_TIMEOUT_DELAY_MS = 2 ** 31 - 1;
-    let cachedJitsiAvailability: boolean | null = null;
-    let cachedJitsiAvailabilityAtMs = 0;
     const scheduledReminderTimers = new Map<string, NodeJS.Timeout>();
     const reminderKeysByEventId = new Map<string, Set<string>>();
 
@@ -165,37 +162,6 @@ export function createCalendarCoreRoutes({
         }
     };
 
-    const resolveJitsiAvailability = async (): Promise<boolean> => {
-        const now = Date.now();
-        if (
-            cachedJitsiAvailability !== null &&
-            now - cachedJitsiAvailabilityAtMs < JITSI_AVAILABILITY_CACHE_TTL_MS
-        ) {
-            return cachedJitsiAvailability;
-        }
-        if (!resolveMeetingsProviderAvailability) return false;
-        try {
-            cachedJitsiAvailability = Boolean(
-                await resolveMeetingsProviderAvailability("jitsi-meet"),
-            );
-            cachedJitsiAvailabilityAtMs = now;
-            return cachedJitsiAvailability;
-        } catch (error) {
-            log?.(
-                "warn",
-                "Failed to resolve meetings provider availability; defaulting to unavailable.",
-                {
-                    component: "calendar-gateway",
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                },
-            );
-            cachedJitsiAvailability = false;
-            cachedJitsiAvailabilityAtMs = now;
-            return false;
-        }
-    };
-
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -210,7 +176,26 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             gateway.ensureDefaultCalendar(claims.sub);
-            const jitsiAvailable = await resolveJitsiAvailability();
+            let jitsiAvailable = false;
+            if (resolveMeetingsProviderAvailability) {
+                try {
+                    jitsiAvailable = Boolean(
+                        await resolveMeetingsProviderAvailability("jitsi-meet"),
+                    );
+                } catch (error) {
+                    log?.(
+                        "warn",
+                        "Failed to resolve meetings provider availability; defaulting to unavailable.",
+                        {
+                            component: "calendar-gateway",
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
+            }
             sendJson(res, 200, {
                 data: gateway.listCalendars(claims.sub),
                 meta: {
