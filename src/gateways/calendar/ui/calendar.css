@@ -72,7 +72,7 @@
     margin: 0.15rem 0 0;
     font-size: 0.76rem;
     font-weight: 600;
-    opacity: 0.8;
+    color: color-mix(in srgb, var(--text-color, var(--text)) 82%, transparent);
 }
 
 .calendar-delete-zone {
