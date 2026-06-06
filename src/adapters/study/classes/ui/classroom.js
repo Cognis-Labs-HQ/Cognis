@@ -6,6 +6,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { isTeacherScope } from "/static/reuse/access-role.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 
 const DEFAULT_CLASSROOM_CAPACITY = 30;
 
@@ -108,7 +109,7 @@ export async function mount(root, { signal } = {}) {
 
     function renderClassSelectOptions() {
         if (!classroomSnapshots.length) {
-            return `<option value="">${escapeHtml(i18n.t("module.study.classes.no_enrolled_classes"))}</option>`;
+            return `<option value="">${escapeHtml(i18n.t(isTeacher ? "module.study.classes.no_teacher_classes" : "module.study.classes.no_enrolled_classes"))}</option>`;
         }
         return classroomSnapshots
             .map((snapshot) => {
@@ -256,10 +257,17 @@ export async function mount(root, { signal } = {}) {
                 return `
             <section class="classes-section classes-classroom-hub">
               <div class="classes-request-form">
-                <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t("module.study.classes.classroom_select_class"))}</label>
-                <select id="classes-class-select" class="classes-language-input">
-                  ${renderClassSelectOptions()}
-                </select>
+                <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t(isTeacher ? "module.study.classes.classroom_select_teacher_classes" : "module.study.classes.classroom_select_student_classes"))}</label>
+                <div class="classes-request-row">
+                  <select id="classes-class-select" class="classes-language-input">
+                    ${renderClassSelectOptions()}
+                  </select>
+                  ${
+                      isTeacher
+                          ? `<button type="button" class="btn-confirm btn-animated classes-create-class-btn classes-open-create-class-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_class"))}" title="${escapeHtml(i18n.t("module.study.classes.create_class"))}">+</button>`
+                          : ""
+                  }
+                </div>
               </div>
               <div class="classes-classroom-content">${renderClassroom()}</div>
             </section>
@@ -300,6 +308,13 @@ export async function mount(root, { signal } = {}) {
                     "click",
                     async (event) => {
                         if (!(event.target instanceof Element)) return;
+                        const createClassButton = event.target.closest(
+                            ".classes-open-create-class-btn",
+                        );
+                        if (createClassButton instanceof HTMLElement) {
+                            navigateTo("/classes");
+                            return;
+                        }
                         const snapshot = selectedSnapshot();
                         if (!snapshot) return;
                         const classId = String(snapshot.id ?? "");

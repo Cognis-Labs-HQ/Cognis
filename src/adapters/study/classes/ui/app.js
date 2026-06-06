@@ -5,7 +5,7 @@
  * filtering, and provides per-class student management (members, join requests,
  * invitations) and entry points to the class chat room.
  *
- * For all users: provides a form to request teacher status for a language.
+ * For teachers: provides a form to request creation of a new classroom for a language.
  * Requests are queued for admin approval when manual approval is enabled.
  *
  * @module app/classes
