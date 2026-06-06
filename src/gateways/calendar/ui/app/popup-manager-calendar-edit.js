@@ -1,4 +1,5 @@
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { toggleSecretVisibility } from "/static/reuse/secret-visibility-toggle.js";
 import {
     bindReminderFieldBehavior,
     getSelectedReminderOffsets,
@@ -91,7 +92,7 @@ function renderCalendarShareCopyField({
     const valueInputType = concealed ? "password" : "text";
     const copyKind = concealed ? "passphrase" : "link";
     const visibilityToggle = concealed
-        ? `<button type="button" class="btn-no-animation calendar-share-secret-toggle" data-calendar-share-toggle-secret="${escapeHtml(value)}">👁</button>`
+        ? `<button type="button" class="btn-no-animation calendar-share-secret-toggle" data-calendar-share-toggle-secret="${escapeHtml(value)}" aria-pressed="false" aria-label="${escapeHtml(i18n.t("gateway.calendar.share_link_passphrase"))}"><span aria-hidden="true">👁</span></button>`
         : "";
     return `<div class="calendar-share-copy-field">
       <span class="calendar-share-copy-label">${escapeHtml(label)}</span>
@@ -139,7 +140,7 @@ function renderCalendarShareResults({ i18n, escapeHtml, shareLinks }) {
               return `<details class="calendar-share-entry"${openAttr}>
                 <summary class="calendar-share-entry-summary">
                  <span class="calendar-share-entry-title">${escapeHtml(name)}</span>
-                 <span class="calendar-share-entry-meta"><span>${escapeHtml(expiryLabel)}</span> <button type="button" class="btn-no-animation btn-cancel calendar-share-delete-btn" data-calendar-share-delete="${escapeHtml(String(shareLink.id ?? ""))}">🗑</button></span>
+                 <span class="calendar-share-entry-meta"><span>${escapeHtml(expiryLabel)}</span> <a href="#" class="btn-no-animation btn-cancel" data-calendar-share-delete="${escapeHtml(String(shareLink.id ?? ""))}" aria-label="${escapeHtml(i18n.t("ui.reuse.remove"))}">🗑</a></span>
                 </summary>
                 <div class="calendar-share-entry-body">
                   ${renderCalendarShareCopyField({
@@ -239,7 +240,7 @@ function bindCalendarShareControls({
                               `<option value="${escapeHtml(option.value)}"${option.value === expiryValue ? " selected" : ""}>${escapeHtml(i18n.t(option.labelKey))}</option>`,
                       ).join("")}</select>
                     </label>
-                    <button type="button" class="btn-no-animation btn-cancel calendar-user-share-delete-btn" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}">🗑</button>
+                    <a href="#" class="btn-no-animation btn-cancel" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}" aria-label="${escapeHtml(i18n.t("ui.reuse.remove"))}">🗑</a>
                   </div>
                 </div>`;
             })
@@ -547,6 +548,7 @@ function bindCalendarShareControls({
                 "[data-calendar-user-share-delete]",
             );
             if (!(button instanceof HTMLElement)) return;
+            event.preventDefault();
             const shareId = String(
                 button.getAttribute("data-calendar-user-share-delete") ?? "",
             ).trim();
@@ -597,7 +599,7 @@ function bindCalendarShareControls({
             const row = toggleButton.closest(".calendar-share-result-row");
             const input = row?.querySelector("input");
             if (!(input instanceof HTMLInputElement)) return;
-            input.type = input.type === "password" ? "text" : "password";
+            toggleSecretVisibility({ input, toggleControl: toggleButton });
             return;
         }
         const deleteButton = event.target.closest(
@@ -646,7 +648,27 @@ export function createCalendarEditPopupHandler({
                 const nameFieldDisabledAttr = calendar.isDefault
                     ? " disabled"
                     : "";
+                const isShared = calendar.visibility === "shared";
                 const isPrivate = calendar.visibility !== "public";
+                const shareControlsMarkup = isShared
+                    ? ""
+                    : `<div class="calendar-share-controls">
+             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.share_calendar"))}</p>
+             <div class="calendar-share-input-row">
+               <input id="calendar-share-user-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
+             </div>
+             <div id="calendar-share-user-options" class="calendar-participant-options"></div>
+             <div id="calendar-share-user-chips" class="calendar-user-share-list"></div>
+             <div id="calendar-share-generate-controls" class="calendar-share-input-row">
+               <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
+               <select id="calendar-share-expiry">${SHARE_EXPIRY_OPTIONS.map(
+                   (option) =>
+                       `<option value="${escapeHtml(option.value)}"${option.value === "24" ? " selected" : ""}>${escapeHtml(i18n.t(option.labelKey))}</option>`,
+               ).join("")}</select>
+               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
+             </div>
+             <div id="calendar-share-results" class="calendar-share-results" hidden></div>
+           </div>`;
                 return `<div class="calendar-edit-popup">
           <div class="calendar-create-row">
             <input id="calendar-edit-color" type="color" value="${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}" class="calendar-color-picker-bare" />
@@ -654,35 +676,20 @@ export function createCalendarEditPopupHandler({
           </div>
           <div class="calendar-visibility-row">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>
-            <select id="calendar-edit-visibility">
+            <select id="calendar-edit-visibility"${isShared ? " disabled" : ""}>
               <option value="private"${isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_private"))}</option>
               <option value="public"${!isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_public"))}</option>
+              ${isShared ? `<option value="shared" selected>${escapeHtml(i18n.t("gateway.calendar.visibility_shared"))}</option>` : ""}
             </select>
           </div>
-          <div class="calendar-share-controls">
-            <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.share_calendar"))}</p>
-            <div class="calendar-share-input-row">
-              <input id="calendar-share-user-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
-            </div>
-            <div id="calendar-share-user-options" class="calendar-participant-options"></div>
-            <div id="calendar-share-user-chips" class="calendar-user-share-list"></div>
-            <div id="calendar-share-generate-controls" class="calendar-share-input-row">
-              <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
-              <select id="calendar-share-expiry">${SHARE_EXPIRY_OPTIONS.map(
-                  (option) =>
-                      `<option value="${escapeHtml(option.value)}"${option.value === "24" ? " selected" : ""}>${escapeHtml(i18n.t(option.labelKey))}</option>`,
-              ).join("")}</select>
-              <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
-            </div>
-            <div id="calendar-share-results" class="calendar-share-results" hidden></div>
-          </div>
+          ${shareControlsMarkup}
           ${renderReminderField({
               i18n,
               escapeHtml,
               selectedOffsets: calendar.defaultReminderOffsetsMinutes ?? [],
               showDefaultTooltip: true,
           })}
-          ${!calendar.isDefault ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
+          ${!calendar.isDefault && !isShared ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
         </div>`;
             },
             closeProtection: false,
@@ -699,15 +706,17 @@ export function createCalendarEditPopupHandler({
                 },
             ],
             onOpen: (overlay, closePopup) => {
-                bindCalendarShareControls({
-                    overlay,
-                    calendarId: calendar.id,
-                    i18n,
-                    apiFetch,
-                    escapeHtml,
-                    showToast,
-                    openPopup,
-                });
+                if (calendar.visibility !== "shared") {
+                    bindCalendarShareControls({
+                        overlay,
+                        calendarId: calendar.id,
+                        i18n,
+                        apiFetch,
+                        escapeHtml,
+                        showToast,
+                        openPopup,
+                    });
+                }
                 bindReminderFieldBehavior({ overlay, i18n });
                 const deleteBtn = overlay.querySelector(
                     "#calendar-edit-delete",

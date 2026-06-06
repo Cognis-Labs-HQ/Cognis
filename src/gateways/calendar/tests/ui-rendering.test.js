@@ -292,7 +292,7 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /btn-no-animation btn-cancel calendar-share-delete-btn/,
+        /href="#" class="btn-no-animation btn-cancel" data-calendar-share-delete=/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,

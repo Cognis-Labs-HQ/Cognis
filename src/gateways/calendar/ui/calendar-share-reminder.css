@@ -4,13 +4,21 @@
     gap: 0.3rem;
 }
 
-.calendar-share-delete-btn,
-.calendar-user-share-delete-btn,
 .calendar-share-secret-toggle,
 .calendar-share-copy-btn {
     flex: 0 0 auto;
     min-width: 1.85rem;
     padding: 0.2rem 0.35rem;
+}
+
+[data-calendar-share-delete],
+[data-calendar-user-share-delete] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.85rem;
+    padding: 0.2rem 0.35rem;
+    text-decoration: none;
 }
 
 .calendar-reminder-options {
@@ -134,6 +142,21 @@
     padding: 0.25rem;
     color: inherit;
     transition: color 0.5s ease;
+}
+
+.calendar-share-secret-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-share-secret-toggle.is-revealed::after {
+    content: "";
+    position: absolute;
+    width: 1.1rem;
+    border-top: 1px solid currentColor;
+    transform: rotate(-32deg);
 }
 
 .calendar-share-copy-btn::before {

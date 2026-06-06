@@ -63,23 +63,6 @@ export function bindReminderFieldBehavior({ overlay, i18n, signal }) {
         },
         { signal },
     );
-    reminderOptions.addEventListener(
-        "click",
-        (event) => {
-            const option = event.target?.closest(".calendar-reminder-option");
-            if (!(option instanceof HTMLElement)) return;
-            const input = option.querySelector(
-                'input[name="calendar-popup-reminder-offset"]',
-            );
-            if (!(input instanceof HTMLInputElement)) return;
-            if (event.target === input) return;
-            input.checked = !input.checked;
-            input.dispatchEvent(
-                new Event("change", { bubbles: true, cancelable: false }),
-            );
-        },
-        { signal },
-    );
     refreshSelectionState();
 }
 
