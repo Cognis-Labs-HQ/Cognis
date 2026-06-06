@@ -257,19 +257,21 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("module.study.classes.classroom_page_title"),
             gridSize: { default: [8, 6], min: [2, 2], max: "full" },
             render() {
+                const classSelectLabelKey = isTeacher
+                    ? "module.study.classes.classroom_select_teacher_classes"
+                    : "module.study.classes.classroom_select_student_classes";
+                const createClassButton = isTeacher
+                    ? `<button type="button" class="btn-confirm btn-animated classes-create-class-btn classes-open-create-class-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_class"))}" title="${escapeHtml(i18n.t("module.study.classes.create_class"))}">+</button>`
+                    : "";
                 return `
             <section class="classes-section classes-classroom-hub">
               <div class="classes-request-form">
-                <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t(isTeacher ? "module.study.classes.classroom_select_teacher_classes" : "module.study.classes.classroom_select_student_classes"))}</label>
+                <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t(classSelectLabelKey))}</label>
                 <div class="classes-request-row">
-                  <select id="classes-class-select" class="classes-language-select">
+                  <select id="classes-class-select" class="theme-select classes-language-select">
                     ${renderClassSelectOptions()}
                   </select>
-                  ${
-                      isTeacher
-                          ? `<button type="button" class="btn-confirm btn-animated classes-create-class-btn classes-open-create-class-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_class"))}" title="${escapeHtml(i18n.t("module.study.classes.create_class"))}">+</button>`
-                          : ""
-                  }
+                  ${createClassButton}
                 </div>
               </div>
               <div class="classes-classroom-content">${renderClassroom()}</div>
