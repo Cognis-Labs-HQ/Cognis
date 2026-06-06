@@ -433,7 +433,7 @@ export class CalendarShareRegistry {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "calendar_user_shares",
-            values: {
+            set: {
                 permission: nextShare.permission,
                 expires_at: nextShare.expiresAt,
                 updated_at: nextShare.updatedAt,
