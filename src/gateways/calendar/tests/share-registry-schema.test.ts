@@ -97,11 +97,9 @@ test("updateCalendarUserShare sends structured UPDATE set payload", async () => 
         (command) => command.option === "UPDATE",
     );
     assert.ok(updateCommand);
-    if (updateCommand.option === "UPDATE") {
-        assert.deepEqual(updateCommand.set, {
-            permission: "write",
-            expires_at: "",
-            updated_at: updatedShare.updatedAt,
-        });
-    }
+    assert.deepEqual(updateCommand.set, {
+        permission: "write",
+        expires_at: "",
+        updated_at: updatedShare.updatedAt,
+    });
 });
