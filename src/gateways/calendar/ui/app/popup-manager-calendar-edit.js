@@ -48,6 +48,18 @@ function resolveExpiryValueFromIso(expiresAt) {
     return "720";
 }
 
+/**
+ * Compare two ordered numeric lists for exact equality.
+ *
+ * @param {number[]} left
+ * @param {number[]} right
+ * @returns {boolean}
+ */
+function areNumericListsEqual(left, right) {
+    if (left.length !== right.length) return false;
+    return left.every((value, index) => value === right[index]);
+}
+
 function mapSearchResultToShareUser(entry) {
     const username = normalizeUserIdentifier(entry);
     const handle = String(entry?.handle ?? entry?.meta ?? entry?.id ?? "")
@@ -361,16 +373,34 @@ function bindCalendarShareControls({
         await loadExistingShares();
         showToast(i18n.t("gateway.calendar.share_user_deleted"), "success");
     };
+    /**
+     * Ask the user to confirm deleting either a share link or shared user.
+     *
+     * @param {"user" | "link"} scope
+     * @returns {Promise<boolean>}
+     */
     const confirmShareRemoval = async (scope) => {
-        if (typeof openPopup !== "function") return true;
+        const confirmMessage = i18n.t(
+            scope === "user"
+                ? "gateway.calendar.share_user_delete_confirm"
+                : "gateway.calendar.share_link_delete_confirm",
+        );
+        if (typeof openPopup !== "function") {
+            if (
+                typeof window !== "undefined" &&
+                typeof window.confirm === "function"
+            ) {
+                return window.confirm(confirmMessage);
+            }
+            return false;
+        }
         const action = await openPopup({
             title: i18n.t(
                 scope === "user"
                     ? "gateway.calendar.share_user_delete_confirm_title"
                     : "gateway.calendar.share_link_delete_confirm_title",
             ),
-            body: () =>
-                `<p>${escapeHtml(i18n.t(scope === "user" ? "gateway.calendar.share_user_delete_confirm" : "gateway.calendar.share_link_delete_confirm"))}</p>`,
+            body: () => `<p>${escapeHtml(confirmMessage)}</p>`,
             actions: [
                 {
                     id: "cancel",
@@ -379,7 +409,7 @@ function bindCalendarShareControls({
                 },
                 {
                     id: "delete",
-                    label: i18n.t("gateway.calendar.delete_calendar"),
+                    label: i18n.t("ui.reuse.remove"),
                     variant: "cancel",
                 },
             ],
@@ -723,22 +753,25 @@ export function createCalendarEditPopupHandler({
                 );
                 const defaultReminderOffsetsMinutes =
                     getSelectedReminderOffsets(overlay);
+                const normalizedCurrentReminderOffsets =
+                    normalizeReminderOffsets(defaultReminderOffsetsMinutes);
                 const hasCalendarChanges =
                     (name !== undefined && name !== calendar.name) ||
                     color !== calendarUi.normalizeHexColor(calendar.color) ||
                     visibility !== calendar.visibility ||
-                    JSON.stringify(defaultReminderOffsetsMinutes) !==
-                        JSON.stringify(
-                            normalizeReminderOffsets(
-                                calendar.defaultReminderOffsetsMinutes ?? [],
-                            ),
-                        );
+                    !areNumericListsEqual(
+                        normalizedCurrentReminderOffsets,
+                        normalizeReminderOffsets(
+                            calendar.defaultReminderOffsetsMinutes ?? [],
+                        ),
+                    );
                 if (!hasCalendarChanges) return true;
                 const updatePayload = {
                     ...(name !== undefined ? { name } : {}),
                     color,
                     visibility,
-                    defaultReminderOffsetsMinutes,
+                    defaultReminderOffsetsMinutes:
+                        normalizedCurrentReminderOffsets,
                 };
                 const res = await apiFetch(
                     `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,

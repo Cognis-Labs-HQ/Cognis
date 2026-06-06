@@ -10,34 +10,13 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
+import { buildCalendarExportHeaders } from "../../../gateways/calendar/reuse/export-headers.js";
 
 export function createCalendarAdapter(): CalendarAdapter {
     return {
         adapterId: "caldav",
         adapterName: "CalDAV",
     };
-}
-
-const buildCalendarExportHeaders = (calendarName: string, calendarId: string) => {
-    const sanitizedCalendarName = sanitizeHeaderValue(calendarName);
-    const normalizedFilename =
-        sanitizedCalendarName
-            .replace(/[^\p{L}\p{N}._-]+/gu, "_")
-            .replace(/^_+|_+$/g, "") || "calendar";
-    return {
-        "content-type": "text/calendar; charset=utf-8",
-        "x-cognis-calendar-name": sanitizedCalendarName,
-        "x-cognis-calendar-id": sanitizeHeaderValue(calendarId),
-        "content-disposition": `attachment; filename="${normalizedFilename}.ics"`,
-        "access-control-expose-headers":
-            "content-disposition,x-cognis-calendar-name,x-cognis-calendar-id",
-    };
-};
-
-function sanitizeHeaderValue(value: string): string {
-    return String(value ?? "")
-        .replace(/[\r\n]+/g, " ")
-        .trim();
 }
 
 function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
@@ -164,7 +143,13 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            respondCalendarPayload(req.method, res, ics, calendar.name, calendar.id);
+            respondCalendarPayload(
+                req.method,
+                res,
+                ics,
+                calendar.name,
+                calendar.id,
+            );
             return true;
         }
 
@@ -227,7 +212,13 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            respondCalendarPayload(req.method, res, ics, calendar.name, calendar.id);
+            respondCalendarPayload(
+                req.method,
+                res,
+                ics,
+                calendar.name,
+                calendar.id,
+            );
             return true;
         }
 
@@ -268,7 +259,13 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(tokenRecord.calendarId);
-            respondCalendarPayload(req.method, res, ics, calendar.name, calendar.id);
+            respondCalendarPayload(
+                req.method,
+                res,
+                ics,
+                calendar.name,
+                calendar.id,
+            );
             return true;
         }
 
