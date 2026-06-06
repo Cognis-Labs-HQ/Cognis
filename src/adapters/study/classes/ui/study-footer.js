@@ -8,7 +8,7 @@ import {
     setClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
 
-function renderFooter({
+function renderClassSelectorContent({
     i18n,
     classes,
     selectedClassId,
@@ -30,37 +30,27 @@ function renderFooter({
                 : "module.study.classes.no_enrolled_classes",
         ),
     );
-    const toggleLabel = escapeHtml(
-        i18n.t(
-            getClassroomViewMode() === "teacher"
-                ? "module.study.classes.enter_student_view"
-                : "module.study.classes.enter_teacher_view",
-        ),
-    );
     const toggleButton = canToggleClassroomView()
-        ? `
-            <button
-                type="button"
-                class="btn-confirm btn-animated classes-footer-toggle-btn"
-            >
-                ${toggleLabel}
-            </button>
-        `
+        ? `<button type="button" class="classes-footer-toggle-btn">${escapeHtml(
+              i18n.t(
+                  getClassroomViewMode() === "teacher"
+                      ? "module.study.classes.enter_student_view"
+                      : "module.study.classes.enter_teacher_view",
+              ),
+          )}</button>`
         : "";
     return `
-        <div class="classes-footer-bar">
-            <label class="classes-footer-label">
-                <span>${escapeHtml(i18n.t("module.study.classes.footer_selector_label"))}</span>
-                <select class="theme-select classes-footer-select">
-                    ${options || `<option value="">${emptyLabel}</option>`}${createOption}
-                </select>
-            </label>
-            ${toggleButton}
-        </div>
+        <label class="classes-footer-class-label">
+            ${escapeHtml(i18n.t("module.study.classes.classroom_select_class"))}:
+            <select class="classes-footer-select">
+                ${options || `<option value="">${emptyLabel}</option>`}${createOption}
+            </select>
+        </label>
+        ${toggleButton}
     `;
 }
 
-async function loadFooterClasses(languageCode = "") {
+export async function loadFooterClasses(languageCode = "") {
     applyClassroomViewModeFromUrl();
     const params = new URLSearchParams();
     params.set("mode", getClassroomViewMode());
@@ -77,71 +67,68 @@ async function loadFooterClasses(languageCode = "") {
     return Array.isArray(payload?.data) ? payload.data : [];
 }
 
-export async function mountStudyClassFooter({
-    root,
-    signal,
+export function createClassFooterItem({
     i18n,
-    languageCode = "",
-    selectedClassId = "",
+    signal,
+    getClasses,
+    getSelectedClassId,
     allowCreateOption = false,
     onSelectClass,
     onCreateClass,
 }) {
-    const classes = await loadFooterClasses(languageCode);
-    const container = document.createElement("div");
-    container.className = "classes-footer-slot";
-    container.innerHTML = renderFooter({
-        i18n,
-        classes,
-        selectedClassId,
-        allowCreateOption,
-    });
-    root.appendChild(container);
-
-    const selectElement = container.querySelector(".classes-footer-select");
-    const toggleButton = container.querySelector(".classes-footer-toggle-btn");
-    if (selectElement instanceof HTMLSelectElement) {
-        selectElement.addEventListener(
-            "change",
-            () => {
-                const nextValue = String(selectElement.value ?? "").trim();
-                if (nextValue === "__create__") {
-                    onCreateClass?.();
-                    return;
-                }
-                if (!nextValue) return;
-                if (typeof onSelectClass === "function") {
-                    onSelectClass(nextValue);
-                    return;
-                }
-                navigateTo(
-                    `/classroom?classId=${encodeURIComponent(nextValue)}`,
-                );
-            },
-            { signal },
-        );
-    }
-    if (toggleButton instanceof HTMLButtonElement) {
-        toggleButton.addEventListener(
-            "click",
-            () => {
-                const nextMode =
-                    getClassroomViewMode() === "teacher"
-                        ? "student"
-                        : "teacher";
-                setClassroomViewMode(nextMode);
-                navigateTo(
-                    `${window.location.pathname}?classroomView=${encodeURIComponent(nextMode)}`,
-                );
-            },
-            { signal },
-        );
-    }
-
     return {
-        classes,
-        destroy() {
-            container.remove();
+        id: "class-selector",
+        render: () =>
+            renderClassSelectorContent({
+                i18n,
+                classes: getClasses(),
+                selectedClassId: getSelectedClassId(),
+                allowCreateOption,
+            }),
+        onRender: (slot) => {
+            const selectElement = slot.querySelector(".classes-footer-select");
+            const toggleButton = slot.querySelector(
+                ".classes-footer-toggle-btn",
+            );
+            if (selectElement instanceof HTMLSelectElement) {
+                selectElement.addEventListener(
+                    "change",
+                    () => {
+                        const nextValue = String(
+                            selectElement.value ?? "",
+                        ).trim();
+                        if (nextValue === "__create__") {
+                            onCreateClass?.();
+                            return;
+                        }
+                        if (!nextValue) return;
+                        if (typeof onSelectClass === "function") {
+                            onSelectClass(nextValue);
+                            return;
+                        }
+                        navigateTo(
+                            `/classroom?classId=${encodeURIComponent(nextValue)}`,
+                        );
+                    },
+                    { signal },
+                );
+            }
+            if (toggleButton instanceof HTMLButtonElement) {
+                toggleButton.addEventListener(
+                    "click",
+                    () => {
+                        const nextMode =
+                            getClassroomViewMode() === "teacher"
+                                ? "student"
+                                : "teacher";
+                        setClassroomViewMode(nextMode);
+                        navigateTo(
+                            `${window.location.pathname}?classroomView=${encodeURIComponent(nextMode)}`,
+                        );
+                    },
+                    { signal },
+                );
+            }
         },
     };
 }

@@ -7,7 +7,10 @@ import { openPopup } from "/static/reuse/popup.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { mountStudyClassFooter } from "/static/adapters/study/classes/study-footer.js";
+import {
+    loadFooterClasses,
+    createClassFooterItem,
+} from "/static/adapters/study/classes/study-footer.js";
 import {
     applyClassroomViewModeFromUrl,
     canToggleClassroomView,
@@ -37,6 +40,7 @@ export async function mount(root, { signal } = {}) {
 
     let classroomSnapshots = [];
     let availableClasses = [];
+    let footerClasses = [];
     let selectedClassId = String(query.get("classId") ?? "").trim();
     let selectedSeatNumber = null;
     let selectedNotebookText = "";
@@ -45,7 +49,6 @@ export async function mount(root, { signal } = {}) {
     let selectedLanguageFilter = "";
     let searchQuery = "";
     let requireTeacherManualApproval = true;
-    let footerController = null;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -512,27 +515,28 @@ export async function mount(root, { signal } = {}) {
 
     async function refreshContent() {
         await refreshData();
+        footerClasses = await loadFooterClasses();
         refreshDom();
-        if (footerController?.destroy) {
-            footerController.destroy();
-        }
-        footerController = await mountStudyClassFooter({
-            root,
-            signal,
-            i18n,
-            selectedClassId,
-            allowCreateOption: isTeacherView(),
-            onSelectClass: async (classId) => {
-                selectedClassId = classId;
-                selectedSeatNumber = null;
-                await loadSelectedClassMeta();
-                refreshDom();
-            },
-            onCreateClass: createClass,
-        });
+        composer.refreshFooter();
     }
 
+    footerClasses = await loadFooterClasses();
     await refreshData();
+
+    const footerItem = createClassFooterItem({
+        i18n,
+        signal,
+        getClasses: () => footerClasses,
+        getSelectedClassId: () => selectedClassId,
+        allowCreateOption: isTeacherView(),
+        onSelectClass: async (classId) => {
+            selectedClassId = classId;
+            selectedSeatNumber = null;
+            await loadSelectedClassMeta();
+            refreshDom();
+        },
+        onCreateClass: createClass,
+    });
 
     const composer = createPageComposer(root, {
         allowCustomization: false,
@@ -854,22 +858,9 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("module.study.classes.classroom_page_title"),
             subtitle: i18n.t("module.study.classes.classroom_page_subtitle"),
         },
+        footer: [footerItem],
     });
     await composer.init();
-    footerController = await mountStudyClassFooter({
-        root,
-        signal,
-        i18n,
-        selectedClassId,
-        allowCreateOption: isTeacherView(),
-        onSelectClass: async (classId) => {
-            selectedClassId = classId;
-            selectedSeatNumber = null;
-            await loadSelectedClassMeta();
-            refreshDom();
-        },
-        onCreateClass: createClass,
-    });
 }
 
 await mountWhenDirect(mount);

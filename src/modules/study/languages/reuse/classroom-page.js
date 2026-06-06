@@ -27,7 +27,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { showToast } from "/static/reuse/toast.js";
 import { isTeacherScope } from "/static/reuse/access-role.js";
-import { mountStudyClassFooter } from "/static/adapters/study/classes/study-footer.js";
+import {
+    loadFooterClasses,
+    createClassFooterItem,
+} from "/static/adapters/study/classes/study-footer.js";
 import {
     applyClassroomViewModeFromUrl,
     getClassroomViewMode,
@@ -76,6 +79,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     });
 
     let classroomSnapshots = [];
+    let footerClasses = [];
     let selectedClassId = "";
     let selectedSeatNumber = null;
 
@@ -315,43 +319,21 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () => `
                     <section class="study-classroom-page">
-                        <div class="study-classroom-topbar">
-                            <label>
-                                ${escapeHtml(i18n.t("gateway.study.classroom_select_class"))}
-                                <select id="study-classroom-class-select">${renderClassOptions()}</select>
-                            </label>
-                        </div>
                         <div id="study-classroom-content">${renderClassroom()}</div>
                     </section>
                 `,
                 onRender: () => {
                     if (root.dataset.classroomBound === "true") return;
                     root.dataset.classroomBound = "true";
-                    const classSelectElement = root.querySelector(
-                        "#study-classroom-class-select",
-                    );
                     const classroomContentElement = root.querySelector(
                         "#study-classroom-content",
                     );
-                    if (!(classSelectElement instanceof HTMLElement)) return;
                     if (!(classroomContentElement instanceof HTMLElement))
                         return;
 
                     function refreshClassroomContent() {
                         classroomContentElement.innerHTML = renderClassroom();
                     }
-
-                    classSelectElement.addEventListener(
-                        "change",
-                        () => {
-                            selectedClassId = String(
-                                classSelectElement.value ?? "",
-                            );
-                            selectedSeatNumber = null;
-                            refreshClassroomContent();
-                        },
-                        { signal },
-                    );
 
                     classroomContentElement.addEventListener(
                         "click",
@@ -661,24 +643,28 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 render: renderSubNavigation,
             },
         ],
+        footer: [
+            createClassFooterItem({
+                i18n,
+                signal,
+                getClasses: () => footerClasses,
+                getSelectedClassId: () => selectedClassId,
+                onSelectClass: async (classId) => {
+                    selectedClassId = classId;
+                    selectedSeatNumber = null;
+                    await loadClassrooms();
+                    const content = root.querySelector(
+                        "#study-classroom-content",
+                    );
+                    if (content instanceof HTMLElement) {
+                        content.innerHTML = renderClassroom();
+                    }
+                },
+            }),
+        ],
     });
 
     await loadClassrooms();
+    footerClasses = await loadFooterClasses(languageCode);
     await pageComposer.init();
-    await mountStudyClassFooter({
-        root,
-        signal,
-        i18n,
-        languageCode,
-        selectedClassId,
-        onSelectClass: async (classId) => {
-            selectedClassId = classId;
-            selectedSeatNumber = null;
-            await loadClassrooms();
-            const content = root.querySelector("#study-classroom-content");
-            if (content instanceof HTMLElement) {
-                content.innerHTML = renderClassroom();
-            }
-        },
-    });
 }

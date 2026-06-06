@@ -24,6 +24,7 @@
  *   toolbarScrollable?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
+ *   footer?: Array<{ id: string, render: () => string, onRender?: () => void }>,
  *   subPageNavigation?: boolean,
  *   columns?: number,
  *   showTopbar?: boolean,
@@ -34,7 +35,7 @@
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshFooter(): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
@@ -67,6 +68,7 @@ export function createPageComposer(
         toolbarScrollable = false,
         subNavigation = [],
         floatingMenu = [],
+        footer = [],
         subPageNavigation = false,
         columns = 1,
         showTopbar = true,
@@ -604,6 +606,28 @@ export function createPageComposer(
         return true;
     }
 
+    function injectFooterElements() {
+        if (!Array.isArray(footer) || !footer.length) return;
+        const footerInner = root.querySelector(".global-footer-inner");
+        if (!footerInner) return;
+        for (const item of footer) {
+            let slot = footerInner.querySelector(
+                `[data-footer-slot="${CSS.escape(item.id)}"]`,
+            );
+            if (!slot) {
+                slot = document.createElement("div");
+                slot.dataset.footerSlot = item.id;
+                footerInner.appendChild(slot);
+            }
+            slot.innerHTML = item.render();
+            item.onRender?.(slot);
+        }
+    }
+
+    function refreshFooter() {
+        injectFooterElements();
+    }
+
     async function init() {
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
@@ -675,6 +699,7 @@ export function createPageComposer(
             }
         }
 
+        injectFooterElements();
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
@@ -942,5 +967,5 @@ export function createPageComposer(
         restoreWindowScrollPosition(previousScrollLeft, previousScrollTop);
     }
 
-    return { init, refresh, getFloatingSlot, showToast };
+    return { init, refresh, refreshFooter, getFloatingSlot, showToast };
 }
