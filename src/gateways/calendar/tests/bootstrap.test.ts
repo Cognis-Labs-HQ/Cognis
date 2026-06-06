@@ -578,6 +578,19 @@ test("calendar shared write access appears in recipient list and supports event 
     const defaultAliceCalendarId = aliceCalendars.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
     ).id;
+    const ownerEventResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
+        {
+            title: "Owner shared event",
+            startAt: "2026-06-14T09:00:00.000Z",
+            endAt: "2026-06-14T09:30:00.000Z",
+        },
+    );
+    assert.equal(ownerEventResponse.statusCode, 201);
+    const ownerEventId = String(ownerEventResponse.body.data.id ?? "");
+    assert.ok(ownerEventId);
 
     const shareUserResponse = await dispatchJson(
         "POST",
@@ -604,6 +617,14 @@ test("calendar shared write access appears in recipient list and supports event 
     );
     assert.equal(elevateShareResponse.statusCode, 200);
     assert.equal(elevateShareResponse.body.data.permission, "write");
+    const elevateByAccountResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent("bob")}`,
+        { permission: "write" },
+    );
+    assert.equal(elevateByAccountResponse.statusCode, 200);
+    assert.equal(elevateByAccountResponse.body.data.permission, "write");
 
     const bobCalendars = await dispatchJson(
         "GET",
@@ -615,6 +636,24 @@ test("calendar shared write access appears in recipient list and supports event 
     );
     assert.ok(sharedCalendar);
     assert.equal(sharedCalendar.visibility, "shared");
+    const sharedEvents = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events`,
+    );
+    assert.equal(sharedEvents.statusCode, 200);
+    const ownerSharedEvent = sharedEvents.body.data.events.find(
+        (event: { id?: string }) => String(event.id ?? "") === ownerEventId,
+    );
+    assert.ok(ownerSharedEvent);
+    assert.equal(ownerSharedEvent.calendarId, sharedCalendarId);
+    const ownerSharedEventDetail = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerSharedEvent.calendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+    );
+    assert.equal(ownerSharedEventDetail.statusCode, 200);
+    assert.equal(ownerSharedEventDetail.body.data.event.id, ownerEventId);
 
     const createViaShared = await dispatchJson(
         "POST",

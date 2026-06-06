@@ -492,10 +492,16 @@ export function createCalendarCoreRoutes({
             }
             const sourceCalendarId =
                 activeSharedCalendar?.ownerCalendarId ?? calendarId;
+            const events = gateway.listEvents(sourceCalendarId);
             sendJson(res, 200, {
                 data: {
                     calendar: gateway.getCalendar(calendarId),
-                    events: gateway.listEvents(sourceCalendarId),
+                    events: activeSharedCalendar
+                        ? events.map((event) => ({
+                              ...event,
+                              calendarId,
+                          }))
+                        : events,
                 },
             });
             return true;

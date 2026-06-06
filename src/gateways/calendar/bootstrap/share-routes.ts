@@ -186,7 +186,17 @@ export async function handleCalendarShareRoutes(input: {
         return true;
     }
     if (shareUsersUpdateMatch && input.req.method === "PATCH") {
-        const shareId = decodeURIComponent(shareUsersUpdateMatch[2]);
+        const shareSelector = decodeURIComponent(shareUsersUpdateMatch[2]);
+        const shares = await input.shareRegistry.listCalendarUserShares(
+            input.claims.sub,
+            ownerCalendarId,
+        );
+        const shareId =
+            shares.find(
+                (share) =>
+                    share.id === shareSelector ||
+                    share.recipientAccountId === shareSelector,
+            )?.id ?? shareSelector;
         const body = (await readJson(input.req)) as Record<string, unknown>;
         const updatedShare = await input.shareRegistry.updateCalendarUserShare({
             ownerAccountId: input.claims.sub,
