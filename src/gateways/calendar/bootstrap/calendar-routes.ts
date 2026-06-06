@@ -22,8 +22,10 @@ import {
     requireOrganizerOwnedSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
+    resolveJitsiAvailability,
     sendCalendarError,
     sendJson,
+    validateSharedCalendars,
     type CalendarLogger,
     type NotificationDispatcher,
     type ResolveAccountId,
@@ -190,28 +192,19 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             gateway.ensureDefaultCalendar(claims.sub);
-            let jitsiAvailable = false;
-            if (resolveMeetingsProviderAvailability) {
-                try {
-                    jitsiAvailable = Boolean(
-                        await resolveMeetingsProviderAvailability("jitsi-meet"),
-                    );
-                } catch (error) {
-                    log?.(
-                        "warn",
-                        "Failed to resolve meetings provider availability; defaulting to unavailable.",
-                        {
-                            component: "calendar-gateway",
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                }
-            }
+            const jitsiAvailable = await resolveJitsiAvailability(
+                resolveMeetingsProviderAvailability,
+                log,
+            );
+            const validatedCalendars = await validateSharedCalendars(
+                gateway.listCalendars(claims.sub),
+                claims.sub,
+                shareRegistry,
+                gateway,
+                log,
+            );
             sendJson(res, 200, {
-                data: gateway.listCalendars(claims.sub),
+                data: validatedCalendars,
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
                     currentAccountId: claims.sub,

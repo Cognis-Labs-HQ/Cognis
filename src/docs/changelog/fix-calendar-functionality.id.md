@@ -25,3 +25,18 @@ Setiap entri pengguna berbagi sekarang menaruh kartu profil, pilihan izin, dan
 pilihan kedaluwarsa pada baris yang sama dengan tombol tutup ringkas di pojok
 kanan atas. Perubahan izin kini hanya mengirim field yang benar-benar berubah,
 sehingga error bad request saat berpindah antara baca-saja dan baca/tulis hilang.
+
+## Kalender berbagi kedaluwarsa langsung dibersihkan
+
+Ketika bagikan kalender dihapus atau kedaluwarsa, kalender yang dibagikan langsung
+hilang dari daftar kalender penerima saat mereka menyegarkan halaman. Handshake
+dijalankan setiap kali penerima memuat kalender mereka dan menghapus entri yang
+catatan berbaginya sudah tidak ada.
+
+## Perubahan izin tetap tersimpan saat berbagi ulang
+
+Menambahkan kembali pengguna yang sebelumnya dibagikan tidak lagi mengatur ulang
+izin yang ditingkatkan ke baca-saja. Izin yang ada tetap dipertahankan sehingga
+pemilik dapat mengundang ulang pengguna dengan aman tanpa kehilangan hak tulis
+yang telah diberikan sebelumnya.
+

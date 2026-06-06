@@ -3,9 +3,14 @@ import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
 import type {
     CalendarEventRecord,
     CalendarEventResponse,
+    CalendarRecord,
     CalendarVisibility,
+    CoreCalendarGateway,
 } from "../gateway/index.js";
-import type { CalendarShareLinkRegistryRecord } from "./share-registry.js";
+import type {
+    CalendarShareLinkRegistryRecord,
+    CalendarShareRegistry,
+} from "./share-registry.js";
 
 const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 
@@ -627,4 +632,84 @@ export function resolveEventMeta(
 
 export function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "calendar_error";
+}
+
+export async function resolveJitsiAvailability(
+    resolver: ((providerId: string) => Promise<boolean> | boolean) | null,
+    log?: CalendarLogger,
+): Promise<boolean> {
+    if (!resolver) return false;
+    try {
+        return Boolean(await resolver("jitsi-meet"));
+    } catch (error) {
+        log?.(
+            "warn",
+            "Failed to resolve meetings provider availability; defaulting to unavailable.",
+            {
+                component: "calendar-gateway",
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
+        return false;
+    }
+}
+
+export async function validateSharedCalendars(
+    calendars: CalendarRecord[],
+    recipientAccountId: string,
+    shareRegistry: CalendarShareRegistry,
+    gateway: CoreCalendarGateway,
+    log?: CalendarLogger,
+): Promise<CalendarRecord[]> {
+    const validated: CalendarRecord[] = [];
+    let pendingFlush = false;
+    for (const calendar of calendars) {
+        if (calendar.visibility !== "shared") {
+            validated.push(calendar);
+            continue;
+        }
+        const shareRecord = await shareRegistry.getByRecipientCalendarId(
+            calendar.id,
+        );
+        if (
+            !shareRecord ||
+            shareRecord.recipientAccountId !== recipientAccountId
+        ) {
+            try {
+                gateway.deleteCalendar({
+                    ownerAccountId: recipientAccountId,
+                    calendarId: calendar.id,
+                });
+                pendingFlush = true;
+                log?.(
+                    "info",
+                    "Removed stale shared calendar during handshake.",
+                    {
+                        component: "calendar-gateway",
+                        accountId: recipientAccountId,
+                        calendarId: calendar.id,
+                    },
+                );
+            } catch (cleanupError) {
+                log?.("warn", "Failed to remove stale shared calendar.", {
+                    component: "calendar-gateway",
+                    accountId: recipientAccountId,
+                    calendarId: calendar.id,
+                    error:
+                        cleanupError instanceof Error
+                            ? cleanupError.message
+                            : String(cleanupError),
+                });
+            }
+            continue;
+        }
+        validated.push({
+            ...calendar,
+            sharedPermission: shareRecord.permission,
+        });
+    }
+    if (pendingFlush) {
+        await gateway.flushStore();
+    }
+    return validated;
 }

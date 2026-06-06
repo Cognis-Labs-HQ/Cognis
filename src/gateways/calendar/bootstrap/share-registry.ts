@@ -338,7 +338,7 @@ export class CalendarShareRegistry {
             recipientHandle: input.recipientHandle ?? null,
             recipientDisplayName: input.recipientDisplayName ?? null,
             recipientAvatarKey: input.recipientAvatarKey ?? null,
-            permission: input.permission,
+            permission: existing?.permission ?? input.permission,
             expiresAt:
                 existing?.expiresAt ?? String(input.expiresAt ?? "").trim(),
             createdAt: existing?.createdAt ?? now,

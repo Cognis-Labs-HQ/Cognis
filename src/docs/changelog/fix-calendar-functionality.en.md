@@ -26,3 +26,16 @@ picker on the same row with a compact close button pinned to the top-right
 corner. Permission changes now patch only the field that changed, which avoids
 the bad request response that appeared while flipping access between read-only
 and read/write.
+
+## Stale shared calendars clean up immediately
+
+When a calendar share is deleted or expires, the shared calendar now disappears
+from the recipient's calendar list on their very next refresh. A handshake runs
+each time the recipient loads their calendars and removes any entry whose
+backing share record is gone.
+
+## Permission changes no longer reset on re-share
+
+Re-adding a previously shared user no longer resets an upgraded permission back
+to read-only. The existing permission is preserved, so an owner can safely
+re-invite a user without losing a write grant they set earlier.

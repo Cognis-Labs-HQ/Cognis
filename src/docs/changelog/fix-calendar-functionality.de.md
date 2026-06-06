@@ -26,3 +26,18 @@ Ablaufwahl jetzt in einer Zeile und zeigt oben rechts eine kompakte Schließen-
 Schaltfläche. Berechtigungsänderungen senden nur noch das tatsächlich geänderte
 Feld, wodurch der Bad-Request-Fehler beim Umschalten zwischen Nur-Lesen und
 Lesen/Schreiben verschwindet.
+
+## Veraltete Freigabekalender werden sofort bereinigt
+
+Wird eine Kalenderfreigabe gelöscht oder abläuft, verschwindet der freigegebene
+Kalender beim nächsten Aktualisieren aus der Liste des Empfängers. Bei jedem
+Laden führt ein Handshake einen Abgleich durch und entfernt Einträge, deren
+Freigabedatensatz nicht mehr existiert.
+
+## Berechtigungsänderungen bleiben bei erneuter Freigabe erhalten
+
+Wird ein bereits freigegebener Nutzer erneut hinzugefügt, wird eine erhöhte
+Berechtigung nicht mehr auf Nur-Lesen zurückgesetzt. Die vorhandene Berechtigung
+bleibt bestehen, sodass ein Besitzer einen Nutzer gefahrlos erneut einladen kann,
+ohne eine zuvor vergebene Schreibberechtigung zu verlieren.
+
