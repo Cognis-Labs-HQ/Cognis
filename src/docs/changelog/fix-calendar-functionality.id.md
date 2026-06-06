@@ -18,3 +18,10 @@ menerimanya untuk akses CalDAV maupun ICS tanpa token bearer Cognis.
 Tautan yang dibuat kini kembali mengikuti masa berlaku yang dipilih dan berhenti
 aktif setelah batas waktunya lewat. Kalender publik juga sekarang membuat URL
 tautan bagikan tersendiri sehingga setiap entri dapat kedaluwarsa secara mandiri.
+
+## Kartu pengguna berbagi mengikuti kontrol baru
+
+Setiap entri pengguna berbagi sekarang menaruh kartu profil, pilihan izin, dan
+pilihan kedaluwarsa pada baris yang sama dengan tombol tutup ringkas di pojok
+kanan atas. Perubahan izin kini hanya mengirim field yang benar-benar berubah,
+sehingga error bad request saat berpindah antara baca-saja dan baca/tulis hilang.

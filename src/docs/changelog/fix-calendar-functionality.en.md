@@ -18,3 +18,11 @@ accept it for CalDAV and ICS access without requiring a Cognis bearer token.
 Generated links once again honour the selected expiry period and stop resolving
 after that deadline passes. Public calendars now also issue distinct share-link
 URLs, so every generated entry can expire independently.
+
+## Shared-user cards fit the new controls
+
+Each shared-user entry now keeps the profile card, permission picker, and expiry
+picker on the same row with a compact close button pinned to the top-right
+corner. Permission changes now patch only the field that changed, which avoids
+the bad request response that appeared while flipping access between read-only
+and read/write.

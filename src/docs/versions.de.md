@@ -36,7 +36,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
 | Registrierung             | `src/gateways/registration/` | `1.1.2` |
 | Logging                   | `src/gateways/logging/`      | `1.4.0` |
-| Kalender                  | `src/gateways/calendar/`     | `1.1.4` |
+| Kalender                  | `src/gateways/calendar/`     | `1.1.7` |
 
 ## Core
 

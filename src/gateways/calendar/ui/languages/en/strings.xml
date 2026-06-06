@@ -136,6 +136,7 @@
   <string name="gateway.calendar.share_link_passphrase_copied">Passphrase copied!</string>
   <string name="gateway.calendar.share_link_deleted">Share link deleted.</string>
   <string name="gateway.calendar.share_user_deleted">Shared user removed.</string>
+  <string name="gateway.calendar.share_user_updated">Shared user updated.</string>
   <string name="gateway.calendar.share_link_delete_confirm_title">Delete share link?</string>
   <string name="gateway.calendar.share_link_delete_confirm">This link will stop working immediately.</string>
   <string name="gateway.calendar.share_user_delete_confirm_title">Remove shared user?</string>

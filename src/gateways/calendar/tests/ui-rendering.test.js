@@ -62,6 +62,10 @@ const TIMED_GRID_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.css"),
     "utf8",
 );
+const SHARE_REMINDER_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-share-reminder.css"),
+    "utf8",
+);
 
 test("calendar timed views render positioned event cards instead of row spans", () => {
     assert.match(TIMED_GRID_SOURCE, /buildTimedEventLayout/);
@@ -280,6 +284,22 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /class="calendar-user-share-entry-remove btn-no-animation btn-cancel" data-calendar-user-share-delete=/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /if \(target === permissionSelect\) \{[\s\S]*update\.permission = permission;/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /if \(target === expirySelect\) \{[\s\S]*update\.expiresInHours = expiresInHours;/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /showToast\(i18n\.t\("gateway\.calendar\.share_user_updated"\), "success"\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /class="btn-no-animation calendar-share-copy-btn" data-calendar-share-copy/,
     );
     assert.match(
@@ -293,6 +313,14 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /href="#" class="btn-no-animation btn-cancel" data-calendar-share-delete=/,
+    );
+    assert.match(
+        SHARE_REMINDER_CSS_SOURCE,
+        /\.calendar-user-share-entry\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\);/s,
+    );
+    assert.match(
+        SHARE_REMINDER_CSS_SOURCE,
+        /\.calendar-user-share-entry-remove\s*\{[\s\S]*position:\s*absolute;/s,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,

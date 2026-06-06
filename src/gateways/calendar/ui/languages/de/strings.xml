@@ -136,6 +136,7 @@
   <string name="gateway.calendar.share_link_passphrase_copied">Passphrase kopiert!</string>
   <string name="gateway.calendar.share_link_deleted">Freigabelink gelöscht.</string>
   <string name="gateway.calendar.share_user_deleted">Freigegebener Benutzer entfernt.</string>
+  <string name="gateway.calendar.share_user_updated">Freigegebener Benutzer aktualisiert.</string>
   <string name="gateway.calendar.share_link_delete_confirm_title">Freigabelink löschen?</string>
   <string name="gateway.calendar.share_link_delete_confirm">Dieser Link funktioniert sofort nicht mehr.</string>
   <string name="gateway.calendar.share_user_delete_confirm_title">Freigegebenen Benutzer entfernen?</string>

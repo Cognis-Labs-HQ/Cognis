@@ -113,27 +113,69 @@
 .calendar-user-share-entry {
     border: 1px solid var(--field-border);
     border-radius: 10px;
-    padding: 0.45rem 0.55rem;
+    padding: 0.6rem 2.2rem 0.6rem 0.65rem;
     display: grid;
-    gap: 0.45rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.65rem;
+    position: relative;
 }
 
 .calendar-user-share-entry-profile .calendar-participant-card {
+    flex-direction: row;
+    align-items: center;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card-profile {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card-meta {
     align-items: flex-start;
 }
 
+.calendar-user-share-entry-profile .calendar-participant-card-name,
+.calendar-user-share-entry-profile .calendar-participant-card-handle {
+    max-width: none;
+    text-align: left;
+}
+
 .calendar-user-share-entry-controls {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
     gap: 0.35rem;
-    align-items: end;
+    align-items: start;
+    min-width: 0;
 }
 
 .calendar-user-share-entry-controls label {
     display: grid;
     gap: 0.2rem;
     font-size: 0.72rem;
-    flex: 1 1 9rem;
+    min-width: 0;
+}
+
+.calendar-user-share-entry-controls select {
+    width: 100%;
+}
+
+.calendar-user-share-entry-remove {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 1.5rem;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    padding: 0;
+    border: 0;
+    line-height: 1;
+}
+
+@media (max-width: 640px) {
+    .calendar-user-share-entry {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .calendar-share-copy-btn {

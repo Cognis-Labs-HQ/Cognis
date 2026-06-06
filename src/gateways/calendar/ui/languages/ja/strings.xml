@@ -136,6 +136,7 @@
   <string name="gateway.calendar.share_link_passphrase_copied">パスフレーズをコピーしました！</string>
   <string name="gateway.calendar.share_link_deleted">共有リンクを削除しました。</string>
   <string name="gateway.calendar.share_user_deleted">共有ユーザーを削除しました。</string>
+  <string name="gateway.calendar.share_user_updated">共有ユーザーを更新しました。</string>
   <string name="gateway.calendar.share_link_delete_confirm_title">共有リンクを削除しますか？</string>
   <string name="gateway.calendar.share_link_delete_confirm">このリンクはすぐに使えなくなります。</string>
   <string name="gateway.calendar.share_user_delete_confirm_title">共有ユーザーを削除しますか？</string>

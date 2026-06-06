@@ -226,6 +226,7 @@ function bindCalendarShareControls({
                 );
                 const expiryValue = resolveExpiryValueFromIso(entry.expiresAt);
                 return `<div class="calendar-user-share-entry" data-calendar-user-share-id="${escapeHtml(String(entry.shareId ?? ""))}">
+                  <button type="button" class="calendar-user-share-entry-remove btn-no-animation btn-cancel" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}" aria-label="${escapeHtml(i18n.t("ui.reuse.remove"))}">×</button>
                   <div class="calendar-user-share-entry-profile">${identityCard}</div>
                   <div class="calendar-user-share-entry-controls">
                     <label><span>${escapeHtml(i18n.t("gateway.calendar.share_link_permission"))}</span>
@@ -240,7 +241,6 @@ function bindCalendarShareControls({
                               `<option value="${escapeHtml(option.value)}"${option.value === expiryValue ? " selected" : ""}>${escapeHtml(i18n.t(option.labelKey))}</option>`,
                       ).join("")}</select>
                     </label>
-                    <a href="#" class="btn-no-animation btn-cancel" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}" aria-label="${escapeHtml(i18n.t("ui.reuse.remove"))}">🗑</a>
                   </div>
                 </div>`;
             })
@@ -359,12 +359,20 @@ function bindCalendarShareControls({
     };
 
     const updateUserShare = async (shareId, { permission, expiresInHours }) => {
+        const body = {};
+        if (permission !== undefined) {
+            body.permission = permission;
+        }
+        if (expiresInHours !== undefined) {
+            body.expiresInHours = expiresInHours;
+        }
+        if (Object.keys(body).length === 0) return;
         const response = await apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share/users/${encodeURIComponent(shareId)}`,
             {
                 method: "PATCH",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ permission, expiresInHours }),
+                body: JSON.stringify(body),
             },
         );
         if (!response.ok) {
@@ -372,7 +380,7 @@ function bindCalendarShareControls({
             return;
         }
         await loadExistingShares();
-        showToast(i18n.t("gateway.calendar.share_user_deleted"), "success");
+        showToast(i18n.t("gateway.calendar.share_user_updated"), "success");
     };
     /**
      * Ask the user to confirm deleting either a share link or shared user.
@@ -541,7 +549,14 @@ function bindCalendarShareControls({
                 expirySelect.value !== "never"
                     ? Number.parseFloat(expirySelect.value)
                     : null;
-            void updateUserShare(shareId, { permission, expiresInHours });
+            const update = {};
+            if (target === permissionSelect) {
+                update.permission = permission;
+            }
+            if (target === expirySelect) {
+                update.expiresInHours = expiresInHours;
+            }
+            void updateUserShare(shareId, update);
         });
         userChips.addEventListener("click", (event) => {
             const button = event.target.closest(

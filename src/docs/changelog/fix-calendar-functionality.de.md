@@ -18,3 +18,11 @@ akzeptieren sie für CalDAV- und ICS-Zugriffe ohne Cognis-Bearer-Token.
 Erzeugte Links beachten wieder die gewählte Ablaufzeit und werden nach diesem
 Zeitpunkt deaktiviert. Auch öffentliche Kalender erzeugen nun eigene
 Freigabe-URLs, sodass jeder erzeugte Eintrag unabhängig ablaufen kann.
+
+## Freigegebene Nutzerkarten passen zu den neuen Bedienelementen
+
+Jeder Eintrag für freigegebene Nutzer hält Profilkarte, Berechtigungswahl und
+Ablaufwahl jetzt in einer Zeile und zeigt oben rechts eine kompakte Schließen-
+Schaltfläche. Berechtigungsänderungen senden nur noch das tatsächlich geänderte
+Feld, wodurch der Bad-Request-Fehler beim Umschalten zwischen Nur-Lesen und
+Lesen/Schreiben verschwindet.
