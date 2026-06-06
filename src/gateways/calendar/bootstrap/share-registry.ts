@@ -1,5 +1,14 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor, RawDbExecutor } from "../db/reuse/db-executor.js";
+import type { DbExecutor, RawDbExecutor } from "../../db/reuse/db-executor.js";
+
+function isRawDbExecutor(
+    dbExecutor: DbExecutor | null,
+): dbExecutor is RawDbExecutor {
+    return (
+        dbExecutor !== null &&
+        typeof (dbExecutor as Partial<RawDbExecutor>).execute === "function"
+    );
+}
 
 export type CalendarShareLinkRegistryRecord = {
     id: string;
@@ -64,12 +73,11 @@ export class CalendarShareRegistry {
     ) {}
 
     private async ensureCalendarUserShareColumns(): Promise<void> {
-        const rawDb = this.db as Partial<RawDbExecutor> | null;
-        if (!rawDb || typeof rawDb.execute !== "function") return;
-        await rawDb.execute(
+        if (!isRawDbExecutor(this.db)) return;
+        await this.db.execute(
             "ALTER TABLE calendar_user_shares ADD COLUMN IF NOT EXISTS permission TEXT NOT NULL DEFAULT 'read'",
         );
-        await rawDb.execute(
+        await this.db.execute(
             "ALTER TABLE calendar_user_shares ADD COLUMN IF NOT EXISTS expires_at TEXT NOT NULL DEFAULT ''",
         );
     }
