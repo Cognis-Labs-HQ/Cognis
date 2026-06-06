@@ -589,6 +589,8 @@
   <string name="module.study.classes.approve">承認</string>
   <string name="module.study.classes.reject">却下</string>
   <string name="module.study.classes.review_saved">教師申請を確認しました。</string>
+  <string name="module.study.classes.review_approved_toast">リクエストを承認しました</string>
+  <string name="module.study.classes.review_declined_toast">リクエストを却下しました</string>
   <string name="module.study.classes.review_failed">教師申請の確認に失敗しました。</string>
   <string name="module.study.classes.teacher_application_title">教師申請</string>
   <string name="module.study.classes.teacher_application_reason">この言語の教室を作成する承認を得るべき理由を管理者に伝えてください。</string>

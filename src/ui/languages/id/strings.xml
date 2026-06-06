@@ -589,6 +589,8 @@
   <string name="module.study.classes.approve">Setujui</string>
   <string name="module.study.classes.reject">Tolak</string>
   <string name="module.study.classes.review_saved">Permintaan pengajar telah ditinjau.</string>
+  <string name="module.study.classes.review_approved_toast">Permintaan Disetujui</string>
+  <string name="module.study.classes.review_declined_toast">Permintaan Ditolak</string>
   <string name="module.study.classes.review_failed">Gagal meninjau permintaan pengajar.</string>
   <string name="module.study.classes.teacher_application_title">Aplikasi Pengajar</string>
   <string name="module.study.classes.teacher_application_reason">Beri tahu admin mengapa Anda harus disetujui untuk membuat kelas untuk bahasa ini.</string>

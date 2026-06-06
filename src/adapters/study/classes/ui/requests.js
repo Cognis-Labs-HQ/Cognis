@@ -87,8 +87,12 @@ export async function mount(root, { signal } = {}) {
                     showToast(
                         response.ok
                             ? reviewAction === "approve"
-                                ? "Request Approved"
-                                : "Request Declined"
+                                ? i18n.t(
+                                      "module.study.classes.review_approved_toast",
+                                  )
+                                : i18n.t(
+                                      "module.study.classes.review_declined_toast",
+                                  )
                             : i18n.t("module.study.classes.review_failed"),
                         { variant: response.ok ? "success" : "error" },
                     );

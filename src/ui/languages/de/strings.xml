@@ -589,6 +589,8 @@
   <string name="module.study.classes.approve">Genehmigen</string>
   <string name="module.study.classes.reject">Ablehnen</string>
   <string name="module.study.classes.review_saved">Lehrerantrag wurde geprüft.</string>
+  <string name="module.study.classes.review_approved_toast">Anfrage genehmigt</string>
+  <string name="module.study.classes.review_declined_toast">Anfrage abgelehnt</string>
   <string name="module.study.classes.review_failed">Lehrerantrag konnte nicht geprüft werden.</string>
   <string name="module.study.classes.teacher_application_title">Lehrerantrag</string>
   <string name="module.study.classes.teacher_application_reason">Erklären Sie den Administratoren, warum Sie für diese Sprache einen Klassenraum erstellen dürfen sollten.</string>

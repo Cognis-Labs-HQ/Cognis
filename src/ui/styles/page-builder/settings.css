@@ -18,10 +18,6 @@
     cursor: text;
 }
 
-.theme-select[type="number"] {
-    cursor: text;
-}
-
 .theme-select:hover {
     background: var(--control-hover-bg);
     border-color: var(--border-strong);

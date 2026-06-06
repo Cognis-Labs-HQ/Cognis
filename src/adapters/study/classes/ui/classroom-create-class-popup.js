@@ -147,7 +147,9 @@ export async function openCreateClassPopup({
                 return false;
             }
             const fieldValues = createClassFormController.getValues();
-            selectedLanguageCode = String(fieldValues.languageCode ?? "").trim();
+            selectedLanguageCode = String(
+                fieldValues.languageCode ?? "",
+            ).trim();
             joinMode = String(fieldValues.joinMode ?? "on_request").trim();
             className = String(fieldValues.className ?? "").trim();
             const parsedStudentLimit = Number(fieldValues.studentLimit ?? "");
@@ -165,7 +167,9 @@ export async function openCreateClassPopup({
             return true;
         },
         onOpen: (overlay) => {
-            const popupForm = overlay.querySelector("#classes-create-class-form");
+            const popupForm = overlay.querySelector(
+                "#classes-create-class-form",
+            );
             createClassFormController =
                 popupForm instanceof HTMLFormElement
                     ? createClassFormBuilder.attach(popupForm)

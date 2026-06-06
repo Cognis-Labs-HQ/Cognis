@@ -306,7 +306,9 @@ export async function mount(root, { signal } = {}) {
         `,
             )
             .join("");
-        const classItems = items ? `<ul class="classes-list">${items}</ul>` : "";
+        const classItems = items
+            ? `<ul class="classes-list">${items}</ul>`
+            : "";
         return `${filterRow}${pendingItems}${classItems}`;
     }
 

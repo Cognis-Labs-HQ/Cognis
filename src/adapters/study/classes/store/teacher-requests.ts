@@ -5,6 +5,8 @@ import { getTeacherClassForLanguage } from "./classes.js";
 import { rowToTeacherRequest } from "./rows.js";
 import type { ClassRow, TeacherRequestRow } from "./types.js";
 
+// Pending teacher-class requests expire after 24h so stale approvals do not
+// block teachers from submitting a fresh request with updated details.
 const TEACHER_REQUEST_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 function isExpiredPendingRequest(request: TeacherRequestRow): boolean {
@@ -65,7 +67,9 @@ export async function getTeacherRequest(
     if (!result.rows?.length) {
         return null;
     }
-    const request = rowToTeacherRequest(result.rows[0] as Record<string, unknown>);
+    const request = rowToTeacherRequest(
+        result.rows[0] as Record<string, unknown>,
+    );
     if (!isExpiredPendingRequest(request)) {
         return request;
     }

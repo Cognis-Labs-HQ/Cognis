@@ -589,6 +589,8 @@
   <string name="module.study.classes.approve">Approve</string>
   <string name="module.study.classes.reject">Reject</string>
   <string name="module.study.classes.review_saved">Teacher request reviewed.</string>
+  <string name="module.study.classes.review_approved_toast">Request Approved</string>
+  <string name="module.study.classes.review_declined_toast">Request Declined</string>
   <string name="module.study.classes.review_failed">Failed to review teacher request.</string>
   <string name="module.study.classes.teacher_application_title">Teacher Application</string>
   <string name="module.study.classes.teacher_application_reason">Tell admins why you should be approved to create a classroom for this language.</string>
