@@ -191,17 +191,20 @@ export async function handleCalendarShareRoutes(input: {
             input.claims.sub,
             ownerCalendarId,
         );
-        const shareId =
-            shares.find(
-                (share) =>
-                    share.id === shareSelector ||
-                    share.recipientAccountId === shareSelector,
-            )?.id ?? shareSelector;
+        const targetShare = shares.find(
+            (share) =>
+                share.id === shareSelector ||
+                share.recipientAccountId === shareSelector,
+        );
+        if (!targetShare) {
+            sendCalendarError(input.res, "not_found", "Share not found.", 404);
+            return true;
+        }
         const body = (await readJson(input.req)) as Record<string, unknown>;
         const updatedShare = await input.shareRegistry.updateCalendarUserShare({
             ownerAccountId: input.claims.sub,
             ownerCalendarId,
-            shareId,
+            shareId: targetShare.id,
             permission: body.permission === "write" ? "write" : "read",
             expiresAt:
                 body.expiresInHours === undefined

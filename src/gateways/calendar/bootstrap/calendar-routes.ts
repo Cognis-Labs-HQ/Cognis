@@ -492,16 +492,15 @@ export function createCalendarCoreRoutes({
             }
             const sourceCalendarId =
                 activeSharedCalendar?.ownerCalendarId ?? calendarId;
-            const events = gateway.listEvents(sourceCalendarId);
             sendJson(res, 200, {
                 data: {
                     calendar: gateway.getCalendar(calendarId),
                     events: activeSharedCalendar
-                        ? events.map((event) => ({
+                        ? gateway.listEvents(sourceCalendarId).map((event) => ({
                               ...event,
                               calendarId,
                           }))
-                        : events,
+                        : gateway.listEvents(sourceCalendarId),
                 },
             });
             return true;
@@ -701,10 +700,9 @@ export function createCalendarCoreRoutes({
                 sharedCalendar?.recipientAccountId === claims.sub
                     ? sharedCalendar
                     : null;
-            const ownedCalendar = gateway.getOwnedCalendar(
-                claims.sub,
-                calendarId,
-            );
+            const ownedCalendar = activeSharedCalendar
+                ? null
+                : gateway.getOwnedCalendar(claims.sub, calendarId);
             const ownedEvent = ownedCalendar
                 ? gateway.getEvent(calendarId, eventId)
                 : activeSharedCalendar
