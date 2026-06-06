@@ -444,7 +444,8 @@ export class CalendarShareRegistry {
         if (!this.db) {
             const share =
                 Array.from(this.memoryUserShares.values()).find(
-                    (entry) => entry.recipientCalendarId === recipientCalendarId,
+                    (entry) =>
+                        entry.recipientCalendarId === recipientCalendarId,
                 ) ?? null;
             if (!share) return null;
             if (!this.isExpiredUserShare(share)) return share;

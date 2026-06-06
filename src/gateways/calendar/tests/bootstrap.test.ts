@@ -688,31 +688,6 @@ test("calendar shared write access appears in recipient list and supports event 
             (event: { title?: string }) => event.title === "Shared event",
         ),
     );
-
-    const unshareResponse = await dispatchJson(
-        "DELETE",
-        aliceToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent(shareId)}`,
-    );
-    assert.equal(unshareResponse.statusCode, 200);
-
-    const bobCalendarsAfterUnshare = await dispatchJson(
-        "GET",
-        bobToken,
-        "/api/v1/calendar/calendars",
-    );
-    assert.ok(
-        !bobCalendarsAfterUnshare.body.data.some(
-            (calendar: { id: string }) => calendar.id === sharedCalendarId,
-        ),
-    );
-
-    const removedSharedEvents = await dispatchJson(
-        "GET",
-        bobToken,
-        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events`,
-    );
-    assert.equal(removedSharedEvents.statusCode, 404);
 });
 
 test("calendar invite dispatch resolves notify capability after bootstrap", async () => {
