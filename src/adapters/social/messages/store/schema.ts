@@ -55,6 +55,20 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
     });
 
     await db.ensureTable({
+        name: "chatroom_classrooms",
+        columns: [
+            { name: "class_id", type: "text", primaryKey: true },
+            { name: "room_id", type: "text", notNull: true },
+        ],
+        indexes: [
+            {
+                columns: ["room_id"],
+                name: "idx_chatroom_classrooms_room",
+            },
+        ],
+    });
+
+    await db.ensureTable({
         name: "chat_messages",
         columns: [
             { name: "id", type: "text", primaryKey: true },

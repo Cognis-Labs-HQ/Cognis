@@ -190,6 +190,89 @@ export async function updateRoomTitle(
     return getRoom(db, roomId);
 }
 
+export async function resolveClassroomRoom(
+    db: DbExecutor,
+    {
+        classId,
+        title,
+        teacherAccountId,
+        memberAccountIds,
+    }: {
+        classId: string;
+        title: string | null;
+        teacherAccountId: string;
+        memberAccountIds: string[];
+    },
+): Promise<{ room: RoomRow; created: boolean }> {
+    const normalizedClassId = String(classId ?? "").trim();
+    const normalizedTeacherAccountId = String(teacherAccountId ?? "").trim();
+    const desiredAccountIds = Array.from(
+        new Set(
+            [normalizedTeacherAccountId, ...(memberAccountIds ?? [])]
+                .map((accountId) => String(accountId ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+    if (!normalizedClassId || !normalizedTeacherAccountId) {
+        throw new Error("classroom_room_invalid_input");
+    }
+
+    const mappingResult = await db.executeCommand({
+        option: "SELECT",
+        table: "chatroom_classrooms",
+        columns: ["room_id"],
+        where: [{ column: "class_id", value: normalizedClassId }],
+        limit: 1,
+    });
+    const mappedRoomId = String(mappingResult.rows?.[0]?.room_id ?? "").trim();
+    let room = mappedRoomId ? await getRoom(db, mappedRoomId) : null;
+    let created = false;
+    if (!room) {
+        room = await createRoom(
+            db,
+            "classroom",
+            title,
+            normalizedTeacherAccountId,
+        );
+        created = true;
+        await db.executeCommand({
+            option: "INSERT",
+            table: "chatroom_classrooms",
+            values: {
+                class_id: normalizedClassId,
+                room_id: room.id,
+            },
+            conflict: {
+                action: "update",
+                target: ["class_id"],
+                update: { room_id: room.id },
+            },
+        });
+    } else if ((room.title ?? null) !== (title ?? null)) {
+        room = (await updateRoomTitle(db, room.id, title)) ?? room;
+    }
+
+    const existingMembers = await listMembers(db, room.id);
+    const existingAccountIds = new Set(
+        existingMembers.map((member) => member.accountId),
+    );
+    for (const accountId of desiredAccountIds) {
+        if (existingAccountIds.has(accountId)) continue;
+        await addMember(
+            db,
+            room.id,
+            accountId,
+            accountId === normalizedTeacherAccountId ? "owner" : "member",
+        );
+    }
+    for (const member of existingMembers) {
+        if (desiredAccountIds.includes(member.accountId)) continue;
+        await removeMember(db, room.id, member.accountId);
+    }
+
+    return { room, created };
+}
+
 export async function findGroupByExactMembers(
     db: DbExecutor,
     memberAccountIds: string[],

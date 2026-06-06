@@ -248,9 +248,37 @@
     gap: 8px;
 }
 
+.classes-classroom-board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 .classes-classroom-blackboard h4 {
     margin: 0;
     font-size: 0.95rem;
+}
+
+.classes-classroom-board-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.classes-icon-btn {
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.18);
+    color: #f6f6f6;
+    cursor: pointer;
+}
+
+.classes-icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .classes-classroom-editor {
@@ -261,6 +289,24 @@
     color: #f6f6f6;
     padding: 8px 10px;
     resize: vertical;
+}
+
+.classes-agenda-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.classes-agenda-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.18);
 }
 
 .classes-classroom-teacher {
@@ -325,6 +371,12 @@
     font-size: 1rem;
 }
 
+.classes-classroom-seat-name {
+    font-size: 0.78rem;
+    text-align: left;
+    word-break: break-word;
+}
+
 .classes-notebook-editor {
     width: 100%;
     min-height: 120px;
@@ -335,4 +387,44 @@
     color: var(--text);
     padding: 8px 10px;
     box-sizing: border-box;
+}
+
+.classes-browse-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.classes-empty--compact {
+    padding: 0;
+    text-align: left;
+}
+
+.classes-footer-slot {
+    margin-top: 16px;
+}
+
+.classes-footer-bar {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+}
+
+.classes-footer-label {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+}
+
+@media (max-width: 640px) {
+    .classes-footer-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }

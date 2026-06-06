@@ -214,6 +214,9 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         (component) => String(component?.id ?? "").trim() === "library",
     );
     const moduleLinks = (model.modules ?? [])
+        .filter(
+            (component) => String(component?.id ?? "").trim() !== "classroom",
+        )
         .map((component) => {
             const pageUrl = String(component?.pageUrl ?? "").trim();
             if (!pageUrl) return "";

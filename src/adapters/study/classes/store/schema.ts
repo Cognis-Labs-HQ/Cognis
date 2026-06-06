@@ -1,4 +1,7 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type {
+    DbExecutor,
+    RawDbExecutor,
+} from "../../../../gateways/db/reuse/db-executor.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 
 const STUDY_LANGUAGE_SEEDS = [
@@ -72,6 +75,18 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
             { name: "language_code", type: "text", notNull: true },
             { name: "teacher_account_id", type: "text", notNull: true },
             {
+                name: "join_mode",
+                type: "text",
+                notNull: true,
+                default: "on_request",
+            },
+            {
+                name: "is_listed",
+                type: "integer",
+                notNull: true,
+                default: 1,
+            },
+            {
                 name: "created_at",
                 type: "timestamp",
                 notNull: true,
@@ -86,6 +101,18 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
             { name: "id", type: "text", primaryKey: true },
             { name: "account_id", type: "text", notNull: true },
             { name: "language_code", type: "text", notNull: true },
+            {
+                name: "join_mode",
+                type: "text",
+                notNull: true,
+                default: "on_request",
+            },
+            {
+                name: "is_listed",
+                type: "integer",
+                notNull: true,
+                default: 1,
+            },
             { name: "reason", type: "text" },
             {
                 name: "status",
@@ -271,7 +298,31 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
         ],
     });
 
+    await ensureStudyClassesColumns(db);
+    await ensureTeacherRequestColumns(db);
     await ensureStudyLanguagesSchema(db);
+}
+
+async function ensureStudyClassesColumns(db: DbExecutor): Promise<void> {
+    const rawDb = db as Partial<RawDbExecutor>;
+    if (typeof rawDb.execute !== "function") return;
+    await rawDb.execute(
+        "ALTER TABLE study_classes ADD COLUMN IF NOT EXISTS join_mode TEXT NOT NULL DEFAULT 'on_request'",
+    );
+    await rawDb.execute(
+        "ALTER TABLE study_classes ADD COLUMN IF NOT EXISTS is_listed INTEGER NOT NULL DEFAULT 1",
+    );
+}
+
+async function ensureTeacherRequestColumns(db: DbExecutor): Promise<void> {
+    const rawDb = db as Partial<RawDbExecutor>;
+    if (typeof rawDb.execute !== "function") return;
+    await rawDb.execute(
+        "ALTER TABLE teacher_requests ADD COLUMN IF NOT EXISTS join_mode TEXT NOT NULL DEFAULT 'on_request'",
+    );
+    await rawDb.execute(
+        "ALTER TABLE teacher_requests ADD COLUMN IF NOT EXISTS is_listed INTEGER NOT NULL DEFAULT 1",
+    );
 }
 
 export async function ensureStudyLanguagesSchema(

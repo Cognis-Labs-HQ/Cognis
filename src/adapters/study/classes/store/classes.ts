@@ -10,7 +10,14 @@ export async function getClassesForTeacher(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         where: [{ column: "teacher_account_id", value: teacherAccountId }],
         orderBy: [{ column: "language_code", direction: "ASC" }],
     });
@@ -26,11 +33,46 @@ export async function getClassById(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         where: [{ column: "id", value: classId }],
     });
     if (!result.rows?.length) {
         return null;
+    }
+
+    export async function getTeacherClassForLanguage(
+        db: DbExecutor,
+        teacherAccountId: string,
+        languageCode: string,
+    ): Promise<ClassRow | null> {
+        const result = await db.executeCommand({
+            option: "SELECT",
+            table: "study_classes",
+            columns: [
+                "id",
+                "language_code",
+                "teacher_account_id",
+                "join_mode",
+                "is_listed",
+                "created_at",
+            ],
+            where: [
+                { column: "teacher_account_id", value: teacherAccountId },
+                { column: "language_code", value: languageCode },
+            ],
+            limit: 1,
+        });
+        if (!result.rows?.length) {
+            return null;
+        }
+        return rowToClassRow(result.rows[0] as Record<string, unknown>);
     }
     return rowToClassRow(result.rows[0] as Record<string, unknown>);
 }
@@ -39,6 +81,17 @@ export async function getClassroomState(
     db: DbExecutor,
     classId: string,
 ): Promise<ClassroomStateRow> {
+    await db.executeCommand({
+        option: "INSERT",
+        table: "classroom_state",
+        values: {
+            class_id: classId,
+            student_limit: DEFAULT_STUDENT_LIMIT,
+            seat_assignments: "{}",
+            updated_at: new Date().toISOString(),
+        },
+        conflict: { action: "ignore" },
+    });
     const result = await db.executeCommand({
         option: "SELECT",
         table: "classroom_state",
@@ -158,14 +211,23 @@ export async function getAvailableClasses(
     languageCode?: string,
     excludeAccountId?: string,
 ): Promise<ClassRow[]> {
-    const whereClause: Array<{ column: string; value: unknown }> = [];
+    const whereClause: Array<{ column: string; value: unknown }> = [
+        { column: "is_listed", value: 1 },
+    ];
     if (languageCode) {
         whereClause.push({ column: "language_code", value: languageCode });
     }
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         ...(whereClause.length ? { where: whereClause } : {}),
         orderBy: [{ column: "language_code", direction: "ASC" }],
     });
@@ -186,7 +248,11 @@ export async function getAvailableClasses(
             String((row as Record<string, unknown>).class_id),
         ),
     );
-    return allClasses.filter((classRow) => !excludedIds.has(classRow.id));
+    return allClasses.filter(
+        (classRow) =>
+            !excludedIds.has(classRow.id) &&
+            classRow.teacherAccountId !== excludeAccountId,
+    );
 }
 
 export async function getClassesForTeacherWithFilter(
@@ -203,7 +269,14 @@ export async function getClassesForTeacherWithFilter(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         where: whereClause,
         orderBy: [{ column: "language_code", direction: "ASC" }],
     });

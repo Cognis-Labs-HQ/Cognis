@@ -15,6 +15,8 @@ export async function getTeacherRequest(
             "id",
             "account_id",
             "language_code",
+            "join_mode",
+            "is_listed",
             "reason",
             "status",
             "reviewed_by",
@@ -42,6 +44,8 @@ export async function listPendingRequests(
             "id",
             "account_id",
             "language_code",
+            "join_mode",
+            "is_listed",
             "reason",
             "status",
             "reviewed_by",
@@ -61,6 +65,8 @@ export async function submitTeacherRequest(
     accountId: string,
     languageCode: string,
     reason: string | null,
+    joinMode: ClassRow["joinMode"],
+    isListed: boolean,
 ): Promise<TeacherRequestRow> {
     const requestId = randomUUID();
     const nowIso = new Date().toISOString();
@@ -71,6 +77,8 @@ export async function submitTeacherRequest(
             id: requestId,
             account_id: accountId,
             language_code: languageCode,
+            join_mode: joinMode,
+            is_listed: isListed ? 1 : 0,
             reason,
             status: "pending",
             created_at: nowIso,
@@ -81,6 +89,8 @@ export async function submitTeacherRequest(
         id: requestId,
         accountId,
         languageCode,
+        joinMode,
+        isListed,
         status: "pending",
         reason,
         reviewedBy: null,
@@ -98,7 +108,13 @@ export async function approveTeacherRequest(
         const requestResult = await executor.executeCommand({
             option: "SELECT",
             table: "teacher_requests",
-            columns: ["id", "account_id", "language_code"],
+            columns: [
+                "id",
+                "account_id",
+                "language_code",
+                "join_mode",
+                "is_listed",
+            ],
             where: [
                 { column: "id", value: requestId },
                 { column: "status", value: "pending" },
@@ -111,7 +127,30 @@ export async function approveTeacherRequest(
         const requestRow = requestResult.rows[0];
         const accountId = String(requestRow.account_id);
         const languageCode = String(requestRow.language_code);
+        const joinMode = String(requestRow.join_mode ?? "on_request")
+            .trim()
+            .toLowerCase();
+        const isListed = Boolean(requestRow.is_listed);
         const nowIso = new Date().toISOString();
+
+        const existingClassResult = await executor.executeCommand({
+            option: "SELECT",
+            table: "study_classes",
+            columns: [
+                "id",
+                "language_code",
+                "teacher_account_id",
+                "join_mode",
+                "is_listed",
+                "created_at",
+            ],
+            where: [
+                { column: "teacher_account_id", value: accountId },
+                { column: "language_code", value: languageCode },
+            ],
+            limit: 1,
+        });
+        const existingClassRow = existingClassResult.rows?.[0];
 
         await executor.executeCommand({
             option: "UPDATE",
@@ -124,17 +163,26 @@ export async function approveTeacherRequest(
             where: [{ column: "id", value: requestId }],
         });
 
-        const classId = randomUUID();
-        await executor.executeCommand({
-            option: "INSERT",
-            table: "study_classes",
-            values: {
-                id: classId,
-                language_code: languageCode,
-                teacher_account_id: accountId,
-                created_at: nowIso,
-            },
-        });
+        const classId = existingClassRow
+            ? String(existingClassRow.id)
+            : randomUUID();
+        if (!existingClassRow) {
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "study_classes",
+                values: {
+                    id: classId,
+                    language_code: languageCode,
+                    teacher_account_id: accountId,
+                    join_mode:
+                        joinMode === "invite_only" || joinMode === "open"
+                            ? joinMode
+                            : "on_request",
+                    is_listed: isListed ? 1 : 0,
+                    created_at: nowIso,
+                },
+            });
+        }
 
         await executor.executeCommand({
             option: "INSERT",
@@ -156,7 +204,19 @@ export async function approveTeacherRequest(
             id: classId,
             languageCode,
             teacherAccountId: accountId,
-            createdAt: nowIso,
+            joinMode:
+                existingClassRow && typeof existingClassRow.join_mode === "string"
+                    ? (String(existingClassRow.join_mode) as ClassRow["joinMode"])
+                    : joinMode === "invite_only" || joinMode === "open"
+                      ? (joinMode as ClassRow["joinMode"])
+                      : "on_request",
+            isListed:
+                existingClassRow && existingClassRow.is_listed != null
+                    ? Boolean(existingClassRow.is_listed)
+                    : isListed,
+            createdAt: existingClassRow
+                ? String(existingClassRow.created_at ?? nowIso)
+                : nowIso,
         };
     });
 }

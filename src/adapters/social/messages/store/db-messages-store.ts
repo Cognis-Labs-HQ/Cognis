@@ -24,6 +24,7 @@ import {
     listMembers,
     listRoomsForAccount,
     removeMember,
+    resolveClassroomRoom,
     updateRoomAvatar,
     updateRoomTitle,
 } from "./rooms.js";
@@ -124,6 +125,19 @@ export class DbMessagesStore {
         title: string | null,
     ): Promise<RoomRow | null> {
         return updateRoomTitle(this.db, roomId, title);
+    }
+
+    async resolveClassroomRoom(input: {
+        classId: string;
+        title: string | null;
+        teacherAccountId: string;
+        memberAccountIds: string[];
+    }): Promise<{ room: RoomRow; created: boolean }> {
+        const resolved = await resolveClassroomRoom(this.db, input);
+        if (resolved.created) {
+            await generateAndStoreRoomKey(this.db, resolved.room.id);
+        }
+        return resolved;
     }
 
     async findGroupByExactMembers(

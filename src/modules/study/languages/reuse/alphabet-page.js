@@ -5,6 +5,7 @@ import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
 } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
+import { mountStudyClassFooter } from "/static/adapters/study/classes/study-footer.js";
 
 async function loadAlphabetCharacters(languageCode, characterClass) {
     try {
@@ -89,4 +90,10 @@ export async function mountStudyAlphabetPage(
     });
 
     await composer.init();
+    await mountStudyClassFooter({
+        root,
+        signal,
+        i18n,
+        languageCode,
+    });
 }

@@ -29,6 +29,7 @@ import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
 } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
+import { mountStudyClassFooter } from "/static/adapters/study/classes/study-footer.js";
 
 const LAYERS = [
     "characters",
@@ -376,4 +377,10 @@ export async function mountStudyLibraryPage(root, { signal, languageCode }) {
     });
 
     await composer.init();
+    await mountStudyClassFooter({
+        root,
+        signal,
+        i18n,
+        languageCode,
+    });
 }

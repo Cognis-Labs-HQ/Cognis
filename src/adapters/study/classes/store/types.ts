@@ -1,4 +1,5 @@
 export type TeacherRequestStatus = "pending" | "approved" | "rejected";
+export type ClassJoinMode = "invite_only" | "on_request" | "open";
 
 export interface StudyLanguageRow {
     code: string;
@@ -13,6 +14,8 @@ export interface ClassRow {
     id: string;
     languageCode: string;
     teacherAccountId: string;
+    joinMode: ClassJoinMode;
+    isListed: boolean;
     createdAt: string;
 }
 
@@ -52,6 +55,8 @@ export interface TeacherRequestRow {
     id: string;
     accountId: string;
     languageCode: string;
+    joinMode: ClassJoinMode;
+    isListed: boolean;
     status: TeacherRequestStatus;
     reason: string | null;
     reviewedBy: string | null;

@@ -64,6 +64,56 @@ export interface ClassesRouteOptions {
     dispatchToRole?: DispatchToRole;
     accountExists?: (accountId: string) => Promise<boolean>;
     areFriends?: (accountA: string, accountB: string) => Promise<boolean>;
+    getProfileSummary?: (accountId: string) => Promise<{
+        handle?: string | null;
+        displayName?: string | null;
+        avatarKey?: string | null;
+    } | null>;
+    resolveClassroomChatUrl?: (input: {
+        classId: string;
+        title?: string | null;
+        teacherAccountId: string;
+        memberAccountIds: string[];
+    }) => Promise<{ roomId: string; url: string; reused: boolean }>;
+    createCalendar?: (
+        ownerAccountId: string,
+        name: string,
+        visibility?: "private" | "shared" | "public",
+        color?: string,
+        defaultReminderOffsetsMinutes?: number[],
+    ) => { id: string };
+    listCalendars?: (
+        ownerAccountId: string,
+    ) => Array<{ id: string; name: string }>;
+    addEvent?: (input: {
+        ownerAccountId: string;
+        calendarId: string;
+        title: string;
+        description?: string | null;
+        startAt: string;
+        endAt: string;
+        attendees?: string[];
+        inviteEmails?: string[];
+        reminderOffsetsMinutes?: number[];
+        meetingUrl?: string | null;
+        status?: "busy" | "free";
+        recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";
+    }) => {
+        id: string;
+        title: string;
+        description: string | null;
+        startAt: string;
+        endAt: string;
+        meetingUrl: string | null;
+    };
+    listEvents?: (calendarId: string) => Array<{
+        id: string;
+        title: string;
+        description?: string | null;
+        startAt: string;
+        endAt: string;
+        meetingUrl?: string | null;
+    }>;
     log?: (
         level: string,
         message: string,
@@ -85,11 +135,91 @@ function normalizeLanguageList(input: unknown): string[] {
     ];
 }
 
+function normalizeJoinMode(input: unknown): "invite_only" | "on_request" | "open" {
+    const joinMode = String(input ?? "").trim().toLowerCase();
+    if (joinMode === "invite_only" || joinMode === "open") {
+        return joinMode;
+    }
+    return "on_request";
+}
+
+function resolveClassroomMode(
+    role: string,
+    requestedMode: string | null,
+): "teacher" | "student" {
+    const normalizedRole = String(role ?? "").trim().toLowerCase();
+    if (normalizedRole === "teacher" && requestedMode === "student") {
+        return "student";
+    }
+    return normalizedRole === "teacher" ? "teacher" : "student";
+}
+
+function buildAgendaCalendarName(classId: string): string {
+    return `Class Agenda ${classId}`;
+}
+
 export function createClassesRoutes(
     store: DbClassesStore,
     options: ClassesRouteOptions = {},
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(options.routeContext);
+
+    async function decorateMemberships(
+        memberships: Array<{
+            studentAccountId: string;
+            [key: string]: unknown;
+        }>,
+    ) {
+        return Promise.all(
+            memberships.map(async (membership) => {
+                const profile = await options.getProfileSummary?.(
+                    membership.studentAccountId,
+                );
+                return {
+                    ...membership,
+                    handle: profile?.handle ?? null,
+                    displayName: profile?.displayName ?? null,
+                    avatarKey: profile?.avatarKey ?? null,
+                };
+            }),
+        );
+    }
+
+    async function syncClassroomArtifacts(classId: string) {
+        const classRow = await store.getClassById(classId);
+        if (!classRow) return null;
+        await store.getClassroomState(classRow.id);
+        const members = await store.getClassMembersForViewer(
+            classRow.id,
+            classRow.teacherAccountId,
+        );
+        const chat = await options.resolveClassroomChatUrl?.({
+            classId: classRow.id,
+            title: `Classroom ${classRow.languageCode}`,
+            teacherAccountId: classRow.teacherAccountId,
+            memberAccountIds: members.map((member) => member.studentAccountId),
+        });
+        return { classRow, chat };
+    }
+
+    async function resolveAgendaCalendarId(ownerAccountId: string, classId: string) {
+        const calendarName = buildAgendaCalendarName(classId);
+        const existingCalendar = options
+            .listCalendars?.(ownerAccountId)
+            ?.find((calendar) => calendar.name === calendarName);
+        if (existingCalendar) {
+            return existingCalendar.id;
+        }
+        return (
+            options.createCalendar?.(
+                ownerAccountId,
+                calendarName,
+                "private",
+                "#2f855a",
+            )?.id ?? null
+        );
+    }
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -148,11 +278,26 @@ export function createClassesRoutes(
             try {
                 const languageCode =
                     url.searchParams.get("language") || undefined;
+                const searchQuery = String(
+                    url.searchParams.get("search") ?? "",
+                ).trim();
                 const classes = await store.getAvailableClasses(
                     languageCode,
                     claims.sub,
                 );
-                jsonOk(res, classes);
+                const filteredClasses = searchQuery
+                    ? classes.filter((classRow) =>
+                          [
+                              classRow.languageCode,
+                              classRow.teacherAccountId,
+                              classRow.id,
+                          ]
+                              .join(" ")
+                              .toLowerCase()
+                              .includes(searchQuery.toLowerCase()),
+                      )
+                    : classes;
+                jsonOk(res, filteredClasses);
             } catch (err) {
                 options.log?.("error", "Failed to load available classes.", {
                     ...logMeta,
@@ -221,6 +366,7 @@ export function createClassesRoutes(
             const body = (await readJson(req)) as {
                 languageCode?: unknown;
                 reason?: unknown;
+                joinMode?: unknown;
             };
             const languageCode =
                 typeof body?.languageCode === "string"
@@ -228,8 +374,24 @@ export function createClassesRoutes(
                     : "";
             const reason =
                 typeof body?.reason === "string" ? body.reason.trim() : "";
+            const joinMode = normalizeJoinMode(body?.joinMode);
+            const isListed = joinMode !== "invite_only";
             if (!languageCode) {
                 jsonError(res, 400, "bad_request", "languageCode is required.");
+                return true;
+            }
+
+            const existingClass = await store.getTeacherClassForLanguage(
+                claims.sub,
+                languageCode,
+            );
+            if (existingClass) {
+                jsonError(
+                    res,
+                    409,
+                    "conflict",
+                    "A class already exists for this language.",
+                );
                 return true;
             }
 
@@ -251,11 +413,16 @@ export function createClassesRoutes(
                         claims.sub,
                         languageCode,
                         reason || null,
+                        joinMode,
+                        isListed,
                     ));
                 const classRow = await store.approveTeacherRequest(
                     request.id,
                     claims.sub,
                 );
+                if (classRow) {
+                    await syncClassroomArtifacts(classRow.id);
+                }
                 await options.setRole?.(claims.sub, "teacher");
                 await options.setProfileRole?.(claims.sub, "teacher");
                 options.log?.("info", "Auto-approved teacher request.", {
@@ -276,13 +443,15 @@ export function createClassesRoutes(
                 claims.sub,
                 languageCode,
                 reason,
+                joinMode,
+                isListed,
             );
             await options.dispatchToRole?.("admin", {
                 category: "study",
                 subject: `Teacher application for ${languageCode}`,
                 body: `${claims.sub} applied to teach ${languageCode}.`,
                 senderName: claims.sub,
-                actionUrl: "/classes",
+                actionUrl: "/classroom",
                 metadata: {
                     requestId: request.id,
                     accountId: claims.sub,
@@ -334,6 +503,7 @@ export function createClassesRoutes(
                     );
                     return true;
                 }
+                await syncClassroomArtifacts(classRow.id);
                 await options.setRole?.(classRow.teacherAccountId, "teacher");
                 await options.setProfileRole?.(
                     classRow.teacherAccountId,
@@ -403,9 +573,13 @@ export function createClassesRoutes(
             if (!claims) return true;
             const languageFilter =
                 url.searchParams.get("language") || undefined;
+            const mode = resolveClassroomMode(
+                claims.role,
+                url.searchParams.get("mode"),
+            );
             try {
                 const classroomClasses =
-                    claims.role === "teacher"
+                    mode === "teacher"
                         ? await store.getClassesForTeacherWithFilter(
                               claims.sub,
                               languageFilter,
@@ -422,21 +596,26 @@ export function createClassesRoutes(
                               }));
                 const snapshots = await Promise.all(
                     classroomClasses.map(async (classRow) => {
-                        const [classroomState, members] = await Promise.all([
+                        const [classroomState, members, synced] =
+                            await Promise.all([
                             store.getClassroomState(classRow.id),
                             store.getClassMembersForViewer(
-                                classRow.id,
-                                claims.sub,
+                               classRow.id,
+                               claims.sub,
                             ),
+                            syncClassroomArtifacts(classRow.id),
                         ]);
+                        const decoratedMembers =
+                            await decorateMemberships(members);
                         return {
                             ...classRow,
                             classroom: classroomState,
-                            members,
+                            members: decoratedMembers,
+                            chatUrl: synced?.chat?.url ?? null,
                         };
                     }),
                 );
-                jsonOk(res, snapshots);
+                jsonOk(res, snapshots, { mode });
             } catch (err) {
                 options.log?.("error", "Failed to load classroom snapshots.", {
                     ...logMeta,
@@ -571,6 +750,7 @@ export function createClassesRoutes(
                     claims.sub,
                     studentAccountId,
                 );
+                await syncClassroomArtifacts(classId);
                 jsonOk(res, { removed: true });
             } catch (err) {
                 if (err instanceof Error && err.message === "not_authorized") {
@@ -596,6 +776,143 @@ export function createClassesRoutes(
                     "Failed to remove class member.",
                 );
             }
+            return true;
+        }
+
+        const agendaMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classes\/([^/]+)\/agenda$/,
+        );
+        if (agendaMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const classId = decodeURIComponent(agendaMatch[1]);
+            const classRow = await store.getClassById(classId);
+            if (!classRow) {
+                jsonError(res, 404, "not_found", "Class not found.");
+                return true;
+            }
+            try {
+                await store.getClassMembersForViewer(classId, claims.sub);
+            } catch {
+                jsonError(res, 403, "forbidden", "Class not found or access denied.");
+                return true;
+            }
+            const calendarId = await resolveAgendaCalendarId(
+                classRow.teacherAccountId,
+                classId,
+            );
+            const now = Date.now();
+            const activeItems =
+                calendarId && options.listEvents
+                    ? options
+                          .listEvents(calendarId)
+                          .filter((event) => {
+                              const startMs = Date.parse(event.startAt);
+                              const endMs = Date.parse(event.endAt);
+                              return (
+                                  Number.isFinite(startMs) &&
+                                  Number.isFinite(endMs) &&
+                                  startMs <= now &&
+                                  now <= endMs
+                              );
+                          })
+                          .map((event) => ({
+                              id: event.id,
+                              title: event.title,
+                              description: event.description ?? "",
+                              startAt: event.startAt,
+                              endAt: event.endAt,
+                              meetingUrl: event.meetingUrl ?? null,
+                          }))
+                    : [];
+            jsonOk(res, { activeItems });
+            return true;
+        }
+
+        if (agendaMatch && req.method === "POST") {
+            const claims = ctx.requireAuth(req, res, "teacher");
+            if (!claims) return true;
+            const classId = decodeURIComponent(agendaMatch[1]);
+            const classRow = await store.getClassById(classId);
+            if (!classRow || classRow.teacherAccountId !== claims.sub) {
+                jsonError(res, 403, "forbidden", "Class not found or access denied.");
+                return true;
+            }
+            if (!options.listCalendars || !options.createCalendar || !options.addEvent || !options.listEvents) {
+                jsonError(
+                    res,
+                    503,
+                    "service_unavailable",
+                    "Calendar integration is unavailable.",
+                );
+                return true;
+            }
+            const body = (await readJson(req)) as Record<string, unknown>;
+            const title = String(body.title ?? "").trim();
+            const description =
+                typeof body.description === "string" ? body.description.trim() : "";
+            const startAt = String(body.startAt ?? "").trim();
+            const endAt = String(body.endAt ?? "").trim();
+            if (!title || !startAt || !endAt) {
+                jsonError(
+                    res,
+                    400,
+                    "bad_request",
+                    "title, startAt, and endAt are required.",
+                );
+                return true;
+            }
+            const startMs = Date.parse(startAt);
+            const endMs = Date.parse(endAt);
+            if (
+                !Number.isFinite(startMs) ||
+                !Number.isFinite(endMs) ||
+                endMs <= startMs
+            ) {
+                jsonError(
+                    res,
+                    400,
+                    "bad_request",
+                    "Agenda end time must be after start time.",
+                );
+                return true;
+            }
+            const calendarId = await resolveAgendaCalendarId(claims.sub, classId);
+            if (!calendarId) {
+                jsonError(
+                    res,
+                    503,
+                    "service_unavailable",
+                    "Agenda calendar is unavailable.",
+                );
+                return true;
+            }
+            const overlappingEvent = options.listEvents(calendarId).find((event) => {
+                const eventStartMs = Date.parse(event.startAt);
+                const eventEndMs = Date.parse(event.endAt);
+                if (!Number.isFinite(eventStartMs) || !Number.isFinite(eventEndMs)) {
+                    return false;
+                }
+                return startMs < eventEndMs && eventStartMs < endMs;
+            });
+            if (overlappingEvent) {
+                jsonError(
+                    res,
+                    409,
+                    "conflict",
+                    "Agenda entries cannot overlap.",
+                );
+                return true;
+            }
+            const event = options.addEvent({
+                ownerAccountId: claims.sub,
+                calendarId,
+                title,
+                description,
+                startAt,
+                endAt,
+            });
+            jsonOk(res, event);
             return true;
         }
 
@@ -625,6 +942,9 @@ export function createClassesRoutes(
                     classId,
                     claims.sub,
                 );
+                if (membership.status === "member") {
+                    await syncClassroomArtifacts(classId);
+                }
                 options.log?.("info", "Student requested to join class.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -634,6 +954,15 @@ export function createClassesRoutes(
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: membership }));
             } catch (err) {
+                if (err instanceof Error && err.message === "invite_only") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "This class is invite only.",
+                    );
+                    return true;
+                }
                 options.log?.("error", "Failed to process join request.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -654,6 +983,7 @@ export function createClassesRoutes(
             const classId = decodeURIComponent(membershipMatch[1]);
             try {
                 await store.leaveClass(classId, claims.sub);
+                await syncClassroomArtifacts(classId);
                 options.log?.("info", "Student left class.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -686,7 +1016,7 @@ export function createClassesRoutes(
                     claims.sub,
                     searchQuery || undefined,
                 );
-                jsonOk(res, members);
+                jsonOk(res, await decorateMemberships(members));
             } catch (err) {
                 if (err instanceof Error && err.message === "not_authorized") {
                     jsonError(
@@ -781,6 +1111,7 @@ export function createClassesRoutes(
                     accountId,
                     claims.sub,
                 );
+                await syncClassroomArtifacts(classId);
                 options.log?.("info", "Teacher invited student to class.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -830,6 +1161,9 @@ export function createClassesRoutes(
                     claims.sub,
                     action === "approve",
                 );
+                if (action === "approve") {
+                    await syncClassroomArtifacts(classId);
+                }
                 options.log?.("info", `Teacher ${action}d join request.`, {
                     ...logMeta,
                     accountId: claims.sub,

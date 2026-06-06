@@ -7,6 +7,7 @@ import {
     getClassesForTeacher,
     getClassesForTeacherWithFilter,
     getEnrolledClasses,
+    getTeacherClassForLanguage,
     updateClassroomStateForTeacher,
 } from "./classes.js";
 import { listStudyLanguages, upsertStudyLanguage } from "./languages.js";
@@ -99,6 +100,17 @@ export class DbClassesStore {
 
     async getClassById(classId: string): Promise<ClassRow | null> {
         return getClassById(this.db, classId);
+    }
+
+    async getTeacherClassForLanguage(
+        teacherAccountId: string,
+        languageCode: string,
+    ): Promise<ClassRow | null> {
+        return getTeacherClassForLanguage(
+            this.db,
+            teacherAccountId,
+            languageCode,
+        );
     }
 
     async getClassroomState(classId: string): Promise<ClassroomStateRow> {
@@ -325,8 +337,17 @@ export class DbClassesStore {
         accountId: string,
         languageCode: string,
         reason: string | null,
+        joinMode: ClassRow["joinMode"],
+        isListed: boolean,
     ): Promise<TeacherRequestRow> {
-        return submitTeacherRequest(this.db, accountId, languageCode, reason);
+        return submitTeacherRequest(
+            this.db,
+            accountId,
+            languageCode,
+            reason,
+            joinMode,
+            isListed,
+        );
     }
 
     async approveTeacherRequest(

@@ -18,6 +18,10 @@ export async function requestJoinClass(
         classId,
         studentAccountId,
     );
+    const classRow = await getClassById(db, classId);
+    if (!classRow) {
+        throw new Error("not_authorized");
+    }
     if (
         existingMembership &&
         (existingMembership.status === "pending" ||
@@ -25,25 +29,29 @@ export async function requestJoinClass(
     ) {
         return existingMembership;
     }
+    if (classRow.joinMode === "invite_only") {
+        throw new Error("invite_only");
+    }
+    const nextStatus = classRow.joinMode === "open" ? "member" : "pending";
     await db.executeCommand({
         option: "INSERT",
         table: "class_memberships",
         values: {
             class_id: classId,
             student_account_id: studentAccountId,
-            status: "pending",
+            status: nextStatus,
             joined_at: nowIso,
         },
         conflict: {
             action: "update",
             target: ["class_id", "student_account_id"],
-            update: { status: "pending", joined_at: nowIso },
+            update: { status: nextStatus, joined_at: nowIso },
         },
     });
     return {
         classId,
         studentAccountId,
-        status: "pending",
+        status: nextStatus,
         invitedBy: null,
         joinedAt: nowIso,
     };

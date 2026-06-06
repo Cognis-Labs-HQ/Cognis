@@ -27,6 +27,11 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { showToast } from "/static/reuse/toast.js";
 import { isTeacherScope } from "/static/reuse/access-role.js";
+import { mountStudyClassFooter } from "/static/adapters/study/classes/study-footer.js";
+import {
+    applyClassroomViewModeFromUrl,
+    getClassroomViewMode,
+} from "/static/adapters/study/classes/view-mode.js";
 import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
@@ -59,6 +64,7 @@ function buildAccountInitials(accountId) {
 }
 
 export async function mountStudyClassroomPage(root, { signal, languageCode }) {
+    applyClassroomViewModeFromUrl();
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
@@ -73,7 +79,8 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     let selectedClassId = "";
     let selectedSeatNumber = null;
 
-    const isTeacher = isTeacherScope();
+    const isTeacher =
+        isTeacherScope() && getClassroomViewMode() === "teacher";
     const viewerAccountId = String(
         localStorage.getItem("cognis_account") ?? "",
     ).trim();
@@ -659,4 +666,20 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
 
     await loadClassrooms();
     await pageComposer.init();
+    await mountStudyClassFooter({
+        root,
+        signal,
+        i18n,
+        languageCode,
+        selectedClassId,
+        onSelectClass: async (classId) => {
+            selectedClassId = classId;
+            selectedSeatNumber = null;
+            await loadClassrooms();
+            const content = root.querySelector("#study-classroom-content");
+            if (content instanceof HTMLElement) {
+                content.innerHTML = renderClassroom();
+            }
+        },
+    });
 }

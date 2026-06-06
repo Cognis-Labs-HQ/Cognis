@@ -29,14 +29,9 @@ const ADAPTER_BACKED_SPA_ROUTES = [
         scriptUrl: "/static/adapters/social/profile/app.js",
     },
     {
-        id: "study-classes-teacher-page",
+        id: "study-classes-classroom-hub-page",
         sourceFile: "src/adapters/study/classes/index.ts",
-        scriptUrl: "/static/adapters/study/classes/app.js",
-    },
-    {
-        id: "study-classes-student-page",
-        sourceFile: "src/adapters/study/classes/index.ts",
-        scriptUrl: "/static/adapters/study/classes/my-classes.js",
+        scriptUrl: "/static/adapters/study/classes/classroom.js",
     },
 ];
 

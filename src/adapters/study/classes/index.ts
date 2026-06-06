@@ -75,7 +75,7 @@ function createClassroomHubPageRoute(
 }
 
 /**
- * Page-serving route for `/classes`. Serves the classes SPA page.
+ * Legacy page-serving route for `/classes`. Redirects to `/classroom`.
  */
 function createClassesPageRoute(
     routeContext: RouteContext | undefined,
@@ -96,23 +96,14 @@ function createClassesPageRoute(
             res.end();
             return true;
         }
-        if (!ctx.hasMinRole(session.role, "teacher")) {
-            res.writeHead(302, { location: "/dashboard" });
-            res.end();
-            return true;
-        }
-        ctx.setPageSecurityHeaders(res);
-        const html = await import("node:fs/promises").then((fs) =>
-            fs.readFile(path.join(ADAPTER_UI_ROOT, "index.html"), "utf8"),
-        );
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
+        res.writeHead(302, { location: "/classroom" });
+        res.end();
         return true;
     };
 }
 
 /**
- * Page-serving route for `/my-classes`. Serves the student classes SPA page.
+ * Legacy page-serving route for `/my-classes`. Redirects to `/classroom`.
  */
 function createMyClassesPageRoute(
     routeContext: RouteContext | undefined,
@@ -133,18 +124,8 @@ function createMyClassesPageRoute(
             res.end();
             return true;
         }
-
-        if (session.role === "teacher") {
-            res.writeHead(302, { location: "/classes" });
-            res.end();
-            return true;
-        }
-        ctx.setPageSecurityHeaders(res);
-        const html = await import("node:fs/promises").then((fs) =>
-            fs.readFile(path.join(ADAPTER_UI_ROOT, "my-classes.html"), "utf8"),
-        );
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
+        res.writeHead(302, { location: "/classroom" });
+        res.end();
         return true;
     };
 }
@@ -260,7 +241,11 @@ export async function bootstrapStudyAdapter(
     const profileStore = ctx.capabilities.get<{
         getProfile: (
             accountId: string,
-        ) => Promise<{ handle?: string | null } | null>;
+        ) => Promise<{
+            handle?: string | null;
+            displayName?: string | null;
+            avatarKey?: string | null;
+        } | null>;
         isFollowing?: (
             followerId: string,
             followingId: string,
@@ -269,6 +254,59 @@ export async function bootstrapStudyAdapter(
     const setProfileRole = ctx.capabilities.get<
         (handle: string, role: "teacher") => Promise<void>
     >("profile:setRoleByHandle");
+    const resolveClassroomChatUrl = ctx.capabilities.get<
+        (input: {
+            classId: string;
+            title?: string | null;
+            teacherAccountId: string;
+            memberAccountIds: string[];
+        }) => Promise<{ roomId: string; url: string; reused: boolean }>
+    >("social:messages:resolveClassroomChatUrl");
+    const createCalendar = ctx.capabilities.get<
+        (
+            ownerAccountId: string,
+            name: string,
+            visibility?: "private" | "shared" | "public",
+            color?: string,
+            defaultReminderOffsetsMinutes?: number[],
+        ) => { id: string }
+    >("calendar:createCalendar");
+    const listCalendars = ctx.capabilities.get<
+        (ownerAccountId: string) => Array<{ id: string; name: string }>
+    >("calendar:listCalendars");
+    const addCalendarEvent = ctx.capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            title: string;
+            description?: string | null;
+            startAt: string;
+            endAt: string;
+            attendees?: string[];
+            inviteEmails?: string[];
+            reminderOffsetsMinutes?: number[];
+            meetingUrl?: string | null;
+            status?: "busy" | "free";
+            recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";
+        }) => {
+            id: string;
+            title: string;
+            description: string | null;
+            startAt: string;
+            endAt: string;
+            meetingUrl: string | null;
+        }
+    >("calendar:addEvent");
+    const listCalendarEvents = ctx.capabilities.get<
+        (calendarId: string) => Array<{
+            id: string;
+            title: string;
+            description?: string | null;
+            startAt: string;
+            endAt: string;
+            meetingUrl?: string | null;
+        }>
+    >("calendar:listEvents");
 
     /**
      * study:classroom:listParticipantHandles — resolves normalized participant
@@ -343,6 +381,22 @@ export async function bootstrapStudyAdapter(
                 ]);
                 return aFollowsB && bFollowsA;
             },
+            getProfileSummary: async (accountId) => {
+                const profile = profileStore
+                    ? await profileStore.getProfile(accountId)
+                    : null;
+                if (!profile) return null;
+                return {
+                    handle: profile.handle ?? null,
+                    displayName: profile.displayName ?? null,
+                    avatarKey: profile.avatarKey ?? null,
+                };
+            },
+            resolveClassroomChatUrl,
+            createCalendar,
+            listCalendars,
+            addEvent: addCalendarEvent,
+            listEvents: listCalendarEvents,
             routeContext,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<
@@ -381,30 +435,6 @@ export async function bootstrapStudyAdapter(
     ctx.registerNavbarPlugin("/static/adapters/study/classes/nav-link.js", () =>
         ctx.isAdapterEnabled(),
     );
-    ctx.registerSpaRoute?.({
-        id: "study-classes-teacher-page",
-        pattern: "^/classes$",
-        base: "/classes",
-        scriptUrl: "/static/adapters/study/classes/app.js",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/adapters/study/classes/classes.css",
-        ],
-        isEnabled: () => ctx.isAdapterEnabled(),
-    });
-    ctx.registerSpaRoute?.({
-        id: "study-classes-student-page",
-        pattern: "^/my-classes$",
-        base: "/my-classes",
-        scriptUrl: "/static/adapters/study/classes/my-classes.js",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/adapters/study/classes/classes.css",
-        ],
-        isEnabled: () => ctx.isAdapterEnabled(),
-    });
     ctx.registerSpaRoute?.({
         id: "study-classes-requests-page",
         pattern: "^/requests$",

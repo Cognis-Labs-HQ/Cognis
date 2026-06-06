@@ -285,6 +285,39 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    ctx.capabilities.contribute(
+        "social:messages:resolveClassroomChatUrl",
+        async (input: {
+            classId: string;
+            title?: string | null;
+            teacherAccountId: string;
+            memberAccountIds: string[];
+        }): Promise<{
+            roomId: string;
+            url: string;
+            reused: boolean;
+        }> => {
+            const resolved = await messagesStore.resolveClassroomRoom({
+                classId: String(input.classId ?? "").trim(),
+                title:
+                    typeof input.title === "string" && input.title.trim().length
+                        ? input.title.trim()
+                        : null,
+                teacherAccountId: String(input.teacherAccountId ?? "").trim(),
+                memberAccountIds: Array.isArray(input.memberAccountIds)
+                    ? input.memberAccountIds.map((accountId) =>
+                          String(accountId ?? "").trim(),
+                      )
+                    : [],
+            });
+            return {
+                roomId: resolved.room.id,
+                url: `/messages/${encodeURIComponent(resolved.room.id)}`,
+                reused: !resolved.created,
+            };
+        },
+    );
+
     ctx.capabilities.contribute("social:messages:uiResources", {
         languageBaseUrls: [
             "/static/adapters/social/messages/languages",
