@@ -13,6 +13,26 @@ import {
 } from "./helpers.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
 
+const WRITE_PERMISSION_VARIANTS = new Set([
+    "write",
+    "read&write",
+    "read_and_write",
+    "read-write",
+    "readandwrite",
+]);
+
+function normalizeSharePermission(
+    value: unknown,
+): "read" | "write" | undefined {
+    if (typeof value !== "string") return undefined;
+    const compactPermission = value
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "");
+    if (!compactPermission) return undefined;
+    return WRITE_PERMISSION_VARIANTS.has(compactPermission) ? "write" : "read";
+}
+
 export async function handleCalendarShareRoutes(input: {
     req: IncomingMessage;
     res: ServerResponse;
@@ -201,25 +221,12 @@ export async function handleCalendarShareRoutes(input: {
             return true;
         }
         const body = (await readJson(input.req)) as Record<string, unknown>;
-        const normalizedPermission =
-            typeof body.permission === "string"
-                ? body.permission.trim().toLowerCase()
-                : undefined;
-        const compactPermission = normalizedPermission?.replace(/\s+/g, "");
+        const normalizedPermission = normalizeSharePermission(body.permission);
         const updatedShare = await input.shareRegistry.updateCalendarUserShare({
             ownerAccountId: input.claims.sub,
             ownerCalendarId,
             shareId: targetShare.id,
-            permission:
-                normalizedPermission === undefined
-                    ? undefined
-                    : compactPermission === "write" ||
-                        compactPermission === "read&write" ||
-                        compactPermission === "read_and_write" ||
-                        compactPermission === "read-write" ||
-                        compactPermission === "readandwrite"
-                      ? "write"
-                      : "read",
+            permission: normalizedPermission,
             expiresAt:
                 body.expiresInHours === undefined
                     ? undefined
