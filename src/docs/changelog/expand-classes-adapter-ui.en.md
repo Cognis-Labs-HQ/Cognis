@@ -14,6 +14,30 @@ Extended the classes adapter for join modes, duplicate-language protection,
 agenda scheduling, classroom chat resolution, and guaranteed classroom records,
 then updated translations and regression tests for the new flow.
 
+The class selector dropdown has been moved out of the page body and into the
+global footer as a page-composer footer element, rendering inline as
+"Class: [dropdown]" with instant apply. The "Teacher:" prefix has been removed
+from the available-classes list and from the language-module classroom teacher
+display.
+
+The classroom view has been completely redesigned as a 2D top-down composite.
+The room is bordered to represent walls. On the front wall a dark-green blackboard
+shows the active class agenda written in a cursive chalk-style font with action
+buttons (chat, meeting, create agenda). A scrollable student roster panel sits to
+the left of the blackboard. A wooden door with a visible swing arc is positioned
+on the right side wall; for students it is the leave-class control, for teachers
+it doubles as a drag target to remove students.
+
+The floor fills with dynamic rows of paired desk-and-chair units that scale with
+the student capacity. Desks are styled as top-down wooden rectangles and chairs as
+smaller rounded elements below each desk; no button borders or table cell visuals
+are used. Occupied desks show a two-letter student badge. Clicking a desk opens
+the per-student management panel below the room.
+
+The materials and homework editor (teacher view) has been moved below the room as
+a collapsible section. The page-composer now supports a `footer` parameter for
+injecting elements into the global footer bar.
+
 ## Changed components and files
 
 - Study classes adapter routes and stores:
@@ -36,8 +60,10 @@ then updated translations and regression tests for the new flow.
     - `src/adapters/study/classes/ui/classes.css`
     - `src/modules/study/languages/reuse/study-sub-navigation.js`
     - `src/modules/study/languages/reuse/classroom-page.js`
+    - `src/modules/study/languages/reuse/classroom-page.css`
     - `src/modules/study/languages/reuse/alphabet-page.js`
     - `src/modules/study/languages/reuse/library-page.js`
+    - `src/ui/reuse/page-composer/init.js`
 - Supporting integrations, strings, and tests:
     - `src/adapters/social/messages/index.ts`
     - `src/adapters/social/messages/store/schema.ts`

@@ -292,7 +292,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 <div class="study-classroom-board">${escapeHtml(i18n.t("gateway.study.classroom_blackboard"))}</div>
                 <div class="study-classroom-teacher">
                     <span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(selectedSnapshot.teacherAccountId))}</span>
-                    <span>${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(selectedSnapshot.teacherAccountId)}</span>
+                    <span>${escapeHtml(selectedSnapshot.teacherAccountId)}</span>
                 </div>
                 <div class="study-classroom-door" id="study-classroom-door" data-door="true">🚪 ${escapeHtml(i18n.t("gateway.study.classroom_door"))}</div>
             </div>

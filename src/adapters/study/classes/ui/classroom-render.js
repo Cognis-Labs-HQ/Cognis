@@ -41,110 +41,179 @@ function buildLanguageFilterOptions({ availableClasses }) {
     ].sort();
 }
 
-function renderAgendaItems({ activeAgendaItems, i18n }) {
-    if (!activeAgendaItems.length) {
-        return `<p class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_active_agenda"))}</p>`;
-    }
-    return `
-        <ul class="classes-agenda-list">
-            ${activeAgendaItems
-                .map(
-                    (item) => `
-                        <li class="classes-agenda-item">
-                            <strong>${escapeHtml(item.title ?? "")}</strong>
-                            <span>${escapeHtml(item.description ?? "")}</span>
-                        </li>
-                    `,
-                )
-                .join("")}
-        </ul>
-    `;
+/** Returns how many desk columns to use for a given student capacity. */
+function computeDesksPerRow(studentLimit) {
+    if (studentLimit <= 6) return 3;
+    if (studentLimit <= 10) return 4;
+    if (studentLimit <= 18) return 6;
+    if (studentLimit <= 28) return 7;
+    return 8;
 }
 
-function renderClassroomBoard({
+function renderChalkAgenda({ activeAgendaItems, i18n }) {
+    if (!activeAgendaItems.length) {
+        return `<span class="classes-chalk-empty">${escapeHtml(i18n.t("module.study.classes.no_active_agenda"))}</span>`;
+    }
+    return activeAgendaItems
+        .map(
+            (item) => `
+                <div class="classes-chalk-item" data-agenda-id="${escapeHtml(String(item.id ?? ""))}">
+                    <span class="classes-chalk-title">${escapeHtml(item.title ?? "")}</span>
+                    ${item.description ? `<span class="classes-chalk-desc">${escapeHtml(item.description)}</span>` : ""}
+                </div>
+            `,
+        )
+        .join("");
+}
+
+function renderBlackboard({
     snapshot,
-    classResources,
     activeAgendaItems,
     i18n,
     isTeacherView,
 }) {
     return `
-        <div class="classes-classroom-board-area">
-            <div class="classes-classroom-blackboard">
-                <div class="classes-classroom-board-header">
-                    <h4>${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}</h4>
-                    <div class="classes-classroom-board-actions">
-                        <button type="button" class="classes-icon-btn classes-open-chat-btn" ${snapshot?.chatUrl ? "" : "disabled"} aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}" title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
-                        <button type="button" class="classes-icon-btn classes-open-meeting-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}" title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
-                        ${
-                            isTeacherView
-                                ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn" aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}" title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
-                                : ""
-                        }
-                    </div>
+        <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
+            <div class="classes-blackboard-header">
+                <span class="classes-chalk-header">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</span>
+                <div class="classes-blackboard-actions">
+                    <button type="button" class="classes-icon-btn classes-open-chat-btn"
+                        ${snapshot?.chatUrl ? "" : "disabled"}
+                        aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
+                        title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
+                    <button type="button" class="classes-icon-btn classes-open-meeting-btn"
+                        aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
+                        title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
+                    ${
+                        isTeacherView
+                            ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
+                                   aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
+                                   title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
+                            : ""
+                    }
                 </div>
-                <label class="classes-section-heading" for="classes-materials">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</label>
-                <textarea id="classes-materials" class="classes-classroom-editor"${isTeacherView ? "" : " readonly"}>${escapeHtml(classResources.materials ?? "")}</textarea>
-                <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
-                <textarea id="classes-homework" class="classes-classroom-editor"${isTeacherView ? "" : " readonly"}>${escapeHtml(classResources.homework ?? "")}</textarea>
-                <div class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</div>
-                ${renderAgendaItems({ activeAgendaItems, i18n })}
-                ${
-                    isTeacherView
-                        ? `<button type="button" class="btn-confirm btn-animated classes-save-materials-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>`
-                        : ""
-                }
             </div>
-            <div class="classes-classroom-teacher">
-                <span class="classes-classroom-seat-avatar">${escapeHtml(buildAccountAbbreviation({ displayName: snapshot.teacherAccountId }))}</span>
-                <span>${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(snapshot.teacherAccountId)}</span>
+            <div class="classes-blackboard-surface">
+                ${renderChalkAgenda({ activeAgendaItems, i18n })}
             </div>
+            <div class="classes-blackboard-ledge"></div>
         </div>
     `;
 }
 
-function renderSeatTiles({ snapshot, selectedSeatNumber, i18n }) {
-    const studentLimit = Number(
-        snapshot?.classroom?.studentLimit ?? DEFAULT_CLASSROOM_CAPACITY,
-    );
-    const normalizedStudentLimit =
-        Number.isInteger(studentLimit) && studentLimit > 0
-            ? studentLimit
+function renderStudentRoster({ snapshot, seatAssignments, i18n }) {
+    const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
+    const rows = members
+        .map(
+            (member) => `
+                <li class="classes-roster-item" data-student-id="${escapeHtml(String(member.studentAccountId ?? ""))}">
+                    <span class="classes-roster-avatar">${escapeHtml(buildAccountAbbreviation(member))}</span>
+                    <span class="classes-roster-name">${escapeHtml(buildAccountLabel(member))}</span>
+                </li>
+            `,
+        )
+        .join("");
+    return `
+        <div class="classes-student-roster">
+            <div class="classes-roster-header">👥 ${escapeHtml(i18n.t("module.study.classes.members_section"))}</div>
+            <ul class="classes-roster-list">${rows || `<li class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</li>`}</ul>
+        </div>
+    `;
+}
+
+function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
+    const occupied = Boolean(member);
+    const classNames = [
+        "classes-desk-unit",
+        occupied ? "occupied" : "",
+        selected ? "selected" : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+    return `
+        <div class="${classNames}"
+             data-seat-number="${seatNumber}"
+             data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}"
+             data-student-handle="${escapeHtml(String(member?.handle ?? ""))}"
+             ${isTeacherView && occupied ? 'draggable="true"' : ""}
+             title="${occupied ? escapeHtml(buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}">
+            <div class="classes-desk-surface">
+                ${occupied ? `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(buildAccountAbbreviation(member))}</span>` : ""}
+            </div>
+            <div class="classes-chair-element"></div>
+        </div>
+    `;
+}
+
+function renderDeskFloor({
+    snapshot,
+    selectedSeatNumber,
+    i18n,
+    isTeacherView,
+}) {
+    const rawLimit = Number(snapshot?.classroom?.studentLimit);
+    const studentLimit =
+        Number.isInteger(rawLimit) && rawLimit > 0
+            ? rawLimit
             : DEFAULT_CLASSROOM_CAPACITY;
     const seatAssignments = normalizeSeatAssignments(
         snapshot?.classroom?.seatAssignments,
     );
-    const members = Array.isArray(snapshot.members) ? snapshot.members : [];
+    const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const membersBySeat = new Map();
     for (const member of members) {
-        const seatNumber =
-            seatAssignments[String(member.studentAccountId ?? "")];
-        if (!Number.isInteger(seatNumber) || seatNumber < 0) continue;
-        membersBySeat.set(seatNumber, member);
+        const seat = Number(
+            seatAssignments[String(member.studentAccountId ?? "")],
+        );
+        if (!Number.isInteger(seat) || seat < 0) continue;
+        membersBySeat.set(seat, member);
     }
-    return Array.from({ length: normalizedStudentLimit })
-        .map((_, seatNumber) => {
-            const member = membersBySeat.get(seatNumber) ?? null;
-            return `
-                <button
-                    type="button"
-                    class="classes-classroom-seat${member ? " occupied" : ""}${
-                        Number(selectedSeatNumber) === seatNumber
-                            ? " selected"
-                            : ""
-                    }"
-                    data-seat-number="${seatNumber}"
-                    data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}"
-                    data-student-handle="${escapeHtml(String(member?.handle ?? ""))}"
-                >
-                    <span class="classes-classroom-seat-icon">🪑</span>
-                    <span class="classes-classroom-seat-label">${escapeHtml(i18n.t("module.study.classes.classroom_seat"))} ${seatNumber + 1}</span>
-                    <span class="classes-classroom-seat-avatar">${member ? escapeHtml(buildAccountAbbreviation(member)) : "—"}</span>
-                    <span class="classes-classroom-seat-name">${member ? escapeHtml(buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}</span>
-                </button>
-            `;
-        })
-        .join("");
+    const desksPerRow = computeDesksPerRow(studentLimit);
+    const rowCount = Math.ceil(studentLimit / desksPerRow);
+    let seatCounter = 0;
+    const rowHtml = Array.from({ length: rowCount }, () => {
+        const units = [];
+        for (
+            let col = 0;
+            col < desksPerRow && seatCounter < studentLimit;
+            col++
+        ) {
+            const seatNum = seatCounter++;
+            units.push(
+                renderDeskUnit({
+                    seatNumber: seatNum,
+                    member: membersBySeat.get(seatNum) ?? null,
+                    selected: Number(selectedSeatNumber) === seatNum,
+                    isTeacherView,
+                    i18n,
+                }),
+            );
+        }
+        // Group desks into pairs with an aisle between each pair
+        const pairs = [];
+        for (let i = 0; i < units.length; i += 2) {
+            pairs.push(
+                `<div class="classes-desk-pair">${units.slice(i, i + 2).join("")}</div>`,
+            );
+        }
+        return `<div class="classes-desk-row">${pairs.join("")}</div>`;
+    }).join("");
+    return `<div class="classes-desk-floor">${rowHtml}</div>`;
+}
+
+function renderRoomDoor({ i18n, isTeacherView }) {
+    return `
+        <div class="classes-room-doorwall">
+            <div class="classes-room-door" id="study-classroom-door"
+                 role="button" tabindex="0"
+                 title="${escapeHtml(i18n.t(isTeacherView ? "module.study.classes.kick_student" : "module.study.classes.leave_class"))}">
+                <div class="classes-door-frame">
+                    <div class="classes-door-leaf"></div>
+                    <div class="classes-door-arc"></div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function renderSelectedDeskPanel({
@@ -175,6 +244,21 @@ function renderSelectedDeskPanel({
             <textarea id="classes-own-notebook" class="classes-notebook-editor">${escapeHtml(selectedNotebookText)}</textarea>
             <button type="button" class="btn-confirm btn-animated classes-save-notebook-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
         </div>
+    `;
+}
+
+function renderMaterialsEditor({ classResources, i18n }) {
+    return `
+        <details class="classes-materials-editor">
+            <summary class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</summary>
+            <div class="classes-materials-editor-body">
+                <label class="classes-section-heading" for="classes-materials">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</label>
+                <textarea id="classes-materials" class="classes-classroom-editor">${escapeHtml(classResources.materials ?? "")}</textarea>
+                <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
+                <textarea id="classes-homework" class="classes-classroom-editor">${escapeHtml(classResources.homework ?? "")}</textarea>
+                <button type="button" class="btn-confirm btn-animated classes-save-materials-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+            </div>
+        </details>
     `;
 }
 
@@ -216,7 +300,6 @@ function renderStudentAvailableClasses({
                                 (classRow) => `
                                     <li class="classes-item">
                                         <span class="classes-language">${escapeHtml(classRow.languageCode)}</span>
-                                        <span class="classes-member-count">${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(classRow.teacherAccountId)}</span>
                                         <button type="button" class="btn-confirm btn-animated classes-join-btn" data-class-id="${escapeHtml(classRow.id)}" data-join-mode="${escapeHtml(classRow.joinMode ?? "on_request")}">${escapeHtml(
                                             classRow.joinMode === "open"
                                                 ? i18n.t(
@@ -259,26 +342,21 @@ function renderClassroomView({
                   i18n,
               });
     }
+    const seatAssignments = normalizeSeatAssignments(
+        snapshot?.classroom?.seatAssignments,
+    );
     return `
         <section class="classes-section classes-classroom-hub">
-            ${renderClassroomBoard({
-                snapshot,
-                classResources,
-                activeAgendaItems,
-                i18n,
-                isTeacherView,
-            })}
-            <div class="classes-classroom-grid">${renderSeatTiles({
-                snapshot,
-                selectedSeatNumber,
-                i18n,
-            })}</div>
-            ${renderSelectedDeskPanel({
-                snapshot,
-                selectedSeatNumber,
-                selectedNotebookText,
-                i18n,
-            })}
+            <div class="classes-room">
+                <div class="classes-room-top">
+                    ${renderStudentRoster({ snapshot, seatAssignments, i18n })}
+                    ${renderBlackboard({ snapshot, activeAgendaItems, i18n, isTeacherView })}
+                    ${renderRoomDoor({ i18n, isTeacherView })}
+                </div>
+                ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}
+            </div>
+            ${isTeacherView ? renderMaterialsEditor({ classResources, i18n }) : ""}
+            ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}
             ${
                 !isTeacherView
                     ? `<button type="button" class="btn-cancel btn-animated classes-leave-classroom-btn">${escapeHtml(i18n.t("module.study.classes.leave_class"))}</button>`

@@ -230,40 +230,394 @@
     gap: 12px;
 }
 
-.classes-classroom-board-area {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    align-items: start;
-}
+/* ── 2D classroom room ── */
 
-.classes-classroom-blackboard {
-    border: 2px solid #161616;
-    background: #1b3b1b;
-    color: #f6f6f6;
-    border-radius: 8px;
-    padding: 12px;
+.classes-room {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    border: 10px solid #5a4a3f;
+    border-radius: 4px;
+    background: #f0e8d5;
+    overflow: hidden;
 }
 
-.classes-classroom-board-header {
+.classes-room-top {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: #e8d9c0;
+    border-bottom: 6px solid #5a4a3f;
+    min-height: 180px;
+}
+
+/* ── Student roster ── */
+
+.classes-student-roster {
+    display: flex;
+    flex-direction: column;
+    width: 152px;
+    flex-shrink: 0;
+    border-right: 4px solid #5a4a3f;
+    background: #ede3ce;
+}
+
+.classes-roster-header {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: #d6c7a8;
+    border-bottom: 2px solid #c0ad88;
+    color: #4a3828;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.classes-roster-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 160px;
+}
+
+.classes-roster-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    cursor: default;
+    font-size: 0.8rem;
+    color: #3a2e1e;
+}
+
+.classes-roster-item:hover {
+    background: rgba(90, 74, 63, 0.08);
+}
+
+.classes-roster-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #c0ad88;
+    border: 1px solid #a08050;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #3a2e1e;
+    flex-shrink: 0;
+}
+
+.classes-roster-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+/* ── Blackboard ── */
+
+.classes-blackboard {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1a3d1a;
+    margin: 12px 8px;
+    border-radius: 4px;
+    border: 4px solid #2a1a0a;
+    box-shadow:
+        inset 0 0 24px rgba(0, 0, 0, 0.35),
+        2px 3px 8px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+}
+
+.classes-blackboard-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-}
-
-.classes-classroom-blackboard h4 {
-    margin: 0;
-    font-size: 0.95rem;
-}
-
-.classes-classroom-board-actions {
-    display: flex;
     gap: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
+
+.classes-blackboard-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.classes-blackboard-surface {
+    flex: 1;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+.classes-blackboard-ledge {
+    height: 8px;
+    background: linear-gradient(to bottom, #8b6d3e, #6b4f28);
+    border-top: 2px solid #2a1a0a;
+}
+
+.classes-chalk-header {
+    font-family: cursive;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 6px rgba(255, 255, 255, 0.2),
+        1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.classes-chalk-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    padding: 2px 0;
+}
+
+.classes-chalk-title {
+    font-family: cursive;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.88);
+    text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.15),
+        1px 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.03em;
+}
+
+.classes-chalk-desc {
+    font-family: cursive;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.62);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+    padding-left: 12px;
+}
+
+.classes-chalk-empty {
+    font-family: cursive;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-style: italic;
+}
+
+/* ── Door (right wall) ── */
+
+.classes-room-doorwall {
+    width: 72px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 28px;
+    border-left: 4px solid #5a4a3f;
+    background: #e8d9c0;
+}
+
+.classes-room-door {
+    position: relative;
+    width: 44px;
+    height: 68px;
+    cursor: pointer;
+}
+
+.classes-room-door:hover .classes-door-frame {
+    filter: brightness(1.08);
+}
+
+.classes-door-frame {
+    position: absolute;
+    inset: 0;
+    background: #c8a070;
+    border: 3px solid #7a5030;
+    border-radius: 3px 3px 0 0;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    overflow: visible;
+}
+
+.classes-door-frame::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 6px;
+    right: 6px;
+    bottom: 22px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+}
+
+.classes-door-frame::after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #5a3820;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.classes-door-leaf {
+    display: none;
+}
+
+.classes-door-arc {
+    position: absolute;
+    left: -1px;
+    bottom: -3px;
+    width: 54px;
+    height: 54px;
+    border: 1px dashed rgba(90, 74, 63, 0.5);
+    border-radius: 50%;
+    clip-path: polygon(0% 100%, 100% 100%, 100% 0%);
+    pointer-events: none;
+}
+
+/* ── Desk floor ── */
+
+.classes-desk-floor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 24px 24px;
+}
+
+.classes-desk-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 32px;
+}
+
+.classes-desk-pair {
+    display: flex;
+    gap: 10px;
+}
+
+.classes-desk-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.classes-desk-unit:hover .classes-desk-surface {
+    filter: brightness(0.92);
+}
+
+.classes-desk-unit.selected .classes-desk-surface {
+    box-shadow: 0 0 0 2px var(--accent, #4a90d9);
+}
+
+.classes-desk-surface {
+    width: 52px;
+    height: 36px;
+    background: linear-gradient(160deg, #d4a96a 0%, #b8875a 100%);
+    border: 2px solid #8b6040;
+    border-radius: 4px;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.classes-desk-unit.occupied .classes-desk-surface {
+    background: linear-gradient(160deg, #c49a60 0%, #a87848 100%);
+    border-color: #6b4828;
+}
+
+.classes-desk-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #3a2010;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+}
+
+.classes-chair-element {
+    width: 30px;
+    height: 26px;
+    background: linear-gradient(160deg, #a87848 0%, #8a6030 100%);
+    border: 2px solid #6a4020;
+    border-radius: 3px 3px 6px 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.classes-chair-element::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 6px;
+    background: #7a5028;
+    border: 1px solid #5a3818;
+    border-radius: 2px;
+}
+
+/* ── Materials editor (below room) ── */
+
+.classes-materials-editor {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    overflow: hidden;
+}
+
+.classes-materials-editor > summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.classes-materials-editor > summary::-webkit-details-marker {
+    display: none;
+}
+
+.classes-materials-editor > summary::before {
+    content: "▶";
+    font-size: 0.7rem;
+    transition: transform 0.15s;
+    color: var(--text-muted);
+}
+
+.classes-materials-editor[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+.classes-materials-editor-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+}
+
+/* ── Shared blackboard icon buttons ── */
 
 .classes-icon-btn {
     width: 2.25rem;
@@ -283,98 +637,14 @@
 
 .classes-classroom-editor {
     min-height: 72px;
-    border: 1px solid #3b3b3b;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.18);
-    color: #f6f6f6;
-    padding: 8px 10px;
-    resize: vertical;
-}
-
-.classes-agenda-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.classes-agenda-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.18);
-}
-
-.classes-classroom-teacher {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text);
-    font-size: 0.86rem;
-}
-
-.classes-classroom-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-    gap: 8px;
-}
-
-.classes-classroom-seat {
     border: 1px solid var(--border);
     border-radius: 8px;
-    background: var(--surface-2);
+    background: var(--surface);
     color: var(--text);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: flex-start;
-    min-height: 104px;
-    padding: 8px;
-}
-
-.classes-classroom-seat.occupied {
-    border-color: var(--accent);
-}
-
-.classes-classroom-seat.selected {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-.classes-classroom-seat-icon {
-    font-size: 1rem;
-}
-
-.classes-classroom-seat-label {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-}
-
-.classes-classroom-seat-avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--accent) 25%, var(--surface));
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-    color: var(--text);
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
-.classes-classroom-seat-desk {
-    font-size: 1rem;
-}
-
-.classes-classroom-seat-name {
-    font-size: 0.78rem;
-    text-align: left;
-    word-break: break-word;
+    padding: 8px 10px;
+    resize: vertical;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .classes-notebook-editor {
@@ -400,31 +670,41 @@
     text-align: left;
 }
 
-.classes-footer-slot {
-    margin-top: 16px;
-}
+/* ── Footer class selector element ── */
 
-.classes-footer-bar {
+.classes-footer-class-label {
     display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface-2);
-}
-
-.classes-footer-label {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
+    align-items: center;
     gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
 }
 
-@media (max-width: 640px) {
-    .classes-footer-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
+.classes-footer-select {
+    height: 26px;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 0.82rem;
+    cursor: pointer;
+    max-width: 180px;
+}
+
+.classes-footer-toggle-btn {
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.classes-footer-toggle-btn:hover {
+    background: var(--surface);
 }
