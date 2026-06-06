@@ -102,7 +102,13 @@ function renderBlackboard({
                                             ? "module.study.classes.enter_student_view"
                                             : "module.study.classes.enter_teacher_view",
                                     ),
-                                )}">👁️</button>`
+                                )}">${escapeHtml(
+                                    i18n.t(
+                                        currentViewMode === "teacher"
+                                            ? "module.study.classes.enter_student_view"
+                                            : "module.study.classes.enter_teacher_view",
+                                    ),
+                                )}</button>`
                             : ""
                     }
                     ${

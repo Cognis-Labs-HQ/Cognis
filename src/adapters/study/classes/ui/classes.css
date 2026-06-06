@@ -691,6 +691,14 @@ body:not([data-theme="light"]) .classes-classroom-content {
     cursor: not-allowed;
 }
 
+.classes-toggle-view-btn {
+    width: auto;
+    min-width: 0;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+}
+
 .classes-classroom-editor {
     min-height: 72px;
     border: 1px solid var(--border);
@@ -737,6 +745,10 @@ body:not([data-theme="light"]) .classes-classroom-content {
     white-space: nowrap;
 }
 
+[data-footer-slot="class-selector"] {
+    margin-left: auto;
+}
+
 .classes-footer-select {
     height: 26px;
     padding: 0 6px;
@@ -763,4 +775,10 @@ body:not([data-theme="light"]) .classes-classroom-content {
 
 .classes-footer-toggle-btn:hover {
     background: var(--surface);
+}
+
+body:not([data-theme="light"]) .classes-footer-select,
+body:not([data-theme="light"]) .classes-footer-toggle-btn {
+    background: var(--surface);
+    border-color: var(--border-strong);
 }

@@ -130,6 +130,35 @@ function createSocialPresenceRoutes(
     tracker: PresenceTracker,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const resolvePresenceClaims = (
+        req: IncomingMessage,
+        res: ServerResponse,
+    ): { sub: string; role: string } | null => {
+        const directClaims = ctx.getAuthClaims(req);
+        if (directClaims) return directClaims;
+        const reqUrl = new URL(req.url ?? "/", "http://localhost");
+        const streamToken = String(reqUrl.searchParams.get("token") ?? "").trim();
+        if (!streamToken) {
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: { code: "unauthorized", message: "Login required" },
+                }),
+            );
+            return null;
+        }
+        const tokenClaims = ctx.lookupAccessToken(streamToken);
+        if (!tokenClaims || tokenClaims.revoked) {
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: { code: "unauthorized", message: "Login required" },
+                }),
+            );
+            return null;
+        }
+        return { sub: tokenClaims.sub, role: tokenClaims.role };
+    };
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -179,7 +208,7 @@ function createSocialPresenceRoutes(
             url.pathname === "/api/v1/social/presence/stream" &&
             req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = resolvePresenceClaims(req, res);
             if (!claims) return true;
             res.writeHead(200, {
                 "content-type": "text/event-stream",

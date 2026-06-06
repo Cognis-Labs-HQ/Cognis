@@ -1,4 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 
 export async function openCreateClassPopup({
     i18n,
@@ -18,17 +19,6 @@ export async function openCreateClassPopup({
     const languagesPayload = languagesResponse.ok
         ? await languagesResponse.json()
         : { data: [] };
-    const languageOptions = (
-        Array.isArray(languagesPayload?.data) ? languagesPayload.data : []
-    )
-        .map((language) => {
-            const languageCode = String(language?.code ?? "").trim();
-            if (!languageCode) return "";
-            const languageName = String(language?.name ?? "").trim();
-            return `<option value="${escapeHtml(languageCode)}">${escapeHtml(languageName || languageCode)}</option>`;
-        })
-        .filter(Boolean)
-        .join("");
     const languageNameByCode = new Map(
         (Array.isArray(languagesPayload?.data) ? languagesPayload.data : [])
             .map((language) => [
@@ -54,37 +44,89 @@ export async function openCreateClassPopup({
     ).trim();
     selectedLanguageCode = initialLanguageCode;
     className = buildDefaultClassName(initialLanguageCode);
-    const approvalReasonField = requireTeacherManualApproval
-        ? `<label class="stack">
-                ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
-                <textarea id="classes-create-reason" class="theme-select" rows="5"></textarea>
-            </label>`
-        : "";
+    const createClassFields = [
+        {
+            name: "languageCode",
+            labelKey: "ui.reuse.language",
+            type: "select",
+            required: true,
+            value: selectedLanguageCode,
+            options: (Array.isArray(languagesPayload?.data)
+                ? languagesPayload.data
+                : []
+            )
+                .map((language) => {
+                    const languageCode = String(language?.code ?? "").trim();
+                    if (!languageCode) return null;
+                    const languageName = String(language?.name ?? "").trim();
+                    return {
+                        value: languageCode,
+                        label: languageName || languageCode,
+                    };
+                })
+                .filter(Boolean),
+        },
+        {
+            name: "className",
+            labelKey: "module.study.classes.class_name_label",
+            type: "text",
+            required: true,
+            value: className,
+            attributes: { maxlength: 120 },
+        },
+        {
+            name: "studentLimit",
+            labelKey: "module.study.classes.class_cap_label",
+            type: "number",
+            required: true,
+            value: String(studentLimit),
+            attributes: { min: 1, max: 100, step: 1 },
+        },
+        {
+            name: "joinMode",
+            labelKey: "module.study.classes.join_mode_label",
+            type: "select",
+            required: true,
+            value: joinMode,
+            options: [
+                {
+                    value: "open",
+                    label: i18n.t("module.study.classes.join_mode_open"),
+                },
+                {
+                    value: "on_request",
+                    label: i18n.t("module.study.classes.join_mode_on_request"),
+                },
+                {
+                    value: "invite_only",
+                    label: i18n.t("module.study.classes.join_mode_invite_only"),
+                },
+            ],
+        },
+    ];
+    if (requireTeacherManualApproval) {
+        createClassFields.push({
+            name: "reason",
+            labelKey: "module.study.classes.teacher_application_reason",
+            type: "textarea",
+            required: true,
+            value: reason,
+            attributes: { rows: 5 },
+        });
+    }
+    const createClassFormBuilder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "classes-create-class-form",
+            includeSubmitButton: false,
+            submitLabelKey: "module.study.classes.create_class",
+            fields: createClassFields,
+        },
+    );
+    let createClassFormController = null;
     const action = await openPopup({
         title: i18n.t("module.study.classes.create_class"),
-        body: `
-            <label class="stack">
-                ${escapeHtml(i18n.t("ui.reuse.language"))}
-                <select id="classes-create-language" class="theme-select">${languageOptions}</select>
-            </label>
-            <label class="stack">
-                ${escapeHtml(i18n.t("module.study.classes.class_name_label"))}
-                <input id="classes-create-name" class="theme-select" type="text" value="${escapeHtml(className)}" maxlength="120" />
-            </label>
-            <label class="stack">
-                ${escapeHtml(i18n.t("module.study.classes.class_cap_label"))}
-                <input id="classes-create-student-limit" class="theme-select" type="number" min="1" max="100" step="1" value="20" />
-            </label>
-            <label class="stack">
-                ${escapeHtml(i18n.t("module.study.classes.join_mode_label"))}
-                <select id="classes-create-join-mode" class="theme-select">
-                    <option value="open">${escapeHtml(i18n.t("module.study.classes.join_mode_open"))}</option>
-                    <option value="on_request" selected>${escapeHtml(i18n.t("module.study.classes.join_mode_on_request"))}</option>
-                    <option value="invite_only">${escapeHtml(i18n.t("module.study.classes.join_mode_invite_only"))}</option>
-                </select>
-            </label>
-            ${approvalReasonField}
-        `,
+        body: createClassFormBuilder.render(),
         variant: "confirm",
         actions: [
             {
@@ -101,45 +143,21 @@ export async function openCreateClassPopup({
         closeProtection: true,
         onAction: (actionId, overlay) => {
             if (actionId !== "submit") return true;
-            const languageSelect = overlay.querySelector(
-                "#classes-create-language",
-            );
-            const joinModeSelect = overlay.querySelector(
-                "#classes-create-join-mode",
-            );
-            const classNameInput = overlay.querySelector(
-                "#classes-create-name",
-            );
-            const studentLimitInput = overlay.querySelector(
-                "#classes-create-student-limit",
-            );
-            const reasonInput = overlay.querySelector("#classes-create-reason");
-            if (actionId === "submit") {
-                const languageSelectForName = overlay.querySelector(
-                    "#classes-create-language",
-                );
-                const currentLanguageCode = String(
-                    languageSelectForName?.value ?? "",
-                ).trim();
-                if (
-                    classNameInput instanceof HTMLInputElement &&
-                    !classNameInput.value.trim()
-                ) {
-                    classNameInput.value =
-                        buildDefaultClassName(currentLanguageCode);
-                }
+            if (!createClassFormController?.validateAll(true)) {
+                return false;
             }
-            selectedLanguageCode = String(languageSelect?.value ?? "").trim();
-            joinMode = String(joinModeSelect?.value ?? "on_request").trim();
-            className = String(classNameInput?.value ?? "").trim();
-            const parsedStudentLimit = Number(studentLimitInput?.value);
+            const fieldValues = createClassFormController.getValues();
+            selectedLanguageCode = String(fieldValues.languageCode ?? "").trim();
+            joinMode = String(fieldValues.joinMode ?? "on_request").trim();
+            className = String(fieldValues.className ?? "").trim();
+            const parsedStudentLimit = Number(fieldValues.studentLimit ?? "");
             studentLimit =
                 Number.isInteger(parsedStudentLimit) &&
                 parsedStudentLimit > 0 &&
                 parsedStudentLimit <= 100
                     ? parsedStudentLimit
                     : 20;
-            reason = String(reasonInput?.value ?? "").trim();
+            reason = String(fieldValues.reason ?? "").trim();
             selectedAction = actionId;
             if (!selectedLanguageCode) return false;
             if (!className) return false;
@@ -147,10 +165,15 @@ export async function openCreateClassPopup({
             return true;
         },
         onOpen: (overlay) => {
+            const popupForm = overlay.querySelector("#classes-create-class-form");
+            createClassFormController =
+                popupForm instanceof HTMLFormElement
+                    ? createClassFormBuilder.attach(popupForm)
+                    : null;
             const languageSelect = overlay.querySelector(
-                "#classes-create-language",
+                '[name="languageCode"]',
             );
-            const nameInput = overlay.querySelector("#classes-create-name");
+            const nameInput = overlay.querySelector('[name="className"]');
             if (
                 languageSelect instanceof HTMLSelectElement &&
                 nameInput instanceof HTMLInputElement

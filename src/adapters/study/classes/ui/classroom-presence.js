@@ -34,7 +34,13 @@ export function createClassroomPresenceController({
             { signal },
         );
         try {
-            stream = new EventSource("/api/v1/social/presence/stream");
+            const accessToken = String(
+                localStorage.getItem("cognis_access_token") ?? "",
+            ).trim();
+            const streamUrl = accessToken
+                ? `/api/v1/social/presence/stream?token=${encodeURIComponent(accessToken)}`
+                : "/api/v1/social/presence/stream";
+            stream = new EventSource(streamUrl);
             stream.addEventListener("presence", (event) => {
                 try {
                     const payload = JSON.parse(event.data ?? "{}");

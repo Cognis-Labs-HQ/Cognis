@@ -37,6 +37,7 @@ import { ensureSchema, ensureStudyLanguagesSchema } from "./schema.js";
 import {
     approveTeacherRequest,
     getTeacherRequest,
+    listTeacherRequestsForAccount,
     listPendingRequests,
     rejectTeacherRequest,
     submitTeacherRequest,
@@ -339,6 +340,12 @@ export class DbClassesStore {
 
     async listPendingRequests(): Promise<TeacherRequestRow[]> {
         return listPendingRequests(this.db);
+    }
+
+    async listTeacherRequestsForAccount(
+        accountId: string,
+    ): Promise<TeacherRequestRow[]> {
+        return listTeacherRequestsForAccount(this.db, accountId);
     }
 
     async submitTeacherRequest(

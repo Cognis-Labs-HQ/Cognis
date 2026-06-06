@@ -85,11 +85,11 @@ export async function mount(root, { signal } = {}) {
                         { method: "POST" },
                     );
                     showToast(
-                        i18n.t(
-                            response.ok
-                                ? "module.study.classes.review_saved"
-                                : "module.study.classes.review_failed",
-                        ),
+                        response.ok
+                            ? reviewAction === "approve"
+                                ? "Request Approved"
+                                : "Request Declined"
+                            : i18n.t("module.study.classes.review_failed"),
                         { variant: response.ok ? "success" : "error" },
                     );
                     if (!response.ok) return;

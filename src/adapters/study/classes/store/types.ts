@@ -1,4 +1,8 @@
-export type TeacherRequestStatus = "pending" | "approved" | "rejected";
+export type TeacherRequestStatus =
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "expired";
 export type ClassJoinMode = "invite_only" | "on_request" | "open";
 
 export interface StudyLanguageRow {

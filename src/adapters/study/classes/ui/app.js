@@ -33,6 +33,7 @@ export async function mount(root, { signal } = {}) {
     let managingClassId = "";
     let managePanelMembers = [];
     let managePanelRequests = [];
+    let pendingTeacherRequests = [];
 
     if (!isTeacher) {
         try {
@@ -104,6 +105,24 @@ export async function mount(root, { signal } = {}) {
         } catch {
             requireTeacherManualApproval = true;
         }
+
+        async function loadPendingTeacherRequests() {
+            try {
+                const response = await apiFetch(
+                    "/api/v1/study/teacher-requests?scope=mine",
+                );
+                if (!response.ok) {
+                    pendingTeacherRequests = [];
+                    return;
+                }
+                const payload = await response.json();
+                pendingTeacherRequests = Array.isArray(payload?.data)
+                    ? payload.data
+                    : [];
+            } catch {
+                pendingTeacherRequests = [];
+            }
+        }
     }
 
     async function loadManagePanel(classId) {
@@ -132,6 +151,7 @@ export async function mount(root, { signal } = {}) {
         loadClasses(),
         loadStudyLanguages(),
         loadTeacherApplicationPolicy(),
+        loadPendingTeacherRequests(),
     ]);
 
     function buildFilterLanguages() {
@@ -236,7 +256,21 @@ export async function mount(root, { signal } = {}) {
     function renderClassList() {
         const allLanguages = buildFilterLanguages();
         const filterRow = renderFilterRow(allLanguages);
-        if (!classes.length) {
+        const pendingItems = pendingTeacherRequests.length
+            ? `<ul class="classes-list">
+                  ${pendingTeacherRequests
+                      .map(
+                          (request) => `
+                    <li class="classes-item">
+                      <span class="classes-language">${escapeHtml(request.className || request.languageCode)}</span>
+                      <span class="classes-status-badge pending">${escapeHtml(i18n.t("module.study.classes.join_pending"))}</span>
+                    </li>
+                  `,
+                      )
+                      .join("")}
+              </ul>`
+            : "";
+        if (!classes.length && !pendingTeacherRequests.length) {
             return `
               ${filterRow}
               <p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.empty"))}</p>
@@ -272,7 +306,8 @@ export async function mount(root, { signal } = {}) {
         `,
             )
             .join("");
-        return `${filterRow}<ul class="classes-list">${items}</ul>`;
+        const classItems = items ? `<ul class="classes-list">${items}</ul>` : "";
+        return `${filterRow}${pendingItems}${classItems}`;
     }
 
     function renderRequestForm() {
@@ -595,7 +630,10 @@ export async function mount(root, { signal } = {}) {
                                 i18n.t("module.study.classes.request_sent"),
                                 { variant: "success" },
                             );
-                            await loadClasses();
+                            await Promise.allSettled([
+                                loadClasses(),
+                                loadPendingTeacherRequests(),
+                            ]);
                             refreshSection();
                         } else {
                             showToast(

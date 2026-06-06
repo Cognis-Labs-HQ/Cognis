@@ -5,6 +5,36 @@ import { getTeacherClassForLanguage } from "./classes.js";
 import { rowToTeacherRequest } from "./rows.js";
 import type { ClassRow, TeacherRequestRow } from "./types.js";
 
+const TEACHER_REQUEST_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+function isExpiredPendingRequest(request: TeacherRequestRow): boolean {
+    if (request.status !== "pending") return false;
+    const createdAtTimestamp = Date.parse(String(request.createdAt ?? ""));
+    if (!Number.isFinite(createdAtTimestamp)) return false;
+    return Date.now() - createdAtTimestamp >= TEACHER_REQUEST_EXPIRY_MS;
+}
+
+async function expireRequest(
+    db: DbExecutor,
+    request: TeacherRequestRow,
+): Promise<TeacherRequestRow> {
+    const nowIso = new Date().toISOString();
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "teacher_requests",
+        set: {
+            status: "expired",
+            updated_at: nowIso,
+        },
+        where: [{ column: "id", value: request.id }],
+    });
+    return {
+        ...request,
+        status: "expired",
+        updatedAt: nowIso,
+    };
+}
+
 export async function getTeacherRequest(
     db: DbExecutor,
     accountId: string,
@@ -35,7 +65,48 @@ export async function getTeacherRequest(
     if (!result.rows?.length) {
         return null;
     }
-    return rowToTeacherRequest(result.rows[0] as Record<string, unknown>);
+    const request = rowToTeacherRequest(result.rows[0] as Record<string, unknown>);
+    if (!isExpiredPendingRequest(request)) {
+        return request;
+    }
+    return expireRequest(db, request);
+}
+
+export async function listTeacherRequestsForAccount(
+    db: DbExecutor,
+    accountId: string,
+): Promise<TeacherRequestRow[]> {
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "teacher_requests",
+        columns: [
+            "id",
+            "account_id",
+            "language_code",
+            "class_name",
+            "student_limit",
+            "join_mode",
+            "is_listed",
+            "reason",
+            "status",
+            "reviewed_by",
+            "created_at",
+            "updated_at",
+        ],
+        where: [{ column: "account_id", value: accountId }],
+        orderBy: [{ column: "created_at", direction: "DESC" }],
+    });
+    const rows = (result.rows ?? []).map((row) =>
+        rowToTeacherRequest(row as Record<string, unknown>),
+    );
+    const normalized = await Promise.all(
+        rows.map(async (request) =>
+            isExpiredPendingRequest(request)
+                ? expireRequest(db, request)
+                : request,
+        ),
+    );
+    return normalized;
 }
 
 export async function listPendingRequests(
@@ -61,9 +132,17 @@ export async function listPendingRequests(
         where: [{ column: "status", value: "pending" }],
         orderBy: [{ column: "created_at", direction: "ASC" }],
     });
-    return (result.rows ?? []).map((row) =>
+    const rows = (result.rows ?? []).map((row) =>
         rowToTeacherRequest(row as Record<string, unknown>),
     );
+    const normalized = await Promise.all(
+        rows.map(async (request) =>
+            isExpiredPendingRequest(request)
+                ? expireRequest(db, request)
+                : request,
+        ),
+    );
+    return normalized.filter((request) => request.status === "pending");
 }
 
 export async function submitTeacherRequest(
@@ -76,7 +155,6 @@ export async function submitTeacherRequest(
     joinMode: ClassRow["joinMode"],
     isListed: boolean,
 ): Promise<TeacherRequestRow> {
-    const requestId = randomUUID();
     const nowIso = new Date().toISOString();
     const normalizedStudentLimit =
         Number.isInteger(studentLimit) &&
@@ -84,23 +162,44 @@ export async function submitTeacherRequest(
         studentLimit <= MAX_STUDENT_LIMIT
             ? Number(studentLimit)
             : DEFAULT_STUDENT_LIMIT;
-    await db.executeCommand({
-        option: "INSERT",
-        table: "teacher_requests",
-        values: {
-            id: requestId,
-            account_id: accountId,
-            language_code: languageCode,
-            class_name: className,
-            student_limit: normalizedStudentLimit,
-            join_mode: joinMode,
-            is_listed: isListed ? 1 : 0,
-            reason,
-            status: "pending",
-            created_at: nowIso,
-            updated_at: nowIso,
-        },
-    });
+    const existing = await getTeacherRequest(db, accountId, languageCode);
+    const requestId = existing?.id ?? randomUUID();
+    if (existing) {
+        await db.executeCommand({
+            option: "UPDATE",
+            table: "teacher_requests",
+            set: {
+                class_name: className,
+                student_limit: normalizedStudentLimit,
+                join_mode: joinMode,
+                is_listed: isListed ? 1 : 0,
+                reason,
+                status: "pending",
+                reviewed_by: null,
+                created_at: nowIso,
+                updated_at: nowIso,
+            },
+            where: [{ column: "id", value: existing.id }],
+        });
+    } else {
+        await db.executeCommand({
+            option: "INSERT",
+            table: "teacher_requests",
+            values: {
+                id: requestId,
+                account_id: accountId,
+                language_code: languageCode,
+                class_name: className,
+                student_limit: normalizedStudentLimit,
+                join_mode: joinMode,
+                is_listed: isListed ? 1 : 0,
+                reason,
+                status: "pending",
+                created_at: nowIso,
+                updated_at: nowIso,
+            },
+        });
+    }
     return {
         id: requestId,
         accountId,

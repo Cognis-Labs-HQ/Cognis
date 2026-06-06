@@ -153,14 +153,15 @@ export async function handleTeacherRequestsRoutes(
         );
         await options.dispatchToRole?.("admin", {
             category: "study",
-            subject: `Teacher application for ${languageCode}`,
-            body: `${claims.sub} applied to teach ${languageCode}.`,
+            subject: `Class request: ${className}`,
+            body: `${claims.sub} requested "${className}" for ${languageCode}.`,
             senderName: claims.sub,
-            actionUrl: "/classroom",
+            actionUrl: "/requests",
             metadata: {
                 requestId: request.id,
                 accountId: claims.sub,
                 languageCode,
+                className,
             },
         });
         options.log?.("info", "Submitted teacher request.", {
@@ -178,6 +179,16 @@ export async function handleTeacherRequestsRoutes(
         url.pathname === "/api/v1/study/teacher-requests" &&
         req.method === "GET"
     ) {
+        if (url.searchParams.get("scope") === "mine") {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const mine = await store.listTeacherRequestsForAccount(claims.sub);
+            jsonOk(
+                res,
+                mine.filter((request) => request.status === "pending"),
+            );
+            return true;
+        }
         if (!ctx.requireAuth(req, res, "admin")) return true;
         const pending = await store.listPendingRequests();
         jsonOk(res, pending);
