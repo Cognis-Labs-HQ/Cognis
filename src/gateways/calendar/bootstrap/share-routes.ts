@@ -247,15 +247,39 @@ export async function handleCalendarShareRoutes(input: {
         return true;
     }
     if (shareUsersUpdateMatch && input.req.method === "DELETE") {
-        const shareId = decodeURIComponent(shareUsersUpdateMatch[2]);
+        const shareSelector = decodeURIComponent(shareUsersUpdateMatch[2]);
+        const shares = await input.shareRegistry.listCalendarUserShares(
+            input.claims.sub,
+            ownerCalendarId,
+        );
+        const targetShare = shares.find(
+            (share) =>
+                share.id === shareSelector ||
+                share.recipientAccountId === shareSelector,
+        );
+        if (!targetShare) {
+            sendCalendarError(input.res, "not_found", "Share not found.", 404);
+            return true;
+        }
         const deleted = await input.shareRegistry.deleteCalendarUserShare({
             ownerAccountId: input.claims.sub,
             ownerCalendarId,
-            shareId,
+            shareId: targetShare.id,
         });
         if (!deleted) {
             sendCalendarError(input.res, "not_found", "Share not found.", 404);
             return true;
+        }
+        const recipientSharedCalendar = input.gateway.getOwnedCalendar(
+            targetShare.recipientAccountId,
+            targetShare.recipientCalendarId,
+        );
+        if (recipientSharedCalendar?.visibility === "shared") {
+            input.gateway.deleteCalendar({
+                ownerAccountId: targetShare.recipientAccountId,
+                calendarId: targetShare.recipientCalendarId,
+            });
+            await input.gateway.flushStore();
         }
         sendJson(input.res, 200, { data: { deleted: true } });
         return true;

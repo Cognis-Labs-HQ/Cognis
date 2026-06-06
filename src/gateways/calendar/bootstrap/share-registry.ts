@@ -442,12 +442,14 @@ export class CalendarShareRegistry {
         recipientCalendarId: string,
     ): Promise<CalendarUserShareRegistryRecord | null> {
         if (!this.db) {
-            return (
+            const share =
                 Array.from(this.memoryUserShares.values()).find(
-                    (share) =>
-                        share.recipientCalendarId === recipientCalendarId,
-                ) ?? null
-            );
+                    (entry) => entry.recipientCalendarId === recipientCalendarId,
+                ) ?? null;
+            if (!share) return null;
+            if (!this.isExpiredUserShare(share)) return share;
+            this.memoryUserShares.delete(share.id);
+            return null;
         }
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -473,7 +475,7 @@ export class CalendarShareRegistry {
         });
         const row = result.rows?.[0];
         if (!row) return null;
-        return {
+        const share: CalendarUserShareRegistryRecord = {
             id: String(row.id ?? ""),
             ownerAccountId: String(row.owner_account_id ?? ""),
             ownerCalendarId: String(row.owner_calendar_id ?? ""),
