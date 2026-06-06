@@ -231,15 +231,19 @@ export class CalendarShareRegistry {
                     share.ownerAccountId === ownerAccountId &&
                     share.ownerCalendarId === ownerCalendarId,
             );
-            const activeShares = shares.filter(
-                (share) => !this.isExpiredUserShare(share),
+            const expiredShareIds = new Set(
+                shares
+                    .filter((share) => this.isExpiredUserShare(share))
+                    .map((share) => share.id),
             );
-            if (activeShares.length !== shares.length) {
-                for (const share of shares) {
-                    if (!this.isExpiredUserShare(share)) continue;
-                    this.memoryUserShares.delete(share.id);
+            if (expiredShareIds.size > 0) {
+                for (const shareId of expiredShareIds) {
+                    this.memoryUserShares.delete(shareId);
                 }
             }
+            const activeShares = shares.filter(
+                (share) => !expiredShareIds.has(share.id),
+            );
             return activeShares;
         }
         const result = await this.db.executeCommand({
@@ -287,16 +291,20 @@ export class CalendarShareRegistry {
             createdAt: String(row.created_at ?? ""),
             updatedAt: String(row.updated_at ?? ""),
         }));
-        const activeShares = shares.filter(
-            (share) => !this.isExpiredUserShare(share),
+        const expiredShares = shares.filter((share) =>
+            this.isExpiredUserShare(share),
         );
-        if (activeShares.length !== shares.length) {
+        if (expiredShares.length > 0) {
             await Promise.all(
-                shares
-                    .filter((share) => this.isExpiredUserShare(share))
-                    .map((share) => this.deleteCalendarUserShareById(share.id)),
+                expiredShares.map((share) =>
+                    this.deleteCalendarUserShareById(share.id),
+                ),
             );
         }
+        const expiredShareIds = new Set(expiredShares.map((share) => share.id));
+        const activeShares = shares.filter(
+            (share) => !expiredShareIds.has(share.id),
+        );
         return activeShares;
     }
 
@@ -384,7 +392,9 @@ export class CalendarShareRegistry {
             input.ownerAccountId,
             input.ownerCalendarId,
         );
-        const existingShare = shares.find((share) => share.id === input.shareId);
+        const existingShare = shares.find(
+            (share) => share.id === input.shareId,
+        );
         if (!existingShare) return null;
         const now = new Date().toISOString();
         const nextShare: CalendarUserShareRegistryRecord = {
@@ -504,7 +514,9 @@ export class CalendarShareRegistry {
         return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
     }
 
-    private isExpiredUserShare(share: CalendarUserShareRegistryRecord): boolean {
+    private isExpiredUserShare(
+        share: CalendarUserShareRegistryRecord,
+    ): boolean {
         if (!share.expiresAt) return false;
         const expiresAtMs = Date.parse(share.expiresAt);
         return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();

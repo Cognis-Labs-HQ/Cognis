@@ -43,14 +43,20 @@ export function getSelectedReminderOffsets(overlay) {
 function buildReminderSummary(i18n, offsets) {
     if (offsets.length === 0) return i18n.t("gateway.calendar.reminder_none");
     const selectedSet = new Set(offsets);
-    return REMINDER_OFFSET_OPTIONS.filter((option) => selectedSet.has(option.minutes))
+    return REMINDER_OFFSET_OPTIONS.filter((option) =>
+        selectedSet.has(option.minutes),
+    )
         .map((option) => i18n.t(option.key))
         .join(", ");
 }
 
 export function bindReminderFieldBehavior({ overlay, i18n, signal }) {
-    const reminderDetails = overlay.querySelector("#calendar-popup-reminder-menu");
-    const summaryText = overlay.querySelector("#calendar-popup-reminder-summary");
+    const reminderDetails = overlay.querySelector(
+        "#calendar-popup-reminder-menu",
+    );
+    const summaryText = overlay.querySelector(
+        "#calendar-popup-reminder-summary",
+    );
     if (!(reminderDetails instanceof HTMLElement)) return;
     const refreshSummary = () => {
         if (!(summaryText instanceof HTMLElement)) return;

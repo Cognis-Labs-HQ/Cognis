@@ -96,6 +96,10 @@ export async function handleCalendarShareRoutes(input: {
             expiresInHours?: unknown;
             name?: unknown;
         };
+        const shareName =
+            typeof body.name === "string" && body.name.trim()
+                ? body.name.trim()
+                : createCalendarShareName();
         const calendar = input.gateway.getOwnedCalendar(
             input.claims.sub,
             calendarId,
@@ -112,10 +116,7 @@ export async function handleCalendarShareRoutes(input: {
         await input.shareRegistry.createShareLink({
             ownerAccountId: input.claims.sub,
             calendarId,
-            name:
-                typeof body.name === "string" && body.name.trim()
-                    ? body.name
-                    : createCalendarShareName(),
+            name: shareName,
             passphrase:
                 calendar.visibility === "private"
                     ? createCalendarSharePassphrase()
@@ -198,12 +199,7 @@ export async function handleCalendarShareRoutes(input: {
                     : resolveShareExpiry(body.expiresInHours),
         });
         if (!updatedShare) {
-            sendCalendarError(
-                input.res,
-                "not_found",
-                "Share not found.",
-                404,
-            );
+            sendCalendarError(input.res, "not_found", "Share not found.", 404);
             return true;
         }
         sendJson(input.res, 200, {
@@ -227,12 +223,7 @@ export async function handleCalendarShareRoutes(input: {
             shareId,
         });
         if (!deleted) {
-            sendCalendarError(
-                input.res,
-                "not_found",
-                "Share not found.",
-                404,
-            );
+            sendCalendarError(input.res, "not_found", "Share not found.", 404);
             return true;
         }
         sendJson(input.res, 200, { data: { deleted: true } });

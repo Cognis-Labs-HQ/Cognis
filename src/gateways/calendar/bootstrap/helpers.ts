@@ -108,6 +108,8 @@ export function buildCalendarShareData(input: {
 }
 
 export function createCalendarSharePassphrase(): string {
+    // 5 x 4-char base64url segments gives a human-readable passphrase with
+    // strong entropy while remaining easy to copy and verify visually.
     const words = Array.from({ length: 5 }, () =>
         randomBytes(3).toString("base64url").slice(0, 4).toLowerCase(),
     );
@@ -115,7 +117,7 @@ export function createCalendarSharePassphrase(): string {
 }
 
 export function createCalendarShareName(): string {
-    return randomBytes(5).toString("base64url").slice(0, 8).toLowerCase();
+    return randomBytes(4).toString("hex");
 }
 
 export function resolveShareExpiry(expiresInHours: unknown): string {

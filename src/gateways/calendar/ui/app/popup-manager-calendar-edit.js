@@ -47,6 +47,27 @@ function resolveExpiryValueFromIso(expiresAt) {
     return "720";
 }
 
+function mapSearchResultToShareUser(entry) {
+    const username = normalizeUserIdentifier(entry);
+    const handle = String(entry?.handle ?? entry?.meta ?? entry?.id ?? "")
+        .trim()
+        .replace(/^@/, "")
+        .toLowerCase();
+    const accountId = String(entry?.accountId ?? username ?? "")
+        .trim()
+        .toLowerCase();
+    const userIdentifier = username || handle;
+    if (!accountId || !userIdentifier) return null;
+    const displayName = String(entry?.displayName ?? entry?.label ?? "").trim();
+    const avatarKey = String(entry?.avatarKey ?? entry?.avatar ?? "").trim();
+    return {
+        accountId,
+        handle: userIdentifier,
+        displayName,
+        avatarKey,
+    };
+}
+
 function renderCalendarShareCopyField({
     i18n,
     escapeHtml,
@@ -191,7 +212,7 @@ function bindCalendarShareControls({
                 return `<div class="calendar-user-share-entry" data-calendar-user-share-id="${escapeHtml(String(entry.shareId ?? ""))}">
                   <div class="calendar-user-share-entry-profile">${identityCard}</div>
                   <div class="calendar-user-share-entry-controls">
-                    <label><span>${escapeHtml(i18n.t("gateway.calendar.share_link_permission_read"))}</span>
+                    <label><span>${escapeHtml(i18n.t("gateway.calendar.share_link_permission"))}</span>
                       <select data-calendar-user-share-permission>
                         <option value="read"${entry.permission === "write" ? "" : " selected"}>${escapeHtml(i18n.t("gateway.calendar.share_link_permission_read"))}</option>
                         <option value="write"${entry.permission === "write" ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.share_link_permission_write"))}</option>
@@ -267,35 +288,12 @@ function bindCalendarShareControls({
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
                 const users = Array.isArray(payload?.data) ? payload.data : [];
-                const mappedUsers = users.map((entry) => {
-                    const username = normalizeUserIdentifier(entry);
-                    const handle = String(
-                        entry?.handle ?? entry?.meta ?? entry?.id ?? "",
-                    )
-                        .trim()
-                        .replace(/^@/, "")
-                        .toLowerCase();
-                    const accountId = String(entry?.accountId ?? username ?? "")
-                        .trim()
-                        .toLowerCase();
-                    const userIdentifier = username || handle;
-                    if (!accountId || !userIdentifier) return null;
-                    const displayName = String(
-                        entry?.displayName ?? entry?.label ?? "",
-                    ).trim();
-                    const avatarKey = String(
-                        entry?.avatarKey ?? entry?.avatar ?? "",
-                    ).trim();
-                    return {
-                        accountId,
-                        handle: userIdentifier,
-                        displayName,
-                        avatarKey,
-                    };
-                });
+                const mappedUsers = users.map(mapSearchResultToShareUser);
                 const selectedUserIds = new Set(
                     selectedShareUsers.map((entry) =>
-                        String(entry.accountId ?? "").trim().toLowerCase(),
+                        String(entry.accountId ?? "")
+                            .trim()
+                            .toLowerCase(),
                     ),
                 );
                 const seen = new Set();
@@ -486,7 +484,9 @@ function bindCalendarShareControls({
             void updateUserShare(shareId, { permission, expiresInHours });
         });
         userChips.addEventListener("click", (event) => {
-            const button = event.target.closest("[data-calendar-user-share-delete]");
+            const button = event.target.closest(
+                "[data-calendar-user-share-delete]",
+            );
             if (!(button instanceof HTMLElement)) return;
             const shareId = String(
                 button.getAttribute("data-calendar-user-share-delete") ?? "",
@@ -522,7 +522,9 @@ function bindCalendarShareControls({
             input.type = input.type === "password" ? "text" : "password";
             return;
         }
-        const deleteButton = event.target.closest("[data-calendar-share-delete]");
+        const deleteButton = event.target.closest(
+            "[data-calendar-share-delete]",
+        );
         if (!(deleteButton instanceof HTMLElement)) return;
         event.preventDefault();
         event.stopPropagation();

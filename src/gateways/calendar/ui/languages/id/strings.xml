@@ -120,6 +120,7 @@
   <string name="gateway.calendar.delete_calendar_success">Kalender dihapus.</string>
   <string name="gateway.calendar.delete_calendar_failed">Tidak dapat menghapus kalender.</string>
   <string name="gateway.calendar.share_calendar">Bagikan Kalender</string>
+  <string name="gateway.calendar.share_link_permission">Izin</string>
   <string name="gateway.calendar.share_link_permission_read">Hanya Baca</string>
   <string name="gateway.calendar.share_link_permission_write">Baca &amp; Tulis</string>
   <string name="gateway.calendar.share_link_expiry_1h">Kedaluwarsa dalam 1 jam</string>

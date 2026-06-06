@@ -1,0 +1,62 @@
+.calendar-share-entry-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.calendar-share-delete-btn,
+.calendar-user-share-delete-btn,
+.calendar-share-secret-toggle {
+    flex: 0 0 auto;
+    min-width: 1.85rem;
+    padding: 0.2rem 0.35rem;
+}
+
+.calendar-reminder-options {
+    margin-top: 0.35rem;
+}
+
+.calendar-reminder-menu {
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    padding: 0.15rem 0.35rem 0.35rem;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+.calendar-reminder-menu-summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.25rem 0.2rem;
+}
+
+.calendar-user-share-list {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.calendar-user-share-entry {
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    padding: 0.45rem 0.55rem;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card {
+    align-items: flex-start;
+}
+
+.calendar-user-share-entry-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: end;
+}
+
+.calendar-user-share-entry-controls label {
+    display: grid;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    flex: 1 1 9rem;
+}
