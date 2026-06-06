@@ -173,6 +173,11 @@ test("calendar composer supports multiple reminders and remembers selected view"
         POPUP_REMINDERS_SOURCE,
         /name="calendar-popup-reminder-offset"/,
     );
+    assert.match(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
+    assert.match(
+        POPUP_REMINDERS_SOURCE,
+        /gateway\.calendar\.reminders_default_tooltip/,
+    );
     assert.match(POPUP_MANAGER_SOURCE, /reminderOffsetsMinutes/);
     assert.match(APP_SOURCE, /SELECTED_VIEW_STORAGE_KEY/);
     assert.match(APP_SOURCE, /loadSelectedViewPreference/);
@@ -252,13 +257,25 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-name/);
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-expiry/);
-    assert.match(
+    assert.doesNotMatch(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /gateway\.calendar\.share_link_regenerate/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /calendar-share-entry-summary/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-share-delete/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-user-share-permission/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-user-share-expiry/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,

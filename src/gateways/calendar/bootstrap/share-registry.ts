@@ -23,6 +23,7 @@ export type CalendarUserShareRegistryRecord = {
     recipientDisplayName: string | null;
     recipientAvatarKey: string | null;
     permission: "read" | "write";
+    expiresAt: string;
     createdAt: string;
     updatedAt: string;
 };
@@ -87,6 +88,7 @@ export class CalendarShareRegistry {
                 { name: "recipient_display_name", type: "text" },
                 { name: "recipient_avatar_key", type: "text" },
                 { name: "permission", type: "text", notNull: true },
+                { name: "expires_at", type: "text", notNull: true },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
             ],
@@ -144,6 +146,25 @@ export class CalendarShareRegistry {
             links,
         });
         return shareLink;
+    }
+
+    async deleteShareLink(input: {
+        ownerAccountId: string;
+        calendarId: string;
+        shareId: string;
+    }): Promise<boolean> {
+        const links = await this.listShareLinks(
+            input.ownerAccountId,
+            input.calendarId,
+        );
+        const filteredLinks = links.filter((link) => link.id !== input.shareId);
+        if (filteredLinks.length === links.length) return false;
+        await this.writeShareLinks({
+            ownerAccountId: input.ownerAccountId,
+            calendarId: input.calendarId,
+            links: filteredLinks,
+        });
+        return true;
     }
 
     async resolveShareLink(
@@ -205,11 +226,21 @@ export class CalendarShareRegistry {
         ownerCalendarId: string,
     ): Promise<CalendarUserShareRegistryRecord[]> {
         if (!this.db) {
-            return Array.from(this.memoryUserShares.values()).filter(
+            const shares = Array.from(this.memoryUserShares.values()).filter(
                 (share) =>
                     share.ownerAccountId === ownerAccountId &&
                     share.ownerCalendarId === ownerCalendarId,
             );
+            const activeShares = shares.filter(
+                (share) => !this.isExpiredUserShare(share),
+            );
+            if (activeShares.length !== shares.length) {
+                for (const share of shares) {
+                    if (!this.isExpiredUserShare(share)) continue;
+                    this.memoryUserShares.delete(share.id);
+                }
+            }
+            return activeShares;
         }
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -224,6 +255,7 @@ export class CalendarShareRegistry {
                 "recipient_display_name",
                 "recipient_avatar_key",
                 "permission",
+                "expires_at",
                 "created_at",
                 "updated_at",
             ],
@@ -232,7 +264,7 @@ export class CalendarShareRegistry {
                 { column: "owner_calendar_id", value: ownerCalendarId },
             ],
         });
-        return (result.rows ?? []).map((row) => ({
+        const shares = (result.rows ?? []).map((row) => ({
             id: String(row.id ?? ""),
             ownerAccountId: String(row.owner_account_id ?? ""),
             ownerCalendarId: String(row.owner_calendar_id ?? ""),
@@ -251,9 +283,21 @@ export class CalendarShareRegistry {
                     ? null
                     : String(row.recipient_avatar_key),
             permission: row.permission === "write" ? "write" : "read",
+            expiresAt: String(row.expires_at ?? "").trim(),
             createdAt: String(row.created_at ?? ""),
             updatedAt: String(row.updated_at ?? ""),
         }));
+        const activeShares = shares.filter(
+            (share) => !this.isExpiredUserShare(share),
+        );
+        if (activeShares.length !== shares.length) {
+            await Promise.all(
+                shares
+                    .filter((share) => this.isExpiredUserShare(share))
+                    .map((share) => this.deleteCalendarUserShareById(share.id)),
+            );
+        }
+        return activeShares;
     }
 
     async upsertCalendarUserShare(input: {
@@ -265,6 +309,7 @@ export class CalendarShareRegistry {
         recipientDisplayName?: string | null;
         recipientAvatarKey?: string | null;
         permission: "read" | "write";
+        expiresAt?: string;
     }): Promise<CalendarUserShareRegistryRecord> {
         const now = new Date().toISOString();
         const existing = (
@@ -286,6 +331,8 @@ export class CalendarShareRegistry {
             recipientDisplayName: input.recipientDisplayName ?? null,
             recipientAvatarKey: input.recipientAvatarKey ?? null,
             permission: input.permission,
+            expiresAt:
+                existing?.expiresAt ?? String(input.expiresAt ?? "").trim(),
             createdAt: existing?.createdAt ?? now,
             updatedAt: now,
         };
@@ -306,6 +353,7 @@ export class CalendarShareRegistry {
                 recipient_display_name: share.recipientDisplayName,
                 recipient_avatar_key: share.recipientAvatarKey,
                 permission: share.permission,
+                expires_at: share.expiresAt,
                 created_at: share.createdAt,
                 updated_at: share.updatedAt,
             },
@@ -317,11 +365,67 @@ export class CalendarShareRegistry {
                     recipient_display_name: share.recipientDisplayName,
                     recipient_avatar_key: share.recipientAvatarKey,
                     permission: share.permission,
+                    expires_at: share.expiresAt,
                     updated_at: share.updatedAt,
                 },
             },
         });
         return share;
+    }
+
+    async updateCalendarUserShare(input: {
+        ownerAccountId: string;
+        ownerCalendarId: string;
+        shareId: string;
+        permission?: "read" | "write";
+        expiresAt?: string;
+    }): Promise<CalendarUserShareRegistryRecord | null> {
+        const shares = await this.listCalendarUserShares(
+            input.ownerAccountId,
+            input.ownerCalendarId,
+        );
+        const existingShare = shares.find((share) => share.id === input.shareId);
+        if (!existingShare) return null;
+        const now = new Date().toISOString();
+        const nextShare: CalendarUserShareRegistryRecord = {
+            ...existingShare,
+            permission: input.permission ?? existingShare.permission,
+            expiresAt:
+                input.expiresAt !== undefined
+                    ? String(input.expiresAt).trim()
+                    : existingShare.expiresAt,
+            updatedAt: now,
+        };
+        if (!this.db) {
+            this.memoryUserShares.set(nextShare.id, nextShare);
+            return nextShare;
+        }
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "calendar_user_shares",
+            values: {
+                permission: nextShare.permission,
+                expires_at: nextShare.expiresAt,
+                updated_at: nextShare.updatedAt,
+            },
+            where: [{ column: "id", value: nextShare.id }],
+        });
+        return nextShare;
+    }
+
+    async deleteCalendarUserShare(input: {
+        ownerAccountId: string;
+        ownerCalendarId: string;
+        shareId: string;
+    }): Promise<boolean> {
+        const shares = await this.listCalendarUserShares(
+            input.ownerAccountId,
+            input.ownerCalendarId,
+        );
+        const targetShare = shares.find((share) => share.id === input.shareId);
+        if (!targetShare) return false;
+        await this.deleteCalendarUserShareById(targetShare.id);
+        return true;
     }
 
     async getByRecipientCalendarId(
@@ -348,6 +452,7 @@ export class CalendarShareRegistry {
                 "recipient_display_name",
                 "recipient_avatar_key",
                 "permission",
+                "expires_at",
                 "created_at",
                 "updated_at",
             ],
@@ -377,9 +482,13 @@ export class CalendarShareRegistry {
                     ? null
                     : String(row.recipient_avatar_key),
             permission: row.permission === "write" ? "write" : "read",
+            expiresAt: String(row.expires_at ?? "").trim(),
             createdAt: String(row.created_at ?? ""),
             updatedAt: String(row.updated_at ?? ""),
         };
+        if (!this.isExpiredUserShare(share)) return share;
+        await this.deleteCalendarUserShareById(share.id);
+        return null;
     }
 
     private normalizeOptionalString(value: unknown): string | null {
@@ -392,6 +501,12 @@ export class CalendarShareRegistry {
     ): boolean {
         if (!shareLink.expiresAt) return false;
         const expiresAtMs = Date.parse(shareLink.expiresAt);
+        return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
+    }
+
+    private isExpiredUserShare(share: CalendarUserShareRegistryRecord): boolean {
+        if (!share.expiresAt) return false;
+        const expiresAtMs = Date.parse(share.expiresAt);
         return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
     }
 
@@ -590,6 +705,18 @@ export class CalendarShareRegistry {
                     updated_at: now,
                 },
             },
+        });
+    }
+
+    private async deleteCalendarUserShareById(shareId: string): Promise<void> {
+        if (!this.db) {
+            this.memoryUserShares.delete(shareId);
+            return;
+        }
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "calendar_user_shares",
+            where: [{ column: "id", value: shareId }],
         });
     }
 }

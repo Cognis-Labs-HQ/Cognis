@@ -86,6 +86,7 @@ export interface CalendarUserShareRecord {
     recipientDisplayName: string | null;
     recipientAvatarKey: string | null;
     permission: "read" | "write";
+    expiresAt: string;
     createdAt: string;
     updatedAt: string;
 }

@@ -57,6 +57,8 @@
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Wiederholung</string>
   <string name="gateway.calendar.event_reminders">Erinnerungen</string>
+  <string name="gateway.calendar.reminder_none">Keine Erinnerungen</string>
+  <string name="gateway.calendar.reminders_default_tooltip">Diese Erinnerungen werden standardmäßig angewendet, sofern sie nicht pro Ereignis überschrieben werden.</string>
   <string name="gateway.calendar.reminder_5m">5 Minuten vorher</string>
   <string name="gateway.calendar.reminder_10m">10 Minuten vorher</string>
   <string name="gateway.calendar.reminder_15m">15 Minuten vorher</string>
@@ -125,8 +127,8 @@
   <string name="gateway.calendar.share_link_expiry_7d">Läuft in 7 Tagen ab</string>
   <string name="gateway.calendar.share_link_expiry_30d">Läuft in 30 Tagen ab</string>
   <string name="gateway.calendar.share_link_expiry_never">Läuft nie ab</string>
+  <string name="gateway.calendar.share_link_expiry">Ablauf</string>
   <string name="gateway.calendar.share_link_generate">Links Generieren</string>
-  <string name="gateway.calendar.share_link_regenerate">Links Neu Generieren</string>
   <string name="gateway.calendar.share_links_details">Kalender-Client-Links</string>
   <string name="gateway.calendar.share_link_copy">Kopieren</string>
   <string name="gateway.calendar.share_link_copied">Link kopiert!</string>

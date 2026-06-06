@@ -108,7 +108,14 @@ export function buildCalendarShareData(input: {
 }
 
 export function createCalendarSharePassphrase(): string {
-    return randomBytes(16).toString("hex");
+    const words = Array.from({ length: 5 }, () =>
+        randomBytes(3).toString("base64url").slice(0, 4).toLowerCase(),
+    );
+    return words.join("-");
+}
+
+export function createCalendarShareName(): string {
+    return randomBytes(5).toString("base64url").slice(0, 8).toLowerCase();
 }
 
 export function resolveShareExpiry(expiresInHours: unknown): string {

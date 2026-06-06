@@ -57,6 +57,8 @@
   <string name="gateway.calendar.event_status">状態</string>
   <string name="gateway.calendar.event_recurrence">繰り返し</string>
   <string name="gateway.calendar.event_reminders">リマインダー</string>
+  <string name="gateway.calendar.reminder_none">リマインダーなし</string>
+  <string name="gateway.calendar.reminders_default_tooltip">このリマインダー設定は、予定ごとに上書きしない限り既定で適用されます。</string>
   <string name="gateway.calendar.reminder_5m">5分前</string>
   <string name="gateway.calendar.reminder_10m">10分前</string>
   <string name="gateway.calendar.reminder_15m">15分前</string>
@@ -125,8 +127,8 @@
   <string name="gateway.calendar.share_link_expiry_7d">7日間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_30d">30日間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_never">期限なし</string>
+  <string name="gateway.calendar.share_link_expiry">有効期限</string>
   <string name="gateway.calendar.share_link_generate">リンクを生成</string>
-  <string name="gateway.calendar.share_link_regenerate">リンクを再生成</string>
   <string name="gateway.calendar.share_links_details">カレンダークライアント用リンク</string>
   <string name="gateway.calendar.share_link_copy">コピー</string>
   <string name="gateway.calendar.share_link_copied">リンクをコピーしました！</string>

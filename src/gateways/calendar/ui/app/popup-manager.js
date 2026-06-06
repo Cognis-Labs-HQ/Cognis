@@ -14,6 +14,7 @@ import {
 } from "./popup-manager-participant-utils.js";
 import { getEventParticipants } from "./popup-manager-participant-mappers.js";
 import {
+    bindReminderFieldBehavior,
     getSelectedReminderOffsets,
     renderReminderField,
 } from "./popup-manager-reminders.js";
@@ -701,6 +702,7 @@ export function createCalendarPopupManager({
                     );
                 }
                 bindAllDayComposerControls({ overlay, signal });
+                bindReminderFieldBehavior({ overlay, i18n, signal });
                 bindProfilePreviews(i18n);
                 renderParticipants(overlay);
                 renderParticipantOptions(overlay);

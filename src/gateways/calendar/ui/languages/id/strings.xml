@@ -57,6 +57,8 @@
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Pengulangan</string>
   <string name="gateway.calendar.event_reminders">Pengingat</string>
+  <string name="gateway.calendar.reminder_none">Tidak ada pengingat</string>
+  <string name="gateway.calendar.reminders_default_tooltip">Pengingat ini akan diterapkan secara default kecuali ditimpa per acara.</string>
   <string name="gateway.calendar.reminder_5m">5 menit sebelumnya</string>
   <string name="gateway.calendar.reminder_10m">10 menit sebelumnya</string>
   <string name="gateway.calendar.reminder_15m">15 menit sebelumnya</string>
@@ -125,8 +127,8 @@
   <string name="gateway.calendar.share_link_expiry_7d">Kedaluwarsa dalam 7 hari</string>
   <string name="gateway.calendar.share_link_expiry_30d">Kedaluwarsa dalam 30 hari</string>
   <string name="gateway.calendar.share_link_expiry_never">Tidak Pernah Kedaluwarsa</string>
+  <string name="gateway.calendar.share_link_expiry">Kedaluwarsa</string>
   <string name="gateway.calendar.share_link_generate">Buat Tautan</string>
-  <string name="gateway.calendar.share_link_regenerate">Buat Ulang Tautan</string>
   <string name="gateway.calendar.share_links_details">Tautan klien kalender</string>
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>

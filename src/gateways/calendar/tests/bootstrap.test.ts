@@ -372,6 +372,10 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     assert.equal(shareResponse.body.data[0].name, "Kitchen Tablet");
     assert.equal(typeof shareResponse.body.data[0].passphrase, "string");
     assert.ok(shareResponse.body.data[0].passphrase.length >= 20);
+    assert.match(
+        shareResponse.body.data[0].passphrase,
+        /^[a-z0-9_-]{4}(?:-[a-z0-9_-]{4}){4}$/,
+    );
     assert.ok(Date.parse(shareResponse.body.data[0].expiresAt) > Date.now());
 
     const repeatedShareResponse = await dispatchJson(
@@ -387,12 +391,19 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     );
     assert.equal(repeatedShareResponse.body.data[0].name, "Office Laptop");
     assert.equal(repeatedShareResponse.body.data[0].expiresAt, "");
+    const unnamedShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { name: "   ", expiresInHours: 1 },
+    );
+    assert.equal(unnamedShareResponse.statusCode, 200);
+    assert.match(unnamedShareResponse.body.data[0].name, /^[a-z0-9_-]{8}$/);
     const getShareResponse = await dispatchJson(
         "GET",
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
     );
     assert.equal(getShareResponse.statusCode, 200);
-    assert.equal(getShareResponse.body.data.length, 2);
+    assert.equal(getShareResponse.body.data.length, 3);
 
     const privateCaldavPath = shareResponse.body.data[0].caldavUrl;
     const privateIcsPath = shareResponse.body.data[0].icsUrl;
@@ -562,14 +573,23 @@ test("calendar shared write access appears in recipient list and supports event 
             recipientAccountId: "bob",
             recipientHandle: "bob",
             recipientDisplayName: "Bob",
-            permission: "write",
         },
     );
     assert.equal(shareUserResponse.statusCode, 200);
+    assert.equal(shareUserResponse.body.data.permission, "read");
     const sharedCalendarId = String(
         shareUserResponse.body.data.calendarId ?? "",
     );
     assert.ok(sharedCalendarId);
+    const shareId = String(shareUserResponse.body.data.id ?? "");
+    const elevateShareResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent(shareId)}`,
+        { permission: "write" },
+    );
+    assert.equal(elevateShareResponse.statusCode, 200);
+    assert.equal(elevateShareResponse.body.data.permission, "write");
 
     const bobCalendars = await dispatchJson(
         "GET",

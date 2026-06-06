@@ -4,6 +4,7 @@ import { normalizeCalendarColor } from "../color.js";
 import type { CoreCalendarGateway } from "../gateway/index.js";
 import {
     buildCalendarShareData,
+    createCalendarShareName,
     createCalendarSharePassphrase,
     errorMessage,
     resolveShareExpiry,
@@ -31,6 +32,45 @@ export async function handleCalendarShareRoutes(input: {
           >)
         | null;
 }): Promise<boolean> {
+    const shareLinkDeleteMatch = input.url.pathname.match(
+        /^\/api\/v1\/calendar\/calendars\/([^/]+)\/share\/([^/]+)$/,
+    );
+    if (shareLinkDeleteMatch && input.req.method === "DELETE") {
+        const calendarId = decodeURIComponent(shareLinkDeleteMatch[1]);
+        const shareId = decodeURIComponent(shareLinkDeleteMatch[2]);
+        const calendar = input.gateway.getOwnedCalendar(
+            input.claims.sub,
+            calendarId,
+        );
+        if (!calendar) {
+            sendCalendarError(
+                input.res,
+                "not_found",
+                "Calendar not found.",
+                404,
+            );
+            return true;
+        }
+        await input.shareRegistry.deleteShareLink({
+            ownerAccountId: input.claims.sub,
+            calendarId,
+            shareId,
+        });
+        const shareLinks = await input.shareRegistry.listShareLinks(
+            input.claims.sub,
+            calendarId,
+        );
+        sendJson(input.res, 200, {
+            data: shareLinks.map((shareLink) =>
+                buildCalendarShareData({
+                    shareLink,
+                    externalHost: input.externalHost,
+                }),
+            ),
+        });
+        return true;
+    }
+
     const shareCalendarMatch = input.url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)\/share$/,
     );
@@ -72,7 +112,10 @@ export async function handleCalendarShareRoutes(input: {
         await input.shareRegistry.createShareLink({
             ownerAccountId: input.claims.sub,
             calendarId,
-            name: typeof body.name === "string" ? body.name : null,
+            name:
+                typeof body.name === "string" && body.name.trim()
+                    ? body.name
+                    : createCalendarShareName(),
             passphrase:
                 calendar.visibility === "private"
                     ? createCalendarSharePassphrase()
@@ -94,11 +137,16 @@ export async function handleCalendarShareRoutes(input: {
         return true;
     }
 
+    const shareUsersUpdateMatch = input.url.pathname.match(
+        /^\/api\/v1\/calendar\/calendars\/([^/]+)\/share\/users\/([^/]+)$/,
+    );
     const shareUsersMatch = input.url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)\/share\/users$/,
     );
-    if (!shareUsersMatch) return false;
-    const ownerCalendarId = decodeURIComponent(shareUsersMatch[1]);
+    if (!shareUsersMatch && !shareUsersUpdateMatch) return false;
+    const ownerCalendarId = decodeURIComponent(
+        shareUsersMatch?.[1] ?? shareUsersUpdateMatch?.[1] ?? "",
+    );
     const ownerCalendar = input.gateway.getOwnedCalendar(
         input.claims.sub,
         ownerCalendarId,
@@ -131,8 +179,63 @@ export async function handleCalendarShareRoutes(input: {
                 avatarKey: share.recipientAvatarKey,
                 permission: share.permission,
                 shareId: share.id,
+                expiresAt: share.expiresAt,
             })),
         });
+        return true;
+    }
+    if (shareUsersUpdateMatch && input.req.method === "PATCH") {
+        const shareId = decodeURIComponent(shareUsersUpdateMatch[2]);
+        const body = (await readJson(input.req)) as Record<string, unknown>;
+        const updatedShare = await input.shareRegistry.updateCalendarUserShare({
+            ownerAccountId: input.claims.sub,
+            ownerCalendarId,
+            shareId,
+            permission: body.permission === "write" ? "write" : "read",
+            expiresAt:
+                body.expiresInHours === undefined
+                    ? undefined
+                    : resolveShareExpiry(body.expiresInHours),
+        });
+        if (!updatedShare) {
+            sendCalendarError(
+                input.res,
+                "not_found",
+                "Share not found.",
+                404,
+            );
+            return true;
+        }
+        sendJson(input.res, 200, {
+            data: {
+                accountId: updatedShare.recipientAccountId,
+                handle: updatedShare.recipientHandle,
+                displayName: updatedShare.recipientDisplayName,
+                avatarKey: updatedShare.recipientAvatarKey,
+                permission: updatedShare.permission,
+                shareId: updatedShare.id,
+                expiresAt: updatedShare.expiresAt,
+            },
+        });
+        return true;
+    }
+    if (shareUsersUpdateMatch && input.req.method === "DELETE") {
+        const shareId = decodeURIComponent(shareUsersUpdateMatch[2]);
+        const deleted = await input.shareRegistry.deleteCalendarUserShare({
+            ownerAccountId: input.claims.sub,
+            ownerCalendarId,
+            shareId,
+        });
+        if (!deleted) {
+            sendCalendarError(
+                input.res,
+                "not_found",
+                "Share not found.",
+                404,
+            );
+            return true;
+        }
+        sendJson(input.res, 200, { data: { deleted: true } });
         return true;
     }
     if (input.req.method !== "POST") return false;
@@ -191,7 +294,11 @@ export async function handleCalendarShareRoutes(input: {
                 typeof body.recipientAvatarKey === "string"
                     ? body.recipientAvatarKey
                     : null,
-            permission: body.permission === "write" ? "write" : "read",
+            permission: "read",
+            expiresAt:
+                body.expiresInHours === undefined
+                    ? ""
+                    : resolveShareExpiry(body.expiresInHours),
         });
         sendJson(input.res, 200, {
             data: {
