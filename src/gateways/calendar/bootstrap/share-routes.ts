@@ -205,6 +205,7 @@ export async function handleCalendarShareRoutes(input: {
             typeof body.permission === "string"
                 ? body.permission.trim().toLowerCase()
                 : undefined;
+        const compactPermission = normalizedPermission?.replace(/\s+/g, "");
         const updatedShare = await input.shareRegistry.updateCalendarUserShare({
             ownerAccountId: input.claims.sub,
             ownerCalendarId,
@@ -212,10 +213,11 @@ export async function handleCalendarShareRoutes(input: {
             permission:
                 normalizedPermission === undefined
                     ? undefined
-                    : normalizedPermission === "write" ||
-                        normalizedPermission === "read&write" ||
-                        normalizedPermission === "read_and_write" ||
-                        normalizedPermission === "read-write"
+                    : compactPermission === "write" ||
+                        compactPermission === "read&write" ||
+                        compactPermission === "read_and_write" ||
+                        compactPermission === "read-write" ||
+                        compactPermission === "readandwrite"
                       ? "write"
                       : "read",
             expiresAt:

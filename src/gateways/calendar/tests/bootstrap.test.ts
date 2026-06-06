@@ -632,7 +632,10 @@ test("calendar shared write access appears in recipient list and supports event 
         { permission: "Read & Write" },
     );
     assert.equal(elevateByDisplayPermissionResponse.statusCode, 200);
-    assert.equal(elevateByDisplayPermissionResponse.body.data.permission, "write");
+    assert.equal(
+        elevateByDisplayPermissionResponse.body.data.permission,
+        "write",
+    );
 
     const bobCalendars = await dispatchJson(
         "GET",
