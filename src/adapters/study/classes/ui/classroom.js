@@ -109,7 +109,10 @@ export async function mount(root, { signal } = {}) {
 
     function renderClassSelectOptions() {
         if (!classroomSnapshots.length) {
-            return `<option value="">${escapeHtml(i18n.t(isTeacher ? "module.study.classes.no_teacher_classes" : "module.study.classes.no_enrolled_classes"))}</option>`;
+            const noClassesKey = isTeacher
+                ? "module.study.classes.no_teacher_classes"
+                : "module.study.classes.no_enrolled_classes";
+            return `<option value="">${escapeHtml(i18n.t(noClassesKey))}</option>`;
         }
         return classroomSnapshots
             .map((snapshot) => {
@@ -259,7 +262,7 @@ export async function mount(root, { signal } = {}) {
               <div class="classes-request-form">
                 <label class="classes-section-heading" for="classes-class-select">${escapeHtml(i18n.t(isTeacher ? "module.study.classes.classroom_select_teacher_classes" : "module.study.classes.classroom_select_student_classes"))}</label>
                 <div class="classes-request-row">
-                  <select id="classes-class-select" class="classes-language-input">
+                  <select id="classes-class-select" class="classes-language-select">
                     ${renderClassSelectOptions()}
                   </select>
                   ${
