@@ -39,4 +39,3 @@ Menambahkan kembali pengguna yang sebelumnya dibagikan tidak lagi mengatur ulang
 izin yang ditingkatkan ke baca-saja. Izin yang ada tetap dipertahankan sehingga
 pemilik dapat mengundang ulang pengguna dengan aman tanpa kehilangan hak tulis
 yang telah diberikan sebelumnya.
-

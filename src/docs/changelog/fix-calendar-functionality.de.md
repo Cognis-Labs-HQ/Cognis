@@ -40,4 +40,3 @@ Wird ein bereits freigegebener Nutzer erneut hinzugefügt, wird eine erhöhte
 Berechtigung nicht mehr auf Nur-Lesen zurückgesetzt. Die vorhandene Berechtigung
 bleibt bestehen, sodass ein Besitzer einen Nutzer gefahrlos erneut einladen kann,
 ohne eine zuvor vergebene Schreibberechtigung zu verlieren.
-
