@@ -244,6 +244,7 @@ function collectPendingEvents(
 }
 
 function visibilityIcon(visibility) {
+    if (visibility === "shared") return "🤝";
     return visibility === "public" ? "🌐" : "🔒";
 }
 

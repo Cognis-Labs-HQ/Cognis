@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { CoreCalendarGateway } from "./index.js";
 
-export type CalendarVisibility = "private" | "public";
+export type CalendarVisibility = "private" | "public" | "shared";
 export type CalendarEventStatus = "busy" | "free";
 export type CalendarEventRecurrence =
     | "none"
@@ -24,6 +24,10 @@ export interface CalendarRecord {
     color: string;
     defaultReminderOffsetsMinutes: number[];
     isDefault: boolean;
+    sourceCalendarId?: string | null;
+    sharedByAccountId?: string | null;
+    sharedByLabel?: string | null;
+    sharedPermission?: "read" | "write" | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -63,6 +67,27 @@ export interface CaldavTokenRecord {
     calendarId: string;
     expiresAt: string;
     name?: string;
+}
+
+export interface CalendarShareLinkRecord {
+    calendarId: string;
+    ownerAccountId: string;
+    token: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CalendarUserShareRecord {
+    id: string;
+    ownerAccountId: string;
+    calendarId: string;
+    recipientAccountId: string;
+    recipientHandle: string | null;
+    recipientDisplayName: string | null;
+    recipientAvatarKey: string | null;
+    permission: "read" | "write";
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface ScopedMeetingAccessTokenRecord {

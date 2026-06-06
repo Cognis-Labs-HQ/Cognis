@@ -355,6 +355,25 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
         shareResponse.body.data.shareUrl,
         shareResponse.body.data.caldavUrl,
     );
+    const repeatedShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { permission: "write", expiresInHours: null },
+    );
+    assert.equal(repeatedShareResponse.statusCode, 200);
+    assert.equal(
+        repeatedShareResponse.body.data.caldavUrl,
+        shareResponse.body.data.caldavUrl,
+    );
+    const getShareResponse = await dispatchJson(
+        "GET",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+    );
+    assert.equal(getShareResponse.statusCode, 200);
+    assert.equal(
+        getShareResponse.body.data.caldavUrl,
+        shareResponse.body.data.caldavUrl,
+    );
 
     const privateCaldavPath = shareResponse.body.data.caldavUrl;
     const privateIcsPath = shareResponse.body.data.icsUrl;
@@ -452,6 +471,92 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     assert.equal(
         publicCaldavResponse.headers["x-cognis-calendar-name"],
         defaultCalendarName,
+    );
+});
+
+test("calendar shared write access appears in recipient list and supports event creation", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const defaultAliceCalendarId = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const shareUserResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users`,
+        {
+            recipientAccountId: "bob",
+            recipientHandle: "bob",
+            recipientDisplayName: "Bob",
+            permission: "write",
+        },
+    );
+    assert.equal(shareUserResponse.statusCode, 200);
+    const sharedCalendarId = String(
+        shareUserResponse.body.data.calendarId ?? "",
+    );
+    assert.ok(sharedCalendarId);
+
+    const bobCalendars = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/calendars",
+    );
+    const sharedCalendar = bobCalendars.body.data.find(
+        (calendar: { id: string }) => calendar.id === sharedCalendarId,
+    );
+    assert.ok(sharedCalendar);
+    assert.equal(sharedCalendar.visibility, "shared");
+
+    const createViaShared = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events`,
+        {
+            title: "Shared event",
+            startAt: "2026-06-15T09:00:00.000Z",
+            endAt: "2026-06-15T09:30:00.000Z",
+        },
+    );
+    assert.equal(createViaShared.statusCode, 201);
+
+    const ownerEvents = await dispatchJson(
+        "GET",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
+    );
+    assert.ok(
+        ownerEvents.body.data.events.some(
+            (event: { title?: string }) => event.title === "Shared event",
+        ),
     );
 });
 

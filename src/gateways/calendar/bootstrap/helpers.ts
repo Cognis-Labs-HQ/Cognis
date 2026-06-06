@@ -78,6 +78,7 @@ export function buildCalendarShareData(input: {
     permission: unknown;
     expiresInHours: unknown;
     name?: string;
+    tokenOverride?: string | null;
     externalHost: string;
 }): {
     permission: "read" | "write";
@@ -94,12 +95,13 @@ export function buildCalendarShareData(input: {
     const privateExportToken =
         calendar.visibility === "public"
             ? null
-            : input.gateway.issuePrivateExportToken({
+            : (input.tokenOverride ??
+              input.gateway.issuePrivateExportToken({
                   ownerAccountId: input.ownerAccountId,
                   calendarId: calendar.id,
                   ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
                   ...(input.name ? { name: input.name } : {}),
-              }).token;
+              }).token);
     const caldavPath =
         calendar.visibility === "public"
             ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.name)}?calendarId=${encodeURIComponent(calendar.id)}`

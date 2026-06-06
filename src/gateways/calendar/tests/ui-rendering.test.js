@@ -230,9 +230,21 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
     assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-generate/);
-    assert.doesNotMatch(
+    assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /void loadCalendarShareLinks\(\);\s*shareResults\.addEventListener/,
+        /void loadExistingShareLinks\(\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-user-search/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-user-options/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-user-chips/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
@@ -274,6 +286,10 @@ test("calendar main view and summaries aggregate events across calendars", () =>
 test("calendar app reads jitsi availability from calendar metadata", () => {
     assert.match(APP_SOURCE, /calendarState\.meta\?\.jitsiAvailable/);
     assert.doesNotMatch(APP_SOURCE, /probeJitsiAvailability/);
+});
+
+test("calendar toolbar shows shared visibility icon", () => {
+    assert.match(HELPERS_SOURCE, /if \(visibility === "shared"\) return "🤝"/);
 });
 
 test("calendar deep-link event popup does not block mount completion", () => {

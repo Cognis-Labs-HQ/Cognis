@@ -2,6 +2,11 @@ import {
     getSelectedReminderOffsets,
     renderReminderField,
 } from "./popup-manager-reminders.js";
+import {
+    buildParticipantCardHtml,
+    buildParticipantOptionHtml,
+    hydrateProfileAvatars,
+} from "./popup-manager-participant-utils.js";
 
 function renderCalendarShareResults({ i18n, escapeHtml, shareData }) {
     return `<p class="calendar-share-links-details">${escapeHtml(i18n.t("gateway.calendar.share_links_details"))}</p>
@@ -31,37 +36,177 @@ function bindCalendarShareControls({
 }) {
     const shareGenerateBtn = overlay.querySelector("#calendar-share-generate");
     const shareResults = overlay.querySelector("#calendar-share-results");
+    const shareControls = overlay.querySelector(
+        "#calendar-share-generate-controls",
+    );
+    const userSearchInput = overlay.querySelector(
+        "#calendar-share-user-search",
+    );
+    const userOptions = overlay.querySelector("#calendar-share-user-options");
+    const userChips = overlay.querySelector("#calendar-share-user-chips");
+    const userPermissionInput = overlay.querySelector(
+        "#calendar-share-user-permission",
+    );
     if (!shareGenerateBtn || !shareResults) {
         console.warn(
             "[calendar] Missing share controls in calendar edit popup.",
         );
         return;
     }
-    const loadCalendarShareLinks = async () => {
-        const permission = String(
-            overlay.querySelector("#calendar-share-permission")?.value ??
-                "read",
-        );
-        const expiresInHoursRaw = String(
-            overlay.querySelector("#calendar-share-expiry")?.value ?? "24",
-        );
-        const shareName = String(
-            overlay.querySelector("#calendar-share-name")?.value ?? "",
-        ).trim();
+
+    const participantKey = (entry) =>
+        `user:${String(entry.accountId ?? "")
+            .trim()
+            .toLowerCase()}`;
+    let shareUserOptions = [];
+    let selectedShareUsers = [];
+    let userSearchAbortController = null;
+
+    const renderSelectedShareUsers = () => {
+        if (!(userChips instanceof HTMLElement)) return;
+        userChips.innerHTML = selectedShareUsers
+            .map((entry) =>
+                buildParticipantCardHtml(
+                    {
+                        type: "user",
+                        value: String(entry.handle ?? entry.accountId ?? ""),
+                        label:
+                            String(entry.displayName ?? "").trim() ||
+                            String(entry.handle ?? entry.accountId ?? ""),
+                        avatarKey: String(entry.avatarKey ?? "").trim(),
+                    },
+                    {
+                        escapeHtml,
+                        i18n,
+                        participantKey: () => participantKey(entry),
+                        removable: false,
+                    },
+                ),
+            )
+            .join("");
+        hydrateProfileAvatars(userChips);
+    };
+
+    const renderShareUserOptions = () => {
+        if (!(userOptions instanceof HTMLElement)) return;
+        userOptions.innerHTML = shareUserOptions
+            .map(
+                (entry, index) =>
+                    `<button type="button" class="calendar-participant-option${index === 0 ? " is-active" : ""}" data-share-user-option="${String(index)}">${buildParticipantOptionHtml(
+                        {
+                            type: "user",
+                            value: String(
+                                entry.handle ?? entry.accountId ?? "",
+                            ),
+                            displayName: entry.displayName,
+                            label:
+                                String(entry.displayName ?? "").trim() ||
+                                String(entry.handle ?? entry.accountId ?? ""),
+                            avatarKey: entry.avatarKey,
+                        },
+                        { escapeHtml },
+                    )}</button>`,
+            )
+            .join("");
+        hydrateProfileAvatars(userOptions);
+    };
+
+    const loadExistingShares = async () => {
         const response = await apiFetch(
-            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share`,
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share/users`,
+        );
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        const users = Array.isArray(payload?.data) ? payload.data : [];
+        selectedShareUsers = users.filter((entry) => {
+            const accountId = String(entry?.accountId ?? "").trim();
+            return accountId !== "";
+        });
+        renderSelectedShareUsers();
+    };
+
+    const refreshShareUserOptions = async () => {
+        if (!(userSearchInput instanceof HTMLInputElement)) return;
+        const query = userSearchInput.value.trim();
+        shareUserOptions = [];
+        if (!query) {
+            renderShareUserOptions();
+            return;
+        }
+        userSearchAbortController?.abort();
+        userSearchAbortController = new AbortController();
+        try {
+            const response = await apiFetch(
+                `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share/users?q=${encodeURIComponent(query)}`,
+                { signal: userSearchAbortController.signal },
+            );
+            if (response.ok) {
+                const payload = await response.json().catch(() => null);
+                const users = Array.isArray(payload?.data) ? payload.data : [];
+                shareUserOptions = users.filter((entry) => {
+                    const accountId = String(entry?.accountId ?? "").trim();
+                    if (!accountId) return false;
+                    return !selectedShareUsers.some(
+                        (selected) =>
+                            String(selected.accountId ?? "").trim() ===
+                            accountId,
+                    );
+                });
+            }
+        } catch {}
+        renderShareUserOptions();
+    };
+
+    const selectShareUser = async (index) => {
+        const selectedUser = shareUserOptions[index];
+        if (!selectedUser) return;
+        const permission =
+            userPermissionInput instanceof HTMLSelectElement &&
+            userPermissionInput.value === "write"
+                ? "write"
+                : "read";
+        const response = await apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share/users`,
             {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
-                    permission: permission === "write" ? "write" : "read",
-                    expiresInHours:
-                        expiresInHoursRaw === "never"
-                            ? null
-                            : Number(expiresInHoursRaw),
-                    name: shareName || undefined,
+                    recipientAccountId: selectedUser.accountId,
+                    recipientHandle: selectedUser.handle ?? null,
+                    recipientDisplayName: selectedUser.displayName ?? null,
+                    recipientAvatarKey: selectedUser.avatarKey ?? null,
+                    permission,
                 }),
             },
+        );
+        if (!response.ok) {
+            showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
+            return;
+        }
+        await loadExistingShares();
+        if (userSearchInput instanceof HTMLInputElement) {
+            userSearchInput.value = "";
+        }
+        shareUserOptions = [];
+        renderShareUserOptions();
+    };
+
+    const renderShareResults = (shareData) => {
+        shareResults.innerHTML = renderCalendarShareResults({
+            i18n,
+            escapeHtml,
+            shareData,
+        });
+        shareResults.hidden = false;
+        if (shareControls instanceof HTMLElement) {
+            shareControls.hidden = true;
+        }
+    };
+
+    const loadCalendarShareLinks = async () => {
+        const response = await apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share`,
+            { method: "POST", headers: { "content-type": "application/json" } },
         );
         if (!response.ok) {
             showToast(i18n.t("gateway.calendar.share_link_failed"), "error");
@@ -78,16 +223,41 @@ function bindCalendarShareControls({
             shareResults.hidden = true;
             return;
         }
-        shareResults.innerHTML = renderCalendarShareResults({
-            i18n,
-            escapeHtml,
-            shareData,
-        });
-        shareResults.hidden = false;
+        renderShareResults(shareData);
+    };
+    const loadExistingShareLinks = async () => {
+        const response = await apiFetch(
+            `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share`,
+        );
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        const shareData = payload?.data;
+        if (
+            typeof shareData?.caldavUrl === "string" &&
+            typeof shareData?.icsUrl === "string"
+        ) {
+            renderShareResults(shareData);
+        }
     };
     shareGenerateBtn.addEventListener("click", () => {
         void loadCalendarShareLinks();
     });
+    if (userSearchInput instanceof HTMLInputElement) {
+        userSearchInput.addEventListener("input", () => {
+            void refreshShareUserOptions();
+        });
+    }
+    if (userOptions instanceof HTMLElement) {
+        userOptions.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-share-user-option]");
+            if (!(button instanceof HTMLElement)) return;
+            const optionIndex = Number.parseInt(
+                String(button.getAttribute("data-share-user-option") ?? "-1"),
+                10,
+            );
+            void selectShareUser(optionIndex);
+        });
+    }
     shareResults.addEventListener("click", async (event) => {
         const copyButton = event.target.closest("[data-calendar-share-copy]");
         if (!(copyButton instanceof HTMLElement)) return;
@@ -104,6 +274,8 @@ function bindCalendarShareControls({
         await navigator.clipboard.writeText(link);
         showToast(i18n.t("gateway.calendar.share_link_copied"), "success");
     });
+    void loadExistingShareLinks();
+    void loadExistingShares();
 }
 
 export function createCalendarEditPopupHandler({
@@ -140,20 +312,15 @@ export function createCalendarEditPopupHandler({
           <div class="calendar-share-controls">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.share_calendar"))}</p>
             <div class="calendar-share-input-row">
-              <select id="calendar-share-permission">
+              <input id="calendar-share-user-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
+              <select id="calendar-share-user-permission">
                 <option value="read">${escapeHtml(i18n.t("gateway.calendar.share_link_permission_read"))}</option>
                 <option value="write">${escapeHtml(i18n.t("gateway.calendar.share_link_permission_write"))}</option>
               </select>
-              <select id="calendar-share-expiry">
-                <option value="1">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_1h"))}</option>
-                <option value="24" selected>${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_24h"))}</option>
-                <option value="168">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_7d"))}</option>
-                <option value="720">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_30d"))}</option>
-                <option value="never">${escapeHtml(i18n.t("gateway.calendar.share_link_expiry_never"))}</option>
-              </select>
             </div>
-            <div class="calendar-share-input-row">
-              <input id="calendar-share-name" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.share_link_name_placeholder"))}" />
+            <div id="calendar-share-user-options" class="calendar-participant-options"></div>
+            <div id="calendar-share-user-chips" class="calendar-participant-list"></div>
+            <div id="calendar-share-generate-controls" class="calendar-share-input-row">
               <button type="button" id="calendar-share-generate" class="btn-confirm btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.share_link_generate"))}</button>
             </div>
             <div id="calendar-share-results" class="calendar-share-results" hidden></div>
