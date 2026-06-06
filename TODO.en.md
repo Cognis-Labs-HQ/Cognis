@@ -1,5 +1,13 @@
 # Ignored Automated Feedback
 
+## Code Review — Restore multi-link calendar sharing
+
+### share-link button wording — prefer singular labels
+
+**Reviewer suggestion:** Rename the share-link button labels from "Generate Links" / "Regenerate Links" to singular wording because the action creates one link at a time.
+
+**Reason ignored:** The current task explicitly requires renaming "Generate Link" to "Generate Links" and switching the existing-link state to "Regenerate Links." Following the review suggestion would directly contradict that user instruction, so the requested plural labels were kept.
+
 ## Code Review — PR #45 third-pass (2026-05-29)
 
 ### settings-section.js drag-drop handler — mutation before rerender

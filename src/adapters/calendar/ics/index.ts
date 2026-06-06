@@ -1,9 +1,12 @@
-import { timingSafeEqual } from "node:crypto";
 import type {
     CalendarAdapter,
     CalendarAdapterBootstrapCtx,
 } from "../../../gateways/calendar/gateway/index.js";
 import { readJson } from "../../../api/reuse/read-json.js";
+import {
+    passphrasesMatch,
+    readSharePassphrase,
+} from "../../../gateways/calendar/reuse/share-auth.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -22,53 +25,15 @@ function sanitizeHeaderValue(value: string): string {
         .trim();
 }
 
-function readSharePassphrase(
-    req: { headers?: Record<string, string | string[]> },
-    url: URL,
-): string {
-    const queryPassphrase = String(url.searchParams.get("passphrase") ?? "").trim();
-    if (queryPassphrase) return queryPassphrase;
-    const headerValue = req.headers?.["x-cognis-calendar-passphrase"];
-    const headerPassphrase = Array.isArray(headerValue)
-        ? String(headerValue[0] ?? "").trim()
-        : String(headerValue ?? "").trim();
-    if (headerPassphrase) return headerPassphrase;
-    const authorizationHeader = Array.isArray(req.headers?.authorization)
-        ? String(req.headers?.authorization[0] ?? "")
-        : String(req.headers?.authorization ?? "");
-    if (!authorizationHeader.startsWith("Basic ")) return "";
-    try {
-        const decoded = Buffer.from(
-            authorizationHeader.slice("Basic ".length),
-            "base64",
-        ).toString("utf8");
-        return decoded.includes(":") ? decoded.split(":").slice(1).join(":") : "";
-    } catch {
-        return "";
-    }
-}
-
-function passphrasesMatch(expectedPassphrase: string, receivedPassphrase: string): boolean {
-    const expectedBuffer = Buffer.from(expectedPassphrase);
-    const receivedBuffer = Buffer.from(receivedPassphrase);
-    return (
-        expectedBuffer.length === receivedBuffer.length &&
-        timingSafeEqual(expectedBuffer, receivedBuffer)
-    );
-}
-
 function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
     const resolveShareLink = ctx.capabilities.get<
-        (token: string) => Promise<
-            | {
-                  calendarId: string;
-                  passphrase: string | null;
-              }
-            | null
-        >
+        (token: string) => Promise<{
+            calendarId: string;
+            passphrase: string | null;
+        } | null>
     >("calendar:resolveShareLink");
     const isMetadataProbeMethod = (method: string | undefined) =>
         method === "HEAD" || method === "OPTIONS" || method === "PROPFIND";
@@ -177,7 +142,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                         JSON.stringify({
                             error: {
                                 code: "unauthorized",
-                                message: "Valid calendar share passphrase required.",
+                                message:
+                                    "Valid calendar share passphrase required.",
                             },
                         }),
                     );

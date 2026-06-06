@@ -134,7 +134,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             });
         }
     }
-    const shareRegistry = new CalendarShareRegistry(dbExecutor ?? null);
+    const shareRegistry = new CalendarShareRegistry(
+        dbExecutor ?? null,
+        ctx.log,
+    );
     await shareRegistry.ensureSchema();
     ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
         shareRegistry.resolveShareLink(token),

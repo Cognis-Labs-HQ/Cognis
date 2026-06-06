@@ -108,7 +108,7 @@ export function buildCalendarShareData(input: {
 }
 
 export function createCalendarSharePassphrase(): string {
-    return randomBytes(12).toString("hex");
+    return randomBytes(16).toString("hex");
 }
 
 export function resolveShareExpiry(expiresInHours: unknown): string {

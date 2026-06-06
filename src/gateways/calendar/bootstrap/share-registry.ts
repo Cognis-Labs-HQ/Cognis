@@ -40,12 +40,27 @@ export class CalendarShareRegistry {
             links: CalendarShareLinkRegistryRecord[];
         }
     >();
+    private readonly memoryShareLinksByToken = new Map<
+        string,
+        CalendarShareLinkRegistryRecord
+    >();
+    private readonly memoryShareLinkTokensByCalendar = new Map<
+        string,
+        Set<string>
+    >();
     private readonly memoryUserShares = new Map<
         string,
         CalendarUserShareRegistryRecord
     >();
 
-    constructor(private readonly db: DbExecutor | null) {}
+    constructor(
+        private readonly db: DbExecutor | null,
+        private readonly log?: (
+            level: string,
+            msg: string,
+            meta?: Record<string, unknown>,
+        ) => void,
+    ) {}
 
     async ensureSchema(): Promise<void> {
         if (!this.db) return;
@@ -82,7 +97,10 @@ export class CalendarShareRegistry {
         ownerAccountId: string,
         calendarId: string,
     ): Promise<CalendarShareLinkRegistryRecord[]> {
-        const existingLinks = await this.readShareLinks(ownerAccountId, calendarId);
+        const existingLinks = await this.readShareLinks(
+            ownerAccountId,
+            calendarId,
+        );
         const activeLinks = this.pruneExpiredShareLinks(existingLinks);
         if (activeLinks.length !== existingLinks.length) {
             await this.writeShareLinks({
@@ -134,20 +152,15 @@ export class CalendarShareRegistry {
         const normalizedToken = String(token ?? "").trim();
         if (!normalizedToken) return null;
         if (!this.db) {
-            for (const [calendarId, memoryEntry] of this.memoryShareLinks.entries()) {
-                const activeLinks = this.pruneExpiredShareLinks(memoryEntry.links);
-                if (activeLinks.length !== memoryEntry.links.length) {
-                    this.memoryShareLinks.set(calendarId, {
-                        ownerAccountId: memoryEntry.ownerAccountId,
-                        links: activeLinks,
-                    });
-                }
-                const resolvedLink =
-                    activeLinks.find((entry) => entry.token === normalizedToken) ??
-                    null;
-                if (resolvedLink) return resolvedLink;
-            }
-            return null;
+            const resolvedLink =
+                this.memoryShareLinksByToken.get(normalizedToken) ?? null;
+            if (!resolvedLink) return null;
+            if (!this.isExpiredShareLink(resolvedLink)) return resolvedLink;
+            await this.listShareLinks(
+                resolvedLink.ownerAccountId,
+                resolvedLink.calendarId,
+            );
+            return this.memoryShareLinksByToken.get(normalizedToken) ?? null;
         }
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -180,7 +193,8 @@ export class CalendarShareRegistry {
                 });
             }
             const resolvedLink =
-                activeLinks.find((entry) => entry.token === normalizedToken) ?? null;
+                activeLinks.find((entry) => entry.token === normalizedToken) ??
+                null;
             if (resolvedLink) return resolvedLink;
         }
         return null;
@@ -373,7 +387,9 @@ export class CalendarShareRegistry {
         return normalizedValue ? normalizedValue : null;
     }
 
-    private isExpiredShareLink(shareLink: CalendarShareLinkRegistryRecord): boolean {
+    private isExpiredShareLink(
+        shareLink: CalendarShareLinkRegistryRecord,
+    ): boolean {
         if (!shareLink.expiresAt) return false;
         const expiresAtMs = Date.parse(shareLink.expiresAt);
         return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
@@ -382,7 +398,9 @@ export class CalendarShareRegistry {
     private pruneExpiredShareLinks(
         shareLinks: CalendarShareLinkRegistryRecord[],
     ): CalendarShareLinkRegistryRecord[] {
-        return shareLinks.filter((shareLink) => !this.isExpiredShareLink(shareLink));
+        return shareLinks.filter(
+            (shareLink) => !this.isExpiredShareLink(shareLink),
+        );
     }
 
     private serializeShareLinks(
@@ -412,7 +430,9 @@ export class CalendarShareRegistry {
         const normalizedUpdatedAt =
             input.updatedAt || input.createdAt || normalizedCreatedAt;
         const storedValue =
-            typeof input.storedValue === "string" ? input.storedValue.trim() : "";
+            typeof input.storedValue === "string"
+                ? input.storedValue.trim()
+                : "";
         if (!storedValue) return [];
         try {
             const parsed = JSON.parse(storedValue) as
@@ -435,6 +455,15 @@ export class CalendarShareRegistry {
                 )
                 .filter(Boolean) as CalendarShareLinkRegistryRecord[];
         } catch {
+            this.log?.(
+                "error",
+                "Failed to parse calendar share link payload; falling back to legacy token format.",
+                {
+                    component: "calendar-gateway",
+                    ownerAccountId: input.ownerAccountId,
+                    calendarId: input.calendarId,
+                },
+            );
             return [
                 {
                     id: randomUUID(),
@@ -519,6 +548,21 @@ export class CalendarShareRegistry {
                 ownerAccountId: input.ownerAccountId,
                 links: [...input.links],
             });
+            const indexedTokens =
+                this.memoryShareLinkTokensByCalendar.get(input.calendarId) ??
+                new Set();
+            for (const token of indexedTokens) {
+                this.memoryShareLinksByToken.delete(token);
+            }
+            indexedTokens.clear();
+            for (const shareLink of input.links) {
+                this.memoryShareLinksByToken.set(shareLink.token, shareLink);
+                indexedTokens.add(shareLink.token);
+            }
+            this.memoryShareLinkTokensByCalendar.set(
+                input.calendarId,
+                indexedTokens,
+            );
             return;
         }
         const now = new Date().toISOString();

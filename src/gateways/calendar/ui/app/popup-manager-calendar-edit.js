@@ -57,11 +57,14 @@ function renderCalendarShareResults({ i18n, escapeHtml, shareLinks }) {
                   ? formatDateTime(expiresAt)
                   : i18n.t("gateway.calendar.share_link_expiry_never");
               const passphraseMarkup =
-                  typeof shareLink.passphrase === "string" && shareLink.passphrase
+                  typeof shareLink.passphrase === "string" &&
+                  shareLink.passphrase
                       ? renderCalendarShareCopyField({
                             i18n,
                             escapeHtml,
-                            label: i18n.t("gateway.calendar.share_link_passphrase"),
+                            label: i18n.t(
+                                "gateway.calendar.share_link_passphrase",
+                            ),
                             value: shareLink.passphrase,
                         })
                       : "";
@@ -279,7 +282,8 @@ function bindCalendarShareControls({
             escapeHtml,
             shareLinks,
         });
-        shareResults.hidden = !Array.isArray(shareLinks) || shareLinks.length === 0;
+        shareResults.hidden =
+            !Array.isArray(shareLinks) || shareLinks.length === 0;
         updateShareGenerateButton(shareLinks);
     };
 

@@ -357,8 +357,14 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     );
     assert.equal(shareResponse.statusCode, 200);
     assert.equal(shareResponse.body.data.length, 1);
-    assert.match(shareResponse.body.data[0].caldavUrl, /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/);
-    assert.match(shareResponse.body.data[0].icsUrl, /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/);
+    assert.match(
+        shareResponse.body.data[0].caldavUrl,
+        /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/,
+    );
+    assert.match(
+        shareResponse.body.data[0].icsUrl,
+        /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/,
+    );
     assert.equal(
         shareResponse.body.data[0].shareUrl,
         shareResponse.body.data[0].caldavUrl,
@@ -487,8 +493,14 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         (shareLink: { name?: string }) => shareLink.name === "Website Feed",
     );
     assert.ok(publicShare);
-    assert.match(publicShare.caldavUrl, /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/);
-    assert.match(publicShare.icsUrl, /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/);
+    assert.match(
+        publicShare.caldavUrl,
+        /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/,
+    );
+    assert.match(
+        publicShare.icsUrl,
+        /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/,
+    );
     assert.equal(publicShare.passphrase, null);
 
     const publicCaldavRequest = new RequestRecorder({
