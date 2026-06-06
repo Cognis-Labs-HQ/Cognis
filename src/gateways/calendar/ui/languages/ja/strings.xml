@@ -133,6 +133,13 @@
   <string name="gateway.calendar.share_links_details">カレンダークライアント用リンク</string>
   <string name="gateway.calendar.share_link_copy">コピー</string>
   <string name="gateway.calendar.share_link_copied">リンクをコピーしました！</string>
+  <string name="gateway.calendar.share_link_passphrase_copied">パスフレーズをコピーしました！</string>
+  <string name="gateway.calendar.share_link_deleted">共有リンクを削除しました。</string>
+  <string name="gateway.calendar.share_user_deleted">共有ユーザーを削除しました。</string>
+  <string name="gateway.calendar.share_link_delete_confirm_title">共有リンクを削除しますか？</string>
+  <string name="gateway.calendar.share_link_delete_confirm">このリンクはすぐに使えなくなります。</string>
+  <string name="gateway.calendar.share_user_delete_confirm_title">共有ユーザーを削除しますか？</string>
+  <string name="gateway.calendar.share_user_delete_confirm">このユーザーはすぐにカレンダーへアクセスできなくなります。</string>
   <string name="gateway.calendar.share_link_failed">共有リンクを生成できませんでした。</string>
   <string name="gateway.calendar.share_link_name_fallback">共有リンク</string>
   <string name="gateway.calendar.share_link_name_placeholder">リンク名（任意）</string>

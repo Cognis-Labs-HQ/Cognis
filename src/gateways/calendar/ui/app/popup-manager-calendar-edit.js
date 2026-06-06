@@ -2,6 +2,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
     bindReminderFieldBehavior,
     getSelectedReminderOffsets,
+    normalizeReminderOffsets,
     renderReminderField,
 } from "./popup-manager-reminders.js";
 import {
@@ -76,6 +77,7 @@ function renderCalendarShareCopyField({
     concealed = false,
 }) {
     const valueInputType = concealed ? "password" : "text";
+    const copyKind = concealed ? "passphrase" : "link";
     const visibilityToggle = concealed
         ? `<button type="button" class="btn-no-animation calendar-share-secret-toggle" data-calendar-share-toggle-secret="${escapeHtml(value)}">👁</button>`
         : "";
@@ -84,7 +86,7 @@ function renderCalendarShareCopyField({
       <div class="calendar-share-result-row">
         <input type="${valueInputType}" readonly value="${escapeHtml(value)}" data-calendar-share-secret-value="${concealed ? escapeHtml(value) : ""}" />
         ${visibilityToggle}
-        <button type="button" class="btn-no-animation" data-calendar-share-copy="${escapeHtml(value)}">${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}</button>
+        <button type="button" class="btn-no-animation calendar-share-copy-btn" data-calendar-share-copy="${escapeHtml(value)}" data-calendar-share-copy-kind="${copyKind}" aria-label="${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}" title="${escapeHtml(i18n.t("gateway.calendar.share_link_copy"))}"></button>
       </div>
     </div>`;
 }
@@ -125,7 +127,7 @@ function renderCalendarShareResults({ i18n, escapeHtml, shareLinks }) {
               return `<details class="calendar-share-entry"${openAttr}>
                 <summary class="calendar-share-entry-summary">
                  <span class="calendar-share-entry-title">${escapeHtml(name)}</span>
-                 <span class="calendar-share-entry-meta"><span>${escapeHtml(expiryLabel)}</span> <button type="button" class="btn-no-animation calendar-share-delete-btn" data-calendar-share-delete="${escapeHtml(String(shareLink.id ?? ""))}">🗑</button></span>
+                 <span class="calendar-share-entry-meta"><span>${escapeHtml(expiryLabel)}</span> <button type="button" class="btn-no-animation btn-cancel calendar-share-delete-btn" data-calendar-share-delete="${escapeHtml(String(shareLink.id ?? ""))}">🗑</button></span>
                 </summary>
                 <div class="calendar-share-entry-body">
                   ${renderCalendarShareCopyField({
@@ -154,6 +156,7 @@ function bindCalendarShareControls({
     apiFetch,
     escapeHtml,
     showToast,
+    openPopup,
 }) {
     const shareGenerateBtn = overlay.querySelector("#calendar-share-generate");
     const shareResults = overlay.querySelector("#calendar-share-results");
@@ -224,7 +227,7 @@ function bindCalendarShareControls({
                               `<option value="${escapeHtml(option.value)}"${option.value === expiryValue ? " selected" : ""}>${escapeHtml(i18n.t(option.labelKey))}</option>`,
                       ).join("")}</select>
                     </label>
-                    <button type="button" class="btn-no-animation calendar-user-share-delete-btn" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}">🗑</button>
+                    <button type="button" class="btn-no-animation btn-cancel calendar-user-share-delete-btn" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}">🗑</button>
                   </div>
                 </div>`;
             })
@@ -356,6 +359,32 @@ function bindCalendarShareControls({
             return;
         }
         await loadExistingShares();
+        showToast(i18n.t("gateway.calendar.share_user_deleted"), "success");
+    };
+    const confirmShareRemoval = async (scope) => {
+        if (typeof openPopup !== "function") return true;
+        const action = await openPopup({
+            title: i18n.t(
+                scope === "user"
+                    ? "gateway.calendar.share_user_delete_confirm_title"
+                    : "gateway.calendar.share_link_delete_confirm_title",
+            ),
+            body: () =>
+                `<p>${escapeHtml(i18n.t(scope === "user" ? "gateway.calendar.share_user_delete_confirm" : "gateway.calendar.share_link_delete_confirm"))}</p>`,
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "delete",
+                    label: i18n.t("gateway.calendar.delete_calendar"),
+                    variant: "cancel",
+                },
+            ],
+        });
+        return action === "delete";
     };
 
     const deleteUserShare = async (shareId) => {
@@ -492,7 +521,11 @@ function bindCalendarShareControls({
                 button.getAttribute("data-calendar-user-share-delete") ?? "",
             ).trim();
             if (!shareId) return;
-            void deleteUserShare(shareId);
+            void (async () => {
+                const confirmed = await confirmShareRemoval("user");
+                if (!confirmed) return;
+                await deleteUserShare(shareId);
+            })();
         });
     }
     shareResults.addEventListener("click", async (event) => {
@@ -509,7 +542,22 @@ function bindCalendarShareControls({
                 return;
             }
             await navigator.clipboard.writeText(link);
-            showToast(i18n.t("gateway.calendar.share_link_copied"), "success");
+            const copyKind = String(
+                copyButton.getAttribute("data-calendar-share-copy-kind") ??
+                    "link",
+            );
+            copyButton.classList.add("calendar-share-copy-btn--copied");
+            setTimeout(() => {
+                copyButton.classList.remove("calendar-share-copy-btn--copied");
+            }, 1500);
+            showToast(
+                i18n.t(
+                    copyKind === "passphrase"
+                        ? "gateway.calendar.share_link_passphrase_copied"
+                        : "gateway.calendar.share_link_copied",
+                ),
+                "success",
+            );
             return;
         }
         const toggleButton = event.target.closest(
@@ -532,6 +580,8 @@ function bindCalendarShareControls({
             deleteButton.getAttribute("data-calendar-share-delete") ?? "",
         ).trim();
         if (!shareId) return;
+        const confirmed = await confirmShareRemoval("link");
+        if (!confirmed) return;
         const response = await apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/share/${encodeURIComponent(shareId)}`,
             { method: "DELETE" },
@@ -542,6 +592,7 @@ function bindCalendarShareControls({
         }
         const payload = await response.json().catch(() => null);
         renderShareResults(normalizeShareLinks(payload));
+        showToast(i18n.t("gateway.calendar.share_link_deleted"), "success");
     });
     void loadExistingShareLinks();
     void loadExistingShares();
@@ -625,6 +676,7 @@ export function createCalendarEditPopupHandler({
                     apiFetch,
                     escapeHtml,
                     showToast,
+                    openPopup,
                 });
                 bindReminderFieldBehavior({ overlay, i18n });
                 const deleteBtn = overlay.querySelector(
@@ -671,6 +723,17 @@ export function createCalendarEditPopupHandler({
                 );
                 const defaultReminderOffsetsMinutes =
                     getSelectedReminderOffsets(overlay);
+                const hasCalendarChanges =
+                    (name !== undefined && name !== calendar.name) ||
+                    color !== calendarUi.normalizeHexColor(calendar.color) ||
+                    visibility !== calendar.visibility ||
+                    JSON.stringify(defaultReminderOffsetsMinutes) !==
+                        JSON.stringify(
+                            normalizeReminderOffsets(
+                                calendar.defaultReminderOffsetsMinutes ?? [],
+                            ),
+                        );
+                if (!hasCalendarChanges) return true;
                 const updatePayload = {
                     ...(name !== undefined ? { name } : {}),
                     color,

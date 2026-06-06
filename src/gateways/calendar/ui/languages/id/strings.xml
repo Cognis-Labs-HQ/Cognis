@@ -133,6 +133,13 @@
   <string name="gateway.calendar.share_links_details">Tautan klien kalender</string>
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>
+  <string name="gateway.calendar.share_link_passphrase_copied">Frasa sandi disalin!</string>
+  <string name="gateway.calendar.share_link_deleted">Tautan berbagi dihapus.</string>
+  <string name="gateway.calendar.share_user_deleted">Pengguna berbagi dihapus.</string>
+  <string name="gateway.calendar.share_link_delete_confirm_title">Hapus tautan berbagi?</string>
+  <string name="gateway.calendar.share_link_delete_confirm">Tautan ini akan langsung berhenti berfungsi.</string>
+  <string name="gateway.calendar.share_user_delete_confirm_title">Hapus pengguna berbagi?</string>
+  <string name="gateway.calendar.share_user_delete_confirm">Pengguna ini akan langsung kehilangan akses kalender.</string>
   <string name="gateway.calendar.share_link_failed">Tidak dapat membuat tautan berbagi.</string>
   <string name="gateway.calendar.share_link_name_fallback">Tautan Berbagi</string>
   <string name="gateway.calendar.share_link_name_placeholder">Nama Tautan (opsional)</string>

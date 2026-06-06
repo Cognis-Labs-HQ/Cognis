@@ -38,10 +38,24 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const isMetadataProbeMethod = (method: string | undefined) =>
         method === "HEAD" || method === "OPTIONS" || method === "PROPFIND";
 
-    const buildCalendarExportHeaders = (calendarName: string) => ({
-        "content-type": "text/calendar; charset=utf-8",
-        "x-cognis-calendar-name": sanitizeHeaderValue(calendarName),
-    });
+    const buildCalendarExportHeaders = (
+        calendarName: string,
+        calendarId: string,
+    ) => {
+        const sanitizedCalendarName = sanitizeHeaderValue(calendarName);
+        const normalizedFilename =
+            sanitizedCalendarName
+                .replace(/[^\p{L}\p{N}._-]+/gu, "_")
+                .replace(/^_+|_+$/g, "") || "calendar";
+        return {
+            "content-type": "text/calendar; charset=utf-8",
+            "x-cognis-calendar-name": sanitizedCalendarName,
+            "x-cognis-calendar-id": sanitizeHeaderValue(calendarId),
+            "content-disposition": `attachment; filename="${normalizedFilename}.ics"`,
+            "access-control-expose-headers":
+                "content-disposition,x-cognis-calendar-name,x-cognis-calendar-id",
+        };
+    };
     const respondCalendarPayload = (
         reqMethod: string | undefined,
         res: {
@@ -53,8 +67,9 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         },
         payload: string,
         calendarName: string,
+        calendarId: string,
     ) => {
-        const headers = buildCalendarExportHeaders(calendarName);
+        const headers = buildCalendarExportHeaders(calendarName, calendarId);
         if (reqMethod === "OPTIONS") {
             res.writeHead(204, {
                 ...headers,
@@ -101,7 +116,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            respondCalendarPayload(req.method, res, ics, calendar.name);
+            respondCalendarPayload(req.method, res, ics, calendar.name, calendar.id);
             return true;
         }
 
@@ -164,7 +179,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            respondCalendarPayload(req.method, res, ics, calendar.name);
+            respondCalendarPayload(req.method, res, ics, calendar.name, calendar.id);
             return true;
         }
 
@@ -205,7 +220,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            respondCalendarPayload(req.method, res, ics, calendar.name);
+            respondCalendarPayload(req.method, res, ics, calendar.name, calendar.id);
             return true;
         }
 
@@ -235,7 +250,10 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
-            res.writeHead(200, buildCalendarExportHeaders(calendar.name));
+            res.writeHead(
+                200,
+                buildCalendarExportHeaders(calendar.name, calendar.id),
+            );
             res.end(ics);
             return true;
         }

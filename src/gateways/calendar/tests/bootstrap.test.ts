@@ -529,6 +529,20 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         publicCaldavResponse.headers["x-cognis-calendar-name"],
         defaultCalendarName,
     );
+    assert.equal(
+        publicCaldavResponse.headers["x-cognis-calendar-id"],
+        defaultCalendarId,
+    );
+    assert.match(
+        String(publicCaldavResponse.headers["content-disposition"] ?? ""),
+        /attachment;\s*filename=/,
+    );
+    assert.match(
+        String(
+            publicCaldavResponse.headers["access-control-expose-headers"] ?? "",
+        ),
+        /x-cognis-calendar-name/i,
+    );
 });
 
 test("calendar shared write access appears in recipient list and supports event creation", async () => {

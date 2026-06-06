@@ -133,6 +133,13 @@
   <string name="gateway.calendar.share_links_details">Kalender-Client-Links</string>
   <string name="gateway.calendar.share_link_copy">Kopieren</string>
   <string name="gateway.calendar.share_link_copied">Link kopiert!</string>
+  <string name="gateway.calendar.share_link_passphrase_copied">Passphrase kopiert!</string>
+  <string name="gateway.calendar.share_link_deleted">Freigabelink gelöscht.</string>
+  <string name="gateway.calendar.share_user_deleted">Freigegebener Benutzer entfernt.</string>
+  <string name="gateway.calendar.share_link_delete_confirm_title">Freigabelink löschen?</string>
+  <string name="gateway.calendar.share_link_delete_confirm">Dieser Link funktioniert sofort nicht mehr.</string>
+  <string name="gateway.calendar.share_user_delete_confirm_title">Freigegebenen Benutzer entfernen?</string>
+  <string name="gateway.calendar.share_user_delete_confirm">Dieser Benutzer verliert sofort den Zugriff auf den Kalender.</string>
   <string name="gateway.calendar.share_link_failed">Freigabelink konnte nicht erstellt werden.</string>
   <string name="gateway.calendar.share_link_name_fallback">Freigabelink</string>
   <string name="gateway.calendar.share_link_name_placeholder">Linkname (optional)</string>

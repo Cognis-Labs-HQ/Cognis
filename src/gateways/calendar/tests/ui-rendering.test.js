@@ -173,7 +173,8 @@ test("calendar composer supports multiple reminders and remembers selected view"
         POPUP_REMINDERS_SOURCE,
         /name="calendar-popup-reminder-offset"/,
     );
-    assert.match(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
+    assert.doesNotMatch(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
+    assert.match(POPUP_REMINDERS_SOURCE, /calendar-reminder-option-check/);
     assert.match(
         POPUP_REMINDERS_SOURCE,
         /gateway\.calendar\.reminders_default_tooltip/,
@@ -279,11 +280,19 @@ test("calendar toolbar includes pending quick responses and accept calendar pick
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /class="btn-no-animation" data-calendar-share-copy/,
+        /class="btn-no-animation calendar-share-copy-btn" data-calendar-share-copy/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-share-copy-kind/,
     );
     assert.doesNotMatch(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /btn-cancel btn-no-animation" data-calendar-share-copy/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /btn-no-animation btn-cancel calendar-share-delete-btn/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
