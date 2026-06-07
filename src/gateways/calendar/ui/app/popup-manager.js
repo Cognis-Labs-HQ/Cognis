@@ -266,7 +266,6 @@ export function createCalendarPopupManager({
             refreshComposer,
             openEventPopup: (calId, evId) => openEventPopup(calId, evId),
         });
-
     async function openEventPopup(calendarId, eventId) {
         try {
             const eventData = await calendarUi.fetchEvent(calendarId, eventId);

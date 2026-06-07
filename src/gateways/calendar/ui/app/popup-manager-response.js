@@ -46,21 +46,29 @@ export function createCalendarResponseHandler({
 
     function resolveTargetCalendarId(eventData) {
         const availableCalendars = getCalendars();
-        const selectedCalendarId = String(getSelectedCalendarId?.() ?? "").trim();
+        const selectedCalendarId = String(getSelectedCalendarId() ?? "").trim();
         if (
             selectedCalendarId &&
-            availableCalendars.some((calendar) => calendar.id === selectedCalendarId)
+            availableCalendars.some(
+                (calendar) => calendar.id === selectedCalendarId,
+            )
         ) {
             return selectedCalendarId;
         }
         const sourceCalendarId = String(eventData.calendar?.id ?? "").trim();
         if (
             sourceCalendarId &&
-            availableCalendars.some((calendar) => calendar.id === sourceCalendarId)
+            availableCalendars.some(
+                (calendar) => calendar.id === sourceCalendarId,
+            )
         ) {
             return sourceCalendarId;
         }
-        return String(availableCalendars[0]?.id ?? "").trim() || null;
+        const fallbackCalendarId = availableCalendars[0]?.id;
+        return typeof fallbackCalendarId === "string" &&
+            fallbackCalendarId.trim()
+            ? fallbackCalendarId
+            : null;
     }
 
     async function handleEventResponse(eventData, responseOption) {
