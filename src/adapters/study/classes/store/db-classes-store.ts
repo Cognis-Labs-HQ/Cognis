@@ -43,8 +43,8 @@ export class DbClassesStore {
 
     private static readonly DEFAULT_STUDENT_LIMIT = DEFAULT_STUDENT_LIMIT;
 
-    async ensureSchema(dbType?: string): Promise<void> {
-        await ensureSchema(this.db, dbType);
+    async ensureSchema(): Promise<void> {
+        await ensureSchema(this.db);
     }
 
     async ensureStudyLanguagesSchema(): Promise<void> {

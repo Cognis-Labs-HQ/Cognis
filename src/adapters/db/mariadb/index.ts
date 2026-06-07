@@ -217,6 +217,21 @@ class MariaDbExecutor implements RawDbExecutor {
             if (typeof value === "number") return String(value);
             return `'${String(value).replace(/'/g, "''")}'`;
         };
+        const notNullFallback = (
+            col: StructuredDbTableDef["columns"][number],
+        ): string => {
+            switch (col.type) {
+                case "integer":
+                case "bigint":
+                    return "0";
+                case "boolean":
+                    return "0";
+                case "timestamp":
+                    return "CURRENT_TIMESTAMP";
+                default:
+                    return "''";
+            }
+        };
         const columnDefs = def.columns.map((col) => {
             const parts: string[] = [`${col.name} ${dbType(col)}`];
             if (col.notNull || col.primaryKey) parts.push("NOT NULL");
@@ -256,6 +271,27 @@ class MariaDbExecutor implements RawDbExecutor {
                 index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
             await this.execute(
                 `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
+            ).catch(() => undefined);
+        }
+        const existingColsResult = await this.execute(
+            `SELECT column_name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
+            [def.name],
+        );
+        const existingCols = new Set(
+            (existingColsResult.rows ?? []).map((row) =>
+                String((row as Record<string, unknown>).column_name ?? ""),
+            ),
+        );
+        for (const col of def.columns) {
+            if (existingCols.has(col.name)) continue;
+            const defaultClause =
+                col.default !== undefined
+                    ? `DEFAULT ${dbDefault(col.default)}`
+                    : col.notNull
+                      ? `DEFAULT ${notNullFallback(col)}`
+                      : "";
+            await this.execute(
+                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${dbType(col)}${defaultClause ? ` ${defaultClause}` : ""}`,
             ).catch(() => undefined);
         }
     }

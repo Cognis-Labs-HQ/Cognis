@@ -12,7 +12,6 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -121,10 +120,9 @@ export async function bootstrapStudyAdapter(
     }
 
     const store = new DbClassesStore(dbExecutor);
-    const dbType = ctx.capabilities.get<DbProviderId>("db:type");
 
     try {
-        await store.ensureSchema(dbType);
+        await store.ensureSchema();
     } catch (err) {
         ctx.log?.(
             "error",

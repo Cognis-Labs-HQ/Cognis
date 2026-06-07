@@ -1,4 +1,4 @@
-import type { DbExecutor, RawDbExecutor } from "../db/reuse/db-executor.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type {
     CalendarEventRecord,
     CalendarEventResponseRecord,
@@ -51,22 +51,6 @@ function parseJsonNumberArray(value: unknown): number[] {
 export class DbCalendarStore implements CalendarStore {
     constructor(private readonly db: DbExecutor) {}
 
-    private async ensureEventTableColumns(): Promise<void> {
-        const rawDb = this.db as Partial<RawDbExecutor>;
-        if (typeof rawDb.execute !== "function") return;
-        await rawDb.execute(
-            "ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS reminder_offsets_json TEXT NOT NULL DEFAULT '[]'",
-        );
-    }
-
-    private async ensureCalendarTableColumns(): Promise<void> {
-        const rawDb = this.db as Partial<RawDbExecutor>;
-        if (typeof rawDb.execute !== "function") return;
-        await rawDb.execute(
-            "ALTER TABLE calendar_calendars ADD COLUMN IF NOT EXISTS default_reminder_offsets_json TEXT NOT NULL DEFAULT '[]'",
-        );
-    }
-
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
             name: "calendar_calendars",
@@ -98,7 +82,6 @@ export class DbCalendarStore implements CalendarStore {
                 },
             ],
         });
-        await this.ensureCalendarTableColumns();
         await this.db.ensureTable({
             name: "calendar_events",
             columns: [
@@ -140,7 +123,6 @@ export class DbCalendarStore implements CalendarStore {
                 },
             ],
         });
-        await this.ensureEventTableColumns();
         await this.db.ensureTable({
             name: "calendar_event_responses",
             columns: [

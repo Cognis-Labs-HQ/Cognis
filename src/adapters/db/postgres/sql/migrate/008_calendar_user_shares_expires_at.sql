@@ -1,1 +1,0 @@
-ALTER TABLE IF EXISTS calendar_user_shares ADD COLUMN IF NOT EXISTS expires_at TEXT NOT NULL DEFAULT '';

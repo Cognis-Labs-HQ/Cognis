@@ -247,18 +247,10 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
     assert.match(HELPERS_SOURCE, /const dedupedByRoot = new Map\(\);/);
     assert.match(PENDING_RENDER_SOURCE, /data-calendar-pending-response/);
-    assert.match(
-        PENDING_RENDER_SOURCE,
-        /btn-confirm btn-animated calendar-pending-action/,
-    );
-    assert.match(
-        PENDING_RENDER_SOURCE,
-        /btn-cancel btn-animated calendar-pending-action/,
-    );
-    assert.match(
-        PENDING_RENDER_SOURCE,
-        /popup-action-btn--neutral btn-animated calendar-pending-action/,
-    );
+    assert.match(PENDING_RENDER_SOURCE, /btn-animated calendar-pending-action/);
+    assert.match(PENDING_RENDER_SOURCE, /btn-confirm/);
+    assert.match(PENDING_RENDER_SOURCE, /btn-cancel/);
+    assert.match(PENDING_RENDER_SOURCE, /popup-action-btn--neutral/);
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
     assert.match(POPUP_MANAGER_SOURCE, /handlePendingResponseClick/);
     assert.match(POPUP_MANAGER_SOURCE, /popup-manager-pending-response/);

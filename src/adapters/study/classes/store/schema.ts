@@ -1,5 +1,4 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import type { DbProviderId } from "../../../../gateways/db/reuse/provider-id.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 
 const STUDY_LANGUAGE_SEEDS = [
@@ -65,83 +64,7 @@ const STUDY_LANGUAGE_SEEDS = [
     },
 ];
 
-type RawDbExecutor = DbExecutor & {
-    execute: (
-        sql: string,
-        params?: unknown[],
-    ) => Promise<{ rows?: unknown[]; rowCount?: number }>;
-};
-
-function canExecuteRaw(db: DbExecutor): db is RawDbExecutor {
-    return typeof (db as RawDbExecutor).execute === "function";
-}
-
-const POSTGRES_DB_PROVIDER: DbProviderId = "postgresql";
-
-/**
- * Create study/classes tables via PostgreSQL-native DDL.
- *
- * This path avoids adapter-level schema helpers that can issue SQLite-specific
- * introspection statements, and ensures PostgreSQL startup remains dialect-safe.
- *
- * @param db - Raw DB executor with SQL execution capability.
- */
-async function ensureSchemaForPostgres(db: RawDbExecutor): Promise<void> {
-    await db.execute(`CREATE TABLE IF NOT EXISTS study_classes (
-  id TEXT PRIMARY KEY,
-  language_code TEXT NOT NULL,
-  teacher_account_id TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-)`);
-    await db.execute(`CREATE TABLE IF NOT EXISTS teacher_requests (
-  id TEXT PRIMARY KEY,
-  account_id TEXT NOT NULL,
-  language_code TEXT NOT NULL,
-  reason TEXT,
-  status TEXT NOT NULL DEFAULT 'pending',
-  reviewed_by TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (account_id, language_code)
-)`);
-    await db.execute(`CREATE TABLE IF NOT EXISTS teacher_assignments (
-  account_id TEXT NOT NULL,
-  language_code TEXT NOT NULL,
-  class_id TEXT NOT NULL,
-  assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (account_id, language_code)
-)`);
-    await db.execute(`CREATE TABLE IF NOT EXISTS study_user_preferences (
-  account_id TEXT PRIMARY KEY,
-  learning_languages TEXT NOT NULL DEFAULT '[]',
-  teaching_languages TEXT NOT NULL DEFAULT '[]',
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-)`);
-    await db.execute(`CREATE TABLE IF NOT EXISTS class_memberships (
-  class_id TEXT NOT NULL,
-  student_account_id TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',
-  invited_by TEXT,
-  joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (class_id, student_account_id)
-)`);
-    await db.execute(`CREATE TABLE IF NOT EXISTS classroom_state (
-  class_id TEXT PRIMARY KEY,
-  student_limit INTEGER NOT NULL DEFAULT ${DEFAULT_STUDENT_LIMIT},
-  seat_assignments TEXT NOT NULL DEFAULT '{}',
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-)`);
-    await ensureStudyLanguagesSchema(db);
-}
-
-export async function ensureSchema(
-    db: DbExecutor,
-    dbType?: DbProviderId,
-): Promise<void> {
-    if (dbType === POSTGRES_DB_PROVIDER && canExecuteRaw(db)) {
-        await ensureSchemaForPostgres(db);
-        return;
-    }
+export async function ensureSchema(db: DbExecutor): Promise<void> {
     await db.ensureTable({
         name: "study_classes",
         columns: [
