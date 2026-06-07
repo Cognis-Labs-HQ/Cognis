@@ -16,6 +16,7 @@ import {
     respondToEvent,
     createJitsiMeeting,
 } from "./calendar-api.js";
+import { createRenderPendingEvents } from "./calendar-pending-render.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
@@ -382,38 +383,13 @@ function renderEventButton(
     </button>`;
 }
 
-const PENDING_ACTION_ICONS = {
-    accepted: "✓",
-    tentative: "?",
-    declined: "✗",
-};
-
-function renderPendingEvents(events, i18n) {
-    if (!events.length) {
-        return "";
-    }
-    return `<section class="calendar-toolbar-subsection">
-      <h4>${escapeHtml(i18n.t("gateway.calendar.pending_events"))}</h4>
-      <ul class="calendar-events-list calendar-events-list--compact">${events
-          .map(
-              (
-                  event,
-              ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
-            <strong>${escapeHtml(event.title)}</strong>
-            <div>${formatDateTime(event.startAt)}</div>
-          </button>
-          <div class="calendar-pending-actions">
-            ${EVENT_RESPONSE_OPTIONS.map(
-                (responseOption) =>
-                    `<button type="button" class="calendar-pending-action calendar-pending-action--${escapeHtml(responseOption)}" data-calendar-pending-response="${escapeHtml(responseOption)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" aria-label="${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}" title="${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}">${PENDING_ACTION_ICONS[responseOption] ?? responseOption}</button>`,
-            ).join("")}
-          </div>
-        </li>`,
-          )
-          .join("")}</ul>
-    </section>`;
-}
+const renderPendingEvents = createRenderPendingEvents({
+    escapeHtml,
+    formatDateTime,
+    normalizeHexColor,
+    EVENT_RESPONSE_OPTIONS,
+    getResponseActionLabelKey,
+});
 
 function renderToolbarSummary(summary, pendingEvents, i18n) {
     const pendingMarkup = renderPendingEvents(pendingEvents, i18n);

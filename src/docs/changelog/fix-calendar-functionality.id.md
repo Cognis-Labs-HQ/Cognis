@@ -33,9 +33,26 @@ hilang dari daftar kalender penerima saat mereka menyegarkan halaman. Handshake
 dijalankan setiap kali penerima memuat kalender mereka dan menghapus entri yang
 catatan berbaginya sudah tidak ada.
 
-## Perubahan izin tetap tersimpan saat berbagi ulang
+## Popup pemilih kalender tidak lagi muncul untuk acara kalender berbagi
 
-Menambahkan kembali pengguna yang sebelumnya dibagikan tidak lagi mengatur ulang
-izin yang ditingkatkan ke baca-saja. Izin yang ada tetap dipertahankan sehingga
-pemilik dapat mengundang ulang pengguna dengan aman tanpa kehilangan hak tulis
-yang telah diberikan sebelumnya.
+Menerima undangan acara yang sudah ada dalam kalender berbagi tidak lagi
+membuka popup "Tambahkan Acara yang Diterima Ke". Respons langsung dicatat
+di kalender berbagi yang bersangkutan.
+
+## Menolak acara menghapus peserta secara permanen
+
+Saat pengguna menolak acara (termasuk seluruh seri berulang lewat Respond All),
+mereka dihapus dari daftar peserta semua kejadian yang terpengaruh. Acara tidak
+akan muncul lagi di kalender atau daftar acara tertunda hingga penyelenggara
+mengundang ulang secara eksplisit.
+
+## Tombol Acara Tertunda cocok dengan gaya popup respons
+
+Tombol respons cepat di bagian Acara Tertunda kini menggunakan gaya tombol
+dengan garis tepi dan animasi hover yang sama seperti di event composer – hijau
+untuk menerima, merah untuk menolak, dan netral berbingkai untuk tentatif.
+
+## Acara Tertunda langsung diperbarui setelah respons dipilih
+
+Mengeklik tombol respons cepat langsung menghapus item dari daftar tanpa
+menunggu permintaan jaringan selesai.

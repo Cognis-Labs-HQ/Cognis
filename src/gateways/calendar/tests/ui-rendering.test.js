@@ -9,6 +9,10 @@ const HELPERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
     "utf8",
 );
+const PENDING_RENDER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-pending-render.js"),
+    "utf8",
+);
 const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
     "utf8",
@@ -48,6 +52,13 @@ const POPUP_MANAGER_CALENDAR_EDIT_SOURCE = readFileSync(
 );
 const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-response.js"),
+    "utf8",
+);
+const POPUP_MANAGER_PENDING_RESPONSE_SOURCE = readFileSync(
+    resolve(
+        ROOT,
+        "src/gateways/calendar/ui/app/popup-manager-pending-response.js",
+    ),
     "utf8",
 );
 const POPUP_REMINDERS_SOURCE = readFileSync(
@@ -235,8 +246,26 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
 test("calendar toolbar includes pending quick responses with shared-calendar target exemption", () => {
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
     assert.match(HELPERS_SOURCE, /const dedupedByRoot = new Map\(\);/);
-    assert.match(HELPERS_SOURCE, /data-calendar-pending-response/);
+    assert.match(PENDING_RENDER_SOURCE, /data-calendar-pending-response/);
+    assert.match(
+        PENDING_RENDER_SOURCE,
+        /btn-confirm btn-animated calendar-pending-action/,
+    );
+    assert.match(
+        PENDING_RENDER_SOURCE,
+        /btn-cancel btn-animated calendar-pending-action/,
+    );
+    assert.match(
+        PENDING_RENDER_SOURCE,
+        /popup-action-btn--neutral btn-animated calendar-pending-action/,
+    );
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
+    assert.match(POPUP_MANAGER_SOURCE, /handlePendingResponseClick/);
+    assert.match(POPUP_MANAGER_SOURCE, /popup-manager-pending-response/);
+    assert.match(
+        POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
+        /calendar-upcoming-item.*remove/s,
+    );
     assert.match(
         POPUP_MANAGER_RESPONSE_SOURCE,
         /calendar\?\.visibility === "shared"/,

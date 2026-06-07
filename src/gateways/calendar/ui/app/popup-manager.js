@@ -28,6 +28,7 @@ import {
     isSafeHttpUrl,
 } from "./popup-manager-event-utils.js";
 import { createCalendarResponseHandler } from "./popup-manager-response.js";
+import { handlePendingResponseClick } from "./popup-manager-pending-response.js";
 import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 export function createCalendarPopupManager({
     root,
@@ -928,29 +929,12 @@ export function createCalendarPopupManager({
                 if (!(event.target instanceof Element)) {
                     return;
                 }
-                const responseButton = event.target.closest(
-                    "[data-calendar-pending-response]",
-                );
-                if (responseButton instanceof HTMLElement) {
-                    const responseOption = String(
-                        responseButton.getAttribute(
-                            "data-calendar-pending-response",
-                        ) ?? "",
-                    ).trim();
-                    const calendarId = String(
-                        responseButton.getAttribute("data-calendar-id") ?? "",
-                    ).trim();
-                    const eventId = String(
-                        responseButton.getAttribute("data-calendar-event") ??
-                            "",
-                    ).trim();
-                    if (calendarId && eventId && responseOption) {
-                        void respondToEventSelection(
-                            calendarId,
-                            eventId,
-                            responseOption,
-                        );
-                    }
+                if (
+                    handlePendingResponseClick(
+                        event.target,
+                        respondToEventSelection,
+                    )
+                ) {
                     return;
                 }
                 const eventButton = event.target.closest(

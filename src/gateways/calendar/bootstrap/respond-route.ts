@@ -92,6 +92,13 @@ export async function handleCalendarResponseRoute(input: {
             response,
             respondAll,
         });
+        if (response === "declined") {
+            input.gateway.removeDeclinedAttendee({
+                eventId: input.eventId,
+                accountId: input.claims.sub,
+                removeAll: respondAll,
+            });
+        }
         let movedTo: EventLocationRef | null = null;
         if (
             (response === "accepted" || response === "tentative") &&

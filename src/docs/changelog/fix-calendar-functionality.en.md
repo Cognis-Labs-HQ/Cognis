@@ -39,3 +39,28 @@ backing share record is gone.
 Re-adding a previously shared user no longer resets an upgraded permission back
 to read-only. The existing permission is preserved, so an owner can safely
 re-invite a user without losing a write grant they set earlier.
+
+## Shared-calendar events no longer show the calendar picker popup
+
+Accepting an event that already lives in a shared calendar no longer opens the
+"Add Accepted Event To" calendar picker popup. The response is recorded directly
+against the shared calendar, matching the behaviour that was already intended.
+
+## Declining an event removes the decliner permanently
+
+When a user declines an event (including an entire recurring series via
+Respond All), they are removed from the attendee list of every affected
+occurrence. The event no longer appears in their calendar or pending-event list
+unless the organiser explicitly re-invites them.
+
+## Pending Events buttons match the response popup style
+
+The quick-response buttons in the Pending Events section now use the same
+outlined button style and hover animation as the event composer's response
+section — green for accept, red for decline, and bordered neutral for tentative.
+
+## Pending Events updates instantly on response
+
+Clicking a quick-response button in the Pending Events section now removes the
+item from the list immediately, without waiting for the network request to
+complete.

@@ -240,3 +240,68 @@ test("shared-calendar responses update the original event without creating a cop
     assert.equal(bobInvitations.statusCode, 200);
     assert.equal(bobInvitations.body.data.length, 0);
 });
+
+test("declining a shared-calendar event removes the decliner from the attendee list", async () => {
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const dispatchJson = await bootstrapCalendarTest({
+        claimsByToken: new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+    });
+
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const ownerCalendarId = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const shareWithBob = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/share/users`,
+        {
+            recipientAccountId: "bob",
+            recipientHandle: "bob",
+            recipientDisplayName: "Bob",
+        },
+    );
+    const bobSharedCalendarId = String(shareWithBob.body.data.calendarId ?? "");
+    assert.ok(bobSharedCalendarId);
+
+    const createdEvent = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/events`,
+        {
+            title: "Declined meeting",
+            startAt: "2026-07-01T10:00:00.000Z",
+            endAt: "2026-07-01T10:30:00.000Z",
+            attendees: ["bob"],
+        },
+    );
+    assert.equal(createdEvent.statusCode, 201);
+    const createdEventId = String(createdEvent.body.data.id ?? "");
+    assert.ok(createdEventId);
+
+    const declineResponse = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(bobSharedCalendarId)}/events/${encodeURIComponent(createdEventId)}/respond`,
+        { response: "declined" },
+    );
+    assert.equal(declineResponse.statusCode, 200);
+    assert.equal(declineResponse.body.data.response, "declined");
+
+    const eventAfterDecline = await dispatchJson(
+        "GET",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/events/${encodeURIComponent(createdEventId)}`,
+    );
+    assert.equal(eventAfterDecline.statusCode, 200);
+    assert.ok(!eventAfterDecline.body.data.event.attendees.includes("bob"));
+});

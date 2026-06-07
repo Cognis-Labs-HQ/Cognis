@@ -34,9 +34,27 @@ Kalender beim nächsten Aktualisieren aus der Liste des Empfängers. Bei jedem
 Laden führt ein Handshake einen Abgleich durch und entfernt Einträge, deren
 Freigabedatensatz nicht mehr existiert.
 
-## Berechtigungsänderungen bleiben bei erneuter Freigabe erhalten
+## Kein Kalender-Auswahl-Popup bei Freigabekalendern
 
-Wird ein bereits freigegebener Nutzer erneut hinzugefügt, wird eine erhöhte
-Berechtigung nicht mehr auf Nur-Lesen zurückgesetzt. Die vorhandene Berechtigung
-bleibt bestehen, sodass ein Besitzer einen Nutzer gefahrlos erneut einladen kann,
-ohne eine zuvor vergebene Schreibberechtigung zu verlieren.
+Das Annehmen einer Einladung, die bereits in einem freigegebenen Kalender liegt,
+öffnet nicht mehr das Popup „Angenommenes Ereignis hinzufügen zu". Die Antwort
+wird direkt im Freigabekalender gespeichert.
+
+## Absagen entfernt Teilnehmer dauerhaft
+
+Sagt ein Nutzer ab (auch über „Allen antworten" bei Wiederholungsterminen),
+wird er aus der Teilnehmerliste aller betroffenen Termine entfernt. Das Ereignis
+erscheint nicht mehr im Kalender oder in ausstehenden Einladungen, bis der
+Organisator ihn erneut einlädt.
+
+## Schaltflächen in „Ausstehende Ereignisse" entsprechen dem Reaktions-Popup
+
+Die Schnellantwort-Schaltflächen im Bereich „Ausstehende Ereignisse" verwenden
+jetzt denselben Umrandungsstil und dieselbe Hover-Animation wie im
+Ereignis-Composer – Grün für Annehmen, Rot für Absagen, neutraler Rahmen für
+Vorläufig.
+
+## Sofortige Aktualisierung bei Antwort auf ausstehende Ereignisse
+
+Ein Klick auf eine Schnellantwort-Schaltfläche entfernt den Eintrag sofort aus
+der Liste, ohne auf die Netzwerkanfrage zu warten.
