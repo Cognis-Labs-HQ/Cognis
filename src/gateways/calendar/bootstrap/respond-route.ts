@@ -11,6 +11,7 @@ import {
     type EventLocationRef,
     type NotificationDispatcher,
 } from "./helpers.js";
+import type { CalendarShareRegistry } from "./share-registry.js";
 
 export async function handleCalendarResponseRoute(input: {
     req: IncomingMessage;
@@ -20,19 +21,32 @@ export async function handleCalendarResponseRoute(input: {
     calendarId: string;
     eventId: string;
     gateway: CoreCalendarGateway;
+    shareRegistry: CalendarShareRegistry;
     dispatchNotification: NotificationDispatcher | null;
     log?: CalendarLogger;
 }): Promise<void> {
-    const ownedCalendar = input.gateway.getOwnedCalendar(
-        input.claims.sub,
+    const sharedCalendar = await input.shareRegistry.getByRecipientCalendarId(
         input.calendarId,
     );
-    const event = ownedCalendar
-        ? input.gateway.getEvent(input.calendarId, input.eventId)
-        : null;
+    const activeSharedCalendar =
+        sharedCalendar?.recipientAccountId === input.claims.sub
+            ? sharedCalendar
+            : null;
+    const ownedCalendar = input.gateway.getOwnedCalendar(
+        input.claims.sub,
+        activeSharedCalendar ? activeSharedCalendar.ownerCalendarId : input.calendarId,
+    );
+    const event = activeSharedCalendar
+        ? input.gateway.getEvent(
+              activeSharedCalendar.ownerCalendarId,
+              input.eventId,
+          )
+        : ownedCalendar
+          ? input.gateway.getEvent(input.calendarId, input.eventId)
+          : null;
     // Also allow responding when the user is an attendee on a non-owned event
     let invitedEvent = null;
-    if (!ownedCalendar) {
+    if (!ownedCalendar && !activeSharedCalendar) {
         const ev = input.gateway.getEvent(input.calendarId, input.eventId);
         invitedEvent = ev?.attendees.includes(input.claims.sub) ? ev : null;
     }

@@ -353,6 +353,7 @@ export async function dispatchInviteNotifications({
     gateway,
     event,
     dispatchNotification,
+    shareRegistry,
     canInviteByEmail,
     externalHost,
     inviterAccountId,
@@ -363,6 +364,7 @@ export async function dispatchInviteNotifications({
     gateway: CoreCalendarGateway;
     event: CalendarEventRecord;
     dispatchNotification: NotificationDispatcher | null;
+    shareRegistry?: CalendarShareRegistry;
     canInviteByEmail: boolean;
     externalHost: string;
     inviterAccountId: string;
@@ -371,6 +373,17 @@ export async function dispatchInviteNotifications({
     log?: CalendarLogger;
 }): Promise<void> {
     if (!dispatchNotification) return;
+    const activeShare =
+        shareRegistry &&
+        (await shareRegistry.getByRecipientCalendarId(calendarId));
+    const ownerCalendarId = activeShare?.ownerCalendarId ?? calendarId;
+    const ownerAccountId = activeShare?.ownerAccountId ?? inviterAccountId;
+    const ownerCalendarShares = shareRegistry
+        ? await shareRegistry.listCalendarUserShares(
+              ownerAccountId,
+              ownerCalendarId,
+          )
+        : [];
     await Promise.all(
         event.attendees.map(async (attendee) => {
             const recipientUsername =
@@ -385,7 +398,13 @@ export async function dispatchInviteNotifications({
                     const copyCalendar = gateway.getCalendar(copy.calendarId);
                     return copyCalendar?.ownerAccountId === recipientUsername;
                 });
-            const actionCalendarId = invitedCopy?.calendarId ?? calendarId;
+            const recipientShare = ownerCalendarShares.find(
+                (share) => share.recipientAccountId === recipientUsername,
+            );
+            const actionCalendarId =
+                invitedCopy?.calendarId ??
+                recipientShare?.recipientCalendarId ??
+                ownerCalendarId;
             const actionEventId = invitedCopy?.id ?? event.id;
             const actionUrl = buildEventActionUrl(
                 actionCalendarId,

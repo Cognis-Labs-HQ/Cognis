@@ -618,6 +618,7 @@ export function createCalendarCoreRoutes({
                             gateway,
                             event,
                             dispatchNotification,
+                            shareRegistry,
                             canInviteByEmail,
                             externalHost,
                             inviterAccountId: claims.sub,
@@ -967,6 +968,7 @@ export function createCalendarCoreRoutes({
                 calendarId: decodeURIComponent(respondMatch[1]),
                 eventId: decodeURIComponent(respondMatch[2]),
                 gateway,
+                shareRegistry,
                 dispatchNotification,
                 log,
             });
