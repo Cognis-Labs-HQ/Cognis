@@ -637,7 +637,8 @@
   <string name="module.study.classes.teacher">Lehrer</string>
   <string name="module.study.classes.class_materials">Unterrichtsmaterialien</string>
   <string name="module.study.classes.assigned_homework">Zugewiesene Hausaufgaben</string>
-  <string name="module.study.classes.class_agenda">Klassenagenda</string>
+  <string name="module.study.classes.class_agenda">Agenda</string>
+  <string name="module.study.classes.classroom_panel">Klassenraum</string>
   <string name="module.study.classes.no_active_agenda">Derzeit sind keine Agendaeinträge aktiv.</string>
   <string name="module.study.classes.create_agenda">Agenda erstellen</string>
   <string name="module.study.classes.agenda_title">Agenda-Titel</string>
@@ -653,6 +654,11 @@
   <string name="module.study.classes.join_mode_label">Beitrittsmodus</string>
   <string name="module.study.classes.class_name_label">Klassenname</string>
   <string name="module.study.classes.class_cap_label">Maximale Klassengröße</string>
+  <string name="module.study.classes.class_settings">Klasseneinstellungen</string>
+  <string name="module.study.classes.class_settings_saved">Klasseneinstellungen gespeichert.</string>
+  <string name="module.study.classes.class_settings_failed">Klasseneinstellungen konnten nicht gespeichert werden.</string>
+  <string name="module.study.classes.profile_preview">Profilvorschau</string>
+  <string name="module.study.classes.profile_unknown">Unbekanntes Mitglied</string>
   <string name="module.study.classes.join_mode_open">Offen</string>
   <string name="module.study.classes.join_mode_on_request">Auf Anfrage</string>
   <string name="module.study.classes.join_mode_invite_only">Nur mit Einladung</string>

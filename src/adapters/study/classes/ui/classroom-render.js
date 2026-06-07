@@ -1,4 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { buildProfileAvatarMarkup } from "/static/gateways/social/reuse/profile-avatar.js";
 
 const DEFAULT_CLASSROOM_CAPACITY = 20;
 
@@ -33,6 +34,21 @@ export function buildAccountAbbreviation(member) {
     const accountLabel = buildAccountLabel(member);
     if (!accountLabel) return "??";
     return accountLabel.slice(0, 2).toUpperCase();
+}
+
+function renderDeskAvatar(member) {
+    if (!member) return "";
+    if (member?.identityMasked) {
+        return `<span class="classes-desk-avatar-fallback">${escapeHtml(buildAccountAbbreviation(member))}</span>`;
+    }
+    return buildProfileAvatarMarkup({
+        avatarKey: member?.avatarKey ?? null,
+        label: buildAccountLabel(member) || "Member",
+        colorSeed: member?.handle || member?.studentAccountId || "",
+        avatarClass: "classes-desk-avatar",
+        imageClass: "classes-desk-avatar-img",
+        fallbackClass: "classes-desk-avatar-fallback",
+    });
 }
 
 function buildLanguageFilterOptions({ availableClasses }) {
@@ -94,6 +110,7 @@ function renderBlackboard({
     canToggleView,
     currentViewMode,
     boardEntities,
+    activeBoardPanel,
 }) {
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
@@ -127,7 +144,14 @@ function renderBlackboard({
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
-                <span class="classes-chalk-header">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</span>
+                <div class="classes-chalk-header classes-board-panel-tabs">
+                    <button type="button" class="classes-board-panel-btn${
+                        activeBoardPanel !== "classroom" ? " active" : ""
+                    }" data-board-panel="agenda">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</button>
+                    <button type="button" class="classes-board-panel-btn${
+                        activeBoardPanel === "classroom" ? " active" : ""
+                    }" data-board-panel="classroom">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
+                </div>
                 <div class="classes-blackboard-actions">
                     <button type="button" class="classes-icon-btn classes-board-entity-token"
                         ${snapshot?.chatUrl ? "" : "disabled"}
@@ -172,14 +196,25 @@ function renderBlackboard({
                                    title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
                             : ""
                     }
+                    ${
+                        isTeacherView
+                            ? `<button type="button" class="classes-icon-btn classes-class-settings-btn"
+                                   aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
+                                   title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">⚙️</button>`
+                            : ""
+                    }
                 </div>
             </div>
             <div class="classes-blackboard-surface">
                 <div class="classes-blackboard-main">
-                    <section class="classes-blackboard-section classes-blackboard-section--agenda">
+                    <section class="classes-blackboard-section classes-blackboard-section--agenda${
+                        activeBoardPanel === "classroom" ? " classes-blackboard-section--hidden" : ""
+                    }">
                         ${renderChalkAgenda({ activeAgendaItems, i18n })}
                     </section>
-                    <section class="classes-blackboard-section classes-blackboard-section--members">
+                    <section class="classes-blackboard-section classes-blackboard-section--members${
+                        activeBoardPanel === "classroom" ? "" : " classes-blackboard-section--hidden"
+                    }">
                         ${renderStudentRoster({ snapshot, i18n })}
                     </section>
                 </div>
@@ -192,37 +227,43 @@ function renderBlackboard({
 
 function renderStudentRoster({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
-    const pendingMembers = Array.isArray(snapshot?.pendingMembers)
-        ? snapshot.pendingMembers
-        : [];
     const rows = members
-        .map(
-            (member) => `
-                <li class="classes-roster-item" data-student-id="${escapeHtml(String(member.studentAccountId ?? ""))}">
-                    <span class="classes-roster-avatar">${escapeHtml(member?.identityMasked ? "???" : buildAccountAbbreviation(member))}</span>
-                    <span class="classes-roster-name">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</span>
-                </li>
-            `,
-        )
+        .map((member) => {
+            const accountId = String(member?.studentAccountId ?? "").trim();
+            const handle = String(member?.handle ?? "").trim();
+            const label = member?.identityMasked
+                ? "???"
+                : buildAccountLabel(member) || accountId;
+            const presenceClass = String(member?.presence ?? "offline")
+                .trim()
+                .toLowerCase();
+            const avatar = member?.identityMasked
+                ? `<span class="classes-roster-avatar">${escapeHtml("???")}</span>`
+                : buildProfileAvatarMarkup({
+                      avatarKey: member?.avatarKey ?? null,
+                      label,
+                      colorSeed: member?.handle || accountId,
+                      avatarClass: "classes-roster-avatar",
+                      imageClass: "classes-roster-avatar-img",
+                      fallbackClass: "classes-roster-avatar-fallback",
+                  });
+            const content = `
+                <span class="classes-roster-member-card">
+                    ${avatar}
+                    <span class="classes-roster-name">${escapeHtml(label)}</span>
+                    <span class="classes-status-light classes-status-light--${escapeHtml(presenceClass)}" aria-hidden="true"></span>
+                </span>
+            `;
+            if (!handle || member?.identityMasked) {
+                return `<div class="classes-roster-item" data-student-id="${escapeHtml(accountId)}">${content}</div>`;
+            }
+            return `<button type="button" class="classes-roster-item classes-member-profile-btn" data-student-id="${escapeHtml(accountId)}" data-student-handle="${escapeHtml(handle)}" data-student-name="${escapeHtml(label)}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${content}</button>`;
+        })
         .join("");
-    const pendingRows =
-        snapshot?.isTeacherView && pendingMembers.length
-            ? pendingMembers
-                  .map(
-                      (member) => `
-                <li class="classes-roster-item classes-roster-item--pending">
-                    <span class="classes-roster-avatar">${escapeHtml(member?.identityMasked ? "???" : buildAccountAbbreviation(member))}</span>
-                    <span class="classes-roster-name">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</span>
-                    <button type="button" class="classes-quick-approve-btn" data-student-id="${escapeHtml(String(member.studentAccountId ?? ""))}">${escapeHtml(i18n.t("module.study.classes.approve"))}</button>
-                </li>
-            `,
-                  )
-                  .join("")
-            : "";
     return `
         <div class="classes-student-roster">
             <div class="classes-roster-header">${escapeHtml(i18n.t("module.study.classes.members_section"))}</div>
-            <ul class="classes-roster-list">${rows || `<li class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</li>`}${pendingRows}</ul>
+            <div class="classes-roster-list classes-roster-grid">${rows || `<span class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</span>`}</div>
         </div>
     `;
 }
@@ -244,13 +285,17 @@ function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
              ${isTeacherView && occupied ? 'draggable="true"' : ""}
              title="${occupied ? escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}">
             <div class="classes-desk-surface">
-                ${occupied ? `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(member?.identityMasked ? "???" : buildAccountAbbreviation(member))}</span>` : ""}
+                ${occupied ? renderDeskAvatar(member) : `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(i18n.t("module.study.classes.classroom_seat"))} ${seatNumber + 1}</span>`}
             </div>
             <div class="classes-desk-nameplate">
                 <span class="classes-status-light classes-status-light--${escapeHtml(
                     String(member?.presence ?? "offline"),
                 )}"></span>
-                <span class="classes-desk-name">${escapeHtml(occupied ? (member?.identityMasked ? "???" : buildAccountLabel(member)) : i18n.t("module.study.classes.empty_seat"))}</span>
+                ${
+                    occupied
+                        ? `<button type="button" class="classes-desk-name classes-desk-name-trigger classes-member-profile-btn" data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}" data-student-handle="${escapeHtml(String(member?.handle ?? ""))}" data-student-name="${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</button>`
+                        : `<span class="classes-desk-name">${escapeHtml(i18n.t("module.study.classes.empty_seat"))}</span>`
+                }
             </div>
             <div class="classes-chair-element"></div>
         </div>
@@ -330,19 +375,23 @@ function renderDeskFloor({
                 studentAccountId: snapshot?.teacherAccountId,
             },
         ) || i18n.t("ui.reuse.teacher");
-    const teacherInitials = buildAccountAbbreviation(
-        snapshot?.teacher ?? { studentAccountId: teacherLabel },
-    );
+    const teacherHandle = String(snapshot?.teacher?.handle ?? "").trim();
     const teacherDesk = snapshot?.teacherAccountId
         ? `<div class="classes-teacher-desk-zone">
                 <div class="classes-desk-unit classes-desk-unit--teacher"
                      title="${escapeHtml(teacherLabel)}">
-                    <div class="classes-desk-surface">
-                        <span class="classes-desk-badge" aria-hidden="true">${escapeHtml(teacherInitials)}</span>
-                    </div>
+                    <div class="classes-desk-surface">${renderDeskAvatar({
+                        ...snapshot?.teacher,
+                        studentAccountId: snapshot?.teacherAccountId,
+                        displayName: teacherLabel,
+                    })}</div>
                     <div class="classes-desk-nameplate">
                         <span class="classes-status-light classes-status-light--online"></span>
-                        <span class="classes-desk-name">${escapeHtml(teacherLabel)}</span>
+                        ${
+                            teacherHandle
+                                ? `<button type="button" class="classes-desk-name classes-desk-name-trigger classes-member-profile-btn" data-student-id="${escapeHtml(String(snapshot?.teacherAccountId ?? ""))}" data-student-handle="${escapeHtml(teacherHandle)}" data-student-name="${escapeHtml(teacherLabel)}" data-student-avatar-key="${escapeHtml(String(snapshot?.teacher?.avatarKey ?? ""))}">${escapeHtml(teacherLabel)}</button>`
+                                : `<span class="classes-desk-name">${escapeHtml(teacherLabel)}</span>`
+                        }
                     </div>
                     <div class="classes-chair-element"></div>
                 </div>
@@ -405,22 +454,6 @@ function renderMaterialsEditor({ classResources, i18n }) {
                 <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
                 <textarea id="classes-homework" class="classes-classroom-editor">${escapeHtml(classResources.homework ?? "")}</textarea>
                 <button type="button" class="btn-confirm btn-animated classes-save-materials-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
-            </div>
-        </details>
-    `;
-}
-
-function renderClassroomIdentityEditor({ i18n, snapshot, isTeacherView }) {
-    if (!isTeacherView || !snapshot) return "";
-    const className = String(snapshot?.name ?? "").trim();
-    return `
-        <details class="classes-materials-editor classes-identity-editor">
-            <summary class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.manage_students"))}</summary>
-            <div class="classes-materials-editor-body">
-                <label class="classes-section-heading" for="classes-rename-input">${escapeHtml(i18n.t("module.study.classes.class_name_label"))}</label>
-                <input id="classes-rename-input" class="theme-select" type="text" value="${escapeHtml(className)}" />
-                <button type="button" class="btn-confirm btn-animated classes-rename-class-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
-                <label class="classes-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="classes-room-avatar-input" type="file" accept="image/*" hidden /></label>
             </div>
         </details>
     `;
@@ -499,6 +532,7 @@ function renderClassroomView({
     currentViewMode,
     canEditMaterials,
     boardEntities,
+    activeBoardPanel,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -514,12 +548,20 @@ function renderClassroomView({
         <section class="classes-section classes-classroom-hub">
             <div class="classes-room">
                 <div class="classes-room-top">
-                    ${renderBlackboard({ snapshot: { ...snapshot, isTeacherView }, activeAgendaItems, i18n, isTeacherView, canToggleView, currentViewMode, boardEntities })}
+                    ${renderBlackboard({
+                        snapshot: { ...snapshot, isTeacherView },
+                        activeAgendaItems,
+                        i18n,
+                        isTeacherView,
+                        canToggleView,
+                        currentViewMode,
+                        boardEntities,
+                        activeBoardPanel,
+                    })}
                     ${renderRoomDoor({ i18n, isTeacherView })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}
             </div>
-            ${renderClassroomIdentityEditor({ i18n, snapshot, isTeacherView })}
             ${canEditMaterials ? renderMaterialsEditor({ classResources, i18n }) : ""}
             ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}
             ${

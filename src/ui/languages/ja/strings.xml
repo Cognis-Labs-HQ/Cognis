@@ -637,7 +637,8 @@
   <string name="module.study.classes.teacher">教師</string>
   <string name="module.study.classes.class_materials">授業教材</string>
   <string name="module.study.classes.assigned_homework">課題</string>
-  <string name="module.study.classes.class_agenda">授業アジェンダ</string>
+  <string name="module.study.classes.class_agenda">アジェンダ</string>
+  <string name="module.study.classes.classroom_panel">教室</string>
   <string name="module.study.classes.no_active_agenda">現在表示中のアジェンダ項目はありません。</string>
   <string name="module.study.classes.create_agenda">アジェンダを作成</string>
   <string name="module.study.classes.agenda_title">アジェンダ名</string>
@@ -653,6 +654,11 @@
   <string name="module.study.classes.join_mode_label">参加方式</string>
   <string name="module.study.classes.class_name_label">クラス名</string>
   <string name="module.study.classes.class_cap_label">定員</string>
+  <string name="module.study.classes.class_settings">クラス設定</string>
+  <string name="module.study.classes.class_settings_saved">クラス設定を保存しました。</string>
+  <string name="module.study.classes.class_settings_failed">クラス設定の保存に失敗しました。</string>
+  <string name="module.study.classes.profile_preview">プロフィールプレビュー</string>
+  <string name="module.study.classes.profile_unknown">不明なメンバー</string>
   <string name="module.study.classes.join_mode_open">オープン</string>
   <string name="module.study.classes.join_mode_on_request">申請制</string>
   <string name="module.study.classes.join_mode_invite_only">招待制</string>
