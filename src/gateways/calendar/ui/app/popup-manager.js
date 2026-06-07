@@ -485,9 +485,8 @@ export function createCalendarPopupManager({
         let popupSearchAbortController = null,
             popupController = null;
         let confirmedConflictCreateKey = "";
-        let pendingCreatedEventId = null;
-        let pendingCreatedCalendarId = null;
-
+        let pendingCreatedEventId = null,
+            pendingCreatedCalendarId = null;
         const participantKey = buildParticipantEntryKey;
 
         function renderParticipants(overlay) {
@@ -858,7 +857,8 @@ export function createCalendarPopupManager({
                         }
                     }
                     const updated = await updateExistingEvent({
-                        sourceCalendarId: eventData.calendar.id,
+                        sourceCalendarId:
+                            eventData.event.calendarId ?? eventData.calendar.id,
                         sourceEventId: eventData.event.id,
                         calendarId: normalizedValues.calendarId,
                         title: normalizedValues.title,

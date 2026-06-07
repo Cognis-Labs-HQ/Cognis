@@ -232,13 +232,21 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
 });
 
-test("calendar toolbar includes pending quick responses with inline calendar targeting", () => {
+test("calendar toolbar includes pending quick responses with shared-calendar target exemption", () => {
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
     assert.match(HELPERS_SOURCE, /data-calendar-pending-response/);
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
     assert.match(
         POPUP_MANAGER_RESPONSE_SOURCE,
         /calendar\?\.visibility === "shared"/,
+    );
+    assert.match(
+        POPUP_MANAGER_RESPONSE_SOURCE,
+        /calendar-response-target-calendar/,
+    );
+    assert.match(
+        POPUP_MANAGER_RESPONSE_SOURCE,
+        /gateway\.calendar\.accept_calendar_title/,
     );
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /getSelectedCalendarId/);

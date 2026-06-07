@@ -71,6 +71,64 @@ export function createCalendarResponseHandler({
             : null;
     }
 
+    async function promptTargetCalendar(eventData) {
+        const availableCalendars = getCalendars()
+            .map((calendar) => ({
+                id: String(calendar?.id ?? "").trim(),
+                name: String(calendar?.name ?? "").trim(),
+            }))
+            .filter((calendar) => calendar.id);
+        if (availableCalendars.length === 0) {
+            return null;
+        }
+        let selectedCalendarId = resolveTargetCalendarId(eventData);
+        if (!selectedCalendarId) {
+            selectedCalendarId = availableCalendars[0].id;
+        }
+        const action = await openPopup({
+            title: i18n.t("gateway.calendar.accept_calendar_title"),
+            body: () => `
+                <div class="calendar-response-calendar-picker">
+                    <p>${escapeHtml(i18n.t("gateway.calendar.accept_calendar_prompt"))}</p>
+                    <select id="calendar-response-target-calendar">
+                        ${availableCalendars
+                            .map(
+                                (calendar) =>
+                                    `<option value="${escapeHtml(calendar.id)}"${calendar.id === selectedCalendarId ? " selected" : ""}>${escapeHtml(calendar.name || calendar.id)}</option>`,
+                            )
+                            .join("")}
+                    </select>
+                </div>
+            `,
+            actions: [
+                {
+                    id: "save",
+                    label: i18n.t("ui.reuse.save"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onAction: (actionId, overlay) => {
+                if (actionId !== "save") return true;
+                const chosenCalendarId = String(
+                    overlay.querySelector("#calendar-response-target-calendar")
+                        ?.value ?? "",
+                ).trim();
+                if (!chosenCalendarId) return false;
+                selectedCalendarId = chosenCalendarId;
+                return true;
+            },
+        });
+        if (action !== "save") {
+            return null;
+        }
+        return selectedCalendarId;
+    }
+
     async function handleEventResponse(eventData, responseOption) {
         if (!calendarUi.EVENT_RESPONSE_OPTIONS.includes(responseOption)) {
             return false;
@@ -86,7 +144,7 @@ export function createCalendarResponseHandler({
             !isSharedCalendarEvent &&
             (responseOption === "accepted" || responseOption === "tentative")
         ) {
-            targetCalendarId = resolveTargetCalendarId(eventData);
+            targetCalendarId = await promptTargetCalendar(eventData);
             if (!targetCalendarId) {
                 return false;
             }

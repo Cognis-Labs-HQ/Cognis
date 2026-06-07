@@ -3,8 +3,14 @@ import assert from "node:assert/strict";
 import { createCalendarResponseHandler } from "../ui/app/popup-manager-response.js";
 
 function createHarness({
-    calendars = [{ id: "default" }, { id: "target" }],
+    calendars = [
+        { id: "default", name: "Default" },
+        { id: "target", name: "Target" },
+    ],
     selectedCalendarId = "target",
+    scopeAction = "single",
+    targetAction = "save",
+    targetCalendarId = "target",
 } = {}) {
     const openPopupCalls = [];
     const responded = [];
@@ -28,6 +34,22 @@ function createHarness({
             showToast: () => {},
             openPopup: async (payload) => {
                 openPopupCalls.push(payload);
+                const actionIds = payload.actions.map((action) => action.id);
+                if (actionIds.includes("single")) {
+                    return scopeAction;
+                }
+                if (actionIds.includes("save")) {
+                    if (typeof payload.onAction === "function") {
+                        await payload.onAction(targetAction, {
+                            querySelector: (selector) =>
+                                selector ===
+                                "#calendar-response-target-calendar"
+                                    ? { value: targetCalendarId }
+                                    : null,
+                        });
+                    }
+                    return targetAction;
+                }
                 return null;
             },
             escapeHtml: (value) => String(value),
@@ -41,7 +63,7 @@ function createHarness({
     };
 }
 
-test("accepted quick response skips calendar picker popup and uses selected calendar", async () => {
+test("accepted quick response prompts for target calendar and uses selection", async () => {
     const { handler, openPopupCalls, responded, selectedCalendars } =
         createHarness();
     const success = await handler.handleEventResponse(
@@ -52,7 +74,11 @@ test("accepted quick response skips calendar picker popup and uses selected cale
         "accepted",
     );
     assert.equal(success, true);
-    assert.equal(openPopupCalls.length, 0);
+    assert.equal(openPopupCalls.length, 1);
+    assert.equal(
+        openPopupCalls[0].title,
+        "gateway.calendar.accept_calendar_title",
+    );
     assert.equal(responded.length, 1);
     assert.deepEqual(responded[0], [
         "invite-source",
@@ -63,10 +89,14 @@ test("accepted quick response skips calendar picker popup and uses selected cale
     assert.deepEqual(selectedCalendars, ["target"]);
 });
 
-test("tentative quick response uses fallback target resolution and declined skips target", async () => {
+test("tentative quick response prompts and declined skips target calendar prompt", async () => {
     const { handler, responded } = createHarness({
-        calendars: [{ id: "source" }, { id: "first-fallback" }],
+        calendars: [
+            { id: "source", name: "Source" },
+            { id: "first-fallback", name: "Fallback" },
+        ],
         selectedCalendarId: "",
+        targetCalendarId: "source",
     });
     const tentativeSuccess = await handler.handleEventResponse(
         {
@@ -94,10 +124,14 @@ test("tentative quick response uses fallback target resolution and declined skip
     });
 });
 
-test("accepted quick response falls back to first available calendar when needed", async () => {
+test("accepted quick response uses fallback target default when no selected calendar is active", async () => {
     const { handler, responded } = createHarness({
-        calendars: [{ id: "first-fallback" }, { id: "other" }],
+        calendars: [
+            { id: "first-fallback", name: "Fallback" },
+            { id: "other", name: "Other" },
+        ],
         selectedCalendarId: "missing",
+        targetCalendarId: "first-fallback",
     });
     await handler.handleEventResponse(
         {
@@ -113,7 +147,7 @@ test("accepted quick response falls back to first available calendar when needed
 });
 
 test("shared calendar quick responses keep target calendar unset", async () => {
-    const { handler, responded } = createHarness();
+    const { handler, responded, openPopupCalls } = createHarness();
     await handler.handleEventResponse(
         {
             calendar: { id: "shared-1", visibility: "shared" },
@@ -125,4 +159,20 @@ test("shared calendar quick responses keep target calendar unset", async () => {
         respondAll: false,
         targetCalendarId: null,
     });
+    assert.equal(openPopupCalls.length, 0);
+});
+
+test("accepted quick response aborts when calendar selection is canceled", async () => {
+    const { handler, responded } = createHarness({
+        targetAction: "cancel",
+    });
+    const success = await handler.handleEventResponse(
+        {
+            calendar: { id: "invite-source", visibility: "private" },
+            event: { id: "event-6", recurrence: "none" },
+        },
+        "accepted",
+    );
+    assert.equal(success, false);
+    assert.equal(responded.length, 0);
 });
