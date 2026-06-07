@@ -83,15 +83,6 @@ async function respondToEvent(
     );
 }
 
-async function probeJitsiAvailability() {
-    const response = await apiFetch("/api/v1/modules/jitsi-meet/ping");
-    if (!response.ok) return false;
-    const payload = await response.json();
-    return (
-        Boolean(payload?.data?.ready) && Boolean(payload?.data?.configComplete)
-    );
-}
-
 async function createJitsiMeeting(attendees) {
     const response = await apiFetch(
         "/api/v1/modules/jitsi-meet/meetings/create",
@@ -121,6 +112,5 @@ export {
     updateEvent,
     deleteEvent,
     respondToEvent,
-    probeJitsiAvailability,
     createJitsiMeeting,
 };

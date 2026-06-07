@@ -1,10 +1,16 @@
+import { randomBytes } from "node:crypto";
 import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
-import type { CoreCalendarGateway } from "../gateway/index.js";
 import type {
     CalendarEventRecord,
     CalendarEventResponse,
+    CalendarRecord,
     CalendarVisibility,
+    CoreCalendarGateway,
 } from "../gateway/index.js";
+import type {
+    CalendarShareLinkRegistryRecord,
+    CalendarShareRegistry,
+} from "./share-registry.js";
 
 const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 
@@ -72,46 +78,23 @@ export function normalizeReminderOffsets(value: unknown): number[] {
 }
 
 export function buildCalendarShareData(input: {
-    gateway: CoreCalendarGateway;
-    ownerAccountId: string;
-    calendarId: string;
-    permission: unknown;
-    expiresInHours: unknown;
-    name?: string;
+    shareLink: CalendarShareLinkRegistryRecord;
     externalHost: string;
 }): {
-    permission: "read" | "write";
+    id: string;
+    name: string | null;
+    passphrase: string | null;
+    expiresAt: string;
     shareUrl: string;
     caldavUrl: string;
     icsUrl: string;
-} | null {
-    const calendar = input.gateway.getOwnedCalendar(
-        input.ownerAccountId,
-        input.calendarId,
-    );
-    if (!calendar) return null;
-    const permission = input.permission === "write" ? "write" : "read";
-    const privateExportToken =
-        calendar.visibility === "public"
-            ? null
-            : input.gateway.issuePrivateExportToken({
-                  ownerAccountId: input.ownerAccountId,
-                  calendarId: calendar.id,
-                  ttlSeconds: resolveShareTtlSeconds(input.expiresInHours),
-                  ...(input.name ? { name: input.name } : {}),
-              }).token;
-    const caldavPath =
-        calendar.visibility === "public"
-            ? `/api/v1/calendar/caldav/public/${encodeURIComponent(calendar.id)}`
-            : `/api/v1/calendar/caldav/private/${encodeURIComponent(
-                  String(privateExportToken),
-              )}`;
-    const icsPath =
-        calendar.visibility === "public"
-            ? `/api/v1/calendar/ics/public/${encodeURIComponent(calendar.id)}`
-            : `/api/v1/calendar/ics/private/${encodeURIComponent(
-                  String(privateExportToken),
-              )}`;
+} {
+    const caldavPath = `/api/v1/calendar/caldav/share/${encodeURIComponent(
+        input.shareLink.token,
+    )}`;
+    const icsPath = `/api/v1/calendar/ics/share/${encodeURIComponent(
+        input.shareLink.token,
+    )}`;
     const toAbsoluteOrPath = (relativePath: string) =>
         input.externalHost
             ? `${input.externalHost}${relativePath}`
@@ -119,23 +102,46 @@ export function buildCalendarShareData(input: {
     const caldavUrl = toAbsoluteOrPath(caldavPath);
     const icsUrl = toAbsoluteOrPath(icsPath);
     return {
-        permission,
+        id: input.shareLink.id,
+        name: input.shareLink.name,
+        passphrase: input.shareLink.passphrase,
+        expiresAt: input.shareLink.expiresAt,
         shareUrl: caldavUrl,
         caldavUrl,
         icsUrl,
     };
 }
 
-function resolveShareTtlSeconds(expiresInHours: unknown): number | null {
-    if (expiresInHours === null) return null;
+export function createCalendarSharePassphrase(): string {
+    // 5 x 4-char base64url segments gives a human-readable passphrase with
+    // strong entropy while remaining easy to copy and verify visually.
+    const words = Array.from({ length: 5 }, () =>
+        randomBytes(3).toString("base64url").slice(0, 4).toLowerCase(),
+    );
+    return words.join("-");
+}
+
+export function createCalendarShareName(): string {
+    return randomBytes(4).toString("hex");
+}
+
+export function resolveShareExpiry(expiresInHours: unknown): string {
+    if (expiresInHours === null) return "";
     if (
         typeof expiresInHours !== "number" ||
         !Number.isFinite(expiresInHours)
     ) {
-        return DEFAULT_SHARE_TTL_SECONDS;
+        return new Date(
+            Date.now() + DEFAULT_SHARE_TTL_SECONDS * 1000,
+        ).toISOString();
     }
-    if (expiresInHours <= 0) return DEFAULT_SHARE_TTL_SECONDS;
-    return Math.round(expiresInHours * 3600);
+    if (expiresInHours <= 0) {
+        return new Date(
+            Date.now() + DEFAULT_SHARE_TTL_SECONDS * 1000,
+        ).toISOString();
+    }
+    const ttlSeconds = Math.max(1, Math.round(expiresInHours * 3600));
+    return new Date(Date.now() + ttlSeconds * 1000).toISOString();
 }
 
 export async function normalizeAttendeesForOwner(
@@ -153,6 +159,29 @@ export async function normalizeAttendeesForOwner(
         new Set(
             [...resolved, ownerAccountId]
                 .map((entry) => String(entry ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
+export async function includeSharedAudienceAttendees(
+    attendees: string[],
+    shareRegistry: CalendarShareRegistry,
+    ownerAccountId: string,
+    ownerCalendarId: string,
+): Promise<string[]> {
+    const shares = await shareRegistry.listCalendarUserShares(
+        ownerAccountId,
+        ownerCalendarId,
+    );
+    return Array.from(
+        new Set(
+            [
+                ...attendees,
+                ownerAccountId,
+                ...shares.map((share) => share.recipientAccountId),
+            ]
+                .map((accountId) => String(accountId ?? "").trim())
                 .filter(Boolean),
         ),
     );
@@ -223,6 +252,49 @@ export function requireOrganizerOwnedSourceEvent(input: {
     return targetEvent;
 }
 
+export function requireWritableSharedOrganizerSourceEvent(input: {
+    gateway: CoreCalendarGateway;
+    sharedCalendar: {
+        ownerCalendarId: string;
+        permission: "read" | "write";
+    };
+    organizerAccountId: string;
+    eventId: string;
+    res: ServerResponse;
+    actionVerb: "edit" | "delete";
+}): CalendarEventRecord | null {
+    if (input.sharedCalendar.permission !== "write") {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            "Calendar is read-only.",
+            403,
+        );
+        return null;
+    }
+    const sourceEvent = input.gateway.getEvent(
+        input.sharedCalendar.ownerCalendarId,
+        input.eventId,
+    );
+    if (!sourceEvent) {
+        sendCalendarError(input.res, "not_found", "Event not found.", 404);
+        return null;
+    }
+    if (
+        sourceEvent.createdBy !== input.organizerAccountId ||
+        sourceEvent.sourceEventId !== null
+    ) {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            `Only the event organizer can ${input.actionVerb} this event.`,
+            403,
+        );
+        return null;
+    }
+    return sourceEvent;
+}
+
 export function buildEventActionUrl(
     calendarId: string,
     eventId: string,
@@ -272,11 +344,9 @@ export function buildResponseNotificationBody(
     response: CalendarEventResponse,
 ): string {
     return [
-        `${attendeeAccountId} responded to ${event.title}.`,
-        "",
+        `Event: ${event.title}`,
+        `User: ${attendeeAccountId}`,
         `Response: ${response}`,
-        `Starts: ${event.startAt}`,
-        `Ends: ${event.endAt}`,
     ].join("\n");
 }
 
@@ -288,6 +358,21 @@ export function buildCancellationNotificationBody(
         "",
         `Starts: ${event.startAt}`,
         `Ends: ${event.endAt}`,
+        ...(event.description ? [`Description: ${event.description}`] : []),
+        ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
+    ].join("\n");
+}
+
+export function buildReminderNotificationBody(
+    event: CalendarEventRecord,
+    reminderOffsetMinutes: number,
+): string {
+    return [
+        `Reminder set for ${event.title}.`,
+        "",
+        `Starts: ${event.startAt}`,
+        `Ends: ${event.endAt}`,
+        `Reminder: ${reminderOffsetMinutes} minutes before`,
         ...(event.description ? [`Description: ${event.description}`] : []),
         ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
     ].join("\n");
@@ -309,6 +394,7 @@ export async function dispatchInviteNotifications({
     gateway,
     event,
     dispatchNotification,
+    shareRegistry,
     canInviteByEmail,
     externalHost,
     inviterAccountId,
@@ -319,6 +405,7 @@ export async function dispatchInviteNotifications({
     gateway: CoreCalendarGateway;
     event: CalendarEventRecord;
     dispatchNotification: NotificationDispatcher | null;
+    shareRegistry?: CalendarShareRegistry;
     canInviteByEmail: boolean;
     externalHost: string;
     inviterAccountId: string;
@@ -327,6 +414,17 @@ export async function dispatchInviteNotifications({
     log?: CalendarLogger;
 }): Promise<void> {
     if (!dispatchNotification) return;
+    const activeShare = shareRegistry
+        ? await shareRegistry.getByRecipientCalendarId(calendarId)
+        : null;
+    const ownerCalendarId = activeShare?.ownerCalendarId ?? calendarId;
+    const ownerAccountId = activeShare?.ownerAccountId ?? inviterAccountId;
+    const ownerCalendarShares = shareRegistry
+        ? await shareRegistry.listCalendarUserShares(
+              ownerAccountId,
+              ownerCalendarId,
+          )
+        : [];
     await Promise.all(
         event.attendees.map(async (attendee) => {
             const recipientUsername =
@@ -341,7 +439,13 @@ export async function dispatchInviteNotifications({
                     const copyCalendar = gateway.getCalendar(copy.calendarId);
                     return copyCalendar?.ownerAccountId === recipientUsername;
                 });
-            const actionCalendarId = invitedCopy?.calendarId ?? calendarId;
+            const recipientShare = ownerCalendarShares.find(
+                (share) => share.recipientAccountId === recipientUsername,
+            );
+            const actionCalendarId =
+                invitedCopy?.calendarId ??
+                recipientShare?.recipientCalendarId ??
+                ownerCalendarId;
             const actionEventId = invitedCopy?.id ?? event.id;
             const actionUrl = buildEventActionUrl(
                 actionCalendarId,
@@ -507,6 +611,78 @@ export async function dispatchCancellationNotifications({
     );
 }
 
+export async function dispatchReminderNotifications({
+    dispatchNotification,
+    event,
+    resolveAccountId,
+    log,
+}: {
+    dispatchNotification: NotificationDispatcher | null;
+    event: CalendarEventRecord;
+    resolveAccountId: ResolveAccountId | null;
+    log?: CalendarLogger;
+}): Promise<void> {
+    if (!dispatchNotification) return;
+    const reminders = normalizeReminderOffsets(event.reminderOffsetsMinutes);
+    if (reminders.length === 0) return;
+    await Promise.all(
+        event.attendees.map(async (attendee) => {
+            const recipientUsername =
+                await resolveNotificationRecipientUsername(
+                    attendee,
+                    resolveAccountId,
+                );
+            await Promise.all(
+                reminders.map(async (reminderOffsetMinutes) => {
+                    const startAtMs = Date.parse(event.startAt);
+                    const reminderAt = Number.isFinite(startAtMs)
+                        ? new Date(
+                              startAtMs - reminderOffsetMinutes * 60_000,
+                          ).toISOString()
+                        : null;
+                    try {
+                        await dispatchNotification({
+                            category: "calendar",
+                            recipientUsername,
+                            subject: `Calendar reminder: ${event.title}`,
+                            body: buildReminderNotificationBody(
+                                event,
+                                reminderOffsetMinutes,
+                            ),
+                            actionUrl: buildEventActionUrl(
+                                event.calendarId,
+                                event.id,
+                            ),
+                            senderName: event.createdBy,
+                            metadata: {
+                                eventId: event.id,
+                                calendarId: event.calendarId,
+                                reminderOffsetMinutes,
+                                ...(reminderAt ? { reminderAt } : {}),
+                            },
+                        });
+                    } catch (error) {
+                        log?.(
+                            "error",
+                            "Calendar reminder notification failed.",
+                            {
+                                component: "calendar-gateway",
+                                attendee: recipientUsername,
+                                eventId: event.id,
+                                reminderOffsetMinutes,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                    }
+                }),
+            );
+        }),
+    );
+}
+
 export function resolveCreatedSeries(
     gateway: CoreCalendarGateway,
     calendarId: string,
@@ -539,4 +715,84 @@ export function resolveEventMeta(
 
 export function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "calendar_error";
+}
+
+export async function resolveJitsiAvailability(
+    resolver: ((providerId: string) => Promise<boolean> | boolean) | null,
+    log?: CalendarLogger,
+): Promise<boolean> {
+    if (!resolver) return false;
+    try {
+        return Boolean(await resolver("jitsi-meet"));
+    } catch (error) {
+        log?.(
+            "warn",
+            "Failed to resolve meetings provider availability; defaulting to unavailable.",
+            {
+                component: "calendar-gateway",
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
+        return false;
+    }
+}
+
+export async function validateSharedCalendars(
+    calendars: CalendarRecord[],
+    recipientAccountId: string,
+    shareRegistry: CalendarShareRegistry,
+    gateway: CoreCalendarGateway,
+    log?: CalendarLogger,
+): Promise<CalendarRecord[]> {
+    const validated: CalendarRecord[] = [];
+    let pendingFlush = false;
+    for (const calendar of calendars) {
+        if (calendar.visibility !== "shared") {
+            validated.push(calendar);
+            continue;
+        }
+        const shareRecord = await shareRegistry.getByRecipientCalendarId(
+            calendar.id,
+        );
+        if (
+            !shareRecord ||
+            shareRecord.recipientAccountId !== recipientAccountId
+        ) {
+            try {
+                gateway.deleteCalendar({
+                    ownerAccountId: recipientAccountId,
+                    calendarId: calendar.id,
+                });
+                pendingFlush = true;
+                log?.(
+                    "info",
+                    "Removed stale shared calendar during handshake.",
+                    {
+                        component: "calendar-gateway",
+                        accountId: recipientAccountId,
+                        calendarId: calendar.id,
+                    },
+                );
+            } catch (cleanupError) {
+                log?.("warn", "Failed to remove stale shared calendar.", {
+                    component: "calendar-gateway",
+                    accountId: recipientAccountId,
+                    calendarId: calendar.id,
+                    error:
+                        cleanupError instanceof Error
+                            ? cleanupError.message
+                            : String(cleanupError),
+                });
+            }
+            continue;
+        }
+        validated.push({
+            ...calendar,
+            sharedPermission: shareRecord.permission,
+        });
+    }
+    if (pendingFlush) {
+        await gateway.flushStore();
+    }
+    return validated;
 }

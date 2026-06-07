@@ -28,6 +28,7 @@ import {
     isSafeHttpUrl,
 } from "./popup-manager-event-utils.js";
 import { createCalendarResponseHandler } from "./popup-manager-response.js";
+import { handlePendingResponseClick } from "./popup-manager-pending-response.js";
 import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 export function createCalendarPopupManager({
     root,
@@ -259,13 +260,13 @@ export function createCalendarPopupManager({
             openPopup,
             escapeHtml,
             getCalendars,
+            getSelectedCalendarId,
             setSelectedCalendarId,
             reloadState,
             syncRouteSelection,
             refreshComposer,
             openEventPopup: (calId, evId) => openEventPopup(calId, evId),
         });
-
     async function openEventPopup(calendarId, eventId) {
         try {
             const eventData = await calendarUi.fetchEvent(calendarId, eventId);
@@ -482,12 +483,11 @@ export function createCalendarPopupManager({
                 );
             });
         }
-        let popupSearchAbortController = null;
-        let popupController = null;
+        let popupSearchAbortController = null,
+            popupController = null;
         let confirmedConflictCreateKey = "";
-        let pendingCreatedEventId = null;
-        let pendingCreatedCalendarId = null;
-
+        let pendingCreatedEventId = null,
+            pendingCreatedCalendarId = null;
         const participantKey = buildParticipantEntryKey;
 
         function renderParticipants(overlay) {
@@ -858,7 +858,8 @@ export function createCalendarPopupManager({
                         }
                     }
                     const updated = await updateExistingEvent({
-                        sourceCalendarId: eventData.calendar.id,
+                        sourceCalendarId:
+                            eventData.event.calendarId ?? eventData.calendar.id,
                         sourceEventId: eventData.event.id,
                         calendarId: normalizedValues.calendarId,
                         title: normalizedValues.title,
@@ -928,29 +929,13 @@ export function createCalendarPopupManager({
                 if (!(event.target instanceof Element)) {
                     return;
                 }
-                const responseButton = event.target.closest(
-                    "[data-calendar-pending-response]",
-                );
-                if (responseButton instanceof HTMLElement) {
-                    const responseOption = String(
-                        responseButton.getAttribute(
-                            "data-calendar-pending-response",
-                        ) ?? "",
-                    ).trim();
-                    const calendarId = String(
-                        responseButton.getAttribute("data-calendar-id") ?? "",
-                    ).trim();
-                    const eventId = String(
-                        responseButton.getAttribute("data-calendar-event") ??
-                            "",
-                    ).trim();
-                    if (calendarId && eventId && responseOption) {
-                        void respondToEventSelection(
-                            calendarId,
-                            eventId,
-                            responseOption,
-                        );
-                    }
+                if (
+                    handlePendingResponseClick(
+                        event.target,
+                        respondToEventSelection,
+                        reloadState,
+                    )
+                ) {
                     return;
                 }
                 const eventButton = event.target.closest(

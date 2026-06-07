@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CoreCalendarGateway } from "../gateway/index.js";
+import type { CalendarStore } from "../store.js";
+import type { CalendarRecord } from "../gateway/utils.js";
 
 test("calendar gateway supports multiple calendars per user", () => {
     const gateway = new CoreCalendarGateway();
@@ -357,6 +359,128 @@ test("calendar gateway can apply attendee response to entire recurrence series",
     assert.ok(
         weeklyEvents.every(
             (event) => gateway.getEventResponse(event.id, "bob") === "accepted",
+        ),
+    );
+});
+
+test("calendar gateway preserves shared visibility when loading calendars from store", async () => {
+    const sharedCalendar: CalendarRecord = {
+        id: "shared-cal-1",
+        ownerAccountId: "bob",
+        name: "Alice's shared calendar",
+        visibility: "shared",
+        color: "#1f8ceb",
+        isDefault: false,
+        defaultReminderOffsetsMinutes: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+    const mockStore: CalendarStore = {
+        ensureSchema: async () => {},
+        listCalendars: async () => [sharedCalendar],
+        saveCalendar: async () => {},
+        deleteCalendar: async () => {},
+        listEvents: async () => [],
+        saveEvent: async () => {},
+        deleteEvent: async () => {},
+        listResponses: async () => [],
+        saveResponse: async () => {},
+        deleteResponse: async () => {},
+        deleteResponsesForRootEvent: async () => {},
+    };
+    const gateway = new CoreCalendarGateway();
+    await gateway.attachStore(mockStore);
+    const loaded = gateway.getCalendar(sharedCalendar.id);
+    assert.equal(loaded?.visibility, "shared");
+});
+
+test("calendar gateway removeDeclinedAttendee removes attendee from event", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Alice",
+        color: "#1f8ceb",
+        isDefault: true,
+    });
+    const event = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Stand-up",
+        startAt: "2026-06-10T09:00:00.000Z",
+        endAt: "2026-06-10T09:30:00.000Z",
+        attendees: ["bob"],
+    });
+    gateway.removeDeclinedAttendee({
+        eventId: event.id,
+        accountId: "bob",
+        removeAll: false,
+    });
+    const updated = gateway
+        .listEvents(calendar.id)
+        .find((e) => e.id === event.id);
+    assert.ok(!updated?.attendees.includes("bob"));
+});
+
+test("calendar gateway removeDeclinedAttendee does not remove event creator", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Alice",
+        color: "#1f8ceb",
+        isDefault: true,
+    });
+    const event = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Stand-up",
+        startAt: "2026-06-10T09:00:00.000Z",
+        endAt: "2026-06-10T09:30:00.000Z",
+        attendees: ["bob"],
+    });
+    gateway.removeDeclinedAttendee({
+        eventId: event.id,
+        accountId: "alice",
+        removeAll: false,
+    });
+    const updated = gateway
+        .listEvents(calendar.id)
+        .find((e) => e.id === event.id);
+    assert.ok(updated?.attendees.includes("alice"));
+});
+
+test("calendar gateway removeDeclinedAttendee with removeAll removes attendee from recurring series", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Alice",
+        color: "#1f8ceb",
+        isDefault: true,
+    });
+    gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Weekly",
+        startAt: "2026-06-10T09:00:00.000Z",
+        endAt: "2026-06-10T09:30:00.000Z",
+        attendees: ["bob"],
+        recurrence: "weekly",
+    });
+    const seriesEvents = gateway
+        .listEvents(calendar.id)
+        .filter((e) => e.recurrence === "weekly");
+    assert.ok(seriesEvents.length > 1);
+    gateway.removeDeclinedAttendee({
+        eventId: seriesEvents[0].id,
+        accountId: "bob",
+        removeAll: true,
+    });
+    assert.ok(
+        seriesEvents.every(
+            (e) =>
+                !gateway
+                    .listEvents(calendar.id)
+                    .find((ev) => ev.id === e.id)
+                    ?.attendees.includes("bob"),
         ),
     );
 });

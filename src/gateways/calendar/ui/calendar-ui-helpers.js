@@ -14,9 +14,9 @@ import {
     updateEvent,
     deleteEvent,
     respondToEvent,
-    probeJitsiAvailability,
     createJitsiMeeting,
 } from "./calendar-api.js";
+import { createRenderPendingEvents } from "./calendar-pending-render.js";
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
@@ -239,12 +239,35 @@ function collectPendingEvents(
                   calendarName: "",
               }))
         : [];
-    return [...ownPending, ...invitePending].sort((a, b) =>
+    const convertToTimestampString = (value) => {
+        const parsed = new Date(String(value ?? ""));
+        return Number.isNaN(parsed.getTime())
+            ? String(value ?? "")
+            : String(parsed.getTime());
+    };
+    const score = (event) =>
+        (String(event.calendarName ?? "").trim() ? 1 : 0) +
+        (String(event.calendarColor ?? "").trim() ? 1 : 0);
+    const dedupedByRoot = new Map();
+    [...ownPending, ...invitePending].forEach((event) => {
+        const rootId = String(event.sourceEventId ?? event.id ?? "").trim();
+        const key = JSON.stringify([
+            rootId,
+            convertToTimestampString(event.startAt),
+            convertToTimestampString(event.endAt),
+        ]);
+        const existing = dedupedByRoot.get(key);
+        if (!existing || score(event) > score(existing)) {
+            dedupedByRoot.set(key, event);
+        }
+    });
+    return Array.from(dedupedByRoot.values()).sort((a, b) =>
         a.startAt.localeCompare(b.startAt),
     );
 }
 
 function visibilityIcon(visibility) {
+    if (visibility === "shared") return "🤝";
     return visibility === "public" ? "🌐" : "🔒";
 }
 
@@ -360,38 +383,13 @@ function renderEventButton(
     </button>`;
 }
 
-const PENDING_ACTION_ICONS = {
-    accepted: "✓",
-    tentative: "?",
-    declined: "✗",
-};
-
-function renderPendingEvents(events, i18n) {
-    if (!events.length) {
-        return "";
-    }
-    return `<section class="calendar-toolbar-subsection">
-      <h4>${escapeHtml(i18n.t("gateway.calendar.pending_events"))}</h4>
-      <ul class="calendar-events-list calendar-events-list--compact">${events
-          .map(
-              (
-                  event,
-              ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
-            <strong>${escapeHtml(event.title)}</strong>
-            <div>${formatDateTime(event.startAt)}</div>
-          </button>
-          <div class="calendar-pending-actions">
-            ${EVENT_RESPONSE_OPTIONS.map(
-                (responseOption) =>
-                    `<button type="button" class="calendar-pending-action calendar-pending-action--${escapeHtml(responseOption)}" data-calendar-pending-response="${escapeHtml(responseOption)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" aria-label="${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}" title="${escapeHtml(i18n.t(getResponseActionLabelKey(responseOption)))}">${PENDING_ACTION_ICONS[responseOption] ?? responseOption}</button>`,
-            ).join("")}
-          </div>
-        </li>`,
-          )
-          .join("")}</ul>
-    </section>`;
-}
+const renderPendingEvents = createRenderPendingEvents({
+    escapeHtml,
+    formatDateTime,
+    normalizeHexColor,
+    EVENT_RESPONSE_OPTIONS,
+    getResponseActionLabelKey,
+});
 
 function renderToolbarSummary(summary, pendingEvents, i18n) {
     const pendingMarkup = renderPendingEvents(pendingEvents, i18n);
@@ -958,7 +956,6 @@ export {
     updateEvent,
     deleteEvent,
     respondToEvent,
-    probeJitsiAvailability,
     createJitsiMeeting,
     getStatusLabelKey,
     getRecurrenceLabelKey,

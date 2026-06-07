@@ -1,6 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
-import type { CoreCalendarGateway } from "../gateway/index.js";
+import type {
+    CalendarEventRecord,
+    CoreCalendarGateway,
+} from "../gateway/index.js";
 import {
     buildResponseNotificationBody,
     errorMessage,
@@ -11,6 +14,7 @@ import {
     type EventLocationRef,
     type NotificationDispatcher,
 } from "./helpers.js";
+import type { CalendarShareRegistry } from "./share-registry.js";
 
 export async function handleCalendarResponseRoute(input: {
     req: IncomingMessage;
@@ -20,19 +24,32 @@ export async function handleCalendarResponseRoute(input: {
     calendarId: string;
     eventId: string;
     gateway: CoreCalendarGateway;
+    shareRegistry: CalendarShareRegistry;
     dispatchNotification: NotificationDispatcher | null;
+    onEventUpdatedForReminders?: (event: CalendarEventRecord) => void;
     log?: CalendarLogger;
 }): Promise<void> {
-    const ownedCalendar = input.gateway.getOwnedCalendar(
-        input.claims.sub,
+    const sharedCalendar = await input.shareRegistry.getByRecipientCalendarId(
         input.calendarId,
     );
-    const event = ownedCalendar
-        ? input.gateway.getEvent(input.calendarId, input.eventId)
-        : null;
+    const activeSharedCalendar =
+        sharedCalendar?.recipientAccountId === input.claims.sub
+            ? sharedCalendar
+            : null;
+    const lookupCalendarId = activeSharedCalendar
+        ? activeSharedCalendar.ownerCalendarId
+        : input.calendarId;
+    const ownedCalendar = input.gateway.getOwnedCalendar(
+        input.claims.sub,
+        lookupCalendarId,
+    );
+    const event =
+        ownedCalendar || activeSharedCalendar
+            ? input.gateway.getEvent(lookupCalendarId, input.eventId)
+            : null;
     // Also allow responding when the user is an attendee on a non-owned event
     let invitedEvent = null;
-    if (!ownedCalendar) {
+    if (!ownedCalendar && !activeSharedCalendar) {
         const ev = input.gateway.getEvent(input.calendarId, input.eventId);
         invitedEvent = ev?.attendees.includes(input.claims.sub) ? ev : null;
     }
@@ -79,6 +96,32 @@ export async function handleCalendarResponseRoute(input: {
             response,
             respondAll,
         });
+        if (response === "declined") {
+            input.gateway.removeDeclinedAttendee({
+                eventId: input.eventId,
+                accountId: input.claims.sub,
+                removeAll: respondAll,
+            });
+            const reminderEvents =
+                respondAll && effectiveEvent.recurrenceId
+                    ? input.gateway
+                          .listEvents(lookupCalendarId)
+                          .filter(
+                              (event) =>
+                                  event.recurrenceId ===
+                                      effectiveEvent.recurrenceId &&
+                                  event.sourceEventId === null,
+                          )
+                    : [
+                          input.gateway.getEvent(
+                              lookupCalendarId,
+                              input.eventId,
+                          ) ?? effectiveEvent,
+                      ];
+            reminderEvents.forEach((event) => {
+                input.onEventUpdatedForReminders?.(event);
+            });
+        }
         let movedTo: EventLocationRef | null = null;
         if (
             (response === "accepted" || response === "tentative") &&
@@ -98,26 +141,96 @@ export async function handleCalendarResponseRoute(input: {
                     eventId: input.eventId,
                 };
             } else if (invitedEvent) {
-                // Non-owned invitation: create a personal copy in the target calendar
-                const copy = input.gateway.addEventToCalendar({
-                    calendarId: targetCalendarId,
-                    sourceEventId:
+                // Non-owned invitation: create personal copies in the target calendar.
+                const sourceOccurrences =
+                    invitedEvent.recurrenceId === null
+                        ? [invitedEvent]
+                        : input.gateway
+                              .listEvents(invitedEvent.calendarId)
+                              .filter(
+                                  (event) =>
+                                      event.recurrenceId ===
+                                          invitedEvent.recurrenceId &&
+                                      event.sourceEventId === null,
+                              );
+                const fallbackOccurrences =
+                    sourceOccurrences.length > 0
+                        ? sourceOccurrences
+                        : [invitedEvent];
+                if (
+                    invitedEvent.recurrenceId !== null &&
+                    sourceOccurrences.length === 0
+                ) {
+                    input.log?.(
+                        "warn",
+                        "Recurring invite response resolved no source occurrences; using selected event fallback.",
+                        {
+                            component: "calendar-gateway",
+                            eventId: invitedEvent.id,
+                            recurrenceId: invitedEvent.recurrenceId,
+                            calendarId: invitedEvent.calendarId,
+                            targetCalendarId,
+                        },
+                    );
+                }
+                const existingTargetEvents =
+                    input.gateway.listEvents(targetCalendarId);
+                const copyBySourceEventId = new Map(
+                    existingTargetEvents
+                        .filter(
+                            (event) => typeof event.sourceEventId === "string",
+                        )
+                        .map((event) => [event.sourceEventId as string, event]),
+                );
+                let movedEventId: string | null = null;
+                for (const sourceOccurrence of fallbackOccurrences) {
+                    const sourceOccurrenceId =
+                        sourceOccurrence.sourceEventId ?? sourceOccurrence.id;
+                    const existingCopy =
+                        copyBySourceEventId.get(sourceOccurrenceId);
+                    if (existingCopy) {
+                        if (
+                            sourceOccurrence.id === invitedEvent.id &&
+                            movedEventId === null
+                        ) {
+                            movedEventId = existingCopy.id;
+                        }
+                        continue;
+                    }
+                    const copy = input.gateway.addEventToCalendar({
+                        calendarId: targetCalendarId,
+                        sourceEventId: sourceOccurrenceId,
+                        title: sourceOccurrence.title,
+                        description: sourceOccurrence.description,
+                        startAt: sourceOccurrence.startAt,
+                        endAt: sourceOccurrence.endAt,
+                        createdBy: sourceOccurrence.createdBy,
+                        attendees: sourceOccurrence.attendees,
+                        inviteEmails: sourceOccurrence.inviteEmails,
+                        reminderOffsetsMinutes:
+                            sourceOccurrence.reminderOffsetsMinutes,
+                        meetingUrl: sourceOccurrence.meetingUrl,
+                        status: sourceOccurrence.status,
+                        recurrence: sourceOccurrence.recurrence,
+                        recurrenceId: sourceOccurrence.recurrenceId,
+                        forceSingle: true,
+                    });
+                    copyBySourceEventId.set(sourceOccurrenceId, copy);
+                    if (sourceOccurrence.id === invitedEvent.id) {
+                        movedEventId = copy.id;
+                    }
+                }
+                const resolvedMovedEventId =
+                    movedEventId ??
+                    copyBySourceEventId.get(
                         invitedEvent.sourceEventId ?? invitedEvent.id,
-                    title: invitedEvent.title,
-                    description: invitedEvent.description,
-                    startAt: invitedEvent.startAt,
-                    endAt: invitedEvent.endAt,
-                    createdBy: invitedEvent.createdBy,
-                    attendees: invitedEvent.attendees,
-                    inviteEmails: invitedEvent.inviteEmails,
-                    reminderOffsetsMinutes: invitedEvent.reminderOffsetsMinutes,
-                    meetingUrl: invitedEvent.meetingUrl,
-                    status: invitedEvent.status,
-                    recurrence: invitedEvent.recurrence,
-                    recurrenceId: invitedEvent.recurrenceId,
-                    forceSingle: true,
-                });
-                movedTo = { calendarId: targetCalendarId, eventId: copy.id };
+                    )?.id;
+                if (resolvedMovedEventId) {
+                    movedTo = {
+                        calendarId: targetCalendarId,
+                        eventId: resolvedMovedEventId,
+                    };
+                }
             }
         }
         await input.gateway.flushStore();

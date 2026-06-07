@@ -39,6 +39,8 @@ import {
     importIcs as importCalendarIcs,
 } from "./adapter-helpers.js";
 import { moveOwnedEvents } from "./move-owned-events.js";
+import { removeDeclinedAttendee as removeDeclinedAttendeeHelper } from "./attendee-management.js";
+import { upsertEventRecord as upsertEventRecordHelper } from "./event-record-ops.js";
 import {
     getEventsByRecurrenceId,
     getResponseRootEventId,
@@ -760,6 +762,24 @@ export class CoreCalendarGateway {
         );
     }
 
+    removeDeclinedAttendee(input: {
+        eventId: string;
+        accountId: string;
+        removeAll: boolean;
+    }): void {
+        removeDeclinedAttendeeHelper({
+            ...input,
+            eventsByCalendar: this.eventsByCalendar,
+            getResponseRootEventId,
+            listEventsByRecurrenceIdIncludingMirrors,
+            syncResponsesForAttendees: (rootEventId, attendees) =>
+                this.syncResponsesForAttendees(rootEventId, attendees),
+            refreshEventResponses: (event) => this.refreshEventResponses(event),
+            scheduleStoreWrite: (task) => this.scheduleStoreWrite(task),
+            saveEvent: (event) => this.store?.saveEvent(event),
+        });
+    }
+
     issuePrivateExportToken(input: {
         ownerAccountId: string;
         calendarId: string;
@@ -860,16 +880,7 @@ export class CoreCalendarGateway {
     }
 
     private upsertEventRecord(event: CalendarEventRecord): void {
-        const existingEvents =
-            this.eventsByCalendar.get(event.calendarId) ?? [];
-        const nextEvents = existingEvents.filter(
-            (existingEvent) => existingEvent.id !== event.id,
-        );
-        nextEvents.push(event);
-        nextEvents.sort((leftEvent, rightEvent) =>
-            leftEvent.startAt.localeCompare(rightEvent.startAt),
-        );
-        this.eventsByCalendar.set(event.calendarId, nextEvents);
+        upsertEventRecordHelper(this.eventsByCalendar, event);
     }
 
     private removeEventRecord(event: CalendarEventRecord): void {

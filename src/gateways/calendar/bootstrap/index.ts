@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Ctx } from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -19,6 +20,7 @@ import { createCalendarAdapterRoutes } from "./adapter-routes.js";
 import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
+import { CalendarShareRegistry } from "./share-registry.js";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -35,9 +37,90 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    const resolveMeetingsProviderAvailability = systemCtx?.getCapability<
+        (providerId: string) => Promise<boolean> | boolean
+    >("meetings:isProviderAvailable");
     const resolveAccountId = ctx.capabilities.get<ResolveAccountId>(
         "auth:resolveAccountId",
     );
+    const profileStore = ctx.capabilities.get<{
+        searchProfiles: (
+            query: string,
+            limit?: number,
+            options?: { includeHidden?: boolean },
+        ) => Promise<
+            Array<{
+                accountId: string;
+                handle?: string | null;
+                displayName?: string | null;
+                avatarKey?: string | null;
+            }>
+        >;
+        isFollowing: (
+            followerId: string,
+            followingId: string,
+        ) => Promise<boolean>;
+    }>("social:profileStore");
+
+    const resolveShareableUsers = profileStore
+        ? async (input: { ownerAccountId: string; query: string }) => {
+              const normalizedQuery = input.query.trim();
+              if (!normalizedQuery) return [];
+              const candidates = await profileStore.searchProfiles(
+                  normalizedQuery,
+                  25,
+                  { includeHidden: false },
+              );
+              const permittedCandidates = await Promise.all(
+                  candidates
+                      .filter(
+                          (entry) =>
+                              String(entry.accountId ?? "") !==
+                              input.ownerAccountId,
+                      )
+                      .map(async (entry) => {
+                          const targetAccountId = String(
+                              entry.accountId ?? "",
+                          ).trim();
+                          if (!targetAccountId) return null;
+                          const [followsTarget, targetFollows] =
+                              await Promise.all([
+                                  profileStore.isFollowing(
+                                      input.ownerAccountId,
+                                      targetAccountId,
+                                  ),
+                                  profileStore.isFollowing(
+                                      targetAccountId,
+                                      input.ownerAccountId,
+                                  ),
+                              ]);
+                          if (!followsTarget && !targetFollows) return null;
+                          return {
+                              accountId: targetAccountId,
+                              handle:
+                                  typeof entry.handle === "string"
+                                      ? entry.handle
+                                      : null,
+                              displayName:
+                                  typeof entry.displayName === "string"
+                                      ? entry.displayName
+                                      : null,
+                              avatarKey:
+                                  typeof entry.avatarKey === "string"
+                                      ? entry.avatarKey
+                                      : null,
+                          };
+                      }),
+              );
+              return permittedCandidates.filter(Boolean) as Array<{
+                  accountId: string;
+                  handle: string | null;
+                  displayName: string | null;
+                  avatarKey: string | null;
+              }>;
+          }
+        : null;
 
     if (dbExecutor) {
         try {
@@ -51,6 +134,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             });
         }
     }
+    const shareRegistry = new CalendarShareRegistry(
+        dbExecutor ?? null,
+        ctx.log,
+    );
+    await shareRegistry.ensureSchema();
+    ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
+        shareRegistry.resolveShareLink(token),
+    );
 
     await gateway.discoverAdapters(adaptersRoot);
 
@@ -123,7 +214,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.register(
         createCalendarCoreRoutes({
             gateway,
+            shareRegistry,
             routeContext,
+            resolveMeetingsProviderAvailability:
+                resolveMeetingsProviderAvailability ?? null,
+            resolveShareableUsers,
             resolveAccountId: resolveAccountId ?? null,
             log: ctx.log,
             getDispatchNotification: () =>
@@ -190,7 +285,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.1.5",
+        version: "1.2.0",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

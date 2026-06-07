@@ -5,6 +5,7 @@ export function createCalendarResponseHandler({
     openPopup,
     escapeHtml,
     getCalendars,
+    getSelectedCalendarId,
     setSelectedCalendarId,
     reloadState,
     syncRouteSelection,
@@ -43,34 +44,66 @@ export function createCalendarResponseHandler({
         return scopeAction === "series";
     }
 
-    async function promptTargetCalendar(eventData, responseOption) {
+    function resolveTargetCalendarId(eventData) {
         const availableCalendars = getCalendars();
-        let targetCalendarId = null;
-        let confirmed = false;
-        const confirmLabel =
-            responseOption === "tentative"
-                ? i18n.t("gateway.calendar.response_action_tentative")
-                : i18n.t("gateway.calendar.response_action_accepted");
-        await openPopup({
+        const selectedCalendarId = String(getSelectedCalendarId() ?? "").trim();
+        if (
+            selectedCalendarId &&
+            availableCalendars.some(
+                (calendar) => calendar.id === selectedCalendarId,
+            )
+        ) {
+            return selectedCalendarId;
+        }
+        const sourceCalendarId = String(eventData.calendar?.id ?? "").trim();
+        if (
+            sourceCalendarId &&
+            availableCalendars.some(
+                (calendar) => calendar.id === sourceCalendarId,
+            )
+        ) {
+            return sourceCalendarId;
+        }
+        const fallbackCalendarId = availableCalendars[0]?.id;
+        return typeof fallbackCalendarId === "string" &&
+            fallbackCalendarId.trim()
+            ? fallbackCalendarId
+            : null;
+    }
+
+    async function promptTargetCalendar(eventData) {
+        const availableCalendars = getCalendars()
+            .map((calendar) => ({
+                id: String(calendar?.id ?? "").trim(),
+                name: String(calendar?.name ?? "").trim(),
+            }))
+            .filter((calendar) => calendar.id);
+        if (availableCalendars.length === 0) {
+            return null;
+        }
+        let selectedCalendarId = resolveTargetCalendarId(eventData);
+        if (!selectedCalendarId) {
+            selectedCalendarId = availableCalendars[0].id;
+        }
+        const action = await openPopup({
             title: i18n.t("gateway.calendar.accept_calendar_title"),
             body: () => `
-        <div class="calendar-response-calendar-picker">
-          <p>${escapeHtml(i18n.t("gateway.calendar.accept_calendar_prompt"))}</p>
-          <label for="calendar-response-calendar-select">${escapeHtml(i18n.t("gateway.calendar.event_calendar"))}</label>
-          <select id="calendar-response-calendar-select">
-            ${availableCalendars
-                .map(
-                    (calendar) =>
-                        `<option value="${escapeHtml(calendar.id)}"${calendar.id === eventData.calendar.id ? " selected" : ""}>${escapeHtml(calendar.name)}</option>`,
-                )
-                .join("")}
-          </select>
-        </div>
-      `,
+                <div class="calendar-response-calendar-picker">
+                    <p>${escapeHtml(i18n.t("gateway.calendar.accept_calendar_prompt"))}</p>
+                    <select id="calendar-response-target-calendar" aria-label="${escapeHtml(i18n.t("gateway.calendar.event_calendar"))}">
+                        ${availableCalendars
+                            .map(
+                                (calendar) =>
+                                    `<option value="${escapeHtml(calendar.id)}"${calendar.id === selectedCalendarId ? " selected" : ""}>${escapeHtml(calendar.name || calendar.id)}</option>`,
+                            )
+                            .join("")}
+                    </select>
+                </div>
+            `,
             actions: [
                 {
-                    id: "confirm",
-                    label: confirmLabel,
+                    id: "save",
+                    label: i18n.t("ui.reuse.save"),
                     variant: "confirm",
                 },
                 {
@@ -79,23 +112,21 @@ export function createCalendarResponseHandler({
                     variant: "cancel",
                 },
             ],
-            onAction: async (actionId, overlay) => {
-                if (actionId !== "confirm") {
-                    return true;
-                }
-                const selectedCalendarId = String(
-                    overlay.querySelector("#calendar-response-calendar-select")
+            onAction: (actionId, overlay) => {
+                if (actionId !== "save") return true;
+                const chosenCalendarId = String(
+                    overlay.querySelector("#calendar-response-target-calendar")
                         ?.value ?? "",
                 ).trim();
-                if (!selectedCalendarId) {
-                    return false;
-                }
-                targetCalendarId = selectedCalendarId;
-                confirmed = true;
+                if (!chosenCalendarId) return false;
+                selectedCalendarId = chosenCalendarId;
                 return true;
             },
         });
-        return confirmed ? targetCalendarId : null;
+        if (action !== "save") {
+            return null;
+        }
+        return selectedCalendarId;
     }
 
     async function handleEventResponse(eventData, responseOption) {
@@ -107,11 +138,13 @@ export function createCalendarResponseHandler({
             return false;
         }
         let targetCalendarId = null;
-        if (responseOption === "accepted" || responseOption === "tentative") {
-            targetCalendarId = await promptTargetCalendar(
-                eventData,
-                responseOption,
-            );
+        const isSharedCalendarEvent =
+            eventData.calendar?.visibility === "shared";
+        if (
+            !isSharedCalendarEvent &&
+            (responseOption === "accepted" || responseOption === "tentative")
+        ) {
+            targetCalendarId = await promptTargetCalendar(eventData);
             if (!targetCalendarId) {
                 return false;
             }

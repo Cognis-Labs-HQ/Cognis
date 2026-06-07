@@ -1,126 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { EventEmitter } from "node:events";
 import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
+import {
+    createAuthContext,
+    createJsonDispatcher,
+    dispatchRoute,
+    RequestRecorder,
+    ResponseRecorder,
+} from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
-
-function createAuthContext(
-    claimsByToken: Map<string, { sub: string; role: string }>,
-) {
-    return {
-        requireAuth(req: { headers?: Record<string, string> }, res: any) {
-            const auth = req.headers?.authorization ?? "";
-            const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-            const claims = claimsByToken.get(token);
-            if (!auth || !auth.startsWith("Bearer ") || !claims) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "unauthorized",
-                            message: "Unauthorized",
-                        },
-                    }),
-                );
-                return null;
-            }
-            return claims;
-        },
-        getCookieSession() {
-            const firstClaims = claimsByToken.values().next().value;
-            return firstClaims ?? { sub: "calendar-admin", role: "admin" };
-        },
-        setPageSecurityHeaders() {},
-    };
-}
-
-class ResponseRecorder extends EventEmitter {
-    statusCode = 0;
-    payload = "";
-
-    writeHead(code: number) {
-        this.statusCode = code;
-    }
-
-    end(chunk?: string | Buffer) {
-        if (chunk) {
-            this.payload += String(chunk);
-        }
-        this.emit("close");
-    }
-}
-
-class RequestRecorder {
-    method: string;
-    headers: Record<string, string>;
-    private readonly body: string;
-
-    constructor(options: { method: string; token: string; body?: string }) {
-        this.method = options.method;
-        this.body = options.body ?? "";
-        this.headers = {
-            authorization: "Bearer " + options.token,
-        };
-    }
-
-    async *[Symbol.asyncIterator]() {
-        if (this.body.length > 0) {
-            yield Buffer.from(this.body);
-        }
-    }
-}
-
-async function dispatchRoute(
-    routeRegistry: RouteRegistry,
-    request: RequestRecorder,
-    response: ResponseRecorder,
-    url: URL,
-) {
-    for (const routeEntry of routeRegistry.getEntries()) {
-        const handled = await routeEntry.handler(
-            request as any,
-            response as any,
-            url,
-        );
-        if (handled) return true;
-    }
-    response.writeHead(404);
-    response.end(JSON.stringify({ error: { code: "not_found" } }));
-    return false;
-}
-
-function createJsonDispatcher(routeRegistry: RouteRegistry) {
-    return async (
-        method: string,
-        token: string,
-        pathname: string,
-        body?: Record<string, unknown>,
-    ) => {
-        const request = new RequestRecorder({
-            method,
-            token,
-            body: body ? JSON.stringify(body) : undefined,
-        });
-        const response = new ResponseRecorder();
-        await dispatchRoute(
-            routeRegistry,
-            request,
-            response,
-            new URL(`http://localhost${pathname}`),
-        );
-        return {
-            statusCode: response.statusCode,
-            body:
-                response.payload.length > 0
-                    ? JSON.parse(response.payload)
-                    : null,
-        };
-    };
-}
 
 test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -157,6 +49,43 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
 
     const routes = routeRegistry.getHandlers();
     assert.ok(routes.length > 0);
+});
+
+test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const adminToken = issueAccessToken("calendar-admin", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
+    );
+    const systemCtx = createCtx();
+    systemCtx.contributePublicCapability(
+        "meetings:isProviderAvailable",
+        (providerId: string) => providerId === "jitsi-meet",
+    );
+    capabilities.contribute("system:ctx", systemCtx);
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+    const calendarsResponse = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/calendar/calendars",
+    );
+
+    assert.equal(calendarsResponse.statusCode, 200);
+    assert.equal(calendarsResponse.body.meta.jitsiAvailable, true);
 });
 
 test("calendar invitations endpoint returns pending invited events for attendee", async () => {
@@ -204,8 +133,8 @@ test("calendar invitations endpoint returns pending invited events for attendee"
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
         {
             title: "Planning",
-            startAt: "2026-06-02T09:00:00.000Z",
-            endAt: "2026-06-02T10:00:00.000Z",
+            startAt: "2027-06-02T09:00:00.000Z",
+            endAt: "2027-06-02T10:00:00.000Z",
             attendees: ["bob"],
             reminderOffsetsMinutes: [10, 60],
         },
@@ -255,7 +184,7 @@ test("calendar invitations endpoint returns pending invited events for attendee"
     assert.ok(cancellationDispatchCount > dispatchCountBeforeOrganizerDelete);
 });
 
-test("calendar share endpoint returns ICS and CalDAV links", async () => {
+test("calendar share endpoint returns multiple expiring ICS and CalDAV links", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -291,28 +220,73 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
     );
     assert.ok(defaultCalendar);
     const defaultCalendarId = defaultCalendar.id;
+    const defaultCalendarName = defaultCalendar.name;
+
+    const initialShareResponse = await dispatchJson(
+        "GET",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+    );
+    assert.equal(initialShareResponse.statusCode, 200);
+    assert.deepEqual(initialShareResponse.body.data, []);
 
     const shareResponse = await dispatchJson(
         "POST",
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
-        { permission: "read", expiresInHours: null },
+        { name: "Kitchen Tablet", expiresInHours: 24 },
     );
     assert.equal(shareResponse.statusCode, 200);
+    assert.equal(shareResponse.body.data.length, 1);
     assert.match(
-        shareResponse.body.data.caldavUrl,
-        /^\/api\/v1\/calendar\/caldav\/private\/[^/]+$/,
+        shareResponse.body.data[0].caldavUrl,
+        /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/,
     );
     assert.match(
-        shareResponse.body.data.icsUrl,
-        /^\/api\/v1\/calendar\/ics\/private\/[^/]+$/,
+        shareResponse.body.data[0].icsUrl,
+        /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/,
     );
     assert.equal(
-        shareResponse.body.data.shareUrl,
-        shareResponse.body.data.caldavUrl,
+        shareResponse.body.data[0].shareUrl,
+        shareResponse.body.data[0].caldavUrl,
     );
+    assert.equal(shareResponse.body.data[0].name, "Kitchen Tablet");
+    assert.equal(typeof shareResponse.body.data[0].passphrase, "string");
+    assert.ok(shareResponse.body.data[0].passphrase.length >= 20);
+    assert.match(
+        shareResponse.body.data[0].passphrase,
+        /^[a-z0-9_-]{4}(?:-[a-z0-9_-]{4}){4}$/,
+    );
+    assert.ok(Date.parse(shareResponse.body.data[0].expiresAt) > Date.now());
 
-    const privateCaldavPath = shareResponse.body.data.caldavUrl;
-    const privateIcsPath = shareResponse.body.data.icsUrl;
+    const repeatedShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { name: "Office Laptop", expiresInHours: null },
+    );
+    assert.equal(repeatedShareResponse.statusCode, 200);
+    assert.equal(repeatedShareResponse.body.data.length, 2);
+    assert.notEqual(
+        repeatedShareResponse.body.data[0].caldavUrl,
+        repeatedShareResponse.body.data[1].caldavUrl,
+    );
+    assert.equal(repeatedShareResponse.body.data[0].name, "Office Laptop");
+    assert.equal(repeatedShareResponse.body.data[0].expiresAt, "");
+    const unnamedShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { name: "   ", expiresInHours: 1 },
+    );
+    assert.equal(unnamedShareResponse.statusCode, 200);
+    assert.match(unnamedShareResponse.body.data[0].name, /^[a-z0-9_-]{8}$/);
+    const getShareResponse = await dispatchJson(
+        "GET",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+    );
+    assert.equal(getShareResponse.statusCode, 200);
+    assert.equal(getShareResponse.body.data.length, 3);
+
+    const privateCaldavPath = shareResponse.body.data[0].caldavUrl;
+    const privateIcsPath = shareResponse.body.data[0].icsUrl;
+    const privatePassphrase = shareResponse.body.data[0].passphrase;
     const unauthenticatedRequest = new RequestRecorder({ method: "GET" });
     const unauthenticatedResponse = new ResponseRecorder();
     await dispatchRoute(
@@ -332,6 +306,267 @@ test("calendar share endpoint returns ICS and CalDAV links", async () => {
         new URL(`http://localhost${privateIcsPath}`),
     );
     assert.equal(unauthenticatedIcsResponse.statusCode, 401);
+
+    const privateCaldavRequest = new RequestRecorder({
+        method: "GET",
+        headers: {
+            "x-cognis-calendar-passphrase": privatePassphrase,
+        },
+    });
+    const privateCaldavResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        privateCaldavRequest,
+        privateCaldavResponse,
+        new URL(`http://localhost${privateCaldavPath}`),
+    );
+    assert.equal(privateCaldavResponse.statusCode, 200);
+
+    const privateIcsRequest = new RequestRecorder({
+        method: "GET",
+        headers: {
+            authorization:
+                "Basic " +
+                Buffer.from(`calendar:${privatePassphrase}`).toString("base64"),
+        },
+    });
+    const privateIcsResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        privateIcsRequest,
+        privateIcsResponse,
+        new URL(`http://localhost${privateIcsPath}`),
+    );
+    assert.equal(privateIcsResponse.statusCode, 200);
+
+    const expiringShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { name: "Short Lived", expiresInHours: 1 / 3600 },
+    );
+    assert.equal(expiringShareResponse.statusCode, 200);
+    const expiringShare = expiringShareResponse.body.data.find(
+        (shareLink: { name?: string }) => shareLink.name === "Short Lived",
+    );
+    assert.ok(expiringShare);
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    const expiredCaldavRequest = new RequestRecorder({
+        method: "GET",
+        headers: {
+            "x-cognis-calendar-passphrase": expiringShare.passphrase,
+        },
+    });
+    const expiredCaldavResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        expiredCaldavRequest,
+        expiredCaldavResponse,
+        new URL(`http://localhost${expiringShare.caldavUrl}`),
+    );
+    assert.equal(expiredCaldavResponse.statusCode, 404);
+
+    const makePublicResponse = await dispatchJson(
+        "PATCH",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}`,
+        { visibility: "public" },
+    );
+    assert.equal(makePublicResponse.statusCode, 200);
+    assert.equal(makePublicResponse.body.data.visibility, "public");
+
+    const publicShareResponse = await dispatchJson(
+        "POST",
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/share`,
+        { name: "Website Feed", expiresInHours: 24 },
+    );
+    assert.equal(publicShareResponse.statusCode, 200);
+    const publicShare = publicShareResponse.body.data.find(
+        (shareLink: { name?: string }) => shareLink.name === "Website Feed",
+    );
+    assert.ok(publicShare);
+    assert.match(
+        publicShare.caldavUrl,
+        /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/,
+    );
+    assert.match(
+        publicShare.icsUrl,
+        /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/,
+    );
+    assert.equal(publicShare.passphrase, null);
+
+    const publicCaldavRequest = new RequestRecorder({
+        method: "GET",
+    });
+    const publicCaldavResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        publicCaldavRequest,
+        publicCaldavResponse,
+        new URL(`http://localhost${publicShare.caldavUrl}`),
+    );
+    assert.equal(publicCaldavResponse.statusCode, 200);
+    assert.equal(
+        publicCaldavResponse.headers["x-cognis-calendar-name"],
+        defaultCalendarName,
+    );
+    assert.equal(
+        publicCaldavResponse.headers["x-cognis-calendar-id"],
+        defaultCalendarId,
+    );
+    assert.match(
+        String(publicCaldavResponse.headers["content-disposition"] ?? ""),
+        /attachment;\s*filename=/,
+    );
+    assert.match(
+        String(
+            publicCaldavResponse.headers["access-control-expose-headers"] ?? "",
+        ),
+        /x-cognis-calendar-name/i,
+    );
+});
+
+test("calendar shared write access appears in recipient list and supports event creation", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const defaultAliceCalendarId = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+    const ownerEventResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
+        {
+            title: "Owner shared event",
+            startAt: "2026-06-14T09:00:00.000Z",
+            endAt: "2026-06-14T09:30:00.000Z",
+        },
+    );
+    assert.equal(ownerEventResponse.statusCode, 201);
+    const ownerEventId = String(ownerEventResponse.body.data.id ?? "");
+    assert.ok(ownerEventId);
+
+    const shareUserResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users`,
+        {
+            recipientAccountId: "bob",
+            recipientHandle: "bob",
+            recipientDisplayName: "Bob",
+        },
+    );
+    assert.equal(shareUserResponse.statusCode, 200);
+    assert.equal(shareUserResponse.body.data.permission, "read");
+    const sharedCalendarId = String(
+        shareUserResponse.body.data.calendarId ?? "",
+    );
+    assert.ok(sharedCalendarId);
+    const shareId = String(shareUserResponse.body.data.id ?? "");
+    const elevateShareResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent(shareId)}`,
+        { permission: "write" },
+    );
+    assert.equal(elevateShareResponse.statusCode, 200);
+    assert.equal(elevateShareResponse.body.data.permission, "write");
+    const elevateByAccountResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent("bob")}`,
+        { permission: "write" },
+    );
+    assert.equal(elevateByAccountResponse.statusCode, 200);
+    assert.equal(elevateByAccountResponse.body.data.permission, "write");
+    const elevateByDisplayPermissionResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/share/users/${encodeURIComponent(shareId)}`,
+        { permission: "Read & Write" },
+    );
+    assert.equal(elevateByDisplayPermissionResponse.statusCode, 200);
+    assert.equal(
+        elevateByDisplayPermissionResponse.body.data.permission,
+        "write",
+    );
+
+    const bobCalendars = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/calendars",
+    );
+    const sharedCalendar = bobCalendars.body.data.find(
+        (calendar: { id: string }) => calendar.id === sharedCalendarId,
+    );
+    assert.ok(sharedCalendar);
+    assert.equal(sharedCalendar.visibility, "shared");
+    const sharedEvents = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events`,
+    );
+    assert.equal(sharedEvents.statusCode, 200);
+    const ownerSharedEvent = sharedEvents.body.data.events.find(
+        (event: { id?: string }) => String(event.id ?? "") === ownerEventId,
+    );
+    assert.ok(ownerSharedEvent);
+    assert.equal(ownerSharedEvent.calendarId, sharedCalendarId);
+    const ownerSharedEventDetail = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerSharedEvent.calendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+    );
+    assert.equal(ownerSharedEventDetail.statusCode, 200);
+    assert.equal(ownerSharedEventDetail.body.data.event.id, ownerEventId);
+
+    const createViaShared = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events`,
+        {
+            title: "Shared event",
+            startAt: "2026-06-15T09:00:00.000Z",
+            endAt: "2026-06-15T09:30:00.000Z",
+        },
+    );
+    assert.equal(createViaShared.statusCode, 201);
+
+    const ownerEvents = await dispatchJson(
+        "GET",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
+    );
+    assert.ok(
+        ownerEvents.body.data.events.some(
+            (event: { title?: string }) => event.title === "Shared event",
+        ),
+    );
 });
 
 test("calendar invite dispatch resolves notify capability after bootstrap", async () => {
@@ -412,6 +647,91 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
     ]);
 });
 
+test("calendar reminders are scheduled instead of dispatched immediately", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([[aliceToken, { sub: "alice", role: "admin" }]]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    const dispatchedSubjects: string[] = [];
+    capabilities.contribute("notify:dispatch", async (envelope: any) => {
+        dispatchedSubjects.push(String(envelope.subject ?? ""));
+        return { dispatched: ["internal"] };
+    });
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+    const calendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const defaultCalendarId = calendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const updateCalendarResponse = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}`,
+        { defaultReminderOffsetsMinutes: [10] },
+    );
+    assert.equal(updateCalendarResponse.statusCode, 200);
+
+    const eventUsingDefaultReminders = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/events`,
+        {
+            title: "Default reminder event",
+            startAt: "2026-06-02T09:00:00.000Z",
+            endAt: "2026-06-02T10:00:00.000Z",
+            attendees: ["alice"],
+        },
+    );
+    assert.equal(eventUsingDefaultReminders.statusCode, 201);
+    assert.deepEqual(
+        eventUsingDefaultReminders.body.data.reminderOffsetsMinutes,
+        [10],
+    );
+
+    const eventWithExplicitReminders = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/events`,
+        {
+            title: "Explicit reminder event",
+            startAt: "2026-06-03T09:00:00.000Z",
+            endAt: "2026-06-03T10:00:00.000Z",
+            attendees: ["alice"],
+            reminderOffsetsMinutes: [5, 30],
+        },
+    );
+    assert.equal(eventWithExplicitReminders.statusCode, 201);
+    assert.deepEqual(
+        eventWithExplicitReminders.body.data.reminderOffsetsMinutes,
+        [5, 30],
+    );
+
+    const reminderSubjects = dispatchedSubjects.filter((subject) =>
+        subject.startsWith("Calendar reminder: "),
+    );
+    assert.equal(reminderSubjects.length, 0);
+});
+
 test("calendar accept response via invitations API saves copy into chosen calendar and returns movedTo", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -426,12 +746,16 @@ test("calendar accept response via invitations API saves copy into chosen calend
         ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
-    const dispatched: Array<{ recipientUsername: string; subject: string }> =
-        [];
+    const dispatched: Array<{
+        recipientUsername: string;
+        subject: string;
+        body: string;
+    }> = [];
     capabilities.contribute("notify:dispatch", async (envelope: any) => {
         dispatched.push({
             recipientUsername: String(envelope.recipientUsername ?? ""),
             subject: String(envelope.subject ?? ""),
+            body: String(envelope.body ?? ""),
         });
         return { dispatched: ["internal"] };
     });
@@ -461,8 +785,8 @@ test("calendar accept response via invitations API saves copy into chosen calend
         `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
         {
             title: "Planning",
-            startAt: "2026-06-02T09:00:00.000Z",
-            endAt: "2026-06-02T10:00:00.000Z",
+            startAt: "2027-06-02T09:00:00.000Z",
+            endAt: "2027-06-02T10:00:00.000Z",
             attendees: ["bob"],
         },
     );
@@ -535,7 +859,118 @@ test("calendar accept response via invitations API saves copy into chosen calend
         dispatched.some(
             (entry) =>
                 entry.recipientUsername === "alice" &&
-                entry.subject === "Calendar response: Planning",
+                entry.subject === "Calendar response: Planning" &&
+                entry.body === "Event: Planning\nUser: bob\nResponse: accepted",
+        ),
+    );
+});
+
+test("calendar recurring invitation acceptance copies all occurrences into target calendar", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const aliceCalendarId = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+    const createEventResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
+        {
+            title: "Series planning",
+            startAt: "2026-06-02T09:00:00.000Z",
+            endAt: "2026-06-02T10:00:00.000Z",
+            attendees: ["bob"],
+            recurrence: "weekly",
+        },
+    );
+    assert.equal(createEventResponse.statusCode, 201);
+    const sourceEventId = String(createEventResponse.body.data.id ?? "");
+    assert.ok(sourceEventId);
+    const recurrenceId = String(
+        createEventResponse.body.data.recurrenceId ?? "",
+    );
+    assert.ok(recurrenceId);
+
+    const aliceEventsResponse = await dispatchJson(
+        "GET",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
+    );
+    assert.equal(aliceEventsResponse.statusCode, 200);
+    const sourceSeries = aliceEventsResponse.body.data.events.filter(
+        (event: { recurrenceId?: string | null }) =>
+            event.recurrenceId === recurrenceId,
+    );
+    assert.ok(sourceSeries.length > 1);
+
+    const bobCalendars = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/calendars",
+    );
+    const bobDefaultCalendarId = bobCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const respondResponse = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events/${encodeURIComponent(sourceEventId)}/respond?series=1`,
+        {
+            response: "accepted",
+            targetCalendarId: bobDefaultCalendarId,
+        },
+    );
+    assert.equal(respondResponse.statusCode, 200);
+    assert.equal(
+        String(respondResponse.body.data.movedTo?.calendarId ?? ""),
+        bobDefaultCalendarId,
+    );
+
+    const bobEventsResponse = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(bobDefaultCalendarId)}/events`,
+    );
+    assert.equal(bobEventsResponse.statusCode, 200);
+    const copiedSeries = bobEventsResponse.body.data.events.filter(
+        (event: { recurrenceId?: string | null }) =>
+            event.recurrenceId === recurrenceId,
+    );
+    assert.equal(copiedSeries.length, sourceSeries.length);
+    assert.ok(
+        copiedSeries.every(
+            (event: { sourceEventId?: string | null }) =>
+                typeof event.sourceEventId === "string" &&
+                event.sourceEventId.length > 0,
         ),
     );
 });

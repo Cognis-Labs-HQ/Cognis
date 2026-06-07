@@ -57,6 +57,8 @@
   <string name="gateway.calendar.event_status">状態</string>
   <string name="gateway.calendar.event_recurrence">繰り返し</string>
   <string name="gateway.calendar.event_reminders">リマインダー</string>
+  <string name="gateway.calendar.reminder_none">リマインダーなし</string>
+  <string name="gateway.calendar.reminders_default_tooltip">このリマインダー設定は、予定ごとに上書きしない限り既定で適用されます。</string>
   <string name="gateway.calendar.reminder_5m">5分前</string>
   <string name="gateway.calendar.reminder_10m">10分前</string>
   <string name="gateway.calendar.reminder_15m">15分前</string>
@@ -118,6 +120,10 @@
   <string name="gateway.calendar.delete_calendar_success">カレンダーを削除しました。</string>
   <string name="gateway.calendar.delete_calendar_failed">カレンダーを削除できませんでした。</string>
   <string name="gateway.calendar.share_calendar">カレンダーを共有</string>
+  <string name="gateway.calendar.share_users_heading">共有ユーザー</string>
+  <string name="gateway.calendar.share_links_heading">共有リンク</string>
+  <string name="gateway.calendar.share_link_permission">権限</string>
+  <string name="gateway.calendar.share_user_invite_default_tooltip">共有ユーザーはこのカレンダー内のすべてのイベントにデフォルトで招待されます。</string>
   <string name="gateway.calendar.share_link_permission_read">読み取り専用</string>
   <string name="gateway.calendar.share_link_permission_write">読み取り・書き込み</string>
   <string name="gateway.calendar.share_link_expiry_1h">1時間で期限切れ</string>
@@ -125,10 +131,21 @@
   <string name="gateway.calendar.share_link_expiry_7d">7日間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_30d">30日間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_never">期限なし</string>
+  <string name="gateway.calendar.share_link_expiry">有効期限</string>
   <string name="gateway.calendar.share_link_generate">リンクを生成</string>
   <string name="gateway.calendar.share_links_details">カレンダークライアント用リンク</string>
   <string name="gateway.calendar.share_link_copy">コピー</string>
   <string name="gateway.calendar.share_link_copied">リンクをコピーしました！</string>
+  <string name="gateway.calendar.share_link_passphrase_copied">パスフレーズをコピーしました！</string>
+  <string name="gateway.calendar.share_link_deleted">共有リンクを削除しました。</string>
+  <string name="gateway.calendar.share_user_deleted">共有ユーザーを削除しました。</string>
+  <string name="gateway.calendar.share_user_updated">共有ユーザーを更新しました。</string>
+  <string name="gateway.calendar.share_link_delete_confirm_title">共有リンクを削除しますか？</string>
+  <string name="gateway.calendar.share_link_delete_confirm">このリンクはすぐに使えなくなります。</string>
+  <string name="gateway.calendar.share_user_delete_confirm_title">共有ユーザーを削除しますか？</string>
+  <string name="gateway.calendar.share_user_delete_confirm">このユーザーはすぐにカレンダーへアクセスできなくなります。</string>
   <string name="gateway.calendar.share_link_failed">共有リンクを生成できませんでした。</string>
+  <string name="gateway.calendar.share_link_name_fallback">共有リンク</string>
   <string name="gateway.calendar.share_link_name_placeholder">リンク名（任意）</string>
+  <string name="gateway.calendar.share_link_passphrase">パスフレーズ</string>
 </resources>

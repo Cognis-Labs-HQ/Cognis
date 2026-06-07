@@ -7,6 +7,10 @@ export function bootstrapModule(ctx) {
 
     const systemCtx = ctx.getCapability("system:ctx");
     if (systemCtx) {
+        systemCtx.contributePublicCapability(
+            "meetings:isProviderAvailable",
+            (providerId) => providerId === "jitsi-meet",
+        );
         for (const flow of MEETINGS_FLOW_CATALOG) {
             registerCanonicalFlow(systemCtx, flow);
         }
