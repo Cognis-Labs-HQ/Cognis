@@ -131,3 +131,53 @@
 **Reviewer suggestion:** Move the popup body template markup out of `popup-manager-response.js` into a separate HTML template file instead of embedding it in JavaScript.
 
 **Reason ignored:** The existing calendar popup manager codebase already renders popup bodies as template strings in JavaScript (including neighboring calendar popups in this same area), so this suggestion conflicts with current repository patterns and would require a broader architectural migration rather than a focused behavior fix. This change intentionally stayed scoped to restoring the response-target flow and shared-calendar exemption.
+
+## Code Review — classroom live desk/profile/settings updates
+
+### schema.ts dialect detection strategy
+
+**Reviewer suggestion:** Replace try/catch SQL-probe dialect detection with explicit metadata/version detection.
+
+**Reason ignored:** This feedback targets pre-existing schema bootstrap logic in `src/adapters/study/classes/store/schema.ts`, which is outside the classroom UI scope and unrelated to the user-requested desk/roster/settings behavior changes in this task.
+
+### schema.ts identifier interpolation safety
+
+**Reviewer suggestion:** Remove direct string interpolation of table/column names in schema SQL.
+
+**Reason ignored:** The reported interpolation is in pre-existing store schema internals not touched by this change; addressing it safely requires a dedicated schema-hardening task and broader migration validation beyond this UI-focused request.
+
+### teacher-requests.ts expiry visibility documentation
+
+**Reviewer suggestion:** Clarify admin-facing behavior for expired teacher requests.
+
+**Reason ignored:** This is a documentation clarification in teacher-request lifecycle code unrelated to the classroom UI updates requested here.
+
+### classroom-presence.js stream-loop control flow
+
+**Reviewer suggestion:** Explicitly break/return immediately on `done` in stream read loop.
+
+**Reason ignored:** The current loop already exits in the same iteration path (`if (done) break;`) and this stylistic refinement is unrelated to the requested classroom feature work.
+
+### gateways/social/bootstrap.ts presence timeout comments
+
+**Reviewer suggestion:** Add inline comments documenting presence timeout constants.
+
+**Reason ignored:** This is non-functional documentation feedback in a separate gateway area and not part of the classroom-page UX scope of this task.
+
+### modules/study/languages/reuse/classroom-page.js teacher-view helper deduplication
+
+**Reviewer suggestion:** Extract duplicated teacher-view logic into a shared helper.
+
+**Reason ignored:** This targets a different legacy classroom implementation file not modified by this task; refactoring it would expand scope beyond the requested updates in `src/adapters/study/classes/ui/`.
+
+### classroom-render.js desk-layout helper deduplication with classroom-page.js
+
+**Reviewer suggestion:** Consolidate duplicated desk-layout logic between adapter and module classroom UIs.
+
+**Reason ignored:** The duplicate exists across two distinct classroom implementations; merging those abstractions is a broader architectural refactor not required to implement the requested live roster/profile/settings behavior.
+
+### classroom.js buildQuery extraction to shared URL helper
+
+**Reviewer suggestion:** Move local `buildQuery` utility to shared reuse helpers.
+
+**Reason ignored:** The helper remains a tiny file-local utility with one call pattern in this module; extracting it would be unrelated churn within this already scoped feature patch.

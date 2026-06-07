@@ -507,6 +507,10 @@ body:not([data-theme="light"]) .classes-classroom-content {
     min-height: 140px;
 }
 
+.classes-blackboard-main--single {
+    grid-template-columns: 1fr;
+}
+
 .classes-blackboard-section {
     min-width: 0;
 }

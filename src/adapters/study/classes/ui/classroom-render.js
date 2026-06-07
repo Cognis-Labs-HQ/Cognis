@@ -206,14 +206,18 @@ function renderBlackboard({
                 </div>
             </div>
             <div class="classes-blackboard-surface">
-                <div class="classes-blackboard-main">
+                <div class="classes-blackboard-main classes-blackboard-main--single">
                     <section class="classes-blackboard-section classes-blackboard-section--agenda${
-                        activeBoardPanel === "classroom" ? " classes-blackboard-section--hidden" : ""
+                        activeBoardPanel === "classroom"
+                            ? " classes-blackboard-section--hidden"
+                            : ""
                     }">
                         ${renderChalkAgenda({ activeAgendaItems, i18n })}
                     </section>
                     <section class="classes-blackboard-section classes-blackboard-section--members${
-                        activeBoardPanel === "classroom" ? "" : " classes-blackboard-section--hidden"
+                        activeBoardPanel === "classroom"
+                            ? ""
+                            : " classes-blackboard-section--hidden"
                     }">
                         ${renderStudentRoster({ snapshot, i18n })}
                     </section>
