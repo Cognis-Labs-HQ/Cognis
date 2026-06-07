@@ -123,6 +123,7 @@
   <string name="gateway.calendar.share_users_heading">共有ユーザー</string>
   <string name="gateway.calendar.share_links_heading">共有リンク</string>
   <string name="gateway.calendar.share_link_permission">権限</string>
+  <string name="gateway.calendar.share_user_invite_default_tooltip">共有ユーザーはこのカレンダー内のすべてのイベントにデフォルトで招待されます。</string>
   <string name="gateway.calendar.share_link_permission_read">読み取り専用</string>
   <string name="gateway.calendar.share_link_permission_write">読み取り・書き込み</string>
   <string name="gateway.calendar.share_link_expiry_1h">1時間で期限切れ</string>

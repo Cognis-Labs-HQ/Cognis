@@ -123,6 +123,7 @@
   <string name="gateway.calendar.share_users_heading">Geteilte Benutzer</string>
   <string name="gateway.calendar.share_links_heading">Freigabelinks</string>
   <string name="gateway.calendar.share_link_permission">Berechtigung</string>
+  <string name="gateway.calendar.share_user_invite_default_tooltip">Geteilte Benutzer werden standardmäßig zu allen Ereignissen in diesem Kalender eingeladen.</string>
   <string name="gateway.calendar.share_link_permission_read">Nur Lesen</string>
   <string name="gateway.calendar.share_link_permission_write">Lesen &amp; Schreiben</string>
   <string name="gateway.calendar.share_link_expiry_1h">Läuft in 1 Stunde ab</string>

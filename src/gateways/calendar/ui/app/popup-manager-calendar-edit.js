@@ -1,4 +1,5 @@
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { toggleSecretVisibility } from "/static/reuse/secret-visibility-toggle.js";
 import {
     bindReminderFieldBehavior,
@@ -203,6 +204,11 @@ function bindCalendarShareControls({
                       typeof shareLink?.icsUrl === "string",
               )
             : [];
+    const shareUserInviteTooltip = renderInfoTooltip(
+        i18n.t("gateway.calendar.share_user_invite_default_tooltip"),
+        i18n.t("ui.reuse.more_information"),
+        "calendar-share-user-invite-default-tooltip",
+    );
 
     const renderSelectedShareUsers = () => {
         if (!(userChips instanceof HTMLElement)) return;
@@ -229,7 +235,7 @@ function bindCalendarShareControls({
                   <button type="button" class="calendar-user-share-entry-remove btn-no-animation btn-cancel" data-calendar-user-share-delete="${escapeHtml(String(entry.shareId ?? ""))}" aria-label="${escapeHtml(i18n.t("ui.reuse.remove"))}">×</button>
                   <div class="calendar-user-share-entry-profile">${identityCard}</div>
                   <div class="calendar-user-share-entry-controls">
-                    <label><span>${escapeHtml(i18n.t("gateway.calendar.share_link_permission"))}</span>
+                    <label><span>${escapeHtml(i18n.t("gateway.calendar.share_link_permission"))} ${shareUserInviteTooltip}</span>
                       <select data-calendar-user-share-permission>
                         <option value="read"${entry.permission === "write" ? "" : " selected"}>${escapeHtml(i18n.t("gateway.calendar.share_link_permission_read"))}</option>
                         <option value="write"${entry.permission === "write" ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.share_link_permission_write"))}</option>

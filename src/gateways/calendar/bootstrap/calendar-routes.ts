@@ -178,6 +178,28 @@ export function createCalendarCoreRoutes({
         }
     };
 
+    const mergeAttendeesWithSharedAudience = async (input: {
+        ownerAccountId: string;
+        ownerCalendarId: string;
+        attendees: string[];
+    }): Promise<string[]> => {
+        const shares = await shareRegistry.listCalendarUserShares(
+            input.ownerAccountId,
+            input.ownerCalendarId,
+        );
+        return Array.from(
+            new Set(
+                [
+                    input.ownerAccountId,
+                    ...shares.map((share) => share.recipientAccountId),
+                    ...input.attendees,
+                ]
+                    .map((accountId) => String(accountId ?? "").trim())
+                    .filter(Boolean),
+            ),
+        );
+    };
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -531,11 +553,6 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             try {
-                const attendees = await normalizeAttendeesForOwner(
-                    body.attendees,
-                    claims.sub,
-                    resolveAccountId,
-                );
                 const sharedCalendar =
                     await shareRegistry.getByRecipientCalendarId(calendarId);
                 const activeSharedCalendar =
@@ -547,6 +564,19 @@ export function createCalendarCoreRoutes({
                 }
                 const targetCalendarId =
                     activeSharedCalendar?.ownerCalendarId ?? calendarId;
+                const attendees = await normalizeAttendeesForOwner(
+                    body.attendees,
+                    claims.sub,
+                    resolveAccountId,
+                );
+                const sharedAudienceAttendees =
+                    await mergeAttendeesWithSharedAudience({
+                        ownerAccountId:
+                            activeSharedCalendar?.ownerAccountId ?? claims.sub,
+                        ownerCalendarId:
+                            activeSharedCalendar?.ownerCalendarId ?? calendarId,
+                        attendees,
+                    });
                 const createdEvent = activeSharedCalendar
                     ? gateway.addEventToCalendar({
                           calendarId: targetCalendarId,
@@ -558,7 +588,7 @@ export function createCalendarCoreRoutes({
                           startAt,
                           endAt,
                           createdBy: claims.sub,
-                          attendees,
+                          attendees: sharedAudienceAttendees,
                           inviteEmails,
                           reminderOffsetsMinutes,
                           meetingUrl:
@@ -584,7 +614,7 @@ export function createCalendarCoreRoutes({
                                   : null,
                           startAt,
                           endAt,
-                          attendees,
+                          attendees: sharedAudienceAttendees,
                           inviteEmails,
                           reminderOffsetsMinutes,
                           meetingUrl:
@@ -762,13 +792,26 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             try {
-                const attendees = Array.isArray(body.attendees)
+                const targetCalendarId =
+                    typeof body.calendarId === "string" &&
+                    body.calendarId.trim().length > 0
+                        ? body.calendarId.trim()
+                        : calendarId;
+                const normalizedAttendees = Array.isArray(body.attendees)
                     ? await normalizeAttendeesForOwner(
                           body.attendees,
                           claims.sub,
                           resolveAccountId,
                       )
                     : undefined;
+                const attendees =
+                    normalizedAttendees !== undefined
+                        ? await mergeAttendeesWithSharedAudience({
+                              ownerAccountId: claims.sub,
+                              ownerCalendarId: targetCalendarId,
+                              attendees: normalizedAttendees,
+                          })
+                        : undefined;
                 const updatedEvent = gateway.updateEvent({
                     ownerAccountId: claims.sub,
                     calendarId,

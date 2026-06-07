@@ -123,6 +123,7 @@
   <string name="gateway.calendar.share_users_heading">Pengguna berbagi</string>
   <string name="gateway.calendar.share_links_heading">Tautan berbagi</string>
   <string name="gateway.calendar.share_link_permission">Izin</string>
+  <string name="gateway.calendar.share_user_invite_default_tooltip">Pengguna yang dibagikan akan diundang ke semua acara di kalender ini secara default.</string>
   <string name="gateway.calendar.share_link_permission_read">Hanya Baca</string>
   <string name="gateway.calendar.share_link_permission_write">Baca &amp; Tulis</string>
   <string name="gateway.calendar.share_link_expiry_1h">Kedaluwarsa dalam 1 jam</string>
