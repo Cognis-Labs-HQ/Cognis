@@ -70,7 +70,11 @@ export async function addMember(
         option: "INSERT",
         table: "chatroom_members",
         values: { chatroom_id: roomId, account_id: accountId, role },
-        conflict: { action: "ignore" },
+        conflict: {
+            action: "update",
+            target: ["chatroom_id", "account_id"],
+            update: { role, archived: 0 },
+        },
     });
 }
 

@@ -31,6 +31,7 @@ function renderClassSelectorContent({
             return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(`${classLabel} (${classTypeLabel})`)}</option>`;
         })
         .join("");
+    const hasClassOptions = Boolean(options);
     const createOption = allowCreateOption
         ? `<option value="__create__">${escapeHtml(i18n.t("module.study.classes.create_class_option"))}</option>`
         : "";
@@ -45,8 +46,12 @@ function renderClassSelectorContent({
         <label class="classes-footer-class-label">
             ${escapeHtml(i18n.t("module.study.classes.classroom_select_class"))}:
             <select class="classes-footer-select">
-                <option value="__find__">${escapeHtml(i18n.t("ui.reuse.search"))}</option>
-                ${options || `<option value="">${emptyLabel}</option>`}${createOption}
+                ${
+                    hasClassOptions
+                        ? `<option value="__find__">${escapeHtml(i18n.t("ui.reuse.search"))}</option>${options}`
+                        : `<option value="__no_class__" selected>${emptyLabel}</option><option value="__find__">${escapeHtml(i18n.t("ui.reuse.search"))}</option>`
+                }
+                ${createOption}
             </select>
         </label>
     `;
@@ -114,6 +119,7 @@ export function createClassFooterItem({
                             navigateTo(searchUrl);
                             return;
                         }
+                        if (nextValue === "__no_class__") return;
                         if (!nextValue) return;
                         if (typeof onSelectClass === "function") {
                             onSelectClass(nextValue);

@@ -192,6 +192,18 @@ export async function mount(root, { signal } = {}) {
                 }
             }
 
+            let syncingView = false;
+            async function syncView() {
+                if (syncingView) return;
+                syncingView = true;
+                try {
+                    await Promise.allSettled([loadEnrolled(), loadAvailable()]);
+                    refreshContent();
+                } finally {
+                    syncingView = false;
+                }
+            }
+
             section.addEventListener(
                 "click",
                 async (event) => {
@@ -281,8 +293,7 @@ export async function mount(root, { signal } = {}) {
                                     i18n.t("module.study.classes.join_sent"),
                                     { variant: "success" },
                                 );
-                                await loadAvailable();
-                                refreshContent();
+                                await syncView();
                             } else {
                                 showToast(
                                     i18n.t("module.study.classes.join_failed"),
@@ -299,6 +310,22 @@ export async function mount(root, { signal } = {}) {
                         }
                         return;
                     }
+                },
+                { signal },
+            );
+
+            window.addEventListener(
+                "focus",
+                () => {
+                    void syncView();
+                },
+                { signal },
+            );
+            document.addEventListener(
+                "visibilitychange",
+                () => {
+                    if (document.visibilityState !== "visible") return;
+                    void syncView();
                 },
                 { signal },
             );

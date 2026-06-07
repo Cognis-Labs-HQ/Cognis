@@ -472,7 +472,7 @@ export function createClassesRoutes(
             const calendarId = await resolveAgendaCalendarId(
                 options,
                 classRow.teacherAccountId,
-                classId,
+                classRow,
             );
             const now = Date.now();
             const activeItems =
@@ -565,7 +565,7 @@ export function createClassesRoutes(
             const calendarId = await resolveAgendaCalendarId(
                 options,
                 claims.sub,
-                classId,
+                classRow,
             );
             if (!calendarId) {
                 jsonError(
@@ -688,13 +688,16 @@ export function createClassesRoutes(
             if (!claims) return true;
             const classId = decodeURIComponent(disbandMatch[1]);
             try {
+                const classRow = await store.getClassById(classId);
                 await store.disbandClassForTeacher(classId, claims.sub);
-                const calendarName = `class-agenda-${classId}`;
-                const calendarId =
-                    options
-                        .listCalendars?.(claims.sub)
-                        ?.find((calendar) => calendar.name === calendarName)
-                        ?.id ?? null;
+                const calendarId = classRow
+                    ? await resolveAgendaCalendarId(
+                          options,
+                          claims.sub,
+                          classRow,
+                          { createIfMissing: false },
+                      )
+                    : null;
                 if (calendarId) {
                     options.deleteCalendar?.(claims.sub, calendarId);
                 }
@@ -921,9 +924,14 @@ export function createClassesRoutes(
                     claims.sub,
                     action === "approve",
                 );
+                const classRow = await store.getClassById(classId);
                 dispatchJoinReviewNotification({
                     options,
                     classId,
+                    className:
+                        classRow?.name ||
+                        classRow?.languageCode ||
+                        classId,
                     teacherAccountId: claims.sub,
                     studentAccountId,
                     action,

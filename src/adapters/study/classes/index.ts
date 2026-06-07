@@ -277,6 +277,13 @@ export async function bootstrapStudyAdapter(
     const deleteCalendar = ctx.capabilities.get<
         (ownerAccountId: string, calendarId: string) => void
     >("calendar:deleteCalendar");
+    const updateCalendar = ctx.capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            name?: string;
+        }) => { id: string; name: string } | null
+    >("calendar:updateCalendar");
     const addCalendarEvent = ctx.capabilities.get<
         (input: {
             ownerAccountId: string;
@@ -468,6 +475,7 @@ export async function bootstrapStudyAdapter(
             createCalendar,
             listCalendars,
             deleteCalendar,
+            updateCalendar,
             addEvent: addCalendarEvent,
             listEvents: listCalendarEvents,
             archiveClassroomChat,

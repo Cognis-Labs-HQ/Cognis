@@ -55,6 +55,11 @@ export interface ClassesRouteOptions {
         ownerAccountId: string,
     ) => Array<{ id: string; name: string }>;
     deleteCalendar?: (ownerAccountId: string, calendarId: string) => void;
+    updateCalendar?: (input: {
+        ownerAccountId: string;
+        calendarId: string;
+        name?: string;
+    }) => { id: string; name: string } | null;
     addEvent?: (input: {
         ownerAccountId: string;
         calendarId: string;
@@ -249,6 +254,27 @@ export async function syncClassroomArtifacts(
     return { classRow, chat };
 }
 
+function resolveClassDisplayName(input: {
+    name?: string | null;
+    languageCode?: string | null;
+    id?: string | null;
+}) {
+    return (
+        String(input.name ?? "").trim() ||
+        String(input.languageCode ?? "").trim() ||
+        String(input.id ?? "").trim() ||
+        "Classroom"
+    );
+}
+
+export function buildAgendaCalendarName(input: {
+    name?: string | null;
+    languageCode?: string | null;
+    id?: string | null;
+}) {
+    return `Class agenda · ${resolveClassDisplayName(input)}`;
+}
+
 export function buildDefaultClassName(input: {
     teacherDisplayName: string;
     languageName: string;
@@ -262,14 +288,37 @@ export function buildDefaultClassName(input: {
 export async function resolveAgendaCalendarId(
     options: ClassesRouteOptions,
     ownerAccountId: string,
-    classId: string,
+    classRow: {
+        id: string;
+        name?: string | null;
+        languageCode?: string | null;
+    },
+    config: { createIfMissing?: boolean } = {},
 ) {
-    const calendarName = `class-agenda-${classId}`;
-    const existingCalendar = options
-        .listCalendars?.(ownerAccountId)
-        ?.find((calendar) => calendar.name === calendarName);
+    const classId = String(classRow.id ?? "").trim();
+    if (!classId) return null;
+    const calendarName = buildAgendaCalendarName(classRow);
+    const legacyCalendarName = `class-agenda-${classId}`;
+    const existingCalendar = options.listCalendars?.(ownerAccountId)?.find(
+        (calendar) =>
+            calendar.name === calendarName || calendar.name === legacyCalendarName,
+    );
     if (existingCalendar) {
+        if (
+            existingCalendar.name !== calendarName &&
+            options.updateCalendar &&
+            existingCalendar.name === legacyCalendarName
+        ) {
+            options.updateCalendar({
+                ownerAccountId,
+                calendarId: existingCalendar.id,
+                name: calendarName,
+            });
+        }
         return existingCalendar.id;
+    }
+    if (config.createIfMissing === false) {
+        return null;
     }
     return (
         options.createCalendar?.(

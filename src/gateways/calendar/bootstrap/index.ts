@@ -172,6 +172,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway.deleteCalendar({ ownerAccountId, calendarId }),
     );
     ctx.capabilities.contribute(
+        "calendar:updateCalendar",
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            name?: string;
+            visibility?: CalendarVisibility;
+            color?: string;
+            defaultReminderOffsetsMinutes?: number[];
+        }) =>
+            gateway.updateCalendar({
+                ownerAccountId: input.ownerAccountId,
+                calendarId: input.calendarId,
+                name: input.name,
+                visibility: input.visibility,
+                color:
+                    input.color == null
+                        ? undefined
+                        : normalizeCalendarColor(input.color),
+                defaultReminderOffsetsMinutes:
+                    input.defaultReminderOffsetsMinutes,
+            }),
+    );
+    ctx.capabilities.contribute(
         "calendar:addEvent",
         (input: {
             ownerAccountId: string;

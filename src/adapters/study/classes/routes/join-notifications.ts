@@ -45,6 +45,7 @@ export function dispatchJoinRequestNotification(input: {
 export function dispatchJoinReviewNotification(input: {
     options: ClassesRouteOptions;
     classId: string;
+    className: string;
     teacherAccountId: string;
     studentAccountId: string;
     action: "approve" | "reject";
@@ -53,11 +54,13 @@ export function dispatchJoinReviewNotification(input: {
     const {
         options,
         classId,
+        className,
         teacherAccountId,
         studentAccountId,
         action,
         logMeta,
     } = input;
+    const readableClassName = String(className ?? "").trim() || classId;
     options
         .dispatchNotification?.({
             category: "study",
@@ -68,11 +71,12 @@ export function dispatchJoinReviewNotification(input: {
                     : "Class join request rejected",
             body:
                 action === "approve"
-                    ? `Your request to join class ${classId} was approved.`
-                    : `Your request to join class ${classId} was rejected.`,
-            actionUrl: "/classroom",
+                    ? `Your request to join "${readableClassName}" was approved.`
+                    : `Your request to join "${readableClassName}" was rejected.`,
+            actionUrl: `/classroom?classId=${encodeURIComponent(classId)}`,
             metadata: {
                 classId,
+                className: readableClassName,
                 teacherAccountId,
                 action,
             },
