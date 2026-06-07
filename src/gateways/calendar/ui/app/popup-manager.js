@@ -259,6 +259,7 @@ export function createCalendarPopupManager({
             openPopup,
             escapeHtml,
             getCalendars,
+            getSelectedCalendarId,
             setSelectedCalendarId,
             reloadState,
             syncRouteSelection,

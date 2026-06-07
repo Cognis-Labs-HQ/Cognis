@@ -5,6 +5,7 @@ export function createCalendarResponseHandler({
     openPopup,
     escapeHtml,
     getCalendars,
+    getSelectedCalendarId,
     setSelectedCalendarId,
     reloadState,
     syncRouteSelection,
@@ -43,59 +44,23 @@ export function createCalendarResponseHandler({
         return scopeAction === "series";
     }
 
-    async function promptTargetCalendar(eventData, responseOption) {
+    function resolveTargetCalendarId(eventData) {
         const availableCalendars = getCalendars();
-        let targetCalendarId = null;
-        let confirmed = false;
-        const confirmLabel =
-            responseOption === "tentative"
-                ? i18n.t("gateway.calendar.response_action_tentative")
-                : i18n.t("gateway.calendar.response_action_accepted");
-        await openPopup({
-            title: i18n.t("gateway.calendar.accept_calendar_title"),
-            body: () => `
-        <div class="calendar-response-calendar-picker">
-          <p>${escapeHtml(i18n.t("gateway.calendar.accept_calendar_prompt"))}</p>
-          <label for="calendar-response-calendar-select">${escapeHtml(i18n.t("gateway.calendar.event_calendar"))}</label>
-          <select id="calendar-response-calendar-select">
-            ${availableCalendars
-                .map(
-                    (calendar) =>
-                        `<option value="${escapeHtml(calendar.id)}"${calendar.id === eventData.calendar.id ? " selected" : ""}>${escapeHtml(calendar.name)}</option>`,
-                )
-                .join("")}
-          </select>
-        </div>
-      `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: confirmLabel,
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-            onAction: async (actionId, overlay) => {
-                if (actionId !== "confirm") {
-                    return true;
-                }
-                const selectedCalendarId = String(
-                    overlay.querySelector("#calendar-response-calendar-select")
-                        ?.value ?? "",
-                ).trim();
-                if (!selectedCalendarId) {
-                    return false;
-                }
-                targetCalendarId = selectedCalendarId;
-                confirmed = true;
-                return true;
-            },
-        });
-        return confirmed ? targetCalendarId : null;
+        const selectedCalendarId = String(getSelectedCalendarId?.() ?? "").trim();
+        if (
+            selectedCalendarId &&
+            availableCalendars.some((calendar) => calendar.id === selectedCalendarId)
+        ) {
+            return selectedCalendarId;
+        }
+        const sourceCalendarId = String(eventData.calendar?.id ?? "").trim();
+        if (
+            sourceCalendarId &&
+            availableCalendars.some((calendar) => calendar.id === sourceCalendarId)
+        ) {
+            return sourceCalendarId;
+        }
+        return String(availableCalendars[0]?.id ?? "").trim() || null;
     }
 
     async function handleEventResponse(eventData, responseOption) {
@@ -113,10 +78,7 @@ export function createCalendarResponseHandler({
             !isSharedCalendarEvent &&
             (responseOption === "accepted" || responseOption === "tentative")
         ) {
-            targetCalendarId = await promptTargetCalendar(
-                eventData,
-                responseOption,
-            );
+            targetCalendarId = resolveTargetCalendarId(eventData);
             if (!targetCalendarId) {
                 return false;
             }
