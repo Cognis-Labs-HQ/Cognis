@@ -68,9 +68,10 @@ test("shared-calendar invite notifications use each recipient shared calendar ro
         aliceToken,
         "/api/v1/calendar/calendars",
     );
-    const ownerCalendarId = aliceCalendars.body.data.find(
+    const ownerCalendar = aliceCalendars.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
-    ).id;
+    );
+    const ownerCalendarId = ownerCalendar.id;
 
     const shareWithBob = await dispatchJson(
         "POST",
@@ -162,9 +163,10 @@ test("shared-calendar responses update the original event without creating a cop
         aliceToken,
         "/api/v1/calendar/calendars",
     );
-    const ownerCalendarId = aliceCalendars.body.data.find(
+    const ownerCalendar = aliceCalendars.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
-    ).id;
+    );
+    const ownerCalendarId = ownerCalendar.id;
 
     const shareWithBob = await dispatchJson(
         "POST",
@@ -256,9 +258,10 @@ test("declining a shared-calendar event removes the decliner from the attendee l
         aliceToken,
         "/api/v1/calendar/calendars",
     );
-    const ownerCalendarId = aliceCalendars.body.data.find(
+    const ownerCalendar = aliceCalendars.body.data.find(
         (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
-    ).id;
+    );
+    const ownerCalendarId = ownerCalendar.id;
 
     const shareWithBob = await dispatchJson(
         "POST",
@@ -304,4 +307,112 @@ test("declining a shared-calendar event removes the decliner from the attendee l
     );
     assert.equal(eventAfterDecline.statusCode, 200);
     assert.ok(!eventAfterDecline.body.data.event.attendees.includes("bob"));
+});
+
+test("recurring invite dispatches one internal notification per recipient", async () => {
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const dispatched: Array<{
+        recipientUsername: string;
+        subject: string;
+        actionUrl?: string;
+    }> = [];
+    const dispatchJson = await bootstrapCalendarTest({
+        claimsByToken: new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+        dispatchNotification: async (envelope) => {
+            dispatched.push(envelope);
+            return { dispatched: [envelope.recipientUsername] };
+        },
+    });
+
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const ownerCalendar = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    );
+    const ownerCalendarId = ownerCalendar.id;
+
+    const createRecurringEvent = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/events`,
+        {
+            title: "Recurring sync",
+            startAt: "2026-07-01T09:00:00.000Z",
+            endAt: "2026-07-01T10:00:00.000Z",
+            attendees: ["bob"],
+            recurrence: "weekly",
+        },
+    );
+    assert.equal(createRecurringEvent.statusCode, 201);
+
+    const inviteNotifications = dispatched.filter(
+        (entry) =>
+            entry.recipientUsername === "bob" &&
+            entry.subject === "Calendar invite: Recurring sync",
+    );
+    assert.equal(inviteNotifications.length, 1);
+});
+
+test("sharing a calendar with a user dispatches a calendar notification", async () => {
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const dispatched: Array<{
+        recipientUsername: string;
+        subject: string;
+        actionUrl?: string;
+    }> = [];
+    const dispatchJson = await bootstrapCalendarTest({
+        claimsByToken: new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+        dispatchNotification: async (envelope) => {
+            dispatched.push(envelope);
+            return { dispatched: [envelope.recipientUsername] };
+        },
+    });
+
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const ownerCalendar = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    );
+    const ownerCalendarId = ownerCalendar.id;
+
+    const shareResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/share/users`,
+        {
+            recipientAccountId: "bob",
+            recipientHandle: "bob",
+            recipientDisplayName: "Bob",
+        },
+    );
+    assert.equal(shareResponse.statusCode, 200);
+    const recipientCalendarId = String(
+        shareResponse.body.data.calendarId ?? "",
+    );
+    assert.ok(recipientCalendarId);
+
+    const shareNotification = dispatched.find(
+        (entry) =>
+            entry.recipientUsername === "bob" &&
+            entry.subject === `Calendar shared: ${ownerCalendar.name}`,
+    );
+    assert.ok(shareNotification);
+    assert.equal(
+        shareNotification.actionUrl,
+        `/calendar?calendarId=${encodeURIComponent(recipientCalendarId)}`,
+    );
 });

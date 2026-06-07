@@ -864,3 +864,113 @@ test("calendar accept response via invitations API saves copy into chosen calend
         ),
     );
 });
+
+test("calendar recurring invitation acceptance copies all occurrences into target calendar", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "admin", 60);
+    const authContext = createAuthContext(
+        new Map([
+            [aliceToken, { sub: "alice", role: "admin" }],
+            [bobToken, { sub: "bob", role: "admin" }],
+        ]),
+    );
+    capabilities.contribute("auth:routeContext", authContext);
+
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        flow: createCtx().flow,
+    } as any);
+
+    const dispatchJson = createJsonDispatcher(routeRegistry);
+
+    const aliceCalendars = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    const aliceCalendarId = aliceCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+    const createEventResponse = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
+        {
+            title: "Series planning",
+            startAt: "2026-06-02T09:00:00.000Z",
+            endAt: "2026-06-02T10:00:00.000Z",
+            attendees: ["bob"],
+            recurrence: "weekly",
+        },
+    );
+    assert.equal(createEventResponse.statusCode, 201);
+    const sourceEventId = String(createEventResponse.body.data.id ?? "");
+    assert.ok(sourceEventId);
+    const recurrenceId = String(
+        createEventResponse.body.data.recurrenceId ?? "",
+    );
+    assert.ok(recurrenceId);
+
+    const aliceEventsResponse = await dispatchJson(
+        "GET",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
+    );
+    assert.equal(aliceEventsResponse.statusCode, 200);
+    const sourceSeries = aliceEventsResponse.body.data.events.filter(
+        (event: { recurrenceId?: string | null }) =>
+            event.recurrenceId === recurrenceId,
+    );
+    assert.ok(sourceSeries.length > 1);
+
+    const bobCalendars = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/calendar/calendars",
+    );
+    const bobDefaultCalendarId = bobCalendars.body.data.find(
+        (calendar: { isDefault?: boolean }) => calendar.isDefault === true,
+    ).id;
+
+    const respondResponse = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events/${encodeURIComponent(sourceEventId)}/respond?series=1`,
+        {
+            response: "accepted",
+            targetCalendarId: bobDefaultCalendarId,
+        },
+    );
+    assert.equal(respondResponse.statusCode, 200);
+    assert.equal(
+        String(respondResponse.body.data.movedTo?.calendarId ?? ""),
+        bobDefaultCalendarId,
+    );
+
+    const bobEventsResponse = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(bobDefaultCalendarId)}/events`,
+    );
+    assert.equal(bobEventsResponse.statusCode, 200);
+    const copiedSeries = bobEventsResponse.body.data.events.filter(
+        (event: { recurrenceId?: string | null }) =>
+            event.recurrenceId === recurrenceId,
+    );
+    assert.equal(copiedSeries.length, sourceSeries.length);
+    assert.ok(
+        copiedSeries.every(
+            (event: { sourceEventId?: string | null }) =>
+                typeof event.sourceEventId === "string" &&
+                event.sourceEventId.length > 0,
+        ),
+    );
+});

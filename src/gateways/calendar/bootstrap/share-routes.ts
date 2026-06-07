@@ -10,6 +10,8 @@ import {
     resolveShareExpiry,
     sendCalendarError,
     sendJson,
+    type CalendarLogger,
+    type NotificationDispatcher,
 } from "./helpers.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
 
@@ -48,6 +50,8 @@ export async function handleCalendarShareRoutes(input: {
               }>
           >)
         | null;
+    dispatchNotification: NotificationDispatcher | null;
+    log?: CalendarLogger;
 }): Promise<boolean> {
     const shareLinkDeleteMatch = input.url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)\/share\/([^/]+)$/,
@@ -346,6 +350,34 @@ export async function handleCalendarShareRoutes(input: {
                     ? ""
                     : resolveShareExpiry(body.expiresInHours),
         });
+        if (input.dispatchNotification) {
+            try {
+                await input.dispatchNotification({
+                    category: "calendar",
+                    recipientUsername: recipientAccountId,
+                    subject: `Calendar shared: ${ownerCalendar.name}`,
+                    body: `${input.claims.sub} shared "${ownerCalendar.name}" with you.\nPermission: ${share.permission}`,
+                    actionUrl: `/calendar?calendarId=${encodeURIComponent(share.recipientCalendarId)}`,
+                    senderName: input.claims.sub,
+                    metadata: {
+                        calendarId: share.recipientCalendarId,
+                        ownerCalendarId,
+                        shareId: share.id,
+                        permission: share.permission,
+                    },
+                });
+            } catch (error) {
+                input.log?.("error", "Calendar share notification failed.", {
+                    component: "calendar-gateway",
+                    ownerAccountId: input.claims.sub,
+                    recipientAccountId,
+                    ownerCalendarId,
+                    recipientCalendarId: share.recipientCalendarId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            }
+        }
         sendJson(input.res, 200, {
             data: {
                 ...share,

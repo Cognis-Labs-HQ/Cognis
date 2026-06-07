@@ -457,6 +457,8 @@ export function createCalendarCoreRoutes({
                 shareRegistry,
                 externalHost,
                 resolveShareableUsers,
+                dispatchNotification,
+                log,
             });
             if (handledShareRoute) return true;
         }
@@ -612,22 +614,18 @@ export function createCalendarCoreRoutes({
                     createdEvent,
                 );
                 await gateway.flushStore();
-                await Promise.all(
-                    createdSeries.map((event) =>
-                        dispatchInviteNotifications({
-                            gateway,
-                            event,
-                            dispatchNotification,
-                            shareRegistry,
-                            canInviteByEmail,
-                            externalHost,
-                            inviterAccountId: claims.sub,
-                            calendarId,
-                            resolveAccountId,
-                            log,
-                        }),
-                    ),
-                );
+                await dispatchInviteNotifications({
+                    gateway,
+                    event: createdEvent,
+                    dispatchNotification,
+                    shareRegistry,
+                    canInviteByEmail,
+                    externalHost,
+                    inviterAccountId: claims.sub,
+                    calendarId,
+                    resolveAccountId,
+                    log,
+                });
                 createdSeries.forEach((event) => {
                     scheduleReminderNotificationsForEvent(event);
                 });

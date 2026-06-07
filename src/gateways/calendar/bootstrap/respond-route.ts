@@ -118,26 +118,96 @@ export async function handleCalendarResponseRoute(input: {
                     eventId: input.eventId,
                 };
             } else if (invitedEvent) {
-                // Non-owned invitation: create a personal copy in the target calendar
-                const copy = input.gateway.addEventToCalendar({
-                    calendarId: targetCalendarId,
-                    sourceEventId:
+                // Non-owned invitation: create personal copies in the target calendar.
+                const sourceOccurrences =
+                    invitedEvent.recurrenceId === null
+                        ? [invitedEvent]
+                        : input.gateway
+                              .listEvents(invitedEvent.calendarId)
+                              .filter(
+                                  (event) =>
+                                      event.recurrenceId ===
+                                          invitedEvent.recurrenceId &&
+                                      event.sourceEventId === null,
+                              );
+                const fallbackOccurrences =
+                    sourceOccurrences.length > 0
+                        ? sourceOccurrences
+                        : [invitedEvent];
+                if (
+                    invitedEvent.recurrenceId !== null &&
+                    sourceOccurrences.length === 0
+                ) {
+                    input.log?.(
+                        "warn",
+                        "Recurring invite response resolved no source occurrences; using selected event fallback.",
+                        {
+                            component: "calendar-gateway",
+                            eventId: invitedEvent.id,
+                            recurrenceId: invitedEvent.recurrenceId,
+                            calendarId: invitedEvent.calendarId,
+                            targetCalendarId,
+                        },
+                    );
+                }
+                const existingTargetEvents =
+                    input.gateway.listEvents(targetCalendarId);
+                const copyBySourceEventId = new Map(
+                    existingTargetEvents
+                        .filter(
+                            (event) => typeof event.sourceEventId === "string",
+                        )
+                        .map((event) => [event.sourceEventId as string, event]),
+                );
+                let movedEventId: string | null = null;
+                for (const sourceOccurrence of fallbackOccurrences) {
+                    const sourceOccurrenceId =
+                        sourceOccurrence.sourceEventId ?? sourceOccurrence.id;
+                    const existingCopy =
+                        copyBySourceEventId.get(sourceOccurrenceId);
+                    if (existingCopy) {
+                        if (
+                            sourceOccurrence.id === invitedEvent.id &&
+                            movedEventId === null
+                        ) {
+                            movedEventId = existingCopy.id;
+                        }
+                        continue;
+                    }
+                    const copy = input.gateway.addEventToCalendar({
+                        calendarId: targetCalendarId,
+                        sourceEventId: sourceOccurrenceId,
+                        title: sourceOccurrence.title,
+                        description: sourceOccurrence.description,
+                        startAt: sourceOccurrence.startAt,
+                        endAt: sourceOccurrence.endAt,
+                        createdBy: sourceOccurrence.createdBy,
+                        attendees: sourceOccurrence.attendees,
+                        inviteEmails: sourceOccurrence.inviteEmails,
+                        reminderOffsetsMinutes:
+                            sourceOccurrence.reminderOffsetsMinutes,
+                        meetingUrl: sourceOccurrence.meetingUrl,
+                        status: sourceOccurrence.status,
+                        recurrence: sourceOccurrence.recurrence,
+                        recurrenceId: sourceOccurrence.recurrenceId,
+                        forceSingle: true,
+                    });
+                    copyBySourceEventId.set(sourceOccurrenceId, copy);
+                    if (sourceOccurrence.id === invitedEvent.id) {
+                        movedEventId = copy.id;
+                    }
+                }
+                const resolvedMovedEventId =
+                    movedEventId ??
+                    copyBySourceEventId.get(
                         invitedEvent.sourceEventId ?? invitedEvent.id,
-                    title: invitedEvent.title,
-                    description: invitedEvent.description,
-                    startAt: invitedEvent.startAt,
-                    endAt: invitedEvent.endAt,
-                    createdBy: invitedEvent.createdBy,
-                    attendees: invitedEvent.attendees,
-                    inviteEmails: invitedEvent.inviteEmails,
-                    reminderOffsetsMinutes: invitedEvent.reminderOffsetsMinutes,
-                    meetingUrl: invitedEvent.meetingUrl,
-                    status: invitedEvent.status,
-                    recurrence: invitedEvent.recurrence,
-                    recurrenceId: invitedEvent.recurrenceId,
-                    forceSingle: true,
-                });
-                movedTo = { calendarId: targetCalendarId, eventId: copy.id };
+                    )?.id;
+                if (resolvedMovedEventId) {
+                    movedTo = {
+                        calendarId: targetCalendarId,
+                        eventId: resolvedMovedEventId,
+                    };
+                }
             }
         }
         await input.gateway.flushStore();
