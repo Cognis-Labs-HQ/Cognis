@@ -69,6 +69,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
     gap: 8px;
+    width: min(80%, 1000px);
+    margin: 0 auto;
 }
 
 .study-classroom-seat {
@@ -86,6 +88,11 @@
 
 .study-classroom-seat.occupied {
     border-color: var(--accent);
+}
+
+.study-classroom-seat--teacher {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 }
 
 .study-classroom-seat.selected {

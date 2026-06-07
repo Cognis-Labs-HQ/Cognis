@@ -26,10 +26,10 @@ export function setClassroomViewMode(mode) {
 
 export function applyClassroomViewModeFromUrl(url = window.location.href) {
     const nextUrl = new URL(url, window.location.origin);
-    const requestedMode = nextUrl.searchParams.get("classroomView");
-    if (requestedMode === "student" || requestedMode === "teacher") {
-        setClassroomViewMode(requestedMode);
-        nextUrl.searchParams.delete("classroomView");
+    const studentParam = nextUrl.searchParams.get("student");
+    if (canToggleClassroomView() && studentParam != null) {
+        setClassroomViewMode(studentParam === "true" ? "student" : "teacher");
+        nextUrl.searchParams.delete("student");
         window.history.replaceState({}, "", nextUrl.pathname + nextUrl.search);
     }
     return getClassroomViewMode();

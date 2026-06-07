@@ -41,13 +41,33 @@ function buildLanguageFilterOptions({ availableClasses }) {
     ].sort();
 }
 
-/** Returns how many desk columns to use for a given student capacity. */
-function computeDesksPerRow(studentLimit) {
-    if (studentLimit <= 6) return 3;
-    if (studentLimit <= 10) return 4;
-    if (studentLimit <= 18) return 6;
-    if (studentLimit <= 28) return 7;
-    return 8;
+function computeDeskLayout(studentLimit) {
+    const normalizedLimit = Math.max(1, Number(studentLimit) || 1);
+    const maxColumns = Math.min(
+        10,
+        Math.max(2, Math.ceil(Math.sqrt(normalizedLimit * 1.8))),
+    );
+    let bestLayout = {
+        columns: Math.min(4, normalizedLimit),
+        rows: Math.ceil(normalizedLimit / Math.min(4, normalizedLimit)),
+        score: Number.POSITIVE_INFINITY,
+    };
+    for (let columns = 2; columns <= maxColumns; columns++) {
+        const rows = Math.ceil(normalizedLimit / columns);
+        const emptySeats = rows * columns - normalizedLimit;
+        const score =
+            Math.abs(rows - columns) * 2 +
+            emptySeats * 1.25 +
+            (normalizedLimit % columns === 1 ? 1.5 : 0) +
+            (columns % 2 === 1 ? 0.35 : 0);
+        if (score < bestLayout.score) {
+            bestLayout = { columns, rows, score };
+        }
+    }
+    return {
+        desksPerRow: bestLayout.columns,
+        rowCount: bestLayout.rows,
+    };
 }
 
 function renderChalkAgenda({ activeAgendaItems, i18n }) {
@@ -131,20 +151,37 @@ function renderBlackboard({
 
 function renderStudentRoster({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
+    const pendingMembers = Array.isArray(snapshot?.pendingMembers)
+        ? snapshot.pendingMembers
+        : [];
     const rows = members
         .map(
             (member) => `
                 <li class="classes-roster-item" data-student-id="${escapeHtml(String(member.studentAccountId ?? ""))}">
-                    <span class="classes-roster-avatar">${escapeHtml(buildAccountAbbreviation(member))}</span>
-                    <span class="classes-roster-name">${escapeHtml(buildAccountLabel(member))}</span>
+                    <span class="classes-roster-avatar">${escapeHtml(member?.identityMasked ? "???" : buildAccountAbbreviation(member))}</span>
+                    <span class="classes-roster-name">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</span>
                 </li>
             `,
         )
         .join("");
+    const pendingRows =
+        snapshot?.isTeacherView && pendingMembers.length
+            ? pendingMembers
+                  .map(
+                      (member) => `
+                <li class="classes-roster-item classes-roster-item--pending">
+                    <span class="classes-roster-avatar">${escapeHtml(member?.identityMasked ? "???" : buildAccountAbbreviation(member))}</span>
+                    <span class="classes-roster-name">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</span>
+                    <button type="button" class="classes-quick-approve-btn" data-student-id="${escapeHtml(String(member.studentAccountId ?? ""))}">${escapeHtml(i18n.t("module.study.classes.approve"))}</button>
+                </li>
+            `,
+                  )
+                  .join("")
+            : "";
     return `
         <div class="classes-student-roster">
             <div class="classes-roster-header">👥 ${escapeHtml(i18n.t("module.study.classes.members_section"))}</div>
-            <ul class="classes-roster-list">${rows || `<li class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</li>`}</ul>
+            <ul class="classes-roster-list">${rows || `<li class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</li>`}${pendingRows}</ul>
         </div>
     `;
 }
@@ -164,15 +201,15 @@ function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
              data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}"
              data-student-handle="${escapeHtml(String(member?.handle ?? ""))}"
              ${isTeacherView && occupied ? 'draggable="true"' : ""}
-             title="${occupied ? escapeHtml(buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}">
+             title="${occupied ? escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}">
             <div class="classes-desk-surface">
-                ${occupied ? `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(buildAccountAbbreviation(member))}</span>` : ""}
+                ${occupied ? `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(member?.identityMasked ? "???" : buildAccountAbbreviation(member))}</span>` : ""}
             </div>
             <div class="classes-desk-nameplate">
                 <span class="classes-status-light classes-status-light--${escapeHtml(
                     String(member?.presence ?? "offline"),
                 )}"></span>
-                <span class="classes-desk-name">${escapeHtml(occupied ? buildAccountLabel(member) : i18n.t("module.study.classes.empty_seat"))}</span>
+                <span class="classes-desk-name">${escapeHtml(occupied ? (member?.identityMasked ? "???" : buildAccountLabel(member)) : i18n.t("module.study.classes.empty_seat"))}</span>
             </div>
             <div class="classes-chair-element"></div>
         </div>
@@ -202,8 +239,7 @@ function renderDeskFloor({
         if (!Number.isInteger(seat) || seat < 0) continue;
         membersBySeat.set(seat, member);
     }
-    const desksPerRow = computeDesksPerRow(studentLimit);
-    const rowCount = Math.ceil(studentLimit / desksPerRow);
+    const { desksPerRow, rowCount } = computeDeskLayout(studentLimit);
     let seatCounter = 0;
     const rowHtml = Array.from({ length: rowCount }, () => {
         const units = [];
@@ -217,7 +253,9 @@ function renderDeskFloor({
                 renderDeskUnit({
                     seatNumber: seatNum,
                     member: membersBySeat.get(seatNum) ?? null,
-                    selected: Number(selectedSeatNumber) === seatNum,
+                    selected:
+                        selectedSeatNumber != null &&
+                        Number(selectedSeatNumber) === seatNum,
                     isTeacherView,
                     i18n,
                 }),
@@ -232,7 +270,21 @@ function renderDeskFloor({
         }
         return `<div class="classes-desk-row">${pairs.join("")}</div>`;
     }).join("");
-    return `<div class="classes-desk-floor">${rowHtml}</div>`;
+    const teacherDesk = snapshot?.teacherAccountId
+        ? `<div class="classes-teacher-desk-zone">
+                <div class="classes-desk-unit classes-desk-unit--teacher">
+                    <div class="classes-desk-surface">
+                        <span class="classes-desk-badge" aria-hidden="true">${escapeHtml(i18n.t("module.study.classes.enter_teacher_view").slice(0, 2).toUpperCase())}</span>
+                    </div>
+                    <div class="classes-desk-nameplate">
+                        <span class="classes-status-light classes-status-light--online"></span>
+                        <span class="classes-desk-name">${escapeHtml(i18n.t("ui.reuse.teacher"))}</span>
+                    </div>
+                    <div class="classes-chair-element"></div>
+                </div>
+            </div>`
+        : "";
+    return `<div class="classes-desk-floor">${teacherDesk}${rowHtml}</div>`;
 }
 
 function renderRoomDoor({ i18n, isTeacherView }) {
@@ -260,13 +312,11 @@ function renderSelectedDeskPanel({
     const seatAssignments = normalizeSeatAssignments(
         snapshot?.classroom?.seatAssignments,
     );
-    const selectedMember =
-        (snapshot.members ?? []).find(
-            (member) =>
-                Number(
-                    seatAssignments[String(member.studentAccountId ?? "")],
-                ) === Number(selectedSeatNumber),
-        ) ?? null;
+    const selectedMember = (snapshot.members ?? []).find(
+        (member) =>
+            Number(seatAssignments[String(member.studentAccountId ?? "")]) ===
+            Number(selectedSeatNumber),
+    );
     if (!selectedMember) return "";
     return `
         <div class="classes-manage-panel">
@@ -367,6 +417,7 @@ function renderClassroomView({
     searchQuery,
     canToggleView,
     currentViewMode,
+    canEditMaterials,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -382,12 +433,12 @@ function renderClassroomView({
         <section class="classes-section classes-classroom-hub">
             <div class="classes-room">
                 <div class="classes-room-top">
-                    ${renderBlackboard({ snapshot, activeAgendaItems, i18n, isTeacherView, canToggleView, currentViewMode })}
+                    ${renderBlackboard({ snapshot: { ...snapshot, isTeacherView }, activeAgendaItems, i18n, isTeacherView, canToggleView, currentViewMode })}
                     ${renderRoomDoor({ i18n, isTeacherView })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}
             </div>
-            ${isTeacherView ? renderMaterialsEditor({ classResources, i18n }) : ""}
+            ${canEditMaterials ? renderMaterialsEditor({ classResources, i18n }) : ""}
             ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}
             ${
                 !isTeacherView

@@ -97,11 +97,19 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     }
 
     async function loadClassrooms() {
-        const languageQuery = languageCode
-            ? `?language=${encodeURIComponent(languageCode)}`
-            : "";
+        const params = new URLSearchParams();
+        if (languageCode) {
+            params.set("language", languageCode);
+        }
+        if (
+            isTeacherScope() &&
+            getClassroomViewMode &&
+            getClassroomViewMode() === "student"
+        ) {
+            params.set("student", "true");
+        }
         const response = await apiFetch(
-            `/api/v1/study/classrooms${languageQuery}`,
+            `/api/v1/study/classrooms${params.toString() ? `?${params.toString()}` : ""}`,
         );
         if (!response.ok) {
             throw new Error(i18n.t("gateway.study.classroom_load_failed"));
@@ -230,6 +238,24 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
         const members = Array.isArray(selectedSnapshot.members)
             ? selectedSnapshot.members
             : [];
+        const maxColumns = Math.min(
+            10,
+            Math.max(2, Math.ceil(Math.sqrt(normalizedStudentLimit * 1.8))),
+        );
+        let gridColumns = Math.min(4, normalizedStudentLimit);
+        let bestScore = Number.POSITIVE_INFINITY;
+        for (let columns = 2; columns <= maxColumns; columns++) {
+            const rows = Math.ceil(normalizedStudentLimit / columns);
+            const emptySeats = rows * columns - normalizedStudentLimit;
+            const score =
+                Math.abs(rows - columns) * 2 +
+                emptySeats * 1.25 +
+                (normalizedStudentLimit % columns === 1 ? 1.5 : 0);
+            if (score < bestScore) {
+                bestScore = score;
+                gridColumns = columns;
+            }
+        }
         const studentBySeatNumber = new Map();
         for (const member of members) {
             const studentAccountId = String(member.studentAccountId ?? "");
@@ -272,7 +298,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 <div class="study-classroom-controls">
                     <label>
                         ${escapeHtml(i18n.t("gateway.study.classroom_student_limit"))}
-                        <input type="number" min="1" max="300" step="1" id="study-classroom-student-limit" value="${normalizedStudentLimit}" />
+                        <input type="number" min="1" max="100" step="1" id="study-classroom-student-limit" value="${normalizedStudentLimit}" />
                     </label>
                     <button type="button" class="btn-confirm btn-animated" id="study-classroom-save-limit">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
                 </div>
@@ -286,18 +312,21 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                     <button type="button" class="btn-cancel btn-animated" id="study-classroom-leave">${escapeHtml(i18n.t("module.study.classes.leave_class"))}</button>
                 </div>
             `;
+        const teacherDeskTile = `
+            <div class="study-classroom-seat study-classroom-seat--teacher">
+                <span class="study-classroom-seat-icon">👩‍🏫</span>
+                <span class="study-classroom-seat-label">${escapeHtml(i18n.t("ui.reuse.teacher"))}</span>
+                <span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(selectedSnapshot.teacherAccountId))}</span>
+            </div>
+        `;
 
         return `
             <div class="study-classroom-board-area">
                 <div class="study-classroom-board">${escapeHtml(i18n.t("gateway.study.classroom_blackboard"))}</div>
-                <div class="study-classroom-teacher">
-                    <span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(selectedSnapshot.teacherAccountId))}</span>
-                    <span>${escapeHtml(selectedSnapshot.teacherAccountId)}</span>
-                </div>
                 <div class="study-classroom-door" id="study-classroom-door" data-door="true">🚪 ${escapeHtml(i18n.t("gateway.study.classroom_door"))}</div>
             </div>
             ${teacherControls}
-            <div class="study-classroom-grid" id="study-classroom-grid">${seatTiles}</div>
+            <div class="study-classroom-grid" id="study-classroom-grid" style="grid-template-columns: repeat(${gridColumns}, minmax(126px, 1fr));">${teacherDeskTile}${seatTiles}</div>
         `;
     }
 

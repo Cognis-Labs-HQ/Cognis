@@ -81,7 +81,7 @@ export async function mount(root, { signal } = {}) {
 
     async function loadClassrooms() {
         const queryString = buildQuery({
-            mode: isTeacherView() ? "teacher" : "student",
+            student: teacherAccount && !isTeacherView() ? "true" : "",
         });
         const response = await apiFetch(
             `/api/v1/study/classrooms?${queryString}`,
@@ -435,6 +435,7 @@ export async function mount(root, { signal } = {}) {
             searchQuery,
             canToggleView: teacherAccount,
             currentViewMode: getClassroomViewMode(),
+            canEditMaterials: teacherAccount,
         });
     }
 
@@ -519,9 +520,18 @@ export async function mount(root, { signal } = {}) {
                             if (!(event.target instanceof Element)) return;
                             const snapshot = selectedSnapshot();
                             const seatButton = event.target.closest(
-                                ".classes-classroom-seat",
+                                ".classes-desk-unit",
                             );
                             if (seatButton instanceof HTMLElement) {
+                                if (
+                                    !Number.isInteger(
+                                        Number(
+                                            seatButton.dataset.seatNumber ?? "",
+                                        ),
+                                    )
+                                ) {
+                                    return;
+                                }
                                 selectedSeatNumber = Number(
                                     seatButton.dataset.seatNumber ?? "-1",
                                 );
@@ -573,9 +583,49 @@ export async function mount(root, { signal } = {}) {
                                         ? "student"
                                         : "teacher";
                                 setClassroomViewMode(nextMode);
-                                navigateTo(
-                                    `${window.location.pathname}?classroomView=${encodeURIComponent(nextMode)}`,
+                                const nextUrl = new URL(
+                                    window.location.href,
+                                    window.location.origin,
                                 );
+                                if (nextMode === "student") {
+                                    nextUrl.searchParams.set("student", "true");
+                                } else {
+                                    nextUrl.searchParams.delete("student");
+                                }
+                                navigateTo(nextUrl.pathname + nextUrl.search);
+                                return;
+                            }
+
+                            const quickApproveButton = event.target.closest(
+                                ".classes-quick-approve-btn",
+                            );
+                            if (
+                                quickApproveButton instanceof HTMLElement &&
+                                selectedClassId
+                            ) {
+                                const studentId = String(
+                                    quickApproveButton.dataset.studentId ?? "",
+                                ).trim();
+                                if (!studentId) return;
+                                const response = await apiFetch(
+                                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/join-requests/${encodeURIComponent(studentId)}/approve`,
+                                    { method: "POST" },
+                                );
+                                showToast(
+                                    i18n.t(
+                                        response.ok
+                                            ? "module.study.classes.request_approved"
+                                            : "module.study.classes.request_review_failed",
+                                    ),
+                                    {
+                                        variant: response.ok
+                                            ? "success"
+                                            : "error",
+                                    },
+                                );
+                                if (response.ok) {
+                                    await refreshContent();
+                                }
                                 return;
                             }
 

@@ -243,7 +243,9 @@ export async function bootstrapStudyAdapter(
             handle?: string | null;
             displayName?: string | null;
             avatarKey?: string | null;
+            visibility?: string | null;
         } | null>;
+        isBlocked?: (blockerId: string, blockedId: string) => Promise<boolean>;
         isFollowing?: (
             followerId: string,
             followingId: string,
@@ -360,6 +362,17 @@ export async function bootstrapStudyAdapter(
             });
         });
     };
+    const dispatchNotification = ctx.capabilities.get<
+        (envelope: {
+            category: string;
+            recipientUsername: string;
+            subject: string;
+            body: string;
+            senderName?: string;
+            actionUrl?: string;
+            metadata?: Record<string, unknown>;
+        }) => Promise<unknown>
+    >("notify:dispatch");
 
     /**
      * study:classroom:listParticipantHandles — resolves normalized participant
@@ -443,8 +456,13 @@ export async function bootstrapStudyAdapter(
                     handle: profile.handle ?? null,
                     displayName: profile.displayName ?? null,
                     avatarKey: profile.avatarKey ?? null,
+                    visibility: profile.visibility ?? null,
                 };
             },
+            isBlocked: (blockerId, blockedId) =>
+                profileStore?.isBlocked
+                    ? profileStore.isBlocked(blockerId, blockedId)
+                    : Promise.resolve(false),
             resolveClassroomChatUrl,
             createCalendar,
             listCalendars,
@@ -464,6 +482,8 @@ export async function bootstrapStudyAdapter(
                 >("notify:dispatchToRole");
                 return dispatch?.(role, envelope) ?? Promise.resolve(null);
             },
+            dispatchNotification: (envelope) =>
+                dispatchNotification?.(envelope) ?? Promise.resolve(null),
             log: ctx.log,
         }),
         "study",

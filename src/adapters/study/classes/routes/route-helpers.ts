@@ -13,19 +13,31 @@ export type DispatchToRole = (
         metadata?: Record<string, unknown>;
     },
 ) => Promise<unknown>;
+export type DispatchNotification = (envelope: {
+    category: string;
+    recipientUsername: string;
+    subject: string;
+    body: string;
+    senderName?: string;
+    actionUrl?: string;
+    metadata?: Record<string, unknown>;
+}) => Promise<unknown>;
 
 export interface ClassesRouteOptions {
     requireTeacherManualApproval?: () => Promise<boolean> | boolean;
     setRole?: SetRole;
     setProfileRole?: SetRole;
     dispatchToRole?: DispatchToRole;
+    dispatchNotification?: DispatchNotification;
     accountExists?: (accountId: string) => Promise<boolean>;
     areFriends?: (accountA: string, accountB: string) => Promise<boolean>;
     getProfileSummary?: (accountId: string) => Promise<{
         handle?: string | null;
         displayName?: string | null;
         avatarKey?: string | null;
+        visibility?: string | null;
     } | null>;
+    isBlocked?: (blockerId: string, blockedId: string) => Promise<boolean>;
     resolveClassroomChatUrl?: (input: {
         classId: string;
         title?: string | null;
@@ -112,12 +124,12 @@ export function normalizeJoinMode(
 
 export function resolveClassroomMode(
     role: string,
-    requestedMode: string | null,
+    requestedStudentView: string | null,
 ): "teacher" | "student" {
     const normalizedRole = String(role ?? "")
         .trim()
         .toLowerCase();
-    if (normalizedRole === "teacher" && requestedMode === "student") {
+    if (normalizedRole === "teacher" && requestedStudentView === "true") {
         return "student";
     }
     return normalizedRole === "teacher" ? "teacher" : "student";
@@ -154,7 +166,13 @@ export async function decorateMemberships(
         studentAccountId: string;
         [key: string]: unknown;
     }>,
+    input?: {
+        viewerAccountId?: string;
+        isTeacherViewer?: boolean;
+    },
 ) {
+    const viewerAccountId = String(input?.viewerAccountId ?? "").trim();
+    const isTeacherViewer = input?.isTeacherViewer === true;
     const presenceByAccountId = options.getPresenceStatuses
         ? await options.getPresenceStatuses(
               memberships.map((membership) => membership.studentAccountId),
@@ -165,14 +183,46 @@ export async function decorateMemberships(
             const profile = await options.getProfileSummary?.(
                 membership.studentAccountId,
             );
+            const isSelf =
+                viewerAccountId &&
+                membership.studentAccountId === viewerAccountId;
+            const blocked = !isTeacherViewer
+                ? (await options.isBlocked?.(
+                      membership.studentAccountId,
+                      viewerAccountId,
+                  )) ||
+                  (await options.isBlocked?.(
+                      viewerAccountId,
+                      membership.studentAccountId,
+                  )) ||
+                  false
+                : false;
+            const hasPrivateVisibility =
+                String(profile?.visibility ?? "")
+                    .trim()
+                    .toLowerCase() === "private";
+            const isFriend =
+                !isTeacherViewer && viewerAccountId && !isSelf
+                    ? await options.areFriends?.(
+                          viewerAccountId,
+                          membership.studentAccountId,
+                      )
+                    : false;
+            const identityMasked =
+                !isTeacherViewer &&
+                !isSelf &&
+                (blocked || (hasPrivateVisibility && !isFriend));
             return {
                 ...membership,
-                handle: profile?.handle ?? null,
-                displayName: profile?.displayName ?? null,
-                avatarKey: profile?.avatarKey ?? null,
+                handle: identityMasked ? null : (profile?.handle ?? null),
+                displayName: identityMasked
+                    ? "???"
+                    : (profile?.displayName ?? null),
+                avatarKey: identityMasked ? null : (profile?.avatarKey ?? null),
                 presence:
                     presenceByAccountId[membership.studentAccountId] ??
                     "offline",
+                identityMasked,
             };
         }),
     );

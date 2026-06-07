@@ -198,11 +198,15 @@ export function createClassesRoutes(
                 url.searchParams.get("language") || undefined;
             const mode = resolveClassroomMode(
                 claims.role,
-                url.searchParams.get("mode"),
+                url.searchParams.get("student"),
             );
             try {
+                const isTeacherAccount =
+                    String(claims.role ?? "")
+                        .trim()
+                        .toLowerCase() === "teacher";
                 const classroomClasses =
-                    mode === "teacher"
+                    mode === "teacher" || isTeacherAccount
                         ? await store.getClassesForTeacherWithFilter(
                               claims.sub,
                               languageFilter,
@@ -236,16 +240,41 @@ export function createClassesRoutes(
                                     classRow.id,
                                 ),
                             ]);
+                        const pendingMembers =
+                            mode === "teacher"
+                                ? await store.getPendingJoinRequests(
+                                      classRow.id,
+                                      claims.sub,
+                                  )
+                                : [];
                         const decoratedMembers = await decorateMemberships(
                             options,
                             members,
+                            {
+                                viewerAccountId: claims.sub,
+                                isTeacherViewer:
+                                    mode === "teacher" || isTeacherAccount,
+                            },
                         );
+                        const decoratedPendingMembers =
+                            mode === "teacher"
+                                ? await decorateMemberships(
+                                      options,
+                                      pendingMembers,
+                                      {
+                                          viewerAccountId: claims.sub,
+                                          isTeacherViewer: true,
+                                      },
+                                  )
+                                : [];
                         return {
                             ...classRow,
                             languageName,
                             classroom: classroomState,
                             members: decoratedMembers,
+                            pendingMembers: decoratedPendingMembers,
                             chatUrl: synced?.chat?.url ?? null,
+                            viewerAccountId: claims.sub,
                         };
                     }),
                 );
@@ -348,7 +377,7 @@ export function createClassesRoutes(
                         res,
                         400,
                         "bad_request",
-                        "studentLimit must be between 1 and 300.",
+                        `studentLimit must be between 1 and ${MAX_STUDENT_LIMIT}.`,
                     );
                     return true;
                 }
@@ -606,6 +635,39 @@ export function createClassesRoutes(
                 if (membership.status === "member") {
                     await syncClassroomArtifacts(store, options, classId);
                 }
+                if (membership.status === "pending") {
+                    const classRow = await store.getClassById(classId);
+                    if (classRow) {
+                        options.dispatchNotification
+                            ?.({
+                                category: "study",
+                                recipientUsername: classRow.teacherAccountId,
+                                subject: "Class join request pending",
+                                body: `${claims.sub} requested to join "${classRow.name || classRow.languageCode}".`,
+                                actionUrl: `/classroom?classId=${encodeURIComponent(classId)}`,
+                                metadata: {
+                                    classId,
+                                    studentAccountId: claims.sub,
+                                    status: "pending",
+                                },
+                            })
+                            .catch((error) => {
+                                options.log?.(
+                                    "error",
+                                    "Failed to dispatch join request notification.",
+                                    {
+                                        ...logMeta,
+                                        accountId: claims.sub,
+                                        classId,
+                                        error:
+                                            error instanceof Error
+                                                ? error.message
+                                                : String(error),
+                                    },
+                                );
+                            });
+                    }
+                }
                 options.log?.("info", "Student requested to join class.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -728,7 +790,13 @@ export function createClassesRoutes(
                     claims.sub,
                     searchQuery || undefined,
                 );
-                jsonOk(res, await decorateMemberships(options, members));
+                jsonOk(
+                    res,
+                    await decorateMemberships(options, members, {
+                        viewerAccountId: claims.sub,
+                        isTeacherViewer: true,
+                    }),
+                );
             } catch (err) {
                 if (err instanceof Error && err.message === "not_authorized") {
                     jsonError(
@@ -873,6 +941,42 @@ export function createClassesRoutes(
                     claims.sub,
                     action === "approve",
                 );
+                options.dispatchNotification
+                    ?.({
+                        category: "study",
+                        recipientUsername: studentAccountId,
+                        subject:
+                            action === "approve"
+                                ? "Class join request approved"
+                                : "Class join request rejected",
+                        body:
+                            action === "approve"
+                                ? `Your request to join class ${classId} was approved.`
+                                : `Your request to join class ${classId} was rejected.`,
+                        actionUrl: "/classroom",
+                        metadata: {
+                            classId,
+                            teacherAccountId: claims.sub,
+                            action,
+                        },
+                    })
+                    .catch((error) => {
+                        options.log?.(
+                            "error",
+                            "Failed to dispatch join review notification.",
+                            {
+                                ...logMeta,
+                                accountId: claims.sub,
+                                classId,
+                                studentAccountId,
+                                action,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
+                    });
                 if (action === "approve") {
                     await syncClassroomArtifacts(store, options, classId);
                 }

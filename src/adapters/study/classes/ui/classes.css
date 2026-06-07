@@ -7,6 +7,20 @@
     box-sizing: border-box;
 }
 
+.classes-teacher-desk-zone {
+    display: flex;
+    justify-content: center;
+}
+
+.classes-desk-unit--teacher .classes-desk-surface {
+    background: linear-gradient(160deg, #d8b37a 0%, #bd8f5f 100%);
+    border-color: #7c5638;
+}
+
+.classes-desk-unit--teacher .classes-chair-element {
+    background: linear-gradient(160deg, #b88758 0%, #9d6f43 100%);
+}
+
 .classes-empty {
     color: var(--text-muted);
     font-size: 0.9rem;
@@ -328,6 +342,21 @@ body:not([data-theme="light"]) .classes-classroom-content {
     background: var(--classroom-member-hover);
 }
 
+.classes-roster-item--pending {
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.classes-quick-approve-btn {
+    margin-left: auto;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+    color: var(--text);
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
 .classes-roster-avatar {
     display: inline-flex;
     align-items: center;
@@ -508,6 +537,8 @@ body:not([data-theme="light"]) .classes-classroom-content {
     flex-direction: column;
     gap: 20px;
     padding: 20px 24px 24px;
+    width: min(80%, 1100px);
+    margin: 0 auto;
 }
 
 .classes-desk-row {

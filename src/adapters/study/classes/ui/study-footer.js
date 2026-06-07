@@ -12,6 +12,9 @@ function renderClassSelectorContent({
     selectedClassId,
     allowCreateOption = false,
 }) {
+    const viewerAccountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
     const options = classes
         .map((classRow) => {
             const selected = classRow.id === selectedClassId ? " selected" : "";
@@ -21,7 +24,11 @@ function renderClassSelectorContent({
                     classRow.languageCode ??
                     classRow.id,
             ).trim();
-            return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(classLabel)}</option>`;
+            const classTypeLabel =
+                classRow.teacherAccountId === viewerAccountId
+                    ? i18n.t("module.study.classes.enter_teacher_view")
+                    : i18n.t("module.study.classes.enter_student_view");
+            return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(`${classLabel} (${classTypeLabel})`)}</option>`;
         })
         .join("");
     const createOption = allowCreateOption
@@ -38,6 +45,7 @@ function renderClassSelectorContent({
         <label class="classes-footer-class-label">
             ${escapeHtml(i18n.t("module.study.classes.classroom_select_class"))}:
             <select class="classes-footer-select">
+                <option value="__find__">${escapeHtml(i18n.t("ui.reuse.search"))}</option>
                 ${options || `<option value="">${emptyLabel}</option>`}${createOption}
             </select>
         </label>
@@ -47,7 +55,9 @@ function renderClassSelectorContent({
 export async function loadFooterClasses(languageCode = "") {
     applyClassroomViewModeFromUrl();
     const params = new URLSearchParams();
-    params.set("mode", getClassroomViewMode());
+    if (getClassroomViewMode() === "student") {
+        params.set("student", "true");
+    }
     if (languageCode) {
         params.set("language", languageCode);
     }
@@ -90,6 +100,18 @@ export function createClassFooterItem({
                         ).trim();
                         if (nextValue === "__create__") {
                             onCreateClass?.();
+                            return;
+                        }
+                        if (nextValue === "__find__") {
+                            const searchUrl =
+                                String(
+                                    localStorage.getItem("cognis_role") ?? "",
+                                )
+                                    .trim()
+                                    .toLowerCase() === "teacher"
+                                    ? "/classroom?student=true"
+                                    : "/classroom";
+                            navigateTo(searchUrl);
                             return;
                         }
                         if (!nextValue) return;
