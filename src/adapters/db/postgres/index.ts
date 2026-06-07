@@ -288,8 +288,9 @@ class PostgresExecutor implements RawDbExecutor {
                     : col.notNull
                       ? `DEFAULT ${notNullFallback(col)}`
                       : "";
+            const notNullClause = col.notNull ? " NOT NULL" : "";
             await this.execute(
-                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${defaultClause ? ` ${defaultClause}` : ""}`,
+                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}`,
             ).catch(() => undefined);
         }
     }
