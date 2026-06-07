@@ -230,6 +230,7 @@ test("shared-calendar responses update the original event without creating a cop
     );
     assert.equal(bobSharedEvent.statusCode, 200);
     assert.equal(bobSharedEvent.body.data.event.responses.bob, "accepted");
+    assert.equal(bobSharedEvent.body.data.calendar.visibility, "shared");
 
     const bobInvitations = await dispatchJson(
         "GET",

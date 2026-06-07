@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CoreCalendarGateway } from "../gateway/index.js";
+import type { CalendarStore } from "../store.js";
+import type { CalendarRecord } from "../gateway/utils.js";
 
 test("calendar gateway supports multiple calendars per user", () => {
     const gateway = new CoreCalendarGateway();
@@ -359,4 +361,35 @@ test("calendar gateway can apply attendee response to entire recurrence series",
             (event) => gateway.getEventResponse(event.id, "bob") === "accepted",
         ),
     );
+});
+
+test("calendar gateway preserves shared visibility when loading calendars from store", async () => {
+    const sharedCalendar: CalendarRecord = {
+        id: "shared-cal-1",
+        ownerAccountId: "bob",
+        name: "Alice's shared calendar",
+        visibility: "shared",
+        color: "#1f8ceb",
+        isDefault: false,
+        defaultReminderOffsetsMinutes: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+    const mockStore: CalendarStore = {
+        ensureSchema: async () => {},
+        listCalendars: async () => [sharedCalendar],
+        saveCalendar: async () => {},
+        deleteCalendar: async () => {},
+        listEvents: async () => [],
+        saveEvent: async () => {},
+        deleteEvent: async () => {},
+        listResponses: async () => [],
+        saveResponse: async () => {},
+        deleteResponse: async () => {},
+        deleteResponsesForRootEvent: async () => {},
+    };
+    const gateway = new CoreCalendarGateway();
+    await gateway.attachStore(mockStore);
+    const loaded = gateway.getCalendar(sharedCalendar.id);
+    assert.equal(loaded?.visibility, "shared");
 });

@@ -184,7 +184,12 @@ export class DbCalendarStore implements CalendarStore {
             id: String(row.id ?? ""),
             ownerAccountId: String(row.owner_account_id ?? ""),
             name: String(row.name ?? ""),
-            visibility: row.visibility === "public" ? "public" : "private",
+            visibility:
+                row.visibility === "public"
+                    ? "public"
+                    : row.visibility === "shared"
+                      ? "shared"
+                      : "private",
             color: String(row.color ?? "#1f8ceb"),
             isDefault: Boolean(row.is_default),
             defaultReminderOffsetsMinutes: parseJsonNumberArray(
