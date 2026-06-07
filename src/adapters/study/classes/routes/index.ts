@@ -7,6 +7,10 @@ import { MAX_STUDENT_LIMIT } from "../store/constants.js";
 import { handleClassroomNotebookRoutes } from "./classroom-notebooks.js";
 import { handleAvailableClassesRequest } from "./available-classes-route.js";
 import { handleEnrolledClassesRequest } from "./enrolled-classes-route.js";
+import {
+    dispatchJoinRequestNotification,
+    dispatchJoinReviewNotification,
+} from "./join-notifications.js";
 import { handleTeacherRequestsRoutes } from "./teacher-requests-route.js";
 import {
     decorateMemberships,
@@ -636,37 +640,13 @@ export function createClassesRoutes(
                     await syncClassroomArtifacts(store, options, classId);
                 }
                 if (membership.status === "pending") {
-                    const classRow = await store.getClassById(classId);
-                    if (classRow) {
-                        options.dispatchNotification
-                            ?.({
-                                category: "study",
-                                recipientUsername: classRow.teacherAccountId,
-                                subject: "Class join request pending",
-                                body: `${claims.sub} requested to join "${classRow.name || classRow.languageCode}".`,
-                                actionUrl: `/classroom?classId=${encodeURIComponent(classId)}`,
-                                metadata: {
-                                    classId,
-                                    studentAccountId: claims.sub,
-                                    status: "pending",
-                                },
-                            })
-                            .catch((error) => {
-                                options.log?.(
-                                    "error",
-                                    "Failed to dispatch join request notification.",
-                                    {
-                                        ...logMeta,
-                                        accountId: claims.sub,
-                                        classId,
-                                        error:
-                                            error instanceof Error
-                                                ? error.message
-                                                : String(error),
-                                    },
-                                );
-                            });
-                    }
+                    dispatchJoinRequestNotification({
+                        options,
+                        store,
+                        classId,
+                        studentAccountId: claims.sub,
+                        logMeta,
+                    });
                 }
                 options.log?.("info", "Student requested to join class.", {
                     ...logMeta,
@@ -941,42 +921,14 @@ export function createClassesRoutes(
                     claims.sub,
                     action === "approve",
                 );
-                options.dispatchNotification
-                    ?.({
-                        category: "study",
-                        recipientUsername: studentAccountId,
-                        subject:
-                            action === "approve"
-                                ? "Class join request approved"
-                                : "Class join request rejected",
-                        body:
-                            action === "approve"
-                                ? `Your request to join class ${classId} was approved.`
-                                : `Your request to join class ${classId} was rejected.`,
-                        actionUrl: "/classroom",
-                        metadata: {
-                            classId,
-                            teacherAccountId: claims.sub,
-                            action,
-                        },
-                    })
-                    .catch((error) => {
-                        options.log?.(
-                            "error",
-                            "Failed to dispatch join review notification.",
-                            {
-                                ...logMeta,
-                                accountId: claims.sub,
-                                classId,
-                                studentAccountId,
-                                action,
-                                error:
-                                    error instanceof Error
-                                        ? error.message
-                                        : String(error),
-                            },
-                        );
-                    });
+                dispatchJoinReviewNotification({
+                    options,
+                    classId,
+                    teacherAccountId: claims.sub,
+                    studentAccountId,
+                    action,
+                    logMeta,
+                });
                 if (action === "approve") {
                     await syncClassroomArtifacts(store, options, classId);
                 }

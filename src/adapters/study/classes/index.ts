@@ -362,17 +362,18 @@ export async function bootstrapStudyAdapter(
             });
         });
     };
-    const dispatchNotification = ctx.capabilities.get<
-        (envelope: {
-            category: string;
-            recipientUsername: string;
-            subject: string;
-            body: string;
-            senderName?: string;
-            actionUrl?: string;
-            metadata?: Record<string, unknown>;
-        }) => Promise<unknown>
-    >("notify:dispatch");
+    const dispatchNotification =
+        ctx.capabilities.get<
+            (envelope: {
+                category: string;
+                recipientUsername: string;
+                subject: string;
+                body: string;
+                senderName?: string;
+                actionUrl?: string;
+                metadata?: Record<string, unknown>;
+            }) => Promise<unknown>
+        >("notify:dispatch");
 
     /**
      * study:classroom:listParticipantHandles — resolves normalized participant

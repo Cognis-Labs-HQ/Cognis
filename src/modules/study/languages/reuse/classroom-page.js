@@ -101,11 +101,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
         if (languageCode) {
             params.set("language", languageCode);
         }
-        if (
-            isTeacherScope() &&
-            getClassroomViewMode &&
-            getClassroomViewMode() === "student"
-        ) {
+        if (isTeacherScope() && getClassroomViewMode() === "student") {
             params.set("student", "true");
         }
         const response = await apiFetch(

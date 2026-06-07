@@ -519,9 +519,8 @@ export async function mount(root, { signal } = {}) {
                         async (event) => {
                             if (!(event.target instanceof Element)) return;
                             const snapshot = selectedSnapshot();
-                            const seatButton = event.target.closest(
-                                ".classes-desk-unit",
-                            );
+                            const seatButton =
+                                event.target.closest(".classes-desk-unit");
                             if (seatButton instanceof HTMLElement) {
                                 if (
                                     !Number.isInteger(
