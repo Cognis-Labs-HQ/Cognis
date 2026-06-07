@@ -238,11 +238,25 @@ function collectPendingEvents(
                   calendarName: "",
               }))
         : [];
+    const convertToTimestampString = (value) => {
+        const parsed = new Date(String(value ?? ""));
+        return Number.isNaN(parsed.getTime())
+            ? String(value ?? "")
+            : String(parsed.getTime());
+    };
+    const score = (event) =>
+        (String(event.calendarName ?? "").trim() ? 1 : 0) +
+        (String(event.calendarColor ?? "").trim() ? 1 : 0);
     const dedupedByRoot = new Map();
     [...ownPending, ...invitePending].forEach((event) => {
         const rootId = String(event.sourceEventId ?? event.id ?? "").trim();
-        const key = `${rootId}::${String(event.startAt ?? "")}::${String(event.endAt ?? "")}`;
-        if (!dedupedByRoot.has(key)) {
+        const key = JSON.stringify([
+            rootId,
+            convertToTimestampString(event.startAt),
+            convertToTimestampString(event.endAt),
+        ]);
+        const existing = dedupedByRoot.get(key);
+        if (!existing || score(event) > score(existing)) {
             dedupedByRoot.set(key, event);
         }
     });

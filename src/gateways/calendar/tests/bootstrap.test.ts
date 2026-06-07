@@ -860,8 +860,7 @@ test("calendar accept response via invitations API saves copy into chosen calend
             (entry) =>
                 entry.recipientUsername === "alice" &&
                 entry.subject === "Calendar response: Planning" &&
-                entry.body ===
-                    "Event: Planning\nUser: bob\nResponse: accepted",
+                entry.body === "Event: Planning\nUser: bob\nResponse: accepted",
         ),
     );
 });
