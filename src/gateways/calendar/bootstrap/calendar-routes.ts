@@ -8,35 +8,58 @@ import {
 import { normalizeCalendarColor } from "../color.js";
 import { CoreCalendarGateway } from "../gateway/index.js";
 import {
-    buildCalendarShareData,
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
     errorMessage,
+    includeSharedAudienceAttendees,
     normalizeAttendeesForOwner,
     normalizeReminderOffsets,
     normalizeStringList,
     normalizeVisibility,
     requireOrganizerOwnedSourceEvent,
+    requireWritableSharedOrganizerSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
+    resolveJitsiAvailability,
     sendCalendarError,
     sendJson,
+    validateSharedCalendars,
     type CalendarLogger,
     type NotificationDispatcher,
     type ResolveAccountId,
 } from "./helpers.js";
+import { createReminderScheduler } from "./reminder-scheduler.js";
 import { handleCalendarResponseRoute } from "./respond-route.js";
+import { handleCalendarShareRoutes } from "./share-routes.js";
+import type { CalendarShareRegistry } from "./share-registry.js";
 
 export function createCalendarCoreRoutes({
     gateway,
+    shareRegistry,
     routeContext,
+    resolveMeetingsProviderAvailability,
+    resolveShareableUsers,
     resolveAccountId,
     log,
     getDispatchNotification,
     ensureNotificationCategory,
 }: {
     gateway: CoreCalendarGateway;
+    shareRegistry: CalendarShareRegistry;
     routeContext?: RouteContext;
+    resolveMeetingsProviderAvailability:
+        | ((providerId: string) => Promise<boolean> | boolean)
+        | null;
+    resolveShareableUsers:
+        | ((input: { ownerAccountId: string; query: string }) => Promise<
+              Array<{
+                  accountId: string;
+                  handle?: string | null;
+                  displayName?: string | null;
+                  avatarKey?: string | null;
+              }>
+          >)
+        | null;
     resolveAccountId: ResolveAccountId | null;
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
@@ -46,6 +69,15 @@ export function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
+    const {
+        clearScheduledReminderTimersForEvent,
+        scheduleReminderNotificationsForEvent,
+    } = createReminderScheduler({
+        getDispatchNotification,
+        resolveAccountId,
+        log,
+    });
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -60,11 +92,23 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             gateway.ensureDefaultCalendar(claims.sub);
+            const jitsiAvailable = await resolveJitsiAvailability(
+                resolveMeetingsProviderAvailability,
+                log,
+            );
+            const validatedCalendars = await validateSharedCalendars(
+                gateway.listCalendars(claims.sub),
+                claims.sub,
+                shareRegistry,
+                gateway,
+                log,
+            );
             sendJson(res, 200, {
-                data: gateway.listCalendars(claims.sub),
+                data: validatedCalendars,
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
                     currentAccountId: claims.sub,
+                    jitsiAvailable,
                 },
             });
             return true;
@@ -140,6 +184,17 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(patchCalendarMatch[1]);
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            if (sharedCalendar?.recipientAccountId === claims.sub) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Shared calendars cannot be edited by recipients.",
+                    403,
+                );
+                return true;
+            }
             const body = await readJson(req);
             try {
                 const updated = gateway.updateCalendar({
@@ -218,7 +273,37 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(deleteCalendarMatch[1]);
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            if (sharedCalendar?.recipientAccountId === claims.sub) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Shared calendars cannot be deleted by recipients.",
+                    403,
+                );
+                return true;
+            }
             try {
+                const ownedCalendar = gateway.getOwnedCalendar(
+                    claims.sub,
+                    calendarId,
+                );
+                if (!ownedCalendar) {
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Calendar not found.",
+                        404,
+                    );
+                    return true;
+                }
+                const deletedEventIds = gateway
+                    .listEvents(calendarId)
+                    .map((event) => event.id);
+                deletedEventIds.forEach((eventId) => {
+                    clearScheduledReminderTimersForEvent(eventId);
+                });
                 gateway.deleteCalendar({
                     ownerAccountId: claims.sub,
                     calendarId,
@@ -261,33 +346,22 @@ export function createCalendarCoreRoutes({
             return true;
         }
 
-        const shareCalendarMatch = url.pathname.match(
-            /^\/api\/v1\/calendar\/calendars\/([^/]+)\/share$/,
-        );
-        if (shareCalendarMatch && req.method === "POST") {
-            const claims = ctx.requireAuth(req, res, "user");
-            if (!claims) return true;
-            const calendarId = decodeURIComponent(shareCalendarMatch[1]);
-            const body = (await readJson(req)) as {
-                permission?: unknown;
-                expiresInHours?: unknown;
-                name?: unknown;
-            };
-            const shareData = buildCalendarShareData({
+        if (url.pathname.includes("/share")) {
+            const shareClaims = ctx.requireAuth(req, res, "user");
+            if (!shareClaims) return true;
+            const handledShareRoute = await handleCalendarShareRoutes({
+                req,
+                res,
+                url,
+                claims: { sub: shareClaims.sub },
                 gateway,
-                ownerAccountId: claims.sub,
-                calendarId,
-                permission: body.permission,
-                expiresInHours: body.expiresInHours,
-                name: typeof body.name === "string" ? body.name : undefined,
+                shareRegistry,
                 externalHost,
+                resolveShareableUsers,
+                dispatchNotification,
+                log,
             });
-            if (!shareData) {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
-                return true;
-            }
-            sendJson(res, 200, { data: shareData });
-            return true;
+            if (handledShareRoute) return true;
         }
 
         const eventsMatch = url.pathname.match(
@@ -297,15 +371,31 @@ export function createCalendarCoreRoutes({
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventsMatch[1]);
-            const calendar = gateway.getOwnedCalendar(claims.sub, calendarId);
-            if (!calendar) {
+            const ownedCalendar = gateway.getOwnedCalendar(
+                claims.sub,
+                calendarId,
+            );
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            const activeSharedCalendar =
+                sharedCalendar?.recipientAccountId === claims.sub
+                    ? sharedCalendar
+                    : null;
+            if (!ownedCalendar && !activeSharedCalendar) {
                 sendCalendarError(res, "not_found", "Calendar not found.", 404);
                 return true;
             }
+            const sourceCalendarId =
+                activeSharedCalendar?.ownerCalendarId ?? calendarId;
             sendJson(res, 200, {
                 data: {
-                    calendar,
-                    events: gateway.listEvents(calendarId),
+                    calendar: gateway.getCalendar(calendarId),
+                    events: activeSharedCalendar
+                        ? gateway.listEvents(sourceCalendarId).map((event) => ({
+                              ...event,
+                              calendarId,
+                          }))
+                        : gateway.listEvents(sourceCalendarId),
                 },
             });
             return true;
@@ -343,58 +433,103 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             try {
+                const sharedCalendar =
+                    await shareRegistry.getByRecipientCalendarId(calendarId);
+                const activeSharedCalendar =
+                    sharedCalendar?.recipientAccountId === claims.sub
+                        ? sharedCalendar
+                        : null;
+                const shared = activeSharedCalendar;
+                if (shared?.permission === "read") {
+                    throw new Error("calendar_forbidden");
+                }
+                const targetCalendarId = shared?.ownerCalendarId ?? calendarId;
                 const attendees = await normalizeAttendeesForOwner(
                     body.attendees,
                     claims.sub,
                     resolveAccountId,
                 );
-                const createdEvent = gateway.addEvent({
-                    ownerAccountId: claims.sub,
-                    calendarId,
-                    title,
-                    description:
-                        typeof body.description === "string"
-                            ? body.description
-                            : null,
-                    startAt,
-                    endAt,
-                    attendees,
-                    inviteEmails,
-                    reminderOffsetsMinutes,
-                    meetingUrl:
-                        typeof body.meetingUrl === "string"
-                            ? body.meetingUrl
-                            : null,
-                    status: body.status === "free" ? "free" : "busy",
-                    recurrence:
-                        body.recurrence === "daily" ||
-                        body.recurrence === "weekly" ||
-                        body.recurrence === "monthly" ||
-                        body.recurrence === "yearly"
-                            ? body.recurrence
-                            : "none",
-                });
+                const sharedAudienceAttendees =
+                    await includeSharedAudienceAttendees(
+                        attendees,
+                        shareRegistry,
+                        shared?.ownerAccountId ?? claims.sub,
+                        shared?.ownerCalendarId ?? calendarId,
+                    );
+                const createdEvent = shared
+                    ? gateway.addEventToCalendar({
+                          calendarId: targetCalendarId,
+                          title,
+                          description:
+                              typeof body.description === "string"
+                                  ? body.description
+                                  : null,
+                          startAt,
+                          endAt,
+                          createdBy: claims.sub,
+                          attendees: sharedAudienceAttendees,
+                          inviteEmails,
+                          reminderOffsetsMinutes,
+                          meetingUrl:
+                              typeof body.meetingUrl === "string"
+                                  ? body.meetingUrl
+                                  : null,
+                          status: body.status === "free" ? "free" : "busy",
+                          recurrence:
+                              body.recurrence === "daily" ||
+                              body.recurrence === "weekly" ||
+                              body.recurrence === "monthly" ||
+                              body.recurrence === "yearly"
+                                  ? body.recurrence
+                                  : "none",
+                      })
+                    : gateway.addEvent({
+                          ownerAccountId: claims.sub,
+                          calendarId,
+                          title,
+                          description:
+                              typeof body.description === "string"
+                                  ? body.description
+                                  : null,
+                          startAt,
+                          endAt,
+                          attendees: sharedAudienceAttendees,
+                          inviteEmails,
+                          reminderOffsetsMinutes,
+                          meetingUrl:
+                              typeof body.meetingUrl === "string"
+                                  ? body.meetingUrl
+                                  : null,
+                          status: body.status === "free" ? "free" : "busy",
+                          recurrence:
+                              body.recurrence === "daily" ||
+                              body.recurrence === "weekly" ||
+                              body.recurrence === "monthly" ||
+                              body.recurrence === "yearly"
+                                  ? body.recurrence
+                                  : "none",
+                      });
                 const createdSeries = resolveCreatedSeries(
                     gateway,
-                    calendarId,
+                    targetCalendarId,
                     createdEvent,
                 );
                 await gateway.flushStore();
-                await Promise.all(
-                    createdSeries.map((event) =>
-                        dispatchInviteNotifications({
-                            gateway,
-                            event,
-                            dispatchNotification,
-                            canInviteByEmail,
-                            externalHost,
-                            inviterAccountId: claims.sub,
-                            calendarId,
-                            resolveAccountId,
-                            log,
-                        }),
-                    ),
-                );
+                await dispatchInviteNotifications({
+                    gateway,
+                    event: createdEvent,
+                    dispatchNotification,
+                    shareRegistry,
+                    canInviteByEmail,
+                    externalHost,
+                    inviterAccountId: claims.sub,
+                    calendarId,
+                    resolveAccountId,
+                    log,
+                });
+                createdSeries.forEach((event) => {
+                    scheduleReminderNotificationsForEvent(event);
+                });
                 sendJson(res, 201, { data: createdEvent });
             } catch (error) {
                 const message = errorMessage(error);
@@ -404,6 +539,15 @@ export function createCalendarCoreRoutes({
                         "not_found",
                         "Calendar not found.",
                         404,
+                    );
+                    return true;
+                }
+                if (message === "calendar_forbidden") {
+                    sendCalendarError(
+                        res,
+                        "forbidden",
+                        "Calendar is read-only.",
+                        403,
                     );
                     return true;
                 }
@@ -449,15 +593,25 @@ export function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
-            const ownedCalendar = gateway.getOwnedCalendar(
-                claims.sub,
-                calendarId,
-            );
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            const activeSharedCalendar =
+                sharedCalendar?.recipientAccountId === claims.sub
+                    ? sharedCalendar
+                    : null;
+            const ownedCalendar = activeSharedCalendar
+                ? null
+                : gateway.getOwnedCalendar(claims.sub, calendarId);
             const ownedEvent = ownedCalendar
                 ? gateway.getEvent(calendarId, eventId)
-                : null;
+                : activeSharedCalendar
+                  ? gateway.getEvent(
+                        activeSharedCalendar.ownerCalendarId,
+                        eventId,
+                    )
+                  : null;
             let invitedEvent = null;
-            if (!ownedCalendar) {
+            if (!ownedCalendar && !activeSharedCalendar) {
                 const fetchedEvent = gateway.getEvent(calendarId, eventId);
                 invitedEvent = fetchedEvent?.attendees.includes(claims.sub)
                     ? fetchedEvent
@@ -489,6 +643,16 @@ export function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            const activeSharedCalendar =
+                sharedCalendar?.recipientAccountId === claims.sub
+                    ? sharedCalendar
+                    : null;
+            const ownerAccountId =
+                activeSharedCalendar?.ownerAccountId ?? claims.sub;
+            const sourceCalendarId =
+                activeSharedCalendar?.ownerCalendarId ?? calendarId;
             const body = (await readJson(req)) as Record<string, unknown>;
             const inviteEmails = normalizeStringList(body.inviteEmails);
             const canInviteByEmail = hasMinRole(claims.role, "admin");
@@ -502,6 +666,20 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             if (
+                activeSharedCalendar &&
+                !requireWritableSharedOrganizerSourceEvent({
+                    gateway,
+                    sharedCalendar: activeSharedCalendar,
+                    organizerAccountId: claims.sub,
+                    eventId,
+                    res,
+                    actionVerb: "edit",
+                })
+            ) {
+                return true;
+            }
+            if (
+                !activeSharedCalendar &&
                 !requireOrganizerOwnedSourceEvent({
                     gateway,
                     ownerAccountId: claims.sub,
@@ -522,8 +700,8 @@ export function createCalendarCoreRoutes({
                       )
                     : undefined;
                 const updatedEvent = gateway.updateEvent({
-                    ownerAccountId: claims.sub,
-                    calendarId,
+                    ownerAccountId,
+                    calendarId: sourceCalendarId,
                     eventId,
                     title:
                         typeof body.title === "string" ? body.title : undefined,
@@ -565,22 +743,27 @@ export function createCalendarCoreRoutes({
                             ? body.recurrence
                             : undefined,
                     targetCalendarId:
+                        !activeSharedCalendar &&
                         typeof body.calendarId === "string"
                             ? body.calendarId
                             : undefined,
                     updateAll: body.updateAll === true,
                 });
                 const updatedCalendarId =
+                    !activeSharedCalendar &&
                     typeof body.calendarId === "string" &&
                     body.calendarId.trim().length > 0
                         ? body.calendarId.trim()
-                        : calendarId;
+                        : sourceCalendarId;
                 const updatedSeries = resolveCreatedSeries(
                     gateway,
                     updatedCalendarId,
                     updatedEvent,
                 );
                 await gateway.flushStore();
+                updatedSeries.forEach((event) => {
+                    scheduleReminderNotificationsForEvent(event);
+                });
                 sendJson(res, 200, { data: updatedEvent });
             } catch (error) {
                 const message = errorMessage(error);
@@ -633,8 +816,32 @@ export function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            const activeSharedCalendar =
+                sharedCalendar?.recipientAccountId === claims.sub
+                    ? sharedCalendar
+                    : null;
+            const ownerAccountId =
+                activeSharedCalendar?.ownerAccountId ?? claims.sub;
+            const sourceCalendarId =
+                activeSharedCalendar?.ownerCalendarId ?? calendarId;
             try {
                 if (
+                    activeSharedCalendar &&
+                    !requireWritableSharedOrganizerSourceEvent({
+                        gateway,
+                        sharedCalendar: activeSharedCalendar,
+                        organizerAccountId: claims.sub,
+                        eventId,
+                        res,
+                        actionVerb: "delete",
+                    })
+                ) {
+                    return true;
+                }
+                if (
+                    !activeSharedCalendar &&
                     !requireOrganizerOwnedSourceEvent({
                         gateway,
                         ownerAccountId: claims.sub,
@@ -647,10 +854,13 @@ export function createCalendarCoreRoutes({
                     return true;
                 }
                 const deletedEvents = gateway.deleteEvent({
-                    ownerAccountId: claims.sub,
-                    calendarId,
+                    ownerAccountId,
+                    calendarId: sourceCalendarId,
                     eventId,
                     deleteAll: url.searchParams.get("series") === "1",
+                });
+                deletedEvents.forEach((deletedEvent) => {
+                    clearScheduledReminderTimersForEvent(deletedEvent.id);
                 });
                 await gateway.flushStore();
                 await Promise.all(
@@ -692,7 +902,6 @@ export function createCalendarCoreRoutes({
             }
             return true;
         }
-
         const respondMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events\/([^/]+)\/respond$/,
         );
@@ -707,12 +916,14 @@ export function createCalendarCoreRoutes({
                 calendarId: decodeURIComponent(respondMatch[1]),
                 eventId: decodeURIComponent(respondMatch[2]),
                 gateway,
+                shareRegistry,
                 dispatchNotification,
+                onEventUpdatedForReminders:
+                    scheduleReminderNotificationsForEvent,
                 log,
             });
             return true;
         }
-
         const meetingAccessMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/meeting-access\/([^/]+)$/,
         );

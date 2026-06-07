@@ -1,3 +1,5 @@
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+
 const REMINDER_OFFSET_OPTIONS = [
     { minutes: 5, key: "gateway.calendar.reminder_5m" },
     { minutes: 10, key: "gateway.calendar.reminder_10m" },
@@ -38,12 +40,44 @@ export function getSelectedReminderOffsets(overlay) {
     );
 }
 
-export function renderReminderField({ i18n, escapeHtml, selectedOffsets }) {
+export function bindReminderFieldBehavior({ overlay, i18n, signal }) {
+    const reminderOptions = overlay.querySelector(
+        "#calendar-popup-reminder-offsets",
+    );
+    if (!(reminderOptions instanceof HTMLElement)) return;
+    const refreshSelectionState = () => {
+        reminderOptions
+            .querySelectorAll(".calendar-reminder-option")
+            .forEach((option) => {
+                const input = option.querySelector(
+                    'input[name="calendar-popup-reminder-offset"]',
+                );
+                if (!(input instanceof HTMLInputElement)) return;
+                option.classList.toggle("is-selected", input.checked);
+            });
+    };
+    reminderOptions.addEventListener(
+        "change",
+        () => {
+            refreshSelectionState();
+        },
+        { signal },
+    );
+    refreshSelectionState();
+}
+
+export function renderReminderField({
+    i18n,
+    escapeHtml,
+    selectedOffsets,
+    showDefaultTooltip = false,
+}) {
     const selectedSet = new Set(normalizeReminderOffsets(selectedOffsets));
+    const reminderHeading = `${escapeHtml(i18n.t("gateway.calendar.event_reminders"))}${showDefaultTooltip ? ` ${renderInfoTooltip(i18n.t("gateway.calendar.reminders_default_tooltip"), i18n.t("ui.reuse.more_information"), "calendar-reminders-default")}` : ""}`;
     return `<label class="form-builder-field calendar-reminder-field">
-      <span class="form-builder-label-text">${escapeHtml(i18n.t("gateway.calendar.event_reminders"))}</span>
-      <div id="calendar-popup-reminder-offsets" class="calendar-reminder-options" role="group">
-        ${REMINDER_OFFSET_OPTIONS.map((option) => `<label class="calendar-reminder-option"><input type="checkbox" name="calendar-popup-reminder-offset" value="${option.minutes}"${selectedSet.has(option.minutes) ? " checked" : ""} /> <span>${escapeHtml(i18n.t(option.key))}</span></label>`).join("")}
+      <span class="form-builder-label-text">${reminderHeading}</span>
+      <div id="calendar-popup-reminder-offsets" class="calendar-reminder-options" role="group" aria-label="${escapeHtml(i18n.t("gateway.calendar.event_reminders"))}">
+        ${REMINDER_OFFSET_OPTIONS.map((option) => `<label class="calendar-reminder-option${selectedSet.has(option.minutes) ? " is-selected" : ""}"><input type="checkbox" name="calendar-popup-reminder-offset" value="${option.minutes}"${selectedSet.has(option.minutes) ? " checked" : ""} /> <span class="calendar-reminder-option-check" aria-hidden="true">✓</span><span class="calendar-reminder-option-label">${escapeHtml(i18n.t(option.key))}</span></label>`).join("")}
       </div>
     </label>`;
 }

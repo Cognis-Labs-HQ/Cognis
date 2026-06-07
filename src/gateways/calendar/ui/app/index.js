@@ -97,6 +97,7 @@ export async function mount(root, { signal } = {}) {
         calendars = calendarState.calendars;
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
         currentAccountId = String(calendarState.meta?.currentAccountId ?? "");
+        jitsiAvailable = Boolean(calendarState.meta?.jitsiAvailable);
         ensureSelectedCalendarId();
         const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
@@ -119,7 +120,6 @@ export async function mount(root, { signal } = {}) {
 
     try {
         await reloadState();
-        jitsiAvailable = await calendarUi.probeJitsiAvailability();
     } catch {
         showToast(i18n.t("gateway.calendar.load_failed"), "error");
     }
@@ -602,6 +602,15 @@ export async function mount(root, { signal } = {}) {
                             selectedEventId = "";
                             syncRouteSelection();
                             composer.refresh();
+                            if (calendar.visibility === "shared") {
+                                showToast(
+                                    i18n.t(
+                                        "gateway.calendar.update_calendar_failed",
+                                    ),
+                                    "warning",
+                                );
+                                return;
+                            }
                             openCalendarEditPopup(calendar);
                         },
                         { signal },

@@ -214,6 +214,21 @@ class PostgresExecutor implements RawDbExecutor {
             if (typeof value === "number") return String(value);
             return `'${String(value).replace(/'/g, "''")}'`;
         };
+        const notNullFallback = (
+            col: StructuredDbTableDef["columns"][number],
+        ): string => {
+            switch (col.type) {
+                case "integer":
+                case "bigint":
+                    return "0";
+                case "boolean":
+                    return "FALSE";
+                case "timestamp":
+                    return "CURRENT_TIMESTAMP";
+                default:
+                    return "''";
+            }
+        };
         const compositePk = def.primaryKey ?? [];
         const columnDefs = def.columns.map((col) => {
             const parts: string[] = [`${col.name} ${pgType(col)}`];
@@ -254,6 +269,28 @@ class PostgresExecutor implements RawDbExecutor {
                 index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
             await this.execute(
                 `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
+            ).catch(() => undefined);
+        }
+        const existingColsResult = await this.execute(
+            `SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND table_schema = current_schema()`,
+            [def.name],
+        );
+        const existingCols = new Set(
+            (existingColsResult.rows ?? []).map((row) =>
+                String((row as Record<string, unknown>).column_name ?? ""),
+            ),
+        );
+        for (const col of def.columns) {
+            if (existingCols.has(col.name)) continue;
+            const defaultClause =
+                col.default !== undefined
+                    ? `DEFAULT ${pgDefault(col.default)}`
+                    : col.notNull
+                      ? `DEFAULT ${notNullFallback(col)}`
+                      : "";
+            const notNullClause = col.notNull ? " NOT NULL" : "";
+            await this.execute(
+                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}`,
             ).catch(() => undefined);
         }
     }

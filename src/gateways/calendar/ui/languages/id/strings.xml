@@ -57,6 +57,8 @@
   <string name="gateway.calendar.event_status">Status</string>
   <string name="gateway.calendar.event_recurrence">Pengulangan</string>
   <string name="gateway.calendar.event_reminders">Pengingat</string>
+  <string name="gateway.calendar.reminder_none">Tidak ada pengingat</string>
+  <string name="gateway.calendar.reminders_default_tooltip">Pengingat ini akan diterapkan secara default kecuali ditimpa per acara.</string>
   <string name="gateway.calendar.reminder_5m">5 menit sebelumnya</string>
   <string name="gateway.calendar.reminder_10m">10 menit sebelumnya</string>
   <string name="gateway.calendar.reminder_15m">15 menit sebelumnya</string>
@@ -118,6 +120,10 @@
   <string name="gateway.calendar.delete_calendar_success">Kalender dihapus.</string>
   <string name="gateway.calendar.delete_calendar_failed">Tidak dapat menghapus kalender.</string>
   <string name="gateway.calendar.share_calendar">Bagikan Kalender</string>
+  <string name="gateway.calendar.share_users_heading">Pengguna berbagi</string>
+  <string name="gateway.calendar.share_links_heading">Tautan berbagi</string>
+  <string name="gateway.calendar.share_link_permission">Izin</string>
+  <string name="gateway.calendar.share_user_invite_default_tooltip">Pengguna yang dibagikan akan diundang ke semua acara di kalender ini secara default.</string>
   <string name="gateway.calendar.share_link_permission_read">Hanya Baca</string>
   <string name="gateway.calendar.share_link_permission_write">Baca &amp; Tulis</string>
   <string name="gateway.calendar.share_link_expiry_1h">Kedaluwarsa dalam 1 jam</string>
@@ -125,10 +131,21 @@
   <string name="gateway.calendar.share_link_expiry_7d">Kedaluwarsa dalam 7 hari</string>
   <string name="gateway.calendar.share_link_expiry_30d">Kedaluwarsa dalam 30 hari</string>
   <string name="gateway.calendar.share_link_expiry_never">Tidak Pernah Kedaluwarsa</string>
+  <string name="gateway.calendar.share_link_expiry">Kedaluwarsa</string>
   <string name="gateway.calendar.share_link_generate">Buat Tautan</string>
   <string name="gateway.calendar.share_links_details">Tautan klien kalender</string>
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>
+  <string name="gateway.calendar.share_link_passphrase_copied">Frasa sandi disalin!</string>
+  <string name="gateway.calendar.share_link_deleted">Tautan berbagi dihapus.</string>
+  <string name="gateway.calendar.share_user_deleted">Pengguna berbagi dihapus.</string>
+  <string name="gateway.calendar.share_user_updated">Pengguna berbagi diperbarui.</string>
+  <string name="gateway.calendar.share_link_delete_confirm_title">Hapus tautan berbagi?</string>
+  <string name="gateway.calendar.share_link_delete_confirm">Tautan ini akan langsung berhenti berfungsi.</string>
+  <string name="gateway.calendar.share_user_delete_confirm_title">Hapus pengguna berbagi?</string>
+  <string name="gateway.calendar.share_user_delete_confirm">Pengguna ini akan langsung kehilangan akses kalender.</string>
   <string name="gateway.calendar.share_link_failed">Tidak dapat membuat tautan berbagi.</string>
+  <string name="gateway.calendar.share_link_name_fallback">Tautan Berbagi</string>
   <string name="gateway.calendar.share_link_name_placeholder">Nama Tautan (opsional)</string>
+  <string name="gateway.calendar.share_link_passphrase">Frasa Sandi</string>
 </resources>

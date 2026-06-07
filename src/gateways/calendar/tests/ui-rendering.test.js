@@ -9,6 +9,10 @@ const HELPERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
     "utf8",
 );
+const PENDING_RENDER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-pending-render.js"),
+    "utf8",
+);
 const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
     "utf8",
@@ -50,6 +54,13 @@ const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-response.js"),
     "utf8",
 );
+const POPUP_MANAGER_PENDING_RESPONSE_SOURCE = readFileSync(
+    resolve(
+        ROOT,
+        "src/gateways/calendar/ui/app/popup-manager-pending-response.js",
+    ),
+    "utf8",
+);
 const POPUP_REMINDERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-reminders.js"),
     "utf8",
@@ -60,6 +71,10 @@ const CSS_SOURCE = readFileSync(
 );
 const TIMED_GRID_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.css"),
+    "utf8",
+);
+const SHARE_REMINDER_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-share-reminder.css"),
     "utf8",
 );
 
@@ -173,6 +188,12 @@ test("calendar composer supports multiple reminders and remembers selected view"
         POPUP_REMINDERS_SOURCE,
         /name="calendar-popup-reminder-offset"/,
     );
+    assert.doesNotMatch(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
+    assert.match(POPUP_REMINDERS_SOURCE, /calendar-reminder-option-check/);
+    assert.match(
+        POPUP_REMINDERS_SOURCE,
+        /gateway\.calendar\.reminders_default_tooltip/,
+    );
     assert.match(POPUP_MANAGER_SOURCE, /reminderOffsetsMinutes/);
     assert.match(APP_SOURCE, /SELECTED_VIEW_STORAGE_KEY/);
     assert.match(APP_SOURCE, /loadSelectedViewPreference/);
@@ -222,14 +243,143 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
 });
 
-test("calendar toolbar includes pending quick responses and accept calendar picker", () => {
+test("calendar toolbar includes pending quick responses with shared-calendar target exemption", () => {
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
-    assert.match(HELPERS_SOURCE, /data-calendar-pending-response/);
+    assert.match(HELPERS_SOURCE, /const dedupedByRoot = new Map\(\);/);
+    assert.match(PENDING_RENDER_SOURCE, /data-calendar-pending-response/);
+    assert.match(PENDING_RENDER_SOURCE, /btn-animated calendar-pending-action/);
+    assert.match(PENDING_RENDER_SOURCE, /btn-confirm/);
+    assert.match(PENDING_RENDER_SOURCE, /btn-cancel/);
+    assert.match(PENDING_RENDER_SOURCE, /popup-action-btn--neutral/);
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
-    assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /accept_calendar_title/);
+    assert.match(POPUP_MANAGER_SOURCE, /handlePendingResponseClick/);
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /handlePendingResponseClick\([\s\S]*reloadState/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /popup-manager-pending-response/);
+    assert.match(
+        POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
+        /calendar-upcoming-item.*remove/s,
+    );
+    assert.match(
+        POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
+        /if \(!success\)[\s\S]*reloadState/s,
+    );
+    assert.match(
+        POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
+        /\.catch\(\(\) => \{[\s\S]*reloadState/s,
+    );
+    assert.match(
+        POPUP_MANAGER_RESPONSE_SOURCE,
+        /calendar\?\.visibility === "shared"/,
+    );
+    assert.match(
+        POPUP_MANAGER_RESPONSE_SOURCE,
+        /calendar-response-target-calendar/,
+    );
+    assert.match(
+        POPUP_MANAGER_RESPONSE_SOURCE,
+        /gateway\.calendar\.accept_calendar_title/,
+    );
     assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /targetCalendarId/);
+    assert.match(POPUP_MANAGER_RESPONSE_SOURCE, /getSelectedCalendarId/);
     assert.match(CSS_SOURCE, /\.calendar-pending-actions\s*\{/s);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-response-calendar-picker select\s*\{/s,
+    );
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-generate/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /void loadExistingShareLinks\(\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-user-search/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-user-options/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-user-chips/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /gateway\.calendar\.share_users_heading/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /gateway\.calendar\.share_links_heading/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /<div id="calendar-share-results" class="calendar-share-results" hidden><\/div>/,
+    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-name/);
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-expiry/);
+    assert.doesNotMatch(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /gateway\.calendar\.share_link_regenerate/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-share-entry-summary/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-share-delete/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-user-share-permission/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-user-share-expiry/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /class="calendar-user-share-entry-remove btn-no-animation btn-cancel" data-calendar-user-share-delete=/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /if \(target === permissionSelect\) \{[\s\S]*update\.permission = permission;/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /if \(target === expirySelect\) \{[\s\S]*update\.expiresInHours = expiresInHours;/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /showToast\(i18n\.t\("gateway\.calendar\.share_user_updated"\), "success"\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /class="btn-no-animation calendar-share-copy-btn" data-calendar-share-copy/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /data-calendar-share-copy-kind/,
+    );
+    assert.doesNotMatch(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /btn-cancel btn-no-animation" data-calendar-share-copy/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /href="#" class="btn-no-animation btn-cancel" data-calendar-share-delete=/,
+    );
+    assert.match(
+        SHARE_REMINDER_CSS_SOURCE,
+        /\.calendar-user-share-entry\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\);/s,
+    );
+    assert.match(
+        SHARE_REMINDER_CSS_SOURCE,
+        /\.calendar-user-share-entry-remove\s*\{[\s\S]*position:\s*absolute;/s,
+    );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /const name = calendar\.isDefault\s*\?\s*undefined/,
@@ -253,6 +403,15 @@ test("calendar main view and summaries aggregate events across calendars", () =>
         APP_SOURCE,
         /function allPendingEvents\(\)\s*\{[\s\S]*collectPendingEvents\(\s*eventsByCalendar,\s*calendars,\s*"",\s*currentAccountId,\s*pendingInvitations,\s*\);/s,
     );
+});
+
+test("calendar app reads jitsi availability from calendar metadata", () => {
+    assert.match(APP_SOURCE, /calendarState\.meta\?\.jitsiAvailable/);
+    assert.doesNotMatch(APP_SOURCE, /probeJitsiAvailability/);
+});
+
+test("calendar toolbar shows shared visibility icon", () => {
+    assert.match(HELPERS_SOURCE, /if \(visibility === "shared"\) return "🤝"/);
 });
 
 test("calendar deep-link event popup does not block mount completion", () => {
@@ -305,5 +464,16 @@ test("calendar read-only all-day details keep start and end date fields", () => 
     assert.match(
         POPUP_MANAGER_READ_ONLY_SOURCE,
         /gateway\.calendar\.event_end/,
+    );
+});
+
+test("calendar upcoming and pending event helpers exclude past events via endAt filter", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /function collectUpcomingEvents[\s\S]*\.filter\(\(event\) => new Date\(event\.endAt\)\.getTime\(\) >= Date\.now\(\)\)/s,
+    );
+    assert.match(
+        HELPERS_SOURCE,
+        /function collectPendingEvents[\s\S]*\.filter\(\(event\) => new Date\(event\.endAt\)\.getTime\(\) >= Date\.now\(\)\)/s,
     );
 });
