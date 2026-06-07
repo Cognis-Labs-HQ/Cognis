@@ -31,6 +31,23 @@ function buildQuery(params) {
         if (value == null || value === "") continue;
         query.set(key, String(value));
     }
+
+    function extensionFromType(type) {
+        const normalized = String(type ?? "")
+            .split(";")[0]
+            .toLowerCase();
+        if (normalized === "image/png") return "png";
+        if (normalized === "image/webp") return "webp";
+        if (normalized === "image/gif") return "gif";
+        return "jpg";
+    }
+
+    function extractMessagesRoomId(chatUrl) {
+        const raw = String(chatUrl ?? "").trim();
+        if (!raw) return "";
+        const match = raw.match(/^\/messages\/([^/?#]+)/);
+        return match ? decodeURIComponent(match[1]) : "";
+    }
     return query.toString();
 }
 
@@ -54,6 +71,7 @@ export async function mount(root, { signal } = {}) {
     let searchQuery = "";
     let requireTeacherManualApproval = true;
     const presenceByAccountId = new Map();
+    const boardEntitiesByClassId = new Map();
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -65,6 +83,27 @@ export async function mount(root, { signal } = {}) {
                 (snapshot) => snapshot.id === selectedClassId,
             ) ?? null
         );
+    }
+
+    function getBoardEntities(snapshot) {
+        const classId = String(snapshot?.id ?? "").trim();
+        if (!classId) return [];
+        return boardEntitiesByClassId.get(classId) ?? [];
+    }
+
+    function setBoardEntity(classId, kind, x, y) {
+        const normalizedClassId = String(classId ?? "").trim();
+        const normalizedKind =
+            String(kind ?? "").trim().toLowerCase() === "meeting"
+                ? "meeting"
+                : "chat";
+        if (!normalizedClassId) return;
+        const boundedX = Math.min(Math.max(Number(x) || 0, 0), 1);
+        const boundedY = Math.min(Math.max(Number(y) || 0, 0), 1);
+        const current = boardEntitiesByClassId.get(normalizedClassId) ?? [];
+        const next = current.filter((entry) => entry.kind !== normalizedKind);
+        next.push({ kind: normalizedKind, x: boundedX, y: boundedY });
+        boardEntitiesByClassId.set(normalizedClassId, next);
     }
 
     async function loadTeacherApplicationPolicy() {
@@ -227,6 +266,30 @@ export async function mount(root, { signal } = {}) {
                 variant: "error",
             });
             return;
+        }
+
+        async function uploadClassroomAvatar(file, snapshot) {
+            const roomId = extractMessagesRoomId(snapshot?.chatUrl);
+            if (!roomId || !file) return false;
+            const extension = extensionFromType(file.type);
+            const key = `chatrooms/${roomId}-${Date.now()}.${extension}`;
+            const upload = await apiFetch(`/api/v1/files/${key}`, {
+                method: "PUT",
+                headers: { "content-type": file.type || "image/jpeg" },
+                body: await file.arrayBuffer(),
+            });
+            if (!upload.ok) {
+                return false;
+            }
+            const update = await apiFetch(
+                `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}`,
+                {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ avatarKey: key }),
+                },
+            );
+            return update.ok;
         }
         const payload = await response.json();
         const meetingId = String(payload?.data?.id ?? "").trim();
@@ -422,8 +485,9 @@ export async function mount(root, { signal } = {}) {
     }
 
     function renderContentMarkup() {
+        const snapshot = selectedSnapshot();
         return renderClassroomPage({
-            snapshot: selectedSnapshot(),
+            snapshot,
             classResources,
             activeAgendaItems,
             selectedSeatNumber,
@@ -436,6 +500,7 @@ export async function mount(root, { signal } = {}) {
             canToggleView: teacherAccount,
             currentViewMode: getClassroomViewMode(),
             canEditMaterials: teacherAccount,
+            boardEntities: getBoardEntities(snapshot),
         });
     }
 
@@ -519,6 +584,14 @@ export async function mount(root, { signal } = {}) {
                         async (event) => {
                             if (!(event.target instanceof Element)) return;
                             const snapshot = selectedSnapshot();
+                            const classId = String(snapshot?.id ?? "").trim();
+                            if (
+                                event.target.closest(
+                                    ".classes-desk-unit--teacher",
+                                )
+                            ) {
+                                return;
+                            }
                             const seatButton =
                                 event.target.closest(".classes-desk-unit");
                             if (seatButton instanceof HTMLElement) {
@@ -686,8 +759,8 @@ export async function mount(root, { signal } = {}) {
                                 showToast(
                                     i18n.t(
                                         response.ok
-                                            ? "module.study.classes.materials_saved"
-                                            : "module.study.classes.materials_save_failed",
+                                            ? "module.study.classes.class_created"
+                                            : "module.study.classes.request_failed",
                                     ),
                                     {
                                         variant: response.ok
@@ -867,6 +940,87 @@ export async function mount(root, { signal } = {}) {
                                     filterButton.dataset.language ?? "";
                                 await loadAvailableClasses();
                                 refreshDom();
+                                return;
+                            }
+
+                            if (
+                                event.target.closest(
+                                    ".classes-rename-class-btn",
+                                ) &&
+                                snapshot
+                            ) {
+                                const classNameInput = root.querySelector(
+                                    "#classes-rename-input",
+                                );
+                                if (
+                                    !(
+                                        classNameInput instanceof
+                                        HTMLInputElement
+                                    )
+                                ) {
+                                    return;
+                                }
+                                const response = await apiFetch(
+                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}`,
+                                    {
+                                        method: "PATCH",
+                                        headers: {
+                                            "content-type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            name: classNameInput.value ?? "",
+                                        }),
+                                    },
+                                );
+                                showToast(
+                                    i18n.t(
+                                        response.ok
+                                            ? "module.study.classes.materials_saved"
+                                            : "module.study.classes.materials_save_failed",
+                                    ),
+                                    {
+                                        variant: response.ok
+                                            ? "success"
+                                            : "error",
+                                    },
+                                );
+                                if (response.ok) {
+                                    await refreshContent();
+                                }
+                            }
+                        },
+                        { signal },
+                    );
+
+                    root.addEventListener(
+                        "change",
+                        async (event) => {
+                            const snapshot = selectedSnapshot();
+                            if (!snapshot) return;
+                            if (
+                                !(
+                                    event.target instanceof HTMLInputElement &&
+                                    event.target.id === "classes-room-avatar-input"
+                                )
+                            ) {
+                                return;
+                            }
+                            const file = event.target.files?.[0];
+                            if (!file) return;
+                            const success = await uploadClassroomAvatar(
+                                file,
+                                snapshot,
+                            );
+                            showToast(
+                                i18n.t(
+                                    success
+                                        ? "module.study.classes.class_created"
+                                        : "module.study.classes.request_failed",
+                                ),
+                                { variant: success ? "success" : "error" },
+                            );
+                            if (success) {
+                                await refreshContent();
                             }
                         },
                         { signal },
@@ -886,6 +1040,97 @@ export async function mount(root, { signal } = {}) {
                             searchQuery = event.target.value.trim();
                             await loadAvailableClasses();
                             refreshDom();
+                        },
+                        { signal },
+                    );
+
+                    root.addEventListener(
+                        "dragstart",
+                        (event) => {
+                            if (!selectedSnapshot()) return;
+                            if (!(event.target instanceof HTMLElement)) return;
+                            const token = event.target.closest(
+                                ".classes-board-entity-token, .classes-board-entity",
+                            );
+                            if (!(token instanceof HTMLElement)) return;
+                            const kind =
+                                token.dataset.entityKind === "meeting"
+                                    ? "meeting"
+                                    : "chat";
+                            event.dataTransfer?.setData(
+                                "application/json",
+                                JSON.stringify({ kind }),
+                            );
+                            event.dataTransfer?.setData("text/plain", kind);
+                            if (event.dataTransfer) {
+                                event.dataTransfer.effectAllowed = "move";
+                            }
+                        },
+                        { signal },
+                    );
+
+                    root.addEventListener(
+                        "dragover",
+                        (event) => {
+                            const surface = (
+                                event.target instanceof Element
+                                    ? event.target.closest(
+                                          ".classes-blackboard-surface",
+                                      )
+                                    : null
+                            ) as HTMLElement | null;
+                            if (!surface) return;
+                            event.preventDefault();
+                        },
+                        { signal },
+                    );
+
+                    root.addEventListener(
+                        "drop",
+                        (event) => {
+                            const surface = (
+                                event.target instanceof Element
+                                    ? event.target.closest(
+                                          ".classes-blackboard-surface",
+                                      )
+                                    : null
+                            ) as HTMLElement | null;
+                            const snapshot = selectedSnapshot();
+                            const classId = String(snapshot?.id ?? "").trim();
+                            if (!surface || !classId) return;
+                            const payloadRaw =
+                                event.dataTransfer?.getData(
+                                    "application/json",
+                                ) ||
+                                JSON.stringify({
+                                    kind: event.dataTransfer?.getData(
+                                        "text/plain",
+                                    ),
+                                });
+                            let kind = "chat";
+                            try {
+                                const payload = JSON.parse(payloadRaw);
+                                kind =
+                                    payload?.kind === "meeting"
+                                        ? "meeting"
+                                        : "chat";
+                            } catch {
+                                kind = "chat";
+                            }
+                            const bounds = surface.getBoundingClientRect();
+                            const x =
+                                bounds.width > 0
+                                    ? (event.clientX - bounds.left) /
+                                      bounds.width
+                                    : 0;
+                            const y =
+                                bounds.height > 0
+                                    ? (event.clientY - bounds.top) /
+                                      bounds.height
+                                    : 0;
+                            setBoardEntity(classId, kind, x, y);
+                            refreshDom();
+                            event.preventDefault();
                         },
                         { signal },
                     );

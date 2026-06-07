@@ -20,6 +20,7 @@ import {
     createRoom,
     findDmBetween,
     findGroupByExactMembers,
+    getClassroomIdForRoom,
     getMember,
     getRoom,
     listMembers,
@@ -149,6 +150,10 @@ export class DbMessagesStore {
 
     async archiveClassroomRoomMembers(classId: string): Promise<void> {
         await archiveClassroomRoomMembers(this.db, classId);
+    }
+
+    async getClassroomIdForRoom(roomId: string): Promise<string | null> {
+        return getClassroomIdForRoom(this.db, roomId);
     }
 
     async appendMessage(input: {

@@ -93,17 +93,49 @@ function renderBlackboard({
     isTeacherView,
     canToggleView,
     currentViewMode,
+    boardEntities,
 }) {
+    const entities = Array.isArray(boardEntities) ? boardEntities : [];
+    const renderedEntities = entities
+        .map((entity) => {
+            const kind = String(entity?.kind ?? "").trim().toLowerCase();
+            const x = Number(entity?.x);
+            const y = Number(entity?.y);
+            const left = Number.isFinite(x) ? Math.min(Math.max(x, 0), 1) : 0.7;
+            const top = Number.isFinite(y) ? Math.min(Math.max(y, 0), 1) : 0.2;
+            const icon = kind === "meeting" ? "📹" : "💬";
+            const label = i18n.t(
+                kind === "meeting"
+                    ? "module.study.classes.open_meeting"
+                    : "module.study.classes.open_chat",
+            );
+            const className =
+                kind === "meeting"
+                    ? "classes-open-meeting-btn"
+                    : "classes-open-chat-btn";
+            return `<button type="button"
+                        class="classes-board-entity ${className}"
+                        data-entity-kind="${escapeHtml(kind)}"
+                        draggable="true"
+                        style="left:${left * 100}%;top:${top * 100}%"
+                        aria-label="${escapeHtml(label)}"
+                        title="${escapeHtml(label)}">${icon}</button>`;
+        })
+        .join("");
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
                 <span class="classes-chalk-header">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</span>
                 <div class="classes-blackboard-actions">
-                    <button type="button" class="classes-icon-btn classes-open-chat-btn"
+                    <button type="button" class="classes-icon-btn classes-board-entity-token"
                         ${snapshot?.chatUrl ? "" : "disabled"}
+                        data-entity-kind="chat"
+                        draggable="true"
                         aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
                         title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
-                    <button type="button" class="classes-icon-btn classes-open-meeting-btn"
+                    <button type="button" class="classes-icon-btn classes-board-entity-token"
+                        data-entity-kind="meeting"
+                        draggable="true"
                         aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
                         title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
                     ${
@@ -141,8 +173,15 @@ function renderBlackboard({
                 </div>
             </div>
             <div class="classes-blackboard-surface">
-                ${renderChalkAgenda({ activeAgendaItems, i18n })}
-                ${renderStudentRoster({ snapshot, i18n })}
+                <div class="classes-blackboard-main">
+                    <section class="classes-blackboard-section classes-blackboard-section--agenda">
+                        ${renderChalkAgenda({ activeAgendaItems, i18n })}
+                    </section>
+                    <section class="classes-blackboard-section classes-blackboard-section--members">
+                        ${renderStudentRoster({ snapshot, i18n })}
+                    </section>
+                </div>
+                <div class="classes-blackboard-entity-layer">${renderedEntities}</div>
             </div>
             <div class="classes-blackboard-ledge"></div>
         </div>
@@ -180,7 +219,7 @@ function renderStudentRoster({ snapshot, i18n }) {
             : "";
     return `
         <div class="classes-student-roster">
-            <div class="classes-roster-header">👥 ${escapeHtml(i18n.t("module.study.classes.members_section"))}</div>
+            <div class="classes-roster-header">${escapeHtml(i18n.t("module.study.classes.members_section"))}</div>
             <ul class="classes-roster-list">${rows || `<li class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</li>`}${pendingRows}</ul>
         </div>
     `;
@@ -232,12 +271,27 @@ function renderDeskFloor({
     );
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const membersBySeat = new Map();
+    const unassignedMembers = [];
     for (const member of members) {
+        const accountId = String(member?.studentAccountId ?? "").trim();
+        if (!accountId) continue;
         const seat = Number(
-            seatAssignments[String(member.studentAccountId ?? "")],
+            seatAssignments[accountId],
         );
-        if (!Number.isInteger(seat) || seat < 0) continue;
-        membersBySeat.set(seat, member);
+        if (Number.isInteger(seat) && seat >= 0) {
+            membersBySeat.set(seat, member);
+            continue;
+        }
+        unassignedMembers.push(member);
+    }
+    if (unassignedMembers.length) {
+        let nextUnassignedIndex = 0;
+        for (let seat = 0; seat < studentLimit; seat++) {
+            if (membersBySeat.has(seat)) continue;
+            const nextMember = unassignedMembers[nextUnassignedIndex++];
+            if (!nextMember) break;
+            membersBySeat.set(seat, nextMember);
+        }
     }
     const { desksPerRow, rowCount } = computeDeskLayout(studentLimit);
     let seatCounter = 0;
@@ -270,15 +324,23 @@ function renderDeskFloor({
         }
         return `<div class="classes-desk-row">${pairs.join("")}</div>`;
     }).join("");
+    const teacherLabel =
+        buildAccountLabel(snapshot?.teacher ?? {
+            studentAccountId: snapshot?.teacherAccountId,
+        }) || i18n.t("ui.reuse.teacher");
+    const teacherInitials = buildAccountAbbreviation(
+        snapshot?.teacher ?? { studentAccountId: teacherLabel },
+    );
     const teacherDesk = snapshot?.teacherAccountId
         ? `<div class="classes-teacher-desk-zone">
-                <div class="classes-desk-unit classes-desk-unit--teacher">
+                <div class="classes-desk-unit classes-desk-unit--teacher"
+                     title="${escapeHtml(teacherLabel)}">
                     <div class="classes-desk-surface">
-                        <span class="classes-desk-badge" aria-hidden="true">${escapeHtml(i18n.t("module.study.classes.enter_teacher_view").slice(0, 2).toUpperCase())}</span>
+                        <span class="classes-desk-badge" aria-hidden="true">${escapeHtml(teacherInitials)}</span>
                     </div>
                     <div class="classes-desk-nameplate">
                         <span class="classes-status-light classes-status-light--online"></span>
-                        <span class="classes-desk-name">${escapeHtml(i18n.t("ui.reuse.teacher"))}</span>
+                        <span class="classes-desk-name">${escapeHtml(teacherLabel)}</span>
                     </div>
                     <div class="classes-chair-element"></div>
                 </div>
@@ -341,6 +403,22 @@ function renderMaterialsEditor({ classResources, i18n }) {
                 <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
                 <textarea id="classes-homework" class="classes-classroom-editor">${escapeHtml(classResources.homework ?? "")}</textarea>
                 <button type="button" class="btn-confirm btn-animated classes-save-materials-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+            </div>
+        </details>
+    `;
+}
+
+function renderClassroomIdentityEditor({ i18n, snapshot, isTeacherView }) {
+    if (!isTeacherView || !snapshot) return "";
+    const className = String(snapshot?.name ?? "").trim();
+    return `
+        <details class="classes-materials-editor classes-identity-editor">
+            <summary class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.manage_students"))}</summary>
+            <div class="classes-materials-editor-body">
+                <label class="classes-section-heading" for="classes-rename-input">${escapeHtml(i18n.t("module.study.classes.class_name_label"))}</label>
+                <input id="classes-rename-input" class="theme-select" type="text" value="${escapeHtml(className)}" />
+                <button type="button" class="btn-confirm btn-animated classes-rename-class-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+                <label class="classes-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="classes-room-avatar-input" type="file" accept="image/*" hidden /></label>
             </div>
         </details>
     `;
@@ -418,6 +496,7 @@ function renderClassroomView({
     canToggleView,
     currentViewMode,
     canEditMaterials,
+    boardEntities,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -433,11 +512,12 @@ function renderClassroomView({
         <section class="classes-section classes-classroom-hub">
             <div class="classes-room">
                 <div class="classes-room-top">
-                    ${renderBlackboard({ snapshot: { ...snapshot, isTeacherView }, activeAgendaItems, i18n, isTeacherView, canToggleView, currentViewMode })}
+                    ${renderBlackboard({ snapshot: { ...snapshot, isTeacherView }, activeAgendaItems, i18n, isTeacherView, canToggleView, currentViewMode, boardEntities })}
                     ${renderRoomDoor({ i18n, isTeacherView })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}
             </div>
+            ${renderClassroomIdentityEditor({ i18n, snapshot, isTeacherView })}
             ${canEditMaterials ? renderMaterialsEditor({ classResources, i18n }) : ""}
             ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}
             ${

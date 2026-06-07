@@ -78,8 +78,13 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     const canSend =
                         !isArchived &&
                         !(room.kind === "dm" && members.length < 2);
+                    const classId =
+                        room.kind === "classroom"
+                            ? await messagesStore.getClassroomIdForRoom(room.id)
+                            : null;
                     return {
                         ...room,
+                        classId,
                         members: enrichedMembers,
                         lastMessage: pendingIncoming ? null : last,
                         unread: pendingIncoming ? 0 : unread,

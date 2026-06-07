@@ -7,9 +7,40 @@
     box-sizing: border-box;
 }
 
+.classes-board-entity {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+    cursor: pointer;
+}
+
+.classes-board-entity-token {
+    cursor: grab;
+}
+
+.classes-board-entity-token:active {
+    cursor: grabbing;
+}
+
 .classes-teacher-desk-zone {
     display: flex;
     justify-content: center;
+}
+
+.classes-room-avatar-btn {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.8rem;
+    width: fit-content;
 }
 
 .classes-desk-unit--teacher .classes-desk-surface {
@@ -419,10 +450,29 @@ body:not([data-theme="light"]) .classes-classroom-content {
 .classes-blackboard-surface {
     flex: 1;
     padding: 10px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: block;
+    position: relative;
     overflow-y: auto;
+}
+
+.classes-blackboard-main {
+    display: grid;
+    grid-template-columns: var(--classroom-board-agenda-width, 62%) var(
+            --classroom-board-members-width,
+            38%
+        );
+    gap: 12px;
+    min-height: 140px;
+}
+
+.classes-blackboard-section {
+    min-width: 0;
+}
+
+.classes-blackboard-entity-layer {
+    position: relative;
+    min-height: 70px;
+    margin-top: 8px;
 }
 
 .classes-blackboard-ledge {

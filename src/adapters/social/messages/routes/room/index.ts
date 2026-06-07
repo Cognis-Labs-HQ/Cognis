@@ -82,11 +82,16 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 members,
                 profileStore,
             );
+            const classId =
+                room.kind === "classroom"
+                    ? await messagesStore.getClassroomIdForRoom(room.id)
+                    : null;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
                         ...room,
+                        classId,
                         members: enrichedMembers,
                         isArchived: member.archived,
                         canSend:

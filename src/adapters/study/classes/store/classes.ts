@@ -364,3 +364,31 @@ export async function disbandClassForTeacher(
     });
     return classRow;
 }
+
+export async function updateClassNameForTeacher(
+    db: DbExecutor,
+    classId: string,
+    teacherAccountId: string,
+    className: string,
+): Promise<ClassRow> {
+    const classRow = await getClassById(db, classId);
+    if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+        throw new Error("not_authorized");
+    }
+    const normalizedClassName = String(className ?? "").trim();
+    if (!normalizedClassName) {
+        throw new Error("invalid_class_name");
+    }
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "study_classes",
+        set: { name: normalizedClassName },
+        where: [{ column: "id", value: classId }],
+    });
+    return (
+        (await getClassById(db, classId)) ?? {
+            ...classRow,
+            name: normalizedClassName,
+        }
+    );
+}

@@ -300,6 +300,25 @@ export async function archiveClassroomRoomMembers(
     });
 }
 
+export async function getClassroomIdForRoom(
+    db: DbExecutor,
+    roomId: string,
+): Promise<string | null> {
+    const normalizedRoomId = String(roomId ?? "").trim();
+    if (!normalizedRoomId) {
+        return null;
+    }
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "chatroom_classrooms",
+        columns: ["class_id"],
+        where: [{ column: "room_id", value: normalizedRoomId }],
+        limit: 1,
+    });
+    const classId = String(result.rows?.[0]?.class_id ?? "").trim();
+    return classId || null;
+}
+
 export async function findGroupByExactMembers(
     db: DbExecutor,
     memberAccountIds: string[],

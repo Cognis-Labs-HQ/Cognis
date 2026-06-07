@@ -48,8 +48,8 @@ function renderClassSelectorContent({
             <select class="classes-footer-select">
                 ${
                     hasClassOptions
-                        ? `<option value="__find__">${escapeHtml(i18n.t("ui.reuse.search"))}</option>${options}`
-                        : `<option value="__no_class__" selected>${emptyLabel}</option><option value="__find__">${escapeHtml(i18n.t("ui.reuse.search"))}</option>`
+                        ? `<option value="__find__">${escapeHtml(i18n.t("ui.layout.search.aria"))}</option>${options}`
+                        : `<option value="__no_class__" selected>${emptyLabel}</option><option value="__find__">${escapeHtml(i18n.t("ui.layout.search.aria"))}</option>`
                 }
                 ${createOption}
             </select>

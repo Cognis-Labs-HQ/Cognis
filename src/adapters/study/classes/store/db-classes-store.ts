@@ -10,6 +10,7 @@ import {
     getEnrolledClasses,
     getTeacherClassForLanguage,
     updateClassroomStateForTeacher,
+    updateClassNameForTeacher,
 } from "./classes.js";
 import { listStudyLanguages, upsertStudyLanguage } from "./languages.js";
 import {
@@ -105,6 +106,19 @@ export class DbClassesStore {
         teacherAccountId: string,
     ): Promise<ClassRow | null> {
         return disbandClassForTeacher(this.db, classId, teacherAccountId);
+    }
+
+    async updateClassNameForTeacher(
+        classId: string,
+        teacherAccountId: string,
+        className: string,
+    ): Promise<ClassRow> {
+        return updateClassNameForTeacher(
+            this.db,
+            classId,
+            teacherAccountId,
+            className,
+        );
     }
 
     async getClassById(classId: string): Promise<ClassRow | null> {
