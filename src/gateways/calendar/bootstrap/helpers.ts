@@ -164,6 +164,29 @@ export async function normalizeAttendeesForOwner(
     );
 }
 
+export async function includeSharedAudienceAttendees(
+    attendees: string[],
+    shareRegistry: CalendarShareRegistry,
+    ownerAccountId: string,
+    ownerCalendarId: string,
+): Promise<string[]> {
+    const shares = await shareRegistry.listCalendarUserShares(
+        ownerAccountId,
+        ownerCalendarId,
+    );
+    return Array.from(
+        new Set(
+            [
+                ...attendees,
+                ownerAccountId,
+                ...shares.map((share) => share.recipientAccountId),
+            ]
+                .map((accountId) => String(accountId ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
 export function normalizeResponseValue(value: unknown): CalendarEventResponse {
     return value === "accepted" || value === "tentative" || value === "declined"
         ? value
