@@ -79,6 +79,10 @@ test("accepted quick response prompts for target calendar and uses selection", a
         openPopupCalls[0].title,
         "gateway.calendar.accept_calendar_title",
     );
+    assert.match(
+        openPopupCalls[0].body(),
+        /aria-label="gateway\.calendar\.event_calendar"/,
+    );
     assert.equal(responded.length, 1);
     assert.deepEqual(responded[0], [
         "invite-source",

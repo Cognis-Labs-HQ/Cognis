@@ -90,7 +90,7 @@ export function createCalendarResponseHandler({
             body: () => `
                 <div class="calendar-response-calendar-picker">
                     <p>${escapeHtml(i18n.t("gateway.calendar.accept_calendar_prompt"))}</p>
-                    <select id="calendar-response-target-calendar">
+                    <select id="calendar-response-target-calendar" aria-label="${escapeHtml(i18n.t("gateway.calendar.event_calendar"))}">
                         ${availableCalendars
                             .map(
                                 (calendar) =>

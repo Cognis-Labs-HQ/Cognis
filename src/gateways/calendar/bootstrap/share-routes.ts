@@ -97,6 +97,19 @@ export async function handleCalendarShareRoutes(input: {
     );
     if (shareCalendarMatch && input.req.method === "GET") {
         const calendarId = decodeURIComponent(shareCalendarMatch[1]);
+        const calendar = input.gateway.getOwnedCalendar(
+            input.claims.sub,
+            calendarId,
+        );
+        if (!calendar) {
+            sendCalendarError(
+                input.res,
+                "not_found",
+                "Calendar not found.",
+                404,
+            );
+            return true;
+        }
         const shareLinks = await input.shareRegistry.listShareLinks(
             input.claims.sub,
             calendarId,

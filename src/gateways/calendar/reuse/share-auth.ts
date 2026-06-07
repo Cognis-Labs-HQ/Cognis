@@ -4,10 +4,6 @@ export function readSharePassphrase(
     req: { headers?: Record<string, string | string[]> },
     url: URL,
 ): string {
-    const queryPassphrase = String(
-        url.searchParams.get("passphrase") ?? "",
-    ).trim();
-    if (queryPassphrase) return queryPassphrase;
     const headerValue = req.headers?.["x-cognis-calendar-passphrase"];
     const headerPassphrase = Array.isArray(headerValue)
         ? String(headerValue[0] ?? "").trim()
@@ -26,8 +22,13 @@ export function readSharePassphrase(
             ? decoded.split(":").slice(1).join(":")
             : "";
     } catch {
-        return "";
+        // fall through to query fallback
     }
+    const queryPassphrase = String(
+        url.searchParams.get("passphrase") ?? "",
+    ).trim();
+    if (queryPassphrase) return queryPassphrase;
+    return "";
 }
 
 export function passphrasesMatch(

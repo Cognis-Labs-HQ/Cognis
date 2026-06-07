@@ -933,6 +933,7 @@ export function createCalendarPopupManager({
                     handlePendingResponseClick(
                         event.target,
                         respondToEventSelection,
+                        reloadState,
                     )
                 ) {
                     return;

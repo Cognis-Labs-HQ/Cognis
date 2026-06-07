@@ -6,14 +6,10 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import { normalizeCalendarColor } from "../color.js";
-import {
-    CoreCalendarGateway,
-    type CalendarEventRecord,
-} from "../gateway/index.js";
+import { CoreCalendarGateway } from "../gateway/index.js";
 import {
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
-    dispatchReminderNotifications,
     errorMessage,
     includeSharedAudienceAttendees,
     normalizeAttendeesForOwner,
@@ -21,6 +17,7 @@ import {
     normalizeStringList,
     normalizeVisibility,
     requireOrganizerOwnedSourceEvent,
+    requireWritableSharedOrganizerSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
     resolveJitsiAvailability,
@@ -31,6 +28,7 @@ import {
     type NotificationDispatcher,
     type ResolveAccountId,
 } from "./helpers.js";
+import { createReminderScheduler } from "./reminder-scheduler.js";
 import { handleCalendarResponseRoute } from "./respond-route.js";
 import { handleCalendarShareRoutes } from "./share-routes.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
@@ -71,111 +69,14 @@ export function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
-    const MAX_SET_TIMEOUT_DELAY_MS = 2 ** 31 - 1;
-    const scheduledReminderTimers = new Map<string, NodeJS.Timeout>();
-    const reminderKeysByEventId = new Map<string, Set<string>>();
-
-    const removeReminderKey = (eventId: string, reminderKey: string) => {
-        const reminderKeys = reminderKeysByEventId.get(eventId);
-        if (!reminderKeys) return;
-        reminderKeys.delete(reminderKey);
-        if (reminderKeys.size === 0) {
-            reminderKeysByEventId.delete(eventId);
-        }
-    };
-
-    const clearScheduledReminderTimersForEvent = (eventId: string) => {
-        const reminderKeys = reminderKeysByEventId.get(eventId);
-        if (!reminderKeys) return;
-        for (const reminderKey of reminderKeys) {
-            const timer = scheduledReminderTimers.get(reminderKey);
-            if (!timer) continue;
-            clearTimeout(timer);
-            scheduledReminderTimers.delete(reminderKey);
-            removeReminderKey(eventId, reminderKey);
-        }
-    };
-
-    const detachReminderTimer = (timer: NodeJS.Timeout) => {
-        if (typeof timer.unref === "function") timer.unref();
-    };
-
-    const scheduleReminderNotificationsForEvent = (
-        event: CalendarEventRecord,
-    ) => {
-        clearScheduledReminderTimersForEvent(event.id);
-        const reminderOffsets = normalizeReminderOffsets(
-            event.reminderOffsetsMinutes,
-        );
-        if (reminderOffsets.length === 0 || event.attendees.length === 0) {
-            return;
-        }
-        const eventStartAtMs = Date.parse(event.startAt);
-        if (!Number.isFinite(eventStartAtMs)) return;
-        for (const attendee of event.attendees) {
-            for (const reminderOffsetMinutes of reminderOffsets) {
-                const reminderAtMs =
-                    eventStartAtMs - reminderOffsetMinutes * 60_000;
-                const initialDelayMs = reminderAtMs - Date.now();
-                if (!Number.isFinite(initialDelayMs) || initialDelayMs <= 0) {
-                    log?.(
-                        "warn",
-                        "Skipped scheduling calendar reminder in the past.",
-                        {
-                            component: "calendar-gateway",
-                            eventId: event.id,
-                            attendee,
-                            reminderOffsetMinutes,
-                            reminderAt: new Date(reminderAtMs).toISOString(),
-                            startAt: event.startAt,
-                        },
-                    );
-                    continue;
-                }
-                const reminderKey = JSON.stringify([
-                    event.id,
-                    attendee,
-                    reminderOffsetMinutes,
-                ]);
-                const scheduleDispatch = (remainingDelayMs: number) => {
-                    const delayMs = Math.min(
-                        remainingDelayMs,
-                        MAX_SET_TIMEOUT_DELAY_MS,
-                    );
-                    const timer = setTimeout(async () => {
-                        if (!scheduledReminderTimers.has(reminderKey)) return;
-                        if (remainingDelayMs > MAX_SET_TIMEOUT_DELAY_MS) {
-                            scheduleDispatch(
-                                remainingDelayMs - MAX_SET_TIMEOUT_DELAY_MS,
-                            );
-                            return;
-                        }
-                        scheduledReminderTimers.delete(reminderKey);
-                        removeReminderKey(event.id, reminderKey);
-                        const dispatchNotification = getDispatchNotification();
-                        if (!dispatchNotification) return;
-                        await dispatchReminderNotifications({
-                            dispatchNotification,
-                            event: {
-                                ...event,
-                                attendees: [attendee],
-                                reminderOffsetsMinutes: [reminderOffsetMinutes],
-                            },
-                            resolveAccountId,
-                            log,
-                        });
-                    }, delayMs);
-                    detachReminderTimer(timer);
-                    scheduledReminderTimers.set(reminderKey, timer);
-                    const eventReminderKeys =
-                        reminderKeysByEventId.get(event.id) ?? new Set();
-                    eventReminderKeys.add(reminderKey);
-                    reminderKeysByEventId.set(event.id, eventReminderKeys);
-                };
-                scheduleDispatch(initialDelayMs);
-            }
-        }
-    };
+    const {
+        clearScheduledReminderTimersForEvent,
+        scheduleReminderNotificationsForEvent,
+    } = createReminderScheduler({
+        getDispatchNotification,
+        resolveAccountId,
+        log,
+    });
 
     return async (
         req: IncomingMessage,
@@ -742,6 +643,16 @@ export function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            const activeSharedCalendar =
+                sharedCalendar?.recipientAccountId === claims.sub
+                    ? sharedCalendar
+                    : null;
+            const ownerAccountId =
+                activeSharedCalendar?.ownerAccountId ?? claims.sub;
+            const sourceCalendarId =
+                activeSharedCalendar?.ownerCalendarId ?? calendarId;
             const body = (await readJson(req)) as Record<string, unknown>;
             const inviteEmails = normalizeStringList(body.inviteEmails);
             const canInviteByEmail = hasMinRole(claims.role, "admin");
@@ -755,6 +666,20 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             if (
+                activeSharedCalendar &&
+                !requireWritableSharedOrganizerSourceEvent({
+                    gateway,
+                    sharedCalendar: activeSharedCalendar,
+                    organizerAccountId: claims.sub,
+                    eventId,
+                    res,
+                    actionVerb: "edit",
+                })
+            ) {
+                return true;
+            }
+            if (
+                !activeSharedCalendar &&
                 !requireOrganizerOwnedSourceEvent({
                     gateway,
                     ownerAccountId: claims.sub,
@@ -775,8 +700,8 @@ export function createCalendarCoreRoutes({
                       )
                     : undefined;
                 const updatedEvent = gateway.updateEvent({
-                    ownerAccountId: claims.sub,
-                    calendarId,
+                    ownerAccountId,
+                    calendarId: sourceCalendarId,
                     eventId,
                     title:
                         typeof body.title === "string" ? body.title : undefined,
@@ -818,16 +743,18 @@ export function createCalendarCoreRoutes({
                             ? body.recurrence
                             : undefined,
                     targetCalendarId:
+                        !activeSharedCalendar &&
                         typeof body.calendarId === "string"
                             ? body.calendarId
                             : undefined,
                     updateAll: body.updateAll === true,
                 });
                 const updatedCalendarId =
+                    !activeSharedCalendar &&
                     typeof body.calendarId === "string" &&
                     body.calendarId.trim().length > 0
                         ? body.calendarId.trim()
-                        : calendarId;
+                        : sourceCalendarId;
                 const updatedSeries = resolveCreatedSeries(
                     gateway,
                     updatedCalendarId,
@@ -889,8 +816,32 @@ export function createCalendarCoreRoutes({
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventMatch[1]);
             const eventId = decodeURIComponent(eventMatch[2]);
+            const sharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(calendarId);
+            const activeSharedCalendar =
+                sharedCalendar?.recipientAccountId === claims.sub
+                    ? sharedCalendar
+                    : null;
+            const ownerAccountId =
+                activeSharedCalendar?.ownerAccountId ?? claims.sub;
+            const sourceCalendarId =
+                activeSharedCalendar?.ownerCalendarId ?? calendarId;
             try {
                 if (
+                    activeSharedCalendar &&
+                    !requireWritableSharedOrganizerSourceEvent({
+                        gateway,
+                        sharedCalendar: activeSharedCalendar,
+                        organizerAccountId: claims.sub,
+                        eventId,
+                        res,
+                        actionVerb: "delete",
+                    })
+                ) {
+                    return true;
+                }
+                if (
+                    !activeSharedCalendar &&
                     !requireOrganizerOwnedSourceEvent({
                         gateway,
                         ownerAccountId: claims.sub,
@@ -903,8 +854,8 @@ export function createCalendarCoreRoutes({
                     return true;
                 }
                 const deletedEvents = gateway.deleteEvent({
-                    ownerAccountId: claims.sub,
-                    calendarId,
+                    ownerAccountId,
+                    calendarId: sourceCalendarId,
                     eventId,
                     deleteAll: url.searchParams.get("series") === "1",
                 });

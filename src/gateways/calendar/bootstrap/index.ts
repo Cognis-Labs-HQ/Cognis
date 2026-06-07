@@ -280,7 +280,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.1.6",
+        version: "1.2.0",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

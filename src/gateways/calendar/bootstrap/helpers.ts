@@ -252,6 +252,49 @@ export function requireOrganizerOwnedSourceEvent(input: {
     return targetEvent;
 }
 
+export function requireWritableSharedOrganizerSourceEvent(input: {
+    gateway: CoreCalendarGateway;
+    sharedCalendar: {
+        ownerCalendarId: string;
+        permission: "read" | "write";
+    };
+    organizerAccountId: string;
+    eventId: string;
+    res: ServerResponse;
+    actionVerb: "edit" | "delete";
+}): CalendarEventRecord | null {
+    if (input.sharedCalendar.permission !== "write") {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            "Calendar is read-only.",
+            403,
+        );
+        return null;
+    }
+    const sourceEvent = input.gateway.getEvent(
+        input.sharedCalendar.ownerCalendarId,
+        input.eventId,
+    );
+    if (!sourceEvent) {
+        sendCalendarError(input.res, "not_found", "Event not found.", 404);
+        return null;
+    }
+    if (
+        sourceEvent.createdBy !== input.organizerAccountId ||
+        sourceEvent.sourceEventId !== null
+    ) {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            `Only the event organizer can ${input.actionVerb} this event.`,
+            403,
+        );
+        return null;
+    }
+    return sourceEvent;
+}
+
 export function buildEventActionUrl(
     calendarId: string,
     eventId: string,

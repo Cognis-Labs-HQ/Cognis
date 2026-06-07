@@ -253,10 +253,22 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
     assert.match(PENDING_RENDER_SOURCE, /popup-action-btn--neutral/);
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
     assert.match(POPUP_MANAGER_SOURCE, /handlePendingResponseClick/);
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /handlePendingResponseClick\([\s\S]*reloadState/,
+    );
     assert.match(POPUP_MANAGER_SOURCE, /popup-manager-pending-response/);
     assert.match(
         POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
         /calendar-upcoming-item.*remove/s,
+    );
+    assert.match(
+        POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
+        /if \(!success\)[\s\S]*reloadState/s,
+    );
+    assert.match(
+        POPUP_MANAGER_PENDING_RESPONSE_SOURCE,
+        /\.catch\(\(\) => \{[\s\S]*reloadState/s,
     );
     assert.match(
         POPUP_MANAGER_RESPONSE_SOURCE,
