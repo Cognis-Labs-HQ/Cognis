@@ -918,6 +918,8 @@ export function createCalendarCoreRoutes({
                 gateway,
                 shareRegistry,
                 dispatchNotification,
+                onEventUpdatedForReminders:
+                    scheduleReminderNotificationsForEvent,
                 log,
             });
             return true;

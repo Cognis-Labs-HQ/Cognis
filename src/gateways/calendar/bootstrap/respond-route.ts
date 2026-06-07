@@ -1,6 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
-import type { CoreCalendarGateway } from "../gateway/index.js";
+import type {
+    CalendarEventRecord,
+    CoreCalendarGateway,
+} from "../gateway/index.js";
 import {
     buildResponseNotificationBody,
     errorMessage,
@@ -23,6 +26,7 @@ export async function handleCalendarResponseRoute(input: {
     gateway: CoreCalendarGateway;
     shareRegistry: CalendarShareRegistry;
     dispatchNotification: NotificationDispatcher | null;
+    onEventUpdatedForReminders?: (event: CalendarEventRecord) => void;
     log?: CalendarLogger;
 }): Promise<void> {
     const sharedCalendar = await input.shareRegistry.getByRecipientCalendarId(
@@ -97,6 +101,25 @@ export async function handleCalendarResponseRoute(input: {
                 eventId: input.eventId,
                 accountId: input.claims.sub,
                 removeAll: respondAll,
+            });
+            const reminderEvents =
+                respondAll && effectiveEvent.recurrenceId
+                    ? input.gateway
+                          .listEvents(lookupCalendarId)
+                          .filter(
+                              (event) =>
+                                  event.recurrenceId ===
+                                      effectiveEvent.recurrenceId &&
+                                  event.sourceEventId === null,
+                          )
+                    : [
+                          input.gateway.getEvent(
+                              lookupCalendarId,
+                              input.eventId,
+                          ) ?? effectiveEvent,
+                      ];
+            reminderEvents.forEach((event) => {
+                input.onEventUpdatedForReminders?.(event);
             });
         }
         let movedTo: EventLocationRef | null = null;
