@@ -125,7 +125,9 @@ export function createJsonDispatcher(routeRegistry: RouteRegistry) {
         return {
             statusCode: response.statusCode,
             body:
-                response.payload.length > 0 ? JSON.parse(response.payload) : null,
+                response.payload.length > 0
+                    ? JSON.parse(response.payload)
+                    : null,
         };
     };
 }
