@@ -854,6 +854,11 @@
     margin: 0;
 }
 
+.calendar-response-calendar-picker select {
+    width: min(100%, 16rem);
+    justify-self: start;
+}
+
 .calendar-month-event-preview {
     display: grid;
     gap: 0.3rem;

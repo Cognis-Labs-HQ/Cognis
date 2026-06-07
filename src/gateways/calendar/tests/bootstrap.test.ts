@@ -746,12 +746,16 @@ test("calendar accept response via invitations API saves copy into chosen calend
         ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
-    const dispatched: Array<{ recipientUsername: string; subject: string }> =
-        [];
+    const dispatched: Array<{
+        recipientUsername: string;
+        subject: string;
+        body: string;
+    }> = [];
     capabilities.contribute("notify:dispatch", async (envelope: any) => {
         dispatched.push({
             recipientUsername: String(envelope.recipientUsername ?? ""),
             subject: String(envelope.subject ?? ""),
+            body: String(envelope.body ?? ""),
         });
         return { dispatched: ["internal"] };
     });
@@ -855,7 +859,9 @@ test("calendar accept response via invitations API saves copy into chosen calend
         dispatched.some(
             (entry) =>
                 entry.recipientUsername === "alice" &&
-                entry.subject === "Calendar response: Planning",
+                entry.subject === "Calendar response: Planning" &&
+                entry.body ===
+                    "Event: Planning\nUser: bob\nResponse: accepted",
         ),
     );
 });

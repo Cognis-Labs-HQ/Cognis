@@ -301,11 +301,9 @@ export function buildResponseNotificationBody(
     response: CalendarEventResponse,
 ): string {
     return [
-        `${attendeeAccountId} responded to ${event.title}.`,
-        "",
+        `Event: ${event.title}`,
+        `User: ${attendeeAccountId}`,
         `Response: ${response}`,
-        `Starts: ${event.startAt}`,
-        `Ends: ${event.endAt}`,
     ].join("\n");
 }
 

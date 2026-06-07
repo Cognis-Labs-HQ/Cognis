@@ -238,7 +238,15 @@ function collectPendingEvents(
                   calendarName: "",
               }))
         : [];
-    return [...ownPending, ...invitePending].sort((a, b) =>
+    const dedupedByRoot = new Map();
+    [...ownPending, ...invitePending].forEach((event) => {
+        const rootId = String(event.sourceEventId ?? event.id ?? "").trim();
+        const key = `${rootId}::${String(event.startAt ?? "")}::${String(event.endAt ?? "")}`;
+        if (!dedupedByRoot.has(key)) {
+            dedupedByRoot.set(key, event);
+        }
+    });
+    return Array.from(dedupedByRoot.values()).sort((a, b) =>
         a.startAt.localeCompare(b.startAt),
     );
 }
