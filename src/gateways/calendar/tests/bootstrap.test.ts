@@ -133,8 +133,8 @@ test("calendar invitations endpoint returns pending invited events for attendee"
         `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
         {
             title: "Planning",
-            startAt: "2026-06-02T09:00:00.000Z",
-            endAt: "2026-06-02T10:00:00.000Z",
+            startAt: "2027-06-02T09:00:00.000Z",
+            endAt: "2027-06-02T10:00:00.000Z",
             attendees: ["bob"],
             reminderOffsetsMinutes: [10, 60],
         },
@@ -785,8 +785,8 @@ test("calendar accept response via invitations API saves copy into chosen calend
         `/api/v1/calendar/calendars/${encodeURIComponent(aliceCalendarId)}/events`,
         {
             title: "Planning",
-            startAt: "2026-06-02T09:00:00.000Z",
-            endAt: "2026-06-02T10:00:00.000Z",
+            startAt: "2027-06-02T09:00:00.000Z",
+            endAt: "2027-06-02T10:00:00.000Z",
             attendees: ["bob"],
         },
     );

@@ -58,3 +58,9 @@ Vorläufig.
 
 Ein Klick auf eine Schnellantwort-Schaltfläche entfernt den Eintrag sofort aus
 der Liste, ohne auf die Netzwerkanfrage zu warten.
+
+## Bevorstehende Ereignisse zeigen keine vergangenen Termine mehr
+
+Ausstehende Kalendereinladungen für Ereignisse, deren Endzeit bereits verstrichen
+ist, werden nicht mehr in der Einladungsliste angezeigt. Zuvor konnten vergangene
+Ereignisse mit ausstehender Antwort weiterhin im Bereich „Bevorstehend" erscheinen.

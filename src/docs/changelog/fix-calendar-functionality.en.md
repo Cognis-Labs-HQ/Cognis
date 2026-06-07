@@ -64,3 +64,9 @@ section — green for accept, red for decline, and bordered neutral for tentativ
 Clicking a quick-response button in the Pending Events section now removes the
 item from the list immediately, without waiting for the network request to
 complete.
+
+## Upcoming events no longer show events that have already passed
+
+Pending calendar invitations for events whose end time has already passed are
+now excluded from the invitations list. Previously, past events with a pending
+response could still appear in the upcoming section even after they were over.

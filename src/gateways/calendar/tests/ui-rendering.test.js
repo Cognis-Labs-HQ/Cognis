@@ -466,3 +466,14 @@ test("calendar read-only all-day details keep start and end date fields", () => 
         /gateway\.calendar\.event_end/,
     );
 });
+
+test("calendar upcoming and pending event helpers exclude past events via endAt filter", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /function collectUpcomingEvents[\s\S]*\.filter\(\(event\) => new Date\(event\.endAt\)\.getTime\(\) >= Date\.now\(\)\)/s,
+    );
+    assert.match(
+        HELPERS_SOURCE,
+        /function collectPendingEvents[\s\S]*\.filter\(\(event\) => new Date\(event\.endAt\)\.getTime\(\) >= Date\.now\(\)\)/s,
+    );
+});

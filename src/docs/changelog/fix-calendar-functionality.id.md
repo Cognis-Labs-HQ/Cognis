@@ -56,3 +56,9 @@ untuk menerima, merah untuk menolak, dan netral berbingkai untuk tentatif.
 
 Mengeklik tombol respons cepat langsung menghapus item dari daftar tanpa
 menunggu permintaan jaringan selesai.
+
+## Acara mendatang tidak lagi menampilkan acara yang sudah berlalu
+
+Undangan kalender yang tertunda untuk acara yang waktu berakhirnya sudah lewat
+kini tidak lagi ditampilkan di daftar undangan. Sebelumnya, acara yang sudah
+berlalu dengan respons tertunda masih bisa muncul di bagian mendatang.
