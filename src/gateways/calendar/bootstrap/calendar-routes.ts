@@ -953,7 +953,6 @@ export function createCalendarCoreRoutes({
             }
             return true;
         }
-
         const respondMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events\/([^/]+)\/respond$/,
         );
@@ -974,7 +973,6 @@ export function createCalendarCoreRoutes({
             });
             return true;
         }
-
         const meetingAccessMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/meeting-access\/([^/]+)$/,
         );

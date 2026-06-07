@@ -32,18 +32,17 @@ export async function handleCalendarResponseRoute(input: {
         sharedCalendar?.recipientAccountId === input.claims.sub
             ? sharedCalendar
             : null;
+    const lookupCalendarId = activeSharedCalendar
+        ? activeSharedCalendar.ownerCalendarId
+        : input.calendarId;
     const ownedCalendar = input.gateway.getOwnedCalendar(
         input.claims.sub,
-        activeSharedCalendar ? activeSharedCalendar.ownerCalendarId : input.calendarId,
+        lookupCalendarId,
     );
-    const event = activeSharedCalendar
-        ? input.gateway.getEvent(
-              activeSharedCalendar.ownerCalendarId,
-              input.eventId,
-          )
-        : ownedCalendar
-          ? input.gateway.getEvent(input.calendarId, input.eventId)
-          : null;
+    const event =
+        ownedCalendar || activeSharedCalendar
+            ? input.gateway.getEvent(lookupCalendarId, input.eventId)
+            : null;
     // Also allow responding when the user is an attendee on a non-owned event
     let invitedEvent = null;
     if (!ownedCalendar && !activeSharedCalendar) {

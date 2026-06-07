@@ -373,9 +373,9 @@ export async function dispatchInviteNotifications({
     log?: CalendarLogger;
 }): Promise<void> {
     if (!dispatchNotification) return;
-    const activeShare =
-        shareRegistry &&
-        (await shareRegistry.getByRecipientCalendarId(calendarId));
+    const activeShare = shareRegistry
+        ? await shareRegistry.getByRecipientCalendarId(calendarId)
+        : null;
     const ownerCalendarId = activeShare?.ownerCalendarId ?? calendarId;
     const ownerAccountId = activeShare?.ownerAccountId ?? inviterAccountId;
     const ownerCalendarShares = shareRegistry

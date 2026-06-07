@@ -23,6 +23,7 @@ async function bootstrapCalendarTest(input: {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
+    const ctx = createCtx();
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(input.claimsByToken),
@@ -36,7 +37,7 @@ async function bootstrapCalendarTest(input: {
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: ctx.flow,
     } as any);
     return createJsonDispatcher(routeRegistry);
 }
@@ -83,6 +84,8 @@ test("shared-calendar invite notifications use each recipient shared calendar ro
     );
     const bobSharedCalendarId = String(shareWithBob.body.data.calendarId ?? "");
     assert.ok(bobSharedCalendarId);
+    const bobShareId = String(shareWithBob.body.data.id ?? "");
+    assert.ok(bobShareId);
 
     const shareWithCharlie = await dispatchJson(
         "POST",
@@ -98,6 +101,13 @@ test("shared-calendar invite notifications use each recipient shared calendar ro
         shareWithCharlie.body.data.calendarId ?? "",
     );
     assert.ok(charlieSharedCalendarId);
+    const elevateBobShare = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/share/users/${encodeURIComponent(bobShareId)}`,
+        { permission: "write" },
+    );
+    assert.equal(elevateBobShare.statusCode, 200);
 
     const createViaBob = await dispatchJson(
         "POST",
