@@ -4,10 +4,12 @@ const PENDING_ACTION_ICONS = {
     declined: "✗",
 };
 
+const PENDING_ACTION_BASE_CLASS = "btn-animated calendar-pending-action";
+
 const PENDING_ACTION_CLASSES = {
-    accepted: "btn-confirm btn-animated calendar-pending-action",
-    tentative: "popup-action-btn--neutral btn-animated calendar-pending-action",
-    declined: "btn-cancel btn-animated calendar-pending-action",
+    accepted: `btn-confirm ${PENDING_ACTION_BASE_CLASS}`,
+    tentative: `popup-action-btn--neutral ${PENDING_ACTION_BASE_CLASS}`,
+    declined: `btn-cancel ${PENDING_ACTION_BASE_CLASS}`,
 };
 
 export function createRenderPendingEvents({

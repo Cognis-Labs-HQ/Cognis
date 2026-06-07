@@ -26,6 +26,8 @@ export function removeDeclinedAttendee(input: {
                 event.sourceEventId === input.eventId,
         );
     if (!matchingEvent) return;
+    // The event creator is never removed as an attendee even if they decline,
+    // since the creator owns the event and must retain visibility and control.
     if (matchingEvent.createdBy === input.accountId) return;
     const targetEvents: CalendarEventRecord[] =
         input.removeAll && matchingEvent.recurrenceId
@@ -34,6 +36,8 @@ export function removeDeclinedAttendee(input: {
                   matchingEvent.recurrenceId,
               )
             : [matchingEvent];
+    // The timestamp is captured once before the loop to ensure all occurrences
+    // in a recurring series share a consistent updatedAt value for this operation.
     const now = new Date().toISOString();
     for (const targetEvent of targetEvents) {
         if (!targetEvent.attendees.includes(input.accountId)) continue;

@@ -11,6 +11,10 @@ export function handlePendingResponseClick(element, respondToEventSelection) {
         responseButton.getAttribute("data-calendar-event") ?? "",
     ).trim();
     if (calendarId && eventId && responseOption) {
+        // Optimistic removal: the item is removed immediately for instant feedback.
+        // If the API call fails, respondToEventSelection triggers a full state
+        // reload (via reloadState), which will re-render the pending list and
+        // restore any items that should still be present.
         responseButton.closest(".calendar-upcoming-item")?.remove();
         void respondToEventSelection(calendarId, eventId, responseOption);
     }
