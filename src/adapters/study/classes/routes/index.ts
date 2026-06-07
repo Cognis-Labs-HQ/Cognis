@@ -11,6 +11,7 @@ import {
     dispatchJoinRequestNotification,
     dispatchJoinReviewNotification,
 } from "./join-notifications.js";
+import { handleClassUpdateRoute } from "./class-update-route.js";
 import { handleTeacherRequestsRoutes } from "./teacher-requests-route.js";
 import {
     decorateMemberships,
@@ -285,7 +286,8 @@ export function createClassesRoutes(
                             teacher: {
                                 accountId: classRow.teacherAccountId,
                                 handle: teacherProfile?.handle ?? null,
-                                displayName: teacherProfile?.displayName ?? null,
+                                displayName:
+                                    teacherProfile?.displayName ?? null,
                                 avatarKey: teacherProfile?.avatarKey ?? null,
                             },
                             viewerAccountId: claims.sub,
@@ -309,52 +311,15 @@ export function createClassesRoutes(
             return true;
         }
 
-        const classMatch = url.pathname.match(/^\/api\/v1\/study\/classes\/([^/]+)$/);
-        if (classMatch && req.method === "PATCH") {
-            const claims = ctx.requireAuth(req, res, "teacher");
-            if (!claims) return true;
-            const classId = decodeURIComponent(classMatch[1]);
-            const body = (await readJson(req)) as { name?: unknown };
-            const className = String(body?.name ?? "").trim();
-            if (!className) {
-                jsonError(res, 400, "bad_request", "name is required.");
-                return true;
-            }
-            try {
-                const updated = await store.updateClassNameForTeacher(
-                    classId,
-                    claims.sub,
-                    className,
-                );
-                jsonOk(res, updated);
-            } catch (error) {
-                if (
-                    error instanceof Error &&
-                    (error.message === "not_authorized" ||
-                        error.message === "invalid_class_name")
-                ) {
-                    jsonError(
-                        res,
-                        error.message === "not_authorized" ? 403 : 400,
-                        error.message,
-                        error.message === "not_authorized"
-                            ? "Teacher access required."
-                            : "name is required.",
-                    );
-                    return true;
-                }
-                options.log?.("error", "Failed to rename class.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    classId,
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                });
-                jsonError(res, 500, "internal_error", "Failed to update class.");
-            }
+        if (
+            await handleClassUpdateRoute(req, res, url, {
+                store,
+                options,
+                ctx,
+                logMeta,
+            })
+        )
             return true;
-        }
-
         const classroomLayoutMatch = url.pathname.match(
             /^\/api\/v1\/study\/classrooms\/([^/]+)\/layout$/,
         );

@@ -98,7 +98,9 @@ function renderBlackboard({
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
         .map((entity) => {
-            const kind = String(entity?.kind ?? "").trim().toLowerCase();
+            const kind = String(entity?.kind ?? "")
+                .trim()
+                .toLowerCase();
             const x = Number(entity?.x);
             const y = Number(entity?.y);
             const left = Number.isFinite(x) ? Math.min(Math.max(x, 0), 1) : 0.7;
@@ -275,9 +277,7 @@ function renderDeskFloor({
     for (const member of members) {
         const accountId = String(member?.studentAccountId ?? "").trim();
         if (!accountId) continue;
-        const seat = Number(
-            seatAssignments[accountId],
-        );
+        const seat = Number(seatAssignments[accountId]);
         if (Number.isInteger(seat) && seat >= 0) {
             membersBySeat.set(seat, member);
             continue;
@@ -325,9 +325,11 @@ function renderDeskFloor({
         return `<div class="classes-desk-row">${pairs.join("")}</div>`;
     }).join("");
     const teacherLabel =
-        buildAccountLabel(snapshot?.teacher ?? {
-            studentAccountId: snapshot?.teacherAccountId,
-        }) || i18n.t("ui.reuse.teacher");
+        buildAccountLabel(
+            snapshot?.teacher ?? {
+                studentAccountId: snapshot?.teacherAccountId,
+            },
+        ) || i18n.t("ui.reuse.teacher");
     const teacherInitials = buildAccountAbbreviation(
         snapshot?.teacher ?? { studentAccountId: teacherLabel },
     );

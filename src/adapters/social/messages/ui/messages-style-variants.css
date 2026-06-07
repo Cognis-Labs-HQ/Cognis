@@ -221,6 +221,28 @@ body:not([data-theme="light"])
     display: inline;
 }
 
+.messages-classroom-collage--count-1 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+.messages-classroom-collage--count-2 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+}
+
+.messages-classroom-collage--count-3 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+.messages-thread-title-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
 .messages-page[data-message-style="irc"] .messages-message-status {
     align-self: center;
     margin-left: 0.15rem;

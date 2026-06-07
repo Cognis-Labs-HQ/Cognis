@@ -625,21 +625,6 @@
     grid-template-rows: repeat(2, 1fr);
 }
 
-.messages-classroom-collage--count-1 {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-}
-
-.messages-classroom-collage--count-2 {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: 1fr;
-}
-
-.messages-classroom-collage--count-3 {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-}
-
 .messages-classroom-collage-tile {
     font-size: 0.65rem;
 }
@@ -659,13 +644,6 @@
 .messages-thread-title {
     margin: 0;
     font-size: 1rem;
-}
-
-.messages-thread-title-link {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
 }
 
 .messages-thread-subtitle {
