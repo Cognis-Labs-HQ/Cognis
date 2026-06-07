@@ -299,10 +299,13 @@ export async function resolveAgendaCalendarId(
     if (!classId) return null;
     const calendarName = buildAgendaCalendarName(classRow);
     const legacyCalendarName = `class-agenda-${classId}`;
-    const existingCalendar = options.listCalendars?.(ownerAccountId)?.find(
-        (calendar) =>
-            calendar.name === calendarName || calendar.name === legacyCalendarName,
-    );
+    const existingCalendar = options
+        .listCalendars?.(ownerAccountId)
+        ?.find(
+            (calendar) =>
+                calendar.name === calendarName ||
+                calendar.name === legacyCalendarName,
+        );
     if (existingCalendar) {
         if (
             existingCalendar.name !== calendarName &&

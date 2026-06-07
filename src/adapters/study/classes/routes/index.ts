@@ -929,9 +929,7 @@ export function createClassesRoutes(
                     options,
                     classId,
                     className:
-                        classRow?.name ||
-                        classRow?.languageCode ||
-                        classId,
+                        classRow?.name || classRow?.languageCode || classId,
                     teacherAccountId: claims.sub,
                     studentAccountId,
                     action,
