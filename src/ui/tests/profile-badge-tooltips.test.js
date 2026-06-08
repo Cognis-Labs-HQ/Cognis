@@ -34,6 +34,7 @@ test("profile badges expose localized hover labels", () => {
     assert.match(renderSource, /title="\$\{teacherLabel\}"/);
     assert.match(
         cssSource,
-        /\.profile-avatar-badge \{[\s\S]*pointer-events: auto;[\s\S]*cursor: help;/m,
+        /\.profile-avatar-badge \{[\s\S]*pointer-events: auto;/m,
     );
+    assert.match(cssSource, /\.profile-avatar-badge \{[\s\S]*cursor: help;/m);
 });
