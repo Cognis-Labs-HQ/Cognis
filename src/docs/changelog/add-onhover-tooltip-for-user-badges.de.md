@@ -1,4 +1,4 @@
-# Vereinfachte Benutzerrollen-Badges
+# Vereinfachte Rollen-Badges
 
 ## Hover-Tooltip-Bubbles bei Rollen-Badges entfernt
 

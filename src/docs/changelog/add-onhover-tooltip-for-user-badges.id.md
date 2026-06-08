@@ -1,4 +1,4 @@
-# Lencana Peran Pengguna Disederhanakan
+# Lencana Peran Lebih Ringkas
 
 ## Gelembung tooltip hover pada lencana peran dihapus
 

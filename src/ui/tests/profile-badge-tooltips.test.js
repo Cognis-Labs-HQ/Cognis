@@ -81,10 +81,10 @@ test("profile badge styles do not show hover tooltip affordance", () => {
     const cssSource = readSourceFile(
         "src/adapters/social/profile/ui/profile-social.css",
     );
-
-    assert.match(
-        cssSource,
-        /\.profile-avatar-badge \{[\s\S]*pointer-events: none;/m,
+    const badgeRule = cssSource.match(
+        /\.profile-avatar-badge\s*\{([\s\S]*?)\n\}/m,
     );
-    assert.match(cssSource, /\.profile-avatar-badge \{[\s\S]*cursor: default;/m);
+    assert.ok(badgeRule);
+    assert.match(badgeRule[1], /pointer-events:\s*none;/);
+    assert.match(badgeRule[1], /cursor:\s*default;/);
 });
