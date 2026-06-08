@@ -1,9 +1,9 @@
-# Simplified User Role Badges
+# Restored User Role Tooltips
 
-## Removed hover tooltip bubbles from role badges
+## Restored hover role text on profile badges
 
-Role badges on profile avatars and user cards no longer show native hover tooltip bubbles, reducing visual noise when scanning profile roles.
+Role badges on profile avatars and user cards now show native hover tooltip text again so role names are visible on hover.
 
-## Kept role semantics without hover hints
+## Re-enabled hover behavior on avatar badges
 
-Role badges now rely on accessibility labels without tooltip affordances so the role icon remains clear and unobstructed.
+Avatar role badges now allow pointer hover so native tooltips can appear while keeping accessibility labels for screen readers.

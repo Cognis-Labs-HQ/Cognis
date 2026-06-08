@@ -1,9 +1,9 @@
-# Lencana Peran Lebih Ringkas
+# Tooltip Peran Dipulihkan
 
-## Gelembung tooltip hover pada lencana peran dihapus
+## Teks peran saat hover dipulihkan pada lencana profil
 
-Lencana peran pada avatar profil dan kartu pengguna kini tidak lagi menampilkan gelembung tooltip hover bawaan, sehingga tampilan peran lebih bersih saat dipindai.
+Lencana peran pada avatar profil dan kartu pengguna kini kembali menampilkan teks tooltip bawaan saat hover agar nama peran terlihat jelas.
 
-## Semantik peran tetap ada tanpa petunjuk hover
+## Perilaku hover pada lencana avatar diaktifkan kembali
 
-Lencana peran tetap memakai label aksesibilitas tanpa affordance tooltip agar ikon peran tetap jelas dan tidak tertutup.
+Lencana peran avatar kini kembali menerima hover pointer agar tooltip bawaan dapat muncul, sambil tetap mempertahankan label aksesibilitas untuk pembaca layar.
