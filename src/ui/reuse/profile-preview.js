@@ -6,7 +6,7 @@ import { getRoleLabel } from "./access-role.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
-const PREVIEW_ROLE_LABELS = new Set(["teacher", "moderator", "admin", "owner"]);
+const PREVIEW_ROLE_LABELS = new Set(["teacher", "admin", "owner"]);
 const profileCache = new Map();
 const avatarUrlCache = new Map();
 let previewEl = null;

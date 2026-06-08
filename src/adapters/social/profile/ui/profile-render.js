@@ -11,20 +11,18 @@ import { getRoleLabel } from "/static/reuse/access-role.js";
 
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
-const PROFILE_BADGE_MARKUP = {
-    owner: '<img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" />',
-    admin: '<img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" />',
-    teacher: "&#128218;",
+const PROFILE_ROLE_ICON_PATHS = {
+    owner: "/static/assets/icons/crown.svg",
+    admin: "/static/assets/icons/wrench.svg",
 };
-const PROFILE_LIST_ROLE_ICON_MARKUP = {
-    owner: '<img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" />',
-    admin: '<img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" />',
-    teacher: "&#128218;",
-};
-const PROFILE_BADGE_ROLES = new Set(Object.keys(PROFILE_BADGE_MARKUP));
-const PROFILE_LIST_ROLE_ICON_ROLES = new Set(
-    Object.keys(PROFILE_LIST_ROLE_ICON_MARKUP),
-);
+const PROFILE_ROLE_ICON_ROLES = new Set(["owner", "admin", "teacher"]);
+
+function renderRoleIconMarkup(normalizedRole, iconClassName) {
+    if (normalizedRole === "teacher") return "&#128218;";
+    const iconPath = PROFILE_ROLE_ICON_PATHS[normalizedRole];
+    if (!iconPath) return "";
+    return `<img src="${iconPath}" alt="" class="${iconClassName}" />`;
+}
 
 function createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n) {
     return createFormBuilder(
@@ -150,30 +148,39 @@ export function visibilityClass(visibilityValue) {
     return visibilityClassMap[visibilityValue] ?? "visibility-hidden";
 }
 
-function normalizeProfileBadgeRole(roleValue) {
+function normalizeRoleValue(roleValue) {
     const normalizedRole = String(roleValue ?? "")
         .trim()
         .toLowerCase();
     return normalizedRole || null;
 }
 
-function getEscapedProfileBadgeRoleLabel(normalizedRole, i18n) {
+function getEscapedRoleLabel(normalizedRole, i18n, allowedRoles) {
     if (!normalizedRole) return "";
-    if (!PROFILE_BADGE_ROLES.has(normalizedRole)) return "";
+    if (!allowedRoles.has(normalizedRole)) return "";
     return escapeHtml(getRoleLabel(i18n, normalizedRole));
 }
 
 export function renderAvatarBadge(roleValue, i18n) {
-    const normalizedRole = normalizeProfileBadgeRole(roleValue);
-    const roleLabel = getEscapedProfileBadgeRoleLabel(normalizedRole, i18n);
+    const normalizedRole = normalizeRoleValue(roleValue);
+    const roleLabel = getEscapedRoleLabel(
+        normalizedRole,
+        i18n,
+        PROFILE_ROLE_ICON_ROLES,
+    );
+    const iconMarkup = renderRoleIconMarkup(
+        normalizedRole,
+        "profile-avatar-badge-icon",
+    );
     if (!roleLabel) return "";
+    if (!iconMarkup) return "";
     return `
       <span
         class="profile-avatar-badge profile-avatar-badge--${normalizedRole}"
         aria-label="${roleLabel}"
         title="${roleLabel}"
         role="img"
-      >${PROFILE_BADGE_MARKUP[normalizedRole]}</span>
+      >${iconMarkup}</span>
     `;
 }
 
@@ -453,18 +460,26 @@ function userDisplayName(user) {
 }
 
 function renderUserRoleIcons(user, i18n) {
-    const normalizedRole = normalizeProfileBadgeRole(user?.role);
+    const normalizedRole = normalizeRoleValue(user?.role);
     if (!normalizedRole) return "";
-    if (!PROFILE_LIST_ROLE_ICON_ROLES.has(normalizedRole)) return "";
-    const roleLabel = getEscapedProfileBadgeRoleLabel(normalizedRole, i18n);
+    const roleLabel = getEscapedRoleLabel(
+        normalizedRole,
+        i18n,
+        PROFILE_ROLE_ICON_ROLES,
+    );
+    const iconMarkup = renderRoleIconMarkup(
+        normalizedRole,
+        "profile-role-icon-img",
+    );
     if (!roleLabel) return "";
+    if (!iconMarkup) return "";
     return `
       <span
         class="profile-user-role-icon"
         aria-label="${roleLabel}"
         title="${roleLabel}"
         role="img"
-      >${PROFILE_LIST_ROLE_ICON_MARKUP[normalizedRole]}</span>
+      >${iconMarkup}</span>
     `;
 }
 

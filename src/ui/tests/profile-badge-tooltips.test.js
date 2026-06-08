@@ -11,7 +11,7 @@ function readSourceFile(relativePath) {
     return readFileSync(resolve(ROOT, relativePath), "utf8");
 }
 
-test("profile badges render localized accessible labels at runtime", () => {
+test("profile badges render localized title and aria-label attributes", () => {
     const renderSource = readSourceFile(
         "src/adapters/social/profile/ui/profile-render.js",
     );
@@ -20,7 +20,7 @@ test("profile badges render localized accessible labels at runtime", () => {
             .replace(/^import[\s\S]*?from .*;\n/gm, "")
             .replace(/\bexport\s+/g, "") +
         "\n" +
-        "globalThis.__testExports = { renderAvatarBadge };\n";
+        "globalThis.testExports = { renderAvatarBadge };\n";
     const context = {
         createFormBuilder() {},
         getInitialsText() {
@@ -55,7 +55,7 @@ test("profile badges render localized accessible labels at runtime", () => {
         filename: "profile-render.js",
     });
 
-    const { renderAvatarBadge } = context.__testExports;
+    const { renderAvatarBadge } = context.testExports;
     const i18n = {
         t(key) {
             const labels = {
