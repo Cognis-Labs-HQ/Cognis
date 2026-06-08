@@ -5,6 +5,7 @@
  *
  * Public exports:
  * - `ACCESS_ROLES` Ordered list of supported role IDs for selectors.
+ * - `normalizeRoleValue(role)` Trims and lowercases a role value.
  * - `getRoleLabel(i18n, role)` Localizes a role ID into a user-facing label.
  * - `hasMinAccessRole(role, minRole)` Returns true when a role meets a minimum role rank.
  * - `isAdminScope()` Returns true when the session role is `admin` or `owner`.
@@ -27,8 +28,14 @@ const ACCESS_ROLE_RANKS = new Map(
     ACCESS_ROLES.map((role, index) => [role, index]),
 );
 
+export function normalizeRoleValue(role) {
+    return String(role ?? "")
+        .trim()
+        .toLowerCase();
+}
+
 export function getRoleLabel(i18n, role) {
-    const normalizedRole = String(role ?? "").trim();
+    const normalizedRole = normalizeRoleValue(role);
     const key = `ui.reuse.role_${normalizedRole}`;
     const label = i18n?.t?.(key);
     if (typeof label === "string" && label !== key) return label;
