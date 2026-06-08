@@ -168,7 +168,7 @@ function renderUsersTable() {
             : "";
     return `
     ${inviteButtonHtml}
-    <div class="users-table-wrap" data-composer-exclude-form-memory="true">
+    <div class="users-table-wrap">
       <table class="users-table">
         <thead>
           <tr>

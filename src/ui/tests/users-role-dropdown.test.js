@@ -144,15 +144,3 @@ test("users resend verification action is hidden when smtp adapter is disabled",
     assert.match(source, /if \(!smtpAdapterActive\) return;/);
     assert.match(source, /const emails = smtpAdapterActive\s*\?[\s\S]*: \[\];/);
 });
-
-test("users table wrapper is excluded from composer form memory", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/users/index.js"),
-        "utf8",
-    );
-
-    assert.match(
-        source,
-        /class="users-table-wrap" data-composer-exclude-form-memory="true"/,
-    );
-});

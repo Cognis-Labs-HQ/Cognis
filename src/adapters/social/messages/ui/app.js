@@ -221,7 +221,7 @@ export async function mount(root, { signal } = {}) {
           <div id="messages-request-banner-slot"></div>
           <div class="messages-thread-list" id="messages-thread-list"></div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
-          <form class="messages-composer" id="messages-composer" data-composer-exclude-form-memory="true">
+          <form class="messages-composer" id="messages-composer">
             <div class="messages-composer-mode-row">
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-compose-toggle" aria-pressed="true">${escapeHtml(i18n.t("module.social.messages.compose"))}</button>
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-preview-toggle" aria-pressed="false">${escapeHtml(i18n.t("module.social.messages.preview"))}</button>

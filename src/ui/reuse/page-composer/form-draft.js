@@ -39,12 +39,12 @@ export function createFormDraftManager({
         );
     }
 
-    function isExcludedFromFormMemory(field) {
+    function isIncludedInFormMemory(field) {
         if (!(field instanceof Element)) {
             return false;
         }
         return (
-            field.closest('[data-composer-exclude-form-memory="true"]') !== null
+            field.closest('[data-composer-include-form-memory="true"]') !== null
         );
     }
 
@@ -86,7 +86,7 @@ export function createFormDraftManager({
                     if (field.type === "file") {
                         return;
                     }
-                    if (persistableOnly && isExcludedFromFormMemory(field)) {
+                    if (persistableOnly && !isIncludedInFormMemory(field)) {
                         return;
                     }
                     if (persistableOnly && isSensitiveDraftField(field)) {
@@ -288,7 +288,7 @@ export function createFormDraftManager({
             (field) =>
                 !isSensitiveDraftField(field) &&
                 field.type !== "file" &&
-                !isExcludedFromFormMemory(field),
+                isIncludedInFormMemory(field),
         );
         if (persistableFields.length < LARGE_FORM_RESET_FIELD_THRESHOLD) {
             card.querySelector("[data-composer-draft-reset-wrapper]")?.remove();
@@ -336,7 +336,7 @@ export function createFormDraftManager({
                 card.querySelectorAll("input, textarea, select").forEach(
                     (field) => {
                         if (field.type === "file") return;
-                        if (isExcludedFromFormMemory(field)) return;
+                        if (!isIncludedInFormMemory(field)) return;
                         field.addEventListener("input", persistDraftSnapshot);
                         field.addEventListener("change", persistDraftSnapshot);
                     },
