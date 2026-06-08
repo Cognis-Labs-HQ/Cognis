@@ -1,3 +1,5 @@
+@import url("/static/adapters/study/classes/classes-windows.css");
+
 .classes-section {
     padding: 16px;
     display: flex;
@@ -580,59 +582,41 @@ body:not([data-theme="light"]) .classes-classroom-content {
     font-style: italic;
 }
 
-/* ── Door (right wall) ── */
+/* ── Door (flat rectangle in desk-floor area) ── */
 
 .classes-room-doorwall {
-    width: 72px;
-    flex-shrink: 0;
     display: flex;
-    flex-direction: column;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: flex-start;
-    padding-top: 28px;
-    border-left: 4px solid var(--classroom-wall-border);
-    background: var(--classroom-wall);
+    padding: 6px 12px;
 }
 
 .classes-room-door {
     position: relative;
-    width: 54px;
-    height: 54px;
     cursor: pointer;
+    width: 14px;
+    height: 56px;
+    border: 2px solid var(--classroom-wall-border);
+    background: var(--classroom-wall);
+    border-radius: 2px;
 }
 
-.classes-door-topdown {
+.classes-door-panel {
     position: absolute;
-    inset: 0;
-    border: 2px solid var(--classroom-door-outline);
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.08);
-}
-
-.classes-door-swing {
-    position: absolute;
-    inset: 4px;
-    border-radius: 4px;
+    top: 3px;
+    left: 2px;
+    width: 10px;
+    height: 46px;
     background: var(--classroom-door);
-    transform-origin: left center;
-    transition: transform 0.24s ease;
+    border: 1px solid var(--classroom-door-outline);
+    border-radius: 2px;
+    transform-origin: top left;
+    transition: transform 0.3s ease;
 }
 
-.classes-room-door:hover .classes-door-swing,
-.classes-room-door:focus-visible .classes-door-swing {
-    transform: rotate(-38deg);
-}
-
-.classes-door-knob {
-    position: absolute;
-    top: 50%;
-    right: 11px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    transform: translateY(-50%);
-    background: #2f1b0f;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+.classes-room-door:hover .classes-door-panel,
+.classes-room-door:focus-visible .classes-door-panel {
+    transform: rotate(90deg);
 }
 
 /* ── Desk floor ── */

@@ -104,7 +104,7 @@ function renderChalkAgenda({ activeAgendaItems, i18n }) {
         .join("");
 }
 
-function renderBlackboard({
+export function renderBlackboard({
     snapshot,
     activeAgendaItems,
     i18n,
@@ -156,17 +156,21 @@ function renderBlackboard({
                     }" data-board-panel="classroom"${canSelectBoardPanel ? "" : ' disabled aria-disabled="true"'}>${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
                 </div>
                 <div class="classes-blackboard-actions">
-                    <button type="button" class="classes-icon-btn classes-board-entity-token"
-                        ${snapshot?.chatUrl ? "" : "disabled"}
-                        data-entity-kind="chat"
-                        draggable="true"
-                        aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
-                        title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
-                    <button type="button" class="classes-icon-btn classes-board-entity-token"
-                        data-entity-kind="meeting"
-                        draggable="true"
-                        aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
-                        title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>
+                    ${
+                        isTeacherView
+                            ? `<button type="button" class="classes-icon-btn classes-board-entity-token"
+                                ${snapshot?.chatUrl ? "" : "disabled"}
+                                data-entity-kind="chat"
+                                draggable="true"
+                                aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
+                                title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
+                            <button type="button" class="classes-icon-btn classes-board-entity-token"
+                                data-entity-kind="meeting"
+                                draggable="true"
+                                aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
+                                title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>`
+                            : ""
+                    }
                     ${
                         canToggleView
                             ? `<button type="button" class="classes-icon-btn classes-toggle-view-btn"
@@ -402,8 +406,10 @@ function renderDeskFloor({
                 </div>
             </div>`
         : "";
-    return `<div class="classes-desk-floor">${teacherDesk}${rowHtml}</div>`;
+    return `<div class="classes-desk-floor">${teacherDesk}${rowHtml}${renderRoomDoor({ i18n, isTeacherView })}</div>`;
 }
+
+export { renderDeskFloor, renderStudentRoster };
 
 function renderRoomDoor({ i18n, isTeacherView }) {
     return `
@@ -411,10 +417,7 @@ function renderRoomDoor({ i18n, isTeacherView }) {
             <div class="classes-room-door" id="study-classroom-door"
                  role="button" tabindex="0"
                  title="${escapeHtml(i18n.t(isTeacherView ? "module.study.classes.disband_class_action" : "module.study.classes.leave_class"))}">
-                <div class="classes-door-topdown">
-                   <div class="classes-door-swing"></div>
-                   <div class="classes-door-knob"></div>
-                </div>
+                <div class="classes-door-panel"></div>
             </div>
         </div>
     `;
@@ -563,7 +566,6 @@ function renderClassroomView({
                         boardEntities,
                         activeBoardPanel,
                     })}
-                    ${renderRoomDoor({ i18n, isTeacherView })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}
             </div>

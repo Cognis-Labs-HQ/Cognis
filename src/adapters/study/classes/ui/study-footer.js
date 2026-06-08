@@ -12,9 +12,6 @@ function renderClassSelectorContent({
     selectedClassId,
     allowCreateOption = false,
 }) {
-    const viewerAccountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
     const options = classes
         .map((classRow) => {
             const selected = classRow.id === selectedClassId ? " selected" : "";
@@ -24,11 +21,7 @@ function renderClassSelectorContent({
                     classRow.languageCode ??
                     classRow.id,
             ).trim();
-            const classTypeLabel =
-                classRow.teacherAccountId === viewerAccountId
-                    ? i18n.t("module.study.classes.enter_teacher_view")
-                    : i18n.t("module.study.classes.enter_student_view");
-            return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(`${classLabel} (${classTypeLabel})`)}</option>`;
+            return `<option value="${escapeHtml(classRow.id)}"${selected}>${escapeHtml(classLabel)}</option>`;
         })
         .join("");
     const hasClassOptions = Boolean(options);

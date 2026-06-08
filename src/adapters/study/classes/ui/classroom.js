@@ -36,6 +36,8 @@ import {
 import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
 import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
+import { createClassroomWindows } from "/static/adapters/study/classes/classroom-windows.js";
+import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -75,6 +77,8 @@ export async function mount(root, { signal } = {}) {
     let activeBoardPanel = "agenda";
     const presenceByAccountId = new Map();
     const boardEntitiesByClassId = new Map();
+    /** Initialised after composer.init(); used by the click handler via closure. */
+    let classroomWindows = null;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -260,31 +264,9 @@ export async function mount(root, { signal } = {}) {
         navigateTo("/classroom");
     }
 
-    /** Creates or reuses a classroom meeting and navigates to it on success. */
+    /** Creates or reuses a classroom meeting and embeds it in the meeting overlay. */
     async function openMeeting(snapshot) {
-        const response = await apiFetch(
-            "/api/v1/modules/jitsi-meet/meetings/create",
-            {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ classroomId: snapshot.id }),
-            },
-        );
-        if (!response.ok) {
-            showToast(i18n.t("module.study.classes.meeting_failed"), {
-                variant: "error",
-            });
-            return;
-        }
-        const payload = await response.json();
-        const meetingId = String(payload?.data?.id ?? "").trim();
-        if (!meetingId) {
-            showToast(i18n.t("module.study.classes.meeting_failed"), {
-                variant: "error",
-            });
-            return;
-        }
-        navigateTo(`/meetings?meetingId=${encodeURIComponent(meetingId)}`);
+        await classroomWindows.openMeeting(snapshot);
     }
 
     async function openSeatActionMenu(button) {
@@ -412,6 +394,15 @@ export async function mount(root, { signal } = {}) {
             void hydrateProfileAvatars(root);
         }
     }
+
+    const refreshDynamicDom = createDynamicDomRefresher({
+        root,
+        selectedSnapshot,
+        getSelectedSeatNumber: () => selectedSeatNumber,
+        i18n,
+        isTeacherView,
+        getActiveBoardPanel: () => activeBoardPanel,
+    });
 
     async function refreshContent() {
         await refreshData();
@@ -554,7 +545,7 @@ export async function mount(root, { signal } = {}) {
                                 ) &&
                                 snapshot?.chatUrl
                             ) {
-                                navigateTo(snapshot.chatUrl);
+                                classroomWindows?.openChat(snapshot.chatUrl);
                                 return;
                             }
 
@@ -983,13 +974,15 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     void hydrateProfileAvatars(root);
+    classroomWindows = createClassroomWindows({ root, i18n });
     startClassroomRealtimeRefresh({
         signal,
         shouldRefresh: () => !isTeacherView(),
         refresh: async () => {
             await loadClassrooms();
             refreshSnapshotPresence();
-            refreshDom();
+            syncActiveBoardPanelWithSnapshot();
+            refreshDynamicDom();
             composer.refreshFooter();
             refreshSubNavigation();
         },
