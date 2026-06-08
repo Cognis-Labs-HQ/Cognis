@@ -11,3 +11,7 @@ Der Nachrichtenkomponist speichert nun einen Entwurf pro Raum, verschlüsselt na
 ## Formular-Entwurfsspeicherung ist jetzt opt-in
 
 Die persistente Formular-Entwurfsspeicherung des Seitenkomponisten wurde von einem Opt-out- auf ein Opt-in-Modell umgestellt. Nur Formularfelder, deren nächster Vorfahre `data-composer-include-form-memory="true"` trägt, werden in localStorage geschrieben. Felder ohne opt-in-Vorfahren werden weiterhin im flüchtigen In-Memory-Snapshot erfasst, sodass sie responsive Neu-Renderings innerhalb derselben Browsersitzung überdauern, aber niemals in den persistenten Speicher geschrieben werden. Dies verhindert, dass serverseitig gesteuerte Steuerelemente (Rollen-Dropdowns, Schalter, Präferenz-Auswahlfelder) jemals clientseitig zwischengespeichert werden.
+
+## Composer-Textfeld wird geleert, wenn zu einem Raum ohne gespeicherten Entwurf gewechselt wird
+
+Bisher blieb beim Wechsel von einem Raum mit ungesendetem Text zu einem Raum ohne gespeicherten Entwurf der Text des vorherigen Raums im Composer erhalten. Das danach ausgelöste synthetische Eingabeereignis speicherte diesen veralteten Text dann unter dem Entwurfsschlüssel des neu geöffneten Raums, was das versehentliche Senden der falschen Nachricht riskierte. Das Composer-Textfeld wird nun explizit geleert, bevor das Eingabeereignis ausgelöst wird, wenn der geöffnete Raum keinen gespeicherten Entwurf hat.

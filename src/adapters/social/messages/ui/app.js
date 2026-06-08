@@ -136,15 +136,24 @@ export async function mount(root, { signal } = {}) {
             syncOpenRoomPreviews();
             const openedRoomId = room?.id != null ? String(room.id) : null;
             if (openedRoomId) {
-                // loadPersistedFormState handles storage errors internally,
-                // returning an empty Map on failure so restoreFormState
-                // becomes a safe no-op when no draft exists.
-                restoreFormState(root, loadPersistedFormState(openedRoomId));
+                const persistedState = loadPersistedFormState(openedRoomId);
+                restoreFormState(root, persistedState);
+                // When no draft exists, restoreFormState is a no-op and the
+                // textarea retains the previous room's text. Clear it explicitly
+                // so stale content is never saved under the new room's draft key
+                // when the synthetic input event fires below.
+                // composerInputRef may be null before the first onRender fires;
+                // the instanceof guard safely skips the clear in that case
+                // (lines 232-239 below, where composerInputRef is assigned).
+                if (
+                    persistedState.size === 0 &&
+                    composerInputRef instanceof HTMLTextAreaElement
+                ) {
+                    composerInputRef.value = "";
+                }
                 // Dispatch a synthetic input event so dependent UI state
                 // (preview rendering, character counters, typing indicators)
                 // is updated after the draft value is restored programmatically.
-                // composerInputRef may be null before the first onRender fires;
-                // optional chaining safely skips the event in that case.
                 composerInputRef?.dispatchEvent(new Event("input"));
             }
         },

@@ -387,11 +387,25 @@ test("messages onRoomOpened callback restores draft for opened room", () => {
 
     assert.match(
         source,
-        /onRoomOpened:\s*async\s*\(room\)\s*=>\s*\{[\s\S]*restoreFormState\(\s*root,\s*loadPersistedFormState\(\s*openedRoomId\s*\)\)/m,
+        /const openedRoomId = room\?\.id != null \? String\(room\.id\) : null/,
     );
     assert.match(
         source,
-        /const openedRoomId = room\?\.id != null \? String\(room\.id\) : null/,
+        /const persistedState = loadPersistedFormState\(\s*openedRoomId\s*\)/,
     );
+    assert.match(source, /restoreFormState\(\s*root,\s*persistedState\s*\)/);
     assert.match(source, /composerInputRef\?\.dispatchEvent/);
+});
+
+test("messages onRoomOpened clears composer when opened room has no saved draft", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(
+        source,
+        /persistedState\.size === 0 &&\s*composerInputRef instanceof HTMLTextAreaElement/m,
+    );
+    assert.match(
+        source,
+        /persistedState\.size === 0[\s\S]*composerInputRef\.value = ""/m,
+    );
 });
