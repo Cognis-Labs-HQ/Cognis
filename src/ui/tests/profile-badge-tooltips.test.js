@@ -11,7 +11,7 @@ function readSourceFile(relativePath) {
     return readFileSync(resolve(ROOT, relativePath), "utf8");
 }
 
-test("profile badges render localized hover labels at runtime", () => {
+test("profile badges render localized accessible labels at runtime", () => {
     const renderSource = readSourceFile(
         "src/adapters/social/profile/ui/profile-render.js",
     );
@@ -67,9 +67,9 @@ test("profile badges render localized hover labels at runtime", () => {
         },
     };
 
-    assert.match(renderAvatarBadge("owner", i18n), /title="Owner"/);
-    assert.match(renderAvatarBadge("admin", i18n), /title="Admin"/);
-    assert.match(renderAvatarBadge("teacher", i18n), /title="Teacher"/);
+    assert.doesNotMatch(renderAvatarBadge("owner", i18n), /title="/);
+    assert.doesNotMatch(renderAvatarBadge("admin", i18n), /title="/);
+    assert.doesNotMatch(renderAvatarBadge("teacher", i18n), /title="/);
     assert.match(
         renderAvatarBadge("owner", i18n),
         /aria-label="Owner" role="img"/,
@@ -77,14 +77,14 @@ test("profile badges render localized hover labels at runtime", () => {
     assert.equal(renderAvatarBadge("user", i18n), "");
 });
 
-test("profile badge styles allow native hover tooltips", () => {
+test("profile badge styles do not show hover tooltip affordance", () => {
     const cssSource = readSourceFile(
         "src/adapters/social/profile/ui/profile-social.css",
     );
 
     assert.match(
         cssSource,
-        /\.profile-avatar-badge \{[\s\S]*pointer-events: auto;/m,
+        /\.profile-avatar-badge \{[\s\S]*pointer-events: none;/m,
     );
-    assert.match(cssSource, /\.profile-avatar-badge \{[\s\S]*cursor: help;/m);
+    assert.match(cssSource, /\.profile-avatar-badge \{[\s\S]*cursor: default;/m);
 });
