@@ -19,7 +19,10 @@ import {
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
-import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import {
+    createFormDraftManager,
+    createPageComposer,
+} from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -54,41 +57,10 @@ import { renderRoomList } from "./room-render.js";
 import { importRoomKey } from "/static/reuse/crypto-utils.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
-const MESSAGES_DRAFT_STORAGE_PREFIX = "cognis_messages_draft";
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
-
-function getRoomDraftStorageKey(accountId, roomId) {
-    return `${MESSAGES_DRAFT_STORAGE_PREFIX}:${accountId}:${roomId}`;
-}
-
-function saveRoomDraft(accountId, roomId, text) {
-    if (!accountId || !roomId) return;
-    const storageKey = getRoomDraftStorageKey(accountId, roomId);
-    try {
-        if (text) {
-            localStorage.setItem(storageKey, text);
-        } else {
-            localStorage.removeItem(storageKey);
-        }
-    } catch {
-        // storage unavailable (e.g. private browsing quota exceeded)
-    }
-}
-
-function loadRoomDraft(accountId, roomId) {
-    if (!accountId || !roomId) return "";
-    try {
-        return (
-            localStorage.getItem(getRoomDraftStorageKey(accountId, roomId)) ??
-            ""
-        );
-    } catch {
-        return "";
-    }
-}
 
 const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
     {
@@ -105,6 +77,21 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "ui.reuse.messages");
+
+    const {
+        captureFormState,
+        restoreFormState,
+        loadPersistedFormState,
+        savePersistedFormState,
+        clearPersistedFormState,
+    } = createFormDraftManager({
+        FORM_DRAFT_STORAGE_PREFIX: "cognis_messages_draft",
+        // The messages composer has a single textarea; the large-form reset
+        // button is never relevant, so the threshold is set above any realistic
+        // field count to suppress it entirely.
+        LARGE_FORM_RESET_FIELD_THRESHOLD: Number.MAX_SAFE_INTEGER,
+        i18n,
+    });
 
     root.classList.add("messages-page");
     root.dataset.messageStyle = resolveMessageStyle();
@@ -148,18 +135,17 @@ export async function mount(root, { signal } = {}) {
         onRoomOpened: async (room) => {
             syncOpenRoomPreviews();
             const openedRoomId = room?.id != null ? String(room.id) : null;
-            if (
-                openedRoomId &&
-                composerInputRef instanceof HTMLTextAreaElement
-            ) {
-                composerInputRef.value = loadRoomDraft(
-                    currentAccountId,
-                    openedRoomId,
-                );
+            if (openedRoomId) {
+                // loadPersistedFormState handles storage errors internally,
+                // returning an empty Map on failure so restoreFormState
+                // becomes a safe no-op when no draft exists.
+                restoreFormState(root, loadPersistedFormState(openedRoomId));
                 // Dispatch a synthetic input event so dependent UI state
                 // (preview rendering, character counters, typing indicators)
                 // is updated after the draft value is restored programmatically.
-                composerInputRef.dispatchEvent(new Event("input"));
+                // composerInputRef may be null before the first onRender fires;
+                // optional chaining safely skips the event in that case.
+                composerInputRef?.dispatchEvent(new Event("input"));
             }
         },
     });
@@ -224,7 +210,7 @@ export async function mount(root, { signal } = {}) {
           <div id="messages-request-banner-slot"></div>
           <div class="messages-thread-list" id="messages-thread-list"></div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
-          <form class="messages-composer" id="messages-composer">
+          <form class="messages-composer" id="messages-composer" data-composer-include-form-memory="true">
             <div class="messages-composer-mode-row">
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-compose-toggle" aria-pressed="true">${escapeHtml(i18n.t("module.social.messages.compose"))}</button>
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-preview-toggle" aria-pressed="false">${escapeHtml(i18n.t("module.social.messages.preview"))}</button>
@@ -682,7 +668,7 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
                     if (composerInput instanceof HTMLTextAreaElement) {
-                        saveRoomDraft(currentAccountId, selectedRoomId, "");
+                        clearPersistedFormState(selectedRoomId);
                         composerInput.value = "";
                     }
                     renderComposerPreview();
@@ -695,11 +681,13 @@ export async function mount(root, { signal } = {}) {
                     const hasText = Boolean((composerInput.value ?? "").trim());
                     roomState.queueTypingUpdate(hasText);
                     renderComposerPreview();
-                    saveRoomDraft(
-                        currentAccountId,
-                        roomState.getSelectedRoomId(),
-                        composerInput.value,
-                    );
+                    const selectedRoomId = roomState.getSelectedRoomId();
+                    if (selectedRoomId) {
+                        savePersistedFormState(
+                            selectedRoomId,
+                            captureFormState(root, { persistableOnly: true }),
+                        );
+                    }
                 });
                 composerInput?.addEventListener("keydown", (keyboardEvent) => {
                     if (

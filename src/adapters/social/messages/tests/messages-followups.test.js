@@ -360,23 +360,16 @@ test("messages saved templates are scoped to the current account", () => {
     );
 });
 
-test("messages composer persists per-room drafts keyed by account and room", () => {
+test("messages composer persists per-room drafts via form-draft manager keyed by room", () => {
     const source = readMessagesUiBundle();
 
     assert.match(
         source,
-        /MESSAGES_DRAFT_STORAGE_PREFIX = "cognis_messages_draft"/,
+        /createFormDraftManager\(\{[^}]*FORM_DRAFT_STORAGE_PREFIX:\s*"cognis_messages_draft"/m,
     );
-    assert.match(
-        source,
-        /function getRoomDraftStorageKey\(accountId, roomId\)/,
-    );
-    assert.match(source, /function saveRoomDraft\(accountId, roomId, text\)/);
-    assert.match(source, /function loadRoomDraft\(accountId, roomId\)/);
-    assert.match(
-        source,
-        /`\$\{MESSAGES_DRAFT_STORAGE_PREFIX\}:\$\{accountId\}:\$\{roomId\}`/,
-    );
+    assert.match(source, /data-composer-include-form-memory="true"/);
+    assert.match(source, /captureFormState\b/);
+    assert.match(source, /restoreFormState\b/);
 });
 
 test("messages composer saves draft on input and clears on successful send", () => {
@@ -384,12 +377,9 @@ test("messages composer saves draft on input and clears on successful send", () 
 
     assert.match(
         source,
-        /saveRoomDraft\(\s*currentAccountId,\s*roomState\.getSelectedRoomId\(\),\s*composerInput\.value,?\s*\)/m,
+        /savePersistedFormState\(\s*selectedRoomId,\s*captureFormState\(root,\s*\{[^}]*persistableOnly:\s*true[^}]*\}\)/m,
     );
-    assert.match(
-        source,
-        /saveRoomDraft\(\s*currentAccountId,\s*selectedRoomId,\s*"",?\s*\)/m,
-    );
+    assert.match(source, /clearPersistedFormState\(\s*selectedRoomId\s*\)/m);
 });
 
 test("messages onRoomOpened callback restores draft for opened room", () => {
@@ -397,11 +387,11 @@ test("messages onRoomOpened callback restores draft for opened room", () => {
 
     assert.match(
         source,
-        /onRoomOpened:\s*async\s*\(room\)\s*=>\s*\{[\s\S]*loadRoomDraft\(\s*currentAccountId,\s*openedRoomId,?\s*\)/m,
+        /onRoomOpened:\s*async\s*\(room\)\s*=>\s*\{[\s\S]*restoreFormState\(\s*root,\s*loadPersistedFormState\(\s*openedRoomId\s*\)\)/m,
     );
     assert.match(
         source,
         /const openedRoomId = room\?\.id != null \? String\(room\.id\) : null/,
     );
-    assert.match(source, /composerInputRef instanceof HTMLTextAreaElement/);
+    assert.match(source, /composerInputRef\?\.dispatchEvent/);
 });
