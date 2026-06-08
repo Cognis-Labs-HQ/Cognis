@@ -92,7 +92,7 @@ test("quiet unsaved changes bar keeps floating controls hidden", () => {
     assert.equal(floatingEl.hidden, true);
 });
 
-test("form dirty tracker only marks dirty after an actual edit", () => {
+test("form dirty tracker detects field value changes and reverts", () => {
     const field = new FakeField({
         name: "displayName",
         value: "Ada",

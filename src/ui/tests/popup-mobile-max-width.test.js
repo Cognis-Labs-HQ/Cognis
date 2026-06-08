@@ -39,13 +39,17 @@ test("popup locks page scrolling while preserving popup overflow", () => {
 test("popup close protection uses the silent dirty tracker before warning", () => {
     const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
 
-    assert.match(source, /createFormDirtyTracker/);
-    assert.match(source, /closeProtectionTracker = createFormDirtyTracker\(/);
-    assert.match(source, /quiet:\s*true/);
-    assert.match(
-        source,
-        /closeProtectionTracker\?\.isAnyDirty\(\)\s*\?\?\s*hasUnsavedFormChanges\(overlay\)/,
+    assert.equal(source.includes("createFormDirtyTracker"), true);
+    assert.equal(
+        source.includes("closeProtectionTracker = createFormDirtyTracker"),
+        true,
     );
+    assert.equal(source.includes("quiet: true"), true);
+    assert.equal(
+        source.includes("closeProtectionTracker?.isAnyDirty() ??"),
+        true,
+    );
+    assert.equal(source.includes("hasUnsavedFormChanges(overlay)"), true);
 });
 
 test("createAnchoredPopup creates, positions, and tears down anchored popups", () => {

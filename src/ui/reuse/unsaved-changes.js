@@ -75,12 +75,29 @@ export function createUnsavedChangesBar(
     return { markDirty, isAnyDirty, sync };
 }
 
+/**
+ * CSS selector for user-editable data fields.
+ *
+ * Hidden and action-style inputs are excluded because they do not represent
+ * direct popup content edits and would otherwise create false-positive dirty
+ * states during close-protection checks.
+ */
 const TRACKED_FIELD_SELECTOR = [
     'input:not([type="hidden"]):not([type="submit"]):not([type="reset"]):not([type="button"]):not([type="image"])',
     "textarea",
     "select",
 ].join(", ");
 
+/**
+ * Builds a stable tracked-field identifier from the field metadata and index.
+ *
+ * The index suffix keeps repeated names or unnamed fields unique within the
+ * same tracked form.
+ *
+ * @param {HTMLElement} field
+ * @param {number} index
+ * @returns {string}
+ */
 function getTrackedFieldId(field, index) {
     const fallbackTag = String(field?.tagName ?? "field").toLowerCase();
     const fieldName = String(field?.name ?? field?.id ?? "").trim();
@@ -88,6 +105,16 @@ function getTrackedFieldId(field, index) {
     return `${baseId}-${index}`;
 }
 
+/**
+ * Serializes a field's current state for dirty comparisons.
+ *
+ * Different field types need different representations: checkboxes/radios use
+ * checked state, file inputs serialize the current file list, multi-selects
+ * serialize selected option values, and text-like fields use their value.
+ *
+ * @param {HTMLElement} field
+ * @returns {string}
+ */
 function readTrackedFieldState(field) {
     const tagName = String(field?.tagName ?? "").toUpperCase();
     if (tagName === "INPUT") {
@@ -117,7 +144,9 @@ function readTrackedFieldState(field) {
  * initial value using the shared unsaved-changes controller.
  *
  * @param {HTMLElement|null} rootElement
- * @param {{ floatingEl?: HTMLElement|null, quiet?: boolean }} options
+ * @param {{ floatingEl?: HTMLElement|null, quiet?: boolean }} options - Pass
+ *   floatingEl only when you want the shared save/discard controls to appear;
+ *   quiet mode ignores the floating element and keeps tracking silent.
  * @returns {{ isAnyDirty: () => boolean, sync: () => void, destroy: () => void }}
  */
 export function createFormDirtyTracker(
@@ -157,14 +186,14 @@ export function createFormDirtyTracker(
     const handleFieldChange = () => {
         sync();
     };
-    const cleanupEntries = trackedFields.flatMap((field) => {
+    trackedFields.forEach((field) => {
         field.addEventListener?.("input", handleFieldChange);
         field.addEventListener?.("change", handleFieldChange);
-        return [
-            [field, "input", handleFieldChange],
-            [field, "change", handleFieldChange],
-        ];
     });
+    const cleanupEntries = trackedFields.flatMap((field) => [
+        [field, "input", handleFieldChange],
+        [field, "change", handleFieldChange],
+    ]);
 
     sync();
 
