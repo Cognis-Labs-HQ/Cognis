@@ -7,7 +7,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
-import { getRoleLabel } from "/static/reuse/access-role.js";
+import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
 
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
@@ -146,13 +146,6 @@ export function visibilityClass(visibilityValue) {
         community: "visibility-community",
     };
     return visibilityClassMap[visibilityValue] ?? "visibility-hidden";
-}
-
-function normalizeRoleValue(roleValue) {
-    const normalizedRole = String(roleValue ?? "")
-        .trim()
-        .toLowerCase();
-    return normalizedRole || null;
 }
 
 function getEscapedRoleLabel(normalizedRole, i18n, allowedRoles) {

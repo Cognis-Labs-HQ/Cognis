@@ -48,6 +48,11 @@ test("profile badges render localized title and aria-label attributes", () => {
         getRoleLabel(i18n, role) {
             return i18n.t(`ui.reuse.role_${role}`);
         },
+        normalizeRoleValue(role) {
+            return String(role ?? "")
+                .trim()
+                .toLowerCase();
+        },
     };
     context.globalThis = context;
 
