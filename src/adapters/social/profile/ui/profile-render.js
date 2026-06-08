@@ -11,6 +11,11 @@ import { getRoleLabel } from "/static/reuse/access-role.js";
 
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
+const PROFILE_BADGE_MARKUP = {
+    owner: '<img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" />',
+    admin: '<img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" />',
+    teacher: "&#128218;",
+};
 
 function createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n) {
     return createFormBuilder(
@@ -144,13 +149,7 @@ function normalizeProfileBadgeRole(roleValue) {
 
 function getProfileBadgeRoleLabel(roleValue, i18n) {
     const normalizedRole = normalizeProfileBadgeRole(roleValue);
-    if (
-        normalizedRole !== "owner" &&
-        normalizedRole !== "admin" &&
-        normalizedRole !== "teacher"
-    ) {
-        return "";
-    }
+    if (!PROFILE_BADGE_MARKUP[normalizedRole]) return "";
     return escapeHtml(getRoleLabel(i18n, normalizedRole));
 }
 
@@ -158,16 +157,7 @@ export function renderAvatarBadge(roleValue, i18n) {
     const normalizedRole = normalizeProfileBadgeRole(roleValue);
     const roleLabel = getProfileBadgeRoleLabel(roleValue, i18n);
     if (!roleLabel) return "";
-    if (normalizedRole === "owner") {
-        return `<span class="profile-avatar-badge profile-avatar-badge--owner" title="${roleLabel}" aria-label="${roleLabel}" role="img"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
-    }
-    if (normalizedRole === "admin") {
-        return `<span class="profile-avatar-badge profile-avatar-badge--admin" title="${roleLabel}" aria-label="${roleLabel}" role="img"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
-    }
-    if (normalizedRole === "teacher") {
-        return `<span class="profile-avatar-badge profile-avatar-badge--teacher" title="${roleLabel}" aria-label="${roleLabel}" role="img">&#128218;</span>`;
-    }
-    return "";
+    return `<span class="profile-avatar-badge profile-avatar-badge--${normalizedRole}" title="${roleLabel}" aria-label="${roleLabel}" role="img">${PROFILE_BADGE_MARKUP[normalizedRole]}</span>`;
 }
 
 function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
