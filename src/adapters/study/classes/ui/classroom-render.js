@@ -144,6 +144,59 @@ export function renderBlackboard({
         })
         .join("");
     const canSelectBoardPanel = isTeacherView;
+    const toolbarActions = [];
+    if (isTeacherView) {
+        toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-chat-btn"
+                ${snapshot?.chatUrl ? "" : "disabled"}
+                data-entity-kind="chat"
+                draggable="true"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
+                title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>`,
+        );
+        toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-meeting-btn"
+                data-entity-kind="meeting"
+                draggable="true"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
+                title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>`,
+        );
+        toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
+                title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">${escapeHtml(i18n.t("module.study.classes.create_agenda"))}</button>`,
+        );
+        toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-class-settings-btn"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
+                title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">${escapeHtml(i18n.t("module.study.classes.class_settings"))}</button>`,
+        );
+    }
+    if (canToggleView) {
+        toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-toggle-view-btn"
+                aria-label="${escapeHtml(
+                    i18n.t(
+                        currentViewMode === "teacher"
+                            ? "module.study.classes.enter_student_view"
+                            : "module.study.classes.enter_teacher_view",
+                    ),
+                )}"
+                title="${escapeHtml(
+                    i18n.t(
+                        currentViewMode === "teacher"
+                            ? "module.study.classes.enter_student_view"
+                            : "module.study.classes.enter_teacher_view",
+                    ),
+                )}">${escapeHtml(
+                    i18n.t(
+                        currentViewMode === "teacher"
+                            ? "module.study.classes.enter_student_view"
+                            : "module.study.classes.enter_teacher_view",
+                    ),
+                )}</button>`,
+        );
+    }
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
@@ -155,62 +208,11 @@ export function renderBlackboard({
                         activeBoardPanel === "classroom" ? " active" : ""
                     }" data-board-panel="classroom"${canSelectBoardPanel ? "" : ' disabled aria-disabled="true"'}>${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
                 </div>
-                <div class="classes-blackboard-actions">
-                    ${
-                        isTeacherView
-                            ? `<button type="button" class="classes-icon-btn classes-board-entity-token"
-                                ${snapshot?.chatUrl ? "" : "disabled"}
-                                data-entity-kind="chat"
-                                draggable="true"
-                                aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
-                                title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">💬</button>
-                            <button type="button" class="classes-icon-btn classes-board-entity-token"
-                                data-entity-kind="meeting"
-                                draggable="true"
-                                aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
-                                title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>`
-                            : ""
-                    }
-                    ${
-                        canToggleView
-                            ? `<button type="button" class="classes-icon-btn classes-toggle-view-btn"
-                                aria-label="${escapeHtml(
-                                    i18n.t(
-                                        currentViewMode === "teacher"
-                                            ? "module.study.classes.enter_student_view"
-                                            : "module.study.classes.enter_teacher_view",
-                                    ),
-                                )}"
-                                title="${escapeHtml(
-                                    i18n.t(
-                                        currentViewMode === "teacher"
-                                            ? "module.study.classes.enter_student_view"
-                                            : "module.study.classes.enter_teacher_view",
-                                    ),
-                                )}">${escapeHtml(
-                                    i18n.t(
-                                        currentViewMode === "teacher"
-                                            ? "module.study.classes.enter_student_view"
-                                            : "module.study.classes.enter_teacher_view",
-                                    ),
-                                )}</button>`
-                            : ""
-                    }
-                    ${
-                        isTeacherView
-                            ? `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
-                                   aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
-                                   title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">🗓</button>`
-                            : ""
-                    }
-                    ${
-                        isTeacherView
-                            ? `<button type="button" class="classes-icon-btn classes-class-settings-btn"
-                                   aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
-                                   title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">⚙️</button>`
-                            : ""
-                    }
-                </div>
+                ${
+                   toolbarActions.length
+                       ? `<div class="classes-blackboard-actions">${toolbarActions.join("")}</div>`
+                       : ""
+                }
             </div>
             <div class="classes-blackboard-surface">
                 <div class="classes-blackboard-main classes-blackboard-main--single">
@@ -238,7 +240,23 @@ export function renderBlackboard({
 
 function renderStudentRoster({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
-    const rows = members
+    const teacherAccountId = String(snapshot?.teacherAccountId ?? "").trim();
+    const rosterMembers = teacherAccountId
+        ? [
+              {
+                  ...(snapshot?.teacher ?? {}),
+                  studentAccountId: teacherAccountId,
+                  displayName:
+                      String(snapshot?.teacher?.displayName ?? "").trim() ||
+                      buildAccountLabel(snapshot?.teacher) ||
+                      teacherAccountId,
+                  rosterRoleLabel: i18n.t("module.study.classes.teacher"),
+                  rosterItemClass: " classes-roster-item--teacher",
+              },
+              ...members,
+          ]
+        : members;
+    const rows = rosterMembers
         .map((member) => {
             const accountId = String(member?.studentAccountId ?? "").trim();
             const handle = String(member?.handle ?? "").trim();
@@ -261,19 +279,26 @@ function renderStudentRoster({ snapshot, i18n }) {
             const content = `
                 <span class="classes-roster-member-card">
                     ${avatar}
-                    <span class="classes-roster-name">${escapeHtml(label)}</span>
+                    <span class="classes-roster-details">
+                        <span class="classes-roster-name">${escapeHtml(label)}</span>
+                        ${
+                            member?.rosterRoleLabel
+                                ? `<span class="classes-roster-role">${escapeHtml(member.rosterRoleLabel)}</span>`
+                                : ""
+                        }
+                    </span>
                     <span class="classes-status-light classes-status-light--${escapeHtml(presenceClass)}" aria-hidden="true"></span>
                 </span>
             `;
             if (!handle || member?.identityMasked) {
-                return `<div class="classes-roster-item" data-student-id="${escapeHtml(accountId)}">${content}</div>`;
+                return `<div class="classes-roster-item${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}">${content}</div>`;
             }
-            return `<button type="button" class="classes-roster-item classes-member-profile-btn" data-student-id="${escapeHtml(accountId)}" data-student-handle="${escapeHtml(handle)}" data-student-name="${escapeHtml(label)}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${content}</button>`;
+            return `<button type="button" class="classes-roster-item classes-member-profile-btn${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}" data-student-handle="${escapeHtml(handle)}" data-student-name="${escapeHtml(label)}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${content}</button>`;
         })
         .join("");
     return `
         <div class="classes-student-roster">
-            <div class="classes-roster-header">${escapeHtml(i18n.t("module.study.classes.members_section"))}</div>
+            <div class="classes-roster-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
             <div class="classes-roster-list classes-roster-grid">${rows || `<span class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</span>`}</div>
         </div>
     `;

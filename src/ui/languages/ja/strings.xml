@@ -631,6 +631,7 @@
   <string name="module.study.classes.no_join_requests">保留中の参加申請はありません。</string>
   <string name="module.study.classes.join_requests">参加申請</string>
   <string name="module.study.classes.members_section">メンバー</string>
+  <string name="module.study.classes.students_section">生徒</string>
   <string name="module.study.classes.request_approved">参加申請を承認しました。</string>
   <string name="module.study.classes.request_rejected">参加申請を却下しました。</string>
   <string name="module.study.classes.request_review_failed">申請の確認に失敗しました。</string>
@@ -649,6 +650,7 @@
   <string name="module.study.classes.agenda_save_failed">アジェンダ項目の保存に失敗しました。</string>
   <string name="module.study.classes.open_textbook">教科書を開く</string>
   <string name="module.study.classes.open_notebook">ノートを開く</string>
+  <string name="module.study.classes.chat_failed">クラスチャットを開けませんでした。</string>
   <string name="module.study.classes.meeting_failed">授業ミーティングを開始できませんでした。</string>
   <string name="module.study.classes.empty_seat">生徒を招待</string>
   <string name="module.study.classes.join_mode_label">参加方式</string>

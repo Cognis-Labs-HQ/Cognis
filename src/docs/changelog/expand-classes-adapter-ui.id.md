@@ -26,6 +26,15 @@ digulir berada di sebelah kiri papan tulis. Pintu kayu dengan busur ayunan berad
 di dinding kanan. Lantai diisi dengan baris meja dan kursi dinamis yang
 menyesuaikan kapasitas. Page-composer kini mendukung parameter `footer`.
 
+## Tindak Lanjut Toolbar Classroom
+
+Daftar classroom sekarang memakai label "Siswa" dan menampilkan guru di bagian
+teratas sehingga panel classroom mengikuti istilah yang diminta.
+
+Toolbar classroom sekarang memakai label teks alih-alih kontrol emoji, menyembunyikan
+strip aksi saat siswa asli melihat ruang, dan menghubungkan tombol chat/meeting
+ke jendela classroom yang sudah ada agar terbuka dengan andal.
+
 ## Komponen dan berkas yang diubah
 
 - Route dan store adapter study/classes:

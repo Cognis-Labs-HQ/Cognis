@@ -38,6 +38,16 @@ The materials and homework editor (teacher view) has been moved below the room a
 a collapsible section. The page-composer now supports a `footer` parameter for
 injecting elements into the global footer bar.
 
+## Classroom Toolbar Follow-Ups
+
+The classroom roster now labels the section as "Students" and shows the teacher
+at the top of the list so the classroom panel matches the requested terminology.
+
+The classroom toolbar now uses text labels instead of emoji-only controls,
+hides its action strip when a real student is viewing the room, and wires the
+chat/meeting toolbar buttons into the existing classroom windows so they open
+reliably.
+
 ## Changed components and files
 
 - Study classes adapter routes and stores:

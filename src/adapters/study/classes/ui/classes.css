@@ -426,11 +426,29 @@ body:not([data-theme="light"]) .classes-classroom-content {
     color: var(--classroom-member-text);
 }
 
+.classes-roster-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .classes-roster-name {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     flex: 1;
+}
+
+.classes-roster-role {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.classes-roster-item--teacher {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 /* ── Blackboard ── */
@@ -832,14 +850,16 @@ body:not([data-theme="light"]) .classes-classroom-content {
 /* ── Shared blackboard icon buttons ── */
 
 .classes-icon-btn {
-    width: 2.25rem;
-    min-width: 2.25rem;
+    min-width: 0;
     height: 2.25rem;
-    border-radius: 999px;
+    padding: 0 10px;
+    border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(0, 0, 0, 0.18);
     color: #f6f6f6;
     cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.78rem;
 }
 
 .classes-icon-btn:disabled {
@@ -848,11 +868,7 @@ body:not([data-theme="light"]) .classes-classroom-content {
 }
 
 .classes-toggle-view-btn {
-    width: auto;
-    min-width: 0;
-    padding: 0 10px;
-    border-radius: 8px;
-    font-size: 0.78rem;
+    margin-left: auto;
 }
 
 .classes-classroom-editor {

@@ -631,6 +631,7 @@
   <string name="module.study.classes.no_join_requests">Tidak ada permintaan bergabung tertunda.</string>
   <string name="module.study.classes.join_requests">Permintaan Bergabung</string>
   <string name="module.study.classes.members_section">Anggota</string>
+  <string name="module.study.classes.students_section">Siswa</string>
   <string name="module.study.classes.request_approved">Permintaan bergabung disetujui.</string>
   <string name="module.study.classes.request_rejected">Permintaan bergabung ditolak.</string>
   <string name="module.study.classes.request_review_failed">Gagal meninjau permintaan.</string>
@@ -649,6 +650,7 @@
   <string name="module.study.classes.agenda_save_failed">Gagal menyimpan item agenda.</string>
   <string name="module.study.classes.open_textbook">Buka Buku Teks</string>
   <string name="module.study.classes.open_notebook">Buka Buku Catatan</string>
+  <string name="module.study.classes.chat_failed">Gagal membuka obrolan kelas.</string>
   <string name="module.study.classes.meeting_failed">Gagal memulai pertemuan kelas.</string>
   <string name="module.study.classes.empty_seat">Undang Siswa</string>
   <string name="module.study.classes.join_mode_label">Mode Bergabung</string>

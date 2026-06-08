@@ -631,6 +631,7 @@
   <string name="module.study.classes.no_join_requests">Keine ausstehenden Beitrittsanträge.</string>
   <string name="module.study.classes.join_requests">Beitrittsanträge</string>
   <string name="module.study.classes.members_section">Mitglieder</string>
+  <string name="module.study.classes.students_section">Schüler</string>
   <string name="module.study.classes.request_approved">Beitrittsantrag genehmigt.</string>
   <string name="module.study.classes.request_rejected">Beitrittsantrag abgelehnt.</string>
   <string name="module.study.classes.request_review_failed">Antrag konnte nicht geprüft werden.</string>
@@ -649,6 +650,7 @@
   <string name="module.study.classes.agenda_save_failed">Agendaeintrag konnte nicht gespeichert werden.</string>
   <string name="module.study.classes.open_textbook">Lehrbuch öffnen</string>
   <string name="module.study.classes.open_notebook">Notizbuch öffnen</string>
+  <string name="module.study.classes.chat_failed">Der Klassenchat konnte nicht geöffnet werden.</string>
   <string name="module.study.classes.meeting_failed">Das Klassenmeeting konnte nicht gestartet werden.</string>
   <string name="module.study.classes.empty_seat">Schüler einladen</string>
   <string name="module.study.classes.join_mode_label">Beitrittsmodus</string>

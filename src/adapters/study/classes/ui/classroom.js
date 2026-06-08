@@ -540,12 +540,20 @@ export async function mount(root, { signal } = {}) {
                             }
 
                             if (
-                                event.target.closest(
-                                    ".classes-open-chat-btn",
-                                ) &&
-                                snapshot?.chatUrl
+                                event.target.closest(".classes-open-chat-btn")
                             ) {
-                                classroomWindows?.openChat(snapshot.chatUrl);
+                                if (!snapshot?.chatUrl || !classroomWindows) {
+                                    showToast(
+                                        i18n.t(
+                                            "module.study.classes.chat_failed",
+                                        ),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
+                                    return;
+                                }
+                                classroomWindows.openChat(snapshot.chatUrl);
                                 return;
                             }
 

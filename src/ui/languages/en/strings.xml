@@ -631,6 +631,7 @@
   <string name="module.study.classes.no_join_requests">No pending join requests.</string>
   <string name="module.study.classes.join_requests">Join Requests</string>
   <string name="module.study.classes.members_section">Members</string>
+  <string name="module.study.classes.students_section">Students</string>
   <string name="module.study.classes.request_approved">Join request approved.</string>
   <string name="module.study.classes.request_rejected">Join request rejected.</string>
   <string name="module.study.classes.request_review_failed">Failed to review request.</string>
@@ -649,6 +650,7 @@
   <string name="module.study.classes.agenda_save_failed">Failed to save agenda entry.</string>
   <string name="module.study.classes.open_textbook">Open Textbook</string>
   <string name="module.study.classes.open_notebook">Open Notebook</string>
+  <string name="module.study.classes.chat_failed">Failed to open the class chat.</string>
   <string name="module.study.classes.meeting_failed">Failed to start the class meeting.</string>
   <string name="module.study.classes.empty_seat">Empty Seat</string>
   <string name="module.study.classes.join_mode_label">Join Mode</string>

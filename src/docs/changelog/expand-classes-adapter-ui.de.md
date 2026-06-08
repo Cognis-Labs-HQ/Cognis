@@ -32,6 +32,15 @@ Der Boden füllt sich mit dynamischen Reihen aus Tisch-Stuhl-Einheiten, die mit
 der Kapazität skalieren. Der Page-Composer unterstützt nun einen `footer`-Parameter
 für Footer-Elemente.
 
+## Toolbar-Nacharbeiten im Classroom
+
+Die Classroom-Liste verwendet nun die Bezeichnung „Schüler“ und zeigt die Lehrkraft
+oben in der Liste, damit das Classroom-Panel der gewünschten Terminologie folgt.
+
+Die Classroom-Toolbar nutzt jetzt Text statt reiner Emoji-Steuerelemente, blendet
+den Aktionsbereich für echte Schüleransichten aus und verbindet die Chat-/Meeting-
+Buttons mit den vorhandenen Classroom-Fenstern, damit sie zuverlässig öffnen.
+
 ## Geänderte Komponenten und Dateien
 
 - Study-Classes-Adapter-Routen und -Stores:

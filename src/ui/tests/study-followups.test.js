@@ -39,3 +39,47 @@ test("study hub detects native library child component by descriptor id", () => 
         /hasLibraryModule[\s\S]*component\?\.id[\s\S]*===\s*"library"/,
     );
 });
+
+test("classroom roster shows a Students header and prepends the teacher", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        "utf8",
+    );
+    assert.match(source, /module\.study\.classes\.students_section/);
+    assert.match(
+        source,
+        /const teacherAccountId = String\(snapshot\?\.teacherAccountId \?\? ""\)\.trim\(\)/,
+    );
+    assert.match(
+        source,
+        /rosterRoleLabel: i18n\.t\("module\.study\.classes\.teacher"\)/,
+    );
+    assert.match(source, /\.\.\.members,/);
+});
+
+test("classroom toolbar chat and meeting controls use text buttons with working action classes", () => {
+    const renderSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        "utf8",
+    );
+    const controllerSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom.js"),
+        "utf8",
+    );
+    assert.match(
+        renderSource,
+        /classes-board-entity-token classes-open-chat-btn[\s\S]*module\.study\.classes\.open_chat/,
+    );
+    assert.match(
+        renderSource,
+        /classes-board-entity-token classes-open-meeting-btn[\s\S]*module\.study\.classes\.open_meeting/,
+    );
+    assert.match(
+        controllerSource,
+        /event\.target\.closest\("\.classes-open-chat-btn"\)/,
+    );
+    assert.match(
+        controllerSource,
+        /classroomWindows\.openChat\(snapshot\.chatUrl\)/,
+    );
+});
