@@ -209,9 +209,9 @@ export function renderBlackboard({
                     }" data-board-panel="classroom"${canSelectBoardPanel ? "" : ' disabled aria-disabled="true"'}>${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
                 </div>
                 ${
-                   toolbarActions.length
-                       ? `<div class="classes-blackboard-actions">${toolbarActions.join("")}</div>`
-                       : ""
+                    toolbarActions.length
+                        ? `<div class="classes-blackboard-actions">${toolbarActions.join("")}</div>`
+                        : ""
                 }
             </div>
             <div class="classes-blackboard-surface">

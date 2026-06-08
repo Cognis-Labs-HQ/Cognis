@@ -556,7 +556,6 @@ export async function mount(root, { signal } = {}) {
                                 classroomWindows.openChat(snapshot.chatUrl);
                                 return;
                             }
-
                             if (
                                 event.target.closest(
                                     ".classes-open-meeting-btn",
