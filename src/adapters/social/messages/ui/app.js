@@ -19,7 +19,10 @@ import {
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
-import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import {
+    createFormDraftManager,
+    createPageComposer,
+} from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -75,6 +78,21 @@ export async function mount(root, { signal } = {}) {
     });
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
+    const {
+        captureFormState,
+        restoreFormState,
+        loadPersistedFormState,
+        savePersistedFormState,
+        clearPersistedFormState,
+    } = createFormDraftManager({
+        FORM_DRAFT_STORAGE_PREFIX: "cognis_messages_draft",
+        // The messages composer has a single textarea; the large-form reset
+        // button is never relevant, so the threshold is set above any realistic
+        // field count to suppress it entirely.
+        LARGE_FORM_RESET_FIELD_THRESHOLD: Number.MAX_SAFE_INTEGER,
+        i18n,
+    });
+
     root.classList.add("messages-page");
     root.dataset.messageStyle = resolveMessageStyle();
     root.addEventListener("error", handleProfileAvatarError, {
@@ -98,6 +116,8 @@ export async function mount(root, { signal } = {}) {
         ? decodeURIComponent(initialRoomMatch[1])
         : rememberedRoomId;
 
+    let composerInputRef = null;
+
     let syncOpenRoomPreviews = () => {};
 
     const roomState = createMessagesRoomState({
@@ -112,8 +132,30 @@ export async function mount(root, { signal } = {}) {
         typingIdleResetMs: TYPING_IDLE_RESET_MS,
         typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MS,
         liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MS,
-        onRoomOpened: async () => {
+        onRoomOpened: async (room) => {
             syncOpenRoomPreviews();
+            const openedRoomId = room?.id != null ? String(room.id) : null;
+            if (openedRoomId) {
+                const persistedState = loadPersistedFormState(openedRoomId);
+                restoreFormState(root, persistedState);
+                // When no draft exists, restoreFormState is a no-op and the
+                // textarea retains the previous room's text. Clear it explicitly
+                // so stale content is never saved under the new room's draft key
+                // when the synthetic input event fires below.
+                // composerInputRef may be null before the first onRender fires;
+                // the instanceof guard safely skips the clear in that case
+                // (lines 232-239 below, where composerInputRef is assigned).
+                if (
+                    persistedState.size === 0 &&
+                    composerInputRef instanceof HTMLTextAreaElement
+                ) {
+                    composerInputRef.value = "";
+                }
+                // Dispatch a synthetic input event so dependent UI state
+                // (preview rendering, character counters, typing indicators)
+                // is updated after the draft value is restored programmatically.
+                composerInputRef?.dispatchEvent(new Event("input"));
+            }
         },
     });
 
@@ -177,7 +219,7 @@ export async function mount(root, { signal } = {}) {
           <div id="messages-request-banner-slot"></div>
           <div class="messages-thread-list" id="messages-thread-list"></div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
-          <form class="messages-composer" id="messages-composer" data-composer-exclude-form-memory="true">
+          <form class="messages-composer" id="messages-composer" data-composer-include-form-memory="true">
             <div class="messages-composer-mode-row">
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-compose-toggle" aria-pressed="true">${escapeHtml(i18n.t("module.social.messages.compose"))}</button>
               <button type="button" class="messages-composer-mode-toggle" id="messages-composer-preview-toggle" aria-pressed="false">${escapeHtml(i18n.t("module.social.messages.preview"))}</button>
@@ -201,6 +243,10 @@ export async function mount(root, { signal } = {}) {
                 const composerInput = document.getElementById(
                     "messages-composer-input",
                 );
+                composerInputRef =
+                    composerInput instanceof HTMLTextAreaElement
+                        ? composerInput
+                        : null;
                 const composerSendButton = form?.querySelector(
                     ".messages-composer-send",
                 );
@@ -631,6 +677,7 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
                     if (composerInput instanceof HTMLTextAreaElement) {
+                        clearPersistedFormState(selectedRoomId);
                         composerInput.value = "";
                     }
                     renderComposerPreview();
@@ -643,6 +690,13 @@ export async function mount(root, { signal } = {}) {
                     const hasText = Boolean((composerInput.value ?? "").trim());
                     roomState.queueTypingUpdate(hasText);
                     renderComposerPreview();
+                    const selectedRoomId = roomState.getSelectedRoomId();
+                    if (selectedRoomId) {
+                        savePersistedFormState(
+                            selectedRoomId,
+                            captureFormState(root, { persistableOnly: true }),
+                        );
+                    }
                 });
                 composerInput?.addEventListener("keydown", (keyboardEvent) => {
                     if (

@@ -95,7 +95,7 @@ slot.hidden = false;
 
 Layouts are stored via `PUT /api/v1/users/:username/preferences` under the key supplied as `preferenceKey`. The stored value is `{ placements: [{id, col, row, w, h}], hidden: [] }`.
 
-Form drafts are also persisted in `localStorage` per user, page path, and composer preference key. This keeps typed inputs when the page reloads or when a responsive re-render rebuilds the element cards. Sensitive fields (`password`, `file`, `hidden`, and identifiers containing `password`/`secret`/`token`) are excluded from persistent draft storage.
+Form drafts are also persisted in `localStorage` per user, page path, and composer preference key. This keeps typed inputs when the page reloads or when a responsive re-render rebuilds the element cards. Persistent form draft storage is opt-in: only fields whose closest ancestor carries `data-composer-include-form-memory="true"` are written to localStorage. Fields without an opted-in ancestor are still captured in the transient in-memory snapshot so they survive responsive re-renders within the same session, but they are never written to persistent storage. Sensitive fields (`password`, `file`, `hidden`, and identifiers containing `password`/`secret`/`token`) are always excluded from persistent draft storage regardless of opt-in status.
 
 Cards with larger forms (6 or more persistable fields) include a **Reset Draft** button. This button clears the persisted draft for that card and resets the current fields to their default values.
 
