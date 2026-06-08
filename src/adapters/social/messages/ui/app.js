@@ -156,6 +156,9 @@ export async function mount(root, { signal } = {}) {
                     currentAccountId,
                     openedRoomId,
                 );
+                // Dispatch a synthetic input event so dependent UI state
+                // (preview rendering, character counters, typing indicators)
+                // is updated after the draft value is restored programmatically.
                 composerInputRef.dispatchEvent(new Event("input"));
             }
         },

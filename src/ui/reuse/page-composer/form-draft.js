@@ -39,6 +39,9 @@ export function createFormDraftManager({
         );
     }
 
+    // Returns true only when the field is an Element whose closest ancestor
+    // carries data-composer-include-form-memory="true". Non-Element values
+    // (e.g. detached or synthetic entries) are treated as not opted-in.
     function isIncludedInFormMemory(field) {
         if (!(field instanceof Element)) {
             return false;
