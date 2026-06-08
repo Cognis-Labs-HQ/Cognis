@@ -137,7 +137,9 @@ export function visibilityClass(visibilityValue) {
 }
 
 function getProfileBadgeRoleLabel(roleValue, i18n) {
-    const normalizedRole = String(roleValue ?? "").trim().toLowerCase();
+    const normalizedRole = String(roleValue ?? "")
+        .trim()
+        .toLowerCase();
     if (
         normalizedRole !== "owner" &&
         normalizedRole !== "admin" &&
@@ -149,7 +151,9 @@ function getProfileBadgeRoleLabel(roleValue, i18n) {
 }
 
 export function renderAvatarBadge(roleValue, i18n) {
-    const normalizedRole = String(roleValue ?? "").trim().toLowerCase();
+    const normalizedRole = String(roleValue ?? "")
+        .trim()
+        .toLowerCase();
     const roleLabel = getProfileBadgeRoleLabel(roleValue, i18n);
     if (!roleLabel) return "";
     if (normalizedRole === "owner") {
