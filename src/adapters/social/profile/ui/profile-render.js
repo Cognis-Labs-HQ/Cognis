@@ -16,6 +16,7 @@ const PROFILE_BADGE_MARKUP = {
     admin: '<img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" />',
     teacher: "&#128218;",
 };
+const PROFILE_BADGE_ROLES = new Set(Object.keys(PROFILE_BADGE_MARKUP));
 
 function createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n) {
     return createFormBuilder(
@@ -150,7 +151,7 @@ function normalizeProfileBadgeRole(roleValue) {
 
 function getEscapedProfileBadgeRoleLabel(normalizedRole, i18n) {
     if (!normalizedRole) return "";
-    if (!PROFILE_BADGE_MARKUP[normalizedRole]) return "";
+    if (!PROFILE_BADGE_ROLES.has(normalizedRole)) return "";
     return escapeHtml(getRoleLabel(i18n, normalizedRole));
 }
 

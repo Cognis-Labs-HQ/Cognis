@@ -6,6 +6,7 @@ import { getRoleLabel } from "./access-role.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
+const PREVIEW_ROLE_LABELS = new Set(["teacher", "moderator", "admin", "owner"]);
 const profileCache = new Map();
 const avatarUrlCache = new Map();
 let previewEl = null;
@@ -114,10 +115,9 @@ async function showPreview(link) {
     const normalizedRole = String(profile.role ?? "")
         .trim()
         .toLowerCase();
-    const roleLabel =
-        normalizedRole && normalizedRole !== "user"
-            ? getRoleLabel(previewI18n, normalizedRole)
-            : null;
+    const roleLabel = PREVIEW_ROLE_LABELS.has(normalizedRole)
+        ? getRoleLabel(previewI18n, normalizedRole)
+        : null;
     const stats = [
         profile.followerCount != null
             ? `${profile.followerCount} ${previewI18n?.t("ui.reuse.followers") ?? ""}`

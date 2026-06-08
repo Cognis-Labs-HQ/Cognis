@@ -1,4 +1,4 @@
-# Rollen-Tooltips wiederhergestellt
+# Rollen-Tooltips zurück
 
 ## Hover-Rollentext bei Profil-Badges wieder da
 
