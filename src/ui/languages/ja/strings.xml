@@ -657,6 +657,10 @@
   <string name="module.study.classes.class_settings">クラス設定</string>
   <string name="module.study.classes.class_settings_saved">クラス設定を保存しました。</string>
   <string name="module.study.classes.class_settings_failed">クラス設定の保存に失敗しました。</string>
+  <string name="module.study.classes.class_cap_reduce_title">削除する受講生を選択</string>
+  <string name="module.study.classes.class_cap_reduce_prompt">新しい上限が現在のクラス人数を下回っています。最新で参加した受講生から削除対象を選択してください。</string>
+  <string name="module.study.classes.class_cap_reduce_count">選択済み {selected} / 必要数 {required}</string>
+  <string name="module.study.classes.class_cap_reduce_confirm">選択した受講生を削除して上限を保存</string>
   <string name="module.study.classes.profile_preview">プロフィールプレビュー</string>
   <string name="module.study.classes.profile_unknown">不明なメンバー</string>
   <string name="module.study.classes.join_mode_open">オープン</string>

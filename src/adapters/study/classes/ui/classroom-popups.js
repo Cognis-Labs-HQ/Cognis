@@ -80,7 +80,9 @@ export async function openClassSettingsPopup({
     refreshContent,
 }) {
     if (!snapshot) return;
-    const currentMembers = Array.isArray(snapshot?.members) ? snapshot.members : [];
+    const currentMembers = Array.isArray(snapshot?.members)
+        ? snapshot.members
+        : [];
     const rawLimit = Number(snapshot?.classroom?.studentLimit);
     const currentLimit =
         Number.isInteger(rawLimit) && rawLimit > 0 ? rawLimit : 20;
@@ -162,10 +164,10 @@ export async function openClassSettingsPopup({
             const leftJoinedAt = Date.parse(String(left?.joinedAt ?? ""));
             const normalizedRight = Number.isFinite(rightJoinedAt)
                 ? rightJoinedAt
-                : 0;
+                : Number.NEGATIVE_INFINITY;
             const normalizedLeft = Number.isFinite(leftJoinedAt)
                 ? leftJoinedAt
-                : 0;
+                : Number.NEGATIVE_INFINITY;
             return normalizedRight - normalizedLeft;
         });
         const removableMembers = sortedMembers
@@ -175,9 +177,7 @@ export async function openClassSettingsPopup({
                 const displayName = String(member?.displayName ?? "").trim();
                 const handle = String(member?.handle ?? "").trim();
                 const label =
-                    displayName ||
-                    (handle ? `@${handle}` : "") ||
-                    accountId;
+                    displayName || (handle ? `@${handle}` : "") || accountId;
                 return { accountId, handle, label };
             })
             .filter(Boolean);
@@ -217,7 +217,9 @@ export async function openClassSettingsPopup({
                 },
                 {
                     id: "confirm-remove",
-                    label: i18n.t("module.study.classes.class_cap_reduce_confirm"),
+                    label: i18n.t(
+                        "module.study.classes.class_cap_reduce_confirm",
+                    ),
                     variant: "confirm",
                 },
             ],
@@ -250,7 +252,8 @@ export async function openClassSettingsPopup({
                         input.disabled = atLimit && !input.checked;
                     }
                     if (confirmButton instanceof HTMLButtonElement) {
-                        confirmButton.disabled = selectedCount !== requiredRemovals;
+                        confirmButton.disabled =
+                            selectedCount !== requiredRemovals;
                     }
                 };
                 for (const input of candidates) {

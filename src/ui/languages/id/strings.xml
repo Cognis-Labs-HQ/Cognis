@@ -657,6 +657,10 @@
   <string name="module.study.classes.class_settings">Pengaturan Kelas</string>
   <string name="module.study.classes.class_settings_saved">Pengaturan kelas disimpan.</string>
   <string name="module.study.classes.class_settings_failed">Gagal menyimpan pengaturan kelas.</string>
+  <string name="module.study.classes.class_cap_reduce_title">Pilih Siswa untuk Dikeluarkan</string>
+  <string name="module.study.classes.class_cap_reduce_prompt">Batas baru berada di bawah ukuran kelas saat ini. Pilih siswa yang paling baru bergabung untuk dikeluarkan.</string>
+  <string name="module.study.classes.class_cap_reduce_count">Terpilih {selected} dari {required} yang diperlukan</string>
+  <string name="module.study.classes.class_cap_reduce_confirm">Keluarkan yang Dipilih &amp; Simpan Batas</string>
   <string name="module.study.classes.profile_preview">Pratinjau Profil</string>
   <string name="module.study.classes.profile_unknown">Anggota tidak dikenal</string>
   <string name="module.study.classes.join_mode_open">Terbuka</string>

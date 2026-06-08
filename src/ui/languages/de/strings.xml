@@ -657,6 +657,10 @@
   <string name="module.study.classes.class_settings">Klasseneinstellungen</string>
   <string name="module.study.classes.class_settings_saved">Klasseneinstellungen gespeichert.</string>
   <string name="module.study.classes.class_settings_failed">Klasseneinstellungen konnten nicht gespeichert werden.</string>
+  <string name="module.study.classes.class_cap_reduce_title">Zu entfernende Schüler auswählen</string>
+  <string name="module.study.classes.class_cap_reduce_prompt">Das neue Klassenlimit liegt unter der aktuellen Klassengröße. Wähle die zuletzt beigetretenen Schüler aus, die entfernt werden sollen.</string>
+  <string name="module.study.classes.class_cap_reduce_count">Ausgewählt {selected} von {required} erforderlich</string>
+  <string name="module.study.classes.class_cap_reduce_confirm">Ausgewählte entfernen &amp; Limit speichern</string>
   <string name="module.study.classes.profile_preview">Profilvorschau</string>
   <string name="module.study.classes.profile_unknown">Unbekanntes Mitglied</string>
   <string name="module.study.classes.join_mode_open">Offen</string>

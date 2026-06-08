@@ -35,6 +35,7 @@ import {
 } from "/static/adapters/study/classes/classroom-popups.js";
 import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
+import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -72,10 +73,8 @@ export async function mount(root, { signal } = {}) {
     let selectedLanguageFilter = "";
     let searchQuery = "";
     let activeBoardPanel = "agenda";
-    const REALTIME_REFRESH_MS = 3000;
     const presenceByAccountId = new Map();
     const boardEntitiesByClassId = new Map();
-    let realtimeRefreshBusy = false;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -421,22 +420,6 @@ export async function mount(root, { signal } = {}) {
         refreshDom();
         composer.refreshFooter();
         refreshSubNavigation();
-    }
-
-    async function refreshClassroomRealtime() {
-        if (realtimeRefreshBusy || isTeacherView()) return;
-        realtimeRefreshBusy = true;
-        try {
-            await loadClassrooms();
-            refreshSnapshotPresence();
-            refreshDom();
-            composer.refreshFooter();
-            refreshSubNavigation();
-        } catch {
-            // Best-effort background refresh.
-        } finally {
-            realtimeRefreshBusy = false;
-        }
     }
 
     function refreshSnapshotPresence() {
@@ -1000,16 +983,17 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     void hydrateProfileAvatars(root);
-    const realtimeRefreshTimer = window.setInterval(() => {
-        void refreshClassroomRealtime();
-    }, REALTIME_REFRESH_MS);
-    signal?.addEventListener(
-        "abort",
-        () => {
-            clearInterval(realtimeRefreshTimer);
+    startClassroomRealtimeRefresh({
+        signal,
+        shouldRefresh: () => !isTeacherView(),
+        refresh: async () => {
+            await loadClassrooms();
+            refreshSnapshotPresence();
+            refreshDom();
+            composer.refreshFooter();
+            refreshSubNavigation();
         },
-        { once: true },
-    );
+    });
 }
 
 await mountWhenDirect(mount);
