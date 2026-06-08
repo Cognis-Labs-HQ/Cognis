@@ -308,6 +308,7 @@ export async function openPopup({
 
         let dismissed = false;
         async function dismiss(actionId) {
+            closeProtectionTracker?.sync();
             const hasUnsavedChanges =
                 closeProtectionTracker?.isAnyDirty() ??
                 hasUnsavedFormChanges(overlay);
