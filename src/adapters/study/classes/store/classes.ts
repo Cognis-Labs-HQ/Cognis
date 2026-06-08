@@ -167,6 +167,23 @@ export async function updateClassroomStateForTeacher(
     ) {
         throw new Error("invalid_student_limit");
     }
+    if (hasStudentLimit) {
+        const membersResult = await db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: ["student_account_id"],
+            where: [
+                { column: "class_id", value: classId },
+                { column: "status", value: "member" },
+            ],
+        });
+        const memberCount = Array.isArray(membersResult.rows)
+            ? membersResult.rows.length
+            : 0;
+        if (normalizedStudentLimit < memberCount) {
+            throw new Error("student_limit_below_members");
+        }
+    }
     const normalizedSeatAssignments =
         options.seatAssignments != null
             ? parseSeatAssignments(JSON.stringify(options.seatAssignments))

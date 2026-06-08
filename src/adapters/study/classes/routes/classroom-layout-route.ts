@@ -125,6 +125,18 @@ export async function handleClassroomLayoutRoute(
             );
             return true;
         }
+        if (
+            err instanceof Error &&
+            err.message === "student_limit_below_members"
+        ) {
+            jsonError(
+                res,
+                409,
+                "conflict",
+                "studentLimit cannot be lower than current class member count.",
+            );
+            return true;
+        }
         input.options.log?.("error", "Failed to update classroom layout.", {
             ...input.logMeta,
             accountId: claims.sub,

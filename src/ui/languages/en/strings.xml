@@ -657,6 +657,10 @@
   <string name="module.study.classes.class_settings">Class Settings</string>
   <string name="module.study.classes.class_settings_saved">Class settings saved.</string>
   <string name="module.study.classes.class_settings_failed">Failed to save class settings.</string>
+  <string name="module.study.classes.class_cap_reduce_title">Select Students to Remove</string>
+  <string name="module.study.classes.class_cap_reduce_prompt">The new cap is below the current class size. Select the most recently joined students to remove.</string>
+  <string name="module.study.classes.class_cap_reduce_count">Selected {selected} of {required} required</string>
+  <string name="module.study.classes.class_cap_reduce_confirm">Remove Selected &amp; Save Cap</string>
   <string name="module.study.classes.profile_preview">Profile Preview</string>
   <string name="module.study.classes.profile_unknown">Unknown member</string>
   <string name="module.study.classes.join_mode_open">Open</string>

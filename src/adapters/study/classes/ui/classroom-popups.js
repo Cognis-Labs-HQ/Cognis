@@ -80,6 +80,7 @@ export async function openClassSettingsPopup({
     refreshContent,
 }) {
     if (!snapshot) return;
+    const currentMembers = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const rawLimit = Number(snapshot?.classroom?.studentLimit);
     const currentLimit =
         Number.isInteger(rawLimit) && rawLimit > 0 ? rawLimit : 20;
@@ -153,7 +154,149 @@ export async function openClassSettingsPopup({
         },
     });
     if (action !== "save") return;
+    let membersToRemove = [];
+    if (nextStudentLimit < currentMembers.length) {
+        const requiredRemovals = currentMembers.length - nextStudentLimit;
+        const sortedMembers = [...currentMembers].sort((left, right) => {
+            const rightJoinedAt = Date.parse(String(right?.joinedAt ?? ""));
+            const leftJoinedAt = Date.parse(String(left?.joinedAt ?? ""));
+            const normalizedRight = Number.isFinite(rightJoinedAt)
+                ? rightJoinedAt
+                : 0;
+            const normalizedLeft = Number.isFinite(leftJoinedAt)
+                ? leftJoinedAt
+                : 0;
+            return normalizedRight - normalizedLeft;
+        });
+        const removableMembers = sortedMembers
+            .map((member) => {
+                const accountId = String(member?.studentAccountId ?? "").trim();
+                if (!accountId) return null;
+                const displayName = String(member?.displayName ?? "").trim();
+                const handle = String(member?.handle ?? "").trim();
+                const label =
+                    displayName ||
+                    (handle ? `@${handle}` : "") ||
+                    accountId;
+                return { accountId, handle, label };
+            })
+            .filter(Boolean);
+        const selectedAccountIds = new Set();
+        const reductionAction = await openPopup({
+            title: i18n.t("module.study.classes.class_cap_reduce_title"),
+            body: `
+                <div class="stack">
+                    <p style="margin:0;">${escapeHtml(i18n.t("module.study.classes.class_cap_reduce_prompt"))}</p>
+                    <p style="margin:0;font-size:.92em;color:var(--text-muted);" data-class-cap-reduce-count></p>
+                    <div style="display:grid;gap:8px;max-height:260px;overflow:auto;padding-right:4px;">
+                        ${removableMembers
+                            .map(
+                                (member, index) => `
+                                    <label style="display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:10px;">
+                                        <input type="checkbox" value="${escapeHtml(member.accountId)}" data-class-cap-reduce-candidate="${escapeHtml(String(index))}" />
+                                        <span style="display:flex;flex-direction:column;gap:2px;">
+                                            <strong>${escapeHtml(member.label)}</strong>
+                                            ${
+                                                member.handle
+                                                    ? `<span style="font-size:.9em;color:var(--text-muted);">@${escapeHtml(member.handle)}</span>`
+                                                    : ""
+                                            }
+                                        </span>
+                                    </label>
+                                `,
+                            )
+                            .join("")}
+                    </div>
+                </div>
+            `,
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "confirm-remove",
+                    label: i18n.t("module.study.classes.class_cap_reduce_confirm"),
+                    variant: "confirm",
+                },
+            ],
+            onOpen: (overlay) => {
+                const countNode = overlay.querySelector(
+                    "[data-class-cap-reduce-count]",
+                );
+                const confirmButton = overlay.querySelector(
+                    '[data-popup-action="confirm-remove"]',
+                );
+                const candidates = Array.from(
+                    overlay.querySelectorAll(
+                        "input[data-class-cap-reduce-candidate]",
+                    ),
+                );
+                const refreshSelectionState = () => {
+                    const selectedCount = selectedAccountIds.size;
+                    if (countNode instanceof HTMLElement) {
+                        countNode.textContent = i18n.t(
+                            "module.study.classes.class_cap_reduce_count",
+                            {
+                                selected: String(selectedCount),
+                                required: String(requiredRemovals),
+                            },
+                        );
+                    }
+                    const atLimit = selectedCount >= requiredRemovals;
+                    for (const input of candidates) {
+                        if (!(input instanceof HTMLInputElement)) continue;
+                        input.disabled = atLimit && !input.checked;
+                    }
+                    if (confirmButton instanceof HTMLButtonElement) {
+                        confirmButton.disabled = selectedCount !== requiredRemovals;
+                    }
+                };
+                for (const input of candidates) {
+                    if (!(input instanceof HTMLInputElement)) continue;
+                    input.addEventListener("change", () => {
+                        const accountId = String(input.value ?? "").trim();
+                        if (!accountId) return;
+                        if (input.checked) {
+                            selectedAccountIds.add(accountId);
+                        } else {
+                            selectedAccountIds.delete(accountId);
+                        }
+                        refreshSelectionState();
+                    });
+                }
+                refreshSelectionState();
+            },
+            onAction: (actionId) => {
+                if (actionId !== "confirm-remove") return true;
+                return selectedAccountIds.size === requiredRemovals;
+            },
+        });
+        if (reductionAction !== "confirm-remove") {
+            nextStudentLimit = currentLimit;
+        } else {
+            membersToRemove = Array.from(selectedAccountIds);
+        }
+    }
     const updates = [];
+    if (membersToRemove.length) {
+        const removalResponses = await Promise.all(
+            membersToRemove.map((accountId) =>
+                apiFetch(
+                    `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/students/${encodeURIComponent(accountId)}`,
+                    { method: "DELETE" },
+                ),
+            ),
+        );
+        if (!removalResponses.every((response) => response.ok)) {
+            showToast(i18n.t("module.study.classes.class_settings_failed"), {
+                variant: "error",
+            });
+            await refreshContent();
+            return;
+        }
+    }
     if (nextClassName !== currentName) {
         updates.push(
             apiFetch(
