@@ -9,7 +9,12 @@ import { createClassroomNativeChat } from "/static/adapters/study/classes/classr
  *
  * Meeting lifecycle is fully owned by the jitsi-meet module via
  * createClassroomMeetingEmbed; this file only wires up the Classroom
- * shell (close buttons, chat panel, reattach).
+ * shell (close buttons, chat panel, hoist/reattach).
+ *
+ * Call hoist() before replacing .classes-classroom-content in the DOM so the
+ * meeting and chat elements (which may contain live iframes) are moved to root
+ * first and never detached from the document. Call reattach() afterwards to
+ * move them back inside the blackboard.
  */
 export function createClassroomWindows({ root, i18n }) {
     const meetingEmbed = createClassroomMeetingEmbed({ i18n });
@@ -28,6 +33,11 @@ export function createClassroomWindows({ root, i18n }) {
 
     root.addEventListener("click", handleWindowButtonClick);
 
+    function hoist() {
+        root.appendChild(meetingEmbed.element);
+        root.appendChild(nativeChat.panel);
+    }
+
     function reattach() {
         const blackboard = root.querySelector(".classes-blackboard");
         if (blackboard) {
@@ -42,6 +52,7 @@ export function createClassroomWindows({ root, i18n }) {
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),
+        hoist,
         reattach,
     };
 }

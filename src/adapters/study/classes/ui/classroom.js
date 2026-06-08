@@ -21,10 +21,7 @@ import {
     canToggleClassroomView,
     getClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
-import {
-    buildAccountLabel,
-    renderClassroomPage,
-} from "/static/adapters/study/classes/classroom-render.js";
+import { renderClassroomPage } from "/static/adapters/study/classes/classroom-render.js";
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
 import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
@@ -35,6 +32,7 @@ import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/cl
 import { createClassroomWindows } from "/static/adapters/study/classes/classroom-windows.js";
 import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
+import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -271,101 +269,19 @@ export async function mount(root, { signal } = {}) {
         navigateTo(nextUrl.pathname + nextUrl.search);
     }
 
-    async function openSeatActionMenu(button) {
-        const studentId = String(button.dataset.studentId ?? "").trim();
-        const studentHandle = String(button.dataset.studentHandle ?? "").trim();
-        if (!studentId) {
-            openSearchPopup({
-                endpoint: "/api/v1/social/messages/users/lookup",
-                category: "user",
-                ariaLabel: i18n.t("module.study.classes.invite_student"),
-                noResultsText: i18n.t("ui.layout.search.no_results"),
-                onSelect: async (result) => {
-                    const accountId = String(result?.accountId ?? "").trim();
-                    if (!accountId || !selectedClassId) return;
-                    const response = await apiFetch(
-                        `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/invite`,
-                        {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify({ accountId }),
-                        },
-                    );
-                    showToast(
-                        i18n.t(
-                            response.ok
-                                ? "module.study.classes.invite_success"
-                                : "module.study.classes.invite_failed",
-                        ),
-                        { variant: response.ok ? "success" : "error" },
-                    );
-                    if (response.ok) {
-                        await refreshContent();
-                    }
-                },
-            });
-            return;
-        }
-        const action = await openPopup({
-            title: buildAccountLabel({
-                studentAccountId: studentId,
-                handle: studentHandle,
-            }),
-            body: `<p>${escapeHtml(i18n.t("module.study.classes.manage_student_prompt"))}</p>`,
-            variant: "confirm",
-            actions: [
-                {
-                    id: "message",
-                    label: i18n.t("ui.reuse.message"),
-                    variant: "confirm",
-                },
-                {
-                    id: "kick",
-                    label: i18n.t("module.study.classes.kick_student"),
-                    variant: "cancel",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.close"),
-                    variant: "cancel",
-                },
-            ],
+    async function handleSeatActionMenu(button) {
+        await openSeatActionMenu({
+            button,
+            getSelectedClassId: () => selectedClassId,
+            apiFetch,
+            i18n,
+            openSearchPopup,
+            openPopup,
+            escapeHtml,
+            showToast,
+            navigateTo,
+            refreshContent,
         });
-        if (action === "message" && studentHandle) {
-            const response = await apiFetch("/api/v1/social/messages/rooms", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ handles: [studentHandle] }),
-            });
-            if (!response.ok) {
-                showToast(i18n.t("module.study.classes.message_failed"), {
-                    variant: "error",
-                });
-                return;
-            }
-            const payload = await response.json();
-            navigateTo(
-                `/messages/${encodeURIComponent(payload?.data?.id ?? "")}`,
-            );
-            return;
-        }
-        if (action === "kick" && selectedClassId) {
-            const response = await apiFetch(
-                `/api/v1/study/classrooms/${encodeURIComponent(selectedClassId)}/students/${encodeURIComponent(studentId)}`,
-                { method: "DELETE" },
-            );
-            showToast(
-                i18n.t(
-                    response.ok
-                        ? "module.study.classes.kick_success"
-                        : "module.study.classes.kick_failed",
-                ),
-                { variant: response.ok ? "success" : "error" },
-            );
-            if (response.ok) {
-                await refreshContent();
-            }
-        }
     }
 
     function renderContentMarkup() {
@@ -392,6 +308,7 @@ export async function mount(root, { signal } = {}) {
     function refreshDom() {
         const content = root.querySelector(".classes-classroom-content");
         if (content instanceof HTMLElement) {
+            classroomWindows?.hoist();
             content.outerHTML = renderContentMarkup();
             void hydrateProfileAvatars(root);
             classroomWindows?.reattach();
@@ -445,7 +362,7 @@ export async function mount(root, { signal } = {}) {
         onPresence: (accountId, status) => {
             presenceByAccountId.set(accountId, status);
             refreshSnapshotPresence();
-            refreshDom();
+            refreshDynamicDom();
         },
     });
     await presenceController.init();
@@ -528,7 +445,7 @@ export async function mount(root, { signal } = {}) {
                                     seatButton.dataset.seatNumber ?? "-1",
                                 );
                                 if (isTeacherView()) {
-                                    await openSeatActionMenu(seatButton);
+                                    await handleSeatActionMenu(seatButton);
                                 } else {
                                     refreshDom();
                                 }
@@ -558,7 +475,15 @@ export async function mount(root, { signal } = {}) {
                                 ) &&
                                 snapshot
                             ) {
-                                await classroomWindows.openMeeting(snapshot);
+                                if (isTeacherView()) {
+                                    await classroomWindows.openMeeting(
+                                        snapshot,
+                                    );
+                                } else {
+                                    await classroomWindows.tryAutoJoin(
+                                        snapshot.id,
+                                    );
+                                }
                                 return;
                             }
 

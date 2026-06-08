@@ -74,7 +74,30 @@ that prevented interaction handlers from re-binding after SPA navigation. The
 role is now refreshed from the API on mount when needed, and the bound flag is
 now tracked with a mount-scoped local variable.
 
-## Classroom Meeting Lifecycle — Full Jitsi Parity
+## Classroom meetings now open correctly for students
+
+Students clicking a meeting button placed on the classroom board now join the
+active meeting rather than attempting to create one (which is a teacher-only
+action and always failed for students). Students without an active meeting to
+join see no change in behaviour.
+
+## DOM refresh no longer resets the Jitsi meeting iframe
+
+Presence update events previously triggered a full classroom content replacement,
+briefly detaching the meeting iframe from the document — a browser-defined
+condition that causes iframes to reload. The frame was destroyed every time any
+participant's status changed. Presence changes now use the targeted
+`refreshDynamicDom` path, which only replaces the desk-floor and member-roster
+nodes without touching the meeting overlay.
+
+## Full DOM refreshes preserve active meetings and chat windows
+
+For DOM refreshes that replace the entire classroom content element (class
+settings, seat management, etc.), the meeting and chat overlay elements are now
+moved to a live ancestor before the content is swapped and moved back into the
+blackboard afterwards. This keeps both elements — and any iframes inside them —
+connected to the document throughout the operation.
+
 
 The meeting lifecycle inside the classroom now exactly matches what the
 Meetings page does. The new `createClassroomMeetingEmbed` factory in the

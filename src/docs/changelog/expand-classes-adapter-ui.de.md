@@ -64,6 +64,30 @@ veraltete Rolle im localStorage, die beim Laden nicht neu abgerufen wurde, sowie
 ein `classroomBound`-Flag am persistenten `#app`-Element, das das erneute Binden
 von Interaktionshandlern nach der SPA-Navigation verhinderte.
 
+## Classroom-Meetings öffnen sich für Schüler nun korrekt
+
+Schüler, die einen Meeting-Button auf dem Classroom-Board anklicken, treten
+jetzt dem aktiven Meeting bei, anstatt zu versuchen, ein neues zu erstellen
+(was eine Lehrer-Aktion ist und für Schüler immer fehlschlug). Schüler ohne
+aktives Meeting sehen keine Verhaltensänderung.
+
+## DOM-Aktualisierung setzt den Jitsi-Meeting-iframe nicht mehr zurück
+
+Präsenzänderungen lösten bisher eine vollständige Classroom-Inhaltserneuerung
+aus, die den Meeting-iframe kurzzeitig vom Dokument trennte — ein
+browserdefiniertesVerhalten, das iframes zurücksetzt. Das Frame wurde bei jeder
+Statusänderung eines Teilnehmers zerstört. Präsenzänderungen verwenden nun den
+gezielten `refreshDynamicDom`-Pfad, der nur den Schreibtischboden und die
+Mitgliederliste ersetzt, ohne das Meeting-Overlay zu berühren.
+
+## Vollständige DOM-Aktualisierungen erhalten aktive Meetings und Chat-Fenster
+
+Bei DOM-Aktualisierungen, die das gesamte Classroom-Inhaltselement ersetzen
+(Klasseneinstellungen, Sitzverwaltung usw.), werden Meeting- und Chat-Overlay-
+Elemente jetzt zuerst in einen lebenden Vorfahren verschoben und danach wieder
+in die Tafel eingefügt. Dadurch bleiben beide Elemente — und alle iframes darin
+— während der gesamten Operation mit dem Dokument verbunden.
+
 ## Meeting-Lebenszyklus im Classroom — volle Jitsi-Parität
 
 Die Meeting-Logik im Classroom wurde in die neue Factory

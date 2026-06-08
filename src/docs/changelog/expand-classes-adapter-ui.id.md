@@ -57,6 +57,30 @@ tampilan siswa. Penyebabnya adalah peran yang sudah usang di localStorage yang
 tidak diperbarui saat mount, serta flag `classroomBound` pada elemen `#app`
 persisten yang mencegah handler interaksi terikat ulang setelah navigasi SPA.
 
+## Meeting classroom kini terbuka dengan benar untuk siswa
+
+Siswa yang mengklik tombol meeting pada papan classroom kini bergabung ke
+meeting aktif, bukan mencoba membuat meeting baru (yang merupakan tindakan
+guru dan selalu gagal untuk siswa). Siswa yang tidak memiliki meeting aktif
+tidak mengalami perubahan perilaku.
+
+## Pembaruan DOM tidak lagi mereset iframe meeting Jitsi
+
+Perubahan kehadiran sebelumnya memicu penggantian konten classroom secara penuh,
+yang sempat memutuskan iframe meeting dari dokumen — kondisi yang didefinisikan
+browser sebagai pemicu reload iframe. Frame dihancurkan setiap kali status
+peserta berubah. Perubahan kehadiran kini menggunakan jalur `refreshDynamicDom`
+yang ditargetkan, yang hanya mengganti node lantai meja dan daftar anggota tanpa
+menyentuh overlay meeting.
+
+## Pembaruan DOM penuh mempertahankan meeting dan jendela chat aktif
+
+Untuk pembaruan DOM yang mengganti seluruh elemen konten classroom (pengaturan
+kelas, manajemen tempat duduk, dll.), elemen overlay meeting dan chat kini
+dipindahkan ke ancestor yang hidup sebelum konten diganti dan dikembalikan ke
+papan tulis sesudahnya. Ini menjaga kedua elemen — dan semua iframe di dalamnya
+— tetap terhubung ke dokumen selama operasi berlangsung.
+
 ## Siklus Hidup Meeting Classroom — Paritas Jitsi Penuh
 
 Logika meeting di classroom dipindahkan ke factory `createClassroomMeetingEmbed`
