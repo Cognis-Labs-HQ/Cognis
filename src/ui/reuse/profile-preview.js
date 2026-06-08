@@ -2,6 +2,7 @@ import { apiFetch } from "./api-client.js";
 import { getInitialsText, pickInitialsColor } from "./avatar-utils.js";
 import { escapeHtml } from "./escape-html.js";
 import { renderMarkdown } from "./markdown-renderer.js";
+import { getRoleLabel } from "./access-role.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
@@ -110,6 +111,13 @@ async function showPreview(link) {
 
     const name = profile.displayName || profile.handle || handle;
     const handleText = profile.handle || handle;
+    const normalizedRole = String(profile.role ?? "")
+        .trim()
+        .toLowerCase();
+    const roleLabel =
+        normalizedRole && normalizedRole !== "user"
+            ? getRoleLabel(previewI18n, normalizedRole)
+            : null;
     const stats = [
         profile.followerCount != null
             ? `${profile.followerCount} ${previewI18n?.t("ui.reuse.followers") ?? ""}`
@@ -130,6 +138,7 @@ async function showPreview(link) {
             <div class="profile-mini-preview__identity">
                 <strong>${escapeHtml(name)}</strong>
                 <span>@${escapeHtml(handleText)}</span>
+                ${roleLabel ? `<span class="profile-mini-preview__role">${escapeHtml(roleLabel)}</span>` : ""}
             </div>
         </div>
         ${profile.bio ? `<div class="profile-mini-preview__bio">${renderMarkdown(profile.bio)}</div>` : ""}

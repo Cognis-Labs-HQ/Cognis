@@ -535,7 +535,7 @@ export function renderSuggestedContacts({ followers, following, i18n }) {
             (suggestedUser) => `
     <div class="profile-suggested-item">
       <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(suggestedUser.handle))}">${escapeHtml(userDisplayName(suggestedUser))}</a>
-      ${renderUserRoleIcons(suggestedUser)}
+      ${renderUserRoleIcons(suggestedUser, i18n)}
       <button
         type="button"
         class="btn-confirm btn-animated profile-follow-btn"
