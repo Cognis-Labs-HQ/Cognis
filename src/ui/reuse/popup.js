@@ -71,6 +71,7 @@
  */
 
 import { createI18n } from "./i18n.js";
+import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 let stylesheetReady = null;
 let i18nReady = null;
@@ -294,6 +295,7 @@ export async function openPopup({
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");
+        let closeProtectionTracker = null;
 
         function escapeHtml(value) {
             return String(value)
@@ -306,11 +308,10 @@ export async function openPopup({
 
         let dismissed = false;
         async function dismiss(actionId) {
-            if (
-                actionId === null &&
-                closeProtection &&
-                hasUnsavedFormChanges(overlay)
-            ) {
+            const hasUnsavedChanges =
+                closeProtectionTracker?.isAnyDirty() ??
+                hasUnsavedFormChanges(overlay);
+            if (actionId === null && closeProtection && hasUnsavedChanges) {
                 const i18n = await getI18n();
                 const confirmed = await openPopup({
                     title: i18n.t("ui.reuse.unsaved_changes"),
@@ -334,6 +335,8 @@ export async function openPopup({
             if (dismissed) return;
             dismissed = true;
             document.removeEventListener("keydown", onKeyDown);
+            closeProtectionTracker?.destroy();
+            closeProtectionTracker = null;
             let removed = false;
             function removeOverlay() {
                 if (!removed) {
@@ -436,6 +439,11 @@ export async function openPopup({
 
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null));
+        }
+        if (closeProtection) {
+            closeProtectionTracker = createFormDirtyTracker(overlay, {
+                quiet: true,
+            });
         }
 
         requestAnimationFrame(() => {
