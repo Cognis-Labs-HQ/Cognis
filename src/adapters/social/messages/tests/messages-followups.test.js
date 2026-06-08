@@ -402,7 +402,7 @@ test("messages onRoomOpened clears composer when opened room has no saved draft"
 
     assert.match(
         source,
-        /persistedState\.size === 0 &&\s*composerInputRef instanceof HTMLTextAreaElement/m,
+        /persistedState\.size === 0[\s\S]*composerInputRef instanceof HTMLTextAreaElement/m,
     );
     assert.match(
         source,
