@@ -84,7 +84,8 @@ const TRACKED_FIELD_SELECTOR = [
 function getTrackedFieldId(field, index) {
     const fallbackTag = String(field?.tagName ?? "field").toLowerCase();
     const fieldName = String(field?.name ?? field?.id ?? "").trim();
-    return fieldName || `${fallbackTag}-${index}`;
+    const baseId = fieldName || fallbackTag;
+    return `${baseId}-${index}`;
 }
 
 function readTrackedFieldState(field) {
@@ -153,10 +154,10 @@ export function createFormDirtyTracker(
         });
     }
 
+    const handleFieldChange = () => {
+        sync();
+    };
     const cleanupEntries = trackedFields.flatMap((field) => {
-        const handleFieldChange = () => {
-            sync();
-        };
         field.addEventListener?.("input", handleFieldChange);
         field.addEventListener?.("change", handleFieldChange);
         return [

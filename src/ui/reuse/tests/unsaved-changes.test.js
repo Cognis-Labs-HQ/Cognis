@@ -114,12 +114,12 @@ test("form dirty tracker only marks dirty after an actual edit", () => {
 
 test("form dirty tracker re-syncs radio groups when a selection is reverted", () => {
     const firstOption = new FakeField({
-        name: "visibility-a",
+        name: "visibility",
         type: "radio",
         checked: true,
     });
     const secondOption = new FakeField({
-        name: "visibility-b",
+        name: "visibility",
         type: "radio",
         checked: false,
     });
