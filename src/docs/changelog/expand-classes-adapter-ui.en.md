@@ -74,7 +74,32 @@ that prevented interaction handlers from re-binding after SPA navigation. The
 role is now refreshed from the API on mount when needed, and the bound flag is
 now tracked with a mount-scoped local variable.
 
-## Changed components and files
+## Classroom Meeting Lifecycle — Full Jitsi Parity
+
+The meeting lifecycle inside the classroom now exactly matches what the
+Meetings page does. The new `createClassroomMeetingEmbed` factory in the
+`jitsi-meet` module owns:
+
+- `videoConferenceJoined` — captures the local participant ID, resolves
+  moderator status, and applies display name, email, and avatar via Jitsi
+  commands.
+- `participantRoleChanged` — keeps moderator state updated so privileged
+  settings (`subject`, `password`) are re-applied when the role changes.
+- `passwordRequired` — submits the stored meeting password.
+- `notificationTriggered` / `errorOccurred` — detects server-side termination
+  notices and closes the window with a `terminated` presence flag so the
+  server records the meeting as ended by the host rather than abandoned.
+- `videoConferenceLeft` / `readyToClose` — clean up on participant-initiated
+  exit.
+- Heartbeat timer — sends `presence active=true` every 10 s to keep the
+  session alive.
+- State-refresh timer — polls the meeting state every 5 s and closes the
+  window as soon as the server reports `endedAt`, so students see the window
+  disappear the moment the teacher ends the meeting.
+
+The `classroom-windows.js` adapter now delegates entirely to
+`createClassroomMeetingEmbed` and contains no meeting logic of its own,
+eliminating the duplication that previously caused the two surfaces to drift.
 
 - Study classes adapter routes and stores:
     - `src/adapters/study/classes/index.ts`

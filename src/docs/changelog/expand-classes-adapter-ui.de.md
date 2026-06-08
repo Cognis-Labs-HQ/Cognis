@@ -64,6 +64,28 @@ veraltete Rolle im localStorage, die beim Laden nicht neu abgerufen wurde, sowie
 ein `classroomBound`-Flag am persistenten `#app`-Element, das das erneute Binden
 von Interaktionshandlern nach der SPA-Navigation verhinderte.
 
+## Meeting-Lebenszyklus im Classroom — volle Jitsi-Parität
+
+Die Meeting-Logik im Classroom wurde in die neue Factory
+`createClassroomMeetingEmbed` im `jitsi-meet`-Modul ausgelagert und folgt nun
+exakt dem Lebenszyklus der Meetings-Seite:
+
+- `videoConferenceJoined` — erfasst die lokale Teilnehmer-ID, ermittelt den
+  Moderatorstatus und überträgt Anzeigename, E-Mail und Avatar per Jitsi-Befehl.
+- `participantRoleChanged` — aktualisiert den Moderatorstatus, damit Betreff
+  und Passwort bei Rollenänderungen erneut angewendet werden.
+- `passwordRequired` — übermittelt das gespeicherte Meeting-Passwort.
+- `notificationTriggered` / `errorOccurred` — erkennt serverinitiierte
+  Abbruchhinweise und schließt das Fenster mit dem Präsenz-Flag `terminated`.
+- `videoConferenceLeft` / `readyToClose` — Aufräumen bei Teilnehmerinitiiertem
+  Austritt.
+- Heartbeat-Timer — sendet alle 10 s `presence active=true`.
+- Statusaktualisierungs-Timer — fragt alle 5 s den Meeting-Status ab und
+  schließt das Fenster, sobald der Server `endedAt` meldet.
+
+`classroom-windows.js` delegiert nun vollständig an
+`createClassroomMeetingEmbed` und enthält keine eigene Meeting-Logik.
+
 ## Geänderte Komponenten und Dateien
 
 - Study-Classes-Adapter-Routen und -Stores:

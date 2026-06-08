@@ -57,6 +57,28 @@ tampilan siswa. Penyebabnya adalah peran yang sudah usang di localStorage yang
 tidak diperbarui saat mount, serta flag `classroomBound` pada elemen `#app`
 persisten yang mencegah handler interaksi terikat ulang setelah navigasi SPA.
 
+## Siklus Hidup Meeting Classroom — Paritas Jitsi Penuh
+
+Logika meeting di classroom dipindahkan ke factory `createClassroomMeetingEmbed`
+baru di modul `jitsi-meet` dan kini mengikuti siklus hidup halaman Meetings
+secara tepat:
+
+- `videoConferenceJoined` — menangkap ID peserta lokal, menentukan status
+  moderator, dan menerapkan nama tampilan, email, serta avatar lewat perintah
+  Jitsi.
+- `participantRoleChanged` — memperbarui status moderator agar subjek dan
+  kata sandi diterapkan ulang saat peran berubah.
+- `passwordRequired` — mengirimkan kata sandi meeting yang tersimpan.
+- `notificationTriggered` / `errorOccurred` — mendeteksi notifikasi penghentian
+  dari server dan menutup jendela dengan flag kehadiran `terminated`.
+- `videoConferenceLeft` / `readyToClose` — pembersihan saat peserta keluar.
+- Timer heartbeat — mengirim `presence active=true` setiap 10 detik.
+- Timer pembaruan status — melakukan polling status meeting setiap 5 detik dan
+  menutup jendela segera setelah server melaporkan `endedAt`.
+
+`classroom-windows.js` kini mendelegasikan sepenuhnya ke
+`createClassroomMeetingEmbed` dan tidak memiliki logika meeting sendiri.
+
 ## Komponen dan berkas yang diubah
 
 - Route dan store adapter study/classes:

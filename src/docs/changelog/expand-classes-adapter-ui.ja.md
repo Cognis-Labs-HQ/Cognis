@@ -57,6 +57,27 @@ API フローを反映するようになりました。作成呼び出しの後�
 SPA ナビゲーション後に `#app` 要素の永続フラグ `classroomBound` が
 インタラクションハンドラーの再バインドを妨げていたことでした。
 
+## Classroom ミーティングライフサイクル — 完全な Jitsi 対応
+
+ミーティングロジックを `jitsi-meet` モジュールの新しい
+`createClassroomMeetingEmbed` ファクトリーに移行し、Meetings ページと
+完全に一致するライフサイクルを実現しました:
+
+- `videoConferenceJoined` — ローカル参加者 ID を取得し、モデレーター状態を
+  確認し、表示名・メール・アバターを Jitsi コマンドで適用します。
+- `participantRoleChanged` — ロール変更時にモデレーター状態を更新して
+  件名とパスワードを再適用します。
+- `passwordRequired` — 保存されたミーティングパスワードを送信します。
+- `notificationTriggered` / `errorOccurred` — サーバー主導の終了通知を検出し、
+  `terminated` プレゼンスフラグでウィンドウを閉じます。
+- `videoConferenceLeft` / `readyToClose` — 参加者側の退出時にクリーンアップ。
+- ハートビートタイマー — 10 秒ごとに `presence active=true` を送信。
+- 状態更新タイマー — 5 秒ごとにミーティング状態をポーリングし、サーバーが
+  `endedAt` を報告した瞬間にウィンドウを閉じます。
+
+`classroom-windows.js` は `createClassroomMeetingEmbed` に全面委譲し、
+ミーティングロジックを一切持たなくなりました。
+
 ## 変更したコンポーネントとファイル
 
 - Study/classes アダプターのルートとストア:
