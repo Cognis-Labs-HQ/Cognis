@@ -20,7 +20,6 @@ import {
     applyClassroomViewModeFromUrl,
     canToggleClassroomView,
     getClassroomViewMode,
-    setClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
 import {
     buildAccountLabel,
@@ -279,10 +278,11 @@ export async function mount(root, { signal } = {}) {
     }
 
     function openClassSearch() {
+        const nextUrl = new URL("/classroom", window.location.origin);
         if (teacherAccount) {
-            setClassroomViewMode("student");
+            nextUrl.searchParams.set("student", "true");
         }
-        navigateTo("/classroom");
+        navigateTo(nextUrl.pathname + nextUrl.search);
     }
 
     /** Creates or reuses a classroom meeting and embeds it in the meeting overlay. */
@@ -626,7 +626,6 @@ export async function mount(root, { signal } = {}) {
                                     getClassroomViewMode() === "teacher"
                                         ? "student"
                                         : "teacher";
-                                setClassroomViewMode(nextMode);
                                 const nextUrl = new URL(
                                     window.location.href,
                                     window.location.origin,

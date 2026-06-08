@@ -106,9 +106,15 @@ export function createClassFooterItem({
                             onSelectClass(nextValue);
                             return;
                         }
-                        navigateTo(
-                            `/classroom?classId=${encodeURIComponent(nextValue)}`,
+                        const nextUrl = new URL(
+                            "/classroom",
+                            window.location.origin,
                         );
+                        nextUrl.searchParams.set("classId", nextValue);
+                        if (getClassroomViewMode() === "student") {
+                            nextUrl.searchParams.set("student", "true");
+                        }
+                        navigateTo(nextUrl.pathname + nextUrl.search);
                     },
                     { signal },
                 );

@@ -1,5 +1,3 @@
-const CLASSROOM_VIEW_MODE_KEY = "study:classes:view-mode";
-
 export function canToggleClassroomView() {
     return (
         String(localStorage.getItem("cognis_role") ?? "")
@@ -8,29 +6,34 @@ export function canToggleClassroomView() {
     );
 }
 
-export function getClassroomViewMode() {
+function getViewUrl(url = window.location.href) {
+    return new URL(url, window.location.origin);
+}
+
+export function getClassroomViewMode(url = window.location.href) {
     if (!canToggleClassroomView()) {
         return "student";
     }
-    return localStorage.getItem(CLASSROOM_VIEW_MODE_KEY) === "student"
+    return getViewUrl(url).searchParams.get("student") === "true"
         ? "student"
         : "teacher";
 }
 
-export function setClassroomViewMode(mode) {
+export function setClassroomViewMode(mode, url = window.location.href) {
     if (!canToggleClassroomView()) return "student";
     const normalizedMode = mode === "student" ? "student" : "teacher";
-    localStorage.setItem(CLASSROOM_VIEW_MODE_KEY, normalizedMode);
+    const nextUrl = getViewUrl(url);
+    if (normalizedMode === "student") {
+        nextUrl.searchParams.set("student", "true");
+    } else {
+        nextUrl.searchParams.delete("student");
+    }
+    if (url === window.location.href) {
+        window.history.replaceState({}, "", nextUrl.pathname + nextUrl.search);
+    }
     return normalizedMode;
 }
 
 export function applyClassroomViewModeFromUrl(url = window.location.href) {
-    const nextUrl = new URL(url, window.location.origin);
-    const studentParam = nextUrl.searchParams.get("student");
-    if (canToggleClassroomView() && studentParam != null) {
-        setClassroomViewMode(studentParam === "true" ? "student" : "teacher");
-        nextUrl.searchParams.delete("student");
-        window.history.replaceState({}, "", nextUrl.pathname + nextUrl.search);
-    }
-    return getClassroomViewMode();
+    return getClassroomViewMode(url);
 }
