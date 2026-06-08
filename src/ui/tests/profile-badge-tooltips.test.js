@@ -67,17 +67,17 @@ test("profile badges render localized accessible labels at runtime", () => {
         },
     };
 
-    assert.doesNotMatch(renderAvatarBadge("owner", i18n), /title="/);
-    assert.doesNotMatch(renderAvatarBadge("admin", i18n), /title="/);
-    assert.doesNotMatch(renderAvatarBadge("teacher", i18n), /title="/);
+    assert.match(renderAvatarBadge("owner", i18n), /title="Owner"/);
+    assert.match(renderAvatarBadge("admin", i18n), /title="Admin"/);
+    assert.match(renderAvatarBadge("teacher", i18n), /title="Teacher"/);
     assert.match(
         renderAvatarBadge("owner", i18n),
-        /aria-label="Owner" role="img"/,
+        /aria-label="Owner"[\s\S]*role="img"/,
     );
     assert.equal(renderAvatarBadge("user", i18n), "");
 });
 
-test("profile badge styles do not show hover tooltip affordance", () => {
+test("profile badge styles allow hover tooltip affordance", () => {
     const cssSource = readSourceFile(
         "src/adapters/social/profile/ui/profile-social.css",
     );
@@ -85,6 +85,6 @@ test("profile badge styles do not show hover tooltip affordance", () => {
         /\.profile-avatar-badge\s*\{([\s\S]*?)\n\}/m,
     );
     assert.ok(badgeRule);
-    assert.match(badgeRule[1], /pointer-events:\s*none;/);
+    assert.match(badgeRule[1], /pointer-events:\s*auto;/);
     assert.match(badgeRule[1], /cursor:\s*default;/);
 });

@@ -158,7 +158,7 @@ export function renderAvatarBadge(roleValue, i18n) {
     const normalizedRole = normalizeProfileBadgeRole(roleValue);
     const roleLabel = getEscapedProfileBadgeRoleLabel(normalizedRole, i18n);
     if (!roleLabel) return "";
-    return `<span class="profile-avatar-badge profile-avatar-badge--${normalizedRole}" aria-label="${roleLabel}" role="img">${PROFILE_BADGE_MARKUP[normalizedRole]}</span>`;
+    return `<span class="profile-avatar-badge profile-avatar-badge--${normalizedRole}" aria-label="${roleLabel}" title="${roleLabel}" role="img">${PROFILE_BADGE_MARKUP[normalizedRole]}</span>`;
 }
 
 function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
@@ -441,9 +441,9 @@ function renderUserRoleIcons(user, i18n) {
     const adminLabel = getEscapedProfileBadgeRoleLabel("admin", i18n);
     const teacherLabel = getEscapedProfileBadgeRoleLabel("teacher", i18n);
     return `
-      ${user.role === "owner" ? `<span class="profile-user-role-icon" aria-label="${ownerLabel}" role="img"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
-      ${user.role === "admin" ? `<span class="profile-user-role-icon" aria-label="${adminLabel}" role="img"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
-      ${user.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="${teacherLabel}" role="img">&#128218;</span>` : ""}
+      ${user.role === "owner" ? `<span class="profile-user-role-icon" aria-label="${ownerLabel}" title="${ownerLabel}" role="img"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${user.role === "admin" ? `<span class="profile-user-role-icon" aria-label="${adminLabel}" title="${adminLabel}" role="img"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${user.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="${teacherLabel}" title="${teacherLabel}" role="img">&#128218;</span>` : ""}
     `;
 }
 
