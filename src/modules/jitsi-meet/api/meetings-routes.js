@@ -300,6 +300,7 @@ export function registerMeetingRoutes({
                     meetingUrl: meeting.meetingUrl,
                     roomSlug: activeMeeting.roomSlug ?? null,
                     chatRoomId: meeting.chatRoomId,
+                    classroomId: meeting.classroomId ?? null,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
                     activeSessionCount: Number(

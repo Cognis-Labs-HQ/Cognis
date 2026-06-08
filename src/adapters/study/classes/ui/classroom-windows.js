@@ -9,7 +9,11 @@ import {
 import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import { fetchCurrentProfile } from "/static/modules/jitsi-meet/jitsi-helpers.js";
 import { ensureSessionId } from "/static/modules/jitsi-meet/session.js";
-import { JITSI_TOOLBAR_BUTTONS } from "/static/modules/jitsi-meet/constants.js";
+import {
+    HEARTBEAT_INTERVAL_MS,
+    JITSI_TOOLBAR_BUTTONS,
+} from "/static/modules/jitsi-meet/constants.js";
+import { createClassroomNativeChat } from "/static/adapters/study/classes/classroom-chat.js";
 
 /**
  * Creates and manages the persistent meeting overlay and class chat panel
@@ -18,6 +22,11 @@ import { JITSI_TOOLBAR_BUTTONS } from "/static/modules/jitsi-meet/constants.js";
  * back inside the blackboard.
  */
 export function createClassroomWindows({ root, i18n }) {
+    let jitsiApi = null;
+    let heartbeatTimer = null;
+    let currentMeetingId = null;
+    let currentSessionId = null;
+
     const meetingWindow = document.createElement("div");
     meetingWindow.className = "classes-meeting-window";
     meetingWindow.hidden = true;
@@ -35,15 +44,61 @@ export function createClassroomWindows({ root, i18n }) {
         <div class="classes-meeting-frame" id="classroom-jitsi-frame"></div>
     `;
 
-    function closeMeeting() {
+    async function keepPresenceAlive(active) {
+        if (!currentMeetingId || !currentSessionId) return;
+        await apiFetch("/api/v1/modules/jitsi-meet/meetings/presence", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+                meetingId: currentMeetingId,
+                sessionId: currentSessionId,
+                active,
+            }),
+        }).catch(() => undefined);
+    }
+
+    function startHeartbeat(meetingId, sessionId) {
+        currentMeetingId = meetingId;
+        currentSessionId = sessionId;
+        if (heartbeatTimer !== null) clearInterval(heartbeatTimer);
+        heartbeatTimer = setInterval(
+            () => void keepPresenceAlive(true),
+            HEARTBEAT_INTERVAL_MS,
+        );
+    }
+
+    function stopHeartbeat() {
+        if (heartbeatTimer !== null) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+        }
+        void keepPresenceAlive(false);
+        currentMeetingId = null;
+        currentSessionId = null;
+    }
+
+    function destroyJitsiApi() {
+        if (jitsiApi) {
+            try {
+                jitsiApi.dispose?.();
+            } catch (error) {
+                console.debug("[classroom] jitsi API dispose failed.", error);
+            }
+            jitsiApi = null;
+        }
         const frame = meetingWindow.querySelector("#classroom-jitsi-frame");
         if (frame instanceof HTMLElement) {
             frame.innerHTML = "";
         }
+    }
+
+    function closeMeeting() {
+        stopHeartbeat();
+        destroyJitsiApi();
         meetingWindow.hidden = true;
     }
 
-    async function openMeetingEmbed(meeting, currentProfile) {
+    async function openMeetingEmbed(meeting, sessionId, currentProfile) {
         await loadJitsiExternalApi(meeting.instanceUrl || meeting.meetingUrl);
 
         const meetingHost = resolveUrlHost(
@@ -63,7 +118,7 @@ export function createClassroomWindows({ root, i18n }) {
 
         const frame = meetingWindow.querySelector("#classroom-jitsi-frame");
         if (!(frame instanceof HTMLElement)) return;
-        frame.innerHTML = "";
+        destroyJitsiApi();
 
         const meetingPassword = String(meeting.meetingPassword ?? "").trim();
         const themeMode = resolveThemeMode();
@@ -83,8 +138,10 @@ export function createClassroomWindows({ root, i18n }) {
                 avatarUrl: currentProfile?.avatarUrl ?? "",
             },
         });
+        jitsiApi = apiInstance;
 
         const applyPrivilegedSettings = () => {
+            if (jitsiApi !== apiInstance) return;
             const isModerator =
                 apiInstance
                     .getParticipantsInfo?.()
@@ -108,6 +165,14 @@ export function createClassroomWindows({ root, i18n }) {
             });
         }
 
+        const handleLeft = () => {
+            if (jitsiApi !== apiInstance) return;
+            closeMeeting();
+        };
+        apiInstance.addEventListener?.("videoConferenceLeft", handleLeft);
+        apiInstance.addEventListener?.("readyToClose", handleLeft);
+
+        startHeartbeat(meeting.id, sessionId);
         meetingWindow.hidden = false;
     }
 
@@ -159,45 +224,67 @@ export function createClassroomWindows({ root, i18n }) {
         }
 
         const currentProfile = await fetchCurrentProfile().catch(() => null);
-        await openMeetingEmbed(meeting, currentProfile);
+        await openMeetingEmbed(meeting, sessionId, currentProfile);
     }
 
-    const chatPanel = document.createElement("div");
-    chatPanel.className = "classes-chat-panel";
-    chatPanel.hidden = true;
-    chatPanel.setAttribute(
-        "aria-label",
-        i18n.t("module.study.classes.open_chat"),
-    );
-    chatPanel.innerHTML = `
-        <div class="classes-chat-panel-header">
-            <span class="classes-chat-panel-title">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</span>
-            <button type="button" class="classes-chat-close-btn classes-window-close-btn">
-                ${escapeHtml(i18n.t("ui.reuse.close"))}
-            </button>
-        </div>
-        <iframe class="classes-chat-panel-frame"
-                id="classroom-chat-frame"
-                src=""
-                title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"></iframe>
-    `;
+    async function openMeetingById(meetingId) {
+        const normalizedId = String(meetingId ?? "").trim();
+        if (!normalizedId) return;
+        if (!meetingWindow.hidden && currentMeetingId === normalizedId) return;
 
-    function closeChat() {
-        const frame = chatPanel.querySelector("#classroom-chat-frame");
-        if (frame instanceof HTMLIFrameElement) {
-            frame.src = "";
-        }
-        chatPanel.hidden = true;
+        const getResponse = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/get",
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ meetingId: normalizedId }),
+            },
+        );
+        if (!getResponse.ok) return;
+        const getPayload = await getResponse
+            .json()
+            .catch(() => ({ data: null }));
+        const meeting = getPayload?.data;
+        if (!meeting?.meetingUrl || meeting?.state?.endedAt) return;
+
+        const sessionId = ensureSessionId();
+        const joinResponse = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/join",
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    meetingId: normalizedId,
+                    sessionId,
+                }),
+            },
+        );
+        const joinedMeeting = joinResponse.ok
+            ? ((await joinResponse.json())?.data ?? meeting)
+            : meeting;
+
+        if (!joinedMeeting?.meetingUrl) return;
+        const currentProfile = await fetchCurrentProfile().catch(() => null);
+        await openMeetingEmbed(joinedMeeting, sessionId, currentProfile);
     }
 
-    function openChat(chatUrl) {
-        if (!chatUrl) return;
-        const frame = chatPanel.querySelector("#classroom-chat-frame");
-        if (frame instanceof HTMLIFrameElement) {
-            frame.src = chatUrl;
-        }
-        chatPanel.hidden = false;
+    async function tryAutoJoin(classroomId) {
+        const id = String(classroomId ?? "").trim();
+        if (!id) return;
+        if (!meetingWindow.hidden) return;
+
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/active",
+        ).catch(() => null);
+        if (!response?.ok) return;
+        const payload = await response.json().catch(() => ({ data: [] }));
+        const meetings = Array.isArray(payload?.data) ? payload.data : [];
+        const match = meetings.find((m) => m?.classroomId === id);
+        if (!match?.id) return;
+        await openMeetingById(match.id);
     }
+
+    const nativeChat = createClassroomNativeChat({ i18n });
 
     function handleWindowButtonClick(event) {
         if (!(event.target instanceof Element)) return;
@@ -206,7 +293,7 @@ export function createClassroomWindows({ root, i18n }) {
             return;
         }
         if (event.target.closest(".classes-chat-close-btn")) {
-            closeChat();
+            nativeChat.closeChat();
         }
     }
 
@@ -216,9 +303,16 @@ export function createClassroomWindows({ root, i18n }) {
         const blackboard = root.querySelector(".classes-blackboard");
         if (blackboard) {
             blackboard.appendChild(meetingWindow);
-            blackboard.appendChild(chatPanel);
+            blackboard.appendChild(nativeChat.panel);
         }
     }
 
-    return { openMeeting, openChat, closeMeeting, closeChat, reattach };
+    return {
+        openMeeting,
+        openChat: (chatUrl) => nativeChat.openChat(chatUrl),
+        closeMeeting,
+        closeChat: () => nativeChat.closeChat(),
+        tryAutoJoin,
+        reattach,
+    };
 }

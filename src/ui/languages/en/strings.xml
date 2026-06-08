@@ -580,7 +580,9 @@
   <string name="module.study.classes.class_created">Your class was created.</string>
   <string name="module.study.classes.request_failed">Failed to submit classroom creation request.</string>
   <string name="module.study.classes.open_chat">Open Chat</string>
-  <string name="module.study.classes.open_meeting">Start Meeting</string>
+  <string name="module.study.classes.open_meeting">Meeting</string>
+  <string name="module.study.classes.chat_placeholder">Message…</string>
+  <string name="module.study.classes.chat_empty">No messages yet.</string>
   <string name="module.study.classes.pending_requests">Pending Teacher Requests</string>
   <string name="module.study.classes.no_pending_requests">No pending teacher requests.</string>
   <string name="module.study.classes.requests_page_title">Requests</string>

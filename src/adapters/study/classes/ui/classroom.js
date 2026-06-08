@@ -34,6 +34,7 @@ import { renderClassroomSubNavigation } from "/static/adapters/study/classes/cla
 import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
 import { createClassroomWindows } from "/static/adapters/study/classes/classroom-windows.js";
 import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
+import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -95,7 +96,7 @@ export async function mount(root, { signal } = {}) {
     let searchQuery = "";
     let activeBoardPanel = "agenda";
     const presenceByAccountId = new Map();
-    const boardEntitiesByClassId = new Map();
+    const boardEntityStore = createBoardEntityStore();
     let interactionsBound = false;
     /** Initialised after composer.init(); used by the click handler via closure. */
     let classroomWindows = null;
@@ -120,26 +121,11 @@ export async function mount(root, { signal } = {}) {
     }
 
     function getBoardEntities(snapshot) {
-        const classId = String(snapshot?.id ?? "").trim();
-        if (!classId) return [];
-        return boardEntitiesByClassId.get(classId) ?? [];
+        return boardEntityStore.get(snapshot);
     }
 
     function setBoardEntity(classId, kind, x, y) {
-        const normalizedClassId = String(classId ?? "").trim();
-        const normalizedKind =
-            String(kind ?? "")
-                .trim()
-                .toLowerCase() === "meeting"
-                ? "meeting"
-                : "chat";
-        if (!normalizedClassId) return;
-        const boundedX = Math.min(Math.max(Number(x) || 0, 0), 1);
-        const boundedY = Math.min(Math.max(Number(y) || 0, 0), 1);
-        const current = boardEntitiesByClassId.get(normalizedClassId) ?? [];
-        const next = current.filter((entry) => entry.kind !== normalizedKind);
-        next.push({ kind: normalizedKind, x: boundedX, y: boundedY });
-        boardEntitiesByClassId.set(normalizedClassId, next);
+        boardEntityStore.set(classId, kind, x, y);
     }
 
     async function loadClassrooms() {
@@ -283,11 +269,6 @@ export async function mount(root, { signal } = {}) {
             nextUrl.searchParams.set("student", "true");
         }
         navigateTo(nextUrl.pathname + nextUrl.search);
-    }
-
-    /** Creates or reuses a classroom meeting and embeds it in the meeting overlay. */
-    async function openMeeting(snapshot) {
-        await classroomWindows.openMeeting(snapshot);
     }
 
     async function openSeatActionMenu(button) {
@@ -577,7 +558,7 @@ export async function mount(root, { signal } = {}) {
                                 ) &&
                                 snapshot
                             ) {
-                                await openMeeting(snapshot);
+                                await classroomWindows.openMeeting(snapshot);
                                 return;
                             }
 
@@ -1007,6 +988,9 @@ export async function mount(root, { signal } = {}) {
             refreshDynamicDom();
             composer.refreshFooter();
             refreshSubNavigation();
+            if (selectedClassId && classroomWindows) {
+                await classroomWindows.tryAutoJoin(selectedClassId);
+            }
         },
     });
 }

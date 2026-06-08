@@ -181,3 +181,41 @@
 **Reviewer suggestion:** Move local `buildQuery` utility to shared reuse helpers.
 
 **Reason ignored:** The helper remains a tiny file-local utility with one call pattern in this module; extracting it would be unrelated churn within this already scoped feature patch.
+
+## Code Review — classroom meeting/chat overhaul
+
+### classroom.js interactionsBound flag — mount-scope only
+
+**Reviewer suggestion:** The `interactionsBound` flag should be local to `onRender` rather than persisted at module level to avoid failed rebinds after SPA navigation.
+
+**Reason ignored:** Pre-existing pattern unrelated to this task's scope. The meeting/chat feature works with the existing event-binding lifecycle. Refactoring the entire listener architecture is a separate improvement.
+
+### classroom-render.js DEFAULT_CLASSROOM_CAPACITY — deduplicate from store constants
+
+**Reviewer suggestion:** Import `DEFAULT_STUDENT_LIMIT` from `src/adapters/study/classes/store/constants.ts` instead of re-declaring.
+
+**Reason ignored:** Pre-existing duplication in classroom-render.js, unrelated to this task.
+
+### classroom-render.js normalizeSeatAssignments — JSDoc @param missing description
+
+**Reviewer suggestion:** Add description of what `rawSeatAssignments` represents in the JSDoc.
+
+**Reason ignored:** Pre-existing JSDoc gap in classroom-render.js, unrelated to this task.
+
+### page-builder/settings.css cursor override — scope to text inputs only
+
+**Reviewer suggestion:** Scope the cursor override to `input[type="text"]` and `textarea` to avoid affecting number/date inputs.
+
+**Reason ignored:** Pre-existing CSS rule in page-builder/settings.css, unrelated to this task.
+
+### page-composer/init.js refreshFooter — add @returns annotation
+
+**Reviewer suggestion:** Add inline JSDoc `@returns` describing what `refreshFooter()` does.
+
+**Reason ignored:** Pre-existing JSDoc gap in page-composer/init.js, unrelated to this task.
+
+### social/bootstrap.ts — add default case comment for unrecognized status values
+
+**Reviewer suggestion:** Add a comment explaining why unrecognized values default to "online".
+
+**Reason ignored:** Pre-existing gap in social/bootstrap.ts, unrelated to this task.

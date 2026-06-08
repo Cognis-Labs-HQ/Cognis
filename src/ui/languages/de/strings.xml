@@ -580,7 +580,9 @@
   <string name="module.study.classes.class_created">Ihre Klasse wurde erstellt.</string>
   <string name="module.study.classes.request_failed">Antrag zur Erstellung eines Klassenraums konnte nicht eingereicht werden.</string>
   <string name="module.study.classes.open_chat">Chat öffnen</string>
-  <string name="module.study.classes.open_meeting">Sitzung starten</string>
+  <string name="module.study.classes.open_meeting">Meeting</string>
+  <string name="module.study.classes.chat_placeholder">Nachricht…</string>
+  <string name="module.study.classes.chat_empty">Noch keine Nachrichten.</string>
   <string name="module.study.classes.pending_requests">Ausstehende Lehreranträge</string>
   <string name="module.study.classes.no_pending_requests">Keine ausstehenden Lehreranträge.</string>
   <string name="module.study.classes.requests_page_title">Anfragen</string>

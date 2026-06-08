@@ -556,11 +556,19 @@ export function registerApiRoutes(router, ctx) {
             });
             if (!requesterUsername) return;
 
-            const requestedParticipants = await resolveRequestedParticipants(
+            let requestedParticipants = await resolveRequestedParticipants(
                 profileStore,
                 body.participants,
                 { includeHidden: hasMinRole(claims.role, "admin") },
             );
+            if (body.classroomId) {
+                const classroomHandles = await listClassroomParticipantHandles({
+                    classId: body.classroomId,
+                }).catch(() => []);
+                requestedParticipants = Array.from(
+                    new Set([...requestedParticipants, ...classroomHandles]),
+                );
+            }
             const normalizedInput = store.normalizeMeetingCreationInput({
                 participants: requestedParticipants,
                 classroomId: body.classroomId,
