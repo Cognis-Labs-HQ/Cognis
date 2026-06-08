@@ -407,4 +407,5 @@ test("messages onRoomOpened callback restores draft for opened room", () => {
         source,
         /const openedRoomId = room\?\.id != null \? String\(room\.id\) : null/,
     );
+    assert.match(source, /composerInputRef instanceof HTMLTextAreaElement/);
 });

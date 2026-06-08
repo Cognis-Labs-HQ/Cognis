@@ -67,18 +67,27 @@ function getRoomDraftStorageKey(accountId, roomId) {
 function saveRoomDraft(accountId, roomId, text) {
     if (!accountId || !roomId) return;
     const storageKey = getRoomDraftStorageKey(accountId, roomId);
-    if (text) {
-        localStorage.setItem(storageKey, text);
-    } else {
-        localStorage.removeItem(storageKey);
+    try {
+        if (text) {
+            localStorage.setItem(storageKey, text);
+        } else {
+            localStorage.removeItem(storageKey);
+        }
+    } catch {
+        // storage unavailable (e.g. private browsing quota exceeded)
     }
 }
 
 function loadRoomDraft(accountId, roomId) {
     if (!accountId || !roomId) return "";
-    return (
-        localStorage.getItem(getRoomDraftStorageKey(accountId, roomId)) ?? ""
-    );
+    try {
+        return (
+            localStorage.getItem(getRoomDraftStorageKey(accountId, roomId)) ??
+            ""
+        );
+    } catch {
+        return "";
+    }
 }
 
 const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
@@ -120,6 +129,8 @@ export async function mount(root, { signal } = {}) {
         ? decodeURIComponent(initialRoomMatch[1])
         : rememberedRoomId;
 
+    let composerInputRef = null;
+
     let syncOpenRoomPreviews = () => {};
 
     const roomState = createMessagesRoomState({
@@ -137,17 +148,15 @@ export async function mount(root, { signal } = {}) {
         onRoomOpened: async (room) => {
             syncOpenRoomPreviews();
             const openedRoomId = room?.id != null ? String(room.id) : null;
-            if (openedRoomId) {
-                const composerInputEl = document.getElementById(
-                    "messages-composer-input",
+            if (
+                openedRoomId &&
+                composerInputRef instanceof HTMLTextAreaElement
+            ) {
+                composerInputRef.value = loadRoomDraft(
+                    currentAccountId,
+                    openedRoomId,
                 );
-                if (composerInputEl instanceof HTMLTextAreaElement) {
-                    composerInputEl.value = loadRoomDraft(
-                        currentAccountId,
-                        openedRoomId,
-                    );
-                    composerInputEl.dispatchEvent(new Event("input"));
-                }
+                composerInputRef.dispatchEvent(new Event("input"));
             }
         },
     });
@@ -236,6 +245,10 @@ export async function mount(root, { signal } = {}) {
                 const composerInput = document.getElementById(
                     "messages-composer-input",
                 );
+                composerInputRef =
+                    composerInput instanceof HTMLTextAreaElement
+                        ? composerInput
+                        : null;
                 const composerSendButton = form?.querySelector(
                     ".messages-composer-send",
                 );
