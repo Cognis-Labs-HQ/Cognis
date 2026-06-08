@@ -33,6 +33,7 @@ test("profile badges render localized hover labels at runtime", () => {
             return String(value ?? "")
                 .replaceAll("&", "&amp;")
                 .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
                 .replaceAll('"', "&quot;");
         },
         renderMarkdown(value) {
