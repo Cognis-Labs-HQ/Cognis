@@ -7,6 +7,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import { getRoleLabel } from "/static/reuse/access-role.js";
 
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
@@ -135,16 +136,30 @@ export function visibilityClass(visibilityValue) {
     return visibilityClassMap[visibilityValue] ?? "visibility-hidden";
 }
 
-export function renderAvatarBadge(roleValue) {
-    if (!roleValue) return "";
-    if (roleValue === "owner") {
-        return '<span class="profile-avatar-badge profile-avatar-badge--owner" aria-hidden="true"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>';
+function getProfileBadgeRoleLabel(roleValue, i18n) {
+    const normalizedRole = String(roleValue ?? "").trim().toLowerCase();
+    if (
+        normalizedRole !== "owner" &&
+        normalizedRole !== "admin" &&
+        normalizedRole !== "teacher"
+    ) {
+        return "";
     }
-    if (roleValue === "admin") {
-        return '<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>';
+    return escapeHtml(getRoleLabel(i18n, normalizedRole));
+}
+
+export function renderAvatarBadge(roleValue, i18n) {
+    const normalizedRole = String(roleValue ?? "").trim().toLowerCase();
+    const roleLabel = getProfileBadgeRoleLabel(roleValue, i18n);
+    if (!roleLabel) return "";
+    if (normalizedRole === "owner") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--owner" title="${roleLabel}" aria-label="${roleLabel}" role="img"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
     }
-    if (roleValue === "teacher") {
-        return '<span class="profile-avatar-badge profile-avatar-badge--teacher" aria-hidden="true">&#128218;</span>';
+    if (normalizedRole === "admin") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--admin" title="${roleLabel}" aria-label="${roleLabel}" role="img"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
+    }
+    if (normalizedRole === "teacher") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--teacher" title="${roleLabel}" aria-label="${roleLabel}" role="img">&#128218;</span>`;
     }
     return "";
 }
@@ -260,7 +275,7 @@ export function renderHero({
           type="button"
           aria-label="${escapeHtml(i18n.t("ui.app.profile.change_avatar"))}"
         >${renderAvatarContent({ avatarBlobUrl, profile, i18n })}</button>
-        ${renderAvatarBadge(profile?.role)}
+        ${renderAvatarBadge(profile?.role, i18n)}
         ${
             avatarBlobUrl
                 ? `
@@ -277,7 +292,7 @@ export function renderHero({
         : `
       <div class="profile-avatar-wrap">
         <div class="profile-hero-avatar-display">${renderAvatarContent({ avatarBlobUrl, profile, i18n })}</div>
-        ${renderAvatarBadge(profile?.role)}
+        ${renderAvatarBadge(profile?.role, i18n)}
       </div>
     `;
 
@@ -424,11 +439,14 @@ function userDisplayName(user) {
     return user?.displayName || user?.username || user?.handle || "";
 }
 
-function renderUserRoleIcons(user) {
+function renderUserRoleIcons(user, i18n) {
+    const ownerLabel = getProfileBadgeRoleLabel("owner", i18n);
+    const adminLabel = getProfileBadgeRoleLabel("admin", i18n);
+    const teacherLabel = getProfileBadgeRoleLabel("teacher", i18n);
     return `
-      ${user.role === "owner" ? '<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>' : ""}
-      ${user.role === "admin" ? '<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>' : ""}
-      ${user.role === "teacher" ? '<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>' : ""}
+      ${user.role === "owner" ? `<span class="profile-user-role-icon" aria-label="${ownerLabel}" title="${ownerLabel}"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${user.role === "admin" ? `<span class="profile-user-role-icon" aria-label="${adminLabel}" title="${adminLabel}"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${user.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="${teacherLabel}" title="${teacherLabel}">&#128218;</span>` : ""}
     `;
 }
 
@@ -445,7 +463,7 @@ function renderUserList(users, emptyKey, i18n) {
           <span class="profile-user-card-name">${escapeHtml(userDisplayName(user))}</span>
           <span class="profile-user-card-handle">@${escapeHtml(user.handle)}</span>
           <span class="profile-user-card-icons">
-            ${renderUserRoleIcons(user)}
+            ${renderUserRoleIcons(user, i18n)}
           </span>
         </a>
       `,
