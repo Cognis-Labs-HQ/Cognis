@@ -16,7 +16,15 @@ const PROFILE_BADGE_MARKUP = {
     admin: '<img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" />',
     teacher: "&#128218;",
 };
+const PROFILE_LIST_ROLE_ICON_MARKUP = {
+    owner: '<img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" />',
+    admin: '<img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" />',
+    teacher: "&#128218;",
+};
 const PROFILE_BADGE_ROLES = new Set(Object.keys(PROFILE_BADGE_MARKUP));
+const PROFILE_LIST_ROLE_ICON_ROLES = new Set(
+    Object.keys(PROFILE_LIST_ROLE_ICON_MARKUP),
+);
 
 function createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n) {
     return createFormBuilder(
@@ -159,7 +167,14 @@ export function renderAvatarBadge(roleValue, i18n) {
     const normalizedRole = normalizeProfileBadgeRole(roleValue);
     const roleLabel = getEscapedProfileBadgeRoleLabel(normalizedRole, i18n);
     if (!roleLabel) return "";
-    return `<span class="profile-avatar-badge profile-avatar-badge--${normalizedRole}" aria-label="${roleLabel}" title="${roleLabel}" role="img">${PROFILE_BADGE_MARKUP[normalizedRole]}</span>`;
+    return `
+      <span
+        class="profile-avatar-badge profile-avatar-badge--${normalizedRole}"
+        aria-label="${roleLabel}"
+        title="${roleLabel}"
+        role="img"
+      >${PROFILE_BADGE_MARKUP[normalizedRole]}</span>
+    `;
 }
 
 function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
@@ -438,13 +453,18 @@ function userDisplayName(user) {
 }
 
 function renderUserRoleIcons(user, i18n) {
-    const ownerLabel = getEscapedProfileBadgeRoleLabel("owner", i18n);
-    const adminLabel = getEscapedProfileBadgeRoleLabel("admin", i18n);
-    const teacherLabel = getEscapedProfileBadgeRoleLabel("teacher", i18n);
+    const normalizedRole = normalizeProfileBadgeRole(user?.role);
+    if (!normalizedRole) return "";
+    if (!PROFILE_LIST_ROLE_ICON_ROLES.has(normalizedRole)) return "";
+    const roleLabel = getEscapedProfileBadgeRoleLabel(normalizedRole, i18n);
+    if (!roleLabel) return "";
     return `
-      ${user.role === "owner" ? `<span class="profile-user-role-icon" aria-label="${ownerLabel}" title="${ownerLabel}" role="img"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
-      ${user.role === "admin" ? `<span class="profile-user-role-icon" aria-label="${adminLabel}" title="${adminLabel}" role="img"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
-      ${user.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="${teacherLabel}" title="${teacherLabel}" role="img">&#128218;</span>` : ""}
+      <span
+        class="profile-user-role-icon"
+        aria-label="${roleLabel}"
+        title="${roleLabel}"
+        role="img"
+      >${PROFILE_LIST_ROLE_ICON_MARKUP[normalizedRole]}</span>
     `;
 }
 
