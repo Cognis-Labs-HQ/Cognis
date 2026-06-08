@@ -28,6 +28,7 @@ export interface ClassroomStateRow {
     classId: string;
     studentLimit: number;
     seatAssignments: Record<string, number>;
+    boardFocus: "agenda" | "classroom";
     updatedAt: string;
 }
 

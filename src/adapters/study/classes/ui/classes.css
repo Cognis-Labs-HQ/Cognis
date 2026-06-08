@@ -484,6 +484,11 @@ body:not([data-theme="light"]) .classes-classroom-content {
     color: #fff;
 }
 
+.classes-board-panel-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .classes-blackboard-actions {
     display: flex;
     gap: 6px;
@@ -660,11 +665,12 @@ body:not([data-theme="light"]) .classes-classroom-content {
     gap: 4px;
     cursor: pointer;
     user-select: none;
+    width: 112px;
 }
 
 .classes-desk-nameplate {
     min-height: 18px;
-    max-width: 106px;
+    width: 100%;
     padding: 1px 6px;
     border-radius: 999px;
     background: var(--classroom-nameplate-bg);
@@ -673,13 +679,16 @@ body:not([data-theme="light"]) .classes-classroom-content {
     line-height: 1.35;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
+    box-sizing: border-box;
 }
 
 .classes-desk-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
 }
 
 .classes-status-light {
@@ -938,6 +947,34 @@ body:not([data-theme="light"]) .classes-classroom-content {
 
 .classes-footer-toggle-btn:hover {
     background: var(--surface);
+}
+
+.classes-classroom-subnav {
+    display: flex;
+    width: 100%;
+}
+
+.classes-classroom-subnav-list {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.classes-subnav-find-btn,
+.classes-subnav-class-btn {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    padding: 5px 12px;
+}
+
+.classes-subnav-class-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
 }
 
 body:not([data-theme="light"]) .classes-footer-select,

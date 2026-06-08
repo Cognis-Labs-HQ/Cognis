@@ -3,7 +3,6 @@ import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
-import { MAX_STUDENT_LIMIT } from "../store/constants.js";
 import { handleClassroomNotebookRoutes } from "./classroom-notebooks.js";
 import { handleAvailableClassesRequest } from "./available-classes-route.js";
 import { handleEnrolledClassesRequest } from "./enrolled-classes-route.js";
@@ -12,6 +11,7 @@ import {
     dispatchJoinReviewNotification,
 } from "./join-notifications.js";
 import { handleClassUpdateRoute } from "./class-update-route.js";
+import { handleClassroomLayoutRoute } from "./classroom-layout-route.js";
 import { handleTeacherRequestsRoutes } from "./teacher-requests-route.js";
 import {
     decorateMemberships,
@@ -211,7 +211,7 @@ export function createClassesRoutes(
                         .trim()
                         .toLowerCase() === "teacher";
                 const classroomClasses =
-                    mode === "teacher" || isTeacherAccount
+                    mode === "teacher"
                         ? await store.getClassesForTeacherWithFilter(
                               claims.sub,
                               languageFilter,
@@ -320,105 +320,14 @@ export function createClassesRoutes(
             })
         )
             return true;
-        const classroomLayoutMatch = url.pathname.match(
-            /^\/api\/v1\/study\/classrooms\/([^/]+)\/layout$/,
-        );
-        if (classroomLayoutMatch && req.method === "PATCH") {
-            const claims = ctx.requireAuth(req, res, "teacher");
-            if (!claims) return true;
-            const classId = decodeURIComponent(classroomLayoutMatch[1]);
-            const body = (await readJson(req)) as {
-                studentLimit?: unknown;
-                seatAssignments?: unknown;
-            };
-            const studentLimitRaw = body.studentLimit;
-            const seatAssignmentsRaw = body.seatAssignments;
-            const studentLimit =
-                studentLimitRaw == null ? undefined : Number(studentLimitRaw);
-            if (
-                studentLimit != null &&
-                (!Number.isInteger(studentLimit) ||
-                    studentLimit < 1 ||
-                    studentLimit > MAX_STUDENT_LIMIT)
-            ) {
-                jsonError(
-                    res,
-                    400,
-                    "bad_request",
-                    `studentLimit must be an integer between 1 and ${MAX_STUDENT_LIMIT}.`,
-                );
-                return true;
-            }
-            if (
-                seatAssignmentsRaw != null &&
-                (typeof seatAssignmentsRaw !== "object" ||
-                    Array.isArray(seatAssignmentsRaw))
-            ) {
-                jsonError(
-                    res,
-                    400,
-                    "bad_request",
-                    "seatAssignments must be an object.",
-                );
-                return true;
-            }
-            const seatAssignments: Record<string, number> | undefined =
-                seatAssignmentsRaw == null
-                    ? undefined
-                    : Object.fromEntries(
-                          Object.entries(
-                              seatAssignmentsRaw as Record<string, unknown>,
-                          ).map(([accountId, seatNumber]) => [
-                              accountId,
-                              Number(seatNumber),
-                          ]),
-                      );
-            try {
-                const classroomState =
-                    await store.updateClassroomStateForTeacher(
-                        classId,
-                        claims.sub,
-                        {
-                            studentLimit,
-                            seatAssignments,
-                        },
-                    );
-                jsonOk(res, classroomState);
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
-                    jsonError(
-                        res,
-                        403,
-                        "forbidden",
-                        "Class not found or access denied.",
-                    );
-                    return true;
-                }
-                if (
-                    err instanceof Error &&
-                    err.message === "invalid_student_limit"
-                ) {
-                    jsonError(
-                        res,
-                        400,
-                        "bad_request",
-                        `studentLimit must be between 1 and ${MAX_STUDENT_LIMIT}.`,
-                    );
-                    return true;
-                }
-                options.log?.("error", "Failed to update classroom layout.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    classId,
-                    error: err instanceof Error ? err.message : String(err),
-                });
-                jsonError(
-                    res,
-                    500,
-                    "internal_error",
-                    "Failed to update classroom.",
-                );
-            }
+        if (
+            await handleClassroomLayoutRoute(req, res, url, {
+                store,
+                options,
+                ctx,
+                logMeta,
+            })
+        ) {
             return true;
         }
 

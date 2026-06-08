@@ -225,6 +225,12 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 default: "{}",
             },
             {
+                name: "board_focus",
+                type: "text",
+                notNull: true,
+                default: "agenda",
+            },
+            {
                 name: "updated_at",
                 type: "timestamp",
                 notNull: true,
@@ -308,6 +314,7 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
 
     await ensureStudyClassesColumns(db);
     await ensureTeacherRequestColumns(db);
+    await ensureClassroomStateColumns(db);
     await ensureStudyLanguagesSchema(db);
 }
 
@@ -335,6 +342,13 @@ async function ensureTeacherRequestColumns(db: DbExecutor): Promise<void> {
     );
 }
 
+async function ensureClassroomStateColumns(db: DbExecutor): Promise<void> {
+    const rawDb = db as Partial<RawDbExecutor>;
+    if (typeof rawDb.execute !== "function") return;
+    const dialect = await detectSqlDialect(rawDb);
+    await ensureMissingColumn(rawDb, dialect, "classroom_state", "board_focus");
+}
+
 type SupportedSqlDialect = "sqlite" | "postgres" | "mariadb";
 
 async function detectSqlDialect(
@@ -355,13 +369,14 @@ async function detectSqlDialect(
 async function ensureMissingColumn(
     db: Partial<RawDbExecutor>,
     dialect: SupportedSqlDialect,
-    tableName: "study_classes" | "teacher_requests",
+    tableName: "study_classes" | "teacher_requests" | "classroom_state",
     columnName:
         | "join_mode"
         | "is_listed"
         | "name"
         | "class_name"
-        | "student_limit",
+        | "student_limit"
+        | "board_focus",
 ): Promise<void> {
     if (!db.execute) return;
     if (await hasColumn(db, dialect, tableName, columnName)) {
@@ -373,13 +388,14 @@ async function ensureMissingColumn(
 async function hasColumn(
     db: Partial<RawDbExecutor>,
     dialect: SupportedSqlDialect,
-    tableName: "study_classes" | "teacher_requests",
+    tableName: "study_classes" | "teacher_requests" | "classroom_state",
     columnName:
         | "join_mode"
         | "is_listed"
         | "name"
         | "class_name"
-        | "student_limit",
+        | "student_limit"
+        | "board_focus",
 ): Promise<boolean> {
     if (!db.execute) return false;
     if (dialect === "sqlite") {
@@ -401,13 +417,14 @@ async function hasColumn(
 
 function resolveAddColumnStatement(
     dialect: SupportedSqlDialect,
-    tableName: "study_classes" | "teacher_requests",
+    tableName: "study_classes" | "teacher_requests" | "classroom_state",
     columnName:
         | "join_mode"
         | "is_listed"
         | "name"
         | "class_name"
-        | "student_limit",
+        | "student_limit"
+        | "board_focus",
 ): string {
     if (tableName === "study_classes" && columnName === "join_mode") {
         return dialect === "mariadb"
@@ -438,6 +455,11 @@ function resolveAddColumnStatement(
         return dialect === "mariadb"
             ? `ALTER TABLE teacher_requests ADD COLUMN student_limit INT NOT NULL DEFAULT ${DEFAULT_STUDENT_LIMIT}`
             : `ALTER TABLE teacher_requests ADD COLUMN student_limit INTEGER NOT NULL DEFAULT ${DEFAULT_STUDENT_LIMIT}`;
+    }
+    if (tableName === "classroom_state" && columnName === "board_focus") {
+        return dialect === "mariadb"
+            ? "ALTER TABLE classroom_state ADD COLUMN board_focus VARCHAR(32) NOT NULL DEFAULT 'agenda'"
+            : "ALTER TABLE classroom_state ADD COLUMN board_focus TEXT NOT NULL DEFAULT 'agenda'";
     }
     return dialect === "mariadb"
         ? "ALTER TABLE teacher_requests ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"

@@ -48,6 +48,8 @@ function renderDeskAvatar(member) {
         avatarClass: "classes-desk-avatar",
         imageClass: "classes-desk-avatar-img",
         fallbackClass: "classes-desk-avatar-fallback",
+        profileHandle: member?.handle ?? null,
+        linkClass: "classes-profile-preview-link",
     });
 }
 
@@ -141,16 +143,17 @@ function renderBlackboard({
                         title="${escapeHtml(label)}">${icon}</button>`;
         })
         .join("");
+    const canSelectBoardPanel = isTeacherView;
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
                 <div class="classes-chalk-header classes-board-panel-tabs">
                     <button type="button" class="classes-board-panel-btn${
                         activeBoardPanel !== "classroom" ? " active" : ""
-                    }" data-board-panel="agenda">${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</button>
+                    }" data-board-panel="agenda"${canSelectBoardPanel ? "" : ' disabled aria-disabled="true"'}>${escapeHtml(i18n.t("module.study.classes.class_agenda"))}</button>
                     <button type="button" class="classes-board-panel-btn${
                         activeBoardPanel === "classroom" ? " active" : ""
-                    }" data-board-panel="classroom">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
+                    }" data-board-panel="classroom"${canSelectBoardPanel ? "" : ' disabled aria-disabled="true"'}>${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
                 </div>
                 <div class="classes-blackboard-actions">
                     <button type="button" class="classes-icon-btn classes-board-entity-token"
@@ -274,6 +277,11 @@ function renderStudentRoster({ snapshot, i18n }) {
 
 function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
     const occupied = Boolean(member);
+    const emptySeatLabel = i18n.t(
+        isTeacherView
+            ? "module.study.classes.invite_student"
+            : "module.study.classes.empty_seat",
+    );
     const classNames = [
         "classes-desk-unit",
         occupied ? "occupied" : "",
@@ -286,8 +294,7 @@ function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
              data-seat-number="${seatNumber}"
              data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}"
              data-student-handle="${escapeHtml(String(member?.handle ?? ""))}"
-             ${isTeacherView && occupied ? 'draggable="true"' : ""}
-             title="${occupied ? escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member)) : escapeHtml(i18n.t("module.study.classes.empty_seat"))}">
+             ${isTeacherView && occupied ? 'draggable="true"' : ""}>
             <div class="classes-desk-surface">
                 ${occupied ? renderDeskAvatar(member) : `<span class="classes-desk-badge" aria-hidden="true">${escapeHtml(i18n.t("module.study.classes.classroom_seat"))} ${seatNumber + 1}</span>`}
             </div>
@@ -297,8 +304,8 @@ function renderDeskUnit({ seatNumber, member, selected, isTeacherView, i18n }) {
                 )}"></span>
                 ${
                     occupied
-                        ? `<button type="button" class="classes-desk-name classes-desk-name-trigger classes-member-profile-btn" data-student-id="${escapeHtml(String(member?.studentAccountId ?? ""))}" data-student-handle="${escapeHtml(String(member?.handle ?? ""))}" data-student-name="${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</button>`
-                        : `<span class="classes-desk-name">${escapeHtml(i18n.t("module.study.classes.empty_seat"))}</span>`
+                        ? `<span class="classes-desk-name">${escapeHtml(member?.identityMasked ? "???" : buildAccountLabel(member))}</span>`
+                        : `<span class="classes-desk-name">${escapeHtml(emptySeatLabel)}</span>`
                 }
             </div>
             <div class="classes-chair-element"></div>
@@ -379,11 +386,9 @@ function renderDeskFloor({
                 studentAccountId: snapshot?.teacherAccountId,
             },
         ) || i18n.t("ui.reuse.teacher");
-    const teacherHandle = String(snapshot?.teacher?.handle ?? "").trim();
     const teacherDesk = snapshot?.teacherAccountId
         ? `<div class="classes-teacher-desk-zone">
-                <div class="classes-desk-unit classes-desk-unit--teacher"
-                     title="${escapeHtml(teacherLabel)}">
+                <div class="classes-desk-unit classes-desk-unit--teacher">
                     <div class="classes-desk-surface">${renderDeskAvatar({
                         ...snapshot?.teacher,
                         studentAccountId: snapshot?.teacherAccountId,
@@ -391,11 +396,7 @@ function renderDeskFloor({
                     })}</div>
                     <div class="classes-desk-nameplate">
                         <span class="classes-status-light classes-status-light--online"></span>
-                        ${
-                            teacherHandle
-                                ? `<button type="button" class="classes-desk-name classes-desk-name-trigger classes-member-profile-btn" data-student-id="${escapeHtml(String(snapshot?.teacherAccountId ?? ""))}" data-student-handle="${escapeHtml(teacherHandle)}" data-student-name="${escapeHtml(teacherLabel)}" data-student-avatar-key="${escapeHtml(String(snapshot?.teacher?.avatarKey ?? ""))}">${escapeHtml(teacherLabel)}</button>`
-                                : `<span class="classes-desk-name">${escapeHtml(teacherLabel)}</span>`
-                        }
+                        <span class="classes-desk-name">${escapeHtml(teacherLabel)}</span>
                     </div>
                     <div class="classes-chair-element"></div>
                 </div>

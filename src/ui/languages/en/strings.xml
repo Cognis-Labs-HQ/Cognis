@@ -568,7 +568,7 @@
   <string name="module.study.classes.page_title">Classes</string>
   <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>
   <string name="module.study.classes.classroom_page_title">Classrooms</string>
-  <string name="module.study.classes.classroom_page_subtitle">Switch between teaching and enrolled classes, manage the room, and join class activities.</string>
+  <string name="module.study.classes.classroom_page_subtitle">Use Find to discover classes, jump between your owned or enrolled classrooms, and follow the teacher-led class focus in real time.</string>
   <string name="module.study.classes.classroom_select_class">Class</string>
   <string name="module.study.classes.classroom_select_teacher_classes">Your Classes</string>
   <string name="module.study.classes.classroom_select_student_classes">Enrolled Classes</string>
@@ -650,7 +650,7 @@
   <string name="module.study.classes.open_textbook">Open Textbook</string>
   <string name="module.study.classes.open_notebook">Open Notebook</string>
   <string name="module.study.classes.meeting_failed">Failed to start the class meeting.</string>
-  <string name="module.study.classes.empty_seat">Invite Student</string>
+  <string name="module.study.classes.empty_seat">Empty Seat</string>
   <string name="module.study.classes.join_mode_label">Join Mode</string>
   <string name="module.study.classes.class_name_label">Class Name</string>
   <string name="module.study.classes.class_cap_label">Class Cap</string>

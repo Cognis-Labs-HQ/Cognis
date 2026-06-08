@@ -7,6 +7,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 import {
     handleProfileAvatarError,
     hydrateProfileAvatars,
@@ -27,13 +28,13 @@ import {
 } from "/static/adapters/study/classes/classroom-render.js";
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
-import { openCreateClassPopup } from "/static/adapters/study/classes/classroom-create-class-popup.js";
 import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
 import {
     openClassSettingsPopup,
     openMemberProfilePreview,
 } from "/static/adapters/study/classes/classroom-popups.js";
 import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
+import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -42,6 +43,14 @@ function buildQuery(params) {
         query.set(key, String(value));
     }
     return query.toString();
+}
+
+function normalizeBoardFocus(input) {
+    return String(input ?? "")
+        .trim()
+        .toLowerCase() === "classroom"
+        ? "classroom"
+        : "agenda";
 }
 
 export async function mount(root, { signal } = {}) {
@@ -63,7 +72,6 @@ export async function mount(root, { signal } = {}) {
     let selectedLanguageFilter = "";
     let searchQuery = "";
     let activeBoardPanel = "agenda";
-    let requireTeacherManualApproval = true;
     const presenceByAccountId = new Map();
     const boardEntitiesByClassId = new Map();
 
@@ -77,6 +85,13 @@ export async function mount(root, { signal } = {}) {
                 (snapshot) => snapshot.id === selectedClassId,
             ) ?? null
         );
+    }
+
+    function syncActiveBoardPanelWithSnapshot() {
+        const snapshot = selectedSnapshot();
+        activeBoardPanel = snapshot
+            ? normalizeBoardFocus(snapshot?.classroom?.boardFocus)
+            : "agenda";
     }
 
     function getBoardEntities(snapshot) {
@@ -100,18 +115,6 @@ export async function mount(root, { signal } = {}) {
         const next = current.filter((entry) => entry.kind !== normalizedKind);
         next.push({ kind: normalizedKind, x: boundedX, y: boundedY });
         boardEntitiesByClassId.set(normalizedClassId, next);
-    }
-
-    async function loadTeacherApplicationPolicy() {
-        try {
-            const response = await apiFetch("/api/v1/system/security");
-            if (!response.ok) return;
-            const payload = await response.json();
-            requireTeacherManualApproval =
-                payload?.data?.requireTeacherManualApproval !== false;
-        } catch {
-            requireTeacherManualApproval = true;
-        }
     }
 
     async function loadClassrooms() {
@@ -146,6 +149,7 @@ export async function mount(root, { signal } = {}) {
             selectedClassId = String(classroomSnapshots[0]?.id ?? "");
             selectedSeatNumber = null;
         }
+        syncActiveBoardPanelWithSnapshot();
     }
 
     async function loadAvailableClasses() {
@@ -203,48 +207,56 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function refreshData() {
-        await Promise.all([
-            loadClassrooms(),
-            loadAvailableClasses(),
-            loadTeacherApplicationPolicy(),
-        ]);
+        await Promise.all([loadClassrooms(), loadAvailableClasses()]);
         await loadSelectedClassMeta();
     }
 
-    async function createClass() {
-        const payload = await openCreateClassPopup({
-            i18n,
-            apiFetch,
-            openPopup,
-            requireTeacherManualApproval,
-        });
-        if (!payload?.languageCode) return;
-        const response = await apiFetch("/api/v1/study/teacher-requests", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        if (response.status === 409) {
-            showToast(i18n.t("module.study.classes.duplicate_language_class"), {
-                variant: "error",
-            });
-            return;
-        }
-        if (!response.ok) {
-            showToast(i18n.t("module.study.classes.request_failed"), {
-                variant: "error",
-            });
-            return;
-        }
-        showToast(
-            i18n.t(
-                requireTeacherManualApproval
-                    ? "module.study.classes.request_sent"
-                    : "module.study.classes.class_created",
-            ),
-            { variant: "success" },
+    async function updateBoardFocus(nextFocus) {
+        const snapshot = selectedSnapshot();
+        if (!snapshot || !isTeacherView()) return;
+        const normalizedFocus = normalizeBoardFocus(nextFocus);
+        const response = await apiFetch(
+            `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/layout`,
+            {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ boardFocus: normalizedFocus }),
+            },
         );
-        await refreshContent();
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        const nextState = payload?.data;
+        if (nextState) {
+            snapshot.classroom = {
+                ...(snapshot.classroom ?? {}),
+                ...nextState,
+            };
+        } else if (snapshot.classroom) {
+            snapshot.classroom.boardFocus = normalizedFocus;
+        }
+        activeBoardPanel = normalizedFocus;
+    }
+
+    function renderSubNavigationMarkup() {
+        return renderClassroomSubNavigation({
+            i18n,
+            classes: footerClasses,
+            selectedClassId,
+        });
+    }
+
+    function refreshSubNavigation() {
+        const subNav = root.querySelector(".page-subnav");
+        if (subNav instanceof HTMLElement) {
+            subNav.innerHTML = renderSubNavigationMarkup();
+        }
+    }
+
+    function openClassSearch() {
+        if (teacherAccount) {
+            setClassroomViewMode("student");
+        }
+        navigateTo("/classroom");
     }
 
     /** Creates or reuses a classroom meeting and navigates to it on success. */
@@ -406,6 +418,7 @@ export async function mount(root, { signal } = {}) {
         footerClasses = await loadFooterClasses();
         refreshDom();
         composer.refreshFooter();
+        refreshSubNavigation();
     }
 
     function refreshSnapshotPresence() {
@@ -447,15 +460,14 @@ export async function mount(root, { signal } = {}) {
         signal,
         getClasses: () => footerClasses,
         getSelectedClassId: () => selectedClassId,
-        allowCreateOption: isTeacherView(),
+        allowCreateOption: false,
         onSelectClass: async (classId) => {
             selectedClassId = classId;
             selectedSeatNumber = null;
-            activeBoardPanel = "agenda";
+            syncActiveBoardPanelWithSnapshot();
             await loadSelectedClassMeta();
             refreshDom();
         },
-        onCreateClass: createClass,
     });
 
     const composer = createPageComposer(root, {
@@ -469,11 +481,21 @@ export async function mount(root, { signal } = {}) {
                 onRender() {
                     if (root.dataset.classroomBound === "true") return;
                     root.dataset.classroomBound = "true";
+                    bindProfilePreviews(i18n);
                     root.addEventListener(
                         "click",
                         async (event) => {
                             if (!(event.target instanceof Element)) return;
                             const snapshot = selectedSnapshot();
+                            const profilePreviewLink = event.target.closest(
+                                ".classes-profile-preview-link",
+                            );
+                            if (
+                                profilePreviewLink instanceof HTMLAnchorElement
+                            ) {
+                                event.preventDefault();
+                                return;
+                            }
                             const profileButton = event.target.closest(
                                 ".classes-member-profile-btn",
                             );
@@ -491,11 +513,13 @@ export async function mount(root, { signal } = {}) {
                                 ".classes-board-panel-btn[data-board-panel]",
                             );
                             if (boardPanelButton instanceof HTMLElement) {
-                                activeBoardPanel =
+                                if (!isTeacherView()) return;
+                                const nextBoardPanel =
                                     boardPanelButton.dataset.boardPanel ===
                                     "classroom"
                                         ? "classroom"
                                         : "agenda";
+                                await updateBoardFocus(nextBoardPanel);
                                 refreshDom();
                                 return;
                             }
@@ -599,6 +623,32 @@ export async function mount(root, { signal } = {}) {
                                     nextUrl.searchParams.delete("student");
                                 }
                                 navigateTo(nextUrl.pathname + nextUrl.search);
+                                return;
+                            }
+
+                            const subnavFindButton = event.target.closest(
+                                ".classes-subnav-find-btn",
+                            );
+                            if (subnavFindButton instanceof HTMLElement) {
+                                openClassSearch();
+                                return;
+                            }
+
+                            const subnavClassButton = event.target.closest(
+                                ".classes-subnav-class-btn[data-class-id]",
+                            );
+                            if (subnavClassButton instanceof HTMLElement) {
+                                const classId = String(
+                                    subnavClassButton.dataset.classId ?? "",
+                                ).trim();
+                                if (!classId) return;
+                                selectedClassId = classId;
+                                selectedSeatNumber = null;
+                                syncActiveBoardPanelWithSnapshot();
+                                await loadSelectedClassMeta();
+                                refreshDom();
+                                refreshSubNavigation();
+                                composer.refreshFooter();
                                 return;
                             }
 
@@ -921,6 +971,13 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("module.study.classes.classroom_page_title"),
             subtitle: i18n.t("module.study.classes.classroom_page_subtitle"),
         },
+        subNavigation: [
+            {
+                id: "classes-classroom-subnav",
+                label: i18n.t("module.study.classes.classroom_select_class"),
+                render: renderSubNavigationMarkup,
+            },
+        ],
         footer: [footerItem],
     });
     await composer.init();

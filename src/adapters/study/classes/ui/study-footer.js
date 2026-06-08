@@ -48,8 +48,8 @@ function renderClassSelectorContent({
             <select class="classes-footer-select">
                 ${
                     hasClassOptions
-                        ? `<option value="__find__">${escapeHtml(i18n.t("ui.layout.search.aria"))}</option>${options}`
-                        : `<option value="__no_class__" selected>${emptyLabel}</option><option value="__find__">${escapeHtml(i18n.t("ui.layout.search.aria"))}</option>`
+                        ? options
+                        : `<option value="__no_class__" selected>${emptyLabel}</option>`
                 }
                 ${createOption}
             </select>
@@ -105,18 +105,6 @@ export function createClassFooterItem({
                         ).trim();
                         if (nextValue === "__create__") {
                             onCreateClass?.();
-                            return;
-                        }
-                        if (nextValue === "__find__") {
-                            const searchUrl =
-                                String(
-                                    localStorage.getItem("cognis_role") ?? "",
-                                )
-                                    .trim()
-                                    .toLowerCase() === "teacher"
-                                    ? "/classroom?student=true"
-                                    : "/classroom";
-                            navigateTo(searchUrl);
                             return;
                         }
                         if (nextValue === "__no_class__") return;

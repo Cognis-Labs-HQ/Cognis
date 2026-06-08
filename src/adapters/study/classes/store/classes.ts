@@ -3,6 +3,14 @@ import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "./constants.js";
 import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
 
+function normalizeBoardFocus(input: unknown): "agenda" | "classroom" {
+    return String(input ?? "")
+        .trim()
+        .toLowerCase() === "classroom"
+        ? "classroom"
+        : "agenda";
+}
+
 export async function getClassesForTeacher(
     db: DbExecutor,
     teacherAccountId: string,
@@ -91,6 +99,7 @@ export async function getClassroomState(
             class_id: classId,
             student_limit: DEFAULT_STUDENT_LIMIT,
             seat_assignments: "{}",
+            board_focus: "agenda",
             updated_at: new Date().toISOString(),
         },
         conflict: { action: "ignore" },
@@ -102,6 +111,7 @@ export async function getClassroomState(
             "class_id",
             "student_limit",
             "seat_assignments",
+            "board_focus",
             "updated_at",
         ],
         where: [{ column: "class_id", value: classId }],
@@ -112,6 +122,7 @@ export async function getClassroomState(
             classId,
             studentLimit: DEFAULT_STUDENT_LIMIT,
             seatAssignments: {},
+            boardFocus: "agenda",
             updatedAt: new Date().toISOString(),
         };
     }
@@ -126,6 +137,7 @@ export async function getClassroomState(
                 ? normalizedStudentLimit
                 : DEFAULT_STUDENT_LIMIT,
         seatAssignments: parseSeatAssignments(row.seat_assignments),
+        boardFocus: normalizeBoardFocus(row.board_focus),
         updatedAt: String(row.updated_at),
     };
 }
@@ -137,6 +149,7 @@ export async function updateClassroomStateForTeacher(
     options: {
         studentLimit?: number;
         seatAssignments?: Record<string, number>;
+        boardFocus?: "agenda" | "classroom";
     },
 ): Promise<ClassroomStateRow> {
     const classRow = await getClassById(db, classId);
@@ -158,6 +171,10 @@ export async function updateClassroomStateForTeacher(
         options.seatAssignments != null
             ? parseSeatAssignments(JSON.stringify(options.seatAssignments))
             : currentState.seatAssignments;
+    const normalizedBoardFocus =
+        options.boardFocus == null
+            ? currentState.boardFocus
+            : normalizeBoardFocus(options.boardFocus);
     const updatedAt = new Date().toISOString();
     await db.executeCommand({
         option: "INSERT",
@@ -166,6 +183,7 @@ export async function updateClassroomStateForTeacher(
             class_id: classId,
             student_limit: normalizedStudentLimit,
             seat_assignments: JSON.stringify(normalizedSeatAssignments),
+            board_focus: normalizedBoardFocus,
             updated_at: updatedAt,
         },
         conflict: {
@@ -174,6 +192,7 @@ export async function updateClassroomStateForTeacher(
             update: {
                 student_limit: normalizedStudentLimit,
                 seat_assignments: JSON.stringify(normalizedSeatAssignments),
+                board_focus: normalizedBoardFocus,
                 updated_at: updatedAt,
             },
         },
