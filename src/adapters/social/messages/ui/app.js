@@ -54,10 +54,32 @@ import { renderRoomList } from "./room-render.js";
 import { importRoomKey } from "/static/reuse/crypto-utils.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
+const MESSAGES_DRAFT_STORAGE_PREFIX = "cognis_messages_draft";
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
+
+function getRoomDraftStorageKey(accountId, roomId) {
+    return `${MESSAGES_DRAFT_STORAGE_PREFIX}:${accountId}:${roomId}`;
+}
+
+function saveRoomDraft(accountId, roomId, text) {
+    if (!accountId || !roomId) return;
+    const storageKey = getRoomDraftStorageKey(accountId, roomId);
+    if (text) {
+        localStorage.setItem(storageKey, text);
+    } else {
+        localStorage.removeItem(storageKey);
+    }
+}
+
+function loadRoomDraft(accountId, roomId) {
+    if (!accountId || !roomId) return "";
+    return (
+        localStorage.getItem(getRoomDraftStorageKey(accountId, roomId)) ?? ""
+    );
+}
 
 const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
     {
@@ -112,8 +134,21 @@ export async function mount(root, { signal } = {}) {
         typingIdleResetMs: TYPING_IDLE_RESET_MS,
         typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MS,
         liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MS,
-        onRoomOpened: async () => {
+        onRoomOpened: async (room) => {
             syncOpenRoomPreviews();
+            const openedRoomId = room?.id != null ? String(room.id) : null;
+            if (openedRoomId) {
+                const composerInputEl = document.getElementById(
+                    "messages-composer-input",
+                );
+                if (composerInputEl instanceof HTMLTextAreaElement) {
+                    composerInputEl.value = loadRoomDraft(
+                        currentAccountId,
+                        openedRoomId,
+                    );
+                    composerInputEl.dispatchEvent(new Event("input"));
+                }
+            }
         },
     });
 
@@ -631,6 +666,7 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
                     if (composerInput instanceof HTMLTextAreaElement) {
+                        saveRoomDraft(currentAccountId, selectedRoomId, "");
                         composerInput.value = "";
                     }
                     renderComposerPreview();
@@ -643,6 +679,11 @@ export async function mount(root, { signal } = {}) {
                     const hasText = Boolean((composerInput.value ?? "").trim());
                     roomState.queueTypingUpdate(hasText);
                     renderComposerPreview();
+                    saveRoomDraft(
+                        currentAccountId,
+                        roomState.getSelectedRoomId(),
+                        composerInput.value,
+                    );
                 });
                 composerInput?.addEventListener("keydown", (keyboardEvent) => {
                     if (

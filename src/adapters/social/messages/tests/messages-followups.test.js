@@ -363,3 +363,48 @@ test("messages saved templates are scoped to the current account", () => {
         /persistSavedMessageTemplates\(\s*savedMessageTemplates,\s*currentAccountId,?\s*\)/m,
     );
 });
+
+test("messages composer persists per-room drafts keyed by account and room", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(
+        source,
+        /MESSAGES_DRAFT_STORAGE_PREFIX = "cognis_messages_draft"/,
+    );
+    assert.match(
+        source,
+        /function getRoomDraftStorageKey\(accountId, roomId\)/,
+    );
+    assert.match(source, /function saveRoomDraft\(accountId, roomId, text\)/);
+    assert.match(source, /function loadRoomDraft\(accountId, roomId\)/);
+    assert.match(
+        source,
+        /`\$\{MESSAGES_DRAFT_STORAGE_PREFIX\}:\$\{accountId\}:\$\{roomId\}`/,
+    );
+});
+
+test("messages composer saves draft on input and clears on successful send", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(
+        source,
+        /saveRoomDraft\(\s*currentAccountId,\s*roomState\.getSelectedRoomId\(\),\s*composerInput\.value,?\s*\)/m,
+    );
+    assert.match(
+        source,
+        /saveRoomDraft\(\s*currentAccountId,\s*selectedRoomId,\s*"",?\s*\)/m,
+    );
+});
+
+test("messages onRoomOpened callback restores draft for opened room", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(
+        source,
+        /onRoomOpened:\s*async\s*\(room\)\s*=>\s*\{[\s\S]*loadRoomDraft\(\s*currentAccountId,\s*openedRoomId,?\s*\)/m,
+    );
+    assert.match(
+        source,
+        /const openedRoomId = room\?\.id != null \? String\(room\.id\) : null/,
+    );
+});
