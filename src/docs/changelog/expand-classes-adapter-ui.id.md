@@ -35,6 +35,28 @@ Toolbar classroom sekarang memakai label teks alih-alih kontrol emoji, menyembun
 strip aksi saat siswa asli melihat ruang, dan menghubungkan tombol chat/meeting
 ke jendela classroom yang sudah ada agar terbuka dengan andal.
 
+## Peningkatan Antarmuka Classroom
+
+Mengklik avatar atau tombol nama siswa di daftar kelas kini langsung menavigasi
+ke halaman `/profile/` mereka.
+
+Baris guru di daftar kelas kini ditampilkan di atas judul "Siswa", bukan di dalam
+kisi siswa.
+
+Jendela pertemuan di ruang kelas kini terbatas di dalam papan tulis dan tidak
+lagi menutupi seluruh halaman. Overlay diposisikan secara absolut dalam konteks
+tumpukan blackboard.
+
+Alur pertemuan di ruang kelas kini mencerminkan alur API lengkap yang digunakan
+halaman Pertemuan: panggilan buat diikuti panggilan gabung dengan ID sesi
+persisten. Penyematan Jitsi diinisialisasi dengan nama tampilan, email, dan avatar
+pengguna saat ini beserta tombol toolbar standar.
+
+Diperbaiki bug di mana guru tidak dapat melihat kelasnya dan tampak terjebak di
+tampilan siswa. Penyebabnya adalah peran yang sudah usang di localStorage yang
+tidak diperbarui saat mount, serta flag `classroomBound` pada elemen `#app`
+persisten yang mencegah handler interaksi terikat ulang setelah navigasi SPA.
+
 ## Komponen dan berkas yang diubah
 
 - Route dan store adapter study/classes:

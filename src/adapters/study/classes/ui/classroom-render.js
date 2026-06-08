@@ -238,68 +238,70 @@ export function renderBlackboard({
     `;
 }
 
+function renderRosterItem(member) {
+    const accountId = String(member?.studentAccountId ?? "").trim();
+    const handle = String(member?.handle ?? "").trim();
+    const label = member?.identityMasked
+        ? "???"
+        : buildAccountLabel(member) || accountId;
+    const presenceClass = String(member?.presence ?? "offline")
+        .trim()
+        .toLowerCase();
+    const avatar = member?.identityMasked
+        ? `<span class="classes-roster-avatar">${escapeHtml("???")}</span>`
+        : buildProfileAvatarMarkup({
+              avatarKey: member?.avatarKey ?? null,
+              label,
+              colorSeed: member?.handle || accountId,
+              avatarClass: "classes-roster-avatar",
+              imageClass: "classes-roster-avatar-img",
+              fallbackClass: "classes-roster-avatar-fallback",
+              profileHandle: handle || null,
+              linkClass: "classes-profile-preview-link",
+          });
+    const content = `
+        <span class="classes-roster-member-card">
+            ${avatar}
+            <span class="classes-roster-details">
+                <span class="classes-roster-name">${escapeHtml(label)}</span>
+                ${
+                    member?.rosterRoleLabel
+                        ? `<span class="classes-roster-role">${escapeHtml(member.rosterRoleLabel)}</span>`
+                        : ""
+                }
+            </span>
+            <span class="classes-status-light classes-status-light--${escapeHtml(presenceClass)}" aria-hidden="true"></span>
+        </span>
+    `;
+    if (!handle || member?.identityMasked) {
+        return `<div class="classes-roster-item${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}">${content}</div>`;
+    }
+    return `<button type="button" class="classes-roster-item classes-member-profile-btn${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}" data-student-handle="${escapeHtml(handle)}" data-student-name="${escapeHtml(label)}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${content}</button>`;
+}
+
 function renderStudentRoster({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const teacherAccountId = String(snapshot?.teacherAccountId ?? "").trim();
-    const rosterMembers = teacherAccountId
-        ? [
-              {
-                  ...(snapshot?.teacher ?? {}),
-                  studentAccountId: teacherAccountId,
-                  displayName:
-                      String(snapshot?.teacher?.displayName ?? "").trim() ||
-                      buildAccountLabel(snapshot?.teacher) ||
-                      teacherAccountId,
-                  rosterRoleLabel: i18n.t("module.study.classes.teacher"),
-                  rosterItemClass: " classes-roster-item--teacher",
-              },
-              ...members,
-          ]
-        : members;
-    const rows = rosterMembers
-        .map((member) => {
-            const accountId = String(member?.studentAccountId ?? "").trim();
-            const handle = String(member?.handle ?? "").trim();
-            const label = member?.identityMasked
-                ? "???"
-                : buildAccountLabel(member) || accountId;
-            const presenceClass = String(member?.presence ?? "offline")
-                .trim()
-                .toLowerCase();
-            const avatar = member?.identityMasked
-                ? `<span class="classes-roster-avatar">${escapeHtml("???")}</span>`
-                : buildProfileAvatarMarkup({
-                      avatarKey: member?.avatarKey ?? null,
-                      label,
-                      colorSeed: member?.handle || accountId,
-                      avatarClass: "classes-roster-avatar",
-                      imageClass: "classes-roster-avatar-img",
-                      fallbackClass: "classes-roster-avatar-fallback",
-                  });
-            const content = `
-                <span class="classes-roster-member-card">
-                    ${avatar}
-                    <span class="classes-roster-details">
-                        <span class="classes-roster-name">${escapeHtml(label)}</span>
-                        ${
-                            member?.rosterRoleLabel
-                                ? `<span class="classes-roster-role">${escapeHtml(member.rosterRoleLabel)}</span>`
-                                : ""
-                        }
-                    </span>
-                    <span class="classes-status-light classes-status-light--${escapeHtml(presenceClass)}" aria-hidden="true"></span>
-                </span>
-            `;
-            if (!handle || member?.identityMasked) {
-                return `<div class="classes-roster-item${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}">${content}</div>`;
-            }
-            return `<button type="button" class="classes-roster-item classes-member-profile-btn${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}" data-student-handle="${escapeHtml(handle)}" data-student-name="${escapeHtml(label)}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${content}</button>`;
-        })
-        .join("");
+    let teacherRow = "";
+    if (teacherAccountId) {
+        const teacherMember = {
+            ...(snapshot?.teacher ?? {}),
+            studentAccountId: teacherAccountId,
+            displayName:
+                String(snapshot?.teacher?.displayName ?? "").trim() ||
+                buildAccountLabel(snapshot?.teacher) ||
+                teacherAccountId,
+            rosterRoleLabel: i18n.t("module.study.classes.teacher"),
+            rosterItemClass: " classes-roster-item--teacher",
+        };
+        teacherRow = renderRosterItem(teacherMember);
+    }
+    const studentRows = members.map(renderRosterItem).join("");
     return `
         <div class="classes-student-roster">
+            ${teacherRow}
             <div class="classes-roster-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
-            <div class="classes-roster-list classes-roster-grid">${rows || `<span class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</span>`}</div>
+            <div class="classes-roster-list classes-roster-grid">${studentRows || `<span class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</span>`}</div>
         </div>
     `;
 }

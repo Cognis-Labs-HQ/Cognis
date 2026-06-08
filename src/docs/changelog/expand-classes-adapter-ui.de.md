@@ -41,6 +41,29 @@ Die Classroom-Toolbar nutzt jetzt Text statt reiner Emoji-Steuerelemente, blende
 den Aktionsbereich für echte Schüleransichten aus und verbindet die Chat-/Meeting-
 Buttons mit den vorhandenen Classroom-Fenstern, damit sie zuverlässig öffnen.
 
+## Verbesserungen der Classroom-Oberfläche
+
+Ein Klick auf das Avatar oder den Namen eines Schülers in der Klassenliste
+navigiert jetzt direkt zu dessen `/profile/`-Seite.
+
+Die Lehrkraftzeile in der Klassenliste wird nun oberhalb der Überschrift „Schüler"
+dargestellt und nicht mehr innerhalb des Schülerrasters.
+
+Das Meeting-Fenster im Unterrichtsraum ist jetzt auf die Tafel beschränkt und
+überdeckt nicht mehr die gesamte Seite. Die Overlays sind absolut innerhalb des
+Blackboard-Stapelkontexts positioniert.
+
+Der Meeting-Ablauf im Unterrichtsraum spiegelt nun den vollständigen API-Ablauf
+der Meetings-Seite wider: Auf einen Create-Aufruf folgt ein Join-Aufruf mit einer
+dauerhaften Sitzungs-ID. Die Jitsi-Einbettung wird mit dem Anzeigenamen, der
+E-Mail-Adresse und dem Avatar des aktuellen Nutzers initialisiert.
+
+Ein Fehler wurde behoben, durch den eine Lehrkraft ihre Klassen nicht sehen
+konnte und scheinbar in der Schüleransicht feststeckte. Ursachen waren eine
+veraltete Rolle im localStorage, die beim Laden nicht neu abgerufen wurde, sowie
+ein `classroomBound`-Flag am persistenten `#app`-Element, das das erneute Binden
+von Interaktionshandlern nach der SPA-Navigation verhinderte.
+
 ## Geänderte Komponenten und Dateien
 
 - Study-Classes-Adapter-Routen und -Stores:

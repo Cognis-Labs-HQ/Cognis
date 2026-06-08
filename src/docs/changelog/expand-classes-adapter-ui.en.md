@@ -48,6 +48,32 @@ hides its action strip when a real student is viewing the room, and wires the
 chat/meeting toolbar buttons into the existing classroom windows so they open
 reliably.
 
+## Classroom UI Improvements
+
+Clicking a student's avatar or name button in the classroom roster now navigates
+directly to their `/profile/` page, consistent with the avatar interaction model
+used elsewhere in the app.
+
+The teacher row in the classroom roster is now rendered above the "Students"
+heading rather than inside the student grid.
+
+The classroom meeting window is now contained within the blackboard element
+instead of covering the full page. The meeting overlay and chat panel are
+positioned absolutely inside the blackboard's stacking context so they never
+escape its bounds.
+
+The meeting flow in the classroom now mirrors the full API flow used by the
+Meetings page: a create call is followed by a join call with a persistent session
+ID, and the Jitsi embed is initialised with the current user's display name,
+email, and avatar as well as the standard toolbar button set.
+
+Fixed a bug where a teacher could not see their classes and appeared stuck in
+student view. The root causes were a stale role in localStorage not being
+refreshed on mount, and a `classroomBound` flag on the persistent `#app` element
+that prevented interaction handlers from re-binding after SPA navigation. The
+role is now refreshed from the API on mount when needed, and the bound flag is
+now tracked with a mount-scoped local variable.
+
 ## Changed components and files
 
 - Study classes adapter routes and stores:

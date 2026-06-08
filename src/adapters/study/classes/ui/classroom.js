@@ -29,10 +29,7 @@ import {
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
 import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
-import {
-    openClassSettingsPopup,
-    openMemberProfilePreview,
-} from "/static/adapters/study/classes/classroom-popups.js";
+import { openClassSettingsPopup } from "/static/adapters/study/classes/classroom-popups.js";
 import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
 import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
@@ -61,6 +58,29 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "module.study.classes.classroom_page_title");
 
+    if (!canToggleClassroomView()) {
+        try {
+            const accountId = localStorage.getItem("cognis_account");
+            if (accountId) {
+                const infoResponse = await apiFetch(
+                    `/api/v1/users/${encodeURIComponent(accountId)}/info`,
+                );
+                if (infoResponse.ok) {
+                    const infoPayload = await infoResponse.json();
+                    const refreshedRole = String(
+                        infoPayload?.data?.role ?? "",
+                    ).trim();
+                    if (refreshedRole) {
+                        localStorage.setItem("cognis_role", refreshedRole);
+                        applyClassroomViewModeFromUrl();
+                    }
+                }
+            }
+        } catch {
+            // Keep existing role when refresh fails.
+        }
+    }
+
     const teacherAccount = canToggleClassroomView();
     const query = new URL(window.location.href).searchParams;
 
@@ -77,6 +97,7 @@ export async function mount(root, { signal } = {}) {
     let activeBoardPanel = "agenda";
     const presenceByAccountId = new Map();
     const boardEntitiesByClassId = new Map();
+    let interactionsBound = false;
     /** Initialised after composer.init(); used by the click handler via closure. */
     let classroomWindows = null;
 
@@ -392,6 +413,7 @@ export async function mount(root, { signal } = {}) {
         if (content instanceof HTMLElement) {
             content.outerHTML = renderContentMarkup();
             void hydrateProfileAvatars(root);
+            classroomWindows?.reattach();
         }
     }
 
@@ -471,33 +493,26 @@ export async function mount(root, { signal } = {}) {
                 gridSize: { default: [8, 6], min: [2, 2], max: "full" },
                 render: renderContentMarkup,
                 onRender() {
-                    if (root.dataset.classroomBound === "true") return;
-                    root.dataset.classroomBound = "true";
+                    if (interactionsBound) return;
+                    interactionsBound = true;
                     bindProfilePreviews(i18n);
                     root.addEventListener(
                         "click",
                         async (event) => {
                             if (!(event.target instanceof Element)) return;
                             const snapshot = selectedSnapshot();
-                            const profilePreviewLink = event.target.closest(
-                                ".classes-profile-preview-link",
-                            );
-                            if (
-                                profilePreviewLink instanceof HTMLAnchorElement
-                            ) {
-                                event.preventDefault();
-                                return;
-                            }
                             const profileButton = event.target.closest(
                                 ".classes-member-profile-btn",
                             );
                             if (profileButton instanceof HTMLElement) {
-                                await openMemberProfilePreview({
-                                    memberButton: profileButton,
-                                    i18n,
-                                    apiFetch,
-                                    openPopup,
-                                });
+                                const handle = String(
+                                    profileButton.dataset.studentHandle ?? "",
+                                ).trim();
+                                if (handle) {
+                                    navigateTo(
+                                        `/profile/${encodeURIComponent(handle)}`,
+                                    );
+                                }
                                 return;
                             }
 
@@ -982,6 +997,7 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     void hydrateProfileAvatars(root);
     classroomWindows = createClassroomWindows({ root, i18n });
+    classroomWindows.reattach();
     startClassroomRealtimeRefresh({
         signal,
         shouldRefresh: () => !isTeacherView(),
