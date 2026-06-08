@@ -142,20 +142,20 @@ export function visibilityClass(visibilityValue) {
 }
 
 function normalizeProfileBadgeRole(roleValue) {
-    return String(roleValue ?? "")
+    const normalizedRole = String(roleValue ?? "")
         .trim()
         .toLowerCase();
+    return normalizedRole || null;
 }
 
-function getProfileBadgeRoleLabel(roleValue, i18n) {
-    const normalizedRole = normalizeProfileBadgeRole(roleValue);
+function getProfileBadgeRoleLabel(normalizedRole, i18n) {
     if (!PROFILE_BADGE_MARKUP[normalizedRole]) return "";
     return escapeHtml(getRoleLabel(i18n, normalizedRole));
 }
 
 export function renderAvatarBadge(roleValue, i18n) {
     const normalizedRole = normalizeProfileBadgeRole(roleValue);
-    const roleLabel = getProfileBadgeRoleLabel(roleValue, i18n);
+    const roleLabel = getProfileBadgeRoleLabel(normalizedRole, i18n);
     if (!roleLabel) return "";
     return `<span class="profile-avatar-badge profile-avatar-badge--${normalizedRole}" title="${roleLabel}" aria-label="${roleLabel}" role="img">${PROFILE_BADGE_MARKUP[normalizedRole]}</span>`;
 }
