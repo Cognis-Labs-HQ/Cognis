@@ -301,9 +301,7 @@ function renderStudentRoster({ snapshot, i18n }) {
         };
         teacherRow = renderRosterItem(teacherMember);
     }
-    const rosterMembers = [
-        ...members,
-    ];
+    const rosterMembers = [...members];
     const studentRows = rosterMembers.map(renderRosterItem).join("");
     return `
         <div class="classes-student-roster">

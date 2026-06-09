@@ -54,7 +54,7 @@ test("classroom roster shows a Students header and prepends the teacher", () => 
         source,
         /rosterRoleLabel: i18n\.t\("module\.study\.classes\.teacher"\)/,
     );
-    assert.match(source, /\.\.\.members,/);
+    assert.match(source, /\.\.\.members,?/);
 });
 
 test("classroom toolbar chat and meeting controls use text buttons with working action classes", () => {
