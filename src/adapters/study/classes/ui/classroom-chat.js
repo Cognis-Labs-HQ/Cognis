@@ -19,7 +19,12 @@ import {
 function parseRoomId(chatUrl) {
     if (!chatUrl) return "";
     const match = chatUrl.match(/\/messages\/([^?#]+)/);
-    return match ? decodeURIComponent(match[1]).trim() : "";
+    if (!match) return "";
+    try {
+        return decodeURIComponent(match[1]).trim();
+    } catch {
+        return "";
+    }
 }
 
 /**
