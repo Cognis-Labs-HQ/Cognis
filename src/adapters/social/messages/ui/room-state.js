@@ -668,14 +668,14 @@ export function createMessagesRoomState({
                                 "",
                         ).trim();
                         const accountId = String(
-                            actionButton.getAttribute("data-member-account-id") ??
-                                "",
+                            actionButton.getAttribute(
+                                "data-member-account-id",
+                            ) ?? "",
                         ).trim();
                         if (!selector || !accountId) return;
                         actionButton.disabled = true;
-                        const action = actionButton.getAttribute(
-                            "data-member-action",
-                        );
+                        const action =
+                            actionButton.getAttribute("data-member-action");
                         try {
                             if (action === "mute") {
                                 const response = await apiFetch(

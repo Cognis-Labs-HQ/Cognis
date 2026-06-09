@@ -41,7 +41,9 @@ async function resolveMemberProfileBySelector(
         displayName: string | null;
     } | null>,
 ) {
-    const normalizedSelector = String(selector ?? "").trim().replace(/^@/, "");
+    const normalizedSelector = String(selector ?? "")
+        .trim()
+        .replace(/^@/, "");
     if (!normalizedSelector) return null;
     return (
         (await getProfileByHandle(normalizedSelector)) ??
@@ -403,8 +405,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                         JSON.stringify({
                             error: {
                                 code: "member_muted",
-                                message:
-                                    "You are muted in this conversation.",
+                                message: "You are muted in this conversation.",
                             },
                         }),
                     );
