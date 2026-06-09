@@ -11,7 +11,7 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
         panelEl.setAttribute("aria-modal", "true");
         panelEl.setAttribute(
             "aria-label",
-            i18n("module.study.classes.whiteboard"),
+            i18n.t("module.study.classes.whiteboard"),
         );
         panelEl.hidden = true;
 
@@ -20,12 +20,12 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
 
         const title = document.createElement("span");
         title.className = "classes-whiteboard-title";
-        title.textContent = i18n("module.study.classes.whiteboard");
+        title.textContent = i18n.t("module.study.classes.whiteboard");
 
         const closeBtn = document.createElement("button");
         closeBtn.type = "button";
         closeBtn.className = "classes-whiteboard-close-btn";
-        closeBtn.setAttribute("aria-label", i18n("ui.reuse.close"));
+        closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.close"));
         closeBtn.setAttribute("data-whiteboard-close", "1");
 
         const iframeEl = document.createElement("iframe");
@@ -70,7 +70,7 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
         const titleEl = boardPanel.querySelector(".classes-whiteboard-title");
         if (titleEl)
             titleEl.textContent =
-                boardName || i18n("module.study.classes.whiteboard");
+                boardName || i18n.t("module.study.classes.whiteboard");
         if (iframe) iframe.src = embedUrl;
         boardPanel.hidden = false;
         root.classList.add("classes-whiteboard-active");
