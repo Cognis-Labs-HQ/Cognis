@@ -98,7 +98,6 @@ moved to a live ancestor before the content is swapped and moved back into the
 blackboard afterwards. This keeps both elements — and any iframes inside them —
 connected to the document throughout the operation.
 
-
 The meeting lifecycle inside the classroom now exactly matches what the
 Meetings page does. The new `createClassroomMeetingEmbed` factory in the
 `jitsi-meet` module owns:
