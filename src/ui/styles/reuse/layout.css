@@ -530,6 +530,11 @@
     border: 1px solid var(--border);
 }
 
+.app-shell .chat-toggle {
+    background: var(--theme-toggle-bg);
+    border: 1px solid var(--border);
+}
+
 button.dropdown-item {
     -webkit-appearance: none;
     appearance: none;
@@ -548,6 +553,10 @@ button.dropdown-item {
 }
 
 .app-shell .theme-toggle:hover {
+    background: var(--theme-toggle-bg-hover);
+}
+
+.app-shell .chat-toggle:hover {
     background: var(--theme-toggle-bg-hover);
 }
 
@@ -659,6 +668,26 @@ button.dropdown-item {
     box-shadow: var(--shadow);
     z-index: 1000;
     font-size: 1.25rem;
+}
+
+.chat-toggle {
+    position: fixed;
+    right: 18px;
+    bottom: 74px;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--theme-toggle-bg);
+    color: var(--theme-toggle-color);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    font-size: 1.1rem;
+}
+
+.chat-toggle[aria-expanded="true"] {
+    color: var(--accent);
 }
 .theme-toggle[data-mode="light"] {
     color: #f59e0b;

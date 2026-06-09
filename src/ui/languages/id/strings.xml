@@ -583,6 +583,7 @@
   <string name="module.study.classes.open_meeting">Meeting</string>
   <string name="module.study.classes.chat_placeholder">Pesan…</string>
   <string name="module.study.classes.chat_empty">Belum ada pesan.</string>
+  <string name="module.study.classes.chat_select_class_prompt">Pilih kelas untuk membuka chatnya.</string>
   <string name="module.study.classes.pending_requests">Permintaan Pengajar Tertunda</string>
   <string name="module.study.classes.no_pending_requests">Tidak ada permintaan pengajar tertunda.</string>
   <string name="module.study.classes.requests_page_title">Permintaan</string>

@@ -583,6 +583,7 @@
   <string name="module.study.classes.open_meeting">Meeting</string>
   <string name="module.study.classes.chat_placeholder">メッセージ…</string>
   <string name="module.study.classes.chat_empty">メッセージはまだありません。</string>
+  <string name="module.study.classes.chat_select_class_prompt">チャットを開くには教室を選択してください。</string>
   <string name="module.study.classes.pending_requests">保留中の教師申請</string>
   <string name="module.study.classes.no_pending_requests">保留中の教師申請はありません。</string>
   <string name="module.study.classes.requests_page_title">リクエスト</string>

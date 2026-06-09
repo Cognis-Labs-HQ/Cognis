@@ -69,6 +69,7 @@
     right: 1rem;
     bottom: 1rem;
     width: min(420px, calc(100vw - 2rem));
+    max-height: min(700px, calc(100vh - 6.2rem));
     z-index: 240;
     display: flex;
     flex-direction: column;
@@ -77,6 +78,15 @@
     border-radius: 0.9rem;
     box-shadow: 0 22px 40px rgba(2, 6, 23, 0.32);
     overflow: hidden;
+    transform-origin: calc(100% - 1.5rem) calc(100% + 1.2rem);
+    transform: translateY(0.9rem) scale(0.2);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        transform 0.24s ease,
+        opacity 0.2s ease,
+        visibility 0.24s linear;
 }
 
 .classes-chat-panel,
@@ -84,8 +94,11 @@
     font-family: inherit;
 }
 
-.classes-chat-panel[hidden] {
-    display: none;
+.classes-chat-panel[data-open="true"] {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .classes-chat-panel-header {
@@ -270,5 +283,18 @@ html[data-message-style="irc"] .classes-chat-message-body {
         left: 0.6rem;
         width: auto;
         bottom: 0.6rem;
+        max-height: calc(100vh - 5.6rem);
+    }
+}
+
+@media (max-width: 640px) {
+    .classes-chat-panel {
+        top: 4.4rem;
+        right: 0.5rem;
+        left: 0.5rem;
+        bottom: 4.8rem;
+        max-height: none;
+        border-radius: 0.8rem;
+        transform-origin: calc(100% - 1rem) calc(100% + 2.2rem);
     }
 }

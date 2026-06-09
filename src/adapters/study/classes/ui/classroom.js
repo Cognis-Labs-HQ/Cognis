@@ -122,6 +122,13 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    function syncGlobalChatTarget() {
+        const chatToggle = root.querySelector("#global-chat-toggle");
+        if (!(chatToggle instanceof HTMLElement)) return;
+        const chatUrl = String(selectedSnapshot()?.chatUrl ?? "").trim();
+        chatToggle.dataset.chatTarget = chatUrl;
+    }
+
     function syncActiveBoardPanelWithSnapshot() {
         const snapshot = selectedSnapshot();
         activeBoardPanel = snapshot
@@ -352,6 +359,7 @@ export async function mount(root, { signal } = {}) {
         refreshSnapshotPresence();
         footerClasses = await loadFooterClasses();
         refreshDom();
+        syncGlobalChatTarget();
         composer.refreshFooter();
         refreshSubNavigation();
     }
@@ -402,6 +410,7 @@ export async function mount(root, { signal } = {}) {
             syncActiveBoardPanelWithSnapshot();
             await loadSelectedClassMeta();
             refreshDom();
+            syncGlobalChatTarget();
         },
     });
 
@@ -478,7 +487,7 @@ export async function mount(root, { signal } = {}) {
                             if (
                                 event.target.closest(".classes-open-chat-btn")
                             ) {
-                                if (!snapshot?.chatUrl || !classroomWindows) {
+                                if (!classroomWindows) {
                                     showToast(
                                         i18n.t(
                                             "module.study.classes.chat_failed",
@@ -489,7 +498,21 @@ export async function mount(root, { signal } = {}) {
                                     );
                                     return;
                                 }
+                                syncGlobalChatTarget();
                                 classroomWindows.openChat(snapshot.chatUrl);
+                                return;
+                            }
+                            if (
+                                event.target.closest("#global-chat-toggle") &&
+                                classroomWindows
+                            ) {
+                                const chatToggle = root.querySelector(
+                                    "#global-chat-toggle",
+                                );
+                                const chatUrl = String(
+                                    chatToggle?.dataset.chatTarget ?? "",
+                                ).trim();
+                                classroomWindows.toggleChat(chatUrl);
                                 return;
                             }
                             if (
@@ -801,9 +824,11 @@ export async function mount(root, { signal } = {}) {
             },
         ],
         footer: [footerItem],
+        showChatToggle: true,
     });
     await composer.init();
     void hydrateProfileAvatars(root);
+    syncGlobalChatTarget();
     classroomWindows = createClassroomWindows({ root, i18n });
     classroomWindows.reattach();
     startClassroomRealtimeRefresh({
@@ -814,6 +839,7 @@ export async function mount(root, { signal } = {}) {
             refreshSnapshotPresence();
             syncActiveBoardPanelWithSnapshot();
             refreshDynamicDom();
+            syncGlobalChatTarget();
             composer.refreshFooter();
             refreshSubNavigation();
             if (selectedClassId && classroomWindows) {

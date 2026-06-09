@@ -29,10 +29,11 @@
  *   columns?: number,
  *   showTopbar?: boolean,
  *   showNavbar?: boolean,
+ *   showChatToggle?: boolean,
  *   showThemeToggle?: boolean,
  *   showFooter?: boolean,
  *   persistLayoutPreferences?: boolean,
- *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
+ *   pageOverrides?: Record<string, { showThemeToggle?: boolean, showChatToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshFooter(): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
@@ -73,6 +74,7 @@ export function createPageComposer(
         columns = 1,
         showTopbar = true,
         showNavbar = true,
+        showChatToggle = false,
         showThemeToggle = true,
         showFooter = true,
         frameless = false,
@@ -565,8 +567,14 @@ export function createPageComposer(
             "showThemeToggle" in overrides
                 ? overrides.showThemeToggle
                 : showThemeToggle;
+        const effectiveShowChatToggle =
+            "showChatToggle" in overrides
+                ? overrides.showChatToggle
+                : showChatToggle;
         const toggleEl = root.querySelector("#theme-toggle");
         if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
+        const chatToggleEl = root.querySelector("#global-chat-toggle");
+        if (chatToggleEl) chatToggleEl.hidden = !effectiveShowChatToggle;
     }
 
     async function switchSubPage(id) {
@@ -661,6 +669,7 @@ export function createPageComposer(
             content: "",
             showTopbar,
             showNavbar,
+            showChatToggle,
             showThemeToggle,
             showFooter,
         });

@@ -13,6 +13,7 @@ import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-white
  * from the document. Call reattach() afterwards to move them back.
  */
 export function createClassroomWindows({ root, i18n }) {
+    const chatToggleButton = root.querySelector("#global-chat-toggle");
     const updateMeetingWindowLayout = () => {
         const blackboard = root.querySelector(".classes-blackboard");
         const header = blackboard?.querySelector(".classes-blackboard-header");
@@ -32,7 +33,16 @@ export function createClassroomWindows({ root, i18n }) {
             updateMeetingWindowLayout();
         },
     });
-    const nativeChat = createClassroomNativeChat({ i18n });
+    const nativeChat = createClassroomNativeChat({
+        i18n,
+        onVisibilityChange: (visible) => {
+            if (!(chatToggleButton instanceof HTMLElement)) return;
+            chatToggleButton.setAttribute(
+                "aria-expanded",
+                visible ? "true" : "false",
+            );
+        },
+    });
     const whiteboardWindow = createClassroomWhiteboardWindow({ root, i18n });
 
     function handleWindowButtonClick(event) {
@@ -69,6 +79,11 @@ export function createClassroomWindows({ root, i18n }) {
     return {
         openMeeting: (snapshot) => meetingEmbed.openMeeting(snapshot),
         openChat: (chatUrl) => nativeChat.openChat(chatUrl),
+        toggleChat: (chatUrl) =>
+            nativeChat.isOpen()
+                ? nativeChat.closeChat()
+                : nativeChat.openChat(chatUrl),
+        isChatOpen: () => nativeChat.isOpen(),
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),

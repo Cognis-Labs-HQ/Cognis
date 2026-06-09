@@ -480,6 +480,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     const {
         showTopbar = true,
         showNavbar = true,
+        showChatToggle = false,
         showThemeToggle = true,
         showFooter = true,
         usePreferenceApi = showTopbar || showNavbar,
@@ -562,6 +563,14 @@ export async function renderDashboardLayout(root, slots = {}) {
 
         const existingThemeToggle =
             existingShell.querySelector("#theme-toggle");
+        const existingChatToggle = existingShell.querySelector(
+            "#global-chat-toggle",
+        );
+        if (!showChatToggle) {
+            existingChatToggle?.setAttribute("hidden", "");
+        } else {
+            existingChatToggle?.removeAttribute("hidden");
+        }
         if (!showThemeToggle) {
             existingThemeToggle?.remove();
         } else {
@@ -618,6 +627,9 @@ export async function renderDashboardLayout(root, slots = {}) {
 
     if (!showTopbar) root.querySelector(".global-topbar")?.remove();
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
+    if (!showChatToggle) {
+        root.querySelector("#global-chat-toggle")?.setAttribute("hidden", "");
+    }
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 

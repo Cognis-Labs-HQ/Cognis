@@ -27,14 +27,15 @@ function parseRoomId(chatUrl) {
  * previously iframe-embedded Messages page. Exposes openChat(chatUrl),
  * closeChat(), and destroy().
  */
-export function createClassroomNativeChat({ i18n }) {
+export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
     let chatRoomId = "";
     let roomKey = null;
     let refreshTimer = null;
 
     const panel = document.createElement("div");
     panel.className = "classes-chat-panel";
-    panel.hidden = true;
+    panel.dataset.open = "false";
+    panel.setAttribute("aria-hidden", "true");
     panel.setAttribute("aria-label", i18n.t("module.study.classes.open_chat"));
     panel.innerHTML = `
         <div class="classes-chat-panel-header">
@@ -189,6 +190,28 @@ export function createClassroomNativeChat({ i18n }) {
         }
     }
 
+    function setPanelVisibility(open) {
+        const isOpen = Boolean(open);
+        panel.dataset.open = isOpen ? "true" : "false";
+        panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        if (typeof onVisibilityChange === "function") {
+            onVisibilityChange(isOpen);
+        }
+    }
+
+    function showSelectChatPrompt() {
+        stopPolling();
+        chatRoomId = "";
+        roomKey = null;
+        if (thread instanceof HTMLElement) {
+            thread.setAttribute("aria-busy", "false");
+            thread.innerHTML = `<p class="classes-chat-empty">${escapeHtml(i18n.t("module.study.classes.chat_select_class_prompt"))}</p>`;
+        }
+        if (input instanceof HTMLTextAreaElement) {
+            input.disabled = true;
+        }
+    }
+
     async function sendMessage(text) {
         const roomId = chatRoomId;
         if (!roomId || !roomKey) return;
@@ -234,7 +257,11 @@ export function createClassroomNativeChat({ i18n }) {
 
     function openChat(chatUrl) {
         const roomId = parseRoomId(chatUrl);
-        if (!roomId) return;
+        setPanelVisibility(true);
+        if (!roomId) {
+            showSelectChatPrompt();
+            return;
+        }
         if (chatRoomId !== roomId) {
             stopPolling();
             chatRoomId = roomId;
@@ -247,18 +274,23 @@ export function createClassroomNativeChat({ i18n }) {
                 input.disabled = true;
             }
         }
-        panel.hidden = false;
         startPolling();
     }
 
     function closeChat() {
         stopPolling();
-        panel.hidden = true;
+        setPanelVisibility(false);
     }
 
     function destroy() {
         stopPolling();
     }
 
-    return { panel, openChat, closeChat, destroy };
+    return {
+        panel,
+        openChat,
+        closeChat,
+        destroy,
+        isOpen: () => panel.dataset.open === "true",
+    };
 }
