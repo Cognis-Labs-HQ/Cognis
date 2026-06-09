@@ -88,7 +88,10 @@ test("classroom notepad accepts the shared i18n object", () => {
             panel.attributes["aria-label"],
             "translated:module.study.classes.notepad",
         );
-        assert.equal(title?.textContent, "translated:module.study.classes.notepad");
+        assert.equal(
+            title?.textContent,
+            "translated:module.study.classes.notepad",
+        );
         assert.equal(
             downloadButton?.textContent,
             "translated:module.study.classes.notepad_download",
