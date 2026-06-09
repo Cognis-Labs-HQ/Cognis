@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.whiteboard">Papan Tulis</string>
+  <string name="module.study.classes.whiteboards">Papan Tulis</string>
+  <string name="module.study.classes.no_whiteboards">Belum ada papan tulis.</string>
+  <string name="module.study.classes.new_whiteboard">Papan Tulis Baru</string>
+  <string name="module.study.classes.whiteboard_name_label">Nama</string>
+  <string name="module.study.classes.whiteboard_created">Papan tulis dibuat.</string>
+  <string name="module.study.classes.whiteboard_create_failed">Gagal membuat papan tulis.</string>
+  <string name="module.study.classes.whiteboard_deleted">Papan tulis dihapus.</string>
+  <string name="module.study.classes.whiteboard_delete_failed">Gagal menghapus papan tulis.</string>
+  <string name="module.study.classes.whiteboard_open_failed">Gagal membuka papan tulis.</string>
+  <string name="module.study.classes.whiteboard_not_configured">Layanan papan tulis belum dikonfigurasi.</string>
+  <string name="module.study.classes.delete_whiteboard_title">Hapus Papan Tulis</string>
+  <string name="module.study.classes.delete_whiteboard_confirm">Hapus papan tulis "{name}"? Tindakan ini tidak dapat dibatalkan.</string>
+</strings>

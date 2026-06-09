@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.whiteboard">ホワイトボード</string>
+  <string name="module.study.classes.whiteboards">ホワイトボード</string>
+  <string name="module.study.classes.no_whiteboards">ホワイトボードはまだありません。</string>
+  <string name="module.study.classes.new_whiteboard">新しいホワイトボード</string>
+  <string name="module.study.classes.whiteboard_name_label">名前</string>
+  <string name="module.study.classes.whiteboard_created">ホワイトボードを作成しました。</string>
+  <string name="module.study.classes.whiteboard_create_failed">ホワイトボードの作成に失敗しました。</string>
+  <string name="module.study.classes.whiteboard_deleted">ホワイトボードを削除しました。</string>
+  <string name="module.study.classes.whiteboard_delete_failed">ホワイトボードの削除に失敗しました。</string>
+  <string name="module.study.classes.whiteboard_open_failed">ホワイトボードを開けませんでした。</string>
+  <string name="module.study.classes.whiteboard_not_configured">ホワイトボードサービスが設定されていません。</string>
+  <string name="module.study.classes.delete_whiteboard_title">ホワイトボードを削除</string>
+  <string name="module.study.classes.delete_whiteboard_confirm">ホワイトボード「{name}」を削除しますか？この操作は元に戻せません。</string>
+</strings>

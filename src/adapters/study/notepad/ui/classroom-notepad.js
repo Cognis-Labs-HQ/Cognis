@@ -27,10 +27,13 @@ export function createClassroomNotepad({ classId, i18n }) {
     }
 
     function buildPanel() {
-        const el = document.createElement("div");
-        el.className = "classes-notepad-panel";
-        el.setAttribute("role", "complementary");
-        el.setAttribute("aria-label", i18n("module.study.classes.notepad"));
+        const panelEl = document.createElement("div");
+        panelEl.className = "classes-notepad-panel";
+        panelEl.setAttribute("role", "complementary");
+        panelEl.setAttribute(
+            "aria-label",
+            i18n("module.study.classes.notepad"),
+        );
 
         const header = document.createElement("div");
         header.className = "classes-notepad-header";
@@ -87,10 +90,10 @@ export function createClassroomNotepad({ classId, i18n }) {
             clearDraft();
         });
 
-        el.appendChild(header);
-        el.appendChild(textarea);
-        panel = el;
-        return el;
+        panelEl.appendChild(header);
+        panelEl.appendChild(textarea);
+        panel = panelEl;
+        return panelEl;
     }
 
     function downloadAsMarkdown(className) {
@@ -105,12 +108,12 @@ export function createClassroomNotepad({ classId, i18n }) {
         const filename = `${slug}-${date}-notes.md`;
         const blob = new Blob([text], { type: "text/markdown" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = url;
+        downloadLink.download = filename;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
         URL.revokeObjectURL(url);
     }
 

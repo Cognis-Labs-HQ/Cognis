@@ -1,6 +1,6 @@
 import { createClassroomMeetingEmbed } from "/static/modules/jitsi-meet/classroom-meeting-embed.js";
 import { createClassroomNativeChat } from "/static/adapters/study/classes/classroom-chat.js";
-import { createClassroomWhiteboardWindow } from "/static/adapters/study/classes/classroom-whiteboard-window.js";
+import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-whiteboard/classroom-whiteboard-window.js";
 
 /**
  * Creates and manages the persistent meeting overlay, class chat panel, and

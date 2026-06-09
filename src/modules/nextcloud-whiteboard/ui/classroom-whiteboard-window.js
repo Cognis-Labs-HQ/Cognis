@@ -5,12 +5,15 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
     let activeBoardName = null;
 
     function buildPanel() {
-        const el = document.createElement("div");
-        el.className = "classes-whiteboard-panel";
-        el.setAttribute("role", "dialog");
-        el.setAttribute("aria-modal", "true");
-        el.setAttribute("aria-label", i18n("module.study.classes.whiteboard"));
-        el.hidden = true;
+        const panelEl = document.createElement("div");
+        panelEl.className = "classes-whiteboard-panel";
+        panelEl.setAttribute("role", "dialog");
+        panelEl.setAttribute("aria-modal", "true");
+        panelEl.setAttribute(
+            "aria-label",
+            i18n("module.study.classes.whiteboard"),
+        );
+        panelEl.hidden = true;
 
         const header = document.createElement("div");
         header.className = "classes-whiteboard-header";
@@ -38,10 +41,10 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
 
         header.appendChild(title);
         header.appendChild(closeBtn);
-        el.appendChild(header);
-        el.appendChild(iframeEl);
-        panel = el;
-        return el;
+        panelEl.appendChild(header);
+        panelEl.appendChild(iframeEl);
+        panel = panelEl;
+        return panelEl;
     }
 
     function getElement() {
@@ -61,15 +64,15 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
     }
 
     function openBoard({ boardId, boardName, embedUrl }) {
-        const el = getElement();
+        const boardPanel = getElement();
         activeBoardId = boardId;
         activeBoardName = boardName;
-        const titleEl = el.querySelector(".classes-whiteboard-title");
+        const titleEl = boardPanel.querySelector(".classes-whiteboard-title");
         if (titleEl)
             titleEl.textContent =
                 boardName || i18n("module.study.classes.whiteboard");
         if (iframe) iframe.src = embedUrl;
-        el.hidden = false;
+        boardPanel.hidden = false;
         root.classList.add("classes-whiteboard-active");
     }
 

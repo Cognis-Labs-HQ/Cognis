@@ -563,8 +563,8 @@ export function createClassesRoutes(
                 ctx,
                 store,
                 options: {
-                    whiteboardUrl: options.whiteboardUrl,
-                    whiteboardSecret: options.whiteboardSecret,
+                    getEmbedUrl: options.whiteboardGetEmbedUrl,
+                    fetchBoardData: options.whiteboardFetchBoardData,
                     log: options.log,
                 },
                 logMeta,

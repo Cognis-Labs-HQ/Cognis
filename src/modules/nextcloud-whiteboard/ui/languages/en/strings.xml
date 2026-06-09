@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.whiteboard">Whiteboard</string>
+  <string name="module.study.classes.whiteboards">Whiteboards</string>
+  <string name="module.study.classes.no_whiteboards">No whiteboards yet.</string>
+  <string name="module.study.classes.new_whiteboard">New Whiteboard</string>
+  <string name="module.study.classes.whiteboard_name_label">Name</string>
+  <string name="module.study.classes.whiteboard_created">Whiteboard created.</string>
+  <string name="module.study.classes.whiteboard_create_failed">Failed to create whiteboard.</string>
+  <string name="module.study.classes.whiteboard_deleted">Whiteboard deleted.</string>
+  <string name="module.study.classes.whiteboard_delete_failed">Failed to delete whiteboard.</string>
+  <string name="module.study.classes.whiteboard_open_failed">Failed to open whiteboard.</string>
+  <string name="module.study.classes.whiteboard_not_configured">Whiteboard service is not configured.</string>
+  <string name="module.study.classes.delete_whiteboard_title">Delete Whiteboard</string>
+  <string name="module.study.classes.delete_whiteboard_confirm">Delete whiteboard "{name}"? This cannot be undone.</string>
+</strings>

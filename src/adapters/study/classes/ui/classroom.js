@@ -33,7 +33,9 @@ import { createClassroomWindows } from "/static/adapters/study/classes/classroom
 import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
-import { createClassroomNotepad } from "/static/adapters/study/classes/classroom-notepad.js";
+import { createClassroomNotepad } from "/static/adapters/study/notepad/classroom-notepad.js";
+import { handleWhiteboardAndNotepadActions } from "/static/adapters/study/classes/classroom-whiteboard-actions.js";
+import { handleResourceActions } from "/static/adapters/study/classes/classroom-resource-actions.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -54,7 +56,12 @@ function normalizeBoardFocus(input) {
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: [
+            "/static/adapters/study/notepad/languages",
+            "/static/modules/nextcloud-whiteboard/languages",
+        ],
+    });
     applyDocumentTitle(i18n, "module.study.classes.classroom_page_title");
 
     if (!canToggleClassroomView()) {
@@ -640,169 +647,22 @@ export async function mount(root, { signal } = {}) {
                             }
 
                             if (
-                                event.target.closest(
-                                    ".classes-save-materials-btn",
-                                )
-                            ) {
-                                if (!snapshot) return;
-                                const materialsInput =
-                                    root.querySelector("#classes-materials");
-                                const homeworkInput =
-                                    root.querySelector("#classes-homework");
-                                if (
-                                    !(
-                                        materialsInput instanceof
-                                        HTMLTextAreaElement
-                                    ) ||
-                                    !(
-                                        homeworkInput instanceof
-                                        HTMLTextAreaElement
-                                    )
-                                ) {
-                                    return;
-                                }
-                                const response = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
-                                    {
-                                        method: "PUT",
-                                        headers: {
-                                            "content-type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                            materials:
-                                                materialsInput.value ?? "",
-                                            homework: homeworkInput.value ?? "",
-                                        }),
+                                await handleResourceActions(event, {
+                                    root,
+                                    snapshot,
+                                    classResources,
+                                    apiFetch,
+                                    i18n,
+                                    showToast,
+                                    openPopup,
+                                    escapeHtml,
+                                    loadSelectedClassMeta,
+                                    refreshDom,
+                                    setNotebookText: (text) => {
+                                        selectedNotebookText = text;
                                     },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        response.ok
-                                            ? "module.study.classes.materials_saved"
-                                            : "module.study.classes.materials_save_failed",
-                                    ),
-                                    {
-                                        variant: response.ok
-                                            ? "success"
-                                            : "error",
-                                    },
-                                );
-                                if (response.ok) {
-                                    await loadSelectedClassMeta();
-                                    refreshDom();
-                                }
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-save-notebook-btn",
-                                )
+                                })
                             ) {
-                                if (!snapshot) return;
-                                const notebookInput = root.querySelector(
-                                    "#classes-own-notebook",
-                                );
-                                if (
-                                    !(
-                                        notebookInput instanceof
-                                        HTMLTextAreaElement
-                                    )
-                                ) {
-                                    return;
-                                }
-                                const response = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
-                                    {
-                                        method: "PUT",
-                                        headers: {
-                                            "content-type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                            noteText: notebookInput.value ?? "",
-                                        }),
-                                    },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        response.ok
-                                            ? "module.study.classes.notebook_saved"
-                                            : "module.study.classes.notebook_save_failed",
-                                    ),
-                                    {
-                                        variant: response.ok
-                                            ? "success"
-                                            : "error",
-                                    },
-                                );
-                                if (response.ok) {
-                                    selectedNotebookText =
-                                        notebookInput.value ?? "";
-                                }
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-open-notebook-btn",
-                                )
-                            ) {
-                                if (!snapshot) return;
-                                const studentId = String(
-                                    event.target.closest(
-                                        ".classes-open-notebook-btn",
-                                    )?.dataset?.studentId ?? "",
-                                ).trim();
-                                if (!studentId) return;
-                                const response = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebooks/${encodeURIComponent(studentId)}`,
-                                );
-                                if (!response.ok) {
-                                    showToast(
-                                        i18n.t(
-                                            "module.study.classes.notebook_load_failed",
-                                        ),
-                                        {
-                                            variant: "error",
-                                        },
-                                    );
-                                    return;
-                                }
-                                const payload = await response.json();
-                                await openPopup({
-                                    title: i18n.t(
-                                        "module.study.classes.open_notebook",
-                                    ),
-                                    body: `<p>${escapeHtml(payload?.data?.noteText || i18n.t("module.study.classes.empty_notebook"))}</p>`,
-                                    actions: [
-                                        {
-                                            id: "close",
-                                            label: i18n.t("ui.reuse.close"),
-                                            variant: "confirm",
-                                        },
-                                    ],
-                                });
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-open-homework-btn",
-                                )
-                            ) {
-                                await openPopup({
-                                    title: i18n.t(
-                                        "module.study.classes.open_textbook",
-                                    ),
-                                    body: `<p>${escapeHtml(classResources.homework || i18n.t("module.study.classes.no_homework_assigned"))}</p>`,
-                                    actions: [
-                                        {
-                                            id: "close",
-                                            label: i18n.t("ui.reuse.close"),
-                                            variant: "confirm",
-                                        },
-                                    ],
-                                });
                                 return;
                             }
 
@@ -826,215 +686,29 @@ export async function mount(root, { signal } = {}) {
                             }
 
                             if (
-                                event.target.closest(
-                                    ".classes-toggle-notepad-btn",
-                                )
-                            ) {
-                                if (!snapshot) return;
-                                notepadVisible = !notepadVisible;
-                                if (!classroomNotepad) {
-                                    classroomNotepad = createClassroomNotepad({
-                                        classId: snapshot.id,
-                                        i18n: (key) => i18n.t(key),
-                                    });
-                                }
-                                const blackboard = root.querySelector(
-                                    ".classes-blackboard",
-                                );
-                                if (!blackboard) return;
-                                const existing = blackboard.querySelector(
-                                    ".classes-notepad-panel",
-                                );
-                                if (notepadVisible) {
-                                    if (!existing) {
-                                        blackboard.appendChild(
-                                            classroomNotepad.getElement(),
-                                        );
-                                    } else {
-                                        existing.hidden = false;
-                                    }
-                                    classroomNotepad.focus();
-                                } else if (existing) {
-                                    existing.hidden = true;
-                                }
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-open-whiteboard-btn",
-                                )
-                            ) {
-                                if (!snapshot || !classroomWindows) return;
-                                const btn = event.target.closest(
-                                    ".classes-open-whiteboard-btn",
-                                );
-                                const boardId = String(
-                                    btn?.dataset?.boardId ?? "",
-                                ).trim();
-                                const boardName = String(
-                                    btn?.dataset?.boardName ?? "",
-                                ).trim();
-                                if (!boardId) return;
-                                const tokenResponse = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}/token`,
-                                );
-                                if (!tokenResponse.ok) {
-                                    const errPayload = await tokenResponse
-                                        .json()
-                                        .catch(() => null);
-                                    const code = String(
-                                        errPayload?.error?.code ?? "",
-                                    );
-                                    showToast(
-                                        i18n.t(
-                                            code === "not_configured"
-                                                ? "module.study.classes.whiteboard_not_configured"
-                                                : "module.study.classes.whiteboard_open_failed",
-                                        ),
-                                        { variant: "error" },
-                                    );
-                                    return;
-                                }
-                                const tokenPayload = await tokenResponse.json();
-                                classroomWindows.openWhiteboard({
-                                    boardId,
-                                    boardName,
-                                    embedUrl:
-                                        tokenPayload?.data?.embedUrl ?? "",
-                                });
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-create-whiteboard-btn",
-                                ) &&
-                                isTeacherView()
-                            ) {
-                                if (!snapshot) return;
-                                const result = await openPopup({
-                                    title: i18n.t(
-                                        "module.study.classes.new_whiteboard",
-                                    ),
-                                    body: `<label>${escapeHtml(i18n.t("module.study.classes.whiteboard_name_label"))}<input type="text" class="classes-whiteboard-name-input" /></label>`,
-                                    actions: [
-                                        {
-                                            id: "create",
-                                            label: i18n.t("ui.reuse.create"),
-                                            variant: "confirm",
-                                        },
-                                        {
-                                            id: "cancel",
-                                            label: i18n.t("ui.reuse.cancel"),
-                                            variant: "cancel",
-                                        },
-                                    ],
-                                });
-                                if (result !== "create") return;
-                                const nameInput = document.querySelector(
-                                    ".classes-whiteboard-name-input",
-                                );
-                                const name =
-                                    nameInput instanceof HTMLInputElement
-                                        ? nameInput.value.trim()
-                                        : "";
-                                const createResponse = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
-                                    {
-                                        method: "POST",
-                                        headers: {
-                                            "content-type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                            name:
-                                                name ||
-                                                i18n.t(
-                                                    "module.study.classes.whiteboard",
-                                                ),
-                                        }),
+                                await handleWhiteboardAndNotepadActions(event, {
+                                    snapshot,
+                                    apiFetch,
+                                    i18n,
+                                    showToast,
+                                    openPopup,
+                                    escapeHtml,
+                                    classroomWindows,
+                                    isTeacherView,
+                                    loadSelectedClassMeta,
+                                    refreshDom,
+                                    getNotepadVisible: () => notepadVisible,
+                                    setNotepadVisible: (visible) => {
+                                        notepadVisible = visible;
                                     },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        createResponse.ok
-                                            ? "module.study.classes.whiteboard_created"
-                                            : "module.study.classes.whiteboard_create_failed",
-                                    ),
-                                    {
-                                        variant: createResponse.ok
-                                            ? "success"
-                                            : "error",
+                                    getClassroomNotepad: () => classroomNotepad,
+                                    setClassroomNotepad: (notepad) => {
+                                        classroomNotepad = notepad;
                                     },
-                                );
-                                if (createResponse.ok) {
-                                    await loadSelectedClassMeta();
-                                    refreshDom();
-                                }
-                                return;
-                            }
-
-                            const deleteWhiteboardBtn = event.target.closest(
-                                ".classes-delete-whiteboard-btn",
-                            );
-                            if (
-                                deleteWhiteboardBtn instanceof HTMLElement &&
-                                isTeacherView()
+                                    createClassroomNotepad,
+                                    root,
+                                })
                             ) {
-                                if (!snapshot) return;
-                                const boardId = String(
-                                    deleteWhiteboardBtn.dataset.boardId ?? "",
-                                ).trim();
-                                const boardName = String(
-                                    deleteWhiteboardBtn.dataset.boardName ?? "",
-                                ).trim();
-                                if (!boardId) return;
-                                const result = await openPopup({
-                                    title: i18n.t(
-                                        "module.study.classes.delete_whiteboard_title",
-                                    ),
-                                    body: `<p>${escapeHtml(i18n.t("module.study.classes.delete_whiteboard_confirm").replace("{name}", boardName))}</p>`,
-                                    actions: [
-                                        {
-                                            id: "delete",
-                                            label: i18n.t("ui.reuse.delete"),
-                                            variant: "confirm",
-                                        },
-                                        {
-                                            id: "cancel",
-                                            label: i18n.t("ui.reuse.cancel"),
-                                            variant: "cancel",
-                                        },
-                                    ],
-                                });
-                                if (result !== "delete") return;
-                                if (
-                                    classroomWindows?.isWhiteboardOpen() &&
-                                    classroomWindows.getActiveWhiteboardId() ===
-                                        boardId
-                                ) {
-                                    classroomWindows.closeWhiteboard();
-                                }
-                                const deleteResponse = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}`,
-                                    { method: "DELETE" },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        deleteResponse.ok
-                                            ? "module.study.classes.whiteboard_deleted"
-                                            : "module.study.classes.whiteboard_delete_failed",
-                                    ),
-                                    {
-                                        variant: deleteResponse.ok
-                                            ? "success"
-                                            : "error",
-                                    },
-                                );
-                                if (deleteResponse.ok) {
-                                    await loadSelectedClassMeta();
-                                    refreshDom();
-                                }
                                 return;
                             }
 
