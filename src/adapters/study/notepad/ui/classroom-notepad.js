@@ -32,7 +32,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         panelEl.setAttribute("role", "complementary");
         panelEl.setAttribute(
             "aria-label",
-            i18n("module.study.classes.notepad"),
+            i18n.t("module.study.classes.notepad"),
         );
 
         const header = document.createElement("div");
@@ -40,7 +40,7 @@ export function createClassroomNotepad({ classId, i18n }) {
 
         const title = document.createElement("span");
         title.className = "classes-notepad-title";
-        title.textContent = i18n("module.study.classes.notepad");
+        title.textContent = i18n.t("module.study.classes.notepad");
 
         const actions = document.createElement("div");
         actions.className = "classes-notepad-actions";
@@ -48,19 +48,21 @@ export function createClassroomNotepad({ classId, i18n }) {
         const downloadBtn = document.createElement("button");
         downloadBtn.type = "button";
         downloadBtn.className = "classes-notepad-download-btn";
-        downloadBtn.textContent = i18n("module.study.classes.notepad_download");
+        downloadBtn.textContent = i18n.t(
+            "module.study.classes.notepad_download",
+        );
         downloadBtn.setAttribute(
             "aria-label",
-            i18n("module.study.classes.notepad_download"),
+            i18n.t("module.study.classes.notepad_download"),
         );
 
         const clearBtn = document.createElement("button");
         clearBtn.type = "button";
         clearBtn.className = "classes-notepad-clear-btn";
-        clearBtn.textContent = i18n("module.study.classes.notepad_clear");
+        clearBtn.textContent = i18n.t("module.study.classes.notepad_clear");
         clearBtn.setAttribute(
             "aria-label",
-            i18n("module.study.classes.notepad_clear"),
+            i18n.t("module.study.classes.notepad_clear"),
         );
 
         actions.appendChild(downloadBtn);
@@ -72,7 +74,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         textarea.className = "classes-notepad-textarea";
         textarea.setAttribute(
             "aria-label",
-            i18n("module.study.classes.notepad"),
+            i18n.t("module.study.classes.notepad"),
         );
         textarea.setAttribute("spellcheck", "true");
         textarea.value = loadDraft();

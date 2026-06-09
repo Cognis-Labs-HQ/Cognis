@@ -37,7 +37,7 @@ export async function handleWhiteboardAndNotepadActions(
         if (!notepad) {
             notepad = createClassroomNotepad({
                 classId: snapshot.id,
-                i18n: (key) => i18n.t(key),
+                i18n,
             });
             setClassroomNotepad(notepad);
         }
