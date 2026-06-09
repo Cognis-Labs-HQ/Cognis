@@ -102,6 +102,17 @@ SPA ナビゲーション後に `#app` 要素の永続フラグ `classroomBound`
 `classroom-windows.js` は `createClassroomMeetingEmbed` に全面委譲し、
 ミーティングロジックを一切持たなくなりました。
 
+## クラスノートパッドとホワイトボード
+
+クラスごとの**ノートパッド**を追加しました — すべてのクラスメンバーが
+ツールバーからアクセスできるセッションスコープのメモ帳です。メモは
+`sessionStorage` に保存されサーバーには送信されません。「Markdownとして
+ダウンロード」ボタンで内容を `.md` ファイルとしてエクスポートできます。
+
+Nextcloud Whiteboard (`NEXTCLOUD_WHITEBOARD_URL` / `NEXTCLOUD_WHITEBOARD_SECRET`)
+を活用した**ホワイトボード**機能を追加しました。教師はクラスごとに名前付き
+ホワイトボードを作成・削除でき、すべてのメンバーがフルスクリーン表示で開けます。
+
 ## 変更したコンポーネントとファイル
 
 - Study/classes アダプターのルートとストア:

@@ -57,6 +57,15 @@ export interface ClassroomNotebookAccessRequestRow {
     updatedAt: string;
 }
 
+export interface ClassroomWhiteboardRow {
+    id: string;
+    classId: string;
+    name: string;
+    fileKey: string | null;
+    createdBy: string;
+    createdAt: string;
+}
+
 export interface TeacherRequestRow {
     id: string;
     accountId: string;

@@ -1,19 +1,16 @@
 import { createClassroomMeetingEmbed } from "/static/modules/jitsi-meet/classroom-meeting-embed.js";
 import { createClassroomNativeChat } from "/static/adapters/study/classes/classroom-chat.js";
+import { createClassroomWhiteboardWindow } from "/static/adapters/study/classes/classroom-whiteboard-window.js";
 
 /**
- * Creates and manages the persistent meeting overlay and class chat panel
- * that live outside refreshDom replacements. The meeting window is reattached
- * inside the blackboard; the chat panel stays root-level as a floating window.
- *
- * Meeting lifecycle is fully owned by the jitsi-meet module via
- * createClassroomMeetingEmbed; this file only wires up the Classroom
- * shell (close buttons, chat panel, hoist/reattach).
+ * Creates and manages the persistent meeting overlay, class chat panel, and
+ * whiteboard window that live outside refreshDom replacements. The meeting and
+ * whiteboard windows are reattached inside the blackboard; the chat panel stays
+ * root-level as a floating window.
  *
  * Call hoist() before replacing .classes-classroom-content in the DOM so
- * meeting/chat elements are moved to root first and never detached from the
- * document. Call reattach() afterwards to move the meeting back to blackboard
- * while leaving chat floating at root.
+ * meeting/chat/whiteboard elements are moved to root first and never detached
+ * from the document. Call reattach() afterwards to move them back.
  */
 export function createClassroomWindows({ root, i18n }) {
     const updateMeetingWindowLayout = () => {
@@ -36,6 +33,7 @@ export function createClassroomWindows({ root, i18n }) {
         },
     });
     const nativeChat = createClassroomNativeChat({ i18n });
+    const whiteboardWindow = createClassroomWhiteboardWindow({ root, i18n });
 
     function handleWindowButtonClick(event) {
         if (!(event.target instanceof Element)) return;
@@ -53,6 +51,7 @@ export function createClassroomWindows({ root, i18n }) {
     function hoist() {
         root.appendChild(meetingEmbed.element);
         root.appendChild(nativeChat.panel);
+        whiteboardWindow.hoist();
     }
 
     function reattach() {
@@ -61,6 +60,7 @@ export function createClassroomWindows({ root, i18n }) {
             blackboard.appendChild(meetingEmbed.element);
         }
         root.appendChild(nativeChat.panel);
+        whiteboardWindow.reattach();
         updateMeetingWindowLayout();
     }
 
@@ -72,6 +72,11 @@ export function createClassroomWindows({ root, i18n }) {
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),
+        openWhiteboard: (opts) => whiteboardWindow.openBoard(opts),
+        closeWhiteboard: () => whiteboardWindow.closeBoard(),
+        isWhiteboardOpen: () => whiteboardWindow.isOpen(),
+        getActiveWhiteboardId: () => whiteboardWindow.getActiveBoardId(),
+        whiteboardElement: whiteboardWindow.getElement(),
         hoist,
         reattach,
     };

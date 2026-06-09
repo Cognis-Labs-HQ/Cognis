@@ -4,6 +4,7 @@ import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import { resolveRouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
 import { handleClassroomNotebookRoutes } from "./classroom-notebooks.js";
+import { handleClassroomWhiteboardRoutes } from "./classroom-whiteboards.js";
 import { handleAvailableClassesRequest } from "./available-classes-route.js";
 import { handleEnrolledClassesRequest } from "./enrolled-classes-route.js";
 import {
@@ -548,6 +549,24 @@ export function createClassesRoutes(
                 ctx,
                 store,
                 options,
+                logMeta,
+            })
+        ) {
+            return true;
+        }
+
+        if (
+            await handleClassroomWhiteboardRoutes({
+                req,
+                res,
+                url,
+                ctx,
+                store,
+                options: {
+                    whiteboardUrl: options.whiteboardUrl,
+                    whiteboardSecret: options.whiteboardSecret,
+                    log: options.log,
+                },
                 logMeta,
             })
         ) {

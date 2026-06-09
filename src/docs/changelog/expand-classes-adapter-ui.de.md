@@ -110,6 +110,18 @@ exakt dem Lebenszyklus der Meetings-Seite:
 `classroom-windows.js` delegiert nun vollständig an
 `createClassroomMeetingEmbed` und enthält keine eigene Meeting-Logik.
 
+## Klassenraum-Notizblock und Whiteboard
+
+Ein klassengebundener **Notizblock** wurde hinzugefügt — ein sitzungsbezogenes
+Notizfeld für alle Klassenmitglieder. Notizen werden im `sessionStorage`
+gespeichert und nicht an den Server übertragen. Ein „Als Markdown herunterladen"-
+Button exportiert den Inhalt als `.md`-Datei.
+
+Eine **Whiteboard**-Funktion wurde integriert, die durch den Nextcloud-Whiteboard-
+Server (`NEXTCLOUD_WHITEBOARD_URL` / `NEXTCLOUD_WHITEBOARD_SECRET`) unterstützt
+wird. Lehrkräfte können benannte Whiteboards pro Klasse anlegen und löschen;
+alle Klassenmitglieder können ein Whiteboard in einer Vollbildansicht öffnen.
+
 ## Geänderte Komponenten und Dateien
 
 - Study-Classes-Adapter-Routen und -Stores:

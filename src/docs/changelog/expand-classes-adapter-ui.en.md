@@ -123,7 +123,40 @@ The `classroom-windows.js` adapter now delegates entirely to
 `createClassroomMeetingEmbed` and contains no meeting logic of its own,
 eliminating the duplication that previously caused the two surfaces to drift.
 
-- Study classes adapter routes and stores:
+## Classroom Notepad and Whiteboard
+
+Added a per-class **Notepad** — a lightweight in-session scratch pad accessible
+to all class members via the toolbar. Notes are stored in `sessionStorage` keyed
+by class ID (auto-cleared when the browser tab is closed) and never reach the
+server. A "Download as Markdown" button exports the current text as a `.md` file.
+The notepad panel is a persistent floating element anchored to the blackboard
+corner, toggled by a toolbar button.
+
+Added a **Whiteboard** capability backed by the Nextcloud Whiteboard server
+(`NEXTCLOUD_WHITEBOARD_URL` / `NEXTCLOUD_WHITEBOARD_SECRET`). Teachers can
+create and delete named whiteboards per class; all class members can open a
+whiteboard in a full-screen overlay. The server mints a short-lived HS256 JWT
+and returns an `embedUrl`; the Nextcloud Whiteboard frontend loads inside a
+sandboxed iframe with no external CDN dependency. Board state is stored in
+real-time by the NC WB server via WebSockets. A `classroom_whiteboards` database
+table tracks board metadata and optional file keys for persisted snapshots.
+
+- `src/adapters/study/classes/store/types.ts`
+- `src/adapters/study/classes/store/schema.ts`
+- `src/adapters/study/classes/store/whiteboards.ts`
+- `src/adapters/study/classes/store/db-classes-store.ts`
+- `src/adapters/study/classes/routes/classroom-whiteboards.ts`
+- `src/adapters/study/classes/routes/route-helpers.ts`
+- `src/adapters/study/classes/routes/index.ts`
+- `src/adapters/study/classes/index.ts`
+- `src/adapters/study/classes/ui/classroom-notepad.js`
+- `src/adapters/study/classes/ui/classroom-whiteboard-window.js`
+- `src/adapters/study/classes/ui/classroom-windows.js`
+- `src/adapters/study/classes/ui/classroom-render.js`
+- `src/adapters/study/classes/ui/classroom.js`
+- `src/adapters/study/classes/ui/classes-notepad.css`
+- `src/adapters/study/classes/ui/classes-whiteboard.css`
+- `docker/Dockerfile`
     - `src/adapters/study/classes/index.ts`
     - `src/adapters/study/classes/routes/index.ts`
     - `src/adapters/study/classes/routes/route-helpers.ts`
@@ -135,6 +168,7 @@ eliminating the duplication that previously caused the two surfaces to drift.
     - `src/adapters/study/classes/store/teacher-requests.ts`
     - `src/adapters/study/classes/store/types.ts`
     - `src/adapters/study/classes/store/rows.ts`
+
 - Classroom UI and shared study navigation:
     - `src/adapters/study/classes/ui/classroom.js`
     - `src/adapters/study/classes/ui/classroom-render.js`

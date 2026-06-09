@@ -43,6 +43,13 @@ import {
     rejectTeacherRequest,
     submitTeacherRequest,
 } from "./teacher-requests.js";
+import {
+    createClassroomWhiteboard,
+    deleteClassroomWhiteboard,
+    getClassroomWhiteboard,
+    listClassroomWhiteboards,
+    setWhiteboardFileKey,
+} from "./whiteboards.js";
 import type {
     ClassMembershipRow,
     ClassRow,
@@ -50,10 +57,13 @@ import type {
     ClassroomResourceRow,
     ClassroomNotebookRow,
     ClassroomNotebookAccessRequestRow,
+    ClassroomWhiteboardRow,
     StudyLanguageRow,
     StudyPreferencesRow,
     TeacherRequestRow,
 } from "./types.js";
+
+export type { ClassroomWhiteboardRow, StudyLanguageRow };
 
 export class DbClassesStore {
     constructor(private readonly db: DbExecutor) {}
@@ -396,5 +406,54 @@ export class DbClassesStore {
         reviewerAccountId: string,
     ): Promise<void> {
         await rejectTeacherRequest(this.db, requestId, reviewerAccountId);
+    }
+
+    async listClassroomWhiteboards(
+        classId: string,
+        accountId: string,
+    ): Promise<ClassroomWhiteboardRow[]> {
+        return listClassroomWhiteboards(this.db, classId, accountId);
+    }
+
+    async createClassroomWhiteboard(
+        classId: string,
+        teacherAccountId: string,
+        name: string,
+    ): Promise<ClassroomWhiteboardRow> {
+        return createClassroomWhiteboard(
+            this.db,
+            classId,
+            teacherAccountId,
+            name,
+        );
+    }
+
+    async deleteClassroomWhiteboard(
+        classId: string,
+        boardId: string,
+        teacherAccountId: string,
+    ): Promise<void> {
+        await deleteClassroomWhiteboard(
+            this.db,
+            classId,
+            boardId,
+            teacherAccountId,
+        );
+    }
+
+    async getClassroomWhiteboard(
+        classId: string,
+        boardId: string,
+        accountId: string,
+    ): Promise<ClassroomWhiteboardRow | null> {
+        return getClassroomWhiteboard(this.db, classId, boardId, accountId);
+    }
+
+    async setWhiteboardFileKey(
+        classId: string,
+        boardId: string,
+        fileKey: string,
+    ): Promise<void> {
+        await setWhiteboardFileKey(this.db, classId, boardId, fileKey);
     }
 }

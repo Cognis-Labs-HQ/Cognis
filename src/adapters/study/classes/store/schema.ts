@@ -312,6 +312,24 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
         ],
     });
 
+    await db.ensureTable({
+        name: "classroom_whiteboards",
+        columns: [
+            { name: "id", type: "text", notNull: true },
+            { name: "class_id", type: "text", notNull: true },
+            { name: "name", type: "text", notNull: true, default: "" },
+            { name: "file_key", type: "text" },
+            { name: "created_by", type: "text", notNull: true },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+        primaryKey: ["id"],
+    });
+
     await ensureStudyClassesColumns(db);
     await ensureTeacherRequestColumns(db);
     await ensureClassroomStateColumns(db);

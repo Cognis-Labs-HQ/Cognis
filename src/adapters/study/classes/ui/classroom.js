@@ -33,6 +33,7 @@ import { createClassroomWindows } from "/static/adapters/study/classes/classroom
 import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
+import { createClassroomNotepad } from "/static/adapters/study/classes/classroom-notepad.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -98,6 +99,9 @@ export async function mount(root, { signal } = {}) {
     let interactionsBound = false;
     /** Initialised after composer.init(); used by the click handler via closure. */
     let classroomWindows = null;
+    let classroomNotepad = null;
+    let notepadVisible = false;
+    let whiteboards = [];
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -187,20 +191,28 @@ export async function mount(root, { signal } = {}) {
             selectedNotebookText = "";
             classResources = { materials: "", homework: "" };
             activeAgendaItems = [];
+            whiteboards = [];
             return;
         }
-        const [resourcesResponse, notebookResponse, agendaResponse] =
-            await Promise.all([
-                apiFetch(
-                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
-                ),
-                apiFetch(
-                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
-                ),
-                apiFetch(
-                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/agenda`,
-                ),
-            ]);
+        const [
+            resourcesResponse,
+            notebookResponse,
+            agendaResponse,
+            whiteboardsResponse,
+        ] = await Promise.all([
+            apiFetch(
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
+            ),
+            apiFetch(
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
+            ),
+            apiFetch(
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/agenda`,
+            ),
+            apiFetch(
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
+            ),
+        ]);
         classResources = resourcesResponse.ok
             ? ((await resourcesResponse.json())?.data ?? {
                   materials: "",
@@ -212,6 +224,9 @@ export async function mount(root, { signal } = {}) {
             : "";
         activeAgendaItems = agendaResponse.ok
             ? ((await agendaResponse.json())?.data?.activeItems ?? [])
+            : [];
+        whiteboards = whiteboardsResponse.ok
+            ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
     }
 
@@ -302,6 +317,7 @@ export async function mount(root, { signal } = {}) {
             canEditMaterials: teacherAccount,
             boardEntities: getBoardEntities(snapshot),
             activeBoardPanel,
+            whiteboards,
         });
     }
 
@@ -806,6 +822,219 @@ export async function mount(root, { signal } = {}) {
                                         await refreshContent();
                                     },
                                 });
+                                return;
+                            }
+
+                            if (
+                                event.target.closest(
+                                    ".classes-toggle-notepad-btn",
+                                )
+                            ) {
+                                if (!snapshot) return;
+                                notepadVisible = !notepadVisible;
+                                if (!classroomNotepad) {
+                                    classroomNotepad = createClassroomNotepad({
+                                        classId: snapshot.id,
+                                        i18n: (key) => i18n.t(key),
+                                    });
+                                }
+                                const blackboard = root.querySelector(
+                                    ".classes-blackboard",
+                                );
+                                if (!blackboard) return;
+                                const existing = blackboard.querySelector(
+                                    ".classes-notepad-panel",
+                                );
+                                if (notepadVisible) {
+                                    if (!existing) {
+                                        blackboard.appendChild(
+                                            classroomNotepad.getElement(),
+                                        );
+                                    } else {
+                                        existing.hidden = false;
+                                    }
+                                    classroomNotepad.focus();
+                                } else if (existing) {
+                                    existing.hidden = true;
+                                }
+                                return;
+                            }
+
+                            if (
+                                event.target.closest(
+                                    ".classes-open-whiteboard-btn",
+                                )
+                            ) {
+                                if (!snapshot || !classroomWindows) return;
+                                const btn = event.target.closest(
+                                    ".classes-open-whiteboard-btn",
+                                );
+                                const boardId = String(
+                                    btn?.dataset?.boardId ?? "",
+                                ).trim();
+                                const boardName = String(
+                                    btn?.dataset?.boardName ?? "",
+                                ).trim();
+                                if (!boardId) return;
+                                const tokenResponse = await apiFetch(
+                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}/token`,
+                                );
+                                if (!tokenResponse.ok) {
+                                    const errPayload = await tokenResponse
+                                        .json()
+                                        .catch(() => null);
+                                    const code = String(
+                                        errPayload?.error?.code ?? "",
+                                    );
+                                    showToast(
+                                        i18n.t(
+                                            code === "not_configured"
+                                                ? "module.study.classes.whiteboard_not_configured"
+                                                : "module.study.classes.whiteboard_open_failed",
+                                        ),
+                                        { variant: "error" },
+                                    );
+                                    return;
+                                }
+                                const tokenPayload = await tokenResponse.json();
+                                classroomWindows.openWhiteboard({
+                                    boardId,
+                                    boardName,
+                                    embedUrl:
+                                        tokenPayload?.data?.embedUrl ?? "",
+                                });
+                                return;
+                            }
+
+                            if (
+                                event.target.closest(
+                                    ".classes-create-whiteboard-btn",
+                                ) &&
+                                isTeacherView()
+                            ) {
+                                if (!snapshot) return;
+                                const result = await openPopup({
+                                    title: i18n.t(
+                                        "module.study.classes.new_whiteboard",
+                                    ),
+                                    body: `<label>${escapeHtml(i18n.t("module.study.classes.whiteboard_name_label"))}<input type="text" class="classes-whiteboard-name-input" /></label>`,
+                                    actions: [
+                                        {
+                                            id: "create",
+                                            label: i18n.t("ui.reuse.create"),
+                                            variant: "confirm",
+                                        },
+                                        {
+                                            id: "cancel",
+                                            label: i18n.t("ui.reuse.cancel"),
+                                            variant: "cancel",
+                                        },
+                                    ],
+                                });
+                                if (result !== "create") return;
+                                const nameInput = document.querySelector(
+                                    ".classes-whiteboard-name-input",
+                                );
+                                const name =
+                                    nameInput instanceof HTMLInputElement
+                                        ? nameInput.value.trim()
+                                        : "";
+                                const createResponse = await apiFetch(
+                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "content-type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            name:
+                                                name ||
+                                                i18n.t(
+                                                    "module.study.classes.whiteboard",
+                                                ),
+                                        }),
+                                    },
+                                );
+                                showToast(
+                                    i18n.t(
+                                        createResponse.ok
+                                            ? "module.study.classes.whiteboard_created"
+                                            : "module.study.classes.whiteboard_create_failed",
+                                    ),
+                                    {
+                                        variant: createResponse.ok
+                                            ? "success"
+                                            : "error",
+                                    },
+                                );
+                                if (createResponse.ok) {
+                                    await loadSelectedClassMeta();
+                                    refreshDom();
+                                }
+                                return;
+                            }
+
+                            const deleteWhiteboardBtn = event.target.closest(
+                                ".classes-delete-whiteboard-btn",
+                            );
+                            if (
+                                deleteWhiteboardBtn instanceof HTMLElement &&
+                                isTeacherView()
+                            ) {
+                                if (!snapshot) return;
+                                const boardId = String(
+                                    deleteWhiteboardBtn.dataset.boardId ?? "",
+                                ).trim();
+                                const boardName = String(
+                                    deleteWhiteboardBtn.dataset.boardName ?? "",
+                                ).trim();
+                                if (!boardId) return;
+                                const result = await openPopup({
+                                    title: i18n.t(
+                                        "module.study.classes.delete_whiteboard_title",
+                                    ),
+                                    body: `<p>${escapeHtml(i18n.t("module.study.classes.delete_whiteboard_confirm").replace("{name}", boardName))}</p>`,
+                                    actions: [
+                                        {
+                                            id: "delete",
+                                            label: i18n.t("ui.reuse.delete"),
+                                            variant: "confirm",
+                                        },
+                                        {
+                                            id: "cancel",
+                                            label: i18n.t("ui.reuse.cancel"),
+                                            variant: "cancel",
+                                        },
+                                    ],
+                                });
+                                if (result !== "delete") return;
+                                if (
+                                    classroomWindows?.isWhiteboardOpen() &&
+                                    classroomWindows.getActiveWhiteboardId() ===
+                                        boardId
+                                ) {
+                                    classroomWindows.closeWhiteboard();
+                                }
+                                const deleteResponse = await apiFetch(
+                                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}`,
+                                    { method: "DELETE" },
+                                );
+                                showToast(
+                                    i18n.t(
+                                        deleteResponse.ok
+                                            ? "module.study.classes.whiteboard_deleted"
+                                            : "module.study.classes.whiteboard_delete_failed",
+                                    ),
+                                    {
+                                        variant: deleteResponse.ok
+                                            ? "success"
+                                            : "error",
+                                    },
+                                );
+                                if (deleteResponse.ok) {
+                                    await loadSelectedClassMeta();
+                                    refreshDom();
+                                }
                                 return;
                             }
 

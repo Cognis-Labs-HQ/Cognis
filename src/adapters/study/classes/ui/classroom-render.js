@@ -147,6 +147,11 @@ export function renderBlackboard({
     const toolbarActions = [];
     if (isTeacherView) {
         toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-open-whiteboards-btn"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.whiteboards"))}"
+                title="${escapeHtml(i18n.t("module.study.classes.whiteboards"))}">${escapeHtml(i18n.t("module.study.classes.whiteboards"))}</button>`,
+        );
+        toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-chat-btn"
                 ${snapshot?.chatUrl ? "" : "disabled"}
                 data-entity-kind="chat"
@@ -197,6 +202,11 @@ export function renderBlackboard({
                 )}</button>`,
         );
     }
+    toolbarActions.push(
+        `<button type="button" class="classes-icon-btn classes-toggle-notepad-btn"
+            aria-label="${escapeHtml(i18n.t("module.study.classes.notepad"))}"
+            title="${escapeHtml(i18n.t("module.study.classes.notepad"))}">${escapeHtml(i18n.t("module.study.classes.notepad"))}</button>`,
+    );
     const showBlackboardHeader = isTeacherView || canToggleView;
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
@@ -558,6 +568,32 @@ function renderStudentAvailableClasses({
     `;
 }
 
+function renderWhiteboardList({ whiteboards, isTeacherView, i18n }) {
+    if (!whiteboards || !whiteboards.length) {
+        return `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>`;
+    }
+    const items = whiteboards
+        .map(
+            (board) => `
+            <li class="classes-whiteboard-item">
+                <span class="classes-whiteboard-name">${escapeHtml(String(board.name ?? ""))}</span>
+                <button type="button" class="btn-confirm btn-animated classes-open-whiteboard-btn"
+                    data-board-id="${escapeHtml(String(board.id))}"
+                    data-board-name="${escapeHtml(String(board.name ?? ""))}">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
+                ${
+                    isTeacherView
+                        ? `<button type="button" class="btn-cancel btn-animated classes-delete-whiteboard-btn"
+                            data-board-id="${escapeHtml(String(board.id))}"
+                            data-board-name="${escapeHtml(String(board.name ?? ""))}">${escapeHtml(i18n.t("ui.reuse.delete"))}</button>`
+                        : ""
+                }
+            </li>
+        `,
+        )
+        .join("");
+    return `<ul class="classes-whiteboard-list">${items}</ul>`;
+}
+
 function renderClassroomView({
     snapshot,
     classResources,
@@ -574,6 +610,7 @@ function renderClassroomView({
     canEditMaterials,
     boardEntities,
     activeBoardPanel,
+    whiteboards,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -604,6 +641,17 @@ function renderClassroomView({
             </div>
             ${canEditMaterials ? renderMaterialsEditor({ classResources, i18n }) : ""}
             ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}
+            <details class="classes-whiteboards-drawer">
+                <summary class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.whiteboards"))}</summary>
+                <div class="classes-whiteboards-body">
+                    ${renderWhiteboardList({ whiteboards: whiteboards ?? [], isTeacherView, i18n })}
+                    ${
+                        isTeacherView
+                            ? `<button type="button" class="btn-confirm btn-animated classes-create-whiteboard-btn">${escapeHtml(i18n.t("module.study.classes.new_whiteboard"))}</button>`
+                            : ""
+                    }
+                </div>
+            </details>
             ${
                 !isTeacherView
                     ? `<button type="button" class="btn-cancel btn-animated classes-leave-classroom-btn">${escapeHtml(i18n.t("module.study.classes.leave_class"))}</button>`

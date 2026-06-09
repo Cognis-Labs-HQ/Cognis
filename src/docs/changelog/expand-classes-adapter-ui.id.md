@@ -103,6 +103,17 @@ secara tepat:
 `classroom-windows.js` kini mendelegasikan sepenuhnya ke
 `createClassroomMeetingEmbed` dan tidak memiliki logika meeting sendiri.
 
+## Notepad dan Whiteboard Kelas
+
+Ditambahkan **Notepad** per-kelas — catatan sesi yang dapat diakses semua
+anggota kelas via toolbar. Catatan disimpan di `sessionStorage` dan tidak
+dikirim ke server. Tombol "Unduh sebagai Markdown" mengekspor isi sebagai file `.md`.
+
+Ditambahkan kemampuan **Papan Tulis** yang didukung oleh Nextcloud Whiteboard
+(`NEXTCLOUD_WHITEBOARD_URL` / `NEXTCLOUD_WHITEBOARD_SECRET`). Guru dapat
+membuat dan menghapus papan tulis bernama per kelas; semua anggota dapat
+membuka papan tulis dalam tampilan layar penuh.
+
 ## Komponen dan berkas yang diubah
 
 - Route dan store adapter study/classes:

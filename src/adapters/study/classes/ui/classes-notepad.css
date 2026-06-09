@@ -1,0 +1,70 @@
+.classes-notepad-panel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 340px;
+    max-width: 90vw;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: var(--border-radius, 8px) var(--border-radius, 8px) 0 0;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
+    z-index: 30;
+    overflow: hidden;
+}
+
+.classes-notepad-panel[hidden] {
+    display: none;
+}
+
+.classes-notepad-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: var(--color-surface-alt, #f5f5f5);
+    border-bottom: 1px solid var(--color-border, #d0d0d0);
+    flex-shrink: 0;
+}
+
+.classes-notepad-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text, #111);
+}
+
+.classes-notepad-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.classes-notepad-download-btn,
+.classes-notepad-clear-btn {
+    padding: 3px 8px;
+    font-size: 0.78rem;
+    border-radius: var(--border-radius-sm, 4px);
+    border: 1px solid var(--color-border, #d0d0d0);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #111);
+    cursor: pointer;
+}
+
+.classes-notepad-download-btn:hover,
+.classes-notepad-clear-btn:hover {
+    background: var(--color-surface-hover, #e8e8e8);
+}
+
+.classes-notepad-textarea {
+    flex: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #111);
+}

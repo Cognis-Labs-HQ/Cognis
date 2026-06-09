@@ -116,6 +116,8 @@ export interface ClassesRouteOptions {
     getPresenceStatuses?: (
         accountIds: string[],
     ) => Promise<Record<string, "online" | "away" | "offline">>;
+    whiteboardUrl?: string;
+    whiteboardSecret?: string;
     log?: (
         level: string,
         message: string,

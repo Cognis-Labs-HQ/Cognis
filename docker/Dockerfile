@@ -38,6 +38,8 @@ ENV HOST=cognis
 ENV EXTERNAL_HOST=
 ENV CONTACT_EMAIL=
 ENV DATA_ENCRYPTION_KEY=not-secure-change-me
+ENV NEXTCLOUD_WHITEBOARD_URL=
+ENV NEXTCLOUD_WHITEBOARD_SECRET=
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/usr/local/bin/healthcheck.sh"]

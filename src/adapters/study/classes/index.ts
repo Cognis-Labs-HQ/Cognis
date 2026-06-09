@@ -508,6 +508,8 @@ export async function bootstrapStudyAdapter(
             archiveClassroomChat,
             archiveClassroomMeetings,
             getPresenceStatuses,
+            whiteboardUrl: process.env.NEXTCLOUD_WHITEBOARD_URL ?? "",
+            whiteboardSecret: process.env.NEXTCLOUD_WHITEBOARD_SECRET ?? "",
             routeContext,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<
@@ -540,6 +542,8 @@ export async function bootstrapStudyAdapter(
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
             "/static/adapters/study/classes/classes.css",
+            "/static/adapters/study/classes/classes-notepad.css",
+            "/static/adapters/study/classes/classes-whiteboard.css",
         ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
