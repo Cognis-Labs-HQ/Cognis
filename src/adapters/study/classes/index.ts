@@ -168,6 +168,15 @@ function createRequestsPageRoute(
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
+    const notepadUi = ctx.capabilities.get<{
+        scriptUrl?: string;
+        stringsBaseUrl?: string;
+        stylesheetUrl?: string;
+    }>("study:notepad:ui");
+    const notepadStylesheetUrl =
+        typeof notepadUi?.stylesheetUrl === "string"
+            ? notepadUi.stylesheetUrl.trim()
+            : "";
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor = ctx.capabilities.get("db:executor");
@@ -551,7 +560,7 @@ export async function bootstrapStudyAdapter(
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
             "/static/adapters/study/classes/classes.css",
-            "/static/adapters/study/notepad/classes-notepad.css",
+            ...(notepadStylesheetUrl ? [notepadStylesheetUrl] : []),
             "/static/modules/nextcloud-whiteboard/classes-whiteboard.css",
         ],
         isEnabled: () => ctx.isAdapterEnabled(),
