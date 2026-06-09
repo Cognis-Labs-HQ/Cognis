@@ -71,5 +71,12 @@
   <string name="module.social.messages.member_summary_empty">Tidak ada anggota yang ditemukan untuk percakapan ini.</string>
   <string name="module.social.messages.emoji_more">Reaksi Lainnya</string>
   <string name="module.social.messages.emoji_search_placeholder">Cari emoji…</string>
+  <string name="module.social.messages.member_action_kick">Keluarkan anggota</string>
+  <string name="module.social.messages.member_action_mute">Bisukan selama 24 jam</string>
+  <string name="module.social.messages.member_mute_failed">Gagal membisukan anggota.</string>
+  <string name="module.social.messages.member_muted_success">Anggota dibisukan selama 24 jam.</string>
+  <string name="module.social.messages.member_kick_failed">Gagal mengeluarkan anggota.</string>
+  <string name="module.social.messages.member_kicked_success">Anggota dikeluarkan dari chat.</string>
+  <string name="module.social.messages.member_muted_cannot_send">Anda dibisukan selama 24 jam dan tidak dapat mengirim pesan di chat ini.</string>
   <string name="module.social.messages.nav_title">Pesan</string>
 </resources>

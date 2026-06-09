@@ -89,6 +89,28 @@ export interface ClassesRouteOptions {
         endAt: string;
         meetingUrl?: string | null;
     }>;
+    listCalendarSharedUsers?: (input: {
+        ownerAccountId: string;
+        calendarId: string;
+    }) => Promise<
+        Array<{
+            recipientAccountId: string;
+        }>
+    >;
+    upsertCalendarShareForUser?: (input: {
+        ownerAccountId: string;
+        calendarId: string;
+        recipientAccountId: string;
+        recipientHandle?: string | null;
+        recipientDisplayName?: string | null;
+        recipientAvatarKey?: string | null;
+        permission?: "read" | "write";
+    }) => Promise<void>;
+    deleteCalendarShareForUser?: (input: {
+        ownerAccountId: string;
+        calendarId: string;
+        recipientAccountId: string;
+    }) => Promise<void>;
     archiveClassroomChat?: (input: { classId: string }) => Promise<void>;
     archiveClassroomMeetings?: (input: { classId: string }) => Promise<void>;
     getPresenceStatuses?: (
@@ -251,6 +273,61 @@ export async function syncClassroomArtifacts(
         teacherAccountId: classRow.teacherAccountId,
         memberAccountIds: members.map((member) => member.studentAccountId),
     });
+    const agendaCalendarId = await resolveAgendaCalendarId(
+        options,
+        classRow.teacherAccountId,
+        classRow,
+    );
+    if (
+        agendaCalendarId &&
+        (options.upsertCalendarShareForUser ||
+            options.deleteCalendarShareForUser)
+    ) {
+        const memberAccountIds = new Set(
+            members
+                .map((member) => String(member.studentAccountId ?? "").trim())
+                .filter(
+                    (accountId) =>
+                        Boolean(accountId) &&
+                        accountId !== classRow.teacherAccountId,
+                ),
+        );
+        const existingShares = options.listCalendarSharedUsers
+            ? await options.listCalendarSharedUsers({
+                  ownerAccountId: classRow.teacherAccountId,
+                  calendarId: agendaCalendarId,
+              })
+            : [];
+        for (const memberAccountId of memberAccountIds) {
+            const profile =
+                (await options.getProfileSummary?.(memberAccountId)) ?? null;
+            await options.upsertCalendarShareForUser?.({
+                ownerAccountId: classRow.teacherAccountId,
+                calendarId: agendaCalendarId,
+                recipientAccountId: memberAccountId,
+                recipientHandle: profile?.handle ?? null,
+                recipientDisplayName: profile?.displayName ?? null,
+                recipientAvatarKey: profile?.avatarKey ?? null,
+                permission: "read",
+            });
+        }
+        for (const share of existingShares) {
+            const recipientAccountId = String(
+                share.recipientAccountId ?? "",
+            ).trim();
+            if (
+                !recipientAccountId ||
+                memberAccountIds.has(recipientAccountId)
+            ) {
+                continue;
+            }
+            await options.deleteCalendarShareForUser?.({
+                ownerAccountId: classRow.teacherAccountId,
+                calendarId: agendaCalendarId,
+                recipientAccountId,
+            });
+        }
+    }
     return { classRow, chat };
 }
 
@@ -272,7 +349,7 @@ export function buildAgendaCalendarName(input: {
     languageCode?: string | null;
     id?: string | null;
 }) {
-    return `Class agenda · ${resolveClassDisplayName(input)}`;
+    return resolveClassDisplayName(input);
 }
 
 export function buildDefaultClassName(input: {

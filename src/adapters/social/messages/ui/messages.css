@@ -779,6 +779,35 @@
     white-space: nowrap;
 }
 
+.messages-member-summary-actions {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 0.35rem;
+}
+
+.messages-member-summary-action {
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
+    width: 1.85rem;
+    height: 1.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.messages-member-summary-action:hover {
+    background: var(--color-surface);
+}
+
+.messages-member-summary-action--kick {
+    border-color: color-mix(in srgb, var(--color-danger, #ef4444) 55%, var(--color-border));
+    color: var(--color-danger, #ef4444);
+}
+
 .messages-member-summary-empty {
     margin: 0;
     color: var(--color-text-muted);

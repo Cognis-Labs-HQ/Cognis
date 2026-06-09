@@ -536,9 +536,28 @@ export function formatRoomListAvatar(room, displayedMember, titleSource) {
 
 function renderMemberSummaryItem(
     member,
-    { avatarClass, imageClass, fallbackClass, statusText = "" },
+    {
+        avatarClass,
+        imageClass,
+        fallbackClass,
+        statusText = "",
+        viewerAccountId = "",
+        canModerateMembers = false,
+        kickLabel = "",
+        muteLabel = "",
+    },
 ) {
     const label = resolveMemberDisplayName(member);
+    const memberAccountId = String(member.accountId ?? "").trim();
+    const selector = String(member.handle ?? memberAccountId).trim();
+    const isSelf = memberAccountId === String(viewerAccountId ?? "").trim();
+    const moderationActions =
+        canModerateMembers && !isSelf && selector
+            ? `<div class="messages-member-summary-actions">
+        <button type="button" class="messages-member-summary-action messages-member-summary-action--mute" data-member-action="mute" data-member-selector="${escapeHtml(selector)}" data-member-account-id="${escapeHtml(memberAccountId)}" title="${escapeHtml(muteLabel)}" aria-label="${escapeHtml(muteLabel)}">🔇</button>
+        <button type="button" class="messages-member-summary-action messages-member-summary-action--kick" data-member-action="kick" data-member-selector="${escapeHtml(selector)}" data-member-account-id="${escapeHtml(memberAccountId)}" title="${escapeHtml(kickLabel)}" aria-label="${escapeHtml(kickLabel)}">✕</button>
+      </div>`
+            : "";
     return `
     <li class="messages-member-summary-item">
       ${buildProfileAvatarMarkup({
@@ -560,6 +579,7 @@ function renderMemberSummaryItem(
               ? `<span class="messages-member-summary-status">${escapeHtml(statusText)}</span>`
               : ""
       }
+      ${moderationActions}
     </li>
   `;
 }
@@ -568,6 +588,10 @@ export function renderMemberSummaryBody({
     members,
     emptyText,
     presentStatusText = "",
+    viewerAccountId = "",
+    canModerateMembers = false,
+    kickLabel = "",
+    muteLabel = "",
 }) {
     if (!Array.isArray(members) || members.length === 0) {
         return `<p class="messages-member-summary-empty">${escapeHtml(emptyText)}</p>`;
@@ -579,6 +603,10 @@ export function renderMemberSummaryBody({
                 imageClass: "messages-member-summary-avatar-img",
                 fallbackClass: "messages-member-summary-avatar-fallback",
                 statusText: presentStatusText,
+                viewerAccountId,
+                canModerateMembers,
+                kickLabel,
+                muteLabel,
             }),
         )
         .join("")}</ul>`;

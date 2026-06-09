@@ -236,6 +236,10 @@ body:not([data-theme="light"])
     grid-template-rows: repeat(2, 1fr);
 }
 
+.messages-classroom-collage--count-3 .messages-classroom-collage-tile:first-child {
+    grid-row: 1 / span 2;
+}
+
 .messages-thread-title-link {
     color: inherit;
     text-decoration: underline;

@@ -18,6 +18,7 @@ export interface MemberRow {
     joinedAt: string;
     lastReadAt: string | null;
     muted: boolean;
+    mutedUntil: string | null;
     archived: boolean;
 }
 

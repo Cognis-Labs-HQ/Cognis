@@ -73,7 +73,7 @@ export async function addMember(
         conflict: {
             action: "update",
             target: ["chatroom_id", "account_id"],
-            update: { role, archived: 0 },
+            update: { role, archived: 0, muted_until: null },
         },
     });
 }
@@ -120,6 +120,23 @@ export async function listMembers(
         orderBy: [{ column: "joined_at", direction: "ASC" }],
     });
     return (result.rows ?? []).map((row) => rowToMember(row));
+}
+
+export async function setMemberMutedUntil(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+    mutedUntil: string | null,
+): Promise<void> {
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatroom_members",
+        set: { muted_until: mutedUntil },
+        where: [
+            { column: "chatroom_id", value: roomId },
+            { column: "account_id", value: accountId },
+        ],
+    });
 }
 
 export async function listRoomsForAccount(

@@ -71,5 +71,12 @@
   <string name="module.social.messages.member_summary_empty">No members found for this conversation.</string>
   <string name="module.social.messages.emoji_more">More Reactions</string>
   <string name="module.social.messages.emoji_search_placeholder">Search emojis…</string>
+  <string name="module.social.messages.member_action_kick">Kick member</string>
+  <string name="module.social.messages.member_action_mute">Mute for 24 hours</string>
+  <string name="module.social.messages.member_mute_failed">Failed to mute member.</string>
+  <string name="module.social.messages.member_muted_success">Member muted for 24 hours.</string>
+  <string name="module.social.messages.member_kick_failed">Failed to remove member.</string>
+  <string name="module.social.messages.member_kicked_success">Member removed from chat.</string>
+  <string name="module.social.messages.member_muted_cannot_send">You are muted for 24 hours and cannot send messages in this chat.</string>
   <string name="module.social.messages.nav_title">Messages</string>
 </resources>

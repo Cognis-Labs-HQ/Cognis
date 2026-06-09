@@ -317,6 +317,30 @@ export async function bootstrapStudyAdapter(
             meetingUrl?: string | null;
         }>
     >("calendar:listEvents");
+    const listCalendarSharedUsers = ctx.capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+        }) => Promise<Array<{ recipientAccountId: string }>>
+    >("calendar:listSharedUsers");
+    const upsertCalendarShareForUser = ctx.capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            recipientAccountId: string;
+            recipientHandle?: string | null;
+            recipientDisplayName?: string | null;
+            recipientAvatarKey?: string | null;
+            permission?: "read" | "write";
+        }) => Promise<void>
+    >("calendar:shareCalendarWithUser");
+    const deleteCalendarShareForUser = ctx.capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            recipientAccountId: string;
+        }) => Promise<void>
+    >("calendar:removeCalendarShareForUser");
     const archiveClassroomChat = ctx.capabilities.get<
         (input: { classId: string }) => Promise<void>
     >("social:messages:archiveClassroomChat");
@@ -478,6 +502,9 @@ export async function bootstrapStudyAdapter(
             updateCalendar,
             addEvent: addCalendarEvent,
             listEvents: listCalendarEvents,
+            listCalendarSharedUsers,
+            upsertCalendarShareForUser,
+            deleteCalendarShareForUser,
             archiveClassroomChat,
             archiveClassroomMeetings,
             getPresenceStatuses,

@@ -129,6 +129,24 @@ function renderMemberInitials(member) {
     return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
 }
 
+function pickClassroomAvatarMembers(room, currentAccountId) {
+    const members = Array.isArray(room?.members) ? room.members : [];
+    const others = members.filter(
+        (member) => member.accountId !== currentAccountId,
+    );
+    const baseCandidates = others.length ? others : members;
+    if (baseCandidates.length <= 4) {
+        return baseCandidates.slice(0, 4);
+    }
+    const nonTeacherCandidates = baseCandidates.filter(
+        (member) => member.role !== "owner",
+    );
+    const randomPool = nonTeacherCandidates.length
+        ? nonTeacherCandidates
+        : baseCandidates;
+    return randomSample(randomPool, 4);
+}
+
 function renderRoomAvatar(room, currentAccountId) {
     if (!room) return "";
     const members = room.members ?? [];
@@ -144,7 +162,7 @@ function renderRoomAvatar(room, currentAccountId) {
                 fallbackClass: "messages-thread-initials",
             });
         }
-        const picked = randomSample(members, 4);
+        const picked = pickClassroomAvatarMembers(room, currentAccountId);
         const count = Math.max(1, picked.length);
         return `<div class="messages-classroom-collage messages-classroom-collage--count-${count}">${picked.map(renderMemberInitials).join("")}</div>`;
     }

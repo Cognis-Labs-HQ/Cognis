@@ -45,6 +45,7 @@ export function rowToMember(row: Record<string, unknown>): MemberRow {
         joinedAt: readString(row.joined_at),
         lastReadAt: readNullableString(row.last_read_at),
         muted: Boolean(row.muted),
+        mutedUntil: readNullableString(row.muted_until),
         archived: Boolean(row.archived),
     };
 }

@@ -71,5 +71,12 @@
   <string name="module.social.messages.member_summary_empty">この会話にはメンバーが見つかりませんでした。</string>
   <string name="module.social.messages.emoji_more">リアクションを追加</string>
   <string name="module.social.messages.emoji_search_placeholder">絵文字を検索…</string>
+  <string name="module.social.messages.member_action_kick">メンバーを退出させる</string>
+  <string name="module.social.messages.member_action_mute">24時間ミュート</string>
+  <string name="module.social.messages.member_mute_failed">メンバーをミュートできませんでした。</string>
+  <string name="module.social.messages.member_muted_success">メンバーを24時間ミュートしました。</string>
+  <string name="module.social.messages.member_kick_failed">メンバーを退出させられませんでした。</string>
+  <string name="module.social.messages.member_kicked_success">メンバーをチャットから退出させました。</string>
+  <string name="module.social.messages.member_muted_cannot_send">24時間ミュート中のため、このチャットではメッセージを送信できません。</string>
   <string name="module.social.messages.nav_title">メッセージ</string>
 </resources>

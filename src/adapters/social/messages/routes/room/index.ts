@@ -10,6 +10,45 @@ import {
     type MessagesRoutesDeps,
 } from "../shared.js";
 
+const MEMBER_MUTE_DURATION_HOURS = 24;
+
+function hasModerationPrivileges(input: {
+    roomKind: string;
+    actorRole: string;
+    actorAccountId: string;
+    roomMembers: Array<{ accountId: string }>;
+}): boolean {
+    if (input.actorRole === "owner") return true;
+    if (input.roomKind !== "dm") return false;
+    const memberIds = new Set(
+        input.roomMembers.map((roomMember) => roomMember.accountId),
+    );
+    return (
+        input.roomMembers.length === 2 && memberIds.has(input.actorAccountId)
+    );
+}
+
+async function resolveMemberProfileBySelector(
+    selector: string,
+    getProfileByHandle: (handle: string) => Promise<{
+        accountId: string;
+        handle: string;
+        displayName: string | null;
+    } | null>,
+    getProfile: (accountId: string) => Promise<{
+        accountId: string;
+        handle: string;
+        displayName: string | null;
+    } | null>,
+) {
+    const normalizedSelector = String(selector ?? "").trim().replace(/^@/, "");
+    if (!normalizedSelector) return null;
+    return (
+        (await getProfileByHandle(normalizedSelector)) ??
+        (await getProfile(normalizedSelector))
+    );
+}
+
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;
     const ctx = resolveRouteContext(deps.routeContext);
@@ -352,6 +391,35 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     return true;
                 }
+                const mutedUntilTimestamp = member.mutedUntil
+                    ? Date.parse(member.mutedUntil)
+                    : Number.NaN;
+                if (
+                    Number.isFinite(mutedUntilTimestamp) &&
+                    mutedUntilTimestamp > Date.now()
+                ) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "member_muted",
+                                message:
+                                    "You are muted in this conversation.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (
+                    Number.isFinite(mutedUntilTimestamp) &&
+                    mutedUntilTimestamp <= Date.now()
+                ) {
+                    await messagesStore.setMemberMutedUntil(
+                        roomId,
+                        accountId,
+                        null,
+                    );
+                }
                 const body = (await readJson(req)) as {
                     ciphertext?: unknown;
                     iv?: unknown;
@@ -567,7 +635,11 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (sub === "members" && subArg && req.method === "DELETE") {
-            const target = await profileStore.getProfileByHandle(subArg);
+            const target = await resolveMemberProfileBySelector(
+                subArg,
+                profileStore.getProfileByHandle.bind(profileStore),
+                profileStore.getProfile.bind(profileStore),
+            );
             if (!target) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -581,8 +653,14 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 return true;
             }
             const isSelfLeave = target.accountId === accountId;
-            const isOwnerKick = member.role === "owner";
-            if (!isSelfLeave && !isOwnerKick) {
+            const roomMembers = await messagesStore.listMembers(roomId);
+            const canModerateOthers = hasModerationPrivileges({
+                roomKind: room.kind,
+                actorRole: member.role,
+                actorAccountId: accountId,
+                roomMembers,
+            });
+            if (!isSelfLeave && !canModerateOthers) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -613,6 +691,88 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
+            return true;
+        }
+
+        if (
+            sub === "members" &&
+            subArg &&
+            subArg2 === "mute" &&
+            req.method === "POST"
+        ) {
+            const target = await resolveMemberProfileBySelector(
+                subArg,
+                profileStore.getProfileByHandle.bind(profileStore),
+                profileStore.getProfile.bind(profileStore),
+            );
+            if (!target) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "User not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (target.accountId === accountId) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Cannot mute yourself.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const roomMembers = await messagesStore.listMembers(roomId);
+            const canModerateOthers = hasModerationPrivileges({
+                roomKind: room.kind,
+                actorRole: member.role,
+                actorAccountId: accountId,
+                roomMembers,
+            });
+            if (!canModerateOthers) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message: "Only owners can mute members.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const targetIsMember = roomMembers.some(
+                (roomMember) => roomMember.accountId === target.accountId,
+            );
+            if (!targetIsMember) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_member",
+                            message: "Target is not a room member.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const mutedUntil = new Date(
+                Date.now() + MEMBER_MUTE_DURATION_HOURS * 60 * 60 * 1000,
+            ).toISOString();
+            await messagesStore.setMemberMutedUntil(
+                roomId,
+                target.accountId,
+                mutedUntil,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true, mutedUntil } }));
             return true;
         }
 
