@@ -17,7 +17,25 @@ import { createClassroomNativeChat } from "/static/adapters/study/classes/classr
  * move them back inside the blackboard.
  */
 export function createClassroomWindows({ root, i18n }) {
-    const meetingEmbed = createClassroomMeetingEmbed({ i18n });
+    const updateMeetingWindowLayout = () => {
+        const blackboard = root.querySelector(".classes-blackboard");
+        const header = blackboard?.querySelector(".classes-blackboard-header");
+        const headerHeight =
+            header instanceof HTMLElement
+                ? Math.ceil(header.getBoundingClientRect().height)
+                : 0;
+        meetingEmbed.element.style.setProperty(
+            "--classes-meeting-window-top",
+            `${headerHeight}px`,
+        );
+    };
+    const meetingEmbed = createClassroomMeetingEmbed({
+        i18n,
+        onVisibilityChange: (visible) => {
+            root.classList.toggle("classes-meeting-active", visible);
+            updateMeetingWindowLayout();
+        },
+    });
     const nativeChat = createClassroomNativeChat({ i18n });
 
     function handleWindowButtonClick(event) {
@@ -44,7 +62,10 @@ export function createClassroomWindows({ root, i18n }) {
             blackboard.appendChild(meetingEmbed.element);
             blackboard.appendChild(nativeChat.panel);
         }
+        updateMeetingWindowLayout();
     }
+
+    updateMeetingWindowLayout();
 
     return {
         openMeeting: (snapshot) => meetingEmbed.openMeeting(snapshot),

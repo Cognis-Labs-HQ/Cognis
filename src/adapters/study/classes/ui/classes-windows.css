@@ -21,11 +21,12 @@
 
 .classes-meeting-window {
     position: absolute;
-    inset: 0;
+    inset: var(--classes-meeting-window-top, 0) 0 0;
     z-index: 100;
     display: flex;
     flex-direction: column;
     background: #000;
+    transition: inset 0.26s ease;
 }
 
 .classes-meeting-window[hidden] {

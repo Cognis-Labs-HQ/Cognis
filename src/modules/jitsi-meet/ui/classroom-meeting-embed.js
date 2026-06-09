@@ -36,7 +36,7 @@ import {
  *   embed.closeMeeting();                        // manual or exit close
  *   ```
  *
- * @param {{ i18n: object }} options
+ * @param {{ i18n: object, onVisibilityChange?: (visible: boolean) => void }} options
  * @param {object} options.i18n - i18n helper created by createI18n().
  * @returns {{
  *   element: HTMLElement,
@@ -46,7 +46,10 @@ import {
  *   closeMeeting: () => void,
  * }}
  */
-export function createClassroomMeetingEmbed({ i18n }) {
+export function createClassroomMeetingEmbed({
+    i18n,
+    onVisibilityChange = () => {},
+}) {
     let jitsiApi = null;
     let jitsiParticipantId = "";
     let jitsiModerator = false;
@@ -164,6 +167,7 @@ export function createClassroomMeetingEmbed({ i18n }) {
         currentMeetingId = null;
         currentSessionId = null;
         element.hidden = true;
+        onVisibilityChange(false);
     }
 
     function isMeetingTerminatedNotice(event) {
@@ -352,6 +356,7 @@ export function createClassroomMeetingEmbed({ i18n }) {
 
         startTracking(meeting.id, sessionId);
         element.hidden = false;
+        onVisibilityChange(true);
     }
 
     async function openMeeting(snapshot) {
@@ -457,7 +462,12 @@ export function createClassroomMeetingEmbed({ i18n }) {
         if (!response?.ok) return;
         const payload = await response.json().catch(() => ({ data: [] }));
         const meetings = Array.isArray(payload?.data) ? payload.data : [];
-        const match = meetings.find((meeting) => meeting?.classroomId === id);
+        const match = meetings.find((meeting) => {
+            const meetingClassroomId = String(
+                meeting?.classroomId ?? meeting?.classId ?? meeting?.classroom?.id ?? "",
+            ).trim();
+            return meetingClassroomId === id;
+        });
         if (!match?.id) return;
         await openMeetingById(match.id);
     }

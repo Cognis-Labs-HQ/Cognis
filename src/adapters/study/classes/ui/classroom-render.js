@@ -197,9 +197,12 @@ export function renderBlackboard({
                 )}</button>`,
         );
     }
+    const showBlackboardHeader = isTeacherView || canToggleView;
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
-            <div class="classes-blackboard-header">
+            ${
+                showBlackboardHeader
+                    ? `<div class="classes-blackboard-header">
                 <div class="classes-chalk-header classes-board-panel-tabs">
                     <button type="button" class="classes-board-panel-btn${
                         activeBoardPanel !== "classroom" ? " active" : ""
@@ -213,7 +216,9 @@ export function renderBlackboard({
                         ? `<div class="classes-blackboard-actions">${toolbarActions.join("")}</div>`
                         : ""
                 }
-            </div>
+            </div>`
+                    : ""
+            }
             <div class="classes-blackboard-surface">
                 <div class="classes-blackboard-main classes-blackboard-main--single">
                     <section class="classes-blackboard-section classes-blackboard-section--agenda${

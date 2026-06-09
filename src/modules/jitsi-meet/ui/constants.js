@@ -12,12 +12,9 @@ export const JITSI_TOOLBAR_BUTTONS = [
     "microphone",
     "camera",
     "desktop",
-    "fullscreen",
     "hangup",
     "participants-pane",
     "tileview",
-    "select-background",
-    "videoquality",
     "raisehand",
     "fodeviceselection",
 ];

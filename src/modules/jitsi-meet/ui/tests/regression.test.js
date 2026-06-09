@@ -104,6 +104,9 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.equal(/"chat"/.test(toolbarArraySource), false);
     assert.equal(/"invite"/.test(toolbarArraySource), false);
     assert.equal(/"settings"/.test(toolbarArraySource), false);
+    assert.equal(/"fullscreen"/.test(toolbarArraySource), false);
+    assert.equal(/"select-background"/.test(toolbarArraySource), false);
+    assert.equal(/"videoquality"/.test(toolbarArraySource), false);
     assert.match(source, /subject: MEETING_SUBJECT,/);
     assert.match(source, /currentUserIsJitsiModerator\(apiInstance\)/);
     assert.match(source, /"subject",[\s\S]*MEETING_SUBJECT/);
