@@ -464,7 +464,10 @@ export function createClassroomMeetingEmbed({
         const meetings = Array.isArray(payload?.data) ? payload.data : [];
         const match = meetings.find((meeting) => {
             const meetingClassroomId = String(
-                meeting?.classroomId ?? meeting?.classId ?? meeting?.classroom?.id ?? "",
+                meeting?.classroomId ??
+                    meeting?.classId ??
+                    meeting?.classroom?.id ??
+                    "",
             ).trim();
             return meetingClassroomId === id;
         });
