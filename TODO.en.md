@@ -251,3 +251,17 @@
 **Reviewer suggestion:** `CHAT_REFRESH_INTERVAL_MS` and `TEXT_ENCODER` imported from the jitsi-meet module at line 14 should move to a neutral shared location or be defined locally.
 
 **Reason ignored:** Pre-existing code in `src/adapters/study/classes/ui/classroom-chat.js` — outside the scope of this PR. No behaviour change made.
+
+## Code Review — classroom i18n object handling
+
+### classroom.js componentStringBaseUrls — hardcoded component string paths
+
+**Reviewer suggestion:** The `componentStringBaseUrls` array in `src/adapters/study/classes/ui/classroom.js` hardcodes other component string paths and should be replaced with a central registry or capability-driven discovery.
+
+**Reason ignored:** This review item targets the pre-existing classroom i18n loading pattern already used across the codebase for component-owned strings. Replacing it safely would require a broader cross-component i18n discovery design rather than a focused fix for the classroom whiteboard regression, so it is tracked here for a dedicated follow-up.
+
+### gateway.ts adapter requires normalization — extract shared helper
+
+**Reviewer suggestion:** Extract the inline `adapter.requires` normalization in `src/gateways/study/gateway.ts` into a helper for reuse and clarity.
+
+**Reason ignored:** This is a pre-existing cleanup in the Study gateway unrelated to the classroom i18n regression. Folding that refactor into this fix would widen the scope into unrelated gateway internals without changing the runtime bug being addressed here.

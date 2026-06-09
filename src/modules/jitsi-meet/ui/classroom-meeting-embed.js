@@ -36,11 +36,10 @@ import {
  *   embed.closeMeeting();                        // manual or exit close
  *   ```
  *
- * @param {{
- *   i18n: { t: (key: string) => string },
- *   onVisibilityChange?: (visible: boolean) => void,
- * }} options
- * @param {{ t: (key: string) => string }} options.i18n - i18n helper created by createI18n().
+ * @param {object} options
+ * @param {Object} options.i18n - i18n helper created by createI18n().
+ * @param {function(string): string} options.i18n.t - Translates a locale key.
+ * @param {(visible: boolean) => void} [options.onVisibilityChange]
  * @returns {{
  *   element: HTMLElement,
  *   openMeeting: (snapshot: object) => Promise<void>,

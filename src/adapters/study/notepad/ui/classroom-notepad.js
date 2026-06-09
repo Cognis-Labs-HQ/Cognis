@@ -98,11 +98,11 @@ export function createClassroomNotepad({ classId, i18n }) {
         return panelEl;
     }
 
-    function downloadAsMarkdown(className) {
+    function downloadAsMarkdown(classroomName) {
         const text = textarea ? textarea.value : loadDraft();
         const date = new Date().toISOString().slice(0, 10);
-        const slug = className
-            ? className
+        const slug = classroomName
+            ? classroomName
                   .replace(/[^a-z0-9]+/gi, "-")
                   .replace(/^-|-$/g, "")
                   .toLowerCase()
