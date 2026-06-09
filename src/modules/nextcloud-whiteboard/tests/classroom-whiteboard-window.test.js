@@ -81,11 +81,16 @@ test("classroom whiteboard window accepts the shared i18n object", () => {
                 return `translated:${key}`;
             },
         };
-        const whiteboardWindow = createClassroomWhiteboardWindow({ root, i18n });
+        const whiteboardWindow = createClassroomWhiteboardWindow({
+            root,
+            i18n,
+        });
 
         const panel = whiteboardWindow.getElement();
         const title = panel.querySelector(".classes-whiteboard-title");
-        const closeButton = panel.querySelector(".classes-whiteboard-close-btn");
+        const closeButton = panel.querySelector(
+            ".classes-whiteboard-close-btn",
+        );
 
         assert.equal(
             panel.attributes["aria-label"],
@@ -95,7 +100,10 @@ test("classroom whiteboard window accepts the shared i18n object", () => {
             title?.textContent,
             "translated:module.study.classes.whiteboard",
         );
-        assert.equal(closeButton?.attributes["aria-label"], "translated:ui.reuse.close");
+        assert.equal(
+            closeButton?.attributes["aria-label"],
+            "translated:ui.reuse.close",
+        );
 
         whiteboardWindow.openBoard({
             boardId: "board-1",
@@ -108,7 +116,10 @@ test("classroom whiteboard window accepts the shared i18n object", () => {
             "translated:module.study.classes.whiteboard",
         );
         assert.equal(panel.hidden, false);
-        assert.equal(root.classList.contains("classes-whiteboard-active"), true);
+        assert.equal(
+            root.classList.contains("classes-whiteboard-active"),
+            true,
+        );
     } finally {
         global.document = originalDocument;
     }
