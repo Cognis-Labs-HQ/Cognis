@@ -457,7 +457,7 @@ export function createClassroomMeetingEmbed({
         if (!id || !element.hidden) return;
 
         const response = await apiFetch(
-            "/api/v1/modules/jitsi-meet/meetings/active",
+            `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(id)}`,
         ).catch(() => null);
         if (!response?.ok) return;
         const payload = await response.json().catch(() => ({ data: [] }));

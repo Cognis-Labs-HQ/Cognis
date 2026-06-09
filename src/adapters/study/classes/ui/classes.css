@@ -475,11 +475,6 @@ body:not([data-theme="light"]) .classes-classroom-content {
     --classes-classroom-blackboard-height: clamp(430px, 72vh, 860px);
 }
 
-.classes-blackboard,
-.classes-blackboard * {
-    font-family: var(--classroom-chalk-font);
-}
-
 .classes-blackboard-header {
     display: flex;
     align-items: center;

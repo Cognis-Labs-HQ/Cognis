@@ -2,6 +2,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatTime } from "/static/reuse/timestamp.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import {
     bytesToHex,
     hexToBytes,
@@ -103,21 +104,35 @@ export function createClassroomNativeChat({ i18n }) {
             thread.innerHTML = `<p class="classes-chat-empty">${escapeHtml(i18n.t("module.study.classes.chat_empty"))}</p>`;
             return;
         }
-        thread.replaceChildren(
-            ...messages.map((msg) => {
-                const item = document.createElement("div");
-                item.className = "classes-chat-message";
+        thread.innerHTML = messages
+            .map((msg) => {
+                const isOwn =
+                    String(msg?.senderId ?? "") ===
+                    String(localStorage.getItem("cognis_account") ?? "");
+                const itemClass = isOwn
+                    ? "classes-chat-message classes-chat-message--own"
+                    : "classes-chat-message";
+                const sender = String(
+                    msg?.senderDisplayName ??
+                        msg?.senderHandle ??
+                        msg?.senderUsername ??
+                        "",
+                ).trim();
                 const time = msg.createdAt
                     ? escapeHtml(formatTime(new Date(msg.createdAt)))
                     : "";
-                item.innerHTML = `
-                    <span class="classes-chat-sender">${escapeHtml(msg.senderHandle ?? msg.senderUsername ?? "")}</span>
-                    <span class="classes-chat-time">${time}</span>
-                    <p class="classes-chat-text">${escapeHtml(msg.text ?? "")}</p>
-                `;
-                return item;
-            }),
-        );
+                const body = renderMarkdown(String(msg?.text ?? ""), {
+                    softBreaks: true,
+                });
+                return `<article class="${itemClass}">
+                    <header class="classes-chat-message-head">
+                        <strong>${escapeHtml(sender)}</strong>
+                        <time>${time}</time>
+                    </header>
+                    <div class="classes-chat-message-body">${body}</div>
+                </article>`;
+            })
+            .join("");
         thread.scrollTop = thread.scrollHeight;
     }
 

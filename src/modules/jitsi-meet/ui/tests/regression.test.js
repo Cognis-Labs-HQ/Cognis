@@ -544,6 +544,10 @@ test("jitsi API exposes user active meetings endpoint", () => {
         resolve(ROOT, "src/modules/jitsi-meet/api/meetings-routes.js"),
         "utf8",
     );
+    const classroomEmbedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/classroom-meeting-embed.js"),
+        "utf8",
+    );
     assert.match(indexSource, /registerMeetingRoutes\(/);
     assert.match(
         meetingsRoutesSource,
@@ -556,5 +560,13 @@ test("jitsi API exposes user active meetings endpoint", () => {
     assert.match(
         meetingsRoutesSource,
         /if \(state\.authRequired && !state\.authCompletedAt\) continue;/,
+    );
+    assert.match(
+        meetingsRoutesSource,
+        /requestUrl\.searchParams\.get\("classroomId"\)/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /meetings\/active\?classroomId=\$\{encodeURIComponent\(id\)\}/,
     );
 });

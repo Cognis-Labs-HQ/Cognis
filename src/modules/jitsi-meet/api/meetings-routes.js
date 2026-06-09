@@ -246,6 +246,10 @@ export function registerMeetingRoutes({
             await store.ensureSchema();
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
+            const requestUrl = new URL(req.url ?? "", "http://localhost");
+            const classroomFilter = String(
+                requestUrl.searchParams.get("classroomId") ?? "",
+            ).trim();
             const requesterUsername = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
@@ -262,6 +266,12 @@ export function registerMeetingRoutes({
                     listClassroomParticipantHandles,
                 });
                 if (!authorized) continue;
+                const meetingClassroomId = String(
+                    meeting.classroomId ?? activeMeeting.classroomId ?? "",
+                ).trim();
+                if (classroomFilter && meetingClassroomId !== classroomFilter) {
+                    continue;
+                }
                 const [participants, state] = await Promise.all([
                     store.listParticipants(meeting.id),
                     store.getMeetingState(meeting.id),
@@ -300,7 +310,7 @@ export function registerMeetingRoutes({
                     meetingUrl: meeting.meetingUrl,
                     roomSlug: activeMeeting.roomSlug ?? null,
                     chatRoomId: meeting.chatRoomId,
-                    classroomId: meeting.classroomId ?? null,
+                    classroomId: meetingClassroomId || null,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
                     activeSessionCount: Number(

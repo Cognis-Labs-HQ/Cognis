@@ -3,18 +3,17 @@ import { createClassroomNativeChat } from "/static/adapters/study/classes/classr
 
 /**
  * Creates and manages the persistent meeting overlay and class chat panel
- * that live as siblings of .classes-classroom-content (never re-rendered by
- * refreshDom). Call reattach() after each DOM refresh to move the panels
- * back inside the blackboard.
+ * that live outside refreshDom replacements. The meeting window is reattached
+ * inside the blackboard; the chat panel stays root-level as a floating window.
  *
  * Meeting lifecycle is fully owned by the jitsi-meet module via
  * createClassroomMeetingEmbed; this file only wires up the Classroom
  * shell (close buttons, chat panel, hoist/reattach).
  *
- * Call hoist() before replacing .classes-classroom-content in the DOM so the
- * meeting and chat elements (which may contain live iframes) are moved to root
- * first and never detached from the document. Call reattach() afterwards to
- * move them back inside the blackboard.
+ * Call hoist() before replacing .classes-classroom-content in the DOM so
+ * meeting/chat elements are moved to root first and never detached from the
+ * document. Call reattach() afterwards to move the meeting back to blackboard
+ * while leaving chat floating at root.
  */
 export function createClassroomWindows({ root, i18n }) {
     const updateMeetingWindowLayout = () => {
@@ -60,8 +59,8 @@ export function createClassroomWindows({ root, i18n }) {
         const blackboard = root.querySelector(".classes-blackboard");
         if (blackboard) {
             blackboard.appendChild(meetingEmbed.element);
-            blackboard.appendChild(nativeChat.panel);
         }
+        root.appendChild(nativeChat.panel);
         updateMeetingWindowLayout();
     }
 
