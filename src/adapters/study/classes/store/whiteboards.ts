@@ -158,20 +158,9 @@ export async function setWhiteboardFileKey(
     fileKey: string,
 ): Promise<void> {
     await db.executeCommand({
-        option: "INSERT",
+        option: "UPDATE",
         table: "classroom_whiteboards",
-        values: {
-            id: boardId,
-            class_id: classId,
-            file_key: fileKey,
-            name: "",
-            created_by: "",
-            created_at: new Date().toISOString(),
-        },
-        conflict: {
-            action: "update",
-            target: ["id"],
-            update: { file_key: fileKey },
-        },
+        values: { file_key: fileKey },
+        where: { id: boardId, class_id: classId },
     });
 }

@@ -14,6 +14,11 @@ function mintToken(secret, payload) {
 export function bootstrapModule(ctx) {
     const whiteboardUrl = process.env.NEXTCLOUD_WHITEBOARD_URL ?? "";
     const whiteboardSecret = process.env.NEXTCLOUD_WHITEBOARD_SECRET ?? "";
+    const tokenExpirySeconds = Math.max(
+        60,
+        Number(process.env.NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS ?? "") ||
+            3600,
+    );
 
     const systemCtx = ctx.getCapability("system:ctx");
     if (systemCtx) {
@@ -35,7 +40,7 @@ export function bootstrapModule(ctx) {
                     user: { id: userId, name: userName },
                     room: boardId,
                     iat: now,
-                    exp: now + 3600,
+                    exp: now + tokenExpirySeconds,
                 });
                 return `${whiteboardUrl.replace(/\/$/, "")}?token=${token}`;
             },

@@ -219,3 +219,35 @@
 **Reviewer suggestion:** Add a comment explaining why unrecognized values default to "online".
 
 **Reason ignored:** Pre-existing gap in social/bootstrap.ts, unrelated to this task.
+
+## Code Review — Expand classes adapter UI (notepad + whiteboard)
+
+### jitsi-meet classroom-meeting-embed.js — silent JSON parse swallow
+
+**Reviewer suggestion:** The catch handler at line 94 silently swallows JSON parse errors. Log parse errors for debugging in non-production environments.
+
+**Reason ignored:** Pre-existing code in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` — outside the scope of this PR. No behaviour change made.
+
+### jitsi-meet classroom-meeting-embed.js — JitsiMeetExternalAPI type check
+
+**Reviewer suggestion:** The runtime check at line 225 does not distinguish between a missing script and a missing API function. Log `typeof window.JitsiMeetExternalAPI` for clarity.
+
+**Reason ignored:** Pre-existing code in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` — outside the scope of this PR. No behaviour change made.
+
+### social/bootstrap.ts — hardcoded presence timeout constants
+
+**Reviewer suggestion:** Expose `PRESENCE_STALE_TIMEOUT_MS` and `PRESENCE_AWAY_TIMEOUT_MS` as environment variables at lines 22-23 to allow deployment tuning without code changes.
+
+**Reason ignored:** Pre-existing code in `src/gateways/social/bootstrap.ts` — outside the scope of this PR. No behaviour change made.
+
+### classroom-render.js — duplicate DEFAULT_STUDENT_LIMIT constant
+
+**Reviewer suggestion:** Line 4 duplicates `DEFAULT_STUDENT_LIMIT = 20` from `src/adapters/study/classes/store/constants.ts`. Import from the store instead.
+
+**Reason ignored:** Pre-existing code in `src/adapters/study/classes/ui/classroom-render.js` — outside the scope of this PR. No behaviour change made.
+
+### classroom-chat.js — cross-module constant coupling with jitsi-meet
+
+**Reviewer suggestion:** `CHAT_REFRESH_INTERVAL_MS` and `TEXT_ENCODER` imported from the jitsi-meet module at line 14 should move to a neutral shared location or be defined locally.
+
+**Reason ignored:** Pre-existing code in `src/adapters/study/classes/ui/classroom-chat.js` — outside the scope of this PR. No behaviour change made.
