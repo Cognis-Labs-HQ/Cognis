@@ -31,6 +31,7 @@ export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "classes",
         adapterName: "Classes",
+        requires: ["notepad"],
         getConfig: () => ({ requireTeacherManualApproval }),
         setConfig: async (config) => {
             const rawValue = config?.requireTeacherManualApproval;

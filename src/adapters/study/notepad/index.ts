@@ -1,11 +1,21 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { StudyAdapterBootstrapCtx } from "../../../gateways/study/gateway.js";
+import type {
+    StudyAdapter,
+    StudyAdapterBootstrapCtx,
+} from "../../../gateways/study/gateway.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "ui",
 );
+
+export function createStudyAdapter(): StudyAdapter {
+    return {
+        adapterId: "notepad",
+        adapterName: "Notepad",
+    };
+}
 
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,

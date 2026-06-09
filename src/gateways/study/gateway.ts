@@ -274,15 +274,25 @@ export class CoreStudyGateway {
     }
 
     listAdapters(): StudyAdapterInfo[] {
-        return Array.from(this.registeredAdapters.values()).map((adapter) => ({
-            id: adapter.adapterId,
-            name: adapter.adapterName,
-            active:
-                !this.disabledAdapters.has(adapter.adapterId) &&
-                (typeof adapter.isConfigured === "function"
-                    ? adapter.isConfigured()
-                    : true),
-        }));
+        return Array.from(this.registeredAdapters.values()).map((adapter) => {
+            const requires = Array.isArray(adapter.requires)
+                ? adapter.requires.filter(
+                      (dependency): dependency is string =>
+                          typeof dependency === "string" &&
+                          dependency.trim().length > 0,
+                  )
+                : [];
+            return {
+                id: adapter.adapterId,
+                name: adapter.adapterName,
+                active:
+                    !this.disabledAdapters.has(adapter.adapterId) &&
+                    (typeof adapter.isConfigured === "function"
+                        ? adapter.isConfigured()
+                        : true),
+                ...(requires.length > 0 ? { requires } : {}),
+            };
+        });
     }
 
     isAdapterEnabled(adapterId: string): boolean {
