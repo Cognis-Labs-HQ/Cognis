@@ -63,7 +63,10 @@ test("classroom toolbar chat and meeting controls use text buttons with working 
         "utf8",
     );
     const controllerSource = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/interactions.js",
+        ),
         "utf8",
     );
     assert.match(
