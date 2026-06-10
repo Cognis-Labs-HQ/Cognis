@@ -27,10 +27,14 @@
 
 .classes-workspace-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 22rem);
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
     gap: 1rem;
     align-items: stretch;
     min-height: 22rem;
+}
+
+.classes-workspace-shell--no-rail {
+    grid-template-columns: 1fr;
 }
 
 .classes-workspace-main {
@@ -45,6 +49,7 @@
 .classes-workspace-panel--agenda,
 .classes-workspace-panel--roster,
 .classes-workspace-panel--notepad,
+.classes-workspace-panel--chat,
 .classes-workspace-panel--whiteboard,
 .classes-workspace-panel--meeting {
     display: flex;
@@ -54,6 +59,11 @@
 
 .classes-workspace-panel--meeting {
     min-height: 26rem;
+}
+
+.classes-workspace-panel--chat {
+    flex: 1;
+    min-height: 24rem;
 }
 
 .classes-meeting-workspace-host {
@@ -74,7 +84,7 @@
     flex-direction: column;
     gap: 0.75rem;
     padding: 0.85rem;
-    border-radius: 0.8rem;
+    border-radius: 12px;
     background: rgba(0, 0, 0, 0.16);
     border: 1px solid rgba(255, 255, 255, 0.08);
     min-height: 0;
@@ -104,13 +114,38 @@
     width: 100%;
 }
 
-.classes-live-rail-roster .classes-student-roster {
-    gap: 0.6rem;
+.classes-presence-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.classes-live-rail-roster .classes-roster-list {
-    max-height: 14rem;
-    overflow: auto;
+.classes-presence-list-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 0 2px;
+}
+
+.classes-presence-item {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.82);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classes-presence-item--absent {
+    color: rgba(255, 255, 255, 0.42);
 }
 
 .classes-inline-whiteboard-header {
@@ -119,7 +154,7 @@
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.75rem 0.9rem;
-    border-radius: 0.8rem 0.8rem 0 0;
+    border-radius: 12px 12px 0 0;
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-bottom: 0;
@@ -142,7 +177,7 @@
 .classes-inline-whiteboard-popout-btn,
 .classes-inline-whiteboard-close-btn {
     padding: 0.35rem 0.7rem;
-    border-radius: 0.5rem;
+    border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
@@ -154,7 +189,7 @@
     min-height: 30rem;
     flex: 1;
     border: 1px solid var(--border);
-    border-radius: 0 0 0.8rem 0.8rem;
+    border-radius: 0 0 12px 12px;
     background: #fff;
 }
 

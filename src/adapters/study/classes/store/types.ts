@@ -28,15 +28,22 @@ export interface ClassroomStateRow {
     classId: string;
     studentLimit: number;
     seatAssignments: Record<string, number>;
-    boardFocus: "agenda" | "classroom";
+    boardFocus: "agenda" | "classroom" | "chat";
     activeWhiteboardId: string | null;
     updatedAt: string;
+}
+
+export interface AttachedFileRef {
+    key: string;
+    name: string;
+    contentType?: string;
 }
 
 export interface ClassroomResourceRow {
     classId: string;
     materials: string;
     homework: string;
+    files: AttachedFileRef[];
     updatedBy: string | null;
     updatedAt: string;
 }

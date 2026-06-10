@@ -1,10 +1,7 @@
-/* ── Classroom meeting overlay and chat panel ── */
-
-/* Shared close button for meeting and chat windows */
 .classes-window-close-btn {
     padding: 4px 14px;
     border: 1px solid var(--border);
-    border-radius: 5px;
+    border-radius: 8px;
     background: var(--surface-2);
     color: var(--text);
     cursor: pointer;
@@ -16,8 +13,6 @@
 .classes-window-close-btn:hover {
     background: var(--surface);
 }
-
-/* ── Meeting overlay ── */
 
 .classes-meeting-window {
     position: absolute;
@@ -61,7 +56,36 @@
     border: 0;
 }
 
-/* ── Chat panel (floating, not bound to blackboard) ── */
+.classes-meeting-closed-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: rgba(10, 12, 10, 0.88);
+    text-align: center;
+    padding: 2rem;
+}
+
+.classes-meeting-closed-overlay[hidden] {
+    display: none;
+}
+
+.classes-meeting-closed-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.classes-meeting-closed-body {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.62);
+    margin: 0;
+}
 
 .classes-chat-panel {
     position: fixed;

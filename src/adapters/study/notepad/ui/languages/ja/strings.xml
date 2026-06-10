@@ -3,4 +3,15 @@
   <string name="module.study.classes.notepad">メモ帳</string>
   <string name="module.study.classes.notepad_download">Markdownとしてダウンロード</string>
   <string name="module.study.classes.notepad_clear">クリア</string>
+  <string name="module.study.classes.notepad_save">クラスに保存</string>
+  <string name="module.study.classes.notepad_open">クラスから開く</string>
+  <string name="module.study.classes.notepad_saved">メモがクラス教材に保存されました。</string>
+  <string name="module.study.classes.notepad_save_failed">メモをクラス教材に保存できませんでした。</string>
+  <string name="module.study.classes.notepad_format_paragraph">段落</string>
+  <string name="module.study.classes.notepad_format_heading1">見出し1</string>
+  <string name="module.study.classes.notepad_format_heading2">見出し2</string>
+  <string name="module.study.classes.notepad_format_quote">引用</string>
+  <string name="module.study.classes.notepad_format_code">コード</string>
+  <string name="module.study.classes.notepad_font_size">フォントサイズ</string>
+  <string name="module.study.classes.notepad_color">色</string>
 </strings>

@@ -3,12 +3,13 @@ import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "./constants.js";
 import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
 
-function normalizeBoardFocus(input: unknown): "agenda" | "classroom" {
-    return String(input ?? "")
+function normalizeBoardFocus(input: unknown): "agenda" | "classroom" | "chat" {
+    const value = String(input ?? "")
         .trim()
-        .toLowerCase() === "classroom"
-        ? "classroom"
-        : "agenda";
+        .toLowerCase();
+    if (value === "classroom") return "classroom";
+    if (value === "chat") return "chat";
+    return "agenda";
 }
 
 function normalizeActiveWhiteboardId(input: unknown): string | null {
@@ -159,7 +160,7 @@ export async function updateClassroomStateForTeacher(
     options: {
         studentLimit?: number;
         seatAssignments?: Record<string, number>;
-        boardFocus?: "agenda" | "classroom";
+        boardFocus?: "agenda" | "classroom" | "chat";
         activeWhiteboardId?: string | null;
     },
 ): Promise<ClassroomStateRow> {

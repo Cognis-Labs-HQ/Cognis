@@ -15,6 +15,7 @@ import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-white
 export function createClassroomWindows({
     root,
     i18n,
+    isTeacher = false,
     onMeetingVisibilityChange = () => {},
     onWhiteboardVisibilityChange = () => {},
     signal = null,
@@ -22,6 +23,7 @@ export function createClassroomWindows({
     const chatToggleButton = root.querySelector("#global-chat-toggle");
     const meetingEmbed = createClassroomMeetingEmbed({
         i18n,
+        isTeacher,
         onVisibilityChange: (visible) => {
             root.classList.toggle("classes-meeting-active", visible);
             onMeetingVisibilityChange(visible);
@@ -46,10 +48,6 @@ export function createClassroomWindows({
 
     function handleWindowButtonClick(event) {
         if (!(event.target instanceof Element)) return;
-        if (event.target.closest(".classes-meeting-close-btn")) {
-            meetingEmbed.closeMeeting();
-            return;
-        }
         if (event.target.closest(".classes-chat-close-btn")) {
             nativeChat.closeChat();
         }
@@ -91,6 +89,8 @@ export function createClassroomWindows({
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),
+        isAuthBlocked: () => meetingEmbed.isAuthBlocked(),
+        resetAuthBlocked: () => meetingEmbed.resetAuthBlocked(),
         openWhiteboard: (opts) => whiteboardWindow.openBoard(opts),
         closeWhiteboard: () => whiteboardWindow.closeBoard(),
         isWhiteboardOpen: () => whiteboardWindow.isOpen(),

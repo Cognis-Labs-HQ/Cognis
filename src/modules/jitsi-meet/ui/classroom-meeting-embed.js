@@ -39,6 +39,7 @@ import {
  * @param {object} options
  * @param {Object} options.i18n - i18n helper created by createI18n().
  * @param {function(string): string} options.i18n.t - Translates a locale key.
+ * @param {boolean} [options.isTeacher] - Whether the current user is the teacher.
  * @param {(visible: boolean) => void} [options.onVisibilityChange]
  * @returns {{
  *   element: HTMLElement,
@@ -46,10 +47,13 @@ import {
  *   openMeetingById: (meetingId: string) => Promise<void>,
  *   tryAutoJoin: (classroomId: string) => Promise<void>,
  *   closeMeeting: () => void,
+ *   isAuthBlocked: () => boolean,
+ *   resetAuthBlocked: () => void,
  * }}
  */
 export function createClassroomMeetingEmbed({
     i18n,
+    isTeacher = false,
     onVisibilityChange = () => {},
     signal = null,
 }) {
@@ -60,6 +64,7 @@ export function createClassroomMeetingEmbed({
     let stateRefreshTimer = null;
     let currentMeetingId = null;
     let currentSessionId = null;
+    let authBlocked = false;
 
     const element = document.createElement("div");
     element.className = "classes-meeting-window";
@@ -71,11 +76,12 @@ export function createClassroomMeetingEmbed({
     element.innerHTML = `
         <div class="classes-meeting-window-header">
             <span class="classes-meeting-window-title">${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</span>
-            <button type="button" class="classes-meeting-close-btn classes-window-close-btn">
-                ${escapeHtml(i18n.t("ui.reuse.close"))}
-            </button>
         </div>
         <div class="classes-meeting-frame" id="classroom-jitsi-frame"></div>
+        <div class="classes-meeting-closed-overlay" hidden>
+            <p class="classes-meeting-closed-title">${escapeHtml(i18n.t("module.study.classes.meeting_closed_title"))}</p>
+            <p class="classes-meeting-closed-body">${escapeHtml(i18n.t("module.study.classes.meeting_closed_body"))}</p>
+        </div>
     `;
 
     async function keepPresenceAlive(active, { terminated = false } = {}) {
@@ -342,6 +348,17 @@ export function createClassroomMeetingEmbed({
                     "password",
                     meetingPassword,
                 );
+                applyPrivilegedSettings();
+                return;
+            }
+            if (!isTeacher) {
+                authBlocked = true;
+                destroyJitsiApi();
+                const overlay = element.querySelector(
+                    ".classes-meeting-closed-overlay",
+                );
+                if (overlay) overlay.hidden = false;
+                return;
             }
             applyPrivilegedSettings();
         });
@@ -457,7 +474,7 @@ export function createClassroomMeetingEmbed({
 
     async function tryAutoJoin(classroomId) {
         const id = String(classroomId ?? "").trim();
-        if (!id || !element.hidden) return;
+        if (!id || !element.hidden || authBlocked) return;
 
         const response = await apiFetch(
             `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(id)}`,
@@ -530,5 +547,13 @@ export function createClassroomMeetingEmbed({
         openMeeting,
         openMeetingById,
         tryAutoJoin,
+        isAuthBlocked: () => authBlocked,
+        resetAuthBlocked: () => {
+            authBlocked = false;
+            const overlay = element.querySelector(
+                ".classes-meeting-closed-overlay",
+            );
+            if (overlay) overlay.hidden = true;
+        },
     };
 }

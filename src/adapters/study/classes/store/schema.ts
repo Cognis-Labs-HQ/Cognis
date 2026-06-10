@@ -259,6 +259,12 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 notNull: true,
                 default: "",
             },
+            {
+                name: "files",
+                type: "text",
+                notNull: true,
+                default: "[]",
+            },
             { name: "updated_by", type: "text" },
             {
                 name: "updated_at",

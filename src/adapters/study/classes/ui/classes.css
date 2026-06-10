@@ -286,12 +286,12 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    --classes-classroom-blackboard-height: clamp(320px, 46vh, 620px);
+    --classes-classroom-blackboard-height: clamp(340px, 50vh, 680px);
     --classroom-wall: #e8d9c0;
     --classroom-wall-border: #5a4a3f;
     --classroom-floor: #f0e8d5;
-    --classroom-blackboard-bg: #1a3d1a;
-    --classroom-blackboard-frame: #2a1a0a;
+    --classroom-blackboard-bg: #1c1e1b;
+    --classroom-blackboard-frame: #3a3228;
     --classroom-member-bg: rgba(0, 0, 0, 0.14);
     --classroom-member-hover: rgba(255, 255, 255, 0.08);
     --classroom-member-text: rgba(255, 255, 255, 0.9);
@@ -299,15 +299,14 @@
     --classroom-nameplate-text: #f8e7c6;
     --classroom-door: #b58858;
     --classroom-door-outline: #6d4325;
-    --classroom-chalk-font: "Gloria Hallelujah", "Comic Sans MS", cursive;
 }
 
 body:not([data-theme="light"]) .classes-classroom-content {
     --classroom-wall: #1b2230;
     --classroom-wall-border: #4d5b72;
     --classroom-floor: #111827;
-    --classroom-blackboard-bg: #102417;
-    --classroom-blackboard-frame: #263342;
+    --classroom-blackboard-bg: #141613;
+    --classroom-blackboard-frame: #2a2820;
     --classroom-member-bg: rgba(255, 255, 255, 0.04);
     --classroom-member-hover: rgba(255, 255, 255, 0.1);
     --classroom-member-text: rgba(226, 232, 240, 0.94);
@@ -317,13 +316,11 @@ body:not([data-theme="light"]) .classes-classroom-content {
     --classroom-door-outline: #94a3b8;
 }
 
-/* ── 2D classroom room ── */
-
 .classes-room {
     display: flex;
     flex-direction: column;
     border: 10px solid var(--classroom-wall-border);
-    border-radius: 4px;
+    border-radius: 12px;
     background: var(--classroom-floor);
     overflow: hidden;
 }
@@ -336,8 +333,6 @@ body:not([data-theme="light"]) .classes-classroom-content {
     border-bottom: 6px solid var(--classroom-wall-border);
     min-height: 180px;
 }
-
-/* ── Student roster ── */
 
 .classes-student-roster {
     display: flex;
@@ -452,19 +447,26 @@ body:not([data-theme="light"]) .classes-classroom-content {
     background: rgba(255, 255, 255, 0.08);
 }
 
-/* ── Blackboard ── */
-
 .classes-blackboard {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--classroom-blackboard-bg);
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(255, 255, 255, 0.012) 3px,
+            rgba(255, 255, 255, 0.012) 4px
+        ),
+        var(--classroom-blackboard-bg);
     margin: 12px 8px;
-    border-radius: 4px;
-    border: 4px solid var(--classroom-blackboard-frame);
+    border-radius: 10px;
+    border: 6px solid var(--classroom-blackboard-frame);
     box-shadow:
-        inset 0 0 24px rgba(0, 0, 0, 0.35),
-        2px 3px 8px rgba(0, 0, 0, 0.4);
+        inset 0 0 40px rgba(0, 0, 0, 0.5),
+        inset 0 0 8px rgba(255, 255, 255, 0.02),
+        3px 4px 12px rgba(0, 0, 0, 0.45);
     overflow: hidden;
     position: relative;
     min-height: var(--classes-classroom-blackboard-height);
@@ -553,20 +555,19 @@ body:not([data-theme="light"]) .classes-classroom-content {
 }
 
 .classes-blackboard-ledge {
-    height: 8px;
-    background: linear-gradient(to bottom, #8b6d3e, #6b4f28);
+    height: 10px;
+    background: linear-gradient(to bottom, #7a5c30, #5a4020);
     border-top: 2px solid var(--classroom-blackboard-frame);
+    border-radius: 0 0 4px 4px;
 }
 
 .classes-chalk-header {
-    font-family: var(--classroom-chalk-font);
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    text-shadow:
-        0 0 6px rgba(255, 255, 255, 0.2),
-        1px 1px 1px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 .classes-chalk-item {
@@ -578,17 +579,14 @@ body:not([data-theme="light"]) .classes-classroom-content {
 }
 
 .classes-chalk-title {
-    font-family: var(--classroom-chalk-font);
     font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.88);
-    text-shadow:
-        0 0 8px rgba(255, 255, 255, 0.15),
-        1px 1px 2px rgba(0, 0, 0, 0.5);
-    letter-spacing: 0.03em;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.02em;
 }
 
 .classes-chalk-desc {
-    font-family: var(--classroom-chalk-font);
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.62);
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
@@ -596,13 +594,10 @@ body:not([data-theme="light"]) .classes-classroom-content {
 }
 
 .classes-chalk-empty {
-    font-family: var(--classroom-chalk-font);
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.38);
     font-style: italic;
 }
-
-/* ── Door (flat rectangle in desk-floor area) ── */
 
 .classes-room-doorwall {
     display: flex;
@@ -639,14 +634,12 @@ body:not([data-theme="light"]) .classes-classroom-content {
     transform: rotate(90deg);
 }
 
-/* ── Desk floor ── */
-
 .classes-desk-floor {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 20px 24px 24px;
-    width: min(80%, 1100px);
+    gap: 24px;
+    padding: 28px 32px 32px;
+    width: min(92%, 1200px);
     margin: 0 auto;
 }
 
@@ -807,11 +800,9 @@ body:not([data-theme="light"]) .classes-classroom-content {
     border-radius: 2px;
 }
 
-/* ── Materials editor (below room) ── */
-
 .classes-materials-editor {
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface-2);
     overflow: hidden;
 }
@@ -849,7 +840,66 @@ body:not([data-theme="light"]) .classes-classroom-content {
     padding: 14px;
 }
 
-/* ── Shared blackboard icon buttons ── */
+.classes-materials-file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.classes-materials-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 0.84rem;
+    color: var(--text);
+}
+
+.classes-materials-file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classes-materials-file-remove {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+}
+
+.classes-materials-file-remove:hover {
+    color: var(--danger, #e55);
+}
+
+.classes-materials-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.classes-materials-upload-label:hover {
+    background: var(--surface-2);
+}
 
 .classes-icon-btn {
     min-width: 0;
@@ -907,8 +957,6 @@ body:not([data-theme="light"]) .classes-classroom-content {
     padding: 0;
     text-align: left;
 }
-
-/* ── Footer class selector element ── */
 
 .classes-footer-class-label {
     display: flex;

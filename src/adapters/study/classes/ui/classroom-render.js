@@ -208,6 +208,9 @@ function renderWorkspaceContent({
     if (workspaceMode === "meeting") {
         return `<section class="classes-workspace-panel classes-workspace-panel--meeting"><div class="classes-meeting-workspace-host"></div></section>`;
     }
+    if (workspaceMode === "chat") {
+        return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
+    }
     if (workspaceMode === "roster") {
         return `<section class="classes-workspace-panel classes-workspace-panel--roster classes-workspace-roster">${renderStudentRoster({ snapshot, i18n })}</section>`;
     }
@@ -235,6 +238,42 @@ function renderWorkspaceContent({
     `;
 }
 
+function renderPresenceList({ snapshot, i18n }) {
+    const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
+    const present = members.filter(
+        (member) =>
+            String(member?.presence ?? "") === "online" ||
+            String(member?.presence ?? "") === "away",
+    );
+    const absent = members.filter(
+        (member) =>
+            String(member?.presence ?? "") === "offline" || !member?.presence,
+    );
+
+    const presentItems = present
+        .map(
+            (member) =>
+                `<li class="classes-presence-item">${escapeHtml(buildAccountLabel(member) || String(member?.studentAccountId ?? ""))}</li>`,
+        )
+        .join("");
+    const absentItems = absent
+        .map(
+            (member) =>
+                `<li class="classes-presence-item classes-presence-item--absent">${escapeHtml(buildAccountLabel(member) || String(member?.studentAccountId ?? ""))}</li>`,
+        )
+        .join("");
+
+    return `
+        <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
+        <ul class="classes-presence-list">
+            <li class="classes-presence-list-label">${escapeHtml(i18n.t("module.study.classes.members_present"))}</li>
+            ${presentItems || `<li class="classes-presence-item classes-presence-item--absent">&#8212;</li>`}
+            <li class="classes-presence-list-label">${escapeHtml(i18n.t("module.study.classes.members_absent"))}</li>
+            ${absentItems || `<li class="classes-presence-item classes-presence-item--absent">&#8212;</li>`}
+        </ul>
+    `;
+}
+
 function renderLiveRail({
     snapshot,
     i18n,
@@ -246,7 +285,6 @@ function renderLiveRail({
     isChatOpen,
     isMeetingOpen,
 }) {
-    const canAccessMeeting = isTeacherView || hasActiveMeeting || isMeetingOpen;
     const canAccessWhiteboard =
         isTeacherView ||
         Boolean(activeWhiteboardId) ||
@@ -261,10 +299,13 @@ function renderLiveRail({
     return `
         <aside class="classes-live-rail">
             <section class="classes-live-rail-card">
-                <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
-                <div class="classes-live-rail-body classes-live-rail-roster">${renderStudentRoster({ snapshot, i18n })}</div>
+                <div class="classes-live-rail-body classes-live-rail-roster">
+                    ${renderPresenceList({ snapshot, i18n })}
+                </div>
             </section>
-            <section class="classes-live-rail-card">
+            ${
+                isTeacherView
+                    ? `<section class="classes-live-rail-card">
                 <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</div>
                 <div class="classes-live-rail-body">
                     <button
@@ -275,9 +316,7 @@ function renderLiveRail({
                     >${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
                 </div>
             </section>
-            ${
-                canAccessMeeting
-                    ? `<section class="classes-live-rail-card">
+            <section class="classes-live-rail-card">
                 <div class="classes-live-rail-header">${escapeHtml(i18n.t("ui.reuse.meeting"))}</div>
                 <div class="classes-live-rail-body">
                     <button
@@ -741,6 +780,19 @@ function renderSelectedDeskPanel({
 }
 
 function renderMaterialsEditor({ classResources, i18n }) {
+    const files = Array.isArray(classResources.files)
+        ? classResources.files
+        : [];
+    const fileItems = files
+        .map(
+            (fileRef, index) => `
+                <li class="classes-materials-file-item" data-file-index="${index}">
+                    <span class="classes-materials-file-name">${escapeHtml(String(fileRef?.name ?? fileRef?.key ?? ""))}</span>
+                    <button type="button" class="classes-materials-file-remove" data-file-index="${index}" aria-label="${escapeHtml(i18n.t("module.study.classes.materials_file_remove"))}">&times;</button>
+                </li>
+            `,
+        )
+        .join("");
     return `
         <details class="classes-materials-editor">
             <summary class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</summary>
@@ -749,6 +801,15 @@ function renderMaterialsEditor({ classResources, i18n }) {
                 <textarea id="classes-materials" class="classes-classroom-editor">${escapeHtml(classResources.materials ?? "")}</textarea>
                 <label class="classes-section-heading" for="classes-homework">${escapeHtml(i18n.t("module.study.classes.assigned_homework"))}</label>
                 <textarea id="classes-homework" class="classes-classroom-editor">${escapeHtml(classResources.homework ?? "")}</textarea>
+                ${
+                    files.length
+                        ? `<ul class="classes-materials-file-list">${fileItems}</ul>`
+                        : ""
+                }
+                <label class="classes-materials-upload-label">
+                    ${escapeHtml(i18n.t("module.study.classes.materials_upload"))}
+                    <input type="file" class="classes-materials-upload-input" style="display:none" multiple>
+                </label>
                 <button type="button" class="btn-confirm btn-animated classes-save-materials-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
             </div>
         </details>

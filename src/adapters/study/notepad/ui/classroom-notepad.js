@@ -1,4 +1,17 @@
+import { apiFetch } from "/static/reuse/api-client.js";
+import { showToast } from "/static/reuse/toast.js";
+
 const STORAGE_PREFIX = "classes_notepad_";
+
+const TEXT_STYLES = [
+    { value: "p", label: "module.study.classes.notepad_format_paragraph" },
+    { value: "h1", label: "module.study.classes.notepad_format_heading1" },
+    { value: "h2", label: "module.study.classes.notepad_format_heading2" },
+    { value: "blockquote", label: "module.study.classes.notepad_format_quote" },
+    { value: "pre", label: "module.study.classes.notepad_format_code" },
+];
+
+const FONT_SIZES = ["12", "14", "16", "18", "22", "28", "36"];
 
 export function createClassroomNotepad({ classId, i18n }) {
     const storageKey = STORAGE_PREFIX + classId;
@@ -9,7 +22,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         .toLowerCase();
 
     let panel = null;
-    let textarea = null;
+    let editor = null;
 
     function loadDraft() {
         try {
@@ -19,9 +32,9 @@ export function createClassroomNotepad({ classId, i18n }) {
         }
     }
 
-    function saveDraft(text) {
+    function saveDraft(html) {
         try {
-            sessionStorage.setItem(storageKey, text);
+            sessionStorage.setItem(storageKey, html);
         } catch {}
     }
 
@@ -31,80 +44,88 @@ export function createClassroomNotepad({ classId, i18n }) {
         } catch {}
     }
 
-    function buildPanel() {
-        const panelEl = document.createElement("div");
-        panelEl.className = "classes-notepad-panel";
-        panelEl.setAttribute("role", "complementary");
-        panelEl.setAttribute(
-            "aria-label",
-            i18n.t("module.study.classes.notepad"),
-        );
+    function getEditorHtml() {
+        return editor ? editor.innerHTML : loadDraft();
+    }
 
-        const header = document.createElement("div");
-        header.className = "classes-notepad-header";
+    function editorToPlainText() {
+        const clone = document.createElement("div");
+        clone.innerHTML = getEditorHtml();
+        return clone.innerText ?? clone.textContent ?? "";
+    }
 
-        const title = document.createElement("span");
-        title.className = "classes-notepad-title";
-        title.textContent = i18n.t("module.study.classes.notepad");
+    function execStyle(tag) {
+        if (!editor) return;
+        editor.focus();
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        const block = document.createElement(tag);
+        block.appendChild(range.extractContents());
+        range.insertNode(block);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(block);
+        newRange.collapse(false);
+        selection.addRange(newRange);
+        saveDraft(editor.innerHTML);
+    }
 
-        const actions = document.createElement("div");
-        actions.className = "classes-notepad-actions";
+    function applyFontSize(size) {
+        if (!editor) return;
+        editor.focus();
+        document.execCommand("fontSize", false, "7");
+        const fontEls = editor.querySelectorAll('font[size="7"]');
+        for (const fontEl of fontEls) {
+            fontEl.removeAttribute("size");
+            fontEl.style.fontSize = `${size}px`;
+        }
+        saveDraft(editor.innerHTML);
+    }
 
-        const downloadBtn = document.createElement("button");
-        downloadBtn.type = "button";
-        downloadBtn.className = "classes-notepad-download-btn";
-        downloadBtn.textContent = i18n.t(
-            "module.study.classes.notepad_download",
-        );
-        downloadBtn.setAttribute(
-            "aria-label",
-            i18n.t("module.study.classes.notepad_download"),
-        );
+    function applyColor(color) {
+        if (!editor) return;
+        editor.focus();
+        document.execCommand("foreColor", false, color);
+        saveDraft(editor.innerHTML);
+    }
 
-        const clearBtn = document.createElement("button");
-        clearBtn.type = "button";
-        clearBtn.className = "classes-notepad-clear-btn";
-        clearBtn.textContent = i18n.t("module.study.classes.notepad_clear");
-        clearBtn.setAttribute(
-            "aria-label",
-            i18n.t("module.study.classes.notepad_clear"),
-        );
+    async function saveToClass() {
+        const html = getEditorHtml();
+        const response = await apiFetch(
+            `/api/v1/study/classes/${encodeURIComponent(classId)}/resources`,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ materials: html }),
+            },
+        ).catch(() => null);
+        if (response?.ok) {
+            showToast(i18n.t("module.study.classes.notepad_saved"), {
+                variant: "success",
+            });
+        } else {
+            showToast(i18n.t("module.study.classes.notepad_save_failed"), {
+                variant: "error",
+            });
+        }
+    }
 
-        actions.appendChild(downloadBtn);
-        actions.appendChild(clearBtn);
-        header.appendChild(title);
-        header.appendChild(actions);
-
-        textarea = document.createElement("textarea");
-        textarea.className = "classes-notepad-textarea";
-        textarea.setAttribute(
-            "aria-label",
-            i18n.t("module.study.classes.notepad"),
-        );
-        textarea.setAttribute("spellcheck", "true");
-        textarea.value = loadDraft();
-
-        textarea.addEventListener("input", () => {
-            saveDraft(textarea.value);
-        });
-
-        downloadBtn.addEventListener("click", () => {
-            downloadAsMarkdown();
-        });
-
-        clearBtn.addEventListener("click", () => {
-            textarea.value = "";
-            clearDraft();
-        });
-
-        panelEl.appendChild(header);
-        panelEl.appendChild(textarea);
-        panel = panelEl;
-        return panelEl;
+    async function openFromClass() {
+        const response = await apiFetch(
+            `/api/v1/study/classes/${encodeURIComponent(classId)}/resources`,
+        ).catch(() => null);
+        if (!response?.ok) return;
+        const payload = await response.json().catch(() => null);
+        const materials = String(payload?.data?.materials ?? "").trim();
+        if (editor && materials) {
+            editor.innerHTML = materials;
+            saveDraft(editor.innerHTML);
+        }
     }
 
     function downloadAsMarkdown() {
-        const text = textarea ? textarea.value : loadDraft();
+        const text = editorToPlainText();
         const date = new Date().toISOString().slice(0, 10);
         const filename = `${downloadSlug || "classroom"}-${date}-notes.md`;
         const blob = new Blob([text], { type: "text/markdown" });
@@ -118,12 +139,132 @@ export function createClassroomNotepad({ classId, i18n }) {
         URL.revokeObjectURL(url);
     }
 
+    function buildPanel() {
+        const panelEl = document.createElement("div");
+        panelEl.className = "classes-notepad-panel";
+        panelEl.setAttribute("role", "region");
+        panelEl.setAttribute(
+            "aria-label",
+            i18n.t("module.study.classes.notepad"),
+        );
+
+        const toolbar = document.createElement("div");
+        toolbar.className = "classes-notepad-toolbar";
+
+        const styleSelect = document.createElement("select");
+        styleSelect.className = "classes-notepad-style-select";
+        styleSelect.setAttribute(
+            "aria-label",
+            i18n.t("module.study.classes.notepad_format_paragraph"),
+        );
+        for (const style of TEXT_STYLES) {
+            const option = document.createElement("option");
+            option.value = style.value;
+            option.textContent = i18n.t(style.label);
+            styleSelect.appendChild(option);
+        }
+
+        const sizeSelect = document.createElement("select");
+        sizeSelect.className = "classes-notepad-size-select";
+        sizeSelect.setAttribute(
+            "aria-label",
+            i18n.t("module.study.classes.notepad_font_size"),
+        );
+        for (const size of FONT_SIZES) {
+            const option = document.createElement("option");
+            option.value = size;
+            option.textContent = size;
+            if (size === "16") option.selected = true;
+            sizeSelect.appendChild(option);
+        }
+
+        const colorInput = document.createElement("input");
+        colorInput.type = "color";
+        colorInput.className = "classes-notepad-color-input";
+        colorInput.value = "#ffffff";
+        colorInput.setAttribute(
+            "aria-label",
+            i18n.t("module.study.classes.notepad_color"),
+        );
+
+        const saveBtn = document.createElement("button");
+        saveBtn.type = "button";
+        saveBtn.className = "classes-notepad-save-btn";
+        saveBtn.textContent = i18n.t("module.study.classes.notepad_save");
+
+        const openBtn = document.createElement("button");
+        openBtn.type = "button";
+        openBtn.className = "classes-notepad-open-btn";
+        openBtn.textContent = i18n.t("module.study.classes.notepad_open");
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.type = "button";
+        downloadBtn.className = "classes-notepad-download-btn";
+        downloadBtn.textContent = i18n.t(
+            "module.study.classes.notepad_download",
+        );
+
+        toolbar.appendChild(styleSelect);
+        toolbar.appendChild(sizeSelect);
+        toolbar.appendChild(colorInput);
+        toolbar.appendChild(saveBtn);
+        toolbar.appendChild(openBtn);
+        toolbar.appendChild(downloadBtn);
+
+        editor = document.createElement("div");
+        editor.className = "classes-notepad-editor";
+        editor.contentEditable = "true";
+        editor.setAttribute("aria-multiline", "true");
+        editor.setAttribute(
+            "aria-label",
+            i18n.t("module.study.classes.notepad"),
+        );
+        editor.spellcheck = true;
+        const draft = loadDraft();
+        if (draft) {
+            editor.innerHTML = draft;
+        }
+
+        editor.addEventListener("input", () => {
+            saveDraft(editor.innerHTML);
+        });
+
+        styleSelect.addEventListener("change", () => {
+            execStyle(styleSelect.value);
+        });
+
+        sizeSelect.addEventListener("change", () => {
+            applyFontSize(sizeSelect.value);
+        });
+
+        colorInput.addEventListener("input", () => {
+            applyColor(colorInput.value);
+        });
+
+        saveBtn.addEventListener("click", () => {
+            void saveToClass();
+        });
+
+        openBtn.addEventListener("click", () => {
+            void openFromClass();
+        });
+
+        downloadBtn.addEventListener("click", () => {
+            downloadAsMarkdown();
+        });
+
+        panelEl.appendChild(toolbar);
+        panelEl.appendChild(editor);
+        panel = panelEl;
+        return panelEl;
+    }
+
     function getElement() {
         return panel ?? buildPanel();
     }
 
     function focus() {
-        textarea?.focus();
+        editor?.focus();
     }
 
     return {

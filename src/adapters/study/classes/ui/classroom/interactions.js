@@ -410,6 +410,28 @@ export function bindClassroomInteractions({
         { signal },
     );
     root.addEventListener(
+        "change",
+        async (event) => {
+            if (!(event.target instanceof Element)) return;
+            const snapshot = selectedSnapshot();
+            const classResources = getClassResources();
+            await handleResourceActions(event, {
+                root,
+                snapshot,
+                classResources,
+                apiFetch,
+                i18n,
+                showToast,
+                openPopup,
+                escapeHtml,
+                loadSelectedClassMeta,
+                refreshDom,
+                setNotebookText,
+            });
+        },
+        { signal },
+    );
+    root.addEventListener(
         "input",
         async (event) => {
             if (

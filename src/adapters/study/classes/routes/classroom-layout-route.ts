@@ -82,13 +82,14 @@ export async function handleClassroomLayoutRoute(
     if (
         boardFocusRaw != null &&
         boardFocusRaw !== "agenda" &&
-        boardFocusRaw !== "classroom"
+        boardFocusRaw !== "classroom" &&
+        boardFocusRaw !== "chat"
     ) {
         jsonError(
             res,
             400,
             "bad_request",
-            "boardFocus must be either agenda or classroom.",
+            "boardFocus must be agenda, classroom, or chat.",
         );
         return true;
     }
@@ -123,7 +124,11 @@ export async function handleClassroomLayoutRoute(
             {
                 studentLimit,
                 seatAssignments,
-                boardFocus: boardFocusRaw as "agenda" | "classroom" | undefined,
+                boardFocus: boardFocusRaw as
+                    | "agenda"
+                    | "classroom"
+                    | "chat"
+                    | undefined,
                 activeWhiteboardId,
             },
         );

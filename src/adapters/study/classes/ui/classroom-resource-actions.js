@@ -1,8 +1,9 @@
 /**
- * Handles save-materials, save-notebook, open-notebook, and open-homework
- * click interactions in the classroom. Returns true if the event was handled.
+ * Handles save-materials, save-notebook, open-notebook, open-homework,
+ * and materials-file-upload click/change interactions in the classroom.
+ * Returns true if the event was handled.
  *
- * @param {MouseEvent} event
+ * @param {Event} event
  * @param {object} deps
  * @returns {Promise<boolean>}
  */
@@ -23,6 +24,88 @@ export async function handleResourceActions(
     },
 ) {
     if (!(event.target instanceof Element)) return false;
+
+    if (event.target.closest(".classes-materials-upload-input")) {
+        const input = event.target.closest(".classes-materials-upload-input");
+        if (!(input instanceof HTMLInputElement) || !input.files?.length) {
+            return true;
+        }
+        if (!snapshot) return true;
+        const existingFiles = Array.isArray(classResources.files)
+            ? [...classResources.files]
+            : [];
+        for (const file of Array.from(input.files)) {
+            const safeFileName = file.name.replace(/[^a-z0-9._-]/gi, "_");
+            const key = `classes/${encodeURIComponent(snapshot.id)}/${Date.now()}-${safeFileName}`;
+            const uploadResponse = await apiFetch(`/api/v1/files/${key}`, {
+                method: "PUT",
+                headers: {
+                    "content-type": file.type || "application/octet-stream",
+                },
+                body: await file.arrayBuffer(),
+            }).catch(() => null);
+            if (!uploadResponse?.ok) {
+                showToast(
+                    i18n.t("module.study.classes.materials_upload_failed"),
+                    { variant: "error" },
+                );
+                continue;
+            }
+            existingFiles.push({
+                key,
+                name: file.name,
+                contentType: file.type || "application/octet-stream",
+            });
+        }
+        const saveResponse = await apiFetch(
+            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ files: existingFiles }),
+            },
+        ).catch(() => null);
+        if (saveResponse?.ok) {
+            classResources.files = existingFiles;
+        }
+        input.value = "";
+        await loadSelectedClassMeta();
+        refreshDom();
+        return true;
+    }
+
+    if (event.target.closest(".classes-materials-file-remove")) {
+        if (!snapshot) return true;
+        const btn = event.target.closest(".classes-materials-file-remove");
+        const fileIndex = Number(btn?.dataset?.fileIndex ?? -1);
+        const existingFiles = Array.isArray(classResources.files)
+            ? [...classResources.files]
+            : [];
+        if (fileIndex < 0 || fileIndex >= existingFiles.length) return true;
+        existingFiles.splice(fileIndex, 1);
+        const removeResponse = await apiFetch(
+            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ files: existingFiles }),
+            },
+        ).catch(() => null);
+        if (removeResponse?.ok) {
+            showToast(i18n.t("module.study.classes.materials_file_removed"), {
+                variant: "success",
+            });
+            classResources.files = existingFiles;
+        } else {
+            showToast(
+                i18n.t("module.study.classes.materials_file_remove_failed"),
+                { variant: "error" },
+            );
+        }
+        await loadSelectedClassMeta();
+        refreshDom();
+        return true;
+    }
 
     if (event.target.closest(".classes-save-materials-btn")) {
         if (!snapshot) return true;
