@@ -68,6 +68,10 @@ const TEXT_STYLES = [
 
 const FONT_SIZES = ["12", "14", "16", "18", "22", "28", "36"];
 
+const ALLOWED_STYLE_TAGS = new Set(TEXT_STYLES.map((style) => style.value));
+const MIN_FONT_SIZE = 8;
+const MAX_FONT_SIZE = 96;
+
 export function createClassroomNotepad({ classId, i18n }) {
     const storageKey = STORAGE_PREFIX + classId;
     const downloadSlug = String(classId)
@@ -108,10 +112,6 @@ export function createClassroomNotepad({ classId, i18n }) {
         clone.innerHTML = getEditorHtml();
         return clone.innerText ?? clone.textContent ?? "";
     }
-
-    const ALLOWED_STYLE_TAGS = new Set(TEXT_STYLES.map((style) => style.value));
-    const MIN_FONT_SIZE = 8;
-    const MAX_FONT_SIZE = 96;
 
     function execStyle(tag) {
         if (!editor || !ALLOWED_STYLE_TAGS.has(tag)) return;

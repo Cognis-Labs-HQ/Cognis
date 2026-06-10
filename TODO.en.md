@@ -374,10 +374,16 @@
 
 `src/adapters/study/notepad/ui/classroom-notepad.js` lines 139 and 152 use the deprecated `document.execCommand` API for text formatting. Should be replaced with the modern Selection API. Pre-existing issue not introduced by this PR.
 
-### `ALLOWED_STYLE_TAGS` recomputed on every module call
-
-`src/adapters/study/notepad/ui/classroom-notepad.js` line 112: the `ALLOWED_STYLE_TAGS` set is recomputed inside a function rather than at module scope. Pre-existing issue.
-
 ### File extension validation in `classroom-resource-actions.js`
 
 `classroom-resource-actions.js:38-40` extracts the file extension from a client-provided filename without validating against an allowlist. Pre-existing code not touched by the classroom overhaul PR.
+
+## Code Review — Student meeting loop fix PR
+
+### `normalizeBoardFocus` duplicated in UI and store layers
+
+`src/adapters/study/classes/ui/classroom/index.js` lines 52–57 and `src/adapters/study/classes/store/classes.ts` lines 6–12 both define an identical `normalizeBoardFocus` function. Extracting this to a shared utility in `src/adapters/study/classes/reuse/` would eliminate the duplication, but requires cross-layer sharing between TypeScript (store) and JavaScript (UI) which needs careful plumbing.
+
+### Wrong `classId` in error log in `classroom-files-route.ts`
+
+`src/adapters/study/classes/routes/classroom-files-route.ts` line 78 logs `eventId` instead of `classId` in the error metadata field named `classId`. Pre-existing bug not introduced by this PR.

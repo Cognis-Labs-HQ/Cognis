@@ -4,10 +4,8 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolvePath(fileURLToPath(import.meta.url), "../../../../");
 
 const REUSE_STUBS = {
-    "reuse/api-client.js":
-        "export async function apiFetch() { return null; }",
-    "reuse/toast.js":
-        "export function showToast() {}",
+    "reuse/api-client.js": "export async function apiFetch() { return null; }",
+    "reuse/toast.js": "export function showToast() {}",
 };
 
 function toDataUrl(source) {
