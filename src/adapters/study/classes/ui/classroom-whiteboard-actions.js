@@ -26,6 +26,8 @@ export async function handleWhiteboardAndNotepadActions(
         setClassroomNotepadClassId,
         createClassroomNotepad,
         getActiveWhiteboard,
+        getActiveWhiteboardId,
+        persistActiveWhiteboardId,
         setActiveWhiteboard,
         setWorkspaceMode,
     },
@@ -85,12 +87,18 @@ export async function handleWhiteboardAndNotepadActions(
 
     if (event.target.closest(".classes-open-whiteboards-btn")) {
         if (!snapshot || isMeetingOpen()) return false;
+        if (!isTeacherView() && !getActiveWhiteboardId()) {
+            return true;
+        }
         setWorkspaceMode("whiteboard");
         refreshDom();
         return true;
     }
 
     if (event.target.closest(".classes-inline-whiteboard-close-btn")) {
+        if (snapshot && isTeacherView()) {
+            await persistActiveWhiteboardId(snapshot.id, null);
+        }
         setActiveWhiteboard(null);
         refreshDom();
         return true;
@@ -98,12 +106,16 @@ export async function handleWhiteboardAndNotepadActions(
 
     if (event.target.closest(".classes-inline-whiteboard-popout-btn")) {
         const activeWhiteboard = getActiveWhiteboard();
-        if (!activeWhiteboard || !classroomWindows) return true;
+        if (!activeWhiteboard || !classroomWindows || !snapshot) return true;
         classroomWindows.openWhiteboard({
+            classId: snapshot.id,
             boardId: activeWhiteboard.boardId,
             boardName: activeWhiteboard.boardName,
             embedUrl: activeWhiteboard.embedUrl,
         });
+        if (isTeacherView()) {
+            await persistActiveWhiteboardId(snapshot.id, activeWhiteboard.boardId);
+        }
         return true;
     }
 
@@ -116,6 +128,9 @@ export async function handleWhiteboardAndNotepadActions(
         const embed = await resolveWhiteboardEmbed(boardId, boardName);
         if (!embed?.embedUrl) return true;
         setActiveWhiteboard(embed);
+        if (isTeacherView()) {
+            await persistActiveWhiteboardId(snapshot.id, boardId);
+        }
         setWorkspaceMode("whiteboard");
         refreshDom();
         return true;
@@ -129,7 +144,13 @@ export async function handleWhiteboardAndNotepadActions(
         if (!boardId) return true;
         const embed = await resolveWhiteboardEmbed(boardId, boardName);
         if (!embed?.embedUrl) return true;
-        classroomWindows.openWhiteboard(embed);
+        classroomWindows.openWhiteboard({
+            classId: snapshot.id,
+            ...embed,
+        });
+        if (isTeacherView()) {
+            await persistActiveWhiteboardId(snapshot.id, boardId);
+        }
         return true;
     }
 
@@ -225,6 +246,7 @@ export async function handleWhiteboardAndNotepadActions(
         if (activeWhiteboard?.boardId === boardId) {
             setActiveWhiteboard(null);
         }
+        await persistActiveWhiteboardId(snapshot.id, null);
         const deleteResponse = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}`,
             { method: "DELETE" },

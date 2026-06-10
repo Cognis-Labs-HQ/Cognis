@@ -126,6 +126,7 @@ export async function mount(root, { signal } = {}) {
     let classroomNotepadClassId = "";
     let whiteboards = [];
     let activeWhiteboard = null;
+    let activeMeetingId = null;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -137,6 +138,49 @@ export async function mount(root, { signal } = {}) {
                 (snapshot) => snapshot.id === selectedClassId,
             ) ?? null
         );
+    }
+
+    function getSelectedActiveWhiteboardId(snapshot = selectedSnapshot()) {
+        const activeWhiteboardId = String(
+            snapshot?.classroom?.activeWhiteboardId ?? "",
+        ).trim();
+        return activeWhiteboardId || null;
+    }
+
+    async function persistActiveWhiteboardId(classId, nextActiveWhiteboardId) {
+        const normalizedClassId = String(classId ?? "").trim();
+        if (!teacherAccount || !normalizedClassId) {
+            return false;
+        }
+        const response = await apiFetch(
+            `/api/v1/study/classrooms/${encodeURIComponent(normalizedClassId)}/layout`,
+            {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    activeWhiteboardId: nextActiveWhiteboardId ?? null,
+                }),
+            },
+        );
+        if (!response.ok) {
+            return false;
+        }
+        const payload = await response.json().catch(() => null);
+        const nextState = payload?.data ?? {
+            activeWhiteboardId: nextActiveWhiteboardId ?? null,
+        };
+        classroomSnapshots = classroomSnapshots.map((snapshot) =>
+            snapshot.id === normalizedClassId
+                ? {
+                      ...snapshot,
+                      classroom: {
+                          ...(snapshot.classroom ?? {}),
+                          ...nextState,
+                      },
+                  }
+                : snapshot,
+        );
+        return true;
     }
 
     function syncGlobalChatTarget() {
@@ -166,6 +210,27 @@ export async function mount(root, { signal } = {}) {
         workspaceMode = normalizedMode;
         if (normalizedMode !== "meeting" && remember) {
             lastNonMeetingWorkspaceMode = normalizedMode;
+        }
+    }
+
+    function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
+        if (isTeacherView()) {
+            return;
+        }
+        const defaultWorkspaceMode = getDefaultWorkspaceMode();
+        if (
+            workspaceMode === "meeting" &&
+            !classroomWindows?.isMeetingOpen() &&
+            !activeMeetingId
+        ) {
+            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
+        }
+        if (
+            workspaceMode === "whiteboard" &&
+            !getSelectedActiveWhiteboardId(snapshot) &&
+            !activeWhiteboard?.embedUrl
+        ) {
+            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
     }
 
@@ -259,6 +324,7 @@ export async function mount(root, { signal } = {}) {
             activeAgendaItems = [];
             whiteboards = [];
             activeWhiteboard = null;
+            activeMeetingId = null;
             return;
         }
         const [
@@ -266,6 +332,7 @@ export async function mount(root, { signal } = {}) {
             notebookResponse,
             agendaResponse,
             whiteboardsResponse,
+            activeMeetingResponse,
         ] = await Promise.all([
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
@@ -279,6 +346,9 @@ export async function mount(root, { signal } = {}) {
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
             ),
+            apiFetch(
+                `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(snapshot.id)}`,
+            ).catch(() => null),
         ]);
         classResources = resourcesResponse.ok
             ? ((await resourcesResponse.json())?.data ?? {
@@ -292,9 +362,38 @@ export async function mount(root, { signal } = {}) {
         activeAgendaItems = agendaResponse.ok
             ? ((await agendaResponse.json())?.data?.activeItems ?? [])
             : [];
+        const activeMeetingPayload = activeMeetingResponse?.ok
+            ? await activeMeetingResponse
+                  .json()
+                  .catch(() => ({ data: [] }))
+            : { data: [] };
+        const activeMeetings = Array.isArray(activeMeetingPayload?.data)
+            ? activeMeetingPayload.data
+            : [];
+        const activeMeeting = activeMeetings.find((meeting) => {
+            const meetingClassroomId = String(
+                meeting?.classroomId ??
+                    meeting?.classId ??
+                    meeting?.classroom?.id ??
+                    "",
+            ).trim();
+            return meetingClassroomId === snapshot.id;
+        });
+        activeMeetingId = String(activeMeeting?.id ?? "").trim() || null;
         whiteboards = whiteboardsResponse.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
+        const selectedActiveWhiteboardId = getSelectedActiveWhiteboardId(
+            snapshot,
+        );
+        if (!isTeacherView()) {
+            whiteboards = selectedActiveWhiteboardId
+                ? whiteboards.filter(
+                      (board) =>
+                          String(board?.id ?? "") === selectedActiveWhiteboardId,
+                  )
+                : [];
+        }
         if (activeWhiteboard) {
             const match = whiteboards.find(
                 (board) => String(board?.id ?? "") === activeWhiteboard.boardId,
@@ -310,6 +409,13 @@ export async function mount(root, { signal } = {}) {
                 };
             }
         }
+        if (
+            !isTeacherView() &&
+            activeWhiteboard?.boardId !== selectedActiveWhiteboardId
+        ) {
+            activeWhiteboard = null;
+        }
+        syncStudentWorkspaceAccess(snapshot);
     }
 
     async function refreshData() {
@@ -401,6 +507,8 @@ export async function mount(root, { signal } = {}) {
             workspaceMode: getWorkspaceMode(),
             whiteboards,
             activeWhiteboard,
+            activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
+            hasActiveMeeting: Boolean(activeMeetingId),
             isChatOpen: classroomWindows?.isChatOpen() ?? false,
             isMeetingOpen: classroomWindows?.isMeetingOpen() ?? false,
         });
@@ -494,9 +602,19 @@ export async function mount(root, { signal } = {}) {
         getSelectedClassId: () => selectedClassId,
         allowCreateOption: false,
         onSelectClass: async (classId) => {
+            const previousClassId = selectedClassId;
+            const previousInlineWhiteboardId = activeWhiteboard?.boardId ?? null;
             selectedClassId = classId;
             selectedSeatNumber = null;
             activeWhiteboard = null;
+            if (
+                previousClassId &&
+                previousClassId !== classId &&
+                previousInlineWhiteboardId &&
+                !classroomWindows?.isWhiteboardOpen()
+            ) {
+                void persistActiveWhiteboardId(previousClassId, null);
+            }
             syncWorkspaceModeWithSnapshot({ force: false });
             await loadSelectedClassMeta();
             refreshDom();
@@ -635,6 +753,9 @@ export async function mount(root, { signal } = {}) {
                                 ) &&
                                 snapshot
                             ) {
+                                if (!isTeacherView() && !activeMeetingId) {
+                                    return;
+                                }
                                 if (isTeacherView()) {
                                     await classroomWindows.openMeeting(
                                         snapshot,
@@ -723,6 +844,9 @@ export async function mount(root, { signal } = {}) {
                                 ".classes-subnav-class-btn[data-class-id]",
                             );
                             if (subnavClassButton instanceof HTMLElement) {
+                                const previousClassId = selectedClassId;
+                                const previousInlineWhiteboardId =
+                                    activeWhiteboard?.boardId ?? null;
                                 const classId = String(
                                     subnavClassButton.dataset.classId ?? "",
                                 ).trim();
@@ -730,6 +854,17 @@ export async function mount(root, { signal } = {}) {
                                 selectedClassId = classId;
                                 selectedSeatNumber = null;
                                 activeWhiteboard = null;
+                                if (
+                                    previousClassId &&
+                                    previousClassId !== classId &&
+                                    previousInlineWhiteboardId &&
+                                    !classroomWindows?.isWhiteboardOpen()
+                                ) {
+                                    void persistActiveWhiteboardId(
+                                        previousClassId,
+                                        null,
+                                    );
+                                }
                                 syncWorkspaceModeWithSnapshot({ force: false });
                                 await loadSelectedClassMeta();
                                 refreshDom();
@@ -858,6 +993,9 @@ export async function mount(root, { signal } = {}) {
                                     setActiveWhiteboard: (whiteboard) => {
                                         activeWhiteboard = whiteboard;
                                     },
+                                    getActiveWhiteboardId: () =>
+                                        getSelectedActiveWhiteboardId(snapshot),
+                                    persistActiveWhiteboardId,
                                     setWorkspaceMode,
                                 })
                             ) {
@@ -971,6 +1109,15 @@ export async function mount(root, { signal } = {}) {
             }
             refreshDom();
         },
+        onWhiteboardVisibilityChange: ({ visible, classId, boardId }) => {
+            if (!teacherAccount || !classId) {
+                return;
+            }
+            void persistActiveWhiteboardId(
+                classId,
+                visible ? boardId ?? null : null,
+            );
+        },
     });
     classroomWindows.reattach();
     startClassroomRealtimeRefresh({
@@ -978,8 +1125,10 @@ export async function mount(root, { signal } = {}) {
         shouldRefresh: () => !isTeacherView(),
         refresh: async () => {
             await loadClassrooms();
+            await loadSelectedClassMeta();
             refreshSnapshotPresence();
             syncWorkspaceModeWithSnapshot();
+            syncStudentWorkspaceAccess();
             refreshDynamicDom();
             syncGlobalChatTarget();
             composer.refreshFooter();

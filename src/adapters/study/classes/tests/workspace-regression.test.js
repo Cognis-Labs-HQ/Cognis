@@ -30,4 +30,16 @@ test("classroom whiteboard actions support inline and pop-out modes", () => {
     assert.match(source, /classes-inline-whiteboard-popout-btn/);
     assert.match(source, /classes-popout-whiteboard-btn/);
     assert.match(source, /setWorkspaceMode\("whiteboard"\)/);
+    assert.match(source, /persistActiveWhiteboardId/);
+});
+
+test("classroom render gates student meeting and whiteboard controls", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        "utf8",
+    );
+
+    assert.match(source, /canAccessMeeting/);
+    assert.match(source, /canAccessWhiteboard/);
+    assert.match(source, /activeWhiteboardId/);
 });

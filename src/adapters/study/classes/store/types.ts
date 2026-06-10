@@ -29,6 +29,7 @@ export interface ClassroomStateRow {
     studentLimit: number;
     seatAssignments: Record<string, number>;
     boardFocus: "agenda" | "classroom";
+    activeWhiteboardId: string | null;
     updatedAt: string;
 }
 

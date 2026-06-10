@@ -231,6 +231,10 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 default: "agenda",
             },
             {
+                name: "active_whiteboard_id",
+                type: "text",
+            },
+            {
                 name: "updated_at",
                 type: "timestamp",
                 notNull: true,
@@ -365,6 +369,12 @@ async function ensureClassroomStateColumns(db: DbExecutor): Promise<void> {
     if (typeof rawDb.execute !== "function") return;
     const dialect = await detectSqlDialect(rawDb);
     await ensureMissingColumn(rawDb, dialect, "classroom_state", "board_focus");
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "classroom_state",
+        "active_whiteboard_id",
+    );
 }
 
 type SupportedSqlDialect = "sqlite" | "postgres" | "mariadb";
@@ -394,7 +404,8 @@ async function ensureMissingColumn(
         | "name"
         | "class_name"
         | "student_limit"
-        | "board_focus",
+        | "board_focus"
+        | "active_whiteboard_id",
 ): Promise<void> {
     if (!db.execute) return;
     if (await hasColumn(db, dialect, tableName, columnName)) {
@@ -413,7 +424,8 @@ async function hasColumn(
         | "name"
         | "class_name"
         | "student_limit"
-        | "board_focus",
+        | "board_focus"
+        | "active_whiteboard_id",
 ): Promise<boolean> {
     if (!db.execute) return false;
     if (dialect === "sqlite") {
@@ -442,7 +454,8 @@ function resolveAddColumnStatement(
         | "name"
         | "class_name"
         | "student_limit"
-        | "board_focus",
+        | "board_focus"
+        | "active_whiteboard_id",
 ): string {
     if (tableName === "study_classes" && columnName === "join_mode") {
         return dialect === "mariadb"
@@ -478,6 +491,14 @@ function resolveAddColumnStatement(
         return dialect === "mariadb"
             ? "ALTER TABLE classroom_state ADD COLUMN board_focus VARCHAR(32) NOT NULL DEFAULT 'agenda'"
             : "ALTER TABLE classroom_state ADD COLUMN board_focus TEXT NOT NULL DEFAULT 'agenda'";
+    }
+    if (
+        tableName === "classroom_state" &&
+        columnName === "active_whiteboard_id"
+    ) {
+        return dialect === "mariadb"
+            ? "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id VARCHAR(255) NULL"
+            : "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id TEXT";
     }
     return dialect === "mariadb"
         ? "ALTER TABLE teacher_requests ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"

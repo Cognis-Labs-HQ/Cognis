@@ -35,13 +35,21 @@ export async function handleClassroomLayoutRoute(
         studentLimit?: unknown;
         seatAssignments?: unknown;
         boardFocus?: unknown;
+        activeWhiteboardId?: unknown;
     };
     const studentLimitRaw = body.studentLimit;
     const seatAssignmentsRaw = body.seatAssignments;
+    const activeWhiteboardIdRaw = body.activeWhiteboardId;
     const boardFocusRaw =
         String(body.boardFocus ?? "")
             .trim()
             .toLowerCase() || undefined;
+    const activeWhiteboardId =
+        activeWhiteboardIdRaw === undefined
+            ? undefined
+            : activeWhiteboardIdRaw === null
+              ? null
+              : String(activeWhiteboardIdRaw ?? "").trim() || null;
     const studentLimit =
         studentLimitRaw == null ? undefined : Number(studentLimitRaw);
     if (
@@ -84,6 +92,19 @@ export async function handleClassroomLayoutRoute(
         );
         return true;
     }
+    if (
+        activeWhiteboardIdRaw !== undefined &&
+        activeWhiteboardIdRaw !== null &&
+        typeof activeWhiteboardIdRaw !== "string"
+    ) {
+        jsonError(
+            res,
+            400,
+            "bad_request",
+            "activeWhiteboardId must be a string or null.",
+        );
+        return true;
+    }
     const seatAssignments: Record<string, number> | undefined =
         seatAssignmentsRaw == null
             ? undefined
@@ -103,6 +124,7 @@ export async function handleClassroomLayoutRoute(
                 studentLimit,
                 seatAssignments,
                 boardFocus: boardFocusRaw as "agenda" | "classroom" | undefined,
+                activeWhiteboardId,
             },
         );
         jsonOk(res, classroomState);
@@ -134,6 +156,15 @@ export async function handleClassroomLayoutRoute(
                 409,
                 "conflict",
                 "studentLimit cannot be lower than current class member count.",
+            );
+            return true;
+        }
+        if (err instanceof Error && err.message === "invalid_active_whiteboard") {
+            jsonError(
+                res,
+                400,
+                "bad_request",
+                "activeWhiteboardId must belong to the selected class.",
             );
             return true;
         }

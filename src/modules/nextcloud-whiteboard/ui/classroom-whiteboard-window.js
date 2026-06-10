@@ -1,6 +1,11 @@
-export function createClassroomWhiteboardWindow({ root, i18n }) {
+export function createClassroomWhiteboardWindow({
+    root,
+    i18n,
+    onVisibilityChange = () => {},
+}) {
     let panel = null;
     let iframe = null;
+    let activeClassId = null;
     let activeBoardId = null;
     let activeBoardName = null;
 
@@ -63,8 +68,9 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
         }
     }
 
-    function openBoard({ boardId, boardName, embedUrl }) {
+    function openBoard({ classId = null, boardId, boardName, embedUrl }) {
         const boardPanel = getElement();
+        activeClassId = classId ? String(classId) : null;
         activeBoardId = boardId;
         activeBoardName = boardName;
         const titleEl = boardPanel.querySelector(".classes-whiteboard-title");
@@ -74,14 +80,27 @@ export function createClassroomWhiteboardWindow({ root, i18n }) {
         if (iframe) iframe.src = embedUrl;
         boardPanel.hidden = false;
         root.classList.add("classes-whiteboard-active");
+        onVisibilityChange({
+            visible: true,
+            classId: activeClassId,
+            boardId: activeBoardId,
+        });
     }
 
     function closeBoard() {
+        const closedClassId = activeClassId;
+        const closedBoardId = activeBoardId;
         if (panel) panel.hidden = true;
         if (iframe) iframe.src = "about:blank";
+        activeClassId = null;
         activeBoardId = null;
         activeBoardName = null;
         root.classList.remove("classes-whiteboard-active");
+        onVisibilityChange({
+            visible: false,
+            classId: closedClassId,
+            boardId: closedBoardId,
+        });
     }
 
     function isOpen() {

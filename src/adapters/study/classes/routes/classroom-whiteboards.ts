@@ -20,6 +20,22 @@ interface WhiteboardRouteOptions {
     ) => void;
 }
 
+async function getStudentVisibleWhiteboardId(
+    store: DbClassesStore,
+    classId: string,
+    accountId: string,
+): Promise<string | null> {
+    const classRow = await store.getClassById(classId);
+    if (!classRow) {
+        throw new Error("not_authorized");
+    }
+    if (classRow.teacherAccountId === accountId) {
+        return null;
+    }
+    const classroomState = await store.getClassroomState(classId);
+    return String(classroomState.activeWhiteboardId ?? "").trim() || null;
+}
+
 export async function handleClassroomWhiteboardRoutes(input: {
     req: IncomingMessage;
     res: ServerResponse;
@@ -39,11 +55,25 @@ export async function handleClassroomWhiteboardRoutes(input: {
         if (!claims) return true;
         const classId = decodeURIComponent(listMatch[1]);
         try {
+            const visibleWhiteboardId = await getStudentVisibleWhiteboardId(
+                store,
+                classId,
+                claims.sub,
+            );
             const boards = await store.listClassroomWhiteboards(
                 classId,
                 claims.sub,
             );
-            jsonOk(res, boards);
+            jsonOk(
+                res,
+                visibleWhiteboardId
+                    ? boards.filter(
+                          (board) => String(board.id) === visibleWhiteboardId,
+                      )
+                    : claims.role === "teacher"
+                      ? boards
+                      : [],
+            );
         } catch (err) {
             if (err instanceof Error && err.message === "not_authorized") {
                 jsonError(
@@ -172,6 +202,23 @@ export async function handleClassroomWhiteboardRoutes(input: {
         }
 
         try {
+            const visibleWhiteboardId = await getStudentVisibleWhiteboardId(
+                store,
+                classId,
+                claims.sub,
+            );
+            if (
+                claims.role !== "teacher" &&
+                (!visibleWhiteboardId || visibleWhiteboardId !== boardId)
+            ) {
+                jsonError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Whiteboard is not currently active.",
+                );
+                return true;
+            }
             const board = await store.getClassroomWhiteboard(
                 classId,
                 boardId,
@@ -238,6 +285,23 @@ export async function handleClassroomWhiteboardRoutes(input: {
         }
 
         try {
+            const visibleWhiteboardId = await getStudentVisibleWhiteboardId(
+                store,
+                classId,
+                claims.sub,
+            );
+            if (
+                claims.role !== "teacher" &&
+                (!visibleWhiteboardId || visibleWhiteboardId !== boardId)
+            ) {
+                jsonError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Whiteboard is not currently active.",
+                );
+                return true;
+            }
             const board = await store.getClassroomWhiteboard(
                 classId,
                 boardId,

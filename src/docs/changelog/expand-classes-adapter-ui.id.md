@@ -164,3 +164,20 @@ membuka papan tulis dalam tampilan layar penuh.
     alih-alih sebagai overlay melayang, dan tombol whiteboard di toolbar sekarang
     membuka workspace whiteboard secara langsung sambil tetap menyediakan aksi
     pop-out yang eksplisit.
+
+## Kontrol siswa kini mengikuti sesi guru yang aktif
+
+Kontrol meeting dan whiteboard untuk siswa sekarang hanya ditampilkan ketika
+guru benar-benar memiliki meeting classroom aktif atau whiteboard aktif yang
+sedang terbuka.
+
+Adapter classes sekarang menyimpan whiteboard classroom yang aktif di state
+classroom, membatasi akses API whiteboard siswa hanya ke board aktif itu, dan
+menghapus kontrol whiteboard yang usang begitu guru menutup board. Pemeriksaan
+ketersediaan meeting classroom juga kini gagal secara lunak dan mengembalikan
+daftar meeting aktif kosong alih-alih error 400 berulang ketika handle meeting
+pemirsa tidak bisa diresolusikan.
+
+Jendela chat classroom yang melayang sekarang dirender di atas header dashboard
+dengan jarak atas yang lebih aman sehingga panel tidak lagi terpotong di bawah
+area heading lengket saat dibuka.

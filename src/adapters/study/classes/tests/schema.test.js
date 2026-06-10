@@ -39,3 +39,31 @@ test("classes schema detection avoids sqlite pragma probes on Postgres", async (
         false,
     );
 });
+
+test("classes schema adds active whiteboard state column when missing", async () => {
+    const executedStatements = [];
+    const executor = createRawExecutor(async (sql) => {
+        executedStatements.push(sql);
+        if (sql === "SELECT current_schema()") {
+            return { rows: [{ current_schema: "public" }], rowCount: 1 };
+        }
+        if (sql.includes("information_schema.columns")) {
+            return {
+                rows: sql.includes("active_whiteboard_id")
+                    ? []
+                    : [{ column_name: "present" }],
+                rowCount: sql.includes("active_whiteboard_id") ? 0 : 1,
+            };
+        }
+        return { rows: [], rowCount: 0 };
+    });
+
+    await ensureSchema(executor);
+
+    assert.equal(
+        executedStatements.includes(
+            "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id TEXT",
+        ),
+        true,
+    );
+});

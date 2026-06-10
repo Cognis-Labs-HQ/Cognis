@@ -250,10 +250,16 @@ export function registerMeetingRoutes({
             const classroomFilter = String(
                 requestUrl.searchParams.get("classroomId") ?? "",
             ).trim();
-            const requesterUsername = await resolveRequesterUsername(
-                profileStore,
-                claims.sub,
-            );
+            let requesterUsername = "";
+            try {
+                requesterUsername = await resolveRequesterUsername(
+                    profileStore,
+                    claims.sub,
+                );
+            } catch {
+                sendJson(res, 200, { data: [] });
+                return;
+            }
             const activeMeetings = await store.listActiveMeetings();
             const visibleMeetings = [];
             for (const activeMeeting of activeMeetings) {

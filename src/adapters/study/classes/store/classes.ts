@@ -11,6 +11,11 @@ function normalizeBoardFocus(input: unknown): "agenda" | "classroom" {
         : "agenda";
 }
 
+function normalizeActiveWhiteboardId(input: unknown): string | null {
+    const normalizedId = String(input ?? "").trim();
+    return normalizedId || null;
+}
+
 export async function getClassesForTeacher(
     db: DbExecutor,
     teacherAccountId: string,
@@ -112,6 +117,7 @@ export async function getClassroomState(
             "student_limit",
             "seat_assignments",
             "board_focus",
+            "active_whiteboard_id",
             "updated_at",
         ],
         where: [{ column: "class_id", value: classId }],
@@ -123,6 +129,7 @@ export async function getClassroomState(
             studentLimit: DEFAULT_STUDENT_LIMIT,
             seatAssignments: {},
             boardFocus: "agenda",
+            activeWhiteboardId: null,
             updatedAt: new Date().toISOString(),
         };
     }
@@ -138,6 +145,9 @@ export async function getClassroomState(
                 : DEFAULT_STUDENT_LIMIT,
         seatAssignments: parseSeatAssignments(row.seat_assignments),
         boardFocus: normalizeBoardFocus(row.board_focus),
+        activeWhiteboardId: normalizeActiveWhiteboardId(
+            row.active_whiteboard_id,
+        ),
         updatedAt: String(row.updated_at),
     };
 }
@@ -150,6 +160,7 @@ export async function updateClassroomStateForTeacher(
         studentLimit?: number;
         seatAssignments?: Record<string, number>;
         boardFocus?: "agenda" | "classroom";
+        activeWhiteboardId?: string | null;
     },
 ): Promise<ClassroomStateRow> {
     const classRow = await getClassById(db, classId);
@@ -192,6 +203,25 @@ export async function updateClassroomStateForTeacher(
         options.boardFocus == null
             ? currentState.boardFocus
             : normalizeBoardFocus(options.boardFocus);
+    const normalizedActiveWhiteboardId =
+        options.activeWhiteboardId === undefined
+            ? currentState.activeWhiteboardId
+            : normalizeActiveWhiteboardId(options.activeWhiteboardId);
+    if (normalizedActiveWhiteboardId) {
+        const whiteboardResult = await db.executeCommand({
+            option: "SELECT",
+            table: "classroom_whiteboards",
+            columns: ["id"],
+            where: [
+                { column: "id", value: normalizedActiveWhiteboardId },
+                { column: "class_id", value: classId },
+            ],
+            limit: 1,
+        });
+        if (!whiteboardResult.rows?.length) {
+            throw new Error("invalid_active_whiteboard");
+        }
+    }
     const updatedAt = new Date().toISOString();
     await db.executeCommand({
         option: "INSERT",
@@ -201,6 +231,7 @@ export async function updateClassroomStateForTeacher(
             student_limit: normalizedStudentLimit,
             seat_assignments: JSON.stringify(normalizedSeatAssignments),
             board_focus: normalizedBoardFocus,
+            active_whiteboard_id: normalizedActiveWhiteboardId,
             updated_at: updatedAt,
         },
         conflict: {
@@ -210,6 +241,7 @@ export async function updateClassroomStateForTeacher(
                 student_limit: normalizedStudentLimit,
                 seat_assignments: JSON.stringify(normalizedSeatAssignments),
                 board_focus: normalizedBoardFocus,
+                active_whiteboard_id: normalizedActiveWhiteboardId,
                 updated_at: updatedAt,
             },
         },

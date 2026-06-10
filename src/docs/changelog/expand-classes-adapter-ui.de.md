@@ -172,3 +172,21 @@ alle Klassenmitglieder können ein Whiteboard in einer Vollbildansicht öffnen.
     im Haupt-Workspace statt als schwebendes Overlay, und der Whiteboard-Button in
     der Toolbar öffnet direkt den Whiteboard-Workspace, bietet aber weiterhin eine
     explizite Pop-out-Aktion.
+
+## Schüler-Steuerungen folgen jetzt aktiven Lehrkraft-Sitzungen
+
+Meeting- und Whiteboard-Steuerungen für Schüler werden jetzt erst angezeigt,
+wenn die Lehrkraft im Classroom tatsächlich ein aktives Meeting oder ein
+aktives Whiteboard geöffnet hat.
+
+Der Classes-Adapter speichert nun das aktive Classroom-Whiteboard im
+Classroom-Zustand, beschränkt den Whiteboard-API-Zugriff für Schüler auf genau
+dieses aktive Board und entfernt veraltete Whiteboard-Steuerungen sofort,
+sobald die Lehrkraft das Board schließt. Die Classroom-Prüfung auf aktive
+Meetings schlägt außerdem weich fehl und liefert statt wiederholter 400-Fehler
+eine leere Liste aktiver Meetings zurück, wenn für den Betrachter kein
+Meeting-Handle aufgelöst werden kann.
+
+Das schwebende Classroom-Chatfenster wird nun oberhalb des Dashboard-Headers
+gerendert und mit mehr Abstand nach oben positioniert, damit es beim Öffnen
+nicht mehr unter dem fixierten Kopfbereich abgeschnitten wird.

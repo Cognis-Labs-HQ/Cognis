@@ -250,6 +250,7 @@ export class DbClassesStore {
             studentLimit?: number;
             seatAssignments?: Record<string, number>;
             boardFocus?: "agenda" | "classroom";
+            activeWhiteboardId?: string | null;
         },
     ): Promise<ClassroomStateRow> {
         return updateClassroomStateForTeacher(

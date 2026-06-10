@@ -104,7 +104,12 @@ function renderChalkAgenda({ activeAgendaItems, i18n }) {
         .join("");
 }
 
-function renderWorkspaceTabs({ i18n, workspaceMode, isMeetingOpen }) {
+function renderWorkspaceTabs({
+    i18n,
+    workspaceMode,
+    isMeetingOpen,
+    canAccessWhiteboard,
+}) {
     const tabs = [
         {
             mode: "agenda",
@@ -118,11 +123,13 @@ function renderWorkspaceTabs({ i18n, workspaceMode, isMeetingOpen }) {
             mode: "notepad",
             label: i18n.t("module.study.classes.notepad"),
         },
-        {
+    ];
+    if (canAccessWhiteboard) {
+        tabs.push({
             mode: "whiteboard",
             label: i18n.t("module.study.classes.whiteboards"),
-        },
-    ];
+        });
+    }
     if (isMeetingOpen) {
         tabs.push({
             mode: "meeting",
@@ -234,9 +241,22 @@ function renderLiveRail({
     isTeacherView,
     whiteboards,
     activeWhiteboard,
+    activeWhiteboardId,
+    hasActiveMeeting,
     isChatOpen,
     isMeetingOpen,
 }) {
+    const canAccessMeeting = isTeacherView || hasActiveMeeting || isMeetingOpen;
+    const canAccessWhiteboard =
+        isTeacherView ||
+        Boolean(activeWhiteboardId) ||
+        Boolean(activeWhiteboard?.embedUrl);
+    const activeWhiteboardSummary =
+        activeWhiteboard?.boardName ??
+        whiteboards.find(
+            (board) => String(board?.id ?? "") === String(activeWhiteboardId ?? ""),
+        )?.name ??
+        "";
     return `
         <aside class="classes-live-rail">
             <section class="classes-live-rail-card">
@@ -254,7 +274,9 @@ function renderLiveRail({
                     >${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
                 </div>
             </section>
-            <section class="classes-live-rail-card">
+            ${
+                canAccessMeeting
+                    ? `<section class="classes-live-rail-card">
                 <div class="classes-live-rail-header">${escapeHtml(i18n.t("ui.reuse.meeting"))}</div>
                 <div class="classes-live-rail-body">
                     <button
@@ -263,13 +285,17 @@ function renderLiveRail({
                         ${isMeetingOpen ? 'aria-pressed="true"' : ""}
                     >${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>
                 </div>
-            </section>
-            <section class="classes-live-rail-card">
+            </section>`
+                    : ""
+            }
+            ${
+                canAccessWhiteboard
+                    ? `<section class="classes-live-rail-card">
                 <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.whiteboards"))}</div>
                 <div class="classes-live-rail-body">
                     ${
-                        activeWhiteboard?.boardName
-                            ? `<div class="classes-live-rail-summary">${escapeHtml(activeWhiteboard.boardName)}</div>`
+                        activeWhiteboardSummary
+                            ? `<div class="classes-live-rail-summary">${escapeHtml(activeWhiteboardSummary)}</div>`
                             : ""
                     }
                     <button
@@ -283,7 +309,9 @@ function renderLiveRail({
                             : ""
                     }
                 </div>
-            </section>
+            </section>`
+                    : ""
+            }
         </aside>
     `;
 }
@@ -301,11 +329,22 @@ export function renderBlackboard({
     workspaceMode,
     whiteboards,
     activeWhiteboard,
+    activeWhiteboardId,
+    hasActiveMeeting,
     isChatOpen,
     isMeetingOpen,
 }) {
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
+        .filter((entity) => {
+            const kind = String(entity?.kind ?? "")
+                .trim()
+                .toLowerCase();
+            if (kind !== "meeting") {
+                return true;
+            }
+            return isTeacherView || hasActiveMeeting || isMeetingOpen;
+        })
         .map((entity) => {
             const kind = String(entity?.kind ?? "")
                 .trim()
@@ -409,6 +448,10 @@ export function renderBlackboard({
                         i18n,
                         workspaceMode,
                         isMeetingOpen,
+                        canAccessWhiteboard:
+                            isTeacherView ||
+                            Boolean(activeWhiteboardId) ||
+                            Boolean(activeWhiteboard?.embedUrl),
                     },
                 )}</div>
                 ${
@@ -441,6 +484,8 @@ export function renderBlackboard({
                         isTeacherView,
                         whiteboards,
                         activeWhiteboard,
+                        activeWhiteboardId,
+                        hasActiveMeeting,
                         isChatOpen,
                         isMeetingOpen,
                     })}
@@ -814,6 +859,8 @@ function renderClassroomView({
     workspaceMode,
     whiteboards,
     activeWhiteboard,
+    activeWhiteboardId,
+    hasActiveMeeting,
     isChatOpen,
     isMeetingOpen,
 }) {
@@ -844,6 +891,8 @@ function renderClassroomView({
                         workspaceMode,
                         whiteboards,
                         activeWhiteboard,
+                        activeWhiteboardId,
+                        hasActiveMeeting,
                         isChatOpen,
                         isMeetingOpen,
                     })}

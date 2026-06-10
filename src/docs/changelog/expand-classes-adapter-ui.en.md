@@ -205,3 +205,18 @@ table tracks board metadata and optional file keys for persisted snapshots.
     main workspace instead of as a floating overlay, and the whiteboard toolbar
     button now opens the whiteboard workspace directly while still offering an
     explicit pop-out action.
+
+## Student controls now follow active teacher sessions
+
+Student meeting and whiteboard controls are now hidden until the teacher
+actually has an active classroom meeting or an active whiteboard open.
+
+The classes adapter now persists the active classroom whiteboard in classroom
+state, limits student whiteboard API access to that active board, and removes
+stale whiteboard controls as soon as the teacher closes the board. The
+classroom meeting availability check now also fails soft and returns an empty
+active-meetings list instead of repeated 400 responses when the viewer cannot
+resolve a meeting handle.
+
+The floating classroom chat window now renders above the dashboard header with
+more top clearance so it no longer opens clipped underneath the sticky heading.

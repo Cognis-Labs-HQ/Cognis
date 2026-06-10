@@ -16,6 +16,7 @@ export function createClassroomWindows({
     root,
     i18n,
     onMeetingVisibilityChange = () => {},
+    onWhiteboardVisibilityChange = () => {},
 }) {
     const chatToggleButton = root.querySelector("#global-chat-toggle");
     const meetingEmbed = createClassroomMeetingEmbed({
@@ -35,7 +36,11 @@ export function createClassroomWindows({
             );
         },
     });
-    const whiteboardWindow = createClassroomWhiteboardWindow({ root, i18n });
+    const whiteboardWindow = createClassroomWhiteboardWindow({
+        root,
+        i18n,
+        onVisibilityChange: onWhiteboardVisibilityChange,
+    });
 
     function handleWindowButtonClick(event) {
         if (!(event.target instanceof Element)) return;

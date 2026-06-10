@@ -65,12 +65,12 @@
 
 .classes-chat-panel {
     position: fixed;
-    top: clamp(3.9rem, 8vh, 6.2rem);
+    top: clamp(8.2rem, 16vh, 10.8rem);
     right: 1rem;
     bottom: 1rem;
     width: min(420px, calc(100vw - 2rem));
-    max-height: min(700px, calc(100vh - 6.2rem));
-    z-index: 240;
+    max-height: min(700px, calc(100dvh - 9.2rem));
+    z-index: 2100;
     display: flex;
     flex-direction: column;
     background: var(--surface);
@@ -283,13 +283,13 @@ html[data-message-style="irc"] .classes-chat-message-body {
         left: 0.6rem;
         width: auto;
         bottom: 0.6rem;
-        max-height: calc(100vh - 5.6rem);
+        max-height: calc(100dvh - 8.8rem);
     }
 }
 
 @media (max-width: 640px) {
     .classes-chat-panel {
-        top: 4.4rem;
+        top: 7.2rem;
         right: 0.5rem;
         left: 0.5rem;
         bottom: 4.8rem;
