@@ -65,7 +65,9 @@ export async function handleWhiteboardAndNotepadActions(
             );
             return null;
         }
-        const tokenPayload = await tokenResponse.json().catch(() => ({ data: {} }));
+        const tokenPayload = await tokenResponse
+            .json()
+            .catch(() => ({ data: {} }));
         return {
             boardId,
             boardName,
@@ -153,7 +155,9 @@ export async function handleWhiteboardAndNotepadActions(
             ],
         });
         if (result !== "create") return true;
-        const nameInput = document.querySelector(".classes-whiteboard-name-input");
+        const nameInput = document.querySelector(
+            ".classes-whiteboard-name-input",
+        );
         const name =
             nameInput instanceof HTMLInputElement ? nameInput.value.trim() : "";
         const createResponse = await apiFetch(
@@ -187,7 +191,9 @@ export async function handleWhiteboardAndNotepadActions(
     );
     if (deleteWhiteboardButton instanceof HTMLElement && isTeacherView()) {
         if (!snapshot) return true;
-        const boardId = String(deleteWhiteboardButton.dataset.boardId ?? "").trim();
+        const boardId = String(
+            deleteWhiteboardButton.dataset.boardId ?? "",
+        ).trim();
         const boardName = String(
             deleteWhiteboardButton.dataset.boardName ?? "",
         ).trim();

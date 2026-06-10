@@ -404,11 +404,13 @@ export function renderBlackboard({
             ${
                 showBlackboardHeader
                     ? `<div class="classes-blackboard-header">
-                <div class="classes-chalk-header classes-workspace-tabs">${renderWorkspaceTabs({
-                    i18n,
-                    workspaceMode,
-                    isMeetingOpen,
-                })}</div>
+                <div class="classes-chalk-header classes-workspace-tabs">${renderWorkspaceTabs(
+                    {
+                        i18n,
+                        workspaceMode,
+                        isMeetingOpen,
+                    },
+                )}</div>
                 ${
                     toolbarActions.length
                         ? `<div class="classes-blackboard-actions">${toolbarActions.join("")}</div>`

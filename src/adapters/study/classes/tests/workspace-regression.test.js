@@ -7,10 +7,7 @@ const ROOT = process.cwd();
 
 test("classroom render includes workspace tabs and live rail", () => {
     const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/study/classes/ui/classroom-render.js",
-        ),
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
         "utf8",
     );
 

@@ -50,7 +50,9 @@ export function createDynamicDomRefresher({
             liveRailRoster.innerHTML = rosterMarkup;
         }
         if (workspaceMode === "roster") {
-            const rosterSection = root.querySelector(".classes-workspace-roster");
+            const rosterSection = root.querySelector(
+                ".classes-workspace-roster",
+            );
             if (rosterSection instanceof HTMLElement) {
                 rosterSection.innerHTML = rosterMarkup;
             }

@@ -57,7 +57,9 @@ export function createClassroomWindows({
     }
 
     function reattach() {
-        const meetingHost = root.querySelector(".classes-meeting-workspace-host");
+        const meetingHost = root.querySelector(
+            ".classes-meeting-workspace-host",
+        );
         if (meetingHost instanceof HTMLElement) {
             meetingHost.appendChild(meetingEmbed.element);
         } else {

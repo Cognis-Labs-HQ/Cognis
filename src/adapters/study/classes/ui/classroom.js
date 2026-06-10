@@ -55,7 +55,9 @@ function normalizeBoardFocus(input) {
 }
 
 function normalizeWorkspaceMode(input) {
-    const normalized = String(input ?? "").trim().toLowerCase();
+    const normalized = String(input ?? "")
+        .trim()
+        .toLowerCase();
     if (
         normalized === "roster" ||
         normalized === "notepad" ||
@@ -146,7 +148,8 @@ export async function mount(root, { signal } = {}) {
 
     function getDefaultWorkspaceMode() {
         const snapshot = selectedSnapshot();
-        return snapshot && normalizeBoardFocus(snapshot?.classroom?.boardFocus) === "classroom"
+        return snapshot &&
+            normalizeBoardFocus(snapshot?.classroom?.boardFocus) === "classroom"
             ? "roster"
             : "agenda";
     }
@@ -301,7 +304,9 @@ export async function mount(root, { signal } = {}) {
             } else {
                 activeWhiteboard = {
                     ...activeWhiteboard,
-                    boardName: String(match?.name ?? activeWhiteboard.boardName),
+                    boardName: String(
+                        match?.name ?? activeWhiteboard.boardName,
+                    ),
                 };
             }
         }
@@ -335,9 +340,7 @@ export async function mount(root, { signal } = {}) {
         } else if (snapshot.classroom) {
             snapshot.classroom.boardFocus = normalizedFocus;
         }
-        setWorkspaceMode(
-            normalizedFocus === "classroom" ? "roster" : "agenda",
-        );
+        setWorkspaceMode(normalizedFocus === "classroom" ? "roster" : "agenda");
     }
 
     function renderSubNavigationMarkup() {
@@ -540,9 +543,10 @@ export async function mount(root, { signal } = {}) {
                                 if (classroomWindows?.isMeetingOpen()) {
                                     return;
                                 }
-                                const nextWorkspaceMode = normalizeWorkspaceMode(
-                                    workspaceButton.dataset.workspaceMode,
-                                );
+                                const nextWorkspaceMode =
+                                    normalizeWorkspaceMode(
+                                        workspaceButton.dataset.workspaceMode,
+                                    );
                                 if (
                                     nextWorkspaceMode === "agenda" ||
                                     nextWorkspaceMode === "roster"
