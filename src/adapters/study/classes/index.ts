@@ -425,9 +425,12 @@ export async function bootstrapStudyAdapter(
         async (input: { classId: string }): Promise<string[]> => {
             const classId = String(input?.classId ?? "").trim();
             if (!classId) return [];
-            const classRow = await store.getClass(classId);
+            const classRow = await store.getClassById(classId);
             if (!classRow) return [];
-            const members = await store.listClassMembers(classId);
+            const members = await store.getClassMembers(
+                classId,
+                classRow.teacherAccountId,
+            );
 
             const accountIds = Array.from(
                 new Set([

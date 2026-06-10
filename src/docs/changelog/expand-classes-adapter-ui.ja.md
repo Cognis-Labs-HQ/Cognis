@@ -181,3 +181,19 @@ Classes アダプターはアクティブな Classroom ホワイトボードを 
 フローティングする Classroom チャットウィンドウはダッシュボード
 ヘッダーより前面で描画され、上方向の余白も広げられたため、開いた際に
 固定ヘッダーの下で切り取られなくなりました。
+
+## アクティブ会議取得エラーの修正と Classroom ナビゲーションガードの追加
+
+`/api/v1/modules/jitsi-meet/meetings/active` エンドポイントが Classroom
+参加者ハンドル解決時に失敗する原因となっていたランタイムエラー
+（`store.getClass は関数ではありません`）を修正しました。該当 capability が
+存在しない `store.getClass` を呼び出していたため、`store.getClassById` に
+修正し、合わせて `store.listClassMembers` を取得したクラス行の教師アカウント ID
+を渡す `store.getClassMembers` に修正しました。
+
+Classroom ミーティング埋め込みは、スタンドアロンの Meetings ページと同じ
+ナビゲーションガードリスナーを登録するようになりました。`beforeunload` で
+フルページリロードを防止し、キャプチャフェーズの `click` ガードで SPA リンク
+ナビゲーションを遮断し、`popstate` ガードでブラウザの戻る／進む操作を
+ブロックします。ミーティングがアクティブな間はすべて既存の
+「ページを離れる前にミーティングを退出してください」トーストを表示します。

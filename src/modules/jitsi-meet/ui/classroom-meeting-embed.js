@@ -51,6 +51,7 @@ import {
 export function createClassroomMeetingEmbed({
     i18n,
     onVisibilityChange = () => {},
+    signal = null,
 }) {
     let jitsiApi = null;
     let jitsiParticipantId = "";
@@ -475,6 +476,52 @@ export function createClassroomMeetingEmbed({
         });
         if (!match?.id) return;
         await openMeetingById(match.id);
+    }
+
+    if (signal) {
+        window.addEventListener(
+            "beforeunload",
+            (event) => {
+                if (element.hidden) return;
+                event.preventDefault();
+                event.returnValue = "";
+            },
+            { signal },
+        );
+        window.addEventListener(
+            "click",
+            (event) => {
+                if (element.hidden) return;
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+                const linkEl = target.closest("a[href]");
+                if (!(linkEl instanceof HTMLAnchorElement)) return;
+                const href = String(linkEl.getAttribute("href") ?? "");
+                if (!href || href.startsWith("#")) return;
+                const targetUrl = new URL(linkEl.href, window.location.origin);
+                if (targetUrl.origin !== window.location.origin) return;
+                const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+                const nextPath = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+                if (currentPath === nextPath) return;
+                event.preventDefault();
+                event.stopPropagation();
+                showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {
+                    variant: "warning",
+                });
+            },
+            { capture: true, signal },
+        );
+        window.addEventListener(
+            "popstate",
+            () => {
+                if (element.hidden) return;
+                history.pushState(history.state, "", window.location.href);
+                showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {
+                    variant: "warning",
+                });
+            },
+            { signal },
+        );
     }
 
     return {

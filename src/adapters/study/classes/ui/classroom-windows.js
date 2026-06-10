@@ -17,6 +17,7 @@ export function createClassroomWindows({
     i18n,
     onMeetingVisibilityChange = () => {},
     onWhiteboardVisibilityChange = () => {},
+    signal = null,
 }) {
     const chatToggleButton = root.querySelector("#global-chat-toggle");
     const meetingEmbed = createClassroomMeetingEmbed({
@@ -25,6 +26,7 @@ export function createClassroomWindows({
             root.classList.toggle("classes-meeting-active", visible);
             onMeetingVisibilityChange(visible);
         },
+        signal,
     });
     const nativeChat = createClassroomNativeChat({
         i18n,

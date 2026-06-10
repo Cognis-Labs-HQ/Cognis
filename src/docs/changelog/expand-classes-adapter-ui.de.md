@@ -190,3 +190,19 @@ Meeting-Handle aufgelöst werden kann.
 Das schwebende Classroom-Chatfenster wird nun oberhalb des Dashboard-Headers
 gerendert und mit mehr Abstand nach oben positioniert, damit es beim Öffnen
 nicht mehr unter dem fixierten Kopfbereich abgeschnitten wird.
+
+## Fehler bei Abruf aktiver Meetings behoben und Navigationsschutz für den Classroom ergänzt
+
+Ein Laufzeitfehler (`store.getClass ist keine Funktion`), der dazu führte, dass
+der Endpunkt `/api/v1/modules/jitsi-meet/meetings/active` fehlschlug, wurde
+behoben. Der Resolver für Classroom-Teilnehmer-Handles verwendete einen nicht
+vorhandenen `store.getClass`-Aufruf; dieser wurde auf `store.getClassById`
+korrigiert, und `store.listClassMembers` wurde entsprechend auf
+`store.getClassMembers` mit der Lehrer-Konto-ID angepasst.
+
+Das eingebettete Classroom-Meeting registriert jetzt dieselben
+Navigationsschutz-Listener wie die eigenständige Meetings-Seite:
+`beforeunload` verhindert einen vollständigen Seiten-Reload, ein
+Capture-Phase-`click`-Guard fängt SPA-Link-Navigation ab, und ein
+`popstate`-Guard blockiert Vor-/Zurück-Navigation im Browser — alle zeigen
+den bestehenden „Meeting verlassen"-Toast, solange ein Meeting aktiv ist.

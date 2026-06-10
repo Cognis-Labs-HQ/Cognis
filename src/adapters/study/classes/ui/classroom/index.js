@@ -733,6 +733,7 @@ export async function mount(root, { signal } = {}) {
     classroomWindows = createClassroomWindows({
         root,
         i18n,
+        signal,
         onMeetingVisibilityChange: (visible) => {
             if (visible) {
                 setWorkspaceMode("meeting", { remember: false });

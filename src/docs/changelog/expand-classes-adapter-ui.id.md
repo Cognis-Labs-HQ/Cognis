@@ -181,3 +181,19 @@ pemirsa tidak bisa diresolusikan.
 Jendela chat classroom yang melayang sekarang dirender di atas header dashboard
 dengan jarak atas yang lebih aman sehingga panel tidak lagi terpotong di bawah
 area heading lengket saat dibuka.
+
+## Kesalahan pencarian meeting aktif diperbaiki dan pengaman navigasi classroom ditambahkan
+
+Kesalahan runtime (`store.getClass bukan fungsi`) yang menyebabkan endpoint
+`/api/v1/modules/jitsi-meet/meetings/active` gagal saat resolver handle
+peserta classroom berjalan, kini diperbaiki. Kemampuan tersebut menggunakan
+panggilan `store.getClass` yang tidak ada; dikoreksi menjadi
+`store.getClassById`, dan panggilan `store.listClassMembers` dikoreksi menjadi
+`store.getClassMembers` dengan ID akun guru yang diambil dari baris kelas.
+
+Embed meeting classroom kini mendaftarkan listener pengaman navigasi yang sama
+dengan yang digunakan halaman Meetings mandiri: `beforeunload` memblokir
+muat ulang halaman penuh, guard `click` fase capture mencegat navigasi link
+SPA, dan guard `popstate` memblokir tombol back/forward browser — semuanya
+menampilkan toast "Tinggalkan meeting sebelum berpindah halaman" saat meeting
+sedang aktif.

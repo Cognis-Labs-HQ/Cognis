@@ -220,3 +220,18 @@ resolve a meeting handle.
 
 The floating classroom chat window now renders above the dashboard header with
 more top clearance so it no longer opens clipped underneath the sticky heading.
+
+## Active meeting lookup fixed and classroom navigation guard added
+
+Fixed a runtime error (`store.getClass is not a function`) that caused the
+`/api/v1/modules/jitsi-meet/meetings/active` endpoint to fail whenever the
+classroom participant-handle resolver ran. The capability used a non-existent
+`store.getClass` call; corrected to `store.getClassById`, and the companion
+`store.listClassMembers` call corrected to `store.getClassMembers` with the
+teacher account ID supplied from the fetched class row.
+
+The classroom meeting embed now registers the same navigation-guard listeners
+used by the standalone Meetings page: `beforeunload` blocks a full-page reload,
+a capture-phase `click` guard intercepts SPA link navigation, and a `popstate`
+guard blocks the browser back/forward action — all showing the existing
+"Leave the meeting before navigating away" toast when a meeting is active.
