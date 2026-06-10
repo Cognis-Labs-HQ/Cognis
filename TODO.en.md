@@ -265,3 +265,41 @@
 **Reviewer suggestion:** Extract the inline `adapter.requires` normalization in `src/gateways/study/gateway.ts` into a helper for reuse and clarity.
 
 **Reason ignored:** This is a pre-existing cleanup in the Study gateway unrelated to the classroom i18n regression. Folding that refactor into this fix would widen the scope into unrelated gateway internals without changing the runtime bug being addressed here.
+
+## Code Review — classroom workspace follow-up
+
+### classroom-meeting-embed.js CSS class naming
+
+**Reviewer suggestion:** Rename `classes-meeting-window` in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` to a more module-scoped class name.
+
+**Reason ignored:** The class name is part of the existing classroom meeting styling contract shared with the classes adapter. Renaming it safely would require a broader cross-module CSS refactor outside this task's scope.
+
+### classroom.js interactionsBound flag
+
+**Reviewer suggestion:** Remove or rework the `interactionsBound` flag in `src/adapters/study/classes/ui/classroom.js`.
+
+**Reason ignored:** False positive. The flag is already mount-scoped inside `mount()` and is recreated for each new page mount, so there is no confirmed regression from the current behavior.
+
+### classroom-presence.js heartbeat timing
+
+**Reviewer suggestion:** Align the classroom presence heartbeat interval with the away-threshold timing in `src/gateways/social/bootstrap.ts`.
+
+**Reason ignored:** This is a broader pre-existing cross-component behavior change unrelated to the workspace/notepad/whiteboard fix and should be handled as a separate follow-up.
+
+### classroom-render.js rosterItemClass validation
+
+**Reviewer suggestion:** Validate `member?.rosterItemClass` against a whitelist instead of escaping it in `src/adapters/study/classes/ui/classroom-render.js`.
+
+**Reason ignored:** The current values are adapter-owned constants, and tightening that contract safely should be done together with the member-shaping code that produces them rather than folded into this workspace change.
+
+### gateways/social/bootstrap.ts claims.sub JSON construction
+
+**Reviewer suggestion:** Build the `claims.sub` JSON payload safely in `src/gateways/social/bootstrap.ts`.
+
+**Reason ignored:** This is an unrelated gateway issue outside the files changed for this classroom task.
+
+### classroom-chat.js CHAT_REFRESH_INTERVAL_MS dependency
+
+**Reviewer suggestion:** Remove the classes adapter dependency on `CHAT_REFRESH_INTERVAL_MS` from the jitsi module.
+
+**Reason ignored:** This is an unrelated module-boundary cleanup outside the classroom workspace refactor.

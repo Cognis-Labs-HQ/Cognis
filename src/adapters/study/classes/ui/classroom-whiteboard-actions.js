@@ -76,7 +76,7 @@ export async function handleWhiteboardAndNotepadActions(
     }
 
     if (event.target.closest(".classes-toggle-notepad-btn")) {
-        if (!snapshot || isMeetingOpen()) return true;
+        if (!snapshot || isMeetingOpen()) return false;
         ensureNotepad();
         setWorkspaceMode("notepad");
         refreshDom();
@@ -84,7 +84,7 @@ export async function handleWhiteboardAndNotepadActions(
     }
 
     if (event.target.closest(".classes-open-whiteboards-btn")) {
-        if (!snapshot || isMeetingOpen()) return true;
+        if (!snapshot || isMeetingOpen()) return false;
         setWorkspaceMode("whiteboard");
         refreshDom();
         return true;
@@ -108,7 +108,7 @@ export async function handleWhiteboardAndNotepadActions(
     }
 
     if (event.target.closest(".classes-open-whiteboard-btn")) {
-        if (!snapshot || isMeetingOpen()) return true;
+        if (!snapshot || isMeetingOpen()) return false;
         const button = event.target.closest(".classes-open-whiteboard-btn");
         const boardId = String(button?.dataset?.boardId ?? "").trim();
         const boardName = String(button?.dataset?.boardName ?? "").trim();

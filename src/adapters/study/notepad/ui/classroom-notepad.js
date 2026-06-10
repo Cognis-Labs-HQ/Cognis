@@ -98,16 +98,10 @@ export function createClassroomNotepad({ classId, i18n }) {
         return panelEl;
     }
 
-    function downloadAsMarkdown(classroomName) {
+    function downloadAsMarkdown() {
         const text = textarea ? textarea.value : loadDraft();
         const date = new Date().toISOString().slice(0, 10);
-        const slug = classroomName
-            ? classroomName
-                  .replace(/[^a-z0-9]+/gi, "-")
-                  .replace(/^-|-$/g, "")
-                  .toLowerCase()
-            : classId;
-        const filename = `${slug}-${date}-notes.md`;
+        const filename = `${classId}-${date}-notes.md`;
         const blob = new Blob([text], { type: "text/markdown" });
         const url = URL.createObjectURL(blob);
         const downloadLink = document.createElement("a");
