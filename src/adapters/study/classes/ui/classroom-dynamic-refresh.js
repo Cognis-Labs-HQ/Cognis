@@ -16,13 +16,13 @@ export function createDynamicDomRefresher({
     getSelectedSeatNumber,
     i18n,
     isTeacherView,
-    getActiveBoardPanel,
+    getWorkspaceMode,
 }) {
     return function refreshDynamicDom() {
         const snapshot = selectedSnapshot();
         if (!snapshot) return;
         const selectedSeatNumber = getSelectedSeatNumber();
-        const activeBoardPanel = getActiveBoardPanel();
+        const workspaceMode = getWorkspaceMode();
 
         // Re-render the desk floor (seats, presence, roster changes)
         const deskFloor = root.querySelector(".classes-desk-floor");
@@ -44,29 +44,16 @@ export function createDynamicDomRefresher({
             }
         }
 
-        // Re-render the blackboard member roster
-        const membersSection = root.querySelector(
-            ".classes-blackboard-section--members",
-        );
-        if (membersSection instanceof HTMLElement) {
-            membersSection.innerHTML = renderStudentRoster({ snapshot, i18n });
+        const rosterMarkup = renderStudentRoster({ snapshot, i18n });
+        const liveRailRoster = root.querySelector(".classes-live-rail-roster");
+        if (liveRailRoster instanceof HTMLElement) {
+            liveRailRoster.innerHTML = rosterMarkup;
         }
-
-        // Sync board-panel visibility to current activeBoardPanel
-        const agendaSection = root.querySelector(
-            ".classes-blackboard-section--agenda",
-        );
-        if (agendaSection instanceof HTMLElement) {
-            agendaSection.classList.toggle(
-                "classes-blackboard-section--hidden",
-                activeBoardPanel === "classroom",
-            );
-        }
-        if (membersSection instanceof HTMLElement) {
-            membersSection.classList.toggle(
-                "classes-blackboard-section--hidden",
-                activeBoardPanel !== "classroom",
-            );
+        if (workspaceMode === "roster") {
+            const rosterSection = root.querySelector(".classes-workspace-roster");
+            if (rosterSection instanceof HTMLElement) {
+                rosterSection.innerHTML = rosterMarkup;
+            }
         }
 
         void hydrateProfileAvatars(root);

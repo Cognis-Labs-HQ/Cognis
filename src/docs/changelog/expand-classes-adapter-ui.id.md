@@ -152,3 +152,15 @@ membuka papan tulis dalam tampilan layar penuh.
     - `src/ui/languages/ja/strings.xml`
     - `src/ui/tests/app-router.test.js`
     - `src/ui/tests/study-followups.test.js`
+
+    ## Tindak lanjut workspace dan skema
+
+    Bootstrap skema adapter kelas tidak lagi mencoba menjalankan `PRAGMA` SQLite di
+    Postgres saat mendeteksi dialek. Karena itu, startup meeting tidak lagi
+    menghasilkan error SQL yang disengaja di log Postgres.
+
+    Papan kelas sekarang memakai model workspace bersama dengan mode Agenda,
+    Siswa, Notepad, Whiteboards, dan Meeting. Notepad kini tampil di workspace utama
+    alih-alih sebagai overlay melayang, dan tombol whiteboard di toolbar sekarang
+    membuka workspace whiteboard secara langsung sambil tetap menyediakan aksi
+    pop-out yang eksplisit.

@@ -151,3 +151,15 @@ Nextcloud Whiteboard (`NEXTCLOUD_WHITEBOARD_URL` / `NEXTCLOUD_WHITEBOARD_SECRET`
     - `src/ui/languages/ja/strings.xml`
     - `src/ui/tests/app-router.test.js`
     - `src/ui/tests/study-followups.test.js`
+
+    ## ワークスペースとスキーマの追補
+
+    クラス用スキーマ初期化は、方言判定のために Postgres へ SQLite の
+    `PRAGMA` を送らなくなりました。これにより、ミーティング開始時に
+    Postgres のログへ意図的な SQL エラーが出なくなります。
+
+    教室の黒板は、Agenda・Students・Notepad・Whiteboards・Meeting の
+    各モードを持つ共通ワークスペースへ整理されました。Notepad は
+    フローティングオーバーレイではなくメインワークスペース内に表示され、
+    ツールバーの whiteboard ボタンは直接 whiteboard ワークスペースを開き、
+    必要なときだけ明示的なポップアウト操作を使えます。

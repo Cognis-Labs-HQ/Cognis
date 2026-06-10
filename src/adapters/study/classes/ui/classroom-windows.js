@@ -12,25 +12,17 @@ import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-white
  * meeting/chat/whiteboard elements are moved to root first and never detached
  * from the document. Call reattach() afterwards to move them back.
  */
-export function createClassroomWindows({ root, i18n }) {
+export function createClassroomWindows({
+    root,
+    i18n,
+    onMeetingVisibilityChange = () => {},
+}) {
     const chatToggleButton = root.querySelector("#global-chat-toggle");
-    const updateMeetingWindowLayout = () => {
-        const blackboard = root.querySelector(".classes-blackboard");
-        const header = blackboard?.querySelector(".classes-blackboard-header");
-        const headerHeight =
-            header instanceof HTMLElement
-                ? Math.ceil(header.getBoundingClientRect().height)
-                : 0;
-        meetingEmbed.element.style.setProperty(
-            "--classes-meeting-window-top",
-            `${headerHeight}px`,
-        );
-    };
     const meetingEmbed = createClassroomMeetingEmbed({
         i18n,
         onVisibilityChange: (visible) => {
             root.classList.toggle("classes-meeting-active", visible);
-            updateMeetingWindowLayout();
+            onMeetingVisibilityChange(visible);
         },
     });
     const nativeChat = createClassroomNativeChat({
@@ -65,16 +57,18 @@ export function createClassroomWindows({ root, i18n }) {
     }
 
     function reattach() {
-        const blackboard = root.querySelector(".classes-blackboard");
-        if (blackboard) {
-            blackboard.appendChild(meetingEmbed.element);
+        const meetingHost = root.querySelector(".classes-meeting-workspace-host");
+        if (meetingHost instanceof HTMLElement) {
+            meetingHost.appendChild(meetingEmbed.element);
+        } else {
+            const blackboard = root.querySelector(".classes-blackboard");
+            if (blackboard) {
+                blackboard.appendChild(meetingEmbed.element);
+            }
         }
         root.appendChild(nativeChat.panel);
         whiteboardWindow.reattach();
-        updateMeetingWindowLayout();
     }
-
-    updateMeetingWindowLayout();
 
     return {
         openMeeting: (snapshot) => meetingEmbed.openMeeting(snapshot),
@@ -84,6 +78,7 @@ export function createClassroomWindows({ root, i18n }) {
                 ? nativeChat.closeChat()
                 : nativeChat.openChat(chatUrl),
         isChatOpen: () => nativeChat.isOpen(),
+        isMeetingOpen: () => !meetingEmbed.element.hidden,
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),

@@ -160,3 +160,15 @@ alle Klassenmitglieder können ein Whiteboard in einer Vollbildansicht öffnen.
     - `src/ui/languages/ja/strings.xml`
     - `src/ui/tests/app-router.test.js`
     - `src/ui/tests/study-followups.test.js`
+
+    ## Workspace- und Schema-Nacharbeiten
+
+    Die Schema-Initialisierung des Klassen-Adapters sendet bei der Dialekterkennung
+    keine SQLite-`PRAGMA`-Abfragen mehr an Postgres. Dadurch verschwinden die
+    absichtlichen SQL-Fehler beim Start eines Meetings aus den Postgres-Logs.
+
+    Die Classroom-Tafel verwendet nun ein gemeinsames Workspace-Modell mit Agenda-,
+    Schüler-, Notizblock-, Whiteboard- und Meeting-Modus. Der Notizblock lebt jetzt
+    im Haupt-Workspace statt als schwebendes Overlay, und der Whiteboard-Button in
+    der Toolbar öffnet direkt den Whiteboard-Workspace, bietet aber weiterhin eine
+    explizite Pop-out-Aktion.

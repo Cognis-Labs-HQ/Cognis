@@ -374,12 +374,12 @@ async function detectSqlDialect(
 ): Promise<SupportedSqlDialect> {
     if (!db.execute) return "postgres";
     try {
-        await db.execute("PRAGMA table_info(study_classes)");
-        return "sqlite";
-    } catch {}
-    try {
         await db.execute("SELECT current_schema()");
         return "postgres";
+    } catch {}
+    try {
+        await db.execute("PRAGMA table_info(study_classes)");
+        return "sqlite";
     } catch {}
     return "mariadb";
 }

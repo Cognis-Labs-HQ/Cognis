@@ -1,0 +1,173 @@
+.classes-workspace-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.classes-workspace-tab-btn {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.16);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.classes-workspace-tab-btn.active {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.classes-workspace-tab-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.classes-workspace-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 22rem);
+    gap: 1rem;
+    align-items: stretch;
+    min-height: 22rem;
+}
+
+.classes-workspace-main {
+    min-width: 0;
+    min-height: 0;
+}
+
+.classes-workspace-panel {
+    min-height: 100%;
+}
+
+.classes-workspace-panel--agenda,
+.classes-workspace-panel--roster,
+.classes-workspace-panel--notepad,
+.classes-workspace-panel--whiteboard,
+.classes-workspace-panel--meeting {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.classes-workspace-panel--meeting {
+    min-height: 26rem;
+}
+
+.classes-meeting-workspace-host {
+    position: relative;
+    flex: 1;
+    min-height: 26rem;
+}
+
+.classes-live-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.classes-live-rail-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border-radius: 0.8rem;
+    background: rgba(0, 0, 0, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 0;
+}
+
+.classes-live-rail-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+    letter-spacing: 0.03em;
+}
+
+.classes-live-rail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: 0;
+}
+
+.classes-live-rail-summary {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.84rem;
+    overflow-wrap: anywhere;
+}
+
+.classes-live-rail-action {
+    width: 100%;
+}
+
+.classes-live-rail-roster .classes-student-roster {
+    gap: 0.6rem;
+}
+
+.classes-live-rail-roster .classes-roster-list {
+    max-height: 14rem;
+    overflow: auto;
+}
+
+.classes-inline-whiteboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.8rem 0.8rem 0 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom: 0;
+}
+
+.classes-inline-whiteboard-title {
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classes-inline-whiteboard-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.classes-inline-whiteboard-popout-btn,
+.classes-inline-whiteboard-close-btn {
+    padding: 0.35rem 0.7rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.classes-inline-whiteboard-frame {
+    width: 100%;
+    min-height: 30rem;
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 0 0 0.8rem 0.8rem;
+    background: #fff;
+}
+
+.classes-workspace-panel--whiteboard .classes-whiteboard-list {
+    margin-bottom: 0;
+}
+
+.classes-workspace-panel--whiteboard .classes-whiteboard-item {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 960px) {
+    .classes-workspace-shell {
+        grid-template-columns: 1fr;
+    }
+}

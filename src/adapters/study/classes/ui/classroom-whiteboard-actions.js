@@ -1,6 +1,6 @@
 /**
- * Handles whiteboard open/create/delete and notepad-toggle click interactions
- * in the classroom. Returns true if the event was handled.
+ * Handles classroom workspace actions for notepad and whiteboards. Returns true
+ * when the click was consumed.
  *
  * @param {MouseEvent} event
  * @param {object} deps
@@ -19,50 +19,36 @@ export async function handleWhiteboardAndNotepadActions(
         isTeacherView,
         loadSelectedClassMeta,
         refreshDom,
-        getNotepadVisible,
-        setNotepadVisible,
+        isMeetingOpen,
         getClassroomNotepad,
         setClassroomNotepad,
+        getClassroomNotepadClassId,
+        setClassroomNotepadClassId,
         createClassroomNotepad,
-        root,
+        getActiveWhiteboard,
+        setActiveWhiteboard,
+        setWorkspaceMode,
     },
 ) {
     if (!(event.target instanceof Element)) return false;
 
-    if (event.target.closest(".classes-toggle-notepad-btn")) {
-        if (!snapshot) return true;
-        const visible = !getNotepadVisible();
-        setNotepadVisible(visible);
+    function ensureNotepad() {
+        if (!snapshot) return null;
+        const currentClassId = getClassroomNotepadClassId();
         let notepad = getClassroomNotepad();
-        if (!notepad) {
+        if (!notepad || currentClassId !== snapshot.id) {
             notepad = createClassroomNotepad({
                 classId: snapshot.id,
                 i18n,
             });
             setClassroomNotepad(notepad);
+            setClassroomNotepadClassId(snapshot.id);
         }
-        const blackboard = root.querySelector(".classes-blackboard");
-        if (!blackboard) return true;
-        const existing = blackboard.querySelector(".classes-notepad-panel");
-        if (visible) {
-            if (!existing) {
-                blackboard.appendChild(notepad.getElement());
-            } else {
-                existing.hidden = false;
-            }
-            notepad.focus();
-        } else if (existing) {
-            existing.hidden = true;
-        }
-        return true;
+        return notepad;
     }
 
-    if (event.target.closest(".classes-open-whiteboard-btn")) {
-        if (!snapshot || !classroomWindows) return true;
-        const btn = event.target.closest(".classes-open-whiteboard-btn");
-        const boardId = String(btn?.dataset?.boardId ?? "").trim();
-        const boardName = String(btn?.dataset?.boardName ?? "").trim();
-        if (!boardId) return true;
+    async function resolveWhiteboardEmbed(boardId, boardName) {
+        if (!snapshot) return null;
         const tokenResponse = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}/token`,
         );
@@ -77,14 +63,71 @@ export async function handleWhiteboardAndNotepadActions(
                 ),
                 { variant: "error" },
             );
-            return true;
+            return null;
         }
-        const tokenPayload = await tokenResponse.json();
-        classroomWindows.openWhiteboard({
+        const tokenPayload = await tokenResponse.json().catch(() => ({ data: {} }));
+        return {
             boardId,
             boardName,
-            embedUrl: tokenPayload?.data?.embedUrl ?? "",
+            embedUrl: String(tokenPayload?.data?.embedUrl ?? "").trim(),
+        };
+    }
+
+    if (event.target.closest(".classes-toggle-notepad-btn")) {
+        if (!snapshot || isMeetingOpen()) return true;
+        ensureNotepad();
+        setWorkspaceMode("notepad");
+        refreshDom();
+        return true;
+    }
+
+    if (event.target.closest(".classes-open-whiteboards-btn")) {
+        if (!snapshot || isMeetingOpen()) return true;
+        setWorkspaceMode("whiteboard");
+        refreshDom();
+        return true;
+    }
+
+    if (event.target.closest(".classes-inline-whiteboard-close-btn")) {
+        setActiveWhiteboard(null);
+        refreshDom();
+        return true;
+    }
+
+    if (event.target.closest(".classes-inline-whiteboard-popout-btn")) {
+        const activeWhiteboard = getActiveWhiteboard();
+        if (!activeWhiteboard || !classroomWindows) return true;
+        classroomWindows.openWhiteboard({
+            boardId: activeWhiteboard.boardId,
+            boardName: activeWhiteboard.boardName,
+            embedUrl: activeWhiteboard.embedUrl,
         });
+        return true;
+    }
+
+    if (event.target.closest(".classes-open-whiteboard-btn")) {
+        if (!snapshot || isMeetingOpen()) return true;
+        const button = event.target.closest(".classes-open-whiteboard-btn");
+        const boardId = String(button?.dataset?.boardId ?? "").trim();
+        const boardName = String(button?.dataset?.boardName ?? "").trim();
+        if (!boardId) return true;
+        const embed = await resolveWhiteboardEmbed(boardId, boardName);
+        if (!embed?.embedUrl) return true;
+        setActiveWhiteboard(embed);
+        setWorkspaceMode("whiteboard");
+        refreshDom();
+        return true;
+    }
+
+    if (event.target.closest(".classes-popout-whiteboard-btn")) {
+        if (!snapshot || !classroomWindows) return true;
+        const button = event.target.closest(".classes-popout-whiteboard-btn");
+        const boardId = String(button?.dataset?.boardId ?? "").trim();
+        const boardName = String(button?.dataset?.boardName ?? "").trim();
+        if (!boardId) return true;
+        const embed = await resolveWhiteboardEmbed(boardId, boardName);
+        if (!embed?.embedUrl) return true;
+        classroomWindows.openWhiteboard(embed);
         return true;
     }
 
@@ -110,9 +153,7 @@ export async function handleWhiteboardAndNotepadActions(
             ],
         });
         if (result !== "create") return true;
-        const nameInput = document.querySelector(
-            ".classes-whiteboard-name-input",
-        );
+        const nameInput = document.querySelector(".classes-whiteboard-name-input");
         const name =
             nameInput instanceof HTMLInputElement ? nameInput.value.trim() : "";
         const createResponse = await apiFetch(
@@ -135,21 +176,20 @@ export async function handleWhiteboardAndNotepadActions(
         );
         if (createResponse.ok) {
             await loadSelectedClassMeta();
+            setWorkspaceMode("whiteboard");
             refreshDom();
         }
         return true;
     }
 
-    const deleteWhiteboardBtn = event.target.closest(
+    const deleteWhiteboardButton = event.target.closest(
         ".classes-delete-whiteboard-btn",
     );
-    if (deleteWhiteboardBtn instanceof HTMLElement && isTeacherView()) {
+    if (deleteWhiteboardButton instanceof HTMLElement && isTeacherView()) {
         if (!snapshot) return true;
-        const boardId = String(
-            deleteWhiteboardBtn.dataset.boardId ?? "",
-        ).trim();
+        const boardId = String(deleteWhiteboardButton.dataset.boardId ?? "").trim();
         const boardName = String(
-            deleteWhiteboardBtn.dataset.boardName ?? "",
+            deleteWhiteboardButton.dataset.boardName ?? "",
         ).trim();
         if (!boardId) return true;
         const result = await openPopup({
@@ -174,6 +214,10 @@ export async function handleWhiteboardAndNotepadActions(
             classroomWindows.getActiveWhiteboardId() === boardId
         ) {
             classroomWindows.closeWhiteboard();
+        }
+        const activeWhiteboard = getActiveWhiteboard();
+        if (activeWhiteboard?.boardId === boardId) {
+            setActiveWhiteboard(null);
         }
         const deleteResponse = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}`,

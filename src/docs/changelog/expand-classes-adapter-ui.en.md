@@ -193,3 +193,15 @@ table tracks board metadata and optional file keys for persisted snapshots.
     - `src/ui/languages/ja/strings.xml`
     - `src/ui/tests/app-router.test.js`
     - `src/ui/tests/study-followups.test.js`
+
+    ## Workspace and schema follow-ups
+
+    The classes schema bootstrap no longer probes Postgres with SQLite `PRAGMA`
+    statements during dialect detection, so meeting startup stops generating
+    intentional SQL errors in Postgres logs.
+
+    The classroom blackboard now uses a shared workspace model with Agenda,
+    Students, Notepad, Whiteboards, and Meeting modes. Notepad now lives in the
+    main workspace instead of as a floating overlay, and the whiteboard toolbar
+    button now opens the whiteboard workspace directly while still offering an
+    explicit pop-out action.
