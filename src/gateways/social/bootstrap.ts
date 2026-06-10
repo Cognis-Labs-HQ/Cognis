@@ -19,8 +19,8 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 
-const PRESENCE_STALE_MS = 120_000;
-const PRESENCE_AWAY_MS = 45_000;
+const PRESENCE_STALE_TIMEOUT_MS = 120_000;
+const PRESENCE_AWAY_TIMEOUT_MS = 45_000;
 
 type PresenceState = "online" | "away" | "offline";
 
@@ -60,11 +60,11 @@ class PresenceTracker {
         const entry = this.entries.get(normalizedAccountId);
         if (!entry) return "offline";
         const age = Date.now() - entry.lastSeenAt;
-        if (age >= PRESENCE_STALE_MS) {
+        if (age >= PRESENCE_STALE_TIMEOUT_MS) {
             this.entries.delete(normalizedAccountId);
             return "offline";
         }
-        if (entry.status === "away" || age >= PRESENCE_AWAY_MS) {
+        if (entry.status === "away" || age >= PRESENCE_AWAY_TIMEOUT_MS) {
             return "away";
         }
         return "online";

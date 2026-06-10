@@ -297,9 +297,3 @@
 **Reviewer suggestion:** Build the `claims.sub` JSON payload safely in `src/gateways/social/bootstrap.ts`.
 
 **Reason ignored:** This is an unrelated gateway issue outside the files changed for this classroom task.
-
-### classroom-chat.js CHAT_REFRESH_INTERVAL_MS dependency
-
-**Reviewer suggestion:** Remove the classes adapter dependency on `CHAT_REFRESH_INTERVAL_MS` from the jitsi module.
-
-**Reason ignored:** This is an unrelated module-boundary cleanup outside the classroom workspace refactor.

@@ -31,9 +31,3 @@
 **Reviewer suggestion:** Die JSON-Nutzlast für `claims.sub` in `src/gateways/social/bootstrap.ts` sicher konstruieren.
 
 **Reason ignored:** Das ist ein unabhängiges Gateway-Thema außerhalb der für diesen Classroom-Task geänderten Dateien.
-
-### classroom-chat.js CHAT_REFRESH_INTERVAL_MS-Abhängigkeit
-
-**Reviewer suggestion:** Die Abhängigkeit des Classes-Adapters von `CHAT_REFRESH_INTERVAL_MS` aus dem Jitsi-Modul entfernen.
-
-**Reason ignored:** Das ist eine unabhängige Bereinigung an Modulgrenzen außerhalb der Classroom-Workspace-Refaktorierung.

@@ -30,7 +30,7 @@ export async function requestJoinClass(
         return existingMembership;
     }
     if (classRow.joinMode === "invite_only") {
-        throw new Error("invite_only");
+        throw new Error("class_requires_invitation");
     }
     const nextStatus = classRow.joinMode === "open" ? "member" : "pending";
     await db.executeCommand({

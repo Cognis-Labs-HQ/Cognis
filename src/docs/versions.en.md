@@ -55,7 +55,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
-| Social                | `src/gateways/social/`       | `1.2.7`  |
+| Social                | `src/gateways/social/`       | `1.2.8`  |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |

@@ -31,9 +31,3 @@
 **Reviewer suggestion:** `src/gateways/social/bootstrap.ts` の `claims.sub` 用 JSON ペイロードを安全に組み立てる。
 
 **Reason ignored:** これは今回の classroom タスクで変更したファイル範囲外にある、独立した gateway 側の問題です。
-
-### classroom-chat.js の CHAT_REFRESH_INTERVAL_MS 依存
-
-**Reviewer suggestion:** classes アダプターが Jitsi モジュールの `CHAT_REFRESH_INTERVAL_MS` に依存しないようにする。
-
-**Reason ignored:** これは classroom workspace リファクタリングとは別の、モジュール境界のクリーンアップです。

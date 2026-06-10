@@ -2,6 +2,11 @@ const STORAGE_PREFIX = "classes_notepad_";
 
 export function createClassroomNotepad({ classId, i18n }) {
     const storageKey = STORAGE_PREFIX + classId;
+    const downloadSlug = String(classId)
+        .trim()
+        .replace(/[^a-z0-9]+/gi, "-")
+        .replace(/^-|-$/g, "")
+        .toLowerCase();
 
     let panel = null;
     let textarea = null;
@@ -101,7 +106,7 @@ export function createClassroomNotepad({ classId, i18n }) {
     function downloadAsMarkdown() {
         const text = textarea ? textarea.value : loadDraft();
         const date = new Date().toISOString().slice(0, 10);
-        const filename = `${classId}-${date}-notes.md`;
+        const filename = `${downloadSlug || "classroom"}-${date}-notes.md`;
         const blob = new Blob([text], { type: "text/markdown" });
         const url = URL.createObjectURL(blob);
         const downloadLink = document.createElement("a");

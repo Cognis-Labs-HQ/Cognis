@@ -1,7 +1,7 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { buildProfileAvatarMarkup } from "/static/gateways/social/reuse/profile-avatar.js";
 
-const DEFAULT_CLASSROOM_CAPACITY = 20;
+const DEFAULT_STUDENT_CAPACITY = 20;
 
 /** @param {unknown} rawSeatAssignments */
 function normalizeSeatAssignments(rawSeatAssignments) {
@@ -569,7 +569,7 @@ function renderDeskFloor({
     const studentLimit =
         Number.isInteger(rawLimit) && rawLimit > 0
             ? rawLimit
-            : DEFAULT_CLASSROOM_CAPACITY;
+            : DEFAULT_STUDENT_CAPACITY;
     const seatAssignments = normalizeSeatAssignments(
         snapshot?.classroom?.seatAssignments,
     );

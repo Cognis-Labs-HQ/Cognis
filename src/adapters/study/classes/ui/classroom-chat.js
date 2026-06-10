@@ -8,10 +8,9 @@ import {
     hexToBytes,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
-import {
-    CHAT_REFRESH_INTERVAL_MS,
-    TEXT_ENCODER,
-} from "/static/modules/jitsi-meet/constants.js";
+
+const CHAT_REFRESH_INTERVAL_MS = 4_000;
+const textEncoder = new TextEncoder();
 
 /**
  * Parses the room ID from a chatUrl of the form `/messages/{roomId}`.
@@ -96,7 +95,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
         const encrypted = await crypto.subtle.encrypt(
             { name: "AES-GCM", iv: initVector },
             key,
-            TEXT_ENCODER.encode(text),
+            textEncoder.encode(text),
         );
         return {
             iv: bytesToHex(initVector),

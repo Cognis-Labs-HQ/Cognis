@@ -31,9 +31,3 @@
 **Reviewer suggestion:** Bangun payload JSON untuk `claims.sub` di `src/gateways/social/bootstrap.ts` dengan cara yang aman.
 
 **Reason ignored:** Ini adalah isu gateway terpisah di luar file yang diubah untuk tugas classroom ini.
-
-### classroom-chat.js dependensi CHAT_REFRESH_INTERVAL_MS
-
-**Reviewer suggestion:** Hapus dependensi adapter classes pada `CHAT_REFRESH_INTERVAL_MS` dari modul Jitsi.
-
-**Reason ignored:** Ini adalah pembersihan batas modul yang tidak terkait langsung dengan refaktor workspace classroom.

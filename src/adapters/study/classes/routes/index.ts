@@ -606,7 +606,10 @@ export function createClassesRoutes(
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: membership }));
             } catch (err) {
-                if (err instanceof Error && err.message === "invite_only") {
+                if (
+                    err instanceof Error &&
+                    err.message === "class_requires_invitation"
+                ) {
                     jsonError(
                         res,
                         403,
