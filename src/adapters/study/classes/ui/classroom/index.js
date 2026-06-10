@@ -24,7 +24,6 @@ import {
 import { renderClassroomPage } from "/static/adapters/study/classes/classroom-render.js";
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
-import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
 import { openClassSettingsPopup } from "/static/adapters/study/classes/classroom-popups.js";
 import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
@@ -36,6 +35,7 @@ import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-sea
 import { createClassroomNotepad } from "/static/adapters/study/notepad/classroom-notepad.js";
 import { handleWhiteboardAndNotepadActions } from "/static/adapters/study/classes/classroom-whiteboard-actions.js";
 import { handleResourceActions } from "/static/adapters/study/classes/classroom-resource-actions.js";
+import { bindClassroomInteractions } from "/static/adapters/study/classes/classroom/interactions.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -363,9 +363,7 @@ export async function mount(root, { signal } = {}) {
             ? ((await agendaResponse.json())?.data?.activeItems ?? [])
             : [];
         const activeMeetingPayload = activeMeetingResponse?.ok
-            ? await activeMeetingResponse
-                  .json()
-                  .catch(() => ({ data: [] }))
+            ? await activeMeetingResponse.json().catch(() => ({ data: [] }))
             : { data: [] };
         const activeMeetings = Array.isArray(activeMeetingPayload?.data)
             ? activeMeetingPayload.data
@@ -383,14 +381,14 @@ export async function mount(root, { signal } = {}) {
         whiteboards = whiteboardsResponse.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
-        const selectedActiveWhiteboardId = getSelectedActiveWhiteboardId(
-            snapshot,
-        );
+        const selectedActiveWhiteboardId =
+            getSelectedActiveWhiteboardId(snapshot);
         if (!isTeacherView()) {
             whiteboards = selectedActiveWhiteboardId
                 ? whiteboards.filter(
                       (board) =>
-                          String(board?.id ?? "") === selectedActiveWhiteboardId,
+                          String(board?.id ?? "") ===
+                          selectedActiveWhiteboardId,
                   )
                 : [];
         }
@@ -603,7 +601,8 @@ export async function mount(root, { signal } = {}) {
         allowCreateOption: false,
         onSelectClass: async (classId) => {
             const previousClassId = selectedClassId;
-            const previousInlineWhiteboardId = activeWhiteboard?.boardId ?? null;
+            const previousInlineWhiteboardId =
+                activeWhiteboard?.boardId ?? null;
             selectedClassId = classId;
             selectedSeatNumber = null;
             activeWhiteboard = null;
@@ -631,448 +630,83 @@ export async function mount(root, { signal } = {}) {
                 gridSize: { default: [8, 6], min: [2, 2], max: "full" },
                 render: renderContentMarkup,
                 onRender() {
-                    if (interactionsBound) return;
-                    interactionsBound = true;
-                    bindProfilePreviews(i18n);
-                    root.addEventListener(
-                        "click",
-                        async (event) => {
-                            if (!(event.target instanceof Element)) return;
-                            const snapshot = selectedSnapshot();
-                            const profileButton = event.target.closest(
-                                ".classes-member-profile-btn",
-                            );
-                            if (profileButton instanceof HTMLElement) {
-                                const handle = String(
-                                    profileButton.dataset.studentHandle ?? "",
-                                ).trim();
-                                if (handle) {
-                                    navigateTo(
-                                        `/profile/${encodeURIComponent(handle)}`,
-                                    );
-                                }
-                                return;
-                            }
-
-                            const workspaceButton = event.target.closest(
-                                ".classes-workspace-tab-btn[data-workspace-mode]",
-                            );
-                            if (workspaceButton instanceof HTMLElement) {
-                                if (classroomWindows?.isMeetingOpen()) {
-                                    return;
-                                }
-                                const nextWorkspaceMode =
-                                    normalizeWorkspaceMode(
-                                        workspaceButton.dataset.workspaceMode,
-                                    );
-                                if (
-                                    nextWorkspaceMode === "agenda" ||
-                                    nextWorkspaceMode === "roster"
-                                ) {
-                                    if (isTeacherView()) {
-                                        await updateBoardFocus(
-                                            nextWorkspaceMode === "roster"
-                                                ? "classroom"
-                                                : "agenda",
-                                        );
-                                    } else {
-                                        setWorkspaceMode(nextWorkspaceMode);
-                                    }
-                                } else {
-                                    if (
-                                        nextWorkspaceMode === "whiteboard" &&
-                                        !activeWhiteboard
-                                    ) {
-                                        activeWhiteboard = null;
-                                    }
-                                    setWorkspaceMode(nextWorkspaceMode);
-                                }
-                                refreshDom();
-                                return;
-                            }
-
-                            const seatButton =
-                                event.target.closest(".classes-desk-unit");
-                            if (seatButton instanceof HTMLElement) {
-                                if (
-                                    !Number.isInteger(
-                                        Number(
-                                            seatButton.dataset.seatNumber ?? "",
-                                        ),
-                                    )
-                                ) {
-                                    return;
-                                }
-                                selectedSeatNumber = Number(
-                                    seatButton.dataset.seatNumber ?? "-1",
-                                );
-                                if (isTeacherView()) {
-                                    await handleSeatActionMenu(seatButton);
-                                } else {
-                                    refreshDom();
-                                }
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(".classes-open-chat-btn")
-                            ) {
-                                if (!classroomWindows || !snapshot) {
-                                    showToast(
-                                        i18n.t(
-                                            "module.study.classes.chat_failed",
-                                        ),
-                                        {
-                                            variant: "error",
-                                        },
-                                    );
-                                    return;
-                                }
-                                syncGlobalChatTarget();
-                                classroomWindows.openChat(snapshot.chatUrl);
-                                refreshDom();
-                                return;
-                            }
-                            if (
-                                event.target.closest("#global-chat-toggle") &&
-                                classroomWindows
-                            ) {
-                                const chatToggle = root.querySelector(
-                                    "#global-chat-toggle",
-                                );
-                                const chatUrl = String(
-                                    chatToggle?.dataset.chatTarget ?? "",
-                                ).trim();
-                                classroomWindows.toggleChat(chatUrl);
-                                refreshDom();
-                                return;
-                            }
-                            if (
-                                event.target.closest(
-                                    ".classes-open-meeting-btn",
-                                ) &&
-                                snapshot
-                            ) {
-                                if (!isTeacherView() && !activeMeetingId) {
-                                    return;
-                                }
-                                if (isTeacherView()) {
-                                    await classroomWindows.openMeeting(
-                                        snapshot,
-                                    );
-                                } else {
-                                    await classroomWindows.tryAutoJoin(
-                                        snapshot.id,
-                                    );
-                                }
-                                if (classroomWindows.isMeetingOpen()) {
-                                    setWorkspaceMode("meeting", {
-                                        remember: false,
-                                    });
-                                    refreshDom();
-                                }
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-create-agenda-btn",
-                                )
-                            ) {
-                                await openAgendaPopup({
-                                    i18n,
-                                    openPopup,
-                                    apiFetch,
-                                    selectedClassId,
-                                    showToast,
-                                    onSaved: async () => {
-                                        await loadSelectedClassMeta();
-                                        refreshDom();
-                                    },
-                                });
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-class-settings-btn",
-                                )
-                            ) {
-                                await openClassSettingsPopup({
-                                    snapshot,
-                                    i18n,
-                                    apiFetch,
-                                    openPopup,
-                                    showToast,
-                                    refreshContent,
-                                });
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-toggle-view-btn",
-                                ) &&
-                                teacherAccount
-                            ) {
-                                const nextMode =
-                                    getClassroomViewMode() === "teacher"
-                                        ? "student"
-                                        : "teacher";
-                                const nextUrl = new URL(
-                                    window.location.href,
-                                    window.location.origin,
-                                );
-                                if (nextMode === "student") {
-                                    nextUrl.searchParams.set("student", "true");
-                                } else {
-                                    nextUrl.searchParams.delete("student");
-                                }
-                                navigateTo(nextUrl.pathname + nextUrl.search);
-                                return;
-                            }
-
-                            const subnavFindButton = event.target.closest(
-                                ".classes-subnav-find-btn",
-                            );
-                            if (subnavFindButton instanceof HTMLElement) {
-                                openClassSearch();
-                                return;
-                            }
-
-                            const subnavClassButton = event.target.closest(
-                                ".classes-subnav-class-btn[data-class-id]",
-                            );
-                            if (subnavClassButton instanceof HTMLElement) {
-                                const previousClassId = selectedClassId;
-                                const previousInlineWhiteboardId =
-                                    activeWhiteboard?.boardId ?? null;
-                                const classId = String(
-                                    subnavClassButton.dataset.classId ?? "",
-                                ).trim();
-                                if (!classId) return;
-                                selectedClassId = classId;
-                                selectedSeatNumber = null;
-                                activeWhiteboard = null;
-                                if (
-                                    previousClassId &&
-                                    previousClassId !== classId &&
-                                    previousInlineWhiteboardId &&
-                                    !classroomWindows?.isWhiteboardOpen()
-                                ) {
-                                    void persistActiveWhiteboardId(
-                                        previousClassId,
-                                        null,
-                                    );
-                                }
-                                syncWorkspaceModeWithSnapshot({ force: false });
-                                await loadSelectedClassMeta();
-                                refreshDom();
-                                refreshSubNavigation();
-                                composer.refreshFooter();
-                                return;
-                            }
-
-                            const quickApproveButton = event.target.closest(
-                                ".classes-quick-approve-btn",
-                            );
-                            if (
-                                quickApproveButton instanceof HTMLElement &&
-                                selectedClassId
-                            ) {
-                                const studentId = String(
-                                    quickApproveButton.dataset.studentId ?? "",
-                                ).trim();
-                                if (!studentId) return;
-                                const response = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/join-requests/${encodeURIComponent(studentId)}/approve`,
-                                    { method: "POST" },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        response.ok
-                                            ? "module.study.classes.request_approved"
-                                            : "module.study.classes.request_review_failed",
-                                    ),
-                                    {
-                                        variant: response.ok
-                                            ? "success"
-                                            : "error",
-                                    },
-                                );
-                                if (response.ok) {
-                                    await refreshContent();
-                                }
-                                return;
-                            }
-
-                            if (event.target.closest("#study-classroom-door")) {
-                                await handleClassroomExit({
-                                    snapshot,
-                                    isTeacherView: isTeacherView(),
-                                    i18n,
-                                    openPopup,
-                                    apiFetch,
-                                    showToast,
-                                    onSuccess: async (kind) => {
-                                        if (kind === "disband") {
-                                            selectedClassId = "";
-                                            selectedSeatNumber = null;
-                                        }
-                                        await refreshContent();
-                                    },
-                                });
-                                return;
-                            }
-
-                            if (
-                                await handleResourceActions(event, {
-                                    root,
-                                    snapshot,
-                                    classResources,
-                                    apiFetch,
-                                    i18n,
-                                    showToast,
-                                    openPopup,
-                                    escapeHtml,
-                                    loadSelectedClassMeta,
-                                    refreshDom,
-                                    setNotebookText: (text) => {
-                                        selectedNotebookText = text;
-                                    },
-                                })
-                            ) {
-                                return;
-                            }
-
-                            if (
-                                event.target.closest(
-                                    ".classes-leave-classroom-btn",
-                                )
-                            ) {
-                                await handleClassroomExit({
-                                    snapshot,
-                                    isTeacherView: false,
-                                    i18n,
-                                    openPopup,
-                                    apiFetch,
-                                    showToast,
-                                    onSuccess: async () => {
-                                        await refreshContent();
-                                    },
-                                });
-                                return;
-                            }
-
-                            if (
-                                await handleWhiteboardAndNotepadActions(event, {
-                                    snapshot,
-                                    apiFetch,
-                                    i18n,
-                                    showToast,
-                                    openPopup,
-                                    escapeHtml,
-                                    classroomWindows,
-                                    isTeacherView,
-                                    loadSelectedClassMeta,
-                                    refreshDom,
-                                    isMeetingOpen: () =>
-                                        classroomWindows?.isMeetingOpen() ??
-                                        false,
-                                    getClassroomNotepad: () => classroomNotepad,
-                                    setClassroomNotepad: (notepad) => {
-                                        classroomNotepad = notepad;
-                                    },
-                                    getClassroomNotepadClassId: () =>
-                                        classroomNotepadClassId,
-                                    setClassroomNotepadClassId: (classId) => {
-                                        classroomNotepadClassId = classId;
-                                    },
-                                    createClassroomNotepad,
-                                    getActiveWhiteboard: () => activeWhiteboard,
-                                    setActiveWhiteboard: (whiteboard) => {
-                                        activeWhiteboard = whiteboard;
-                                    },
-                                    getActiveWhiteboardId: () =>
-                                        getSelectedActiveWhiteboardId(snapshot),
-                                    persistActiveWhiteboardId,
-                                    setWorkspaceMode,
-                                })
-                            ) {
-                                return;
-                            }
-
-                            const joinButton =
-                                event.target.closest(".classes-join-btn");
-                            if (joinButton instanceof HTMLElement) {
-                                const classId =
-                                    joinButton.dataset.classId ?? "";
-                                const response = await apiFetch(
-                                    `/api/v1/study/classes/${encodeURIComponent(classId)}/join`,
-                                    { method: "POST" },
-                                );
-                                showToast(
-                                    i18n.t(
-                                        response.ok
-                                            ? "module.study.classes.join_sent"
-                                            : "module.study.classes.join_failed",
-                                    ),
-                                    {
-                                        variant: response.ok
-                                            ? "success"
-                                            : "error",
-                                    },
-                                );
-                                if (response.ok) {
-                                    await refreshContent();
-                                }
-                                return;
-                            }
-
-                            const filterButton =
-                                event.target.closest("[data-language]");
-                            if (filterButton instanceof HTMLElement) {
-                                selectedLanguageFilter =
-                                    filterButton.dataset.language ?? "";
-                                await loadAvailableClasses();
-                                refreshDom();
-                                return;
-                            }
+                    bindClassroomInteractions({
+                        root,
+                        signal,
+                        i18n,
+                        apiFetch,
+                        openPopup,
+                        escapeHtml,
+                        navigateTo,
+                        bindProfilePreviews,
+                        getInteractionsBound: () => interactionsBound,
+                        setInteractionsBound: (value) => {
+                            interactionsBound = value;
                         },
-                        { signal },
-                    );
+                        selectedSnapshot,
+                        getSelectedClassId: () => selectedClassId,
+                        setSelectedClassId: (classId) => {
+                            selectedClassId = classId;
+                        },
+                        getSelectedSeatNumber: () => selectedSeatNumber,
+                        setSelectedSeatNumber: (seatNumber) => {
+                            selectedSeatNumber = seatNumber;
+                        },
+                        getActiveWhiteboard: () => activeWhiteboard,
+                        setActiveWhiteboard: (whiteboard) => {
+                            activeWhiteboard = whiteboard;
+                        },
+                        getSelectedActiveWhiteboardId,
+                        getActiveMeetingId: () => activeMeetingId,
+                        getTeacherAccount: () => teacherAccount,
+                        getClassroomViewMode,
+                        isTeacherView,
+                        getClassroomWindows: () => classroomWindows,
+                        updateBoardFocus,
+                        normalizeWorkspaceMode,
+                        setWorkspaceMode,
+                        handleSeatActionMenu,
+                        openAgendaPopup,
+                        openClassSettingsPopup,
+                        openClassSearch,
+                        refreshContent,
+                        refreshDom,
+                        refreshSubNavigation,
+                        refreshComposerFooter: () => composer.refreshFooter(),
+                        syncWorkspaceModeWithSnapshot,
+                        syncGlobalChatTarget,
+                        showToast,
+                        handleClassroomExit,
+                        handleResourceActions,
+                        handleWhiteboardAndNotepadActions,
+                        getClassResources: () => classResources,
+                        loadSelectedClassMeta,
+                        getClassroomNotepad: () => classroomNotepad,
+                        setClassroomNotepad: (notepad) => {
+                            classroomNotepad = notepad;
+                        },
+                        getClassroomNotepadClassId: () =>
+                            classroomNotepadClassId,
+                        setClassroomNotepadClassId: (classId) => {
+                            classroomNotepadClassId = classId;
+                        },
+                        createClassroomNotepad,
+                        persistActiveWhiteboardId,
+                        loadAvailableClasses,
+                        setSelectedLanguageFilter: (language) => {
+                            selectedLanguageFilter = language;
+                        },
+                        setSearchQuery: (queryText) => {
+                            searchQuery = queryText;
+                        },
+                        setNotebookText: (text) => {
+                            selectedNotebookText = text;
+                        },
+                        setBoardEntity,
+                    });
                     root.addEventListener("error", handleProfileAvatarError, {
                         signal,
                         capture: true,
-                    });
-
-                    root.addEventListener(
-                        "input",
-                        async (event) => {
-                            if (
-                                !(event.target instanceof HTMLInputElement) ||
-                                !event.target.classList.contains(
-                                    "classes-available-search",
-                                )
-                            ) {
-                                return;
-                            }
-                            searchQuery = event.target.value.trim();
-                            await loadAvailableClasses();
-                            refreshDom();
-                        },
-                        { signal },
-                    );
-                    bindClassroomEnhancements({
-                        root,
-                        signal,
-                        apiFetch,
-                        i18n,
-                        showToast,
-                        selectedSnapshot,
-                        setBoardEntity,
-                        refreshDom,
-                        refreshContent,
                     });
                 },
             },
@@ -1115,7 +749,7 @@ export async function mount(root, { signal } = {}) {
             }
             void persistActiveWhiteboardId(
                 classId,
-                visible ? boardId ?? null : null,
+                visible ? (boardId ?? null) : null,
             );
         },
     });

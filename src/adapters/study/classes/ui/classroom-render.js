@@ -254,7 +254,8 @@ function renderLiveRail({
     const activeWhiteboardSummary =
         activeWhiteboard?.boardName ??
         whiteboards.find(
-            (board) => String(board?.id ?? "") === String(activeWhiteboardId ?? ""),
+            (board) =>
+                String(board?.id ?? "") === String(activeWhiteboardId ?? ""),
         )?.name ??
         "";
     return `

@@ -555,7 +555,7 @@ export async function bootstrapStudyAdapter(
         id: "study-classes-classroom-hub-page",
         pattern: "^/classroom$",
         base: "/classroom",
-        scriptUrl: "/static/adapters/study/classes/classroom.js",
+        scriptUrl: "/static/adapters/study/classes/classroom/index.js",
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",

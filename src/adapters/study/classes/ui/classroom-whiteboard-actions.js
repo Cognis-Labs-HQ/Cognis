@@ -114,7 +114,10 @@ export async function handleWhiteboardAndNotepadActions(
             embedUrl: activeWhiteboard.embedUrl,
         });
         if (isTeacherView()) {
-            await persistActiveWhiteboardId(snapshot.id, activeWhiteboard.boardId);
+            await persistActiveWhiteboardId(
+                snapshot.id,
+                activeWhiteboard.boardId,
+            );
         }
         return true;
     }

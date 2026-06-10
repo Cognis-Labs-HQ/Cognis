@@ -159,7 +159,10 @@ export async function handleClassroomLayoutRoute(
             );
             return true;
         }
-        if (err instanceof Error && err.message === "invalid_active_whiteboard") {
+        if (
+            err instanceof Error &&
+            err.message === "invalid_active_whiteboard"
+        ) {
             jsonError(
                 res,
                 400,
