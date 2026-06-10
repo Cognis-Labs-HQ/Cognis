@@ -1,5 +1,7 @@
 import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
 
+const DEFAULT_AGENDA_DURATION_MS = 60 * 60 * 1000;
+
 export function bindClassroomInteractions({
     root,
     signal,
@@ -215,7 +217,7 @@ export function bindClassroomInteractions({
                 ).trim();
                 const nowIso = new Date().toISOString();
                 const endIso = new Date(
-                    Date.now() + 60 * 60 * 1000,
+                    Date.now() + DEFAULT_AGENDA_DURATION_MS,
                 ).toISOString();
                 const saveResponse = await apiFetch(
                     `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/agenda`,

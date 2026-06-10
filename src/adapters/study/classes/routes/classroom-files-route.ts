@@ -71,7 +71,15 @@ export async function handleClassroomFilesRoutes({
         }
         const deleted = await options
             .deleteEvent(calendarId, eventId)
-            .catch(() => false);
+            .catch((error: unknown) => {
+                options.log?.("error", "Failed to delete agenda item.", {
+                    component: "classes",
+                    operation: "delete-agenda-item",
+                    classId: eventId,
+                    error,
+                });
+                return false;
+            });
         if (!deleted) {
             jsonError(res, 404, "not_found", "Agenda item not found.");
             return true;

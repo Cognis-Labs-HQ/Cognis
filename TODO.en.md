@@ -363,3 +363,21 @@
 ### classes.css over 1000 lines
 
 `src/adapters/study/classes/ui/classes.css` is 1034 lines at HEAD, already above the 1000-line guardrail before this PR. Needs to be split into focused sibling files under a `classes/` subdirectory. Not addressed in this PR.
+
+## Code review items deferred from classroom overhaul PR
+
+### Server-side rename for notepad files
+
+`classroom-file-actions.js renameNotepadFile` reads the full file content into memory to perform a rename via read-write-delete. A dedicated server-side rename/move endpoint in the file gateway would avoid this. Requires a new route on the file gateway.
+
+### `document.execCommand` deprecated in classroom notepad
+
+`src/adapters/study/notepad/ui/classroom-notepad.js` lines 139 and 152 use the deprecated `document.execCommand` API for text formatting. Should be replaced with the modern Selection API. Pre-existing issue not introduced by this PR.
+
+### `ALLOWED_STYLE_TAGS` recomputed on every module call
+
+`src/adapters/study/notepad/ui/classroom-notepad.js` line 112: the `ALLOWED_STYLE_TAGS` set is recomputed inside a function rather than at module scope. Pre-existing issue.
+
+### File extension validation in `classroom-resource-actions.js`
+
+`classroom-resource-actions.js:38-40` extracts the file extension from a client-provided filename without validating against an allowlist. Pre-existing code not touched by the classroom overhaul PR.

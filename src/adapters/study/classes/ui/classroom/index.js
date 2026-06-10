@@ -214,7 +214,6 @@ export async function mount(root, { signal } = {}) {
                 snapshot?.classroom?.boardFocus,
             );
             if (boardFocus === "classroom") return "roster";
-            if (boardFocus === "chat") return "chat";
             return "chat";
         }
         const snapshot = selectedSnapshot();

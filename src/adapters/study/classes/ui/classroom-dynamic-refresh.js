@@ -1,6 +1,6 @@
 import {
     renderDeskFloor,
-    renderStudentRoster,
+    renderRosterPanel,
 } from "/static/adapters/study/classes/classroom-render.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 
@@ -44,17 +44,17 @@ export function createDynamicDomRefresher({
             }
         }
 
-        const rosterMarkup = renderStudentRoster({ snapshot, i18n });
+        const rosterPanelMarkup = renderRosterPanel({ snapshot, i18n });
         const rosterPanel = root.querySelector(".classes-roster-panel");
         if (rosterPanel instanceof HTMLElement) {
-            rosterPanel.innerHTML = rosterMarkup;
+            rosterPanel.outerHTML = rosterPanelMarkup;
         }
         if (workspaceMode === "roster") {
             const rosterSection = root.querySelector(
                 ".classes-workspace-roster",
             );
             if (rosterSection instanceof HTMLElement) {
-                rosterSection.innerHTML = rosterMarkup;
+                rosterSection.innerHTML = rosterPanelMarkup;
             }
         }
 

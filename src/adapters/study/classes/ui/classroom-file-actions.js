@@ -254,10 +254,39 @@ export async function handleFileActions(
                     );
                     if (renameBtn instanceof HTMLElement) {
                         const oldName = renameBtn.dataset.fileName ?? "";
-                        const newName = window.prompt(
-                            i18n.t("module.study.classes.notepad_filename"),
-                            oldName,
+                        const renameResult = await openPopup({
+                            title: i18n.t(
+                                "module.study.classes.notepad_filename",
+                            ),
+                            body: `
+                                <label class="stack">
+                                    ${esc(i18n.t("module.study.classes.notepad_filename"))}
+                                    <input type="text" class="classes-rename-filename-input"
+                                        value="${esc(oldName)}" />
+                                </label>
+                            `,
+                            actions: [
+                                {
+                                    id: "cancel",
+                                    label: i18n.t("ui.reuse.cancel"),
+                                    variant: "cancel",
+                                },
+                                {
+                                    id: "rename",
+                                    label: i18n.t("ui.reuse.save"),
+                                    variant: "confirm",
+                                },
+                            ],
+                        });
+                        if (renameResult !== "rename") return;
+                        const renameInput = document.querySelector(
+                            ".classes-rename-filename-input",
                         );
+                        const newName = String(
+                            renameInput instanceof HTMLInputElement
+                                ? renameInput.value
+                                : "",
+                        ).trim();
                         if (!newName || newName === oldName) return;
                         const renamed = await renameNotepadFile(
                             apiFetch,
@@ -298,7 +327,6 @@ export async function handleFileActions(
         if ((action !== "open" && action !== "cancel") || !selectedFilename) {
             return true;
         }
-        if (!selectedFilename) return true;
         const content = await loadNotepadFile(
             apiFetch,
             snapshot.id,

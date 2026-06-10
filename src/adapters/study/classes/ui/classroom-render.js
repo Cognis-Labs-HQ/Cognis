@@ -279,6 +279,7 @@ function renderRosterPanel({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const memberLabel = (member) =>
         buildAccountLabel(member) || String(member?.studentAccountId ?? "");
+    const emptySlot = `<li class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</li>`;
     const present = members.filter(
         (member) =>
             String(member?.presence ?? "") === "online" ||
@@ -307,9 +308,9 @@ function renderRosterPanel({ snapshot, i18n }) {
             <div class="classes-roster-panel-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
             <ul class="classes-roster-panel-list">
                 <li class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_present"))}</li>
-                ${presentItems || `<li class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</li>`}
+                ${presentItems || emptySlot}
                 <li class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_absent"))}</li>
-                ${absentItems || `<li class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</li>`}
+                ${absentItems || emptySlot}
             </ul>
         </div>
     `;
@@ -676,7 +677,7 @@ function renderDeskFloor({
     return `<div class="classes-desk-floor">${teacherDesk}${rowHtml}${renderRoomDoor({ i18n, isTeacherView })}</div>`;
 }
 
-export { renderDeskFloor, renderStudentRoster };
+export { renderDeskFloor, renderStudentRoster, renderRosterPanel };
 
 function renderRoomDoor({ i18n, isTeacherView }) {
     return `
