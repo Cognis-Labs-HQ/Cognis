@@ -10,6 +10,16 @@
     overflow: hidden;
 }
 
+.classes-notepad-title {
+    margin: 0;
+    padding: 10px 14px 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
 .classes-notepad-toolbar {
     display: flex;
     align-items: center;
@@ -44,7 +54,8 @@
 
 .classes-notepad-save-btn,
 .classes-notepad-open-btn,
-.classes-notepad-download-btn {
+.classes-notepad-download-btn,
+.classes-notepad-clear-btn {
     padding: 4px 10px;
     border-radius: 6px;
     border: 1px solid var(--border);
@@ -57,11 +68,17 @@
 
 .classes-notepad-save-btn:hover,
 .classes-notepad-open-btn:hover,
-.classes-notepad-download-btn:hover {
+.classes-notepad-download-btn:hover,
+.classes-notepad-clear-btn:hover {
     background: var(--surface-2);
 }
 
-.classes-notepad-editor {
+.classes-notepad-clear-btn {
+    color: var(--danger, #c0392b);
+    border-color: var(--danger, #c0392b);
+}
+
+.classes-notepad-textarea {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
@@ -74,23 +91,23 @@
     word-break: break-word;
 }
 
-.classes-notepad-editor h1 {
+.classes-notepad-textarea h1 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0.75em 0 0.4em;
 }
 
-.classes-notepad-editor h2 {
+.classes-notepad-textarea h2 {
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0.6em 0 0.3em;
 }
 
-.classes-notepad-editor p {
+.classes-notepad-textarea p {
     margin: 0.4em 0;
 }
 
-.classes-notepad-editor blockquote {
+.classes-notepad-textarea blockquote {
     border-left: 3px solid var(--border);
     margin: 0.5em 0;
     padding: 0.3em 0.8em;
@@ -98,7 +115,7 @@
     font-style: italic;
 }
 
-.classes-notepad-editor pre {
+.classes-notepad-textarea pre {
     font-family: monospace;
     background: var(--surface-2);
     border: 1px solid var(--border);

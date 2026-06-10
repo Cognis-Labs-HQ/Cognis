@@ -211,6 +211,10 @@ export function createClassroomNotepad({ classId, i18n }) {
             i18n.t("module.study.classes.notepad"),
         );
 
+        const titleEl = document.createElement("h2");
+        titleEl.className = "classes-notepad-title";
+        titleEl.textContent = i18n.t("module.study.classes.notepad");
+
         const toolbar = document.createElement("div");
         toolbar.className = "classes-notepad-toolbar";
 
@@ -267,15 +271,21 @@ export function createClassroomNotepad({ classId, i18n }) {
             "module.study.classes.notepad_download",
         );
 
+        const clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.className = "classes-notepad-clear-btn";
+        clearBtn.textContent = i18n.t("module.study.classes.notepad_clear");
+
         toolbar.appendChild(styleSelect);
         toolbar.appendChild(sizeSelect);
         toolbar.appendChild(colorInput);
         toolbar.appendChild(saveBtn);
         toolbar.appendChild(openBtn);
         toolbar.appendChild(downloadBtn);
+        toolbar.appendChild(clearBtn);
 
         editor = document.createElement("div");
-        editor.className = "classes-notepad-editor";
+        editor.className = "classes-notepad-textarea";
         editor.contentEditable = "true";
         editor.setAttribute("aria-multiline", "true");
         editor.setAttribute(
@@ -316,6 +326,14 @@ export function createClassroomNotepad({ classId, i18n }) {
             downloadAsMarkdown();
         });
 
+        clearBtn.addEventListener("click", () => {
+            if (editor) {
+                editor.innerHTML = "";
+            }
+            clearDraft();
+        });
+
+        panelEl.appendChild(titleEl);
         panelEl.appendChild(toolbar);
         panelEl.appendChild(editor);
         panel = panelEl;

@@ -803,7 +803,10 @@ export async function mount(root, { signal } = {}) {
             const previousActiveMeetingId = activeMeetingId;
             await loadClassrooms();
             await loadSelectedClassMeta();
-            if (activeMeetingId && activeMeetingId !== previousActiveMeetingId) {
+            if (
+                activeMeetingId &&
+                activeMeetingId !== previousActiveMeetingId
+            ) {
                 studentJoinedMeetingId = null;
             }
             refreshSnapshotPresence();

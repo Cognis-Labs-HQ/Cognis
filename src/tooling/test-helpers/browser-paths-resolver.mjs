@@ -3,12 +3,27 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolvePath(fileURLToPath(import.meta.url), "../../../../");
 
+const REUSE_STUBS = {
+    "reuse/api-client.js":
+        "export async function apiFetch() { return null; }",
+    "reuse/toast.js":
+        "export function showToast() {}",
+};
+
+function toDataUrl(source) {
+    return `data:text/javascript,${encodeURIComponent(source)}`;
+}
+
 export async function resolve(specifier, context, nextResolve) {
     if (!specifier.startsWith("/static/")) {
         return nextResolve(specifier, context);
     }
 
     const relative = specifier.slice("/static/".length);
+
+    if (Object.hasOwn(REUSE_STUBS, relative)) {
+        return { url: toDataUrl(REUSE_STUBS[relative]), shortCircuit: true };
+    }
 
     if (relative.startsWith("adapters/")) {
         const rest = relative.slice("adapters/".length);
