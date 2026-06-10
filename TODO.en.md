@@ -258,6 +258,58 @@
 
 **Reviewer suggestion:** The `componentStringBaseUrls` array in `src/adapters/study/classes/ui/classroom.js` hardcodes other component string paths and should be replaced with a central registry or capability-driven discovery.
 
+**Reason ignored:** This feedback targets a pre-existing i18n bootstrap pattern outside the requested meeting/whiteboard gating fix. The task-specific instruction says not to fix unrelated pre-existing issues, so this broader classroom i18n architecture change is deferred.
+
+## Code Review — classroom activity gating
+
+### gateways/social/bootstrap.ts timeout constant naming
+
+**Reviewer suggestion:** Rename the `_MS` timeout constants in `src/gateways/social/bootstrap.ts` to a more descriptive naming style.
+
+**Reason ignored:** This is pre-existing naming cleanup in an unrelated gateway file. The current task was limited to classroom activity gating, and the repository instructions explicitly say not to fix unrelated pre-existing issues.
+
+### gateways/social/bootstrap.ts presence prune interval constant
+
+**Reviewer suggestion:** Extract the hardcoded 15-second prune interval in `src/gateways/social/bootstrap.ts` into a named constant.
+
+**Reason ignored:** This is a pre-existing maintainability suggestion in the social gateway, not part of the classroom fix. It is deferred under the instruction not to change unrelated code.
+
+### store/rows.ts class row name clarity
+
+**Reviewer suggestion:** Rename `ClassRow.name` to `className` for clarity.
+
+**Reason ignored:** This would be a broader data-contract refactor across the classes adapter and unrelated consumers, well beyond the requested classroom activity behavior change. It is deferred to avoid unrelated API churn.
+
+### classroom-render.js default student capacity constant
+
+**Reviewer suggestion:** Move the default student capacity in `src/adapters/study/classes/ui/classroom-render.js` into a shared constant module.
+
+**Reason ignored:** This is pre-existing duplication unrelated to the new activity gating behavior. Per repository instructions, unrelated pre-existing cleanup was not folded into this task.
+
+### classroom-chat.js refresh interval constant
+
+**Reviewer suggestion:** Make the chat refresh interval in `src/adapters/study/classes/ui/classroom-chat.js` configurable or document it more clearly.
+
+**Reason ignored:** This is a pre-existing tuning/documentation issue in the classroom chat module. It does not affect the teacher-activity gating change and is deferred under the no-unrelated-fixes rule.
+
+### classroom-presence.js heartbeat constant extraction
+
+**Reviewer suggestion:** Extract the 30-second heartbeat interval in `src/adapters/study/classes/ui/classroom-presence.js` into a named module constant.
+
+**Reason ignored:** This is a pre-existing readability improvement unrelated to the user-requested classroom gating fix. It is deferred to keep this change focused on the required behavior.
+
+### classroom-realtime.js refresh interval constant
+
+**Reviewer suggestion:** Extract the default 3000 ms refresh interval in `src/adapters/study/classes/ui/classroom-realtime.js` into a named constant.
+
+**Reason ignored:** This is a pre-existing maintainability suggestion in an untouched module. The repository instructions explicitly prioritize avoiding unrelated changes in this task.
+
+### classroom-notepad.js storage key prefix naming
+
+**Reviewer suggestion:** Rename the `classes_notepad_` storage key prefix in `src/adapters/study/notepad/ui/classroom-notepad.js` to a more adapter-neutral prefix.
+
+**Reason ignored:** This is a pre-existing naming issue in the notepad adapter and unrelated to meeting/whiteboard activity gating. Changing it here would widen the scope into a separate adapter concern, so it is deferred.
+
 **Reason ignored:** This review item targets the pre-existing classroom i18n loading pattern already used across the codebase for component-owned strings. Replacing it safely would require a broader cross-component i18n discovery design rather than a focused fix for the classroom whiteboard regression, so it is tracked here for a dedicated follow-up.
 
 ### gateway.ts adapter requires normalization — extract shared helper
