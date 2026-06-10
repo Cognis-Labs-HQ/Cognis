@@ -35,3 +35,35 @@ Guru kini dapat mengunggah file ke materi kelas melalui gateway file. File yang 
 ## Kontrol tampilan obrolan/rapat siswa dihapus
 
 Siswa tidak lagi memiliki tombol manual untuk menampilkan atau menyembunyikan jendela obrolan atau rapat. Visibilitas ruang kerja sepenuhnya dikendalikan oleh status guru.
+
+## Loop penyegaran siswa dan penjagaan rapat diperbaiki
+
+Siswa tidak lagi terjebak dalam loop memasuki rapat. Auto-join dijaga oleh catatan per sesi dan hanya berjalan saat guru telah memulai rapat.
+
+## Tombol Pencarian diperbaiki untuk siswa dan guru
+
+Menekan Pencarian sebagai siswa kini menavigasi ke halaman pencari kelas. Guru dalam tampilan guru tidak lagi melihat tombol tersebut. Kondisi rusak saat daftar kelas guru menghilang telah dihilangkan.
+
+## Pengalihan tampilan guru/siswa diperbaiki
+
+Beralih antara tampilan guru dan siswa tidak lagi memerlukan dua kali tekan atau menyebabkan daftar kelas menghilang.
+
+## Agenda dan Buat Agenda digabungkan menjadi pengeditan langsung
+
+Guru kini dapat menambahkan item agenda langsung di panel tanpa membuka popup. Item baru muncul bagi siswa pada pembaruan berikutnya. Setiap item memiliki tombol hapus untuk guru.
+
+## Papan tulis dibuat otomatis saat pertama kali ditekan
+
+Menekan tombol Papan Tulis sebagai guru kini secara otomatis membuat dan membuka papan tulis. Alur dua langkah telah dihapus.
+
+## Tata letak kelas: 15% panel daftar hadir + 85% ruang kerja
+
+Bilah sisi live rail digantikan oleh tata letak CSS grid: panel daftar hadir 15% dengan font kapur di sebelah kiri, dan ruang kerja utama di sebelah kanan. Bilah alat terlihat oleh semua pengguna tetapi hanya dapat digunakan oleh guru.
+
+## Gaya papan tulis diterapkan pada elemen page-content
+
+Latar belakang gelap papan tulis kini diterapkan langsung pada container page-content saat halaman dimuat.
+
+## Pengelolaan file untuk buku catatan kelas
+
+Menekan Simpan atau Buka di ruang kerja buku catatan membuka antarmuka pengelolaan file melalui gateway file. File disimpan per kelas dan dapat diubah nama atau dihapus dari dialog buka.

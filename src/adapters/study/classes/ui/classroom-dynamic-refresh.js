@@ -45,9 +45,9 @@ export function createDynamicDomRefresher({
         }
 
         const rosterMarkup = renderStudentRoster({ snapshot, i18n });
-        const liveRailRoster = root.querySelector(".classes-live-rail-roster");
-        if (liveRailRoster instanceof HTMLElement) {
-            liveRailRoster.innerHTML = rosterMarkup;
+        const rosterPanel = root.querySelector(".classes-roster-panel");
+        if (rosterPanel instanceof HTMLElement) {
+            rosterPanel.innerHTML = rosterMarkup;
         }
         if (workspaceMode === "roster") {
             const rosterSection = root.querySelector(

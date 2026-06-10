@@ -90,6 +90,58 @@ export async function handleWhiteboardAndNotepadActions(
         if (!isTeacherView() && !getActiveWhiteboardId()) {
             return true;
         }
+        if (isTeacherView()) {
+            const activeWhiteboardId = getActiveWhiteboardId();
+            if (!activeWhiteboardId) {
+                const autoName = i18n.t("module.study.classes.whiteboard");
+                const createResponse = await apiFetch(
+                    `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
+                    {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ name: autoName }),
+                    },
+                );
+                if (!createResponse.ok) {
+                    showToast(
+                        i18n.t("module.study.classes.whiteboard_create_failed"),
+                        { variant: "error" },
+                    );
+                    return true;
+                }
+                const createPayload = await createResponse
+                    .json()
+                    .catch(() => ({ data: {} }));
+                const newBoardId = String(createPayload?.data?.id ?? "").trim();
+                if (!newBoardId) {
+                    await loadSelectedClassMeta();
+                } else {
+                    const embed = await resolveWhiteboardEmbed(
+                        newBoardId,
+                        autoName,
+                    );
+                    if (embed?.embedUrl) {
+                        setActiveWhiteboard(embed);
+                        await persistActiveWhiteboardId(
+                            snapshot.id,
+                            newBoardId,
+                        );
+                    }
+                    await loadSelectedClassMeta();
+                }
+            } else {
+                const currentActive = getActiveWhiteboard();
+                if (!currentActive?.embedUrl) {
+                    const embed = await resolveWhiteboardEmbed(
+                        activeWhiteboardId,
+                        "",
+                    );
+                    if (embed?.embedUrl) {
+                        setActiveWhiteboard(embed);
+                    }
+                }
+            }
+        }
         setWorkspaceMode("whiteboard");
         refreshDom();
         return true;
@@ -153,59 +205,6 @@ export async function handleWhiteboardAndNotepadActions(
         });
         if (isTeacherView()) {
             await persistActiveWhiteboardId(snapshot.id, boardId);
-        }
-        return true;
-    }
-
-    if (
-        event.target.closest(".classes-create-whiteboard-btn") &&
-        isTeacherView()
-    ) {
-        if (!snapshot) return true;
-        const result = await openPopup({
-            title: i18n.t("module.study.classes.new_whiteboard"),
-            body: `<label>${escapeHtml(i18n.t("module.study.classes.whiteboard_name_label"))}<input type="text" class="classes-whiteboard-name-input" /></label>`,
-            actions: [
-                {
-                    id: "create",
-                    label: i18n.t("ui.reuse.create"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-        });
-        if (result !== "create") return true;
-        const nameInput = document.querySelector(
-            ".classes-whiteboard-name-input",
-        );
-        const name =
-            nameInput instanceof HTMLInputElement ? nameInput.value.trim() : "";
-        const createResponse = await apiFetch(
-            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
-            {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    name: name || i18n.t("module.study.classes.whiteboard"),
-                }),
-            },
-        );
-        showToast(
-            i18n.t(
-                createResponse.ok
-                    ? "module.study.classes.whiteboard_created"
-                    : "module.study.classes.whiteboard_create_failed",
-            ),
-            { variant: createResponse.ok ? "success" : "error" },
-        );
-        if (createResponse.ok) {
-            await loadSelectedClassMeta();
-            setWorkspaceMode("whiteboard");
-            refreshDom();
         }
         return true;
     }

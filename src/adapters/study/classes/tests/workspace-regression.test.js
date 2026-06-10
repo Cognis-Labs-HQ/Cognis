@@ -5,14 +5,14 @@ import { resolve } from "node:path";
 
 const ROOT = process.cwd();
 
-test("classroom render includes workspace tabs and live rail", () => {
+test("classroom render includes workspace tabs and roster panel", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
         "utf8",
     );
 
     assert.match(source, /classes-workspace-tab-btn/);
-    assert.match(source, /classes-live-rail/);
+    assert.match(source, /classes-roster-panel/);
     assert.match(source, /classes-notepad-host/);
     assert.match(source, /classes-meeting-workspace-host/);
 });
@@ -39,7 +39,7 @@ test("classroom render gates student meeting and whiteboard controls", () => {
         "utf8",
     );
 
-    assert.match(source, /canAccessMeeting/);
     assert.match(source, /canAccessWhiteboard/);
     assert.match(source, /activeWhiteboardId/);
+    assert.match(source, /classes-blackboard-body/);
 });

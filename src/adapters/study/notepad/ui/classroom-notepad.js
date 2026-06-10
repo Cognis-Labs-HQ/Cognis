@@ -52,8 +52,8 @@ function sanitizeNotepadHtml(html) {
         }
         node = walker.nextNode();
     }
-    for (const el of toRemove) {
-        el.replaceWith(...Array.from(el.childNodes));
+    for (const element of toRemove) {
+        element.replaceWith(...Array.from(element.childNodes));
     }
     return container.innerHTML;
 }

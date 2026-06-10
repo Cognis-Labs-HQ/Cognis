@@ -109,6 +109,7 @@ function renderWorkspaceTabs({
     workspaceMode,
     isMeetingOpen,
     canAccessWhiteboard,
+    isTeacherView,
 }) {
     const tabs = [
         {
@@ -145,7 +146,8 @@ function renderWorkspaceTabs({
                     }"
                     data-workspace-mode="${escapeHtml(tab.mode)}"
                     ${
-                        isMeetingOpen && tab.mode !== "meeting"
+                        !isTeacherView ||
+                        (isMeetingOpen && tab.mode !== "meeting")
                             ? 'disabled aria-disabled="true"'
                             : ""
                     }
@@ -154,21 +156,11 @@ function renderWorkspaceTabs({
         .join("");
 }
 
-function renderWorkspaceWhiteboard({
-    whiteboards,
-    activeWhiteboard,
-    isTeacherView,
-    i18n,
-}) {
+function renderWorkspaceWhiteboard({ activeWhiteboard, i18n }) {
     if (!activeWhiteboard?.embedUrl) {
         return `
             <section class="classes-workspace-panel classes-workspace-panel--whiteboard">
-                ${renderWhiteboardList({ whiteboards, isTeacherView, i18n })}
-                ${
-                    isTeacherView
-                        ? `<button type="button" class="btn-confirm btn-animated classes-create-whiteboard-btn">${escapeHtml(i18n.t("module.study.classes.new_whiteboard"))}</button>`
-                        : ""
-                }
+                <p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>
             </section>
         `;
     }
@@ -193,6 +185,45 @@ function renderWorkspaceWhiteboard({
     `;
 }
 
+function renderInlineAgenda({ activeAgendaItems, isTeacherView, i18n }) {
+    const items = activeAgendaItems.length
+        ? activeAgendaItems
+              .map(
+                  (item) => `
+                <div class="classes-chalk-item" data-agenda-id="${escapeHtml(String(item.id ?? ""))}">
+                    <span class="classes-chalk-title">${escapeHtml(item.title ?? "")}</span>
+                    ${item.description ? `<span class="classes-chalk-desc">${escapeHtml(item.description)}</span>` : ""}
+                    ${
+                        isTeacherView
+                            ? `<button type="button" class="classes-agenda-delete-btn"
+                                data-agenda-id="${escapeHtml(String(item.id ?? ""))}"
+                                aria-label="${escapeHtml(i18n.t("ui.reuse.delete"))}">&times;</button>`
+                            : ""
+                    }
+                </div>
+            `,
+              )
+              .join("")
+        : `<span class="classes-chalk-empty">${escapeHtml(i18n.t("module.study.classes.no_active_agenda"))}</span>`;
+
+    const addForm = isTeacherView
+        ? `
+            <div class="classes-agenda-inline-form" hidden>
+                <input type="text" class="classes-agenda-inline-title"
+                    placeholder="${escapeHtml(i18n.t("module.study.classes.agenda_title"))}" />
+                <input type="text" class="classes-agenda-inline-desc"
+                    placeholder="${escapeHtml(i18n.t("module.study.classes.agenda_description_optional"))}" />
+                <button type="button" class="btn-confirm btn-animated classes-agenda-inline-save">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+            </div>
+            <button type="button" class="classes-icon-btn classes-add-agenda-btn"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
+            >${escapeHtml(i18n.t("module.study.classes.create_agenda"))}</button>
+        `
+        : "";
+
+    return `<div class="classes-agenda-panel">${items}${addForm}</div>`;
+}
+
 function renderWorkspaceContent({
     snapshot,
     activeAgendaItems,
@@ -215,19 +246,25 @@ function renderWorkspaceContent({
         return `<section class="classes-workspace-panel classes-workspace-panel--roster classes-workspace-roster">${renderStudentRoster({ snapshot, i18n })}</section>`;
     }
     if (workspaceMode === "notepad") {
-        return '<section class="classes-workspace-panel classes-workspace-panel--notepad"><div class="classes-notepad-host"></div></section>';
+        return `
+            <section class="classes-workspace-panel classes-workspace-panel--notepad">
+                <div class="classes-notepad-toolbar">
+                    <button type="button" class="classes-notepad-save-file-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+                    <button type="button" class="classes-notepad-open-file-btn">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
+                </div>
+                <div class="classes-notepad-host"></div>
+            </section>
+        `;
     }
     if (workspaceMode === "whiteboard") {
         return renderWorkspaceWhiteboard({
-            whiteboards,
             activeWhiteboard,
-            isTeacherView,
             i18n,
         });
     }
     return `
         <section class="classes-workspace-panel classes-workspace-panel--agenda">
-            ${renderChalkAgenda({ activeAgendaItems, i18n })}
+            ${renderInlineAgenda({ activeAgendaItems, isTeacherView, i18n })}
             ${renderSelectedDeskPanel({
                 snapshot,
                 selectedSeatNumber,
@@ -238,7 +275,7 @@ function renderWorkspaceContent({
     `;
 }
 
-function renderPresenceList({ snapshot, i18n }) {
+function renderRosterPanel({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const memberLabel = (member) =>
         buildAccountLabel(member) || String(member?.studentAccountId ?? "");
@@ -255,106 +292,26 @@ function renderPresenceList({ snapshot, i18n }) {
     const presentItems = present
         .map(
             (member) =>
-                `<li class="classes-presence-item">${escapeHtml(memberLabel(member))}</li>`,
+                `<li class="classes-roster-panel-item">${escapeHtml(memberLabel(member))}</li>`,
         )
         .join("");
     const absentItems = absent
         .map(
             (member) =>
-                `<li class="classes-presence-item classes-presence-item--absent">${escapeHtml(memberLabel(member))}</li>`,
+                `<li class="classes-roster-panel-item classes-roster-panel-item--absent">${escapeHtml(memberLabel(member))}</li>`,
         )
         .join("");
 
     return `
-        <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
-        <ul class="classes-presence-list">
-            <li class="classes-presence-list-label">${escapeHtml(i18n.t("module.study.classes.members_present"))}</li>
-            ${presentItems || `<li class="classes-presence-item classes-presence-item--absent">&#8212;</li>`}
-            <li class="classes-presence-list-label">${escapeHtml(i18n.t("module.study.classes.members_absent"))}</li>
-            ${absentItems || `<li class="classes-presence-item classes-presence-item--absent">&#8212;</li>`}
-        </ul>
-    `;
-}
-
-function renderLiveRail({
-    snapshot,
-    i18n,
-    isTeacherView,
-    whiteboards,
-    activeWhiteboard,
-    activeWhiteboardId,
-    hasActiveMeeting,
-    isChatOpen,
-    isMeetingOpen,
-}) {
-    const canAccessWhiteboard =
-        isTeacherView ||
-        Boolean(activeWhiteboardId) ||
-        Boolean(activeWhiteboard?.embedUrl);
-    const activeWhiteboardSummary =
-        activeWhiteboard?.boardName ??
-        whiteboards.find(
-            (board) =>
-                String(board?.id ?? "") === String(activeWhiteboardId ?? ""),
-        )?.name ??
-        "";
-    return `
-        <aside class="classes-live-rail">
-            <section class="classes-live-rail-card">
-                <div class="classes-live-rail-body classes-live-rail-roster">
-                    ${renderPresenceList({ snapshot, i18n })}
-                </div>
-            </section>
-            ${
-                isTeacherView
-                    ? `<section class="classes-live-rail-card">
-                <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</div>
-                <div class="classes-live-rail-body">
-                    <button
-                        type="button"
-                        class="classes-live-rail-action classes-open-chat-btn"
-                        ${snapshot?.chatUrl ? "" : "disabled"}
-                        aria-pressed="${isChatOpen ? "true" : "false"}"
-                    >${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
-                </div>
-            </section>
-            <section class="classes-live-rail-card">
-                <div class="classes-live-rail-header">${escapeHtml(i18n.t("ui.reuse.meeting"))}</div>
-                <div class="classes-live-rail-body">
-                    <button
-                        type="button"
-                        class="classes-live-rail-action classes-open-meeting-btn"
-                        ${isMeetingOpen ? 'aria-pressed="true"' : ""}
-                    >${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>
-                </div>
-            </section>`
-                    : ""
-            }
-            ${
-                canAccessWhiteboard
-                    ? `<section class="classes-live-rail-card">
-                <div class="classes-live-rail-header">${escapeHtml(i18n.t("module.study.classes.whiteboards"))}</div>
-                <div class="classes-live-rail-body">
-                    ${
-                        activeWhiteboardSummary
-                            ? `<div class="classes-live-rail-summary">${escapeHtml(activeWhiteboardSummary)}</div>`
-                            : ""
-                    }
-                    <button
-                        type="button"
-                        class="classes-live-rail-action classes-open-whiteboards-btn"
-                        ${isMeetingOpen ? 'disabled aria-disabled="true"' : ""}
-                    >${escapeHtml(i18n.t("module.study.classes.whiteboards"))}</button>
-                    ${
-                        isTeacherView && !whiteboards?.length
-                            ? `<button type="button" class="btn-confirm btn-animated classes-create-whiteboard-btn">${escapeHtml(i18n.t("module.study.classes.new_whiteboard"))}</button>`
-                            : ""
-                    }
-                </div>
-            </section>`
-                    : ""
-            }
-        </aside>
+        <div class="classes-roster-panel">
+            <div class="classes-roster-panel-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
+            <ul class="classes-roster-panel-list">
+                <li class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_present"))}</li>
+                ${presentItems || `<li class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</li>`}
+                <li class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_absent"))}</li>
+                ${absentItems || `<li class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</li>`}
+            </ul>
+        </div>
     `;
 }
 
@@ -438,11 +395,6 @@ export function renderBlackboard({
                 title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>`,
         );
         toolbarActions.push(
-            `<button type="button" class="classes-icon-btn classes-create-agenda-btn"
-                aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
-                title="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}">${escapeHtml(i18n.t("module.study.classes.create_agenda"))}</button>`,
-        );
-        toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-class-settings-btn"
                 aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
                 title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">${escapeHtml(i18n.t("module.study.classes.class_settings"))}</button>`,
@@ -479,17 +431,15 @@ export function renderBlackboard({
             ${isMeetingOpen ? 'disabled aria-disabled="true"' : ""}
             title="${escapeHtml(i18n.t("module.study.classes.notepad"))}">${escapeHtml(i18n.t("module.study.classes.notepad"))}</button>`,
     );
-    const showBlackboardHeader = isTeacherView || canToggleView;
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
-            ${
-                showBlackboardHeader
-                    ? `<div class="classes-blackboard-header">
+            <div class="classes-blackboard-header">
                 <div class="classes-chalk-header classes-workspace-tabs">${renderWorkspaceTabs(
                     {
                         i18n,
                         workspaceMode,
                         isMeetingOpen,
+                        isTeacherView,
                         canAccessWhiteboard:
                             isTeacherView ||
                             Boolean(activeWhiteboardId) ||
@@ -501,11 +451,10 @@ export function renderBlackboard({
                         ? `<div class="classes-blackboard-actions">${toolbarActions.join("")}</div>`
                         : ""
                 }
-            </div>`
-                    : ""
-            }
+            </div>
             <div class="classes-blackboard-surface">
-                <div class="classes-workspace-shell">
+                <div class="classes-blackboard-body">
+                    ${renderRosterPanel({ snapshot, i18n })}
                     <div class="classes-workspace-main">
                         ${renderWorkspaceContent({
                             snapshot,
@@ -520,17 +469,6 @@ export function renderBlackboard({
                             isMeetingOpen,
                         })}
                     </div>
-                    ${renderLiveRail({
-                        snapshot,
-                        i18n,
-                        isTeacherView,
-                        whiteboards,
-                        activeWhiteboard,
-                        activeWhiteboardId,
-                        hasActiveMeeting,
-                        isChatOpen,
-                        isMeetingOpen,
-                    })}
                 </div>
                 <div class="classes-blackboard-entity-layer">${renderedEntities}</div>
             </div>

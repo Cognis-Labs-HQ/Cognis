@@ -22,6 +22,7 @@ export function bindClassroomInteractions({
     getActiveMeetingId,
     getTeacherAccount,
     getClassroomViewMode,
+    setClassroomViewMode,
     isTeacherView,
     getClassroomWindows,
     updateBoardFocus,
@@ -41,6 +42,7 @@ export function bindClassroomInteractions({
     handleClassroomExit,
     handleResourceActions,
     handleWhiteboardAndNotepadActions,
+    handleFileActions,
     getClassResources,
     loadSelectedClassMeta,
     getClassroomNotepad,
@@ -181,6 +183,92 @@ export function bindClassroomInteractions({
                 return;
             }
 
+            if (event.target.closest(".classes-add-agenda-btn")) {
+                if (!isTeacherView() || !selectedClassId) return;
+                const form = root.querySelector(".classes-agenda-inline-form");
+                if (form instanceof HTMLElement) {
+                    form.hidden = !form.hidden;
+                }
+                return;
+            }
+
+            if (event.target.closest(".classes-agenda-inline-save")) {
+                if (!isTeacherView() || !selectedClassId) return;
+                const form = root.querySelector(".classes-agenda-inline-form");
+                if (!(form instanceof HTMLElement)) return;
+                const titleInput = form.querySelector(
+                    ".classes-agenda-inline-title",
+                );
+                const title = String(
+                    titleInput instanceof HTMLInputElement
+                        ? titleInput.value
+                        : "",
+                ).trim();
+                if (!title) return;
+                const descInput = form.querySelector(
+                    ".classes-agenda-inline-desc",
+                );
+                const desc = String(
+                    descInput instanceof HTMLInputElement
+                        ? descInput.value
+                        : "",
+                ).trim();
+                const nowIso = new Date().toISOString();
+                const endIso = new Date(
+                    Date.now() + 60 * 60 * 1000,
+                ).toISOString();
+                const saveResponse = await apiFetch(
+                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/agenda`,
+                    {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                            title,
+                            description: desc,
+                            startAt: nowIso,
+                            endAt: endIso,
+                        }),
+                    },
+                );
+                showToast(
+                    i18n.t(
+                        saveResponse.ok
+                            ? "module.study.classes.agenda_saved"
+                            : "module.study.classes.agenda_save_failed",
+                    ),
+                    { variant: saveResponse.ok ? "success" : "error" },
+                );
+                if (saveResponse.ok) {
+                    await loadSelectedClassMeta();
+                    refreshDom();
+                }
+                return;
+            }
+
+            const agendaDeleteButton = event.target.closest(
+                ".classes-agenda-delete-btn[data-agenda-id]",
+            );
+            if (agendaDeleteButton instanceof HTMLElement && isTeacherView()) {
+                const agendaId = String(
+                    agendaDeleteButton.dataset.agendaId ?? "",
+                ).trim();
+                if (!agendaId || !selectedClassId) return;
+                const deleteResponse = await apiFetch(
+                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/agenda/${encodeURIComponent(agendaId)}`,
+                    { method: "DELETE" },
+                );
+                if (deleteResponse.ok) {
+                    await loadSelectedClassMeta();
+                    refreshDom();
+                } else {
+                    showToast(
+                        i18n.t("module.study.classes.agenda_save_failed"),
+                        { variant: "error" },
+                    );
+                }
+                return;
+            }
+
             if (event.target.closest(".classes-create-agenda-btn")) {
                 await openAgendaPopup({
                     i18n,
@@ -216,16 +304,9 @@ export function bindClassroomInteractions({
                     getClassroomViewMode() === "teacher"
                         ? "student"
                         : "teacher";
-                const nextUrl = new URL(
-                    window.location.href,
-                    window.location.origin,
-                );
-                if (nextMode === "student") {
-                    nextUrl.searchParams.set("student", "true");
-                } else {
-                    nextUrl.searchParams.delete("student");
-                }
-                navigateTo(nextUrl.pathname + nextUrl.search);
+                setClassroomViewMode(nextMode);
+                setWorkspaceMode("agenda");
+                await refreshContent();
                 return;
             }
 
@@ -344,6 +425,20 @@ export function bindClassroomInteractions({
                         await refreshContent();
                     },
                 });
+                return;
+            }
+
+            if (
+                await handleFileActions(event, {
+                    snapshot,
+                    apiFetch,
+                    i18n,
+                    showToast,
+                    openPopup,
+                    escapeHtml,
+                    isTeacherView,
+                })
+            ) {
                 return;
             }
 

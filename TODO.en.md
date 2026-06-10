@@ -349,3 +349,17 @@
 **Reviewer suggestion:** Build the `claims.sub` JSON payload safely in `src/gateways/social/bootstrap.ts`.
 
 **Reason ignored:** This is an unrelated gateway issue outside the files changed for this classroom task.
+
+## Architecture compliance — classes.css over 1000 lines
+
+`src/adapters/study/classes/ui/classes.css` was already 1034 lines at the start of this PR (pre-existing). It needs to be split into a subdirectory with focused sibling files (e.g. `classes/base.css`, `classes/room.css`, `classes/desk.css`). Not addressed in this PR because it is a pre-existing issue unrelated to the classroom overhaul changes.
+
+## Pre-existing test failures (not introduced by this PR)
+
+### classroom-notepad.test.js — module resolution failure
+
+`src/adapters/study/notepad/tests/classroom-notepad.test.js` fails because `classroom-notepad.js` imports `/static/reuse/api-client.js` using a browser-rooted path that Node cannot resolve. The test infrastructure needs a module alias resolver or the import path needs to be made Node-compatible. Not addressed in this PR as this pre-dates these changes.
+
+### classes.css over 1000 lines
+
+`src/adapters/study/classes/ui/classes.css` is 1034 lines at HEAD, already above the 1000-line guardrail before this PR. Needs to be split into focused sibling files under a `classes/` subdirectory. Not addressed in this PR.
