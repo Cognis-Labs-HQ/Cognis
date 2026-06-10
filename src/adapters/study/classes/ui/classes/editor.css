@@ -1,0 +1,232 @@
+.classes-materials-editor {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    overflow: hidden;
+}
+
+.classes-materials-editor > summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.classes-materials-editor > summary::-webkit-details-marker {
+    display: none;
+}
+
+.classes-materials-editor > summary::before {
+    content: "▶";
+    font-size: 0.7rem;
+    transition: transform 0.15s;
+    color: var(--text-muted);
+}
+
+.classes-materials-editor[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+.classes-materials-editor-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+}
+
+.classes-materials-file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.classes-materials-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 0.84rem;
+    color: var(--text);
+}
+
+.classes-materials-file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classes-materials-file-remove {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+}
+
+.classes-materials-file-remove:hover {
+    color: var(--danger, #e55);
+}
+
+.classes-materials-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.classes-materials-upload-label:hover {
+    background: var(--surface-2);
+}
+
+.classes-icon-btn {
+    min-width: 0;
+    height: 2.25rem;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.18);
+    color: #f6f6f6;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.78rem;
+}
+
+.classes-icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.classes-toggle-view-btn {
+    margin-left: auto;
+}
+
+.classes-classroom-editor {
+    min-height: 72px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 8px 10px;
+    resize: vertical;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.classes-notebook-editor {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 8px 10px;
+    box-sizing: border-box;
+}
+
+.classes-browse-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.classes-empty--compact {
+    padding: 0;
+    text-align: left;
+}
+
+.classes-footer-class-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+[data-footer-slot="class-selector"] {
+    margin-left: auto;
+}
+
+.classes-footer-select {
+    height: 26px;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 0.82rem;
+    cursor: pointer;
+    max-width: 180px;
+}
+
+.classes-footer-toggle-btn {
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.classes-footer-toggle-btn:hover {
+    background: var(--surface);
+}
+
+.classes-classroom-subnav {
+    display: flex;
+    width: 100%;
+}
+
+.classes-classroom-subnav-list {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.classes-subnav-find-btn,
+.classes-subnav-class-btn {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    padding: 5px 12px;
+}
+
+.classes-subnav-class-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+body:not([data-theme="light"]) .classes-footer-select,
+body:not([data-theme="light"]) .classes-footer-toggle-btn {
+    background: var(--surface);
+    border-color: var(--border-strong);
+}

@@ -1,0 +1,169 @@
+.classes-classroom-hub {
+    gap: 16px;
+}
+
+.classes-classroom-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    --classes-classroom-blackboard-height: clamp(340px, 50vh, 680px);
+    --classroom-wall: #e8d9c0;
+    --classroom-wall-border: #5a4a3f;
+    --classroom-floor: #f0e8d5;
+    --classroom-blackboard-bg: #1c1e1b;
+    --classroom-blackboard-frame: #3a3228;
+    --classroom-member-bg: rgba(0, 0, 0, 0.14);
+    --classroom-member-hover: rgba(255, 255, 255, 0.08);
+    --classroom-member-text: rgba(255, 255, 255, 0.9);
+    --classroom-nameplate-bg: #5d3f24;
+    --classroom-nameplate-text: #f8e7c6;
+    --classroom-door: #b58858;
+    --classroom-door-outline: #6d4325;
+}
+
+body:not([data-theme="light"]) .classes-classroom-content {
+    --classroom-wall: #1b2230;
+    --classroom-wall-border: #4d5b72;
+    --classroom-floor: #111827;
+    --classroom-blackboard-bg: #141613;
+    --classroom-blackboard-frame: #2a2820;
+    --classroom-member-bg: rgba(255, 255, 255, 0.04);
+    --classroom-member-hover: rgba(255, 255, 255, 0.1);
+    --classroom-member-text: rgba(226, 232, 240, 0.94);
+    --classroom-nameplate-bg: #2f3f56;
+    --classroom-nameplate-text: #d7e3f5;
+    --classroom-door: #6c7f99;
+    --classroom-door-outline: #94a3b8;
+}
+
+.classes-room {
+    display: flex;
+    flex-direction: column;
+    border: 10px solid var(--classroom-wall-border);
+    border-radius: 12px;
+    background: var(--classroom-floor);
+    overflow: hidden;
+}
+
+.classes-room-top {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--classroom-wall);
+    border-bottom: 6px solid var(--classroom-wall-border);
+    min-height: 180px;
+}
+
+.classes-student-roster {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 8px;
+    background: var(--classroom-member-bg);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.classes-roster-header {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: rgba(0, 0, 0, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--classroom-member-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.classes-roster-list {
+    margin: 0;
+    padding: 8px;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 180px;
+}
+
+.classes-roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.classes-roster-item {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.12);
+    padding: 6px 8px;
+    color: var(--classroom-member-text);
+    text-align: left;
+    width: 100%;
+    font: inherit;
+}
+
+.classes-roster-member-card {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    align-items: center;
+    gap: 6px;
+}
+
+.classes-roster-avatar,
+.classes-roster-avatar-img,
+.classes-roster-avatar-fallback {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+}
+
+.classes-roster-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.classes-roster-avatar-img {
+    object-fit: cover;
+    display: block;
+}
+
+.classes-roster-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--initials-bg, rgba(255, 255, 255, 0.2));
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--classroom-member-text);
+}
+
+.classes-roster-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.classes-roster-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.classes-roster-role {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.classes-roster-item--teacher {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+}
+

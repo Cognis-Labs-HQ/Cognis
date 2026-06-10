@@ -67,3 +67,25 @@ Latar belakang gelap papan tulis kini diterapkan langsung pada container page-co
 ## Pengelolaan file untuk buku catatan kelas
 
 Menekan Simpan atau Buka di ruang kerja buku catatan membuka antarmuka pengelolaan file melalui gateway file. File disimpan per kelas dan dapat diubah nama atau dihapus dari dialog buka.
+
+## Loop bergabung-keluar otomatis dihilangkan
+
+Siswa mengalami siklus keluar/masuk berulang setelah pembaruan realtime kelas
+mendeteksi konferensi aktif. Penjaga bergabung per-rapat kini dicatat sebelum
+menunggu panggilan auto-join, sehingga peristiwa `videoConferenceLeft` yang
+cepat dari Jitsi tidak lagi meninggalkan penjaga tidak terset dan memulai ulang
+siklus. Nilai null sementara dari API rapat aktif tidak lagi mereset penjaga.
+
+## Kepatuhan arsitektur CSS dipulihkan
+
+`classes.css` melebihi batas 1000 baris. File kini menjadi agregator `@import`
+dan gayanya dibagi menjadi empat file saudara di bawah
+`src/adapters/study/classes/ui/classes/`: `list.css`, `room.css`,
+`blackboard.css`, dan `editor.css`.
+
+## Pengujian unit notepad kelas diperbaiki
+
+Tes `classroom-notepad.test.js` gagal karena Node tidak dapat menyelesaikan
+jalur impor `/static/` berbasis browser. Sebuah hook loader ESM kustom
+(`src/tooling/test-helpers/browser-paths-hook.mjs`) kini memetakan jalur tersebut
+ke lokasi sistem file yang sebenarnya.

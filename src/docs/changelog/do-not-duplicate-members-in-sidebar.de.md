@@ -67,3 +67,26 @@ Der dunkle Hintergrund der Tafel wird jetzt beim Laden direkt auf den page-conte
 ## Dateiverwaltung für den Klassenraum-Notizblock
 
 Über die Schaltflächen Speichern und Öffnen im Notizblock-Arbeitsbereich kann eine Dateiverwaltungsoberfläche geöffnet werden. Dateien werden pro Klasse gespeichert und können umbenannt oder gelöscht werden.
+
+## Dauerschleife beim automatischen Beitreten behoben
+
+Schüler gerieten in eine kontinuierliche Schleife aus Verlassen und erneutem
+Beitreten, wenn die Echtzeit-Aktualisierung des Klassenraums eine laufende
+Konferenz erkannte. Der Beitrittsschutz pro Konferenz wird jetzt vor dem Warten
+auf den Auto-Join-Aufruf gesetzt, sodass ein schnelles `videoConferenceLeft`-Ereignis
+von Jitsi die Schleife nicht mehr auslöst. Kurzzeitige Null-Werte der
+Aktivkonferenz-API setzen den Schutz nicht mehr zurück.
+
+## CSS-Architekturkonformität wiederhergestellt
+
+`classes.css` überschritt die 1000-Zeilen-Grenze. Die Datei dient jetzt als
+`@import`-Aggregator; die Stile sind auf vier spezialisierte Geschwisterdateien
+unter `src/adapters/study/classes/ui/classes/` aufgeteilt: `list.css`,
+`room.css`, `blackboard.css` und `editor.css`.
+
+## Unit-Test für Klassenraum-Notizblock behoben
+
+Der Test `classroom-notepad.test.js` schlug fehl, weil Node browser-absolute
+`/static/`-Importpfade nicht auflösen konnte. Ein benutzerdefinierter ESM-Loader-Hook
+(`src/tooling/test-helpers/browser-paths-hook.mjs`) bildet diese Pfade auf
+echte Dateisystemspeicherorte ab.

@@ -803,7 +803,7 @@ export async function mount(root, { signal } = {}) {
             const previousActiveMeetingId = activeMeetingId;
             await loadClassrooms();
             await loadSelectedClassMeta();
-            if (activeMeetingId !== previousActiveMeetingId) {
+            if (activeMeetingId && activeMeetingId !== previousActiveMeetingId) {
                 studentJoinedMeetingId = null;
             }
             refreshSnapshotPresence();
@@ -821,9 +821,9 @@ export async function mount(root, { signal } = {}) {
                         classroomWindows.resetAuthBlocked();
                     }
                     if (activeMeetingId !== studentJoinedMeetingId) {
+                        studentJoinedMeetingId = activeMeetingId;
                         await classroomWindows.tryAutoJoin(selectedClassId);
                         if (classroomWindows.isMeetingOpen()) {
-                            studentJoinedMeetingId = activeMeetingId;
                             setWorkspaceMode("meeting", { remember: false });
                             refreshDom();
                         } else {

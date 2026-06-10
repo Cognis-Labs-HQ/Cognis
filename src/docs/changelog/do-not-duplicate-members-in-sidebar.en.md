@@ -67,3 +67,27 @@ The blackboard background is now applied directly to the page-content container 
 ## File save/open/delete/rename for classroom notepad
 
 Pressing Save or Open in the notepad workspace opens a file management interface backed by the file gateway. Files are stored per class and can be renamed or deleted from the open dialog.
+
+## Student meeting loop eliminated
+
+Students were entering a continuous leave/rejoin cycle after the classroom
+realtime refresh detected an active meeting. The per-meeting join guard is now
+recorded before awaiting the auto-join call, so a rapid `videoConferenceLeft`
+event fired by Jitsi between unhiding the embed and the subsequent
+`isMeetingOpen()` check no longer leaves the guard unset and restarts the cycle.
+Transient null values from the active-meeting API no longer reset the guard,
+preventing a secondary loop caused by brief API flicker.
+
+## CSS architecture compliance restored
+
+`classes.css` exceeded the 1000-line guardrail. The file is now an
+`@import` aggregator and its styles are split across four focused sibling files
+under `src/adapters/study/classes/ui/classes/`: `list.css`, `room.css`,
+`blackboard.css`, and `editor.css`.
+
+## Classroom notepad unit test fixed
+
+The `classroom-notepad.test.js` test was failing because Node could not resolve
+browser-rooted `/static/` import paths. A custom ESM loader hook
+(`src/tooling/test-helpers/browser-paths-hook.mjs`) now maps those paths to their
+real filesystem locations, making the test pass without changing production code.
