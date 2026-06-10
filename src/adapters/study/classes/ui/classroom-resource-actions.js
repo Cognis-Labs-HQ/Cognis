@@ -35,15 +35,11 @@ export async function handleResourceActions(
             ? [...classResources.files]
             : [];
         for (const file of Array.from(input.files)) {
-            const nameBase = file.name
-                .replace(/\.[^.]+$/, "")
-                .replace(/[^a-z0-9-]/gi, "_");
-            const nameExt = (file.name.match(/\.[^.]+$/) ?? [""])[0].replace(
-                /[^a-z0-9.]/gi,
-                "",
-            );
-            const safeFileName = (nameBase || "file") + nameExt;
-            const key = `classes/${encodeURIComponent(snapshot.id)}/${Date.now()}-${safeFileName}`;
+            const ext = (file.name.match(/\.[a-z0-9]+$/i) ?? [""])[0]
+                .toLowerCase()
+                .replace(/[^.a-z0-9]/g, "");
+            const uniqueId = crypto.randomUUID();
+            const key = `classes/${encodeURIComponent(snapshot.id)}/${uniqueId}${ext}`;
             const uploadResponse = await apiFetch(`/api/v1/files/${key}`, {
                 method: "PUT",
                 headers: {

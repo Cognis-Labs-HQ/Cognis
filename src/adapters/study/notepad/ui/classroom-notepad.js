@@ -109,8 +109,12 @@ export function createClassroomNotepad({ classId, i18n }) {
         return clone.innerText ?? clone.textContent ?? "";
     }
 
+    const ALLOWED_STYLE_TAGS = new Set(TEXT_STYLES.map((style) => style.value));
+    const MIN_FONT_SIZE = 8;
+    const MAX_FONT_SIZE = 96;
+
     function execStyle(tag) {
-        if (!editor) return;
+        if (!editor || !ALLOWED_STYLE_TAGS.has(tag)) return;
         editor.focus();
         const selection = window.getSelection();
         if (!selection || !selection.rangeCount) return;
@@ -128,18 +132,22 @@ export function createClassroomNotepad({ classId, i18n }) {
 
     function applyFontSize(size) {
         if (!editor) return;
+        const parsed = parseInt(size, 10);
+        if (isNaN(parsed) || parsed < MIN_FONT_SIZE || parsed > MAX_FONT_SIZE)
+            return;
         editor.focus();
         document.execCommand("fontSize", false, "7");
         const fontEls = editor.querySelectorAll('font[size="7"]');
         for (const fontEl of fontEls) {
             fontEl.removeAttribute("size");
-            fontEl.style.fontSize = `${size}px`;
+            fontEl.style.fontSize = `${parsed}px`;
         }
         saveDraft(editor.innerHTML);
     }
 
     function applyColor(color) {
         if (!editor) return;
+        if (!/^#[0-9a-f]{6}$/i.test(color)) return;
         editor.focus();
         document.execCommand("foreColor", false, color);
         saveDraft(editor.innerHTML);

@@ -789,7 +789,7 @@ function renderMaterialsEditor({ classResources, i18n }) {
         .map(
             (fileRef, index) => `
                 <li class="classes-materials-file-item" data-file-index="${index}">
-                    <span class="classes-materials-file-name">${escapeHtml(String(fileRef?.name ?? fileRef?.key ?? ""))}</span>
+                    <span class="classes-materials-file-name">${escapeHtml(String(fileRef?.name ?? ""))}</span>
                     <button type="button" class="classes-materials-file-remove" data-file-index="${index}" aria-label="${escapeHtml(i18n.t("module.study.classes.materials_file_remove"))}">&times;</button>
                 </li>
             `,
