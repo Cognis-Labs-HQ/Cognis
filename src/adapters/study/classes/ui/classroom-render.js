@@ -240,6 +240,8 @@ function renderWorkspaceContent({
 
 function renderPresenceList({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
+    const memberLabel = (member) =>
+        buildAccountLabel(member) || String(member?.studentAccountId ?? "");
     const present = members.filter(
         (member) =>
             String(member?.presence ?? "") === "online" ||
@@ -253,13 +255,13 @@ function renderPresenceList({ snapshot, i18n }) {
     const presentItems = present
         .map(
             (member) =>
-                `<li class="classes-presence-item">${escapeHtml(buildAccountLabel(member) || String(member?.studentAccountId ?? ""))}</li>`,
+                `<li class="classes-presence-item">${escapeHtml(memberLabel(member))}</li>`,
         )
         .join("");
     const absentItems = absent
         .map(
             (member) =>
-                `<li class="classes-presence-item classes-presence-item--absent">${escapeHtml(buildAccountLabel(member) || String(member?.studentAccountId ?? ""))}</li>`,
+                `<li class="classes-presence-item classes-presence-item--absent">${escapeHtml(memberLabel(member))}</li>`,
         )
         .join("");
 

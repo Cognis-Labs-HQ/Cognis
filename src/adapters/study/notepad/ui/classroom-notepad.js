@@ -3,6 +3,61 @@ import { showToast } from "/static/reuse/toast.js";
 
 const STORAGE_PREFIX = "classes_notepad_";
 
+const ALLOWED_TAGS = new Set([
+    "p",
+    "h1",
+    "h2",
+    "h3",
+    "blockquote",
+    "pre",
+    "code",
+    "strong",
+    "em",
+    "u",
+    "s",
+    "br",
+    "ul",
+    "ol",
+    "li",
+    "span",
+    "div",
+    "font",
+]);
+
+const ALLOWED_ATTRS = new Set(["style", "class"]);
+
+function sanitizeNotepadHtml(html) {
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_ELEMENT,
+        null,
+    );
+    const toRemove = [];
+    let node = walker.nextNode();
+    while (node) {
+        if (!(node instanceof Element)) {
+            node = walker.nextNode();
+            continue;
+        }
+        if (!ALLOWED_TAGS.has(node.tagName.toLowerCase())) {
+            toRemove.push(node);
+        } else {
+            for (const attr of Array.from(node.attributes)) {
+                if (!ALLOWED_ATTRS.has(attr.name.toLowerCase())) {
+                    node.removeAttribute(attr.name);
+                }
+            }
+        }
+        node = walker.nextNode();
+    }
+    for (const el of toRemove) {
+        el.replaceWith(...Array.from(el.childNodes));
+    }
+    return container.innerHTML;
+}
+
 const TEXT_STYLES = [
     { value: "p", label: "module.study.classes.notepad_format_paragraph" },
     { value: "h1", label: "module.study.classes.notepad_format_heading1" },
@@ -119,7 +174,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         const payload = await response.json().catch(() => null);
         const materials = String(payload?.data?.materials ?? "").trim();
         if (editor && materials) {
-            editor.innerHTML = materials;
+            editor.innerHTML = sanitizeNotepadHtml(materials);
             saveDraft(editor.innerHTML);
         }
     }
@@ -222,7 +277,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         editor.spellcheck = true;
         const draft = loadDraft();
         if (draft) {
-            editor.innerHTML = draft;
+            editor.innerHTML = sanitizeNotepadHtml(draft);
         }
 
         editor.addEventListener("input", () => {

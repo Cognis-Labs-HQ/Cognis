@@ -71,16 +71,19 @@ function normalizeWorkspaceMode(input) {
     return "agenda";
 }
 
+function emptyClassResources() {
+    return { materials: "", homework: "", files: [] };
+}
+
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
+    const referrerUrl = document.referrer
+        ? new URL(document.referrer, window.location.origin)
+        : null;
     const previousPath =
-        document.referrer &&
-        new URL(document.referrer, window.location.origin).origin ===
-            window.location.origin &&
-        new URL(document.referrer, window.location.origin).pathname !==
-            window.location.pathname
-            ? new URL(document.referrer, window.location.origin).pathname +
-              new URL(document.referrer, window.location.origin).search
+        referrerUrl?.origin === window.location.origin &&
+        referrerUrl?.pathname !== window.location.pathname
+            ? referrerUrl.pathname + referrerUrl.search
             : "/";
     const i18n = await createI18n({
         componentStringBaseUrls: [
@@ -122,7 +125,7 @@ export async function mount(root, { signal } = {}) {
     let selectedClassId = String(query.get("classId") ?? "").trim();
     let selectedSeatNumber = null;
     let selectedNotebookText = "";
-    let classResources = { materials: "", homework: "", files: [] };
+    let classResources = emptyClassResources();
     let activeAgendaItems = [];
     let selectedLanguageFilter = "";
     let searchQuery = "";
@@ -354,7 +357,7 @@ export async function mount(root, { signal } = {}) {
         const snapshot = selectedSnapshot();
         if (!snapshot) {
             selectedNotebookText = "";
-            classResources = { materials: "", homework: "", files: [] };
+            classResources = emptyClassResources();
             activeAgendaItems = [];
             whiteboards = [];
             activeWhiteboard = null;
@@ -385,12 +388,8 @@ export async function mount(root, { signal } = {}) {
             ).catch(() => null),
         ]);
         classResources = resourcesResponse.ok
-            ? ((await resourcesResponse.json())?.data ?? {
-                  materials: "",
-                  homework: "",
-                  files: [],
-              })
-            : { materials: "", homework: "", files: [] };
+            ? ((await resourcesResponse.json())?.data ?? emptyClassResources())
+            : emptyClassResources();
         selectedNotebookText = notebookResponse.ok
             ? String((await notebookResponse.json())?.data?.noteText ?? "")
             : "";

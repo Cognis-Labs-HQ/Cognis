@@ -35,7 +35,14 @@ export async function handleResourceActions(
             ? [...classResources.files]
             : [];
         for (const file of Array.from(input.files)) {
-            const safeFileName = file.name.replace(/[^a-z0-9._-]/gi, "_");
+            const nameBase = file.name
+                .replace(/\.[^.]+$/, "")
+                .replace(/[^a-z0-9-]/gi, "_");
+            const nameExt = (file.name.match(/\.[^.]+$/) ?? [""])[0].replace(
+                /[^a-z0-9.]/gi,
+                "",
+            );
+            const safeFileName = (nameBase || "file") + nameExt;
             const key = `classes/${encodeURIComponent(snapshot.id)}/${Date.now()}-${safeFileName}`;
             const uploadResponse = await apiFetch(`/api/v1/files/${key}`, {
                 method: "PUT",
@@ -46,7 +53,7 @@ export async function handleResourceActions(
             }).catch(() => null);
             if (!uploadResponse?.ok) {
                 showToast(
-                    i18n.t("module.study.classes.materials_upload_failed"),
+                    `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
                     { variant: "error" },
                 );
                 continue;
