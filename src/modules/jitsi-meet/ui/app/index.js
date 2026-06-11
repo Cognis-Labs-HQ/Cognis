@@ -6,6 +6,8 @@ import { showToast } from "/static/reuse/toast.js";
 
 const API_BASE = "/api/v1/modules/jitsi-meet";
 const DEFAULT_TITLE = "Cognis Meeting";
+const JITSI_IFRAME_SANDBOX =
+    "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation";
 
 let i18n = null;
 let composer = null;
@@ -83,6 +85,7 @@ function buildJitsiOptions(meeting, jwt) {
     return {
         roomName,
         parentNode: meetingContainer,
+        sandbox: JITSI_IFRAME_SANDBOX,
         userInfo,
         jwt: jwt || undefined,
         configOverwrite: {
@@ -97,7 +100,6 @@ function buildJitsiOptions(meeting, jwt) {
                 "closedcaptions",
                 "desktop",
                 "fullscreen",
-                "fodeviceselection",
                 "hangup",
                 "profile",
                 "recording",

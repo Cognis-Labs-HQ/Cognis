@@ -174,7 +174,7 @@ function renderWorkspaceWhiteboard({ activeWhiteboard, i18n }) {
                 src="${escapeHtml(activeWhiteboard.embedUrl)}"
                 loading="eager"
                 allow="clipboard-read; clipboard-write"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
                 title="${escapeHtml(activeWhiteboard.boardName || i18n.t("module.study.classes.whiteboard"))}"
             ></iframe>
         </section>

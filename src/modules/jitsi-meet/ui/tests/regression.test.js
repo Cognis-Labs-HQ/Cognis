@@ -112,15 +112,17 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.match(source, /"subject",[\s\S]*MEETING_SUBJECT/);
     assert.match(source, /preferredTheme: themeMode,/);
     assert.match(source, /disableDeepLinking: true,/);
-    assert.match(source, /avatarUrl: state\.currentProfile\?\.avatarUrl/);
-    assert.match(source, /"avatarUrl",[\s\S]*state\.currentProfile\.avatarUrl/);
+    assert.match(source, /const safeAvatarUrl = resolveSafeJitsiAvatarUrl\(/);
+    assert.match(source, /avatarUrl: safeAvatarUrl,/);
+    assert.match(source, /"avatarUrl",[\s\S]*safeAvatarUrl/);
     assert.match(
         embedSource,
         /hashParams\.set\("config\.disableDeepLinking", "true"\)/,
     );
+    assert.match(embedSource, /resolveSafeJitsiAvatarUrl\(/);
     assert.match(
         embedSource,
-        /hashParams\.set\("userInfo\.avatarUrl", profile\.avatarUrl\)/,
+        /hashParams\.set\("userInfo\.avatarUrl", safeAvatarUrl\)/,
     );
     assert.match(
         embedSource,
@@ -570,4 +572,9 @@ test("jitsi API exposes user active meetings endpoint", () => {
         /meetings\/active\?classroomId=\$\{encodeURIComponent\(id\)\}/,
     );
     assert.match(classroomEmbedSource, /skipChatRoomCreation:\s*true/);
+    assert.match(
+        classroomEmbedSource,
+        /const safeAvatarUrl = resolveSafeJitsiAvatarUrl\(/,
+    );
+    assert.match(classroomEmbedSource, /avatarUrl: safeAvatarUrl,/);
 });

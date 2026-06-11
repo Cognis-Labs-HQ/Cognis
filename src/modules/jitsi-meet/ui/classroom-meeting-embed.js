@@ -5,12 +5,14 @@ import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
     resolveRoomName,
+    resolveSafeJitsiAvatarUrl,
     resolveThemeMode,
 } from "./meeting-embed.js";
 import { fetchCurrentProfile } from "./jitsi-helpers.js";
 import { ensureSessionId } from "./session.js";
 import {
     HEARTBEAT_INTERVAL_MS,
+    JITSI_IFRAME_SANDBOX,
     JITSI_TOOLBAR_BUTTONS,
     MEETING_SUBJECT,
     MEETING_TERMINATED_TEXT,
@@ -253,10 +255,15 @@ export function createClassroomMeetingEmbed({
             const meetingPassword = String(
                 meeting.meetingPassword ?? "",
             ).trim();
+            const safeAvatarUrl = resolveSafeJitsiAvatarUrl(
+                currentProfile?.avatarUrl,
+                meeting.instanceUrl || meeting.meetingUrl,
+            );
             const themeMode = resolveThemeMode();
             const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
                 roomName,
                 parentNode: frame,
+                sandbox: JITSI_IFRAME_SANDBOX,
                 configOverwrite: {
                     prejoinConfig: { enabled: false },
                     requireDisplayName: false,
@@ -268,7 +275,7 @@ export function createClassroomMeetingEmbed({
                 userInfo: {
                     displayName: currentProfile?.displayName ?? "",
                     email: currentProfile?.email ?? "",
-                    avatarUrl: currentProfile?.avatarUrl ?? "",
+                    avatarUrl: safeAvatarUrl,
                 },
             });
             jitsiApi = apiInstance;
@@ -307,11 +314,11 @@ export function createClassroomMeetingEmbed({
                         currentProfile.email,
                     );
                 }
-                if (currentProfile?.avatarUrl) {
+                if (safeAvatarUrl) {
                     executeJitsiCommandIfSupported(
                         apiInstance,
                         "avatarUrl",
-                        currentProfile.avatarUrl,
+                        safeAvatarUrl,
                     );
                 }
             };

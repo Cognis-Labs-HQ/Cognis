@@ -38,7 +38,7 @@ export function createClassroomWhiteboardWindow({
         iframeEl.setAttribute("allow", "clipboard-read; clipboard-write");
         iframeEl.setAttribute(
             "sandbox",
-            "allow-scripts allow-same-origin allow-forms allow-popups",
+            "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox",
         );
         iframeEl.setAttribute("loading", "eager");
         iframeEl.src = "about:blank";
