@@ -89,3 +89,11 @@ Tes `classroom-notepad.test.js` gagal karena Node tidak dapat menyelesaikan
 jalur impor `/static/` berbasis browser. Sebuah hook loader ESM kustom
 (`src/tooling/test-helpers/browser-paths-hook.mjs`) kini memetakan jalur tersebut
 ke lokasi sistem file yang sebenarnya.
+
+## Kesalahan ekspor classroom-render diperbaiki
+
+`classroom-render.js` mengekspor nama (`renderStudentRoster`) yang tidak pernah didefinisikan dalam modul, menyebabkan `SyntaxError` yang tidak tertangani dan membuat halaman kelas crash. Ekspor yang tidak terdefinisi telah dihapus.
+
+## Z-index popup crash dinaikkan di atas overlay pemuatan
+
+Popup crash error runtime ditampilkan di bawah overlay pemuatan halaman (z-index 9999), sehingga tidak terlihat saat halaman masih memuat. Kelas modifier baru `popup-overlay--critical` meningkatkan popup crash ke z-index 10000, memastikannya selalu terlihat saat terjadi kesalahan.

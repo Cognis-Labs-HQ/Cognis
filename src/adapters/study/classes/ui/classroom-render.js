@@ -604,7 +604,7 @@ function renderDeskFloor({
     return `<div class="classes-desk-floor">${teacherDesk}${rowHtml}${renderRoomDoor({ i18n, isTeacherView })}</div>`;
 }
 
-export { renderDeskFloor, renderStudentRoster, renderRosterPanel };
+export { renderDeskFloor, renderRosterPanel };
 
 function renderRoomDoor({ i18n, isTeacherView }) {
     return `

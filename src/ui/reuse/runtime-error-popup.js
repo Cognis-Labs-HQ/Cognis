@@ -361,6 +361,7 @@ export async function openRuntimeErrorPopup({
             body: popupBody,
             variant: "danger",
             maxWidth: "960px",
+            overlayClassName: "popup-overlay--critical",
             actions: [
                 {
                     id: "copy",

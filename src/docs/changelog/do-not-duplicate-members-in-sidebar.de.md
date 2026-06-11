@@ -90,3 +90,11 @@ Der Test `classroom-notepad.test.js` schlug fehl, weil Node browser-absolute
 `/static/`-Importpfade nicht auflösen konnte. Ein benutzerdefinierter ESM-Loader-Hook
 (`src/tooling/test-helpers/browser-paths-hook.mjs`) bildet diese Pfade auf
 echte Dateisystemspeicherorte ab.
+
+## Exportfehler in classroom-render behoben
+
+`classroom-render.js` exportierte einen Namen (`renderStudentRoster`), der im Modul nicht definiert war. Dies verursachte einen unkontrollierten `SyntaxError`, der die Klassenraumseite zum Absturz brachte. Der undefinierte Export wurde entfernt.
+
+## Z-Index des Absturz-Popups über Ladeoverlay angehoben
+
+Das Absturz-Popup für Laufzeitfehler wurde unterhalb des Seitenladeoverlay (z-index 9999) dargestellt und war daher unsichtbar, solange eine Seite noch geladen wurde. Eine neue Modifier-Klasse `popup-overlay--critical` hebt das Absturz-Popup auf z-index 10000 an und stellt sicher, dass es bei einem Fehler immer sichtbar ist.

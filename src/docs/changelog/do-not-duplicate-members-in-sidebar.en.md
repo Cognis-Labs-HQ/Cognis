@@ -91,3 +91,11 @@ The `classroom-notepad.test.js` test was failing because Node could not resolve
 browser-rooted `/static/` import paths. A custom ESM loader hook
 (`src/tooling/test-helpers/browser-paths-hook.mjs`) now maps those paths to their
 real filesystem locations, making the test pass without changing production code.
+
+## Classroom render export error fixed
+
+`classroom-render.js` was exporting a name (`renderStudentRoster`) that was never defined in the module, causing an uncaught `SyntaxError` that crashed the classroom page. The undefined export has been removed.
+
+## Crash popup z-index raised above loading overlay
+
+The runtime error crash popup was rendered beneath the page loading overlay (z-index 9999), making it invisible while a page was still loading. A new `popup-overlay--critical` modifier class elevates the crash popup to z-index 10000, ensuring it is always visible when an error occurs.

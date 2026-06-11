@@ -287,11 +287,14 @@ export async function openPopup({
     onOpen,
     onAction,
     closeProtection = false,
+    overlayClassName = "",
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
-        overlay.className = "popup-overlay";
+        overlay.className = overlayClassName
+            ? `popup-overlay ${overlayClassName}`
+            : "popup-overlay";
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");
