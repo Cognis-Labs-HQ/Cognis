@@ -97,3 +97,7 @@ ke lokasi sistem file yang sebenarnya.
 ## Z-index popup crash dinaikkan di atas overlay pemuatan
 
 Popup crash error runtime ditampilkan di bawah overlay pemuatan halaman (z-index 9999), sehingga tidak terlihat saat halaman masih memuat. Kelas modifier baru `popup-overlay--critical` meningkatkan popup crash ke z-index 10000, memastikannya selalu terlihat saat terjadi kesalahan.
+
+## Siswa di Classroom tidak lagi masuk ulang setelah keluar dari meeting
+
+Logika auto-join siswa di Classroom terus meluncurkan ulang embed Jitsi setiap siklus refresh 3 detik setelah siswa meninggalkan meeting. Dua masalah panggilan bersamaan dan masuk ulang telah diperbaiki: (1) fase setup `openMeetingEmbed` kini menyimpan flag `openInProgress` agar panggilan `tryAutoJoin` baru selama inisialisasi Jitsi tidak dapat membuat embed kedua yang tumpang tindih, dan (2) guard `triedMeetingId` di dalam `classroom-meeting-embed.js` mencegah bergabung kembali ke ID meeting yang sudah dicoba. Metode baru `notifyActiveMeeting(meetingId)` memungkinkan adapter Classroom memberi sinyal meeting benar-benar baru, yang mereset guard dan menghapus status auth-block. Loop refresh Classroom telah disederhanakan; semua logika guard join kini berada di dalam modul jitsi-meet.

@@ -33,6 +33,7 @@ import {
  *   blackboard.appendChild(embed.element);
  *   await embed.openMeeting(classroomSnapshot);  // teacher-initiated
  *   await embed.tryAutoJoin(classroomId);        // student auto-join
+ *   embed.notifyActiveMeeting(newMeetingId);     // teacher started a new meeting
  *   embed.closeMeeting();                        // manual or exit close
  *   ```
  *
@@ -46,6 +47,7 @@ import {
  *   openMeeting: (snapshot: object) => Promise<void>,
  *   openMeetingById: (meetingId: string) => Promise<void>,
  *   tryAutoJoin: (classroomId: string) => Promise<void>,
+ *   notifyActiveMeeting: (meetingId: string) => void,
  *   closeMeeting: () => void,
  *   isAuthBlocked: () => boolean,
  *   resetAuthBlocked: () => void,
@@ -65,6 +67,8 @@ export function createClassroomMeetingEmbed({
     let currentMeetingId = null;
     let currentSessionId = null;
     let authBlocked = false;
+    let triedMeetingId = null;
+    let openInProgress = false;
 
     const element = document.createElement("div");
     element.className = "classes-meeting-window";
@@ -218,165 +222,179 @@ export function createClassroomMeetingEmbed({
     }
 
     async function openMeetingEmbed(meeting, sessionId, currentProfile) {
-        stopTracking();
-        void keepPresenceAlive(false);
-        destroyJitsiApi();
+        openInProgress = true;
+        try {
+            stopTracking();
+            void keepPresenceAlive(false);
+            destroyJitsiApi();
 
-        await loadJitsiExternalApi(meeting.instanceUrl || meeting.meetingUrl);
-
-        const meetingHost = resolveUrlHost(
-            meeting.instanceUrl || meeting.meetingUrl,
-        );
-        const roomName = resolveRoomName(meeting);
-        if (
-            !meetingHost ||
-            !roomName ||
-            typeof window.JitsiMeetExternalAPI !== "function"
-        ) {
-            showToast(i18n.t("module.study.classes.meeting_failed"), {
-                variant: "error",
-            });
-            return;
-        }
-
-        const frame = element.querySelector("#classroom-jitsi-frame");
-        if (!(frame instanceof HTMLElement)) return;
-
-        const meetingPassword = String(meeting.meetingPassword ?? "").trim();
-        const themeMode = resolveThemeMode();
-        const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
-            roomName,
-            parentNode: frame,
-            configOverwrite: {
-                prejoinConfig: { enabled: false },
-                requireDisplayName: false,
-                disableDeepLinking: true,
-                subject: MEETING_SUBJECT,
-                preferredTheme: themeMode,
-                toolbarButtons: JITSI_TOOLBAR_BUTTONS,
-            },
-            userInfo: {
-                displayName: currentProfile?.displayName ?? "",
-                email: currentProfile?.email ?? "",
-                avatarUrl: currentProfile?.avatarUrl ?? "",
-            },
-        });
-        jitsiApi = apiInstance;
-        jitsiParticipantId = "";
-        jitsiModerator = false;
-
-        const applyPrivilegedSettings = () => {
-            if (jitsiApi !== apiInstance || !jitsiModerator) return;
-            executeJitsiCommandIfSupported(
-                apiInstance,
-                "subject",
-                MEETING_SUBJECT,
+            await loadJitsiExternalApi(
+                meeting.instanceUrl || meeting.meetingUrl,
             );
-            if (meetingPassword) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "password",
-                    meetingPassword,
-                );
+
+            const meetingHost = resolveUrlHost(
+                meeting.instanceUrl || meeting.meetingUrl,
+            );
+            const roomName = resolveRoomName(meeting);
+            if (
+                !meetingHost ||
+                !roomName ||
+                typeof window.JitsiMeetExternalAPI !== "function"
+            ) {
+                showToast(i18n.t("module.study.classes.meeting_failed"), {
+                    variant: "error",
+                });
+                return;
             }
-        };
 
-        const applyParticipantProfile = () => {
-            if (jitsiApi !== apiInstance) return;
-            if (currentProfile?.displayName) {
+            const frame = element.querySelector("#classroom-jitsi-frame");
+            if (!(frame instanceof HTMLElement)) return;
+
+            const meetingPassword = String(
+                meeting.meetingPassword ?? "",
+            ).trim();
+            const themeMode = resolveThemeMode();
+            const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
+                roomName,
+                parentNode: frame,
+                configOverwrite: {
+                    prejoinConfig: { enabled: false },
+                    requireDisplayName: false,
+                    disableDeepLinking: true,
+                    subject: MEETING_SUBJECT,
+                    preferredTheme: themeMode,
+                    toolbarButtons: JITSI_TOOLBAR_BUTTONS,
+                },
+                userInfo: {
+                    displayName: currentProfile?.displayName ?? "",
+                    email: currentProfile?.email ?? "",
+                    avatarUrl: currentProfile?.avatarUrl ?? "",
+                },
+            });
+            jitsiApi = apiInstance;
+            jitsiParticipantId = "";
+            jitsiModerator = false;
+
+            const applyPrivilegedSettings = () => {
+                if (jitsiApi !== apiInstance || !jitsiModerator) return;
                 executeJitsiCommandIfSupported(
                     apiInstance,
-                    "displayName",
-                    currentProfile.displayName,
+                    "subject",
+                    MEETING_SUBJECT,
                 );
-            }
-            if (currentProfile?.email) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "email",
-                    currentProfile.email,
-                );
-            }
-            if (currentProfile?.avatarUrl) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "avatarUrl",
-                    currentProfile.avatarUrl,
-                );
-            }
-        };
+                if (meetingPassword) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "password",
+                        meetingPassword,
+                    );
+                }
+            };
 
-        const handleMeetingLeft = () => {
-            if (jitsiApi !== apiInstance) return;
-            closeMeeting();
-        };
+            const applyParticipantProfile = () => {
+                if (jitsiApi !== apiInstance) return;
+                if (currentProfile?.displayName) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "displayName",
+                        currentProfile.displayName,
+                    );
+                }
+                if (currentProfile?.email) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "email",
+                        currentProfile.email,
+                    );
+                }
+                if (currentProfile?.avatarUrl) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "avatarUrl",
+                        currentProfile.avatarUrl,
+                    );
+                }
+            };
 
-        const handleMeetingTerminated = () => {
-            if (jitsiApi !== apiInstance) return;
-            closeMeeting({ terminated: true });
-        };
+            const handleMeetingLeft = () => {
+                if (jitsiApi !== apiInstance) return;
+                closeMeeting();
+            };
 
-        apiInstance.addEventListener("videoConferenceJoined", (event) => {
-            jitsiParticipantId = getParticipantId(event);
-            const participants = apiInstance.getParticipantsInfo?.() ?? [];
-            const localParticipant =
-                participants.find(
-                    (participant) => participant?.local === true,
-                ) ??
-                participants.find(
-                    (participant) =>
-                        getParticipantId(participant) === jitsiParticipantId,
-                ) ??
-                null;
-            jitsiModerator =
-                getParticipantRole(localParticipant) === "moderator";
-            applyParticipantProfile();
-            applyPrivilegedSettings();
-        });
+            const handleMeetingTerminated = () => {
+                if (jitsiApi !== apiInstance) return;
+                closeMeeting({ terminated: true });
+            };
 
-        apiInstance.addEventListener("participantRoleChanged", (event) => {
-            const participantId = getParticipantId(event);
-            if (participantId && participantId !== jitsiParticipantId) return;
-            jitsiModerator = getParticipantRole(event) === "moderator";
-            applyPrivilegedSettings();
-        });
-
-        apiInstance.addEventListener("passwordRequired", () => {
-            if (meetingPassword) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "password",
-                    meetingPassword,
-                );
+            apiInstance.addEventListener("videoConferenceJoined", (event) => {
+                jitsiParticipantId = getParticipantId(event);
+                const participants = apiInstance.getParticipantsInfo?.() ?? [];
+                const localParticipant =
+                    participants.find(
+                        (participant) => participant?.local === true,
+                    ) ??
+                    participants.find(
+                        (participant) =>
+                            getParticipantId(participant) ===
+                            jitsiParticipantId,
+                    ) ??
+                    null;
+                jitsiModerator =
+                    getParticipantRole(localParticipant) === "moderator";
+                applyParticipantProfile();
                 applyPrivilegedSettings();
-                return;
-            }
-            if (!isTeacher) {
-                authBlocked = true;
-                destroyJitsiApi();
-                const overlay = element.querySelector(
-                    ".classes-meeting-closed-overlay",
-                );
-                if (overlay) overlay.hidden = false;
-                return;
-            }
-            applyPrivilegedSettings();
-        });
+            });
 
-        apiInstance.addEventListener("notificationTriggered", (event) => {
-            if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
-        });
+            apiInstance.addEventListener("participantRoleChanged", (event) => {
+                const participantId = getParticipantId(event);
+                if (participantId && participantId !== jitsiParticipantId)
+                    return;
+                jitsiModerator = getParticipantRole(event) === "moderator";
+                applyPrivilegedSettings();
+            });
 
-        apiInstance.addEventListener("errorOccurred", (event) => {
-            if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
-        });
+            apiInstance.addEventListener("passwordRequired", () => {
+                if (meetingPassword) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "password",
+                        meetingPassword,
+                    );
+                    applyPrivilegedSettings();
+                    return;
+                }
+                if (!isTeacher) {
+                    authBlocked = true;
+                    destroyJitsiApi();
+                    const overlay = element.querySelector(
+                        ".classes-meeting-closed-overlay",
+                    );
+                    if (overlay) overlay.hidden = false;
+                    return;
+                }
+                applyPrivilegedSettings();
+            });
 
-        apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
-        apiInstance.addEventListener("readyToClose", handleMeetingLeft);
+            apiInstance.addEventListener("notificationTriggered", (event) => {
+                if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
+            });
 
-        startTracking(meeting.id, sessionId);
-        element.hidden = false;
-        onVisibilityChange(true);
+            apiInstance.addEventListener("errorOccurred", (event) => {
+                if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
+            });
+
+            apiInstance.addEventListener(
+                "videoConferenceLeft",
+                handleMeetingLeft,
+            );
+            apiInstance.addEventListener("readyToClose", handleMeetingLeft);
+
+            startTracking(meeting.id, sessionId);
+            element.hidden = false;
+            onVisibilityChange(true);
+        } finally {
+            openInProgress = false;
+        }
     }
 
     async function openMeeting(snapshot) {
@@ -471,13 +489,14 @@ export function createClassroomMeetingEmbed({
             : meeting;
 
         if (!joinedMeeting?.meetingUrl) return;
+        triedMeetingId = normalizedId;
         const currentProfile = await fetchCurrentProfile().catch(() => null);
         await openMeetingEmbed(joinedMeeting, sessionId, currentProfile);
     }
 
     async function tryAutoJoin(classroomId) {
         const id = String(classroomId ?? "").trim();
-        if (!id || !element.hidden || authBlocked) return;
+        if (!id || !element.hidden || authBlocked || openInProgress) return;
 
         const response = await apiFetch(
             `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(id)}`,
@@ -495,7 +514,19 @@ export function createClassroomMeetingEmbed({
             return meetingClassroomId === id;
         });
         if (!match?.id) return;
+        if (match.id === triedMeetingId) return;
         await openMeetingById(match.id);
+    }
+
+    function notifyActiveMeeting(meetingId) {
+        const id = String(meetingId ?? "").trim();
+        if (!id || id === triedMeetingId) return;
+        triedMeetingId = null;
+        authBlocked = false;
+        const overlay = element.querySelector(
+            ".classes-meeting-closed-overlay",
+        );
+        if (overlay) overlay.hidden = true;
     }
 
     if (signal) {
@@ -550,6 +581,7 @@ export function createClassroomMeetingEmbed({
         openMeeting,
         openMeetingById,
         tryAutoJoin,
+        notifyActiveMeeting,
         isAuthBlocked: () => authBlocked,
         resetAuthBlocked: () => {
             authBlocked = false;

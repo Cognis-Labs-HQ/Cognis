@@ -142,7 +142,6 @@ export async function mount(root, { signal } = {}) {
     let whiteboards = [];
     let activeWhiteboard = null;
     let activeMeetingId = null;
-    let studentJoinedMeetingId = null;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -796,7 +795,7 @@ export async function mount(root, { signal } = {}) {
                 activeMeetingId &&
                 activeMeetingId !== previousActiveMeetingId
             ) {
-                studentJoinedMeetingId = null;
+                classroomWindows.notifyActiveMeeting(activeMeetingId);
             }
             refreshSnapshotPresence();
             syncStudentWorkspaceAccess();
@@ -806,22 +805,13 @@ export async function mount(root, { signal } = {}) {
             refreshSubNavigation();
             if (selectedClassId && classroomWindows && activeMeetingId) {
                 if (!classroomWindows.isMeetingOpen()) {
-                    if (
-                        classroomWindows.isAuthBlocked() &&
-                        activeMeetingId !== studentJoinedMeetingId
-                    ) {
-                        classroomWindows.resetAuthBlocked();
-                    }
-                    if (activeMeetingId !== studentJoinedMeetingId) {
-                        studentJoinedMeetingId = activeMeetingId;
-                        await classroomWindows.tryAutoJoin(selectedClassId);
-                        if (classroomWindows.isMeetingOpen()) {
-                            setWorkspaceMode("meeting", { remember: false });
-                            refreshDom();
-                        } else {
-                            syncStudentWorkspaceAccess();
-                            refreshDom();
-                        }
+                    await classroomWindows.tryAutoJoin(selectedClassId);
+                    if (classroomWindows.isMeetingOpen()) {
+                        setWorkspaceMode("meeting", { remember: false });
+                        refreshDom();
+                    } else {
+                        syncStudentWorkspaceAccess();
+                        refreshDom();
                     }
                 } else {
                     setWorkspaceMode("meeting", { remember: false });

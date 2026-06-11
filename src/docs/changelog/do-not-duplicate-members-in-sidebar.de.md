@@ -98,3 +98,7 @@ echte Dateisystemspeicherorte ab.
 ## Z-Index des Absturz-Popups über Ladeoverlay angehoben
 
 Das Absturz-Popup für Laufzeitfehler wurde unterhalb des Seitenladeoverlay (z-index 9999) dargestellt und war daher unsichtbar, solange eine Seite noch geladen wurde. Eine neue Modifier-Klasse `popup-overlay--critical` hebt das Absturz-Popup auf z-index 10000 an und stellt sicher, dass es bei einem Fehler immer sichtbar ist.
+
+## Schüler-Meeting im Classroom verlässt die Endlosschleife
+
+Die automatische Join-Logik für Schüler im Classroom rief das Jitsi-Embed nach dem Verlassen eines Meetings bei jedem 3-Sekunden-Refresh-Zyklus erneut auf. Zwei Gleichzeitigkeits- und Wiedereintritts-Probleme wurden behoben: (1) Die `openMeetingEmbed`-Initialisierungsphase hält nun ein `openInProgress`-Flag, damit ein erneuter `tryAutoJoin`-Aufruf während der Jitsi-Initialisierung kein zweites Embed erstellen kann, und (2) ein `triedMeetingId`-Guard innerhalb von `classroom-meeting-embed.js` verhindert das erneute Beitreten derselben Meeting-ID. Eine neue Methode `notifyActiveMeeting(meetingId)` ermöglicht es dem Classroom-Adapter, ein wirklich neues Meeting zu signalisieren, was den Guard zurücksetzt und den Auth-Block-Status löscht. Die Refresh-Schleife des Classrooms wurde vereinfacht; die gesamte Join-Guard-Logik lebt nun im jitsi-meet-Modul.

@@ -89,6 +89,8 @@ export function createClassroomWindows({
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),
+        notifyActiveMeeting: (meetingId) =>
+            meetingEmbed.notifyActiveMeeting(meetingId),
         isAuthBlocked: () => meetingEmbed.isAuthBlocked(),
         resetAuthBlocked: () => meetingEmbed.resetAuthBlocked(),
         openWhiteboard: (opts) => whiteboardWindow.openBoard(opts),

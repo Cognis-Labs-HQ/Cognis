@@ -99,3 +99,7 @@ real filesystem locations, making the test pass without changing production code
 ## Crash popup z-index raised above loading overlay
 
 The runtime error crash popup was rendered beneath the page loading overlay (z-index 9999), making it invisible while a page was still loading. A new `popup-overlay--critical` modifier class elevates the crash popup to z-index 10000, ensuring it is always visible when an error occurs.
+
+## Classroom student meeting no longer re-enters after leaving
+
+The classroom adapter's student auto-join logic was re-launching the Jitsi embed on every 3-second refresh cycle after the student left a meeting. Two concurrent-call and re-entry issues were fixed: (1) the `openMeetingEmbed` setup phase now holds an `openInProgress` flag so that a new `tryAutoJoin` call during Jitsi initialisation cannot create a second overlapping embed, and (2) a `triedMeetingId` guard inside `classroom-meeting-embed.js` prevents re-joining the same meeting ID that was already attempted. A new `notifyActiveMeeting(meetingId)` method allows the classroom adapter to signal a genuinely new meeting, which resets the guard and clears the auth-block state. The classroom's refresh loop has been simplified to call `tryAutoJoin` unconditionally; all join-guard logic now lives inside the jitsi-meet module.
