@@ -596,10 +596,9 @@ export function registerApiRoutes(router, ctx) {
                 return;
             }
 
-            const skipChatRoomCreation = body?.skipChatRoomCreation === true;
             let chatRoom = null;
             if (
-                !skipChatRoomCreation &&
+                body?.skipChatRoomCreation !== true &&
                 typeof resolveGroupChat === "function"
             ) {
                 const meetingChatTitle = buildMeetingChatTitle();
@@ -609,7 +608,6 @@ export function registerApiRoutes(router, ctx) {
                     createdByAccountId: claims.sub,
                 }).catch(() => null);
             }
-
             const meeting = await store.createMeeting({
                 instanceUrl: config.instanceUrl,
                 meetingPrefix: config.meetingPrefix,

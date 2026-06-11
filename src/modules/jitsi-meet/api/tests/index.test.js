@@ -70,7 +70,7 @@ test("jitsi meeting creation supports chat-room creation opt-out", () => {
     );
 
     assert.match(source, /skipChatRoomCreation/);
-    assert.match(source, /!skipChatRoomCreation/);
+    assert.match(source, /body\?\.skipChatRoomCreation !== true/);
 });
 
 test("jitsi meetings API exposes current events query endpoint", () => {
