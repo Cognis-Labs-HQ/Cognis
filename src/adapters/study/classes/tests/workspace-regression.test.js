@@ -60,3 +60,15 @@ test("classroom sub-navigation always renders the search button", () => {
     assert.match(source, /classes-subnav-find-btn/);
     assert.doesNotMatch(source, /isTeacherView \?/);
 });
+
+test("classroom view sync detaches search and only forces live teacher meetings", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /isClassSearchDetached/);
+    assert.match(source, /if \(!isClassSearchDetached\)/);
+    assert.match(source, /teacherActiveInMeeting/);
+    assert.match(source, /activeParticipants\.some/);
+});

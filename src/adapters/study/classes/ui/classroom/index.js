@@ -134,6 +134,7 @@ export async function mount(root, { signal } = {}) {
     let whiteboards = [];
     let activeWhiteboard = null;
     let activeMeetingId = null;
+    let isClassSearchDetached = false;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -221,6 +222,12 @@ export async function mount(root, { signal } = {}) {
 
     function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
         if (isTeacherView()) {
+            return;
+        }
+        if (!snapshot) {
+            if (workspaceMode === "meeting" && !classroomWindows?.isMeetingOpen()) {
+                setWorkspaceMode("agenda", { remember: false });
+            }
             return;
         }
         const defaultWorkspaceMode = getDefaultWorkspaceMode();
@@ -312,8 +319,10 @@ export async function mount(root, { signal } = {}) {
                 (snapshot) => snapshot.id === selectedClassId,
             )
         ) {
-            selectedClassId = String(classroomSnapshots[0]?.id ?? "");
-            selectedSeatNumber = null;
+            if (!isClassSearchDetached) {
+                selectedClassId = String(classroomSnapshots[0]?.id ?? "");
+                selectedSeatNumber = null;
+            }
         }
         syncWorkspaceModeWithSnapshot({ force: true });
     }
@@ -397,7 +406,24 @@ export async function mount(root, { signal } = {}) {
             ).trim();
             return meetingClassroomId === snapshot.id;
         });
-        activeMeetingId = String(activeMeeting?.id ?? "").trim() || null;
+        const teacherAccountId = String(snapshot?.teacherAccountId ?? "").trim();
+        const activeParticipants = Array.isArray(activeMeeting?.activeParticipants)
+            ? activeMeeting.activeParticipants
+            : [];
+        const teacherActiveInMeeting = Boolean(
+            teacherAccountId &&
+                activeParticipants.some((participant) => {
+                    const username = String(participant?.username ?? "").trim();
+                    const handle = String(participant?.handle ?? "").trim();
+                    return (
+                        username === teacherAccountId ||
+                        handle === teacherAccountId
+                    );
+                }),
+        );
+        activeMeetingId = teacherActiveInMeeting
+            ? String(activeMeeting?.id ?? "").trim() || null
+            : null;
         whiteboards = whiteboardsResponse.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
@@ -484,7 +510,10 @@ export async function mount(root, { signal } = {}) {
     function refreshSubNavigation() {
         const subNav = root.querySelector(".page-subnav");
         if (subNav instanceof HTMLElement) {
-            subNav.innerHTML = renderSubNavigationMarkup();
+            const nextMarkup = renderSubNavigationMarkup();
+            if (subNav.innerHTML !== nextMarkup) {
+                subNav.innerHTML = nextMarkup;
+            }
         }
     }
 
@@ -492,6 +521,7 @@ export async function mount(root, { signal } = {}) {
         if (teacherAccount && getClassroomViewMode() === "teacher") {
             setClassroomViewMode("student");
         }
+        isClassSearchDetached = true;
         selectedClassId = "";
         selectedSeatNumber = null;
         activeWhiteboard = null;
@@ -634,6 +664,7 @@ export async function mount(root, { signal } = {}) {
             const previousClassId = selectedClassId;
             const previousInlineWhiteboardId =
                 activeWhiteboard?.boardId ?? null;
+            isClassSearchDetached = false;
             selectedClassId = classId;
             selectedSeatNumber = null;
             activeWhiteboard = null;
@@ -677,6 +708,7 @@ export async function mount(root, { signal } = {}) {
                         selectedSnapshot,
                         getSelectedClassId: () => selectedClassId,
                         setSelectedClassId: (classId) => {
+                            isClassSearchDetached = false;
                             selectedClassId = classId;
                         },
                         getSelectedSeatNumber: () => selectedSeatNumber,
@@ -800,8 +832,10 @@ export async function mount(root, { signal } = {}) {
         shouldRefresh: () => !isTeacherView(),
         refresh: async () => {
             const previousActiveMeetingId = activeMeetingId;
+            const previousSelectedClassId = selectedClassId;
             await loadClassrooms();
             await loadSelectedClassMeta();
+            const selectedClassChanged = selectedClassId !== previousSelectedClassId;
             if (
                 activeMeetingId &&
                 activeMeetingId !== previousActiveMeetingId
@@ -812,8 +846,11 @@ export async function mount(root, { signal } = {}) {
             syncStudentWorkspaceAccess();
             refreshDynamicDom();
             syncGlobalChatTarget();
-            composer.refreshFooter();
-            refreshSubNavigation();
+            if (selectedClassChanged) {
+                footerClasses = await loadFooterClasses();
+                composer.refreshFooter();
+                refreshSubNavigation();
+            }
             const meetingAutoJoinBlocked = Boolean(
                 activeMeetingId &&
                 classroomWindows?.isMeetingDismissed?.(activeMeetingId),
