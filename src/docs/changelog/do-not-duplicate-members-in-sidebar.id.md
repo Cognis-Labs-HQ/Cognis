@@ -160,3 +160,47 @@ kadaluarsa dari kelas sebelumnya. Meeting ditutup sebelum kelas baru dimuat.
 Direktif `connect-src` pada Content Security Policy kini menyertakan
 origin server Jitsi yang terdaftar bersama `script-src`, menyelesaikan
 pelanggaran konsol ketika Jitsi external API membuat koneksi ke server meeting.
+
+## Regresi cookie Jitsi diperbaiki
+
+`allow-same-origin` ditambahkan ke sandbox iframe Jitsi agar domain Jitsi dapat membaca dan menulis cookie sesinya sendiri.
+
+## Guard meeting mencegah tampilan beranda Jitsi
+
+Saat autentikasi diblokir atau pengguna membatalkan alur autentikasi meeting, jendela meeting kini ditutup dengan benar daripada menampilkan beranda Jitsi melalui overlay.
+
+## Tampilan guru selalu direset saat navigasi
+
+Guru yang sebelumnya beralih ke tampilan siswa kini selalu dikembalikan ke tampilan guru saat refresh halaman atau navigasi SPA.
+
+## Sub-navigasi terlihat untuk guru dalam tampilan siswa
+
+Memperbaiki regresi di mana guru dalam tampilan siswa melihat daftar kelas kosong di bilah sub-navigasi.
+
+## Tata letak kelas distrukturisasi ulang
+
+Tab Kehadiran (roster) telah dipindahkan dari sidebar ke baris tab ruang kerja. Entri Agenda Kelas telah dihapus dari sidebar karena sudah ada di tab ruang kerja. Tombol meeting telah dihapus dari toolbar aksi papan tulis. Sidebar sekarang hanya menampilkan materi kelas.
+
+## Papan tulis dimulai dalam keadaan terlipat
+
+Saat memasuki kelas, papan tulis diminimalkan ke baris header hingga sebuah tab ruang kerja ditekan.
+
+## Status aktif tab ruang kerja
+
+Setiap tombol tab ruang kerja menerima kelas CSS `active` saat modusnya dipilih.
+
+## Pembaruan dinamis dibatasi pada pembaruan bedah
+
+Siklus pembaruan realtime untuk siswa tidak lagi memicu penggantian DOM penuh; lantai meja dan panel kehadiran diperbarui di tempat.
+
+## Klik meja guru dinonaktifkan
+
+Mengklik meja guru tidak lagi membuka popup pencarian pengguna.
+
+## Font kapur dibatasi pada panel ruang kerja dan kehadiran
+
+Font kapur kini diterapkan secara eksplisit ke `classes-workspace-main` dan `classes-roster-panel` dan diteruskan ke elemen formulir melalui `font-family: inherit`.
+
+## Tinggi papan tulis menyesuaikan konten
+
+Papan tulis tidak lagi memiliki tinggi minimum yang dipaksakan saat tidak ada meeting aktif, sehingga ukurannya menyesuaikan kontennya secara alami.

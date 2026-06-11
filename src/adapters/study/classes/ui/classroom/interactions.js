@@ -58,8 +58,8 @@ export function bindClassroomInteractions({
     setSearchQuery,
     setNotebookText,
     setBoardEntity,
-    getSidebarPanelMode,
-    setSidebarPanelMode,
+    getBlackboardExpanded,
+    setBlackboardExpanded,
 }) {
     if (getInteractionsBound()) {
         return;
@@ -110,6 +110,7 @@ export function bindClassroomInteractions({
                         setWorkspaceMode("meeting", {
                             remember: false,
                         });
+                        setBlackboardExpanded(true);
                         refreshDom();
                     }
                     return;
@@ -129,27 +130,18 @@ export function bindClassroomInteractions({
                     }
                     setWorkspaceMode(nextWorkspaceMode);
                 }
-                refreshDom();
-                return;
-            }
-
-            const sidebarButton = event.target.closest(
-                ".classes-side-panel-btn[data-sidebar-mode]",
-            );
-            if (sidebarButton instanceof HTMLElement) {
-                const sidebarMode = String(
-                    sidebarButton.dataset.sidebarMode ?? "",
-                ).trim();
-                if (!sidebarMode || sidebarMode === getSidebarPanelMode()) {
-                    return;
-                }
-                setSidebarPanelMode(sidebarMode);
+                setBlackboardExpanded(true);
                 refreshDom();
                 return;
             }
 
             const seatButton = event.target.closest(".classes-desk-unit");
             if (seatButton instanceof HTMLElement) {
+                if (
+                    seatButton.classList.contains("classes-desk-unit--teacher")
+                ) {
+                    return;
+                }
                 if (
                     !Number.isInteger(
                         Number(seatButton.dataset.seatNumber ?? ""),

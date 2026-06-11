@@ -50,7 +50,7 @@ test("classroom roster keeps present and absent columns", () => {
     assert.match(source, /classes-roster-panel-columns/);
 });
 
-test("classroom toolbar chat and meeting controls use text buttons with working action classes", () => {
+test("classroom toolbar chat control and meeting workspace tab use correct action classes", () => {
     const renderSource = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
         "utf8",
@@ -68,7 +68,7 @@ test("classroom toolbar chat and meeting controls use text buttons with working 
     );
     assert.match(
         renderSource,
-        /classes-board-entity-token classes-open-meeting-btn[\s\S]*module\.study\.classes\.open_meeting/,
+        /mode:\s*"meeting"[\s\S]*label:\s*i18n\.t\("ui\.reuse\.meeting"\)/,
     );
     assert.match(
         controllerSource,

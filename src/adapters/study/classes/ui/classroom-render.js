@@ -113,6 +113,10 @@ function renderWorkspaceTabs({
 }) {
     const tabs = [
         {
+            mode: "roster",
+            label: i18n.t("module.study.classes.members_present"),
+        },
+        {
             mode: "agenda",
             label: i18n.t("module.study.classes.class_agenda"),
         },
@@ -248,6 +252,9 @@ function renderWorkspaceContent({
             i18n,
         });
     }
+    if (workspaceMode === "roster") {
+        return `<section class="classes-workspace-panel classes-workspace-panel--roster">${renderRosterPanel({ snapshot, i18n })}</section>`;
+    }
     return `<section class="classes-workspace-panel classes-workspace-panel--classroom">${renderSelectedDeskPanel(
         {
             snapshot,
@@ -302,33 +309,6 @@ function renderRosterPanel({ snapshot, i18n }) {
     `;
 }
 
-function renderSidebarTabs({ i18n, sidebarPanelMode, isMeetingOpen }) {
-    const tabs = [
-        {
-            mode: "roster",
-            label: i18n.t("module.study.classes.members_present"),
-        },
-        {
-            mode: "agenda",
-            label: i18n.t("module.study.classes.class_agenda"),
-        },
-        {
-            mode: "materials",
-            label: i18n.t("module.study.classes.class_materials"),
-        },
-    ];
-    return tabs
-        .map((tab) => {
-            const activeClass = sidebarPanelMode === tab.mode ? " active" : "";
-            const disabled =
-                isMeetingOpen && tab.mode === "roster"
-                    ? 'disabled aria-disabled="true"'
-                    : "";
-            return `<button type="button" class="classes-side-panel-btn${activeClass}" data-sidebar-mode="${escapeHtml(tab.mode)}" ${disabled}>${escapeHtml(tab.label)}</button>`;
-        })
-        .join("");
-}
-
 function renderSidebarMaterials({ classResources, i18n }) {
     const files = Array.isArray(classResources?.files)
         ? classResources.files
@@ -350,29 +330,10 @@ function renderSidebarMaterials({ classResources, i18n }) {
     `;
 }
 
-function renderSidebarPanel({
-    snapshot,
-    classResources,
-    activeAgendaItems,
-    i18n,
-    isTeacherView,
-    sidebarPanelMode,
-    isMeetingOpen,
-}) {
-    const content =
-        sidebarPanelMode === "agenda"
-            ? renderInlineAgenda({ activeAgendaItems, isTeacherView, i18n })
-            : sidebarPanelMode === "materials"
-              ? renderSidebarMaterials({ classResources, i18n })
-              : renderRosterPanel({ snapshot, i18n });
+function renderSidebarPanel({ classResources, i18n }) {
     return `
         <aside class="classes-sidebar-panel-wrap">
-            <div class="classes-sidebar-tabs">${renderSidebarTabs({
-                i18n,
-                sidebarPanelMode,
-                isMeetingOpen,
-            })}</div>
-            ${content}
+            ${renderSidebarMaterials({ classResources, i18n })}
         </aside>
     `;
 }
@@ -395,7 +356,7 @@ export function renderBlackboard({
     hasActiveMeeting,
     isChatOpen,
     isMeetingOpen,
-    sidebarPanelMode,
+    blackboardExpanded,
 }) {
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
@@ -446,13 +407,6 @@ export function renderBlackboard({
                 title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>`,
         );
         toolbarActions.push(
-            `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-meeting-btn"
-                data-entity-kind="meeting"
-                draggable="true"
-                aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
-                title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>`,
-        );
-        toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-class-settings-btn"
                 aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
                 title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">${escapeHtml(i18n.t("module.study.classes.class_settings"))}</button>`,
@@ -483,13 +437,15 @@ export function renderBlackboard({
                 )}</button>`,
         );
     }
+    const collapsed = !blackboardExpanded && !isMeetingOpen;
     return `
-        <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
+        <div class="classes-blackboard${collapsed ? " classes-blackboard--collapsed" : ""}" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
                 <div class="classes-chalk-header classes-workspace-tabs">${renderWorkspaceTabs(
                     {
                         i18n,
                         workspaceMode,
+                        isMeetingOpen,
                         isTeacherView,
                         canAccessWhiteboard:
                             isTeacherView ||
@@ -506,13 +462,8 @@ export function renderBlackboard({
             <div class="classes-blackboard-surface">
                 <div class="classes-blackboard-body">
                     ${renderSidebarPanel({
-                        snapshot,
                         classResources,
-                        activeAgendaItems,
                         i18n,
-                        isTeacherView,
-                        sidebarPanelMode,
-                        isMeetingOpen,
                     })}
                     <div class="classes-workspace-main">
                         ${renderWorkspaceContent({
@@ -853,7 +804,7 @@ function renderClassroomView({
     hasActiveMeeting,
     isChatOpen,
     isMeetingOpen,
-    sidebarPanelMode,
+    blackboardExpanded,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -887,7 +838,7 @@ function renderClassroomView({
                         hasActiveMeeting,
                         isChatOpen,
                         isMeetingOpen,
-                        sidebarPanelMode,
+                        blackboardExpanded,
                     })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}

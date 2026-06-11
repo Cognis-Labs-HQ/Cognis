@@ -167,3 +167,47 @@ Die `connect-src`-Direktive der Content Security Policy enthält jetzt den
 registrierten Jitsi-Server-Ursprung neben `script-src`, wodurch
 Konsolenverletzungen behoben werden, wenn die Jitsi External API Verbindungen
 zum Meeting-Server herstellt.
+
+## Jitsi-Cookie-Regression behoben
+
+`allow-same-origin` wurde dem Jitsi-Iframe-Sandbox hinzugefügt, damit die Jitsi-Domain ihre eigenen Sitzungscookies lesen und schreiben kann.
+
+## Meeting-Guard verhindert Jitsi-Homepage-Durchscheinen
+
+Wenn die Authentifizierung blockiert wird oder der Benutzer den Meeting-Authentifizierungsfluss abbricht, wird das Meeting-Fenster jetzt ordnungsgemäß geschlossen, anstatt die Jitsi-Homepage durch ein Overlay anzuzeigen.
+
+## Lehreransicht wird bei Navigation immer zurückgesetzt
+
+Lehrer, die zuvor zur Schüleransicht gewechselt hatten, werden jetzt bei jedem Seiten-Refresh oder SPA-Navigation immer zur Lehreransicht zurückgekehrt.
+
+## Sub-Navigation für Lehrer in Schüleransicht sichtbar
+
+Ein Fehler wurde behoben, bei dem Lehrer in der Schüleransicht eine leere Klassenliste in der Sub-Navigationsleiste sahen.
+
+## Classroom-Layout umstrukturiert
+
+Der Anwesenheits-Tab wurde von der Seitenleiste in die Arbeitsbereich-Tab-Reihe verschoben. Der Klassenagenda-Eintrag wurde aus der Seitenleiste entfernt, da er bereits in den Arbeitsbereich-Tabs vorhanden ist. Die Meeting-Schaltfläche wurde aus der Tafelaktionen-Toolbar entfernt. Die Seitenleiste zeigt jetzt nur noch Klassmaterialien.
+
+## Tafel startet eingeklappt
+
+Beim Betreten einer Klasse ist die Tafel auf die Kopfzeile minimiert. Sie erweitert sich, wenn ein Arbeitsbereich-Tab gedrückt wird.
+
+## Arbeitsbereich-Tab-Aktivstatus
+
+Jede Arbeitsbereich-Tab-Schaltfläche erhält eine `active`-CSS-Klasse, wenn ihr Modus ausgewählt ist.
+
+## Dynamisches Aktualisieren auf chirurgische Aktualisierungen beschränkt
+
+Der Echtzeit-Aktualisierungszyklus für Schüler löst keine vollständigen DOM-Ersetzungen mehr aus; Schreibtischboden und Anwesenheitsbereich werden stattdessen an Ort und Stelle aktualisiert.
+
+## Lehrertisch-Klick deaktiviert
+
+Das Klicken auf den Lehrertisch öffnet nicht mehr das Benutzersuche-Popup.
+
+## Kreide-Schriftart auf Arbeitsbereich- und Anwesenheitsbereiche beschränkt
+
+Die Kreide-Schriftart wird jetzt explizit auf `classes-workspace-main` und `classes-roster-panel` angewendet und wird über `font-family: inherit` an Formularelemente weitergegeben.
+
+## Tafelhöhe passt sich dem Inhalt an
+
+Die Tafel hat keine erzwungene Mindesthöhe mehr, wenn kein Meeting aktiv ist, sodass sie sich natürlich an ihre Kinder anpasst.

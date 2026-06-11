@@ -380,14 +380,13 @@ export function createClassroomMeetingEmbed({
             const handleAuthBlocked = () => {
                 if (isTeacher) return false;
                 authBlocked = true;
-                destroyJitsiApi();
-                updateOverlay({
-                    message: i18n.t(
+                showToast(
+                    i18n.t(
                         "module.jitsi_meet.overlay.auth_required_description",
                     ),
-                    visible: true,
-                    loading: false,
-                });
+                    { variant: "warning" },
+                );
+                closeMeeting({ suppressAutoJoin: true });
                 return true;
             };
 

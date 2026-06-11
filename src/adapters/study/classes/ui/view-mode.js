@@ -35,5 +35,8 @@ export function setClassroomViewMode(mode, url = window.location.href) {
 }
 
 export function applyClassroomViewModeFromUrl(url = window.location.href) {
+    if (canToggleClassroomView()) {
+        return setClassroomViewMode("teacher", url);
+    }
     return getClassroomViewMode(url);
 }

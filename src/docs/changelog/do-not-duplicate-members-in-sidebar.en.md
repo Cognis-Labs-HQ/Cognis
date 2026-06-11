@@ -165,3 +165,47 @@ The Content Security Policy `connect-src` directive now includes the
 registered Jitsi server origin alongside `script-src`, resolving console
 violations when the Jitsi external API makes connections back to the meeting
 server.
+
+## Jitsi cookie regression fixed
+
+Added `allow-same-origin` to the Jitsi iframe sandbox so the Jitsi domain can read and write its own session cookies.
+
+## Meeting guard prevents Jitsi homepage bleed-through
+
+When authentication is blocked or the user cancels the meeting auth flow, the meeting window is now properly closed instead of showing the Jitsi homepage through an overlay.
+
+## Teacher view always resets on navigation
+
+Teachers who had previously switched to student view are now always returned to teacher view on page refresh or SPA navigation.
+
+## Sub-navigation visible for teachers in student view
+
+Fixed a regression where teachers in student view would see an empty class list in the sub-navigation bar.
+
+## Classroom layout restructured
+
+The Present (roster) tab has been moved from the sidebar to the workspace tab row. The Class Agenda entry has been removed from the sidebar since it already exists in workspace tabs. The meeting button has been removed from the blackboard action toolbar. The sidebar now shows only class materials.
+
+## Blackboard starts collapsed on entry
+
+When entering a class, the blackboard is minimised to the header row. It expands when a workspace tab is pressed.
+
+## Workspace tab active state
+
+Each workspace tab button receives an `active` CSS class when its mode is selected.
+
+## Dynamic refresh limited to surgical updates
+
+The realtime refresh cycle for students no longer triggers full DOM replacements; desk-floor and roster-panel are updated in place instead.
+
+## Teacher desk click disabled
+
+Clicking on the teacher's desk no longer opens the user search popup.
+
+## Chalk font scoped to workspace and roster panels
+
+The chalk font is now applied explicitly to `classes-workspace-main` and `classes-roster-panel` and propagates to form elements via `font-family: inherit`.
+
+## Blackboard height fits content
+
+The blackboard no longer has a forced minimum height when no meeting is active, so it sizes naturally to its children.

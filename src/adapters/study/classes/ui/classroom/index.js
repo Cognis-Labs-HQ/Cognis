@@ -57,7 +57,8 @@ function normalizeWorkspaceMode(input) {
         normalized === "notepad" ||
         normalized === "whiteboard" ||
         normalized === "meeting" ||
-        normalized === "chat"
+        normalized === "chat" ||
+        normalized === "roster"
     ) {
         return normalized;
     }
@@ -135,7 +136,7 @@ export async function mount(root, { signal } = {}) {
     let activeWhiteboard = null;
     let activeMeetingId = null;
     let isClassSearchDetached = false;
-    let sidebarPanelMode = "roster";
+    let blackboardExpanded = false;
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -219,24 +220,6 @@ export async function mount(root, { signal } = {}) {
         if (normalizedMode !== "meeting" && remember) {
             lastNonMeetingWorkspaceMode = normalizedMode;
         }
-    }
-
-    function normalizeSidebarPanelMode(nextMode) {
-        const normalizedMode = String(nextMode ?? "")
-            .trim()
-            .toLowerCase();
-        if (
-            normalizedMode === "agenda" ||
-            normalizedMode === "materials" ||
-            normalizedMode === "roster"
-        ) {
-            return normalizedMode;
-        }
-        return "roster";
-    }
-
-    function setSidebarMode(nextMode) {
-        sidebarPanelMode = normalizeSidebarPanelMode(nextMode);
     }
 
     function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
@@ -378,7 +361,6 @@ export async function mount(root, { signal } = {}) {
             whiteboards = [];
             activeWhiteboard = null;
             activeMeetingId = null;
-            setSidebarMode("roster");
             return;
         }
         const [
@@ -486,14 +468,6 @@ export async function mount(root, { signal } = {}) {
             activeWhiteboard?.boardId !== selectedActiveWhiteboardId
         ) {
             activeWhiteboard = null;
-        }
-        if (classroomWindows?.isMeetingOpen()) {
-            setSidebarMode("materials");
-        } else if (
-            sidebarPanelMode !== "agenda" &&
-            sidebarPanelMode !== "materials"
-        ) {
-            setSidebarMode("roster");
         }
         syncStudentWorkspaceAccess(snapshot);
     }
@@ -607,7 +581,7 @@ export async function mount(root, { signal } = {}) {
             hasActiveMeeting: Boolean(activeMeetingId),
             isChatOpen: classroomWindows?.isChatOpen() ?? false,
             isMeetingOpen: classroomWindows?.isMeetingOpen() ?? false,
-            sidebarPanelMode,
+            blackboardExpanded,
         });
     }
 
@@ -815,9 +789,9 @@ export async function mount(root, { signal } = {}) {
                             selectedNotebookText = text;
                         },
                         setBoardEntity,
-                        getSidebarPanelMode: () => sidebarPanelMode,
-                        setSidebarPanelMode: (nextMode) => {
-                            setSidebarMode(nextMode);
+                        getBlackboardExpanded: () => blackboardExpanded,
+                        setBlackboardExpanded: (value) => {
+                            blackboardExpanded = Boolean(value);
                         },
                     });
                     root.addEventListener("error", handleProfileAvatarError, {
@@ -858,15 +832,12 @@ export async function mount(root, { signal } = {}) {
         onMeetingVisibilityChange: ({ visible, returnMode } = {}) => {
             if (visible) {
                 setWorkspaceMode("meeting", { remember: false });
-                setSidebarMode("materials");
             } else if (returnMode === "agenda") {
                 setWorkspaceMode("agenda", { remember: false });
-                setSidebarMode("agenda");
             } else {
                 setWorkspaceMode(lastNonMeetingWorkspaceMode, {
                     remember: false,
                 });
-                setSidebarMode("roster");
             }
             refreshDom();
         },
@@ -951,7 +922,7 @@ export async function mount(root, { signal } = {}) {
                     // class; avoid disrupting the overlay with a full redraw.
                     refreshDynamicDom();
                 } else {
-                    refreshDom();
+                    refreshDynamicDom();
                 }
             }
         },

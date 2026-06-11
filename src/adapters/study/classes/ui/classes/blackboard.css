@@ -23,12 +23,32 @@
         3px 4px 12px rgba(0, 0, 0, 0.45);
     overflow: hidden;
     position: relative;
-    min-height: var(--classes-classroom-blackboard-height);
     transition: min-height 0.26s ease;
 }
 
-#app.classes-meeting-active .classes-classroom-content {
-    --classes-classroom-blackboard-height: clamp(360px, 62vh, 720px);
+#app.classes-meeting-active .classes-blackboard {
+    min-height: clamp(360px, 62vh, 720px);
+}
+
+.classes-blackboard--collapsed .classes-blackboard-surface,
+.classes-blackboard--collapsed .classes-blackboard-ledge {
+    display: none;
+}
+
+.classes-workspace-main,
+.classes-roster-panel {
+    font-family: var(--classes-blackboard-chalk-font);
+}
+
+.classes-workspace-main button,
+.classes-workspace-main input,
+.classes-workspace-main textarea,
+.classes-workspace-main select,
+.classes-roster-panel button,
+.classes-roster-panel input,
+.classes-roster-panel textarea,
+.classes-roster-panel select {
+    font-family: inherit;
 }
 
 .classes-blackboard-header {
@@ -79,7 +99,6 @@
     display: block;
     position: relative;
     overflow-y: auto;
-    font-family: var(--classes-blackboard-chalk-font);
 }
 
 .classes-blackboard-main {
