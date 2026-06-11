@@ -20,7 +20,6 @@ export function createClassroomWindows({
     onWhiteboardVisibilityChange = () => {},
     signal = null,
 }) {
-    const chatToggleButton = root.querySelector("#global-chat-toggle");
     const meetingEmbed = createClassroomMeetingEmbed({
         i18n,
         isTeacher,
@@ -33,6 +32,7 @@ export function createClassroomWindows({
     const nativeChat = createClassroomNativeChat({
         i18n,
         onVisibilityChange: (visible) => {
+            const chatToggleButton = root.querySelector("#global-chat-toggle");
             if (!(chatToggleButton instanceof HTMLElement)) return;
             chatToggleButton.setAttribute(
                 "aria-expanded",
@@ -73,7 +73,12 @@ export function createClassroomWindows({
                 blackboard.appendChild(meetingEmbed.element);
             }
         }
-        root.appendChild(nativeChat.panel);
+        const chatHost = root.querySelector(".classes-chat-workspace-host");
+        if (chatHost instanceof HTMLElement) {
+            chatHost.appendChild(nativeChat.panel);
+        } else {
+            root.appendChild(nativeChat.panel);
+        }
         whiteboardWindow.reattach();
     }
 

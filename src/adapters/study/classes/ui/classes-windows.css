@@ -148,6 +148,15 @@
     pointer-events: auto;
 }
 
+.classes-chat-workspace-host > .classes-chat-panel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-height: none;
+    border-radius: 0.8rem;
+    transform-origin: 50% 50%;
+}
+
 .classes-chat-panel-header {
     display: flex;
     align-items: center;

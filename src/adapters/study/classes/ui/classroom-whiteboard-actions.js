@@ -53,6 +53,9 @@ export async function handleWhiteboardAndNotepadActions(
         if (!snapshot) return null;
         const tokenResponse = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(boardId)}/token`,
+            {
+                suppressConnectionRecoveryToast: true,
+            },
         );
         if (!tokenResponse.ok) {
             const errPayload = await tokenResponse.json().catch(() => null);
@@ -85,7 +88,11 @@ export async function handleWhiteboardAndNotepadActions(
         return true;
     }
 
-    if (event.target.closest(".classes-open-whiteboards-btn")) {
+    if (
+        event.target.closest(
+            '.classes-open-whiteboards-btn, .classes-workspace-tab-btn[data-workspace-mode="whiteboard"]',
+        )
+    ) {
         if (!snapshot || isMeetingOpen()) return false;
         if (!isTeacherView() && !getActiveWhiteboardId()) {
             return true;

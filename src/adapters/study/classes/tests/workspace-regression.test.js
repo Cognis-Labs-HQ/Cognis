@@ -29,7 +29,8 @@ test("classroom whiteboard actions support inline and pop-out modes", () => {
         "utf8",
     );
 
-    assert.match(source, /classes-open-whiteboards-btn/);
+    assert.match(source, /classes-workspace-tab-btn/);
+    assert.match(source, /suppressConnectionRecoveryToast:\s*true/);
     assert.match(source, /classes-inline-whiteboard-popout-btn/);
     assert.match(source, /classes-popout-whiteboard-btn/);
     assert.match(source, /setWorkspaceMode\("whiteboard"\)/);
@@ -45,4 +46,17 @@ test("classroom render gates student meeting and whiteboard controls", () => {
     assert.match(source, /canAccessWhiteboard/);
     assert.match(source, /activeWhiteboardId/);
     assert.match(source, /classes-blackboard-body/);
+});
+
+test("classroom sub-navigation always renders the search button", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-sub-navigation.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /classes-subnav-find-btn/);
+    assert.doesNotMatch(source, /isTeacherView \?/);
 });

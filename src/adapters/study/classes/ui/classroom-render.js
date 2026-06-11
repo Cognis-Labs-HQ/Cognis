@@ -371,12 +371,6 @@ export function renderBlackboard({
     const toolbarActions = [];
     if (isTeacherView) {
         toolbarActions.push(
-            `<button type="button" class="classes-icon-btn classes-open-whiteboards-btn"
-                ${isMeetingOpen ? 'disabled aria-disabled="true"' : ""}
-                aria-label="${escapeHtml(i18n.t("module.study.classes.whiteboards"))}"
-                title="${escapeHtml(i18n.t("module.study.classes.whiteboards"))}">${escapeHtml(i18n.t("module.study.classes.whiteboards"))}</button>`,
-        );
-        toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-chat-btn"
                 ${snapshot?.chatUrl ? "" : "disabled"}
                 data-entity-kind="chat"
@@ -422,12 +416,6 @@ export function renderBlackboard({
                 )}</button>`,
         );
     }
-    toolbarActions.push(
-        `<button type="button" class="classes-icon-btn classes-toggle-notepad-btn"
-            aria-label="${escapeHtml(i18n.t("module.study.classes.notepad"))}"
-            ${isMeetingOpen ? 'disabled aria-disabled="true"' : ""}
-            title="${escapeHtml(i18n.t("module.study.classes.notepad"))}">${escapeHtml(i18n.t("module.study.classes.notepad"))}</button>`,
-    );
     return `
         <div class="classes-blackboard" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">

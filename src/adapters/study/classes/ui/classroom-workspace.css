@@ -62,6 +62,12 @@
     min-height: 24rem;
 }
 
+.classes-chat-workspace-host {
+    position: relative;
+    flex: 1;
+    min-height: 24rem;
+}
+
 .classes-meeting-workspace-host {
     position: relative;
     flex: 1;

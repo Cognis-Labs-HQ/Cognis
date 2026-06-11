@@ -441,8 +441,21 @@ function syncHeaderScrollState(root) {
 
     const hasSubNavigation = Boolean(shell.querySelector(".page-subnav"));
     const hasPrimaryNavigation = Boolean(shell.querySelector(".global-navrow"));
-    const shouldPrioritizeSubnav =
-        hasSubNavigation && hasPrimaryNavigation && window.scrollY > 12;
+    const subnavPriorityWasActive = shell.classList.contains(
+        "app-shell--subnav-priority",
+    );
+    const SUBNAV_PRIORITY_ENTER_SCROLL_Y = 20;
+    const SUBNAV_PRIORITY_EXIT_SCROLL_Y = 6;
+    let shouldPrioritizeSubnav = false;
+    if (hasSubNavigation && hasPrimaryNavigation) {
+        if (subnavPriorityWasActive) {
+            shouldPrioritizeSubnav =
+                window.scrollY > SUBNAV_PRIORITY_EXIT_SCROLL_Y;
+        } else {
+            shouldPrioritizeSubnav =
+                window.scrollY >= SUBNAV_PRIORITY_ENTER_SCROLL_Y;
+        }
+    }
 
     shell.classList.toggle("app-shell--has-subnav", hasSubNavigation);
     shell.classList.toggle(
@@ -629,6 +642,8 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
     if (!showChatToggle) {
         root.querySelector("#global-chat-toggle")?.setAttribute("hidden", "");
+    } else {
+        root.querySelector("#global-chat-toggle")?.removeAttribute("hidden");
     }
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
     if (!showFooter) root.querySelector(".global-footer")?.remove();

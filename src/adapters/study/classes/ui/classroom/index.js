@@ -486,7 +486,6 @@ export async function mount(root, { signal } = {}) {
             i18n,
             classes: footerClasses,
             selectedClassId,
-            isTeacherView: isTeacherView(),
         });
     }
 
@@ -497,8 +496,18 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    function openClassSearch() {
-        navigateTo("/my-classes");
+    async function openClassSearch() {
+        if (teacherAccount && getClassroomViewMode() === "teacher") {
+            setClassroomViewMode("student");
+        }
+        selectedClassId = "";
+        selectedSeatNumber = null;
+        activeWhiteboard = null;
+        setWorkspaceMode("agenda");
+        await loadAvailableClasses();
+        refreshDom();
+        refreshSubNavigation();
+        composer.refreshFooter();
     }
 
     async function handleSeatActionMenu(button) {

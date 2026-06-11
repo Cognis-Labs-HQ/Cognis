@@ -95,6 +95,9 @@ export function bindClassroomInteractions({
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
+                if (nextWorkspaceMode === "whiteboard") {
+                    return;
+                }
                 if (nextWorkspaceMode === "agenda") {
                     if (isTeacherView()) {
                         await updateBoardFocus("agenda");
@@ -142,8 +145,29 @@ export function bindClassroomInteractions({
                     return;
                 }
                 syncGlobalChatTarget();
-                classroomWindows.openChat(snapshot.chatUrl);
+                if (classroomWindows.isMeetingOpen()) {
+                    const chatToggle = root.querySelector(
+                        "#global-chat-toggle",
+                    );
+                    if (chatToggle instanceof HTMLElement) {
+                        chatToggle.dataset.chatTarget = String(
+                            snapshot.chatUrl ?? "",
+                        ).trim();
+                        chatToggle.dispatchEvent(
+                            new MouseEvent("click", {
+                                bubbles: true,
+                                cancelable: true,
+                            }),
+                        );
+                    } else {
+                        classroomWindows.toggleChat(snapshot.chatUrl);
+                        refreshDom();
+                    }
+                    return;
+                }
+                setWorkspaceMode("chat");
                 refreshDom();
+                classroomWindows.openChat(snapshot.chatUrl);
                 return;
             }
 
@@ -309,7 +333,7 @@ export function bindClassroomInteractions({
                 ".classes-subnav-find-btn",
             );
             if (subnavFindButton instanceof HTMLElement) {
-                openClassSearch();
+                await openClassSearch();
                 return;
             }
 
