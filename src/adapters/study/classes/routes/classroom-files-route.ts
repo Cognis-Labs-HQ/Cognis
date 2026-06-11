@@ -75,7 +75,7 @@ export async function handleClassroomFilesRoutes({
                 options.log?.("error", "Failed to delete agenda item.", {
                     component: "classes",
                     operation: "delete-agenda-item",
-                    classId: eventId,
+                    classId: classId,
                     error,
                 });
                 return false;

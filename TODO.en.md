@@ -379,7 +379,3 @@
 ### `normalizeBoardFocus` duplicated in UI and store layers
 
 `src/adapters/study/classes/ui/classroom/index.js` lines 52–57 and `src/adapters/study/classes/store/classes.ts` lines 6–12 both define an identical `normalizeBoardFocus` function. Extracting this to a shared utility in `src/adapters/study/classes/reuse/` would eliminate the duplication, but requires cross-layer sharing between TypeScript (store) and JavaScript (UI) which needs careful plumbing.
-
-### Wrong `classId` in error log in `classroom-files-route.ts`
-
-`src/adapters/study/classes/routes/classroom-files-route.ts` line 78 logs `eventId` instead of `classId` in the error metadata field named `classId`. Pre-existing bug not introduced by this PR.
