@@ -58,12 +58,12 @@
 }
 
 .classes-workspace-panel--tiled {
-    min-height: 24rem;
+    min-height: 20rem;
 }
 
 .classes-workspace-tile-deck {
     position: relative;
-    min-height: 24rem;
+    min-height: 20rem;
     height: 100%;
     isolation: isolate;
 }

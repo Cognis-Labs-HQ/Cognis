@@ -42,7 +42,10 @@ test("study hub detects native library child component by descriptor id", () => 
 
 test("classroom roster keeps present and absent columns", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
         "utf8",
     );
     assert.match(source, /module\.study\.classes\.members_present/);
@@ -52,7 +55,10 @@ test("classroom roster keeps present and absent columns", () => {
 
 test("classroom toolbar chat control and meeting workspace tab use correct action classes", () => {
     const renderSource = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/index.js",
+        ),
         "utf8",
     );
     const controllerSource = readFileSync(
@@ -62,12 +68,19 @@ test("classroom toolbar chat control and meeting workspace tab use correct actio
         ),
         "utf8",
     );
+    const workspaceSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
+        "utf8",
+    );
     assert.match(
         renderSource,
         /classes-board-entity-token classes-open-chat-btn[\s\S]*module\.study\.classes\.open_chat/,
     );
     assert.match(
-        renderSource,
+        workspaceSource,
         /mode:\s*"meeting"[\s\S]*label:\s*i18n\.t\("ui\.reuse\.meeting"\)/,
     );
     assert.match(

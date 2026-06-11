@@ -148,6 +148,8 @@ export async function mount(root, { signal } = {}) {
     let activeMaterialKey = null;
     let isClassSearchDetached = false;
     let blackboardExpanded = false;
+    /** Tracks which tiles have been initialized by user action or system auto-open. */
+    let initializedTiles = new Set();
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -241,6 +243,11 @@ export async function mount(root, { signal } = {}) {
     function setWorkspaceMode(nextMode, { remember = true } = {}) {
         const normalizedMode = normalizeWorkspaceMode(nextMode);
         workspaceMode = normalizedMode;
+        if (normalizedMode === "whiteboard") {
+            initializedTiles.add("whiteboard");
+        } else if (normalizedMode === "meeting") {
+            initializedTiles.add("meeting");
+        }
         if (normalizedMode !== "meeting" && remember) {
             lastNonMeetingWorkspaceMode = normalizedMode;
         }
@@ -604,6 +611,7 @@ export async function mount(root, { signal } = {}) {
             isChatOpen: classroomWindows?.isChatOpen() ?? false,
             isMeetingOpen: classroomWindows?.isMeetingOpen() ?? false,
             blackboardExpanded,
+            initializedTiles,
         });
     }
 
@@ -701,6 +709,7 @@ export async function mount(root, { signal } = {}) {
             selectedClassId = classId;
             selectedSeatNumber = null;
             activeWhiteboard = null;
+            initializedTiles = new Set();
             if (
                 previousClassId &&
                 previousClassId !== classId &&

@@ -236,3 +236,11 @@ Saat guru membuka ubin materi, pilihan disiarkan ke semua siswa melalui mekanism
 ## Navigasi kembali ke materi
 
 Tombol "Kembali ke Materi" di header penampil menutup penampil dan kembali ke kisi ubin. Bagi guru, menutup penampil juga menghapus siaran.
+
+## Kontainer ubin kini menyesuaikan dimensi tampilan tunggal
+
+Tinggi kontainer tumpukan ubin telah diselaraskan dengan tampilan panel tunggal, sehingga area papan tulis tidak lagi melebar secara tidak perlu saat tata letak ubin aktif.
+
+## Ubin papan tulis dan rapat dibuat secara malas
+
+Ubin papan tulis dan rapat di papan kelas tidak lagi dirender sebelumnya saat halaman dimuat. Setiap ubin hanya ditambahkan ke DOM pertama kali pengguna (atau sistem, untuk bergabung otomatis bagi siswa) mengaktifkan mode tersebut. Setelah diinisialisasi, ubin tetap berada di dek dan mempertahankan statusnya saat pengguna berpindah di antara ubin.

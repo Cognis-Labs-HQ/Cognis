@@ -241,3 +241,11 @@ When a teacher opens a material tile, the selection is broadcast to all students
 ## Back to Materials navigation
 
 A "Back to Materials" button in the viewer header closes the viewer and returns to the tile grid. For teachers, closing the viewer also clears the broadcast.
+
+## Tile container now matches single-view dimensions
+
+The stacked tile deck container height has been aligned with the single-panel view, so the blackboard area no longer expands unnecessarily when the tiled layout is active.
+
+## Whiteboard and meeting tiles are created lazily
+
+Whiteboard and meeting tiles in the classroom blackboard are no longer pre-rendered on page load. Each tile is only added to the DOM the first time the user (or the system, for student auto-join) activates that mode. Once initialized, tiles remain in the deck and retain their state while switching between them.

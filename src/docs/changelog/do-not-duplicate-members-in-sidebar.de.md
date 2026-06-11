@@ -243,3 +243,11 @@ Wenn ein Lehrer eine Materialkachel öffnet, wird die Auswahl über den Echtzeit
 ## Navigation zurück zu den Materialien
 
 Eine Schaltfläche „Zurück zu Materialien" in der Viewer-Kopfzeile schließt den Viewer und kehrt zum Kachelraster zurück. Für Lehrer wird dabei auch die Übertragung beendet.
+
+## Kachelbehälter entspricht jetzt den Abmessungen der Einzelansicht
+
+Die Höhe des gestapelten Kachel-Decks wurde an die Einzelpanelansicht angepasst, sodass der Tafelbereich sich beim aktiven Kachel-Layout nicht mehr unnötig vergrößert.
+
+## Whiteboard- und Meeting-Kacheln werden verzögert erstellt
+
+Whiteboard- und Meeting-Kacheln im Unterrichtsraum werden nicht mehr beim Laden der Seite vorgerendert. Jede Kachel wird dem DOM erst beim ersten Aktivieren durch den Nutzer (oder automatisch beim Beitreten für Schüler) hinzugefügt. Nach der Initialisierung bleiben die Kacheln im Deck und behalten ihren Zustand beim Wechsel zwischen ihnen.

@@ -7,7 +7,10 @@ const ROOT = process.cwd();
 
 test("classroom render includes workspace tabs and roster panel", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
         "utf8",
     );
 
@@ -40,7 +43,10 @@ test("classroom whiteboard actions support inline and pop-out modes", () => {
 
 test("classroom render gates student meeting and whiteboard controls", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/index.js",
+        ),
         "utf8",
     );
 
