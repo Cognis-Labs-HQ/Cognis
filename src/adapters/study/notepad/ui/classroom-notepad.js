@@ -1,4 +1,3 @@
-
 const STORAGE_PREFIX = "classes_notepad_";
 
 const ALLOWED_TAGS = new Set([

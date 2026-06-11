@@ -141,9 +141,7 @@ function renderWorkspaceTabs({
                         workspaceMode === tab.mode ? " active" : ""
                     }"
                     data-workspace-mode="${escapeHtml(tab.mode)}"
-                    ${
-                        !isTeacherView ? 'disabled aria-disabled="true"' : ""
-                    }
+                    ${!isTeacherView ? 'disabled aria-disabled="true"' : ""}
                 >${escapeHtml(tab.label)}</button>`,
         )
         .join("");
@@ -250,12 +248,14 @@ function renderWorkspaceContent({
             i18n,
         });
     }
-    return `<section class="classes-workspace-panel classes-workspace-panel--classroom">${renderSelectedDeskPanel({
-        snapshot,
-        selectedSeatNumber,
-        selectedNotebookText,
-        i18n,
-    })}</section>`;
+    return `<section class="classes-workspace-panel classes-workspace-panel--classroom">${renderSelectedDeskPanel(
+        {
+            snapshot,
+            selectedSeatNumber,
+            selectedNotebookText,
+            i18n,
+        },
+    )}</section>`;
 }
 
 function renderRosterPanel({ snapshot, i18n }) {
@@ -319,8 +319,7 @@ function renderSidebarTabs({ i18n, sidebarPanelMode, isMeetingOpen }) {
     ];
     return tabs
         .map((tab) => {
-            const activeClass =
-                sidebarPanelMode === tab.mode ? " active" : "";
+            const activeClass = sidebarPanelMode === tab.mode ? " active" : "";
             const disabled =
                 isMeetingOpen && tab.mode === "roster"
                     ? 'disabled aria-disabled="true"'
@@ -331,7 +330,9 @@ function renderSidebarTabs({ i18n, sidebarPanelMode, isMeetingOpen }) {
 }
 
 function renderSidebarMaterials({ classResources, i18n }) {
-    const files = Array.isArray(classResources?.files) ? classResources.files : [];
+    const files = Array.isArray(classResources?.files)
+        ? classResources.files
+        : [];
     const filesMarkup = files.length
         ? `<ul class="classes-sidebar-material-list">${files
               .map((fileRef) => {
@@ -443,6 +444,13 @@ export function renderBlackboard({
                 draggable="true"
                 aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
                 title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>`,
+        );
+        toolbarActions.push(
+            `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-meeting-btn"
+                data-entity-kind="meeting"
+                draggable="true"
+                aria-label="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}"
+                title="${escapeHtml(i18n.t("module.study.classes.open_meeting"))}">📹</button>`,
         );
         toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-class-settings-btn"
