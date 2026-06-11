@@ -122,6 +122,15 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.match(embedSource, /resolveSafeJitsiAvatarUrl\(/);
     assert.match(
         embedSource,
+        /new URL\(\s*normalizedAvatarUrl,\s*window\.location\.origin,\s*\)/,
+    );
+    assert.match(
+        embedSource,
+        /if \(parsedAvatarUrl\.origin !== meetingOrigin\) \{\s*return "";\s*\}/,
+    );
+    assert.match(embedSource, /return parsedAvatarUrl\.toString\(\);/);
+    assert.match(
+        embedSource,
         /hashParams\.set\("userInfo\.avatarUrl", safeAvatarUrl\)/,
     );
     assert.match(
