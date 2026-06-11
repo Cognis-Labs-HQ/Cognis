@@ -114,8 +114,8 @@ function renderWorkspaceTabs({
 }) {
     const tabs = [
         {
-            mode: "notepad",
-            label: i18n.t("module.study.classes.notepad"),
+            mode: "agenda",
+            label: i18n.t("module.study.classes.classroom_panel"),
         },
     ];
     if (canAccessWhiteboard) {
@@ -222,9 +222,6 @@ function renderWorkspaceContent({
     workspaceMode,
     activeWhiteboard,
 }) {
-    if (workspaceMode === "meeting") {
-        return `<section class="classes-workspace-panel classes-workspace-panel--meeting"><div class="classes-meeting-workspace-host"></div></section>`;
-    }
     if (workspaceMode === "chat") {
         return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
     }
@@ -239,20 +236,47 @@ function renderWorkspaceContent({
             </section>
         `;
     }
-    if (workspaceMode === "whiteboard") {
-        return renderWorkspaceWhiteboard({
-            activeWhiteboard,
-            i18n,
-        });
-    }
-    return `<section class="classes-workspace-panel classes-workspace-panel--classroom">${renderSelectedDeskPanel(
-        {
-            snapshot,
-            selectedSeatNumber,
-            selectedNotebookText,
-            i18n,
-        },
-    )}</section>`;
+    const activeTileMode =
+        workspaceMode === "whiteboard" || workspaceMode === "meeting"
+            ? workspaceMode
+            : "agenda";
+    return `
+        <section class="classes-workspace-panel classes-workspace-panel--tiled">
+            <div class="classes-workspace-tile-deck" data-active-workspace-mode="${escapeHtml(activeTileMode)}">
+                <section class="classes-workspace-tile classes-workspace-tile--agenda${
+                    activeTileMode === "agenda" ? " active" : ""
+                }" data-workspace-mode="agenda">
+                    <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="agenda">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
+                    <div class="classes-workspace-tile-body">${renderSelectedDeskPanel(
+                        {
+                            snapshot,
+                            selectedSeatNumber,
+                            selectedNotebookText,
+                            i18n,
+                        },
+                    )}</div>
+                </section>
+                <section class="classes-workspace-tile classes-workspace-tile--whiteboard${
+                    activeTileMode === "whiteboard" ? " active" : ""
+                }" data-workspace-mode="whiteboard">
+                    <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>
+                    <div class="classes-workspace-tile-body classes-whiteboard-workspace-host">
+                        ${
+                            activeWhiteboard?.embedUrl
+                                ? ""
+                                : `<p class="classes-empty classes-workspace-tile-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>`
+                        }
+                    </div>
+                </section>
+                <section class="classes-workspace-tile classes-workspace-tile--meeting${
+                    activeTileMode === "meeting" ? " active" : ""
+                }" data-workspace-mode="meeting">
+                    <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="meeting">${escapeHtml(i18n.t("ui.reuse.meeting"))}</button>
+                    <div class="classes-workspace-tile-body classes-meeting-workspace-host"></div>
+                </section>
+            </div>
+        </section>
+    `;
 }
 
 function renderRosterPanel({ snapshot, i18n }) {

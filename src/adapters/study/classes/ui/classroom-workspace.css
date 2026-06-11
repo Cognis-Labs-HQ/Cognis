@@ -57,6 +57,84 @@
     min-height: 20rem;
 }
 
+.classes-workspace-panel--tiled {
+    min-height: 24rem;
+}
+
+.classes-workspace-tile-deck {
+    position: relative;
+    min-height: 24rem;
+    height: 100%;
+    isolation: isolate;
+}
+
+.classes-workspace-tile {
+    --classes-workspace-tile-offset-x: 0px;
+    --classes-workspace-tile-offset-y: 0px;
+    position: absolute;
+    inset: 0;
+    transform: translate(
+        var(--classes-workspace-tile-offset-x),
+        var(--classes-workspace-tile-offset-y)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.classes-workspace-tile--agenda {
+    --classes-workspace-tile-offset-x: 0px;
+    --classes-workspace-tile-offset-y: 0px;
+    z-index: 20;
+}
+
+.classes-workspace-tile--whiteboard {
+    --classes-workspace-tile-offset-x: -0.55rem;
+    --classes-workspace-tile-offset-y: 0.55rem;
+    z-index: 30;
+}
+
+.classes-workspace-tile--meeting {
+    --classes-workspace-tile-offset-x: -1.1rem;
+    --classes-workspace-tile-offset-y: 1.1rem;
+    z-index: 40;
+}
+
+.classes-workspace-tile.active {
+    z-index: 50;
+}
+
+.classes-workspace-tile-hitbox {
+    width: 100%;
+    padding: 0.4rem 0.7rem;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.classes-workspace-tile-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.classes-workspace-tile-empty {
+    margin: 0;
+    padding: 0.9rem;
+}
+
 .classes-workspace-panel--chat {
     flex: 1;
     min-height: 24rem;
@@ -71,6 +149,11 @@
 .classes-meeting-workspace-host {
     position: relative;
     flex: 1;
+    min-height: 20rem;
+}
+
+.classes-whiteboard-workspace-host {
+    position: relative;
     min-height: 20rem;
 }
 
@@ -393,6 +476,24 @@
 @media (max-width: 960px) {
     .classes-blackboard-body {
         grid-template-columns: 1fr;
+    }
+
+    .classes-workspace-tile-deck {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        min-height: 0;
+    }
+
+    .classes-workspace-tile {
+        position: relative;
+        inset: auto;
+        transform: none;
+        min-height: 15rem;
+    }
+
+    .classes-workspace-tile.active {
+        z-index: 1;
     }
 }
 

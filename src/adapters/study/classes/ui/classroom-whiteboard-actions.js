@@ -19,7 +19,6 @@ export async function handleWhiteboardAndNotepadActions(
         isTeacherView,
         loadSelectedClassMeta,
         refreshDom,
-        isMeetingOpen,
         getClassroomNotepad,
         setClassroomNotepad,
         getClassroomNotepadClassId,
@@ -81,7 +80,7 @@ export async function handleWhiteboardAndNotepadActions(
     }
 
     if (event.target.closest(".classes-toggle-notepad-btn")) {
-        if (!snapshot || isMeetingOpen()) return false;
+        if (!snapshot) return false;
         ensureNotepad();
         setWorkspaceMode("notepad");
         refreshDom();
@@ -93,7 +92,7 @@ export async function handleWhiteboardAndNotepadActions(
             '.classes-open-whiteboards-btn, .classes-workspace-tab-btn[data-workspace-mode="whiteboard"]',
         )
     ) {
-        if (!snapshot || isMeetingOpen()) return false;
+        if (!snapshot) return false;
         if (!isTeacherView() && !getActiveWhiteboardId()) {
             return true;
         }
@@ -178,11 +177,13 @@ export async function handleWhiteboardAndNotepadActions(
                 activeWhiteboard.boardId,
             );
         }
+        setWorkspaceMode("whiteboard");
+        refreshDom();
         return true;
     }
 
     if (event.target.closest(".classes-open-whiteboard-btn")) {
-        if (!snapshot || isMeetingOpen()) return false;
+        if (!snapshot) return false;
         const button = event.target.closest(".classes-open-whiteboard-btn");
         const boardId = String(button?.dataset?.boardId ?? "").trim();
         const boardName = String(button?.dataset?.boardName ?? "").trim();
@@ -213,6 +214,8 @@ export async function handleWhiteboardAndNotepadActions(
         if (isTeacherView()) {
             await persistActiveWhiteboardId(snapshot.id, boardId);
         }
+        setWorkspaceMode("whiteboard");
+        refreshDom();
         return true;
     }
 

@@ -281,12 +281,8 @@ export async function mount(root, { signal } = {}) {
         if (workspaceMode === "agenda" && !meetingAutoJoinBlocked) {
             setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
-        if (
-            activeMeetingId &&
-            workspaceMode !== "meeting" &&
-            !meetingAutoJoinBlocked
-        ) {
-            setWorkspaceMode("meeting", { remember: false });
+        if (workspaceMode === "meeting" && !classroomWindows?.isMeetingOpen()) {
+            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
         const activeWhiteboardId = getSelectedActiveWhiteboardId(snapshot);
         if (
@@ -955,8 +951,6 @@ export async function mount(root, { signal } = {}) {
                         refreshDynamicDom();
                     }
                 } else {
-                    // Meeting already open; sync mode without a full redraw.
-                    setWorkspaceMode("meeting", { remember: false });
                     refreshDynamicDom();
                 }
             } else {

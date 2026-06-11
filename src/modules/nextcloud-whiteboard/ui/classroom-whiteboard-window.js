@@ -12,8 +12,7 @@ export function createClassroomWhiteboardWindow({
     function buildPanel() {
         const panelEl = document.createElement("div");
         panelEl.className = "classes-whiteboard-panel";
-        panelEl.setAttribute("role", "dialog");
-        panelEl.setAttribute("aria-modal", "true");
+        panelEl.setAttribute("role", "region");
         panelEl.setAttribute(
             "aria-label",
             i18n.t("module.study.classes.whiteboard"),
@@ -62,8 +61,15 @@ export function createClassroomWhiteboardWindow({
 
     function reattach() {
         if (!panel) return;
+        const whiteboardHost = root.querySelector(
+            ".classes-whiteboard-workspace-host",
+        );
+        if (whiteboardHost instanceof HTMLElement) {
+            whiteboardHost.appendChild(panel);
+            return;
+        }
         const blackboard = root.querySelector(".classes-blackboard");
-        if (blackboard) {
+        if (blackboard instanceof HTMLElement) {
             blackboard.appendChild(panel);
         }
     }

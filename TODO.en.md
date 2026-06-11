@@ -433,3 +433,53 @@
 **Source:** `src/adapters/study/classes/ui/classroom-resource-actions.js` line 68
 
 **Reason deferred:** Pre-existing client-side extension whitelist. Full MIME sniffing requires server-side changes across the file gateway and is outside the tiled viewer scope.
+
+## Code Review — classroom tiled workspace stabilization
+
+### dashboard-layout-followups.test.js runtime-assertion gap
+
+**Reviewer suggestion:** Replace regex source checks with runtime behavior assertions for scroll hysteresis and chat-toggle visibility.
+
+**Reason ignored:** This feedback targets `src/ui/tests/dashboard-layout-followups.test.js`, which is unrelated to the classroom workspace tiling fix in this PR. Expanding into dashboard-layout test redesign would widen scope across a separate UI subsystem and is tracked here for a dedicated follow-up.
+
+### jitsi classroom embed authBlocked naming
+
+**Reviewer suggestion:** Rename `authBlocked` in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` to a clearer lifecycle-specific name.
+
+**Reason ignored:** The current task is focused on stabilizing classroom tiled behavior and interaction flow, not a naming refactor inside the Jitsi module internals. This can be handled in a dedicated readability cleanup without mixing concerns in this behavior-focused patch.
+
+### jitsi classroom embed openInProgress guard
+
+**Reviewer suggestion:** Re-check that `openInProgress` cannot stay stuck `true` in exceptional paths.
+
+**Reason ignored:** The flagged code path already resets `openInProgress` in `finally`, and this PR does not modify that logic. No regression evidence was introduced by the tiled workspace change, so this remains a separate hardening follow-up item.
+
+### classroom/index.js teacher-active helper extraction
+
+**Reviewer suggestion:** Extract teacher-active meeting detection into a dedicated helper for clarity.
+
+**Reason ignored:** The suggested extraction is a refactor to existing meeting-presence matching logic that predates this change and is not required for the tiled view stabilization behavior. I kept this patch scoped to interaction and rendering fixes.
+
+### classroom-resource-actions extensionless upload allowance
+
+**Reviewer suggestion:** Disallow extensionless uploads in `classroom-resource-actions.js`.
+
+**Reason ignored:** This is a broader file-upload policy/security change outside the requested tiled workspace behavior and requires product-level validation of accepted classroom material formats. It is tracked for a dedicated security-policy update.
+
+### classroom-file-actions default notepad filename helper
+
+**Reviewer suggestion:** Extract the default notes filename format into a dedicated helper.
+
+**Reason ignored:** This is a maintainability refactor in notepad file-export naming and unrelated to the meeting/whiteboard/nodes tiling stabilization delivered here. Deferred to a separate cleanup pass.
+
+### classroom-render material extension parsing robustness
+
+**Reviewer suggestion:** Harden extension parsing for material keys without dots or with path separators.
+
+**Reason ignored:** The noted parser issue is orthogonal to tiled workspace behavior and existed before this change set. It should be fixed in a dedicated material-viewer parsing task with focused tests.
+
+### meeting-embed.js JSDoc tags
+
+**Reviewer suggestion:** Add `@param`/`@returns` tags to `resolveSafeJitsiAvatarUrl`.
+
+**Reason ignored:** This is documentation hygiene in `src/modules/jitsi-meet/ui/meeting-embed.js`, unrelated to the classroom tile behavior fix. Deferred to a docs/readability sweep for the Jitsi UI module.

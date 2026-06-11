@@ -120,16 +120,21 @@ export function bindClassroomInteractions({
             }
 
             const workspaceButton = event.target.closest(
-                ".classes-workspace-tab-btn[data-workspace-mode]",
+                ".classes-workspace-tab-btn[data-workspace-mode], .classes-workspace-tile-hitbox[data-workspace-mode]",
             );
             if (workspaceButton instanceof HTMLElement) {
-                if (classroomWindows?.isMeetingOpen()) {
-                    return;
-                }
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
                 if (nextWorkspaceMode === "meeting") {
+                    if (classroomWindows?.isMeetingOpen()) {
+                        setWorkspaceMode("meeting", {
+                            remember: false,
+                        });
+                        setBlackboardExpanded(true);
+                        refreshDom();
+                        return;
+                    }
                     if (!snapshot) {
                         return;
                     }
@@ -526,8 +531,6 @@ export function bindClassroomInteractions({
                     isTeacherView,
                     loadSelectedClassMeta,
                     refreshDom,
-                    isMeetingOpen: () =>
-                        classroomWindows?.isMeetingOpen() ?? false,
                     getClassroomNotepad,
                     setClassroomNotepad,
                     getClassroomNotepadClassId,
