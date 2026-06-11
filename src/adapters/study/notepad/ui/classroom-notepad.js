@@ -130,26 +130,52 @@ export function createClassroomNotepad({ classId, i18n }) {
         saveDraft(editor.innerHTML);
     }
 
+    function applyInlineStyle(styleMutator) {
+        if (!editor || typeof styleMutator !== "function") return;
+        editor.focus();
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        if (!editor.contains(range.commonAncestorContainer)) return;
+        const span = document.createElement("span");
+        styleMutator(span.style);
+        if (range.collapsed) {
+            const caret = document.createTextNode("\u200B");
+            span.appendChild(caret);
+            range.insertNode(span);
+            const nextRange = document.createRange();
+            nextRange.setStart(caret, caret.length);
+            nextRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(nextRange);
+            return;
+        }
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+        const nextRange = document.createRange();
+        nextRange.selectNodeContents(span);
+        nextRange.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(nextRange);
+    }
+
     function applyFontSize(size) {
         if (!editor) return;
         const parsed = parseInt(size, 10);
         if (isNaN(parsed) || parsed < MIN_FONT_SIZE || parsed > MAX_FONT_SIZE)
             return;
-        editor.focus();
-        document.execCommand("fontSize", false, "7");
-        const fontEls = editor.querySelectorAll('font[size="7"]');
-        for (const fontEl of fontEls) {
-            fontEl.removeAttribute("size");
-            fontEl.style.fontSize = `${parsed}px`;
-        }
+        applyInlineStyle((style) => {
+            style.fontSize = `${parsed}px`;
+        });
         saveDraft(editor.innerHTML);
     }
 
     function applyColor(color) {
         if (!editor) return;
         if (!/^#[0-9a-f]{6}$/i.test(color)) return;
-        editor.focus();
-        document.execCommand("foreColor", false, color);
+        applyInlineStyle((style) => {
+            style.color = color;
+        });
         saveDraft(editor.innerHTML);
     }
 

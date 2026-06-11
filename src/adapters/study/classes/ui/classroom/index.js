@@ -225,7 +225,10 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         if (!snapshot) {
-            if (workspaceMode === "meeting" && !classroomWindows?.isMeetingOpen()) {
+            if (
+                workspaceMode === "meeting" &&
+                !classroomWindows?.isMeetingOpen()
+            ) {
                 setWorkspaceMode("agenda", { remember: false });
             }
             return;
@@ -406,20 +409,25 @@ export async function mount(root, { signal } = {}) {
             ).trim();
             return meetingClassroomId === snapshot.id;
         });
-        const teacherAccountId = String(snapshot?.teacherAccountId ?? "").trim();
-        const activeParticipants = Array.isArray(activeMeeting?.activeParticipants)
+        const teacherAccountId = String(
+            snapshot?.teacherAccountId ?? "",
+        ).trim();
+        const activeParticipants = Array.isArray(
+            activeMeeting?.activeParticipants,
+        )
             ? activeMeeting.activeParticipants
             : [];
+        // Active meeting participant payloads can expose either username or
+        // handle, while classroom snapshots only expose teacherAccountId.
         const teacherActiveInMeeting = Boolean(
             teacherAccountId &&
-                activeParticipants.some((participant) => {
-                    const username = String(participant?.username ?? "").trim();
-                    const handle = String(participant?.handle ?? "").trim();
-                    return (
-                        username === teacherAccountId ||
-                        handle === teacherAccountId
-                    );
-                }),
+            activeParticipants.some((participant) => {
+                const username = String(participant?.username ?? "").trim();
+                const handle = String(participant?.handle ?? "").trim();
+                return (
+                    username === teacherAccountId || handle === teacherAccountId
+                );
+            }),
         );
         activeMeetingId = teacherActiveInMeeting
             ? String(activeMeeting?.id ?? "").trim() || null
@@ -835,7 +843,8 @@ export async function mount(root, { signal } = {}) {
             const previousSelectedClassId = selectedClassId;
             await loadClassrooms();
             await loadSelectedClassMeta();
-            const selectedClassChanged = selectedClassId !== previousSelectedClassId;
+            const selectedClassChanged =
+                selectedClassId !== previousSelectedClassId;
             if (
                 activeMeetingId &&
                 activeMeetingId !== previousActiveMeetingId
