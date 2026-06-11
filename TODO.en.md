@@ -483,3 +483,41 @@
 **Reviewer suggestion:** Add `@param`/`@returns` tags to `resolveSafeJitsiAvatarUrl`.
 
 **Reason ignored:** This is documentation hygiene in `src/modules/jitsi-meet/ui/meeting-embed.js`, unrelated to the classroom tile behavior fix. Deferred to a docs/readability sweep for the Jitsi UI module.
+
+## Code Review — Lazy classroom tile initialization
+
+### classroom/index.js — rename `isClassSearchDetached`
+
+**Reviewer suggestion:** Rename `isClassSearchDetached` to `isClassSelectionManual` or `hasExplicitClassSelection` to better convey that the user has manually navigated to the class search interface.
+
+**Reason ignored:** Pre-existing variable name not introduced by this PR. Renaming would require a coordinated update to the test in `workspace-regression.test.js` that asserts the exact string, for no behavioral change. Left for a dedicated rename/refactor pass.
+
+### classroom-meeting-embed.js — comments on state variables
+
+**Reviewer suggestion:** Add brief comments explaining the purpose of `authBlocked`, `triedMeetingId`, `dismissedMeetingId`, and `openInProgress` at lines 71–74.
+
+**Reason ignored:** File not touched in this PR. The opportunistic-improvement scope does not extend to `classroom-meeting-embed.js`.
+
+### classroom-resource-actions.js — clarify empty string in allowed extensions set
+
+**Reviewer suggestion:** Add a comment explaining that the empty string `""` in the allowed extensions set represents files without extensions, or use an explicit constant.
+
+**Reason ignored:** File not touched in this PR. Scope does not extend to `classroom-resource-actions.js`.
+
+### meeting-embed.js — distinguish missing avatar URL from missing meeting origin
+
+**Reviewer suggestion:** Return `null` instead of `""` for error cases in `meeting-embed.js` to distinguish them from intentionally empty avatars.
+
+**Reason ignored:** File not touched in this PR. Scope does not extend to `meeting-embed.js`.
+
+### classroom/index.js — `teacherActiveInMeeting` O(n) iteration on every refresh
+
+**Reviewer suggestion:** Cache the `teacherActiveInMeeting` result or use a Map for O(1) lookup instead of iterating `activeParticipants` on every refresh cycle.
+
+**Reason ignored:** Pre-existing logic not introduced by this PR. The participant list is bounded by classroom capacity (typically small). Caching would require invalidation logic. Left for a separate performance-focused pass.
+
+### dashboard-layout.js — magic hysteresis threshold numbers
+
+**Reviewer suggestion:** Add a comment explaining why 48 and 18 pixel thresholds were chosen at lines 32–33.
+
+**Reason ignored:** File not touched in this PR. Scope does not extend to `dashboard-layout.js`.
