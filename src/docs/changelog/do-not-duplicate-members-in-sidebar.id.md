@@ -137,3 +137,26 @@ Keluar dari meeting Jitsi tersemat di halaman Meetings kini langsung menutup
 jendela meeting di dalam Cognis. Embed Meetings mencegat aksi hangup pada
 toolbar Jitsi sebelum iframe jatuh ke beranda Jitsi yang di-host, sambil tetap
 mempertahankan alur overlay saat meninggalkan meeting.
+
+## Overlay meeting tidak lagi menyebabkan kedipan halaman bagi siswa
+
+Pada siklus pembaruan waktu nyata, penggantian DOM penuh kini dilewati saat
+meeting sudah terbuka. Bagian dinamis (lantai meja, daftar anggota) diperbarui
+di tempat tanpa mengganggu overlay meeting.
+
+## Siswa dialihkan kembali ke kelas saat guru mengakhiri meeting
+
+Ketika guru meninggalkan meeting aktif, siswa kini secara otomatis
+dikeluarkan dari tampilan meeting dan mendapat notifikasi toast. Overlay
+ditutup dengan bersih dan halaman kembali ke ruang kerja bawaan.
+
+## Berpindah kelas kini menutup meeting terbuka dari kelas sebelumnya
+
+Memilih kelas lain dari footer tidak lagi meninggalkan overlay meeting
+kadaluarsa dari kelas sebelumnya. Meeting ditutup sebelum kelas baru dimuat.
+
+## CSP connect-src kini mencakup instans Jitsi yang dikonfigurasi
+
+Direktif `connect-src` pada Content Security Policy kini menyertakan
+origin server Jitsi yang terdaftar bersama `script-src`, menyelesaikan
+pelanggaran konsol ketika Jitsi external API membuat koneksi ke server meeting.

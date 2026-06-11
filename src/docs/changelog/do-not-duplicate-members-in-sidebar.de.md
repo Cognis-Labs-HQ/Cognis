@@ -141,3 +141,29 @@ das Meetingfenster jetzt sofort innerhalb von Cognis geschlossen. Das
 Meetings-Embed fängt die Jitsi-Hangup-Aktion in der Toolbar ab, bevor der
 iframe auf die gehostete Jitsi-Startseite fallen kann, und behält dabei den
 bestehenden Leave-Overlay-Ablauf bei.
+
+## Meeting-Overlay verursacht kein Seitenflackern mehr für Schüler
+
+Beim Echtzeit-Aktualisierungszyklus wird keine vollständige DOM-Ersetzung mehr
+ausgeführt, wenn ein Meeting bereits geöffnet ist. Dynamische Elemente
+(Schreibtischboden, Mitgliederliste) werden direkt aktualisiert, ohne das
+Meeting-Overlay zu stören.
+
+## Schüler werden zum Klassenzimmer zurückgeführt, wenn der Lehrer das Meeting beendet
+
+Wenn der Lehrer ein aktives Meeting verlässt, werden Schüler jetzt automatisch
+aus der Meeting-Ansicht entfernt und erhalten eine Toast-Benachrichtigung.
+Das Overlay schließt sich sauber und die Seite kehrt zum Standard-Arbeitsbereich zurück.
+
+## Klassenwechsel schließt jetzt ein offenes Meeting der vorherigen Klasse
+
+Das Auswählen einer anderen Klasse in der Fußleiste hinterlässt nicht mehr ein
+veraltetes Meeting-Overlay der vorherigen Klasse. Das Meeting schließt sich,
+bevor die neue Klasse geladen wird.
+
+## CSP connect-src enthält jetzt die konfigurierte Jitsi-Instanz
+
+Die `connect-src`-Direktive der Content Security Policy enthält jetzt den
+registrierten Jitsi-Server-Ursprung neben `script-src`, wodurch
+Konsolenverletzungen behoben werden, wenn die Jitsi External API Verbindungen
+zum Meeting-Server herstellt.

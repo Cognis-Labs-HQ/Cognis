@@ -701,6 +701,7 @@
   <string name="module.study.classes.members_absent">Absent</string>
   <string name="module.study.classes.meeting_closed_title">Classroom Is Closed</string>
   <string name="module.study.classes.meeting_closed_body">The teacher has not opened the meeting yet. You will be joined automatically when it starts.</string>
+  <string name="module.study.classes.meeting_teacher_ended">The teacher has ended the meeting.</string>
   <string name="module.study.classes.notepad_save">Save to Class</string>
   <string name="module.study.classes.notepad_open">Open from Class</string>
   <string name="module.study.classes.notepad_saved">Note saved to class materials.</string>

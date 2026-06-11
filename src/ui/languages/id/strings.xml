@@ -701,6 +701,7 @@
   <string name="module.study.classes.members_absent">Tidak Hadir</string>
   <string name="module.study.classes.meeting_closed_title">Kelas Sedang Ditutup</string>
   <string name="module.study.classes.meeting_closed_body">Guru belum membuka pertemuan. Anda akan bergabung secara otomatis ketika pertemuan dimulai.</string>
+  <string name="module.study.classes.meeting_teacher_ended">Guru telah mengakhiri pertemuan.</string>
   <string name="module.study.classes.notepad_save">Simpan ke Kelas</string>
   <string name="module.study.classes.notepad_open">Buka dari Kelas</string>
   <string name="module.study.classes.notepad_saved">Catatan disimpan ke materi kelas.</string>

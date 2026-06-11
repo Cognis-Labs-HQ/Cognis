@@ -140,3 +140,28 @@ Leaving an embedded Jitsi meeting from the Meetings page now closes the
 meeting window immediately inside Cognis. The Meetings embed intercepts the
 Jitsi hangup toolbar action before the iframe can fall through to the hosted
 Jitsi homepage, while preserving the existing leave-state overlay flow.
+
+## Meeting overlay no longer causes page flapping for students
+
+During the realtime refresh cycle, a full DOM replacement is now skipped when
+a meeting is already open. Dynamic parts (desk floor, roster) update in place
+without disrupting the meeting overlay.
+
+## Students are pushed back to the classroom when the teacher ends a meeting
+
+When the teacher leaves an active meeting, students are now automatically
+removed from the meeting view and shown a toast notification. The overlay
+closes cleanly and the page returns to the default workspace.
+
+## Switching classes now closes an open meeting from the previous class
+
+Selecting a different class from the footer no longer leaves a stale meeting
+overlay from the previous class visible. The meeting closes before the new
+class loads.
+
+## CSP connect-src now includes the configured Jitsi instance
+
+The Content Security Policy `connect-src` directive now includes the
+registered Jitsi server origin alongside `script-src`, resolving console
+violations when the Jitsi external API makes connections back to the meeting
+server.

@@ -168,6 +168,10 @@ test("page security headers include registered script origins", () => {
         contentSecurityPolicy,
         /script-src-elem 'self' https:\/\/meetings\.example\.test/,
     );
+    assert.match(
+        contentSecurityPolicy,
+        /connect-src 'self' https:\/\/meetings\.example\.test/,
+    );
 });
 
 test("page script origin registration rejects non-http origins", () => {

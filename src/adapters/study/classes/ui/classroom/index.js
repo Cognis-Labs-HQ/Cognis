@@ -684,6 +684,15 @@ export async function mount(root, { signal } = {}) {
             ) {
                 void persistActiveWhiteboardId(previousClassId, null);
             }
+            if (
+                previousClassId &&
+                previousClassId !== classId &&
+                classroomWindows?.isMeetingOpen()
+            ) {
+                // Close the meeting from the previous class before switching.
+                // closeMeeting() → onMeetingVisibilityChange → setWorkspaceMode + refreshDom
+                classroomWindows.closeMeeting();
+            }
             syncWorkspaceModeWithSnapshot({ force: false });
             await loadSelectedClassMeta();
             refreshDom();
@@ -860,6 +869,19 @@ export async function mount(root, { signal } = {}) {
                 composer.refreshFooter();
                 refreshSubNavigation();
             }
+            // Teacher ended the meeting — close the overlay and notify the student.
+            const teacherJustLeft = Boolean(
+                previousActiveMeetingId && !activeMeetingId,
+            );
+            if (teacherJustLeft && classroomWindows?.isMeetingOpen()) {
+                showToast(
+                    i18n.t("module.study.classes.meeting_teacher_ended"),
+                    { variant: "info" },
+                );
+                classroomWindows.closeMeeting();
+                // closeMeeting() → onMeetingVisibilityChange → setWorkspaceMode + refreshDom
+                return;
+            }
             const meetingAutoJoinBlocked = Boolean(
                 activeMeetingId &&
                 classroomWindows?.isMeetingDismissed?.(activeMeetingId),
@@ -877,15 +899,22 @@ export async function mount(root, { signal } = {}) {
                         refreshDom();
                     } else {
                         syncStudentWorkspaceAccess();
-                        refreshDom();
+                        refreshDynamicDom();
                     }
                 } else {
+                    // Meeting already open — sync mode without a full redraw.
                     setWorkspaceMode("meeting", { remember: false });
-                    refreshDom();
+                    refreshDynamicDom();
                 }
             } else {
                 syncStudentWorkspaceAccess();
-                refreshDom();
+                if (classroomWindows?.isMeetingOpen()) {
+                    // Meeting is open but there is no active meeting for this
+                    // class — avoid disrupting the overlay with a full redraw.
+                    refreshDynamicDom();
+                } else {
+                    refreshDom();
+                }
             }
         },
     });
