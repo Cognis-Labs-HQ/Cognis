@@ -28,6 +28,8 @@ import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
+const SUBNAV_PRIORITY_ENTER_SCROLL_Y = 20;
+const SUBNAV_PRIORITY_EXIT_SCROLL_Y = 6;
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
@@ -444,8 +446,6 @@ function syncHeaderScrollState(root) {
     const subnavPriorityWasActive = shell.classList.contains(
         "app-shell--subnav-priority",
     );
-    const SUBNAV_PRIORITY_ENTER_SCROLL_Y = 20;
-    const SUBNAV_PRIORITY_EXIT_SCROLL_Y = 6;
     let shouldPrioritizeSubnav = false;
     if (hasSubNavigation && hasPrimaryNavigation) {
         if (subnavPriorityWasActive) {
