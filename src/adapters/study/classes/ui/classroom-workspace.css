@@ -162,28 +162,139 @@
     padding: 0.15rem 0.1rem;
 }
 
-.classes-sidebar-material-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+.classes-material-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+    gap: 0.5rem;
+    padding: 0.25rem 0.1rem;
 }
 
-.classes-sidebar-material-btn {
-    width: 100%;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(0, 0, 0, 0.2);
-    color: rgba(255, 255, 255, 0.88);
+.classes-material-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.45rem 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(0, 0, 0, 0.22);
     border-radius: 8px;
-    padding: 0.35rem 0.45rem;
-    font-size: 0.76rem;
-    text-align: left;
+    color: rgba(255, 255, 255, 0.88);
+    cursor: pointer;
+    text-align: center;
+    transition:
+        background 0.15s,
+        border-color 0.15s;
+}
+
+.classes-material-tile:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.classes-material-tile-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.classes-material-tile-name {
+    font-size: 0.68rem;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.classes-sidebar-panel--viewer {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.classes-material-viewer-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: rgba(0, 0, 0, 0.28);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.classes-material-viewer-back {
+    flex-shrink: 0;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.28);
+    color: rgba(255, 255, 255, 0.82);
+    border-radius: 6px;
+    font-size: 0.72rem;
     cursor: pointer;
+    white-space: nowrap;
+}
+
+.classes-material-viewer-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.classes-material-viewer-title {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.72);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.classes-material-viewer-body {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.5rem;
+}
+
+.classes-material-viewer-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.classes-material-viewer-embed {
+    width: 100%;
+    height: 100%;
+    min-height: 10rem;
+    border: none;
+    border-radius: 4px;
+}
+
+.classes-material-viewer-download-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.classes-material-viewer-file-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.classes-material-viewer-file-name {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.78);
+    word-break: break-all;
+}
+
+.classes-material-download-btn {
+    margin-top: 0.25rem;
 }
 
 .classes-agenda-inline-form {

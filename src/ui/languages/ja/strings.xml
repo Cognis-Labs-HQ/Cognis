@@ -719,6 +719,8 @@
   <string name="module.study.classes.materials_file_remove">削除</string>
   <string name="module.study.classes.materials_file_removed">ファイルが削除されました。</string>
   <string name="module.study.classes.materials_file_remove_failed">ファイルの削除に失敗しました。</string>
+  <string name="module.study.classes.material_viewer_back">素材に戻る</string>
+  <string name="module.study.classes.material_download">ファイルをダウンロード</string>
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>
   <string name="ui.app.dashboard.element.student_classes.cta">参加しているクラスを確認・管理できます。</string>
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>

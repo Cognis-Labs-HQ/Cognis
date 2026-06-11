@@ -225,3 +225,19 @@ The workspace tab row now contains only Notepad, Whiteboard, and Meeting. Active
 ## Meeting conference-web errors handled
 
 The classroom meeting embed now catches `[ERROR] [app:conference-web]` errors from the Jitsi API. The meeting closes gracefully and the user sees an error toast.
+
+## Tiled material viewer
+
+Class materials are now displayed as a visual tile grid in the classroom sidebar Materials panel. Each file is shown as a card with a file-type icon and its filename.
+
+## Inline document viewer
+
+Double-clicking a material tile opens an inline viewer directly in the sidebar. Images are displayed natively, PDFs are embedded, and other file types show a download link.
+
+## Teacher broadcast of active material
+
+When a teacher opens a material tile, the selection is broadcast to all students via the existing realtime snapshot mechanism. Students automatically switch to the Materials panel and see the same file.
+
+## Back to Materials navigation
+
+A "Back to Materials" button in the viewer header closes the viewer and returns to the tile grid. For teachers, closing the viewer also clears the broadcast.

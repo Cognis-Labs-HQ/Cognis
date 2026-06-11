@@ -145,6 +145,7 @@ export async function mount(root, { signal } = {}) {
     let whiteboards = [];
     let activeWhiteboard = null;
     let activeMeetingId = null;
+    let activeMaterialKey = null;
     let isClassSearchDetached = false;
     let blackboardExpanded = false;
 
@@ -167,7 +168,12 @@ export async function mount(root, { signal } = {}) {
         return activeWhiteboardId || null;
     }
 
-    async function persistActiveWhiteboardId(classId, nextActiveWhiteboardId) {
+    function getSelectedActiveMaterialKey(snapshot = selectedSnapshot()) {
+        const key = String(snapshot?.classroom?.activeMaterialKey ?? "").trim();
+        return key || null;
+    }
+
+    async function patchClassroomLayout(classId, fields) {
         const normalizedClassId = String(classId ?? "").trim();
         if (!teacherAccount || !normalizedClassId) {
             return false;
@@ -177,18 +183,14 @@ export async function mount(root, { signal } = {}) {
             {
                 method: "PATCH",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    activeWhiteboardId: nextActiveWhiteboardId ?? null,
-                }),
+                body: JSON.stringify(fields),
             },
         );
         if (!response.ok) {
             return false;
         }
         const payload = await response.json().catch(() => null);
-        const nextState = payload?.data ?? {
-            activeWhiteboardId: nextActiveWhiteboardId ?? null,
-        };
+        const nextState = payload?.data ?? fields;
         classroomSnapshots = classroomSnapshots.map((snapshot) =>
             snapshot.id === normalizedClassId
                 ? {
@@ -201,6 +203,18 @@ export async function mount(root, { signal } = {}) {
                 : snapshot,
         );
         return true;
+    }
+
+    async function persistActiveWhiteboardId(classId, nextActiveWhiteboardId) {
+        return patchClassroomLayout(classId, {
+            activeWhiteboardId: nextActiveWhiteboardId ?? null,
+        });
+    }
+
+    async function persistActiveMaterialKey(classId, nextActiveMaterialKey) {
+        return patchClassroomLayout(classId, {
+            activeMaterialKey: nextActiveMaterialKey ?? null,
+        });
     }
 
     function syncGlobalChatTarget() {
@@ -586,6 +600,7 @@ export async function mount(root, { signal } = {}) {
             boardEntities: getBoardEntities(snapshot),
             workspaceMode: getWorkspaceMode(),
             sidebarMode,
+            activeMaterialKey,
             whiteboards,
             activeWhiteboard,
             activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
@@ -794,6 +809,11 @@ export async function mount(root, { signal } = {}) {
                         },
                         createClassroomNotepad,
                         persistActiveWhiteboardId,
+                        getActiveMaterialKey: () => activeMaterialKey,
+                        setActiveMaterialKey: (key) => {
+                            activeMaterialKey = key ?? null;
+                        },
+                        persistActiveMaterialKey,
                         loadAvailableClasses,
                         setSelectedLanguageFilter: (language) => {
                             selectedLanguageFilter = language;
@@ -886,6 +906,14 @@ export async function mount(root, { signal } = {}) {
             }
             refreshSnapshotPresence();
             syncStudentWorkspaceAccess();
+            const broadcastedMaterialKey = getSelectedActiveMaterialKey();
+            if (
+                broadcastedMaterialKey &&
+                broadcastedMaterialKey !== activeMaterialKey
+            ) {
+                activeMaterialKey = broadcastedMaterialKey;
+                sidebarMode = "materials";
+            }
             refreshDynamicDom();
             syncGlobalChatTarget();
             if (selectedClassChanged) {

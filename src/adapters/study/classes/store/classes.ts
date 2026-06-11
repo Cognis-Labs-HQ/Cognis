@@ -9,6 +9,11 @@ function normalizeActiveWhiteboardId(input: unknown): string | null {
     return normalizedId || null;
 }
 
+function normalizeActiveMaterialKey(input: unknown): string | null {
+    const normalizedKey = String(input ?? "").trim();
+    return normalizedKey || null;
+}
+
 export async function getClassesForTeacher(
     db: DbExecutor,
     teacherAccountId: string,
@@ -111,6 +116,7 @@ export async function getClassroomState(
             "seat_assignments",
             "board_focus",
             "active_whiteboard_id",
+            "active_material_key",
             "updated_at",
         ],
         where: [{ column: "class_id", value: classId }],
@@ -123,6 +129,7 @@ export async function getClassroomState(
             seatAssignments: {},
             boardFocus: "agenda",
             activeWhiteboardId: null,
+            activeMaterialKey: null,
             updatedAt: new Date().toISOString(),
         };
     }
@@ -141,6 +148,7 @@ export async function getClassroomState(
         activeWhiteboardId: normalizeActiveWhiteboardId(
             row.active_whiteboard_id,
         ),
+        activeMaterialKey: normalizeActiveMaterialKey(row.active_material_key),
         updatedAt: String(row.updated_at),
     };
 }
@@ -154,6 +162,7 @@ export async function updateClassroomStateForTeacher(
         seatAssignments?: Record<string, number>;
         boardFocus?: "agenda" | "classroom" | "chat";
         activeWhiteboardId?: string | null;
+        activeMaterialKey?: string | null;
     },
 ): Promise<ClassroomStateRow> {
     const classRow = await getClassById(db, classId);
@@ -215,6 +224,10 @@ export async function updateClassroomStateForTeacher(
             throw new Error("invalid_active_whiteboard");
         }
     }
+    const normalizedActiveMaterialKey =
+        options.activeMaterialKey === undefined
+            ? currentState.activeMaterialKey
+            : normalizeActiveMaterialKey(options.activeMaterialKey);
     const updatedAt = new Date().toISOString();
     await db.executeCommand({
         option: "INSERT",
@@ -225,6 +238,7 @@ export async function updateClassroomStateForTeacher(
             seat_assignments: JSON.stringify(normalizedSeatAssignments),
             board_focus: normalizedBoardFocus,
             active_whiteboard_id: normalizedActiveWhiteboardId,
+            active_material_key: normalizedActiveMaterialKey,
             updated_at: updatedAt,
         },
         conflict: {
@@ -235,6 +249,7 @@ export async function updateClassroomStateForTeacher(
                 seat_assignments: JSON.stringify(normalizedSeatAssignments),
                 board_focus: normalizedBoardFocus,
                 active_whiteboard_id: normalizedActiveWhiteboardId,
+                active_material_key: normalizedActiveMaterialKey,
                 updated_at: updatedAt,
             },
         },

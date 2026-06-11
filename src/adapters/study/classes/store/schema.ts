@@ -235,6 +235,10 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 type: "text",
             },
             {
+                name: "active_material_key",
+                type: "text",
+            },
+            {
                 name: "updated_at",
                 type: "timestamp",
                 notNull: true,
@@ -381,6 +385,12 @@ async function ensureClassroomStateColumns(db: DbExecutor): Promise<void> {
         "classroom_state",
         "active_whiteboard_id",
     );
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "classroom_state",
+        "active_material_key",
+    );
 }
 
 type SupportedSqlDialect = "sqlite" | "postgres" | "mariadb";
@@ -411,7 +421,8 @@ async function ensureMissingColumn(
         | "class_name"
         | "student_limit"
         | "board_focus"
-        | "active_whiteboard_id",
+        | "active_whiteboard_id"
+        | "active_material_key",
 ): Promise<void> {
     if (!db.execute) return;
     if (await hasColumn(db, dialect, tableName, columnName)) {
@@ -431,7 +442,8 @@ async function hasColumn(
         | "class_name"
         | "student_limit"
         | "board_focus"
-        | "active_whiteboard_id",
+        | "active_whiteboard_id"
+        | "active_material_key",
 ): Promise<boolean> {
     if (!db.execute) return false;
     if (dialect === "sqlite") {
@@ -461,7 +473,8 @@ function resolveAddColumnStatement(
         | "class_name"
         | "student_limit"
         | "board_focus"
-        | "active_whiteboard_id",
+        | "active_whiteboard_id"
+        | "active_material_key",
 ): string {
     if (tableName === "study_classes" && columnName === "join_mode") {
         return dialect === "mariadb"
@@ -505,6 +518,14 @@ function resolveAddColumnStatement(
         return dialect === "mariadb"
             ? "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id VARCHAR(255) NULL"
             : "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id TEXT";
+    }
+    if (
+        tableName === "classroom_state" &&
+        columnName === "active_material_key"
+    ) {
+        return dialect === "mariadb"
+            ? "ALTER TABLE classroom_state ADD COLUMN active_material_key VARCHAR(1024) NULL"
+            : "ALTER TABLE classroom_state ADD COLUMN active_material_key TEXT";
     }
     return dialect === "mariadb"
         ? "ALTER TABLE teacher_requests ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"

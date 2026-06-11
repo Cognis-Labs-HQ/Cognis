@@ -220,3 +220,19 @@ Baris tab area kerja kini hanya berisi Notepad, Whiteboard, dan Meeting. Status 
 ## Kesalahan koneksi meeting ditangani
 
 Embed meeting kelas kini menangkap kesalahan `[ERROR] [app:conference-web]` dari API Jitsi. Meeting ditutup dengan baik dan pengguna mendapat notifikasi kesalahan.
+
+## Tampilan ubin untuk materi
+
+Materi kelas kini ditampilkan sebagai kisi ubin visual di panel Materi sidebar. Setiap file ditampilkan sebagai kartu dengan ikon jenis file dan nama file.
+
+## Penampil dokumen inline
+
+Mengklik dua kali pada ubin materi membuka penampil inline langsung di sidebar. Gambar ditampilkan langsung, PDF disematkan, dan jenis file lain menampilkan tautan unduhan.
+
+## Siaran materi aktif oleh guru
+
+Saat guru membuka ubin materi, pilihan disiarkan ke semua siswa melalui mekanisme snapshot realtime. Siswa otomatis beralih ke panel Materi.
+
+## Navigasi kembali ke materi
+
+Tombol "Kembali ke Materi" di header penampil menutup penampil dan kembali ke kisi ubin. Bagi guru, menutup penampil juga menghapus siaran.

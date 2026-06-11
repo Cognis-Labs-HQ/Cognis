@@ -298,30 +298,108 @@ function renderRosterPanel({ snapshot, i18n }) {
     `;
 }
 
-function renderSidebarMaterials({ classResources, i18n }) {
+function renderSidebarMaterials({ classResources, activeMaterialKey, i18n }) {
     const files = Array.isArray(classResources?.files)
         ? classResources.files
         : [];
-    const filesMarkup = files.length
-        ? `<ul class="classes-sidebar-material-list">${files
-              .map((fileRef) => {
-                  const fileName = String(fileRef?.name ?? "").trim();
-                  const fileKey = String(fileRef?.key ?? "").trim();
-                  if (!fileName || !fileKey) return "";
-                  return `<li><button type="button" class="classes-sidebar-material-btn" data-material-key="${escapeHtml(fileKey)}" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</button></li>`;
-              })
-              .join("")}</ul>`
-        : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_homework_assigned"))}</p>`;
+    if (activeMaterialKey) {
+        const fileRef = files.find(
+            (ref) => String(ref?.key ?? "").trim() === activeMaterialKey,
+        );
+        const fileName = fileRef
+            ? String(fileRef.name ?? "").trim()
+            : (activeMaterialKey.split("/").pop() ?? "");
+        const fileUrl = `/api/v1/files/${activeMaterialKey}`;
+        const extension =
+            activeMaterialKey.split(".").pop()?.toLowerCase() ?? "";
+        const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(
+            extension,
+        );
+        const isPdf = extension === "pdf";
+        let mediaMarkup;
+        if (isImage) {
+            mediaMarkup = `<img class="classes-material-viewer-image" src="${escapeHtml(fileUrl)}" alt="${escapeHtml(fileName)}">`;
+        } else if (isPdf) {
+            mediaMarkup = `<embed class="classes-material-viewer-embed" src="${escapeHtml(fileUrl)}" type="application/pdf">`;
+        } else {
+            mediaMarkup = `
+                <div class="classes-material-viewer-download-wrap">
+                    <span class="classes-material-viewer-file-icon">${getMaterialIcon(extension)}</span>
+                    <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
+                    <a href="${escapeHtml(fileUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
+                        ${escapeHtml(i18n.t("module.study.classes.material_download"))}
+                    </a>
+                </div>
+            `;
+        }
+        return `
+            <div class="classes-sidebar-panel classes-sidebar-panel--materials classes-sidebar-panel--viewer">
+                <div class="classes-material-viewer-header">
+                    <button type="button" class="classes-material-viewer-back">
+                        &#8592; ${escapeHtml(i18n.t("module.study.classes.material_viewer_back"))}
+                    </button>
+                    <span class="classes-material-viewer-title" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>
+                </div>
+                <div class="classes-material-viewer-body">${mediaMarkup}</div>
+            </div>
+        `;
+    }
+    if (!files.length) {
+        return `
+            <div class="classes-sidebar-panel classes-sidebar-panel--materials">
+                <p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_homework_assigned"))}</p>
+            </div>
+        `;
+    }
+    const tilesMarkup = files
+        .map((fileRef) => {
+            const fileName = String(fileRef?.name ?? "").trim();
+            const fileKey = String(fileRef?.key ?? "").trim();
+            if (!fileName || !fileKey) return "";
+            const extension = fileKey.split(".").pop()?.toLowerCase() ?? "";
+            const icon = getMaterialIcon(extension);
+            return `<button
+                type="button"
+                class="classes-material-tile"
+                data-material-key="${escapeHtml(fileKey)}"
+                data-material-name="${escapeHtml(fileName)}"
+                title="${escapeHtml(fileName)}"
+            >
+                <span class="classes-material-tile-icon">${icon}</span>
+                <span class="classes-material-tile-name">${escapeHtml(fileName)}</span>
+            </button>`;
+        })
+        .join("");
     return `
         <div class="classes-sidebar-panel classes-sidebar-panel--materials">
-            ${filesMarkup}
+            <div class="classes-material-tiles">${tilesMarkup}</div>
         </div>
     `;
+}
+
+function getMaterialIcon(extension) {
+    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(extension)) {
+        return "&#128444;";
+    }
+    if (extension === "pdf") {
+        return "&#128196;";
+    }
+    if (["doc", "docx", "txt", "md"].includes(extension)) {
+        return "&#128221;";
+    }
+    if (["xls", "xlsx", "csv"].includes(extension)) {
+        return "&#128200;";
+    }
+    if (["ppt", "pptx"].includes(extension)) {
+        return "&#128204;";
+    }
+    return "&#128196;";
 }
 
 function renderSidebarPanel({
     classResources,
     sidebarMode,
+    activeMaterialKey,
     snapshot,
     activeAgendaItems,
     isTeacherView,
@@ -361,7 +439,11 @@ function renderSidebarPanel({
             i18n,
         });
     } else {
-        panelContent = renderSidebarMaterials({ classResources, i18n });
+        panelContent = renderSidebarMaterials({
+            classResources,
+            activeMaterialKey,
+            i18n,
+        });
     }
 
     return `
@@ -385,6 +467,7 @@ export function renderBlackboard({
     boardEntities,
     workspaceMode,
     sidebarMode,
+    activeMaterialKey,
     whiteboards,
     activeWhiteboard,
     activeWhiteboardId,
@@ -499,6 +582,7 @@ export function renderBlackboard({
                     ${renderSidebarPanel({
                         classResources,
                         sidebarMode,
+                        activeMaterialKey,
                         snapshot,
                         activeAgendaItems,
                         isTeacherView,
@@ -838,6 +922,7 @@ function renderClassroomView({
     boardEntities,
     workspaceMode,
     sidebarMode,
+    activeMaterialKey,
     whiteboards,
     activeWhiteboard,
     activeWhiteboardId,
@@ -873,6 +958,7 @@ function renderClassroomView({
                         boardEntities,
                         workspaceMode,
                         sidebarMode,
+                        activeMaterialKey,
                         whiteboards,
                         activeWhiteboard,
                         activeWhiteboardId,

@@ -719,6 +719,8 @@
   <string name="module.study.classes.materials_file_remove">Remove</string>
   <string name="module.study.classes.materials_file_removed">File removed.</string>
   <string name="module.study.classes.materials_file_remove_failed">Failed to remove file.</string>
+  <string name="module.study.classes.material_viewer_back">Back to Materials</string>
+  <string name="module.study.classes.material_download">Download File</string>
   <string name="ui.app.dashboard.element.student_classes.label">My Classes</string>
   <string name="ui.app.dashboard.element.student_classes.cta">View and manage the classes you are enrolled in.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Go to My Classes</string>

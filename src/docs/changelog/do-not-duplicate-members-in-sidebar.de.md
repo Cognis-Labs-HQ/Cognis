@@ -227,3 +227,19 @@ Die Tab-Leiste enthält jetzt nur noch Notizbuch, Whiteboard und Meeting. Der ak
 ## Meeting-Verbindungsfehler werden abgefangen
 
 Das Classroom-Meeting-Embed fängt jetzt `[ERROR] [app:conference-web]`-Fehler der Jitsi-API ab. Das Meeting wird ordnungsgemäß geschlossen und der Benutzer erhält eine Fehlermeldung.
+
+## Kachelansicht für Materialien
+
+Klassenunterlagen werden jetzt als visuelles Kachelraster in der Seitenleiste angezeigt. Jede Datei erscheint als Karte mit einem Datei-Typ-Symbol und dem Dateinamen.
+
+## Integrierter Dokumentenviewer
+
+Ein Doppelklick auf eine Materialkachel öffnet einen integrierten Viewer direkt in der Seitenleiste. Bilder werden direkt angezeigt, PDFs eingebettet, andere Dateitypen zeigen einen Download-Link.
+
+## Lehrerübertragung des aktiven Materials
+
+Wenn ein Lehrer eine Materialkachel öffnet, wird die Auswahl über den Echtzeit-Snapshot-Mechanismus an alle Schüler übermittelt. Schüler wechseln automatisch zum Materialien-Panel.
+
+## Navigation zurück zu den Materialien
+
+Eine Schaltfläche „Zurück zu Materialien" in der Viewer-Kopfzeile schließt den Viewer und kehrt zum Kachelraster zurück. Für Lehrer wird dabei auch die Übertragung beendet.

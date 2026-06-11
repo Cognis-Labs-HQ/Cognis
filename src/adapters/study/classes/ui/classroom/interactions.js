@@ -56,6 +56,9 @@ export function bindClassroomInteractions({
     setClassroomNotepadClassId,
     createClassroomNotepad,
     persistActiveWhiteboardId,
+    getActiveMaterialKey,
+    setActiveMaterialKey,
+    persistActiveMaterialKey,
     loadAvailableClasses,
     setSelectedLanguageFilter,
     setSearchQuery,
@@ -97,6 +100,21 @@ export function bindClassroomInteractions({
                 setSidebarMode(
                     normalizeSidebarMode(sidebarButton.dataset.sidebarMode),
                 );
+                if (sidebarButton.dataset.sidebarMode !== "materials") {
+                    setActiveMaterialKey(null);
+                }
+                refreshDom();
+                return;
+            }
+
+            const viewerBackButton = event.target.closest(
+                ".classes-material-viewer-back",
+            );
+            if (viewerBackButton instanceof HTMLElement) {
+                setActiveMaterialKey(null);
+                if (isTeacherView()) {
+                    await persistActiveMaterialKey(getSelectedClassId(), null);
+                }
                 refreshDom();
                 return;
             }
@@ -560,18 +578,27 @@ export function bindClassroomInteractions({
     );
     root.addEventListener(
         "dblclick",
-        (event) => {
+        async (event) => {
             if (!(event.target instanceof Element)) return;
-            const materialButton = event.target.closest(
-                ".classes-sidebar-material-btn[data-material-key]",
+            const materialTile = event.target.closest(
+                ".classes-material-tile[data-material-key]",
             );
-            if (!(materialButton instanceof HTMLElement)) return;
-            const materialKey = String(
-                materialButton.dataset.materialKey ?? "",
-            ).trim();
-            if (!materialKey) return;
-            const materialUrl = `/api/v1/files/${materialKey}`;
-            window.open(materialUrl, "_blank", "noopener,noreferrer");
+            if (materialTile instanceof HTMLElement) {
+                const materialKey = String(
+                    materialTile.dataset.materialKey ?? "",
+                ).trim();
+                if (!materialKey) return;
+                setActiveMaterialKey(materialKey);
+                setSidebarMode("materials");
+                if (isTeacherView()) {
+                    await persistActiveMaterialKey(
+                        getSelectedClassId(),
+                        materialKey,
+                    );
+                }
+                refreshDom();
+                return;
+            }
         },
         { signal },
     );

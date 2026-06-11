@@ -36,10 +36,12 @@ export async function handleClassroomLayoutRoute(
         seatAssignments?: unknown;
         boardFocus?: unknown;
         activeWhiteboardId?: unknown;
+        activeMaterialKey?: unknown;
     };
     const studentLimitRaw = body.studentLimit;
     const seatAssignmentsRaw = body.seatAssignments;
     const activeWhiteboardIdRaw = body.activeWhiteboardId;
+    const activeMaterialKeyRaw = body.activeMaterialKey;
     const boardFocusRaw =
         String(body.boardFocus ?? "")
             .trim()
@@ -50,6 +52,12 @@ export async function handleClassroomLayoutRoute(
             : activeWhiteboardIdRaw === null
               ? null
               : String(activeWhiteboardIdRaw ?? "").trim() || null;
+    const activeMaterialKey =
+        activeMaterialKeyRaw === undefined
+            ? undefined
+            : activeMaterialKeyRaw === null
+              ? null
+              : String(activeMaterialKeyRaw ?? "").trim() || null;
     const studentLimit =
         studentLimitRaw == null ? undefined : Number(studentLimitRaw);
     if (
@@ -106,6 +114,19 @@ export async function handleClassroomLayoutRoute(
         );
         return true;
     }
+    if (
+        activeMaterialKeyRaw !== undefined &&
+        activeMaterialKeyRaw !== null &&
+        typeof activeMaterialKeyRaw !== "string"
+    ) {
+        jsonError(
+            res,
+            400,
+            "bad_request",
+            "activeMaterialKey must be a string or null.",
+        );
+        return true;
+    }
     const seatAssignments: Record<string, number> | undefined =
         seatAssignmentsRaw == null
             ? undefined
@@ -130,6 +151,7 @@ export async function handleClassroomLayoutRoute(
                     | "chat"
                     | undefined,
                 activeWhiteboardId,
+                activeMaterialKey,
             },
         );
         jsonOk(res, classroomState);
