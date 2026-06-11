@@ -164,6 +164,26 @@
 
 **Reason ignored:** This is non-functional documentation feedback in a separate gateway area and not part of the classroom-page UX scope of this task.
 
+## Code Review — classroom view sync + meeting force fixes
+
+### classroom-notepad.js execStyle range edge cases
+
+**Reviewer suggestion:** Replace manual Selection/Range formatting in `execStyle` with a richer contenteditable abstraction (or document all known nested-formatting limits).
+
+**Reason ignored:** This task addressed meeting/view-sync regressions and removed deprecated `document.execCommand` usage for color/font changes. Replacing the entire notepad rich-text editing model with a new abstraction is a broader editor architecture project and requires dedicated compatibility testing beyond this fix.
+
+### classroom-files-route.ts and classroom-file-actions.js shared notepad prefix constant
+
+**Reviewer suggestion:** Extract the duplicated `classroom-notes/` prefix into a shared constant.
+
+**Reason ignored:** The current route/file-action paths are stable and this review note is unrelated to the meeting/view-sync regression path. I kept this task focused on the requested classroom sync behavior changes; shared prefix extraction can be addressed safely in a dedicated cleanup change.
+
+### classroom-file-actions.js server-side rename optimization
+
+**Reviewer suggestion:** Replace the read-write-delete rename flow with a dedicated server-side rename/move API to avoid loading full file content.
+
+**Reason ignored:** Implementing this suggestion requires adding new file-gateway capabilities and route contracts, then updating adapter behavior and tests together. That is a valid improvement, but it is a larger backend feature change separate from the classroom sync regression fix requested here.
+
 ### modules/study/languages/reuse/classroom-page.js teacher-view helper deduplication
 
 **Reviewer suggestion:** Extract duplicated teacher-view logic into a shared helper.

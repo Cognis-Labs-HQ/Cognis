@@ -444,12 +444,12 @@ function syncHeaderScrollState(root) {
 
     const hasSubNavigation = Boolean(shell.querySelector(".page-subnav"));
     const hasPrimaryNavigation = Boolean(shell.querySelector(".global-navrow"));
-    const subnavPriorityWasActive = shell.classList.contains(
+    const hadSubnavPriority = shell.classList.contains(
         "app-shell--subnav-priority",
     );
     let shouldPrioritizeSubnav = false;
     if (hasSubNavigation && hasPrimaryNavigation) {
-        if (subnavPriorityWasActive) {
+        if (hadSubnavPriority) {
             shouldPrioritizeSubnav =
                 window.scrollY > SUBNAV_PRIORITY_EXIT_SCROLL_Y;
         } else {
