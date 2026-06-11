@@ -594,10 +594,7 @@ test("classroom meetings intercept hangup, show the meeting overlay, and block s
         "utf8",
     );
     const classroomWindowsSource = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/study/classes/ui/classroom-windows.js",
-        ),
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-windows.js"),
         "utf8",
     );
     const classroomPageSource = readFileSync(
@@ -605,15 +602,9 @@ test("classroom meetings intercept hangup, show the meeting overlay, and block s
         "utf8",
     );
     assert.match(classroomEmbedSource, /classes-meeting-overlay/);
-    assert.match(
-        classroomEmbedSource,
-        /module\.jitsi_meet\.overlay\.joining/,
-    );
+    assert.match(classroomEmbedSource, /module\.jitsi_meet\.overlay\.joining/);
     assert.match(classroomEmbedSource, /function updateOverlay\(/);
-    assert.match(
-        classroomEmbedSource,
-        /let dismissedMeetingId = null;/,
-    );
+    assert.match(classroomEmbedSource, /let dismissedMeetingId = null;/);
     assert.match(
         classroomEmbedSource,
         /addEventListener\("toolbarButtonClicked",[\s\S]*"hangup"/,

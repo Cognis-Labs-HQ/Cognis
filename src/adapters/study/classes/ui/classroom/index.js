@@ -234,7 +234,7 @@ export async function mount(root, { signal } = {}) {
         const defaultWorkspaceMode = getDefaultWorkspaceMode();
         const meetingAutoJoinBlocked = Boolean(
             activeMeetingId &&
-                classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+            classroomWindows?.isMeetingDismissed?.(activeMeetingId),
         );
         if (
             workspaceMode === "meeting" &&
@@ -815,7 +815,7 @@ export async function mount(root, { signal } = {}) {
             refreshSubNavigation();
             const meetingAutoJoinBlocked = Boolean(
                 activeMeetingId &&
-                    classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+                classroomWindows?.isMeetingDismissed?.(activeMeetingId),
             );
             if (
                 selectedClassId &&
