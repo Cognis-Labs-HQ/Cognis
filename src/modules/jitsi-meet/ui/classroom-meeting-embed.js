@@ -323,6 +323,17 @@ export function createClassroomMeetingEmbed({
                 }
             };
 
+            const handleAuthBlocked = () => {
+                if (isTeacher) return false;
+                authBlocked = true;
+                destroyJitsiApi();
+                const overlay = element.querySelector(
+                    ".classes-meeting-closed-overlay",
+                );
+                if (overlay) overlay.hidden = false;
+                return true;
+            };
+
             const handleMeetingLeft = () => {
                 if (jitsiApi !== apiInstance) return;
                 closeMeeting();
@@ -370,13 +381,7 @@ export function createClassroomMeetingEmbed({
                     applyPrivilegedSettings();
                     return;
                 }
-                if (!isTeacher) {
-                    authBlocked = true;
-                    destroyJitsiApi();
-                    const overlay = element.querySelector(
-                        ".classes-meeting-closed-overlay",
-                    );
-                    if (overlay) overlay.hidden = false;
+                if (handleAuthBlocked()) {
                     return;
                 }
                 applyPrivilegedSettings();
