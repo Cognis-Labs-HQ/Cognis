@@ -385,7 +385,10 @@ export function createClassroomMeetingEmbed({
             {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ classroomId: snapshot.id }),
+                body: JSON.stringify({
+                    classroomId: snapshot.id,
+                    skipChatRoomCreation: true,
+                }),
             },
         );
         if (!createResponse.ok) {

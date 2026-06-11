@@ -117,10 +117,6 @@ function renderWorkspaceTabs({
             label: i18n.t("module.study.classes.class_agenda"),
         },
         {
-            mode: "roster",
-            label: i18n.t("module.study.classes.students_section"),
-        },
-        {
             mode: "notepad",
             label: i18n.t("module.study.classes.notepad"),
         },
@@ -242,9 +238,6 @@ function renderWorkspaceContent({
     if (workspaceMode === "chat") {
         return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
     }
-    if (workspaceMode === "roster") {
-        return `<section class="classes-workspace-panel classes-workspace-panel--roster classes-workspace-roster">${renderStudentRoster({ snapshot, i18n })}</section>`;
-    }
     if (workspaceMode === "notepad") {
         return `
             <section class="classes-workspace-panel classes-workspace-panel--notepad">
@@ -279,7 +272,7 @@ function renderRosterPanel({ snapshot, i18n }) {
     const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
     const memberLabel = (member) =>
         buildAccountLabel(member) || String(member?.studentAccountId ?? "");
-    const emptySlot = `<li class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</li>`;
+    const emptySlot = `<div class="classes-roster-panel-item classes-roster-panel-item--absent">&#8212;</div>`;
     const present = members.filter(
         (member) =>
             String(member?.presence ?? "") === "online" ||
@@ -293,25 +286,28 @@ function renderRosterPanel({ snapshot, i18n }) {
     const presentItems = present
         .map(
             (member) =>
-                `<li class="classes-roster-panel-item">${escapeHtml(memberLabel(member))}</li>`,
+                `<div class="classes-roster-panel-item">${escapeHtml(memberLabel(member))}</div>`,
         )
         .join("");
     const absentItems = absent
         .map(
             (member) =>
-                `<li class="classes-roster-panel-item classes-roster-panel-item--absent">${escapeHtml(memberLabel(member))}</li>`,
+                `<div class="classes-roster-panel-item classes-roster-panel-item--absent">${escapeHtml(memberLabel(member))}</div>`,
         )
         .join("");
 
     return `
         <div class="classes-roster-panel">
-            <div class="classes-roster-panel-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
-            <ul class="classes-roster-panel-list">
-                <li class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_present"))}</li>
-                ${presentItems || emptySlot}
-                <li class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_absent"))}</li>
-                ${absentItems || emptySlot}
-            </ul>
+            <div class="classes-roster-panel-columns">
+                <div class="classes-roster-panel-column">
+                    <div class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_present"))}</div>
+                    ${presentItems || emptySlot}
+                </div>
+                <div class="classes-roster-panel-column">
+                    <div class="classes-roster-panel-label">${escapeHtml(i18n.t("module.study.classes.members_absent"))}</div>
+                    ${absentItems || emptySlot}
+                </div>
+            </div>
         </div>
     `;
 }
@@ -474,75 +470,6 @@ export function renderBlackboard({
                 <div class="classes-blackboard-entity-layer">${renderedEntities}</div>
             </div>
             <div class="classes-blackboard-ledge"></div>
-        </div>
-    `;
-}
-
-function renderRosterItem(member) {
-    const accountId = String(member?.studentAccountId ?? "").trim();
-    const handle = String(member?.handle ?? "").trim();
-    const label = member?.identityMasked
-        ? "???"
-        : buildAccountLabel(member) || accountId;
-    const presenceClass = String(member?.presence ?? "offline")
-        .trim()
-        .toLowerCase();
-    const avatar = member?.identityMasked
-        ? `<span class="classes-roster-avatar">${escapeHtml("???")}</span>`
-        : buildProfileAvatarMarkup({
-              avatarKey: member?.avatarKey ?? null,
-              label,
-              colorSeed: member?.handle || accountId,
-              avatarClass: "classes-roster-avatar",
-              imageClass: "classes-roster-avatar-img",
-              fallbackClass: "classes-roster-avatar-fallback",
-              profileHandle: handle || null,
-              linkClass: "classes-profile-preview-link",
-          });
-    const content = `
-        <span class="classes-roster-member-card">
-            ${avatar}
-            <span class="classes-roster-details">
-                <span class="classes-roster-name">${escapeHtml(label)}</span>
-                ${
-                    member?.rosterRoleLabel
-                        ? `<span class="classes-roster-role">${escapeHtml(member.rosterRoleLabel)}</span>`
-                        : ""
-                }
-            </span>
-            <span class="classes-status-light classes-status-light--${escapeHtml(presenceClass)}" aria-hidden="true"></span>
-        </span>
-    `;
-    if (!handle || member?.identityMasked) {
-        return `<div class="classes-roster-item${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}">${content}</div>`;
-    }
-    return `<button type="button" class="classes-roster-item classes-member-profile-btn${escapeHtml(String(member?.rosterItemClass ?? ""))}" data-student-id="${escapeHtml(accountId)}" data-student-handle="${escapeHtml(handle)}" data-student-name="${escapeHtml(label)}" data-student-avatar-key="${escapeHtml(String(member?.avatarKey ?? ""))}">${content}</button>`;
-}
-
-function renderStudentRoster({ snapshot, i18n }) {
-    const members = Array.isArray(snapshot?.members) ? snapshot.members : [];
-    const teacherAccountId = String(snapshot?.teacherAccountId ?? "").trim();
-    let teacherRow = "";
-    if (teacherAccountId) {
-        const teacherMember = {
-            ...(snapshot?.teacher ?? {}),
-            studentAccountId: teacherAccountId,
-            displayName:
-                String(snapshot?.teacher?.displayName ?? "").trim() ||
-                buildAccountLabel(snapshot?.teacher) ||
-                teacherAccountId,
-            rosterRoleLabel: i18n.t("module.study.classes.teacher"),
-            rosterItemClass: " classes-roster-item--teacher",
-        };
-        teacherRow = renderRosterItem(teacherMember);
-    }
-    const rosterMembers = [...members];
-    const studentRows = rosterMembers.map(renderRosterItem).join("");
-    return `
-        <div class="classes-student-roster">
-            ${teacherRow}
-            <div class="classes-roster-header">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
-            <div class="classes-roster-list classes-roster-grid">${studentRows || `<span class="classes-empty classes-empty--compact">${escapeHtml(i18n.t("module.study.classes.no_members"))}</span>`}</div>
         </div>
     `;
 }

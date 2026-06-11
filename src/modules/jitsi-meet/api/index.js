@@ -596,8 +596,12 @@ export function registerApiRoutes(router, ctx) {
                 return;
             }
 
+            const skipChatRoomCreation = body?.skipChatRoomCreation === true;
             let chatRoom = null;
-            if (typeof resolveGroupChat === "function") {
+            if (
+                !skipChatRoomCreation &&
+                typeof resolveGroupChat === "function"
+            ) {
                 const meetingChatTitle = buildMeetingChatTitle();
                 chatRoom = await resolveGroupChat({
                     usernames: normalizedInput.participantUsernames,

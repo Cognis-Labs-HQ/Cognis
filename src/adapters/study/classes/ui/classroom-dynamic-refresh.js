@@ -16,13 +16,11 @@ export function createDynamicDomRefresher({
     getSelectedSeatNumber,
     i18n,
     isTeacherView,
-    getWorkspaceMode,
 }) {
     return function refreshDynamicDom() {
         const snapshot = selectedSnapshot();
         if (!snapshot) return;
         const selectedSeatNumber = getSelectedSeatNumber();
-        const workspaceMode = getWorkspaceMode();
 
         // Re-render the desk floor (seats, presence, roster changes)
         const deskFloor = root.querySelector(".classes-desk-floor");
@@ -48,14 +46,6 @@ export function createDynamicDomRefresher({
         const rosterPanel = root.querySelector(".classes-roster-panel");
         if (rosterPanel instanceof HTMLElement) {
             rosterPanel.outerHTML = rosterPanelMarkup;
-        }
-        if (workspaceMode === "roster") {
-            const rosterSection = root.querySelector(
-                ".classes-workspace-roster",
-            );
-            if (rosterSection instanceof HTMLElement) {
-                rosterSection.innerHTML = rosterPanelMarkup;
-            }
         }
 
         void hydrateProfileAvatars(root);

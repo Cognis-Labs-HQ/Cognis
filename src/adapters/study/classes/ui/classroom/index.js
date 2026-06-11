@@ -62,7 +62,6 @@ function normalizeWorkspaceMode(input) {
         .trim()
         .toLowerCase();
     if (
-        normalized === "roster" ||
         normalized === "notepad" ||
         normalized === "whiteboard" ||
         normalized === "meeting" ||
@@ -209,18 +208,9 @@ export async function mount(root, { signal } = {}) {
 
     function getDefaultWorkspaceMode() {
         if (!isTeacherView()) {
-            const snapshot = selectedSnapshot();
-            const boardFocus = normalizeBoardFocus(
-                snapshot?.classroom?.boardFocus,
-            );
-            if (boardFocus === "classroom") return "roster";
             return "chat";
         }
-        const snapshot = selectedSnapshot();
-        return snapshot &&
-            normalizeBoardFocus(snapshot?.classroom?.boardFocus) === "classroom"
-            ? "roster"
-            : "agenda";
+        return "agenda";
     }
 
     function getWorkspaceMode() {
@@ -257,7 +247,7 @@ export async function mount(root, { signal } = {}) {
         ) {
             setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
-        if (workspaceMode === "agenda" || workspaceMode === "roster") {
+        if (workspaceMode === "agenda") {
             setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
         if (activeMeetingId && workspaceMode !== "meeting") {
@@ -278,7 +268,6 @@ export async function mount(root, { signal } = {}) {
         if (
             force ||
             workspaceMode === "agenda" ||
-            workspaceMode === "roster" ||
             workspaceMode === "meeting"
         ) {
             setWorkspaceMode(nextMode);
@@ -476,7 +465,7 @@ export async function mount(root, { signal } = {}) {
             snapshot.classroom.boardFocus = normalizedFocus;
         }
         if (normalizedFocus === "classroom") {
-            setWorkspaceMode("roster");
+            setWorkspaceMode("agenda");
         } else if (normalizedFocus === "chat") {
             setWorkspaceMode("chat");
         } else {
@@ -580,7 +569,6 @@ export async function mount(root, { signal } = {}) {
         getSelectedSeatNumber: () => selectedSeatNumber,
         i18n,
         isTeacherView,
-        getWorkspaceMode,
     });
 
     async function refreshContent() {

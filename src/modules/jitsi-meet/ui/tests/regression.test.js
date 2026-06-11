@@ -569,4 +569,5 @@ test("jitsi API exposes user active meetings endpoint", () => {
         classroomEmbedSource,
         /meetings\/active\?classroomId=\$\{encodeURIComponent\(id\)\}/,
     );
+    assert.match(classroomEmbedSource, /skipChatRoomCreation:\s*true/);
 });

@@ -1,4 +1,7 @@
 .classes-blackboard {
+    --classes-blackboard-chalk-font:
+        "Comic Sans MS", "Bradley Hand", "Chalkboard SE", "Marker Felt",
+        cursive, var(--app-font), sans-serif;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -36,6 +39,7 @@
     padding: 6px 10px;
     background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-family: var(--classes-blackboard-chalk-font);
 }
 
 .classes-board-panel-tabs {
@@ -75,6 +79,7 @@
     display: block;
     position: relative;
     overflow-y: auto;
+    font-family: var(--classes-blackboard-chalk-font);
 }
 
 .classes-blackboard-main {

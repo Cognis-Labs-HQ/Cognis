@@ -27,7 +27,7 @@
 
 .classes-blackboard-body {
     display: grid;
-    grid-template-columns: 15% 1fr;
+    grid-template-columns: minmax(15%, 15%) minmax(0, 1fr);
     gap: 0;
     align-items: stretch;
     min-height: 22rem;
@@ -74,44 +74,39 @@
     gap: 0.25rem;
     padding: 0.75rem 0.5rem;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    overflow-y: auto;
     min-height: 0;
 }
 
-.classes-roster-panel-header {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.88);
-    letter-spacing: 0.03em;
-    margin-bottom: 0.4rem;
-    font-family: var(--font-ui);
+.classes-roster-panel-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    align-items: start;
 }
 
-.classes-roster-panel-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.classes-roster-panel-column {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
 .classes-roster-panel-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.82);
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    padding: 4px 0 2px;
+    padding: 0 0 4px;
 }
 
 .classes-roster-panel-item {
-    font-size: 1.15rem;
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.9);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 2px 0;
+    padding: 1px 0;
 }
 
 .classes-roster-panel-item--absent {
@@ -227,4 +222,6 @@
 .classes-classroom-page-content {
     background: var(--classroom-blackboard-bg, #1c1e1b) !important;
     color: rgba(255, 255, 255, 0.9);
+    overflow: visible;
+    overflow-y: visible;
 }

@@ -95,16 +95,9 @@ export function bindClassroomInteractions({
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
-                if (
-                    nextWorkspaceMode === "agenda" ||
-                    nextWorkspaceMode === "roster"
-                ) {
+                if (nextWorkspaceMode === "agenda") {
                     if (isTeacherView()) {
-                        await updateBoardFocus(
-                            nextWorkspaceMode === "roster"
-                                ? "classroom"
-                                : "agenda",
-                        );
+                        await updateBoardFocus("agenda");
                     } else {
                         setWorkspaceMode(nextWorkspaceMode);
                     }
