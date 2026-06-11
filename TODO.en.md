@@ -379,3 +379,7 @@
 ### `normalizeBoardFocus` duplicated in UI and store layers
 
 `src/adapters/study/classes/ui/classroom/index.js` lines 52–57 and `src/adapters/study/classes/store/classes.ts` lines 6–12 both define an identical `normalizeBoardFocus` function. Extracting this to a shared utility in `src/adapters/study/classes/reuse/` would eliminate the duplication, but requires cross-layer sharing between TypeScript (store) and JavaScript (UI) which needs careful plumbing.
+
+### Rename `handleClassroomFilesRoutes` for mixed responsibilities
+
+`src/adapters/study/classes/routes/classroom-files-route.ts` currently includes both file route handling and agenda deletion handling. A follow-up should either rename this handler to reflect both responsibilities or split agenda deletion into a dedicated route module.

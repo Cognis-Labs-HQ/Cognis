@@ -9,7 +9,7 @@ export const TEXT_ENCODER = new TextEncoder();
 export const MEETING_SUBJECT = "Cognis Classroom";
 export const MEETING_TERMINATED_TEXT = "meeting terminated";
 export const JITSI_IFRAME_SANDBOX =
-    "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation";
+    "allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation";
 export const JITSI_TOOLBAR_BUTTONS = [
     "microphone",
     "camera",

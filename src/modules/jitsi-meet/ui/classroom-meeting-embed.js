@@ -384,7 +384,6 @@ export function createClassroomMeetingEmbed({
                 if (handleAuthBlocked()) {
                     return;
                 }
-                applyPrivilegedSettings();
             });
 
             apiInstance.addEventListener("notificationTriggered", (event) => {
