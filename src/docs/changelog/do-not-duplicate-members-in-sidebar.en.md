@@ -209,3 +209,19 @@ The chalk font is now applied explicitly to `classes-workspace-main` and `classe
 ## Blackboard height fits content
 
 The blackboard no longer has a forced minimum height when no meeting is active, so it sizes naturally to its children.
+
+## "Present" tab renamed to "Students"
+
+The classroom roster tab has been renamed from "Present" to "Students".
+
+## Students and Agenda moved to the sidebar
+
+Pressing the Students or Agenda button now opens the corresponding panel inside the sidebar instead of replacing the main workspace. Each sidebar tab (Materials, Students, Agenda) maintains its own independent active state.
+
+## Workspace tabs control only the main view
+
+The workspace tab row now contains only Notepad, Whiteboard, and Meeting. Active state for workspace tabs is tracked separately from the sidebar tabs.
+
+## Meeting conference-web errors handled
+
+The classroom meeting embed now catches `[ERROR] [app:conference-web]` errors from the Jitsi API. The meeting closes gracefully and the user sees an error toast.

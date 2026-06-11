@@ -204,3 +204,19 @@ Font kapur kini diterapkan secara eksplisit ke `classes-workspace-main` dan `cla
 ## Tinggi papan tulis menyesuaikan konten
 
 Papan tulis tidak lagi memiliki tinggi minimum yang dipaksakan saat tidak ada meeting aktif, sehingga ukurannya menyesuaikan kontennya secara alami.
+
+## Tab "Hadir" diganti menjadi "Siswa"
+
+Tab daftar hadir kelas telah diganti namanya dari "Hadir" menjadi "Siswa".
+
+## Siswa dan Agenda dipindahkan ke panel samping
+
+Menekan tombol Siswa atau Agenda kini membuka panel yang sesuai di panel samping, bukan mengganti tampilan utama. Setiap tab panel samping (Materi, Siswa, Agenda) memiliki status aktif yang independen.
+
+## Tab area kerja hanya mengontrol tampilan utama
+
+Baris tab area kerja kini hanya berisi Notepad, Whiteboard, dan Meeting. Status aktif tab area kerja dilacak secara terpisah dari tab panel samping.
+
+## Kesalahan koneksi meeting ditangani
+
+Embed meeting kelas kini menangkap kesalahan `[ERROR] [app:conference-web]` dari API Jitsi. Meeting ditutup dengan baik dan pengguna mendapat notifikasi kesalahan.

@@ -211,3 +211,19 @@ Die Kreide-Schriftart wird jetzt explizit auf `classes-workspace-main` und `clas
 ## Tafelhöhe passt sich dem Inhalt an
 
 Die Tafel hat keine erzwungene Mindesthöhe mehr, wenn kein Meeting aktiv ist, sodass sie sich natürlich an ihre Kinder anpasst.
+
+## Tab „Anwesend" in „Schüler" umbenannt
+
+Der Kursplan-Tab wurde von „Anwesend" in „Schüler" umbenannt.
+
+## Schüler und Agenda in die Seitenleiste verschoben
+
+Das Drücken der Schaltflächen „Schüler" oder „Agenda" öffnet jetzt das entsprechende Panel in der Seitenleiste statt den Hauptarbeitsbereich zu ersetzen. Jeder Seitenleisten-Tab (Materialien, Schüler, Agenda) verwaltet seinen eigenen aktiven Zustand unabhängig.
+
+## Arbeitsbereich-Tabs steuern nur die Hauptansicht
+
+Die Tab-Leiste enthält jetzt nur noch Notizbuch, Whiteboard und Meeting. Der aktive Zustand der Arbeitsbereich-Tabs wird separat von den Seitenleisten-Tabs verfolgt.
+
+## Meeting-Verbindungsfehler werden abgefangen
+
+Das Classroom-Meeting-Embed fängt jetzt `[ERROR] [app:conference-web]`-Fehler der Jitsi-API ab. Das Meeting wird ordnungsgemäß geschlossen und der Benutzer erhält eine Fehlermeldung.

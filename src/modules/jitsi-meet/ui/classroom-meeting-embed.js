@@ -246,6 +246,16 @@ export function createClassroomMeetingEmbed({
         return message.includes(MEETING_TERMINATED_TEXT);
     }
 
+    function isConferenceWebError(event) {
+        const fields = [
+            event?.type,
+            event?.message,
+            event?.name,
+            event?.details?.message,
+        ].map((value) => String(value ?? ""));
+        return fields.some((field) => field.includes("[app:conference-web]"));
+    }
+
     function getParticipantId(candidate) {
         return String(candidate?.id ?? candidate?.participantId ?? "").trim();
     }
@@ -453,7 +463,16 @@ export function createClassroomMeetingEmbed({
             });
 
             apiInstance.addEventListener("errorOccurred", (event) => {
-                if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
+                if (isMeetingTerminatedNotice(event)) {
+                    handleMeetingTerminated();
+                    return;
+                }
+                if (isConferenceWebError(event)) {
+                    showToast(i18n.t("module.study.classes.meeting_failed"), {
+                        variant: "error",
+                    });
+                    closeMeeting({ returnMode: "agenda" });
+                }
             });
             apiInstance.addEventListener("toolbarButtonClicked", (event) => {
                 if (jitsiApi !== apiInstance) return;

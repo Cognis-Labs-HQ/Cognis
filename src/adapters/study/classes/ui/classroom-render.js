@@ -113,14 +113,6 @@ function renderWorkspaceTabs({
 }) {
     const tabs = [
         {
-            mode: "roster",
-            label: i18n.t("module.study.classes.members_present"),
-        },
-        {
-            mode: "agenda",
-            label: i18n.t("module.study.classes.class_agenda"),
-        },
-        {
             mode: "notepad",
             label: i18n.t("module.study.classes.notepad"),
         },
@@ -252,9 +244,6 @@ function renderWorkspaceContent({
             i18n,
         });
     }
-    if (workspaceMode === "roster") {
-        return `<section class="classes-workspace-panel classes-workspace-panel--roster">${renderRosterPanel({ snapshot, i18n })}</section>`;
-    }
     return `<section class="classes-workspace-panel classes-workspace-panel--classroom">${renderSelectedDeskPanel(
         {
             snapshot,
@@ -330,10 +319,55 @@ function renderSidebarMaterials({ classResources, i18n }) {
     `;
 }
 
-function renderSidebarPanel({ classResources, i18n }) {
+function renderSidebarPanel({
+    classResources,
+    sidebarMode,
+    snapshot,
+    activeAgendaItems,
+    isTeacherView,
+    i18n,
+}) {
+    const tabs = [
+        {
+            mode: "materials",
+            label: i18n.t("module.study.classes.class_materials"),
+        },
+        {
+            mode: "students",
+            label: i18n.t("module.study.classes.students_section"),
+        },
+        {
+            mode: "agenda",
+            label: i18n.t("module.study.classes.class_agenda"),
+        },
+    ];
+    const tabsMarkup = `<div class="classes-sidebar-tabs">${tabs
+        .map(
+            (tab) => `<button
+                    type="button"
+                    class="classes-side-panel-btn${sidebarMode === tab.mode ? " active" : ""}"
+                    data-sidebar-mode="${escapeHtml(tab.mode)}"
+                >${escapeHtml(tab.label)}</button>`,
+        )
+        .join("")}</div>`;
+
+    let panelContent;
+    if (sidebarMode === "students") {
+        panelContent = renderRosterPanel({ snapshot, i18n });
+    } else if (sidebarMode === "agenda") {
+        panelContent = renderInlineAgenda({
+            activeAgendaItems,
+            isTeacherView,
+            i18n,
+        });
+    } else {
+        panelContent = renderSidebarMaterials({ classResources, i18n });
+    }
+
     return `
         <aside class="classes-sidebar-panel-wrap">
-            ${renderSidebarMaterials({ classResources, i18n })}
+            ${tabsMarkup}
+            ${panelContent}
         </aside>
     `;
 }
@@ -350,6 +384,7 @@ export function renderBlackboard({
     currentViewMode,
     boardEntities,
     workspaceMode,
+    sidebarMode,
     whiteboards,
     activeWhiteboard,
     activeWhiteboardId,
@@ -463,6 +498,10 @@ export function renderBlackboard({
                 <div class="classes-blackboard-body">
                     ${renderSidebarPanel({
                         classResources,
+                        sidebarMode,
+                        snapshot,
+                        activeAgendaItems,
+                        isTeacherView,
                         i18n,
                     })}
                     <div class="classes-workspace-main">
@@ -798,6 +837,7 @@ function renderClassroomView({
     canEditMaterials,
     boardEntities,
     workspaceMode,
+    sidebarMode,
     whiteboards,
     activeWhiteboard,
     activeWhiteboardId,
@@ -832,6 +872,7 @@ function renderClassroomView({
                         currentViewMode,
                         boardEntities,
                         workspaceMode,
+                        sidebarMode,
                         whiteboards,
                         activeWhiteboard,
                         activeWhiteboardId,

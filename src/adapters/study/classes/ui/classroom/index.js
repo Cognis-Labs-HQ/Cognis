@@ -57,12 +57,21 @@ function normalizeWorkspaceMode(input) {
         normalized === "notepad" ||
         normalized === "whiteboard" ||
         normalized === "meeting" ||
-        normalized === "chat" ||
-        normalized === "roster"
+        normalized === "chat"
     ) {
         return normalized;
     }
     return "agenda";
+}
+
+function normalizeSidebarMode(input) {
+    const normalized = String(input ?? "")
+        .trim()
+        .toLowerCase();
+    if (normalized === "students" || normalized === "agenda") {
+        return normalized;
+    }
+    return "materials";
 }
 
 function createDefaultClassResources() {
@@ -125,6 +134,7 @@ export async function mount(root, { signal } = {}) {
     let searchQuery = "";
     let workspaceMode = "agenda";
     let lastNonMeetingWorkspaceMode = "agenda";
+    let sidebarMode = "materials";
     const presenceByAccountId = new Map();
     const boardEntityStore = createBoardEntityStore();
     let interactionsBound = false;
@@ -575,6 +585,7 @@ export async function mount(root, { signal } = {}) {
             canEditMaterials: teacherAccount,
             boardEntities: getBoardEntities(snapshot),
             workspaceMode: getWorkspaceMode(),
+            sidebarMode,
             whiteboards,
             activeWhiteboard,
             activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
@@ -750,6 +761,11 @@ export async function mount(root, { signal } = {}) {
                         updateBoardFocus,
                         normalizeWorkspaceMode,
                         setWorkspaceMode,
+                        normalizeSidebarMode,
+                        getSidebarMode: () => sidebarMode,
+                        setSidebarMode: (mode) => {
+                            sidebarMode = normalizeSidebarMode(mode);
+                        },
                         handleSeatActionMenu,
                         openAgendaPopup,
                         openClassSettingsPopup,
