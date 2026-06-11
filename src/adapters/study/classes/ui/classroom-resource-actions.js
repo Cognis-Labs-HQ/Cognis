@@ -28,6 +28,28 @@ const ALLOWED_CLASSROOM_FILE_EXTENSIONS = new Set([
     ".xlsx",
 ]);
 
+export function getMaterialIcon(extension) {
+    const ext = String(extension ?? "")
+        .toLowerCase()
+        .replace(/^\./, "");
+    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) {
+        return "&#128444;";
+    }
+    if (ext === "pdf") {
+        return "&#128196;";
+    }
+    if (["doc", "docx", "txt", "md"].includes(ext)) {
+        return "&#128221;";
+    }
+    if (["xls", "xlsx", "csv"].includes(ext)) {
+        return "&#128200;";
+    }
+    if (["ppt", "pptx"].includes(ext)) {
+        return "&#128204;";
+    }
+    return "&#128196;";
+}
+
 export async function handleResourceActions(
     event,
     {

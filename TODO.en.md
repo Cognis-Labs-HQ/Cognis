@@ -413,3 +413,23 @@
 **Reviewer suggestion:** Rename `authBlocked`, `triedMeetingId`, `dismissedMeetingId`, and `openInProgress` in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` to longer explicit names.
 
 **Reason ignored:** This is naming-only churn in a module outside the files touched for the current classroom and dashboard regressions. It does not impact correctness, security, or the requested behavior and is better handled in a focused readability pass.
+
+## Code Review — Tiled material viewer (feat/tiled-material-viewer)
+
+### classroom-file-actions.js uses textarea selector for contentEditable notepad
+
+**Source:** `src/adapters/study/classes/ui/classroom-file-actions.js` lines 159–162 and 347–353
+
+**Reason deferred:** Pre-existing issue unrelated to the tiled viewer feature. The notepad refactor that introduced the `contentEditable` editor is a separate concern; fixing it risks unintended regressions outside this PR's scope.
+
+### DEFAULT_AGENDA_DURATION_MS hardcoded in interactions.js
+
+**Source:** `src/adapters/study/classes/ui/classroom/interactions.js` line 3
+
+**Reason deferred:** Pre-existing constant unrelated to the tiled viewer feature. Adding a teacher-facing duration input is a separate UX enhancement.
+
+### server-side MIME type validation for classroom file uploads
+
+**Source:** `src/adapters/study/classes/ui/classroom-resource-actions.js` line 68
+
+**Reason deferred:** Pre-existing client-side extension whitelist. Full MIME sniffing requires server-side changes across the file gateway and is outside the tiled viewer scope.

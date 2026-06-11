@@ -1,5 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { buildProfileAvatarMarkup } from "/static/gateways/social/reuse/profile-avatar.js";
+import { getMaterialIcon } from "/static/adapters/study/classes/classroom-resource-actions.js";
 
 const DEFAULT_STUDENT_CAPACITY = 20;
 
@@ -320,7 +321,7 @@ function renderSidebarMaterials({ classResources, activeMaterialKey, i18n }) {
         if (isImage) {
             mediaMarkup = `<img class="classes-material-viewer-image" src="${escapeHtml(fileUrl)}" alt="${escapeHtml(fileName)}">`;
         } else if (isPdf) {
-            mediaMarkup = `<embed class="classes-material-viewer-embed" src="${escapeHtml(fileUrl)}" type="application/pdf">`;
+            mediaMarkup = `<embed class="classes-material-viewer-embed" src="${escapeHtml(fileUrl)}" type="application/pdf" title="${escapeHtml(fileName)}">`;
         } else {
             mediaMarkup = `
                 <div class="classes-material-viewer-download-wrap">
@@ -375,25 +376,6 @@ function renderSidebarMaterials({ classResources, activeMaterialKey, i18n }) {
             <div class="classes-material-tiles">${tilesMarkup}</div>
         </div>
     `;
-}
-
-function getMaterialIcon(extension) {
-    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(extension)) {
-        return "&#128444;";
-    }
-    if (extension === "pdf") {
-        return "&#128196;";
-    }
-    if (["doc", "docx", "txt", "md"].includes(extension)) {
-        return "&#128221;";
-    }
-    if (["xls", "xlsx", "csv"].includes(extension)) {
-        return "&#128200;";
-    }
-    if (["ppt", "pptx"].includes(extension)) {
-        return "&#128204;";
-    }
-    return "&#128196;";
 }
 
 function renderSidebarPanel({
