@@ -121,3 +121,11 @@ CognisのUI内で分かりやすく表示される。
 共有のboard-focusノーマライザーは、大きな教室ファイル内のインライン定義から、
 各レイヤーの専用ファイル（サーバー側: `store/board-focus.ts`、
 ブラウザー側: `ui/board-focus.js`）に移動しました。
+
+## Meetings の退出を Cognis に維持
+
+Meetings ページの埋め込み Jitsi ミーティングを退出すると、ミーティング
+ウィンドウが Cognis 内でただちに閉じるようになりました。Meetings の
+埋め込みは、iframe がホスト先の Jitsi ホームページへ遷移する前に
+Jitsi の hangup ツールバー操作を捕捉し、既存の退出オーバーレイ動作も
+維持します。

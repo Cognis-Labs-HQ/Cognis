@@ -50,6 +50,6 @@
 | コンポーネント | パス                              | バージョン |
 | -------------- | --------------------------------- | ---------- |
 | 分析           | `src/modules/analytics/`          | `2.0.1`    |
-| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.1.2`    |
+| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.1.3`    |
 | Cognis 日本語  | `src/modules/study/languages/ja/` | `1.2.4`    |
 | Cognis 英語    | `src/modules/study/languages/en/` | `1.2.2`    |

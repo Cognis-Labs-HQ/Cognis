@@ -133,3 +133,11 @@ eigenes Routenmodul verschoben, um Datei- und Kalenderzugriff klar zu trennen.
 Der gemeinsame Board-Focus-Normalisierer befindet sich nun in einer eigenen
 Datei pro Schicht (`store/board-focus.ts` auf dem Server, `ui/board-focus.js`
 im Browser) anstatt in den größeren Klassenzimmer-Dateien inline definiert.
+
+## Jitsi-Austritt bleibt in Cognis
+
+Beim Verlassen eines eingebetteten Jitsi-Meetings auf der Meetings-Seite wird
+das Meetingfenster jetzt sofort innerhalb von Cognis geschlossen. Das
+Meetings-Embed fängt die Jitsi-Hangup-Aktion in der Toolbar ab, bevor der
+iframe auf die gehostete Jitsi-Startseite fallen kann, und behält dabei den
+bestehenden Leave-Overlay-Ablauf bei.

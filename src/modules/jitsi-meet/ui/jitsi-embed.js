@@ -173,6 +173,11 @@ export function createEmbedHandlers({
             if (!callbacks.isMeetingTerminatedNotice(event)) return;
             handleMeetingTerminated();
         });
+        apiInstance.addEventListener("toolbarButtonClicked", (event) => {
+            if (state.jitsiApi !== apiInstance) return;
+            if (String(event?.key ?? "").trim() !== "hangup") return;
+            handleMeetingLeft();
+        });
         apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
         apiInstance.addEventListener("readyToClose", handleMeetingLeft);
         callbacks.renderParticipants();

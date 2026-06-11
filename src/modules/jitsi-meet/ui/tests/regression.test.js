@@ -280,6 +280,8 @@ test("meetings session state polling handles closed meetings and distinct leave 
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
     assert.match(source, /honorMeetingClosed: false/);
+    assert.match(source, /addEventListener\("toolbarButtonClicked",[\s\S]*"hangup"/);
+    assert.match(source, /addEventListener\("toolbarButtonClicked",[\s\S]*handleMeetingLeft\(\)/);
     assert.match(
         source,
         /addEventListener\("readyToClose", handleMeetingLeft\)/,

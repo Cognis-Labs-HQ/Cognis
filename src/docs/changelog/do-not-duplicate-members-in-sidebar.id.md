@@ -130,3 +130,10 @@ tersendiri, memisahkan tanggung jawab akses file dan kalender secara jelas.
 Normalizer board-focus bersama kini berada di file tersendiri per lapisan
 (`store/board-focus.ts` di server, `ui/board-focus.js` di browser) alih-alih
 didefinisikan secara inline di dalam file kelas yang lebih besar.
+
+## Keluar Jitsi tetap di Cognis
+
+Keluar dari meeting Jitsi tersemat di halaman Meetings kini langsung menutup
+jendela meeting di dalam Cognis. Embed Meetings mencegat aksi hangup pada
+toolbar Jitsi sebelum iframe jatuh ke beranda Jitsi yang di-host, sambil tetap
+mempertahankan alur overlay saat meninggalkan meeting.

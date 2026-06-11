@@ -133,3 +133,10 @@ module, keeping file-access and calendar-access responsibilities separate.
 The shared board-focus normalizer is now in its own file in each layer
 (`store/board-focus.ts` on the server, `ui/board-focus.js` in the browser)
 instead of being defined inline inside the larger classroom files.
+
+## Meetings Jitsi exits stay in Cognis
+
+Leaving an embedded Jitsi meeting from the Meetings page now closes the
+meeting window immediately inside Cognis. The Meetings embed intercepts the
+Jitsi hangup toolbar action before the iframe can fall through to the hosted
+Jitsi homepage, while preserving the existing leave-state overlay flow.
