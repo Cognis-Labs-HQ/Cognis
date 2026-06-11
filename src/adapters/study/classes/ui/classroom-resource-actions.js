@@ -7,6 +7,27 @@
  * @param {object} deps
  * @returns {Promise<boolean>}
  */
+const ALLOWED_CLASSROOM_FILE_EXTENSIONS = new Set([
+    "",
+    ".csv",
+    ".doc",
+    ".docx",
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".json",
+    ".md",
+    ".pdf",
+    ".png",
+    ".ppt",
+    ".pptx",
+    ".svg",
+    ".txt",
+    ".webp",
+    ".xls",
+    ".xlsx",
+]);
+
 export async function handleResourceActions(
     event,
     {
@@ -35,9 +56,22 @@ export async function handleResourceActions(
             ? [...classResources.files]
             : [];
         for (const file of Array.from(input.files)) {
-            const ext = (file.name.match(/\.[a-z0-9]+$/i) ?? [""])[0]
-                .toLowerCase()
-                .replace(/[^.a-z0-9]/g, "");
+            const filename = String(file.name ?? "").trim();
+            const extensionStart = filename.lastIndexOf(".");
+            const ext =
+                extensionStart >= 0
+                    ? filename
+                          .slice(extensionStart)
+                          .toLowerCase()
+                          .replace(/[^.a-z0-9]/g, "")
+                    : "";
+            if (!ALLOWED_CLASSROOM_FILE_EXTENSIONS.has(ext)) {
+                showToast(
+                    `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                    { variant: "error" },
+                );
+                continue;
+            }
             const uniqueId = crypto.randomUUID();
             const key = `classes/${encodeURIComponent(snapshot.id)}/${uniqueId}${ext}`;
             const uploadResponse = await apiFetch(`/api/v1/files/${key}`, {

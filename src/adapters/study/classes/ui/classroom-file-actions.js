@@ -1,9 +1,9 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const FILE_BUCKET = "classroom-notes";
+const NOTEPAD_FILES_PREFIX = "classroom-notes";
 
 function buildFileKey(classId, filename) {
-    return `${FILE_BUCKET}/${encodeURIComponent(classId)}/${encodeURIComponent(filename)}`;
+    return `${NOTEPAD_FILES_PREFIX}/${encodeURIComponent(classId)}/${encodeURIComponent(filename)}`;
 }
 
 function extractFilename(key) {

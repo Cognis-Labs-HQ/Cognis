@@ -374,10 +374,6 @@
 
 `src/adapters/study/notepad/ui/classroom-notepad.js` lines 139 and 152 use the deprecated `document.execCommand` API for text formatting. Should be replaced with the modern Selection API. Pre-existing issue not introduced by this PR.
 
-### File extension validation in `classroom-resource-actions.js`
-
-`classroom-resource-actions.js:38-40` extracts the file extension from a client-provided filename without validating against an allowlist. Pre-existing code not touched by the classroom overhaul PR.
-
 ## Code Review — Student meeting loop fix PR
 
 ### `normalizeBoardFocus` duplicated in UI and store layers

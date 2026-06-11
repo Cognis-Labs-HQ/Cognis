@@ -72,7 +72,7 @@ function normalizeWorkspaceMode(input) {
     return "agenda";
 }
 
-function emptyClassResources() {
+function createDefaultClassResources() {
     return { materials: "", homework: "", files: [] };
 }
 
@@ -126,7 +126,7 @@ export async function mount(root, { signal } = {}) {
     let selectedClassId = String(query.get("classId") ?? "").trim();
     let selectedSeatNumber = null;
     let selectedNotebookText = "";
-    let classResources = emptyClassResources();
+    let classResources = createDefaultClassResources();
     let activeAgendaItems = [];
     let selectedLanguageFilter = "";
     let searchQuery = "";
@@ -343,7 +343,7 @@ export async function mount(root, { signal } = {}) {
         const snapshot = selectedSnapshot();
         if (!snapshot) {
             selectedNotebookText = "";
-            classResources = emptyClassResources();
+            classResources = createDefaultClassResources();
             activeAgendaItems = [];
             whiteboards = [];
             activeWhiteboard = null;
@@ -374,8 +374,9 @@ export async function mount(root, { signal } = {}) {
             ).catch(() => null),
         ]);
         classResources = resourcesResponse.ok
-            ? ((await resourcesResponse.json())?.data ?? emptyClassResources())
-            : emptyClassResources();
+            ? ((await resourcesResponse.json())?.data ??
+              createDefaultClassResources())
+            : createDefaultClassResources();
         selectedNotebookText = notebookResponse.ok
             ? String((await notebookResponse.json())?.data?.noteText ?? "")
             : "";
