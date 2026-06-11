@@ -119,3 +119,14 @@ akan auto-join meeting yang sama lagi sampai meeting yang lebih baru aktif.
 Jendela meeting classroom sekarang menampilkan pola overlay status gabung dan
 tertutup yang sama seperti halaman Meetings, sehingga status memuat dan
 penutupan tetap muncul di dalam UI Cognis.
+
+## Rute agenda dipisahkan dari rute file
+
+Penangan penghapusan item agenda kelas kini dipindahkan ke modul rute
+tersendiri, memisahkan tanggung jawab akses file dan kalender secara jelas.
+
+## normalizeBoardFocus diekstrak ke modul tersendiri
+
+Normalizer board-focus bersama kini berada di file tersendiri per lapisan
+(`store/board-focus.ts` di server, `ui/board-focus.js` di browser) alih-alih
+didefinisikan secara inline di dalam file kelas yang lebih besar.

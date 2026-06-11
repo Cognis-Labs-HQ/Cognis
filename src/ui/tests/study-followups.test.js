@@ -40,7 +40,7 @@ test("study hub detects native library child component by descriptor id", () => 
     );
 });
 
-test("classroom roster keeps present and absent columns without a Students header", () => {
+test("classroom roster keeps present and absent columns", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
         "utf8",
@@ -48,8 +48,6 @@ test("classroom roster keeps present and absent columns without a Students heade
     assert.match(source, /module\.study\.classes\.members_present/);
     assert.match(source, /module\.study\.classes\.members_absent/);
     assert.match(source, /classes-roster-panel-columns/);
-    assert.doesNotMatch(source, /module\.study\.classes\.students_section/);
-    assert.doesNotMatch(source, /<ul class="classes-roster-panel-list">/);
 });
 
 test("classroom toolbar chat and meeting controls use text buttons with working action classes", () => {

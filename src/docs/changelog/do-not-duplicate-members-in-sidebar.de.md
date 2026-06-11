@@ -122,3 +122,14 @@ aktiv wird.
 Das Classroom-Meetingfenster zeigt jetzt dasselbe Overlay-Muster für Join- und
 Closed-Zustände wie die Meetings-Seite, sodass Lade- und Schließzustände in der
 Cognis-Oberfläche bleiben.
+
+## Agenda-Route von Datei-Routen getrennt
+
+Der Klassenzimmer-Handler zum Löschen von Agenda-Einträgen wurde in ein
+eigenes Routenmodul verschoben, um Datei- und Kalenderzugriff klar zu trennen.
+
+## normalizeBoardFocus in ein eigenes Modul ausgelagert
+
+Der gemeinsame Board-Focus-Normalisierer befindet sich nun in einer eigenen
+Datei pro Schicht (`store/board-focus.ts` auf dem Server, `ui/board-focus.js`
+im Browser) anstatt in den größeren Klassenzimmer-Dateien inline definiert.

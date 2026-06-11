@@ -43,7 +43,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.9` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.6` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.3` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4` |
 | Notepad (Study)       | `src/adapters/study/notepad/`       | `1.0.1` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 

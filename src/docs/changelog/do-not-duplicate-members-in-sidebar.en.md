@@ -122,3 +122,14 @@ active.
 The classroom meeting window now shows the same overlay-style join and closed
 state feedback pattern used on the Meetings page, so loading and closure states
 stay inside the Cognis UI.
+
+## Agenda route separated from file routes
+
+The classroom agenda-item deletion handler has been moved to its own route
+module, keeping file-access and calendar-access responsibilities separate.
+
+## normalizeBoardFocus extracted to a dedicated module
+
+The shared board-focus normalizer is now in its own file in each layer
+(`store/board-focus.ts` on the server, `ui/board-focus.js` in the browser)
+instead of being defined inline inside the larger classroom files.

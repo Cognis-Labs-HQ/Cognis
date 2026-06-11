@@ -38,6 +38,7 @@ import { handleWhiteboardAndNotepadActions } from "/static/adapters/study/classe
 import { handleResourceActions } from "/static/adapters/study/classes/classroom-resource-actions.js";
 import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
 import { bindClassroomInteractions } from "/static/adapters/study/classes/classroom/interactions.js";
+import { normalizeBoardFocus } from "/static/adapters/study/classes/board-focus.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -46,15 +47,6 @@ function buildQuery(params) {
         query.set(key, String(value));
     }
     return query.toString();
-}
-
-function normalizeBoardFocus(input) {
-    const normalized = String(input ?? "")
-        .trim()
-        .toLowerCase();
-    if (normalized === "classroom") return "classroom";
-    if (normalized === "chat") return "chat";
-    return "agenda";
 }
 
 function normalizeWorkspaceMode(input) {

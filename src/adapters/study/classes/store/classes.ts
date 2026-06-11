@@ -2,15 +2,7 @@ import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "./constants.js";
 import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
-
-function normalizeBoardFocus(input: unknown): "agenda" | "classroom" | "chat" {
-    const value = String(input ?? "")
-        .trim()
-        .toLowerCase();
-    if (value === "classroom") return "classroom";
-    if (value === "chat") return "chat";
-    return "agenda";
-}
+import { normalizeBoardFocus } from "./board-focus.js";
 
 function normalizeActiveWhiteboardId(input: unknown): string | null {
     const normalizedId = String(input ?? "").trim();

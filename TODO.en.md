@@ -374,16 +374,6 @@
 
 `src/adapters/study/notepad/ui/classroom-notepad.js` lines 139 and 152 use the deprecated `document.execCommand` API for text formatting. Should be replaced with the modern Selection API. Pre-existing issue not introduced by this PR.
 
-## Code Review — Student meeting loop fix PR
-
-### `normalizeBoardFocus` duplicated in UI and store layers
-
-`src/adapters/study/classes/ui/classroom/index.js` lines 52–57 and `src/adapters/study/classes/store/classes.ts` lines 6–12 both define an identical `normalizeBoardFocus` function. Extracting this to a shared utility in `src/adapters/study/classes/reuse/` would eliminate the duplication, but requires cross-layer sharing between TypeScript (store) and JavaScript (UI) which needs careful plumbing.
-
-### Rename `handleClassroomFilesRoutes` for mixed responsibilities
-
-`src/adapters/study/classes/routes/classroom-files-route.ts` currently includes both file route handling and agenda deletion handling. A follow-up should either rename this handler to reflect both responsibilities or split agenda deletion into a dedicated route module.
-
 ## Code Review — classroom chat/workspace controls follow-up
 
 ### notepad/classroom-notepad.js deprecates `document.execCommand`
@@ -391,18 +381,6 @@
 **Reviewer suggestion:** Replace `document.execCommand` usage in `src/adapters/study/notepad/ui/classroom-notepad.js` with Selection/Range APIs.
 
 **Reason ignored:** This change touches rich-text editing behavior in the standalone notepad adapter, which is outside this classroom chat/workspace fix and requires dedicated UX regression testing for editor commands.
-
-### classes/ui/classroom/index.js normalizeBoardFocus duplication
-
-**Reviewer suggestion:** Extract duplicated `normalizeBoardFocus` logic shared between `src/adapters/study/classes/ui/classroom/index.js` and `src/adapters/study/classes/store/classes.ts` into shared reuse code.
-
-**Reason ignored:** The duplication predates this fix and refactoring it now would expand scope across UI/store layers with additional version/changelog churn beyond the targeted classroom interaction regressions addressed in this change.
-
-### routes/classroom-files-route.ts mixed responsibilities
-
-**Reviewer suggestion:** Rename or split `handleClassroomFilesRoutes` because it also handles agenda deletion.
-
-**Reason ignored:** This is a structural route-organization refactor in server code unrelated to the user-facing classroom chat/workspace regressions fixed here and should be handled as its own gateway/route cleanup task.
 
 ### classroom-file-actions.js rename reads full file content
 
