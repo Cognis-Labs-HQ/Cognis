@@ -70,6 +70,7 @@ export function createClassroomMeetingEmbed({
     let currentSessionId = null;
     let authBlocked = false;
     let triedMeetingId = null;
+    let dismissedMeetingId = null;
     let openInProgress = false;
 
     const element = document.createElement("div");
@@ -84,11 +85,42 @@ export function createClassroomMeetingEmbed({
             <span class="classes-meeting-window-title">${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</span>
         </div>
         <div class="classes-meeting-frame" id="classroom-jitsi-frame"></div>
-        <div class="classes-meeting-closed-overlay" hidden>
-            <p class="classes-meeting-closed-title">${escapeHtml(i18n.t("module.study.classes.meeting_closed_title"))}</p>
-            <p class="classes-meeting-closed-body">${escapeHtml(i18n.t("module.study.classes.meeting_closed_body"))}</p>
+        <div class="classes-meeting-overlay" hidden>
+            <h3 class="classes-meeting-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
+            <p class="classes-meeting-overlay-body">${escapeHtml(i18n.t("module.jitsi_meet.overlay.joining"))}</p>
+            <div class="classes-meeting-overlay-loading" hidden>
+                <span class="classes-meeting-overlay-spinner" aria-hidden="true"></span>
+                <span class="classes-meeting-overlay-loading-text">${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
+            </div>
         </div>
     `;
+
+    function updateOverlay({
+        message = "",
+        visible = true,
+        loading = false,
+    } = {}) {
+        const overlay = element.querySelector(".classes-meeting-overlay");
+        const body = element.querySelector(".classes-meeting-overlay-body");
+        const loadingWrap = element.querySelector(
+            ".classes-meeting-overlay-loading",
+        );
+        const loadingText = element.querySelector(
+            ".classes-meeting-overlay-loading-text",
+        );
+        if (body instanceof HTMLElement) {
+            body.textContent = message;
+        }
+        if (loadingWrap instanceof HTMLElement) {
+            loadingWrap.hidden = !loading;
+        }
+        if (loadingText instanceof HTMLElement) {
+            loadingText.textContent = message;
+        }
+        if (overlay instanceof HTMLElement) {
+            overlay.hidden = !visible;
+        }
+    }
 
     async function keepPresenceAlive(active, { terminated = false } = {}) {
         if (!currentMeetingId || !currentSessionId) return null;
@@ -126,7 +158,7 @@ export function createClassroomMeetingEmbed({
         if (!response?.ok) return;
         const payload = await response.json().catch(() => ({ data: null }));
         if (payload?.data?.state?.endedAt) {
-            closeMeeting();
+            closeMeeting({ returnMode: "agenda" });
         }
     }
 
@@ -175,14 +207,28 @@ export function createClassroomMeetingEmbed({
         }
     }
 
-    function closeMeeting({ terminated = false } = {}) {
+    function closeMeeting({
+        terminated = false,
+        suppressAutoJoin = false,
+        returnMode = null,
+    } = {}) {
+        const meetingId = String(currentMeetingId ?? "").trim();
+        if (suppressAutoJoin && meetingId) {
+            dismissedMeetingId = meetingId;
+            triedMeetingId = meetingId;
+        }
         stopTracking();
         void keepPresenceAlive(false, { terminated });
         destroyJitsiApi();
         currentMeetingId = null;
         currentSessionId = null;
+        updateOverlay({ visible: false });
         element.hidden = true;
-        onVisibilityChange(false);
+        onVisibilityChange({
+            visible: false,
+            returnMode,
+            meetingId,
+        });
     }
 
     function isMeetingTerminatedNotice(event) {
@@ -226,6 +272,13 @@ export function createClassroomMeetingEmbed({
     async function openMeetingEmbed(meeting, sessionId, currentProfile) {
         openInProgress = true;
         try {
+            element.hidden = false;
+            updateOverlay({
+                message: i18n.t("module.jitsi_meet.overlay.joining"),
+                visible: true,
+                loading: true,
+            });
+            onVisibilityChange({ visible: true });
             stopTracking();
             void keepPresenceAlive(false);
             destroyJitsiApi();
@@ -246,6 +299,7 @@ export function createClassroomMeetingEmbed({
                 showToast(i18n.t("module.study.classes.meeting_failed"), {
                     variant: "error",
                 });
+                closeMeeting();
                 return;
             }
 
@@ -327,21 +381,30 @@ export function createClassroomMeetingEmbed({
                 if (isTeacher) return false;
                 authBlocked = true;
                 destroyJitsiApi();
-                const overlay = element.querySelector(
-                    ".classes-meeting-closed-overlay",
-                );
-                if (overlay) overlay.hidden = false;
+                updateOverlay({
+                    message: i18n.t(
+                        "module.jitsi_meet.overlay.auth_required_description",
+                    ),
+                    visible: true,
+                    loading: false,
+                });
                 return true;
             };
 
             const handleMeetingLeft = () => {
                 if (jitsiApi !== apiInstance) return;
-                closeMeeting();
+                closeMeeting({
+                    suppressAutoJoin: true,
+                    returnMode: "agenda",
+                });
             };
 
             const handleMeetingTerminated = () => {
                 if (jitsiApi !== apiInstance) return;
-                closeMeeting({ terminated: true });
+                closeMeeting({
+                    terminated: true,
+                    returnMode: "agenda",
+                });
             };
 
             apiInstance.addEventListener("videoConferenceJoined", (event) => {
@@ -393,6 +456,14 @@ export function createClassroomMeetingEmbed({
             apiInstance.addEventListener("errorOccurred", (event) => {
                 if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
             });
+            apiInstance.addEventListener("toolbarButtonClicked", (event) => {
+                if (jitsiApi !== apiInstance) return;
+                if (String(event?.key ?? "").trim() !== "hangup") return;
+                closeMeeting({
+                    suppressAutoJoin: true,
+                    returnMode: "agenda",
+                });
+            });
 
             apiInstance.addEventListener(
                 "videoConferenceLeft",
@@ -401,8 +472,8 @@ export function createClassroomMeetingEmbed({
             apiInstance.addEventListener("readyToClose", handleMeetingLeft);
 
             startTracking(meeting.id, sessionId);
-            element.hidden = false;
-            onVisibilityChange(true);
+            updateOverlay({ visible: false });
+            onVisibilityChange({ visible: true });
         } finally {
             openInProgress = false;
         }
@@ -525,19 +596,21 @@ export function createClassroomMeetingEmbed({
             return meetingClassroomId === id;
         });
         if (!match?.id) return;
+        if (match.id === dismissedMeetingId) return;
         if (match.id === triedMeetingId) return;
         await openMeetingById(match.id);
     }
 
     function notifyActiveMeeting(meetingId) {
         const id = String(meetingId ?? "").trim();
-        if (!id || id === triedMeetingId) return;
+        if (!id) return;
+        if (id !== dismissedMeetingId) {
+            dismissedMeetingId = null;
+        }
+        if (id === triedMeetingId) return;
         triedMeetingId = null;
         authBlocked = false;
-        const overlay = element.querySelector(
-            ".classes-meeting-closed-overlay",
-        );
-        if (overlay) overlay.hidden = true;
+        updateOverlay({ visible: false });
     }
 
     if (signal) {
@@ -593,13 +666,12 @@ export function createClassroomMeetingEmbed({
         openMeetingById,
         tryAutoJoin,
         notifyActiveMeeting,
+        isMeetingDismissed: (meetingId) =>
+            String(meetingId ?? "").trim() === dismissedMeetingId,
         isAuthBlocked: () => authBlocked,
         resetAuthBlocked: () => {
             authBlocked = false;
-            const overlay = element.querySelector(
-                ".classes-meeting-closed-overlay",
-            );
-            if (overlay) overlay.hidden = true;
+            updateOverlay({ visible: false });
         },
     };
 }

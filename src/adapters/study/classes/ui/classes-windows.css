@@ -56,7 +56,7 @@
     border: 0;
 }
 
-.classes-meeting-closed-overlay {
+.classes-meeting-overlay {
     position: absolute;
     inset: 0;
     z-index: 10;
@@ -70,21 +70,44 @@
     padding: 2rem;
 }
 
-.classes-meeting-closed-overlay[hidden] {
+.classes-meeting-overlay[hidden] {
     display: none;
 }
 
-.classes-meeting-closed-title {
+.classes-meeting-overlay-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
     margin: 0;
 }
 
-.classes-meeting-closed-body {
+.classes-meeting-overlay-body {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.62);
     margin: 0;
+}
+
+.classes-meeting-overlay-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.86rem;
+}
+
+.classes-meeting-overlay-spinner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+    border-top-color: rgba(255, 255, 255, 0.88);
+    animation: classes-meeting-spin 0.9s linear infinite;
+}
+
+@keyframes classes-meeting-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .classes-chat-panel {

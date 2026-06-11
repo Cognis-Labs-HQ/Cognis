@@ -103,3 +103,22 @@ The runtime error crash popup was rendered beneath the page loading overlay (z-i
 ## Classroom student meeting no longer re-enters after leaving
 
 The classroom adapter's student auto-join logic was re-launching the Jitsi embed on every 3-second refresh cycle after the student left a meeting. Two concurrent-call and re-entry issues were fixed: (1) the `openMeetingEmbed` setup phase now holds an `openInProgress` flag so that a new `tryAutoJoin` call during Jitsi initialisation cannot create a second overlapping embed, and (2) a `triedMeetingId` guard inside `classroom-meeting-embed.js` prevents re-joining the same meeting ID that was already attempted. A new `notifyActiveMeeting(meetingId)` method allows the classroom adapter to signal a genuinely new meeting, which resets the guard and clears the auth-block state. The classroom's refresh loop has been simplified to call `tryAutoJoin` unconditionally; all join-guard logic now lives inside the jitsi-meet module.
+
+## Classroom Jitsi exits stay in Cognis
+
+Leaving an embedded classroom Jitsi meeting now closes the classroom meeting
+window immediately instead of letting the iframe fall through to the Jitsi home
+page. Classroom meeting exits also return the workspace to the agenda view.
+
+## Same-meeting rejoin is suppressed after leaving
+
+When a student intentionally leaves an active classroom meeting, Cognis now
+remembers that dismissal for the current meeting ID. The classroom refresh loop
+will not auto-join that same meeting again until a newer meeting becomes
+active.
+
+## Classroom uses the Meetings overlay pattern
+
+The classroom meeting window now shows the same overlay-style join and closed
+state feedback pattern used on the Meetings page, so loading and closure states
+stay inside the Cognis UI.

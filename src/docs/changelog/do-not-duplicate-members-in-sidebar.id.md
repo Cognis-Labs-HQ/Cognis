@@ -101,3 +101,21 @@ Popup crash error runtime ditampilkan di bawah overlay pemuatan halaman (z-index
 ## Siswa di Classroom tidak lagi masuk ulang setelah keluar dari meeting
 
 Logika auto-join siswa di Classroom terus meluncurkan ulang embed Jitsi setiap siklus refresh 3 detik setelah siswa meninggalkan meeting. Dua masalah panggilan bersamaan dan masuk ulang telah diperbaiki: (1) fase setup `openMeetingEmbed` kini menyimpan flag `openInProgress` agar panggilan `tryAutoJoin` baru selama inisialisasi Jitsi tidak dapat membuat embed kedua yang tumpang tindih, dan (2) guard `triedMeetingId` di dalam `classroom-meeting-embed.js` mencegah bergabung kembali ke ID meeting yang sudah dicoba. Metode baru `notifyActiveMeeting(meetingId)` memungkinkan adapter Classroom memberi sinyal meeting benar-benar baru, yang mereset guard dan menghapus status auth-block. Loop refresh Classroom telah disederhanakan; semua logika guard join kini berada di dalam modul jitsi-meet.
+
+## Keluar dari Jitsi tetap di Cognis
+
+Keluar dari meeting Jitsi Classroom yang disematkan sekarang langsung menutup
+jendela meeting di dalam Cognis, bukan membiarkan iframe berpindah ke halaman
+awal Jitsi. Setelah itu workspace classroom kembali ke tampilan agenda.
+
+## Meeting yang sama tidak langsung di-auto-join lagi
+
+Saat siswa sengaja keluar dari meeting classroom yang masih aktif, Cognis kini
+mengingat penolakan itu untuk ID meeting saat ini. Loop refresh classroom tidak
+akan auto-join meeting yang sama lagi sampai meeting yang lebih baru aktif.
+
+## Classroom memakai pola overlay Meetings
+
+Jendela meeting classroom sekarang menampilkan pola overlay status gabung dan
+tertutup yang sama seperti halaman Meetings, sehingga status memuat dan
+penutupan tetap muncul di dalam UI Cognis.

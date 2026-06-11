@@ -24,6 +24,7 @@
 | 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
 | プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.7`    |
 | メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
+| クラス (Study)            | `src/adapters/study/classes/`       | `1.4.3`    |
 
 ## ゲートウェイ
 
@@ -49,6 +50,6 @@
 | コンポーネント | パス                              | バージョン |
 | -------------- | --------------------------------- | ---------- |
 | 分析           | `src/modules/analytics/`          | `2.0.1`    |
-| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.0.0`    |
+| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.1.2`    |
 | Cognis 日本語  | `src/modules/study/languages/ja/` | `1.2.4`    |
 | Cognis 英語    | `src/modules/study/languages/en/` | `1.2.2`    |

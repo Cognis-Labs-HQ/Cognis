@@ -24,9 +24,9 @@ export function createClassroomWindows({
     const meetingEmbed = createClassroomMeetingEmbed({
         i18n,
         isTeacher,
-        onVisibilityChange: (visible) => {
+        onVisibilityChange: ({ visible, returnMode, meetingId }) => {
             root.classList.toggle("classes-meeting-active", visible);
-            onMeetingVisibilityChange(visible);
+            onMeetingVisibilityChange({ visible, returnMode, meetingId });
         },
         signal,
     });
@@ -91,6 +91,8 @@ export function createClassroomWindows({
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),
         notifyActiveMeeting: (meetingId) =>
             meetingEmbed.notifyActiveMeeting(meetingId),
+        isMeetingDismissed: (meetingId) =>
+            meetingEmbed.isMeetingDismissed(meetingId),
         isAuthBlocked: () => meetingEmbed.isAuthBlocked(),
         resetAuthBlocked: () => meetingEmbed.resetAuthBlocked(),
         openWhiteboard: (opts) => whiteboardWindow.openBoard(opts),

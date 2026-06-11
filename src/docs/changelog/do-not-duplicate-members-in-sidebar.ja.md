@@ -91,3 +91,22 @@ Node.jsがブラウザ絶対パス`/static/`のインポートを解決できな
 ## Classroomの生徒が退出後にミーティングが再ループしなくなった
 
 Classroomアダプターの生徒向け自動参加ロジックが、生徒がミーティングを退出した後も3秒ごとのリフレッシュサイクルのたびにJitsi埋め込みを再起動していた。2つの同時呼び出しと再入問題を修正した：(1) `openMeetingEmbed`のセットアップフェーズに`openInProgress`フラグを設け、Jitsi初期化中の新たな`tryAutoJoin`呼び出しで二重の埋め込みが生成されないようにした。(2) `classroom-meeting-embed.js`内の`triedMeetingId`ガードにより、すでに試みたミーティングIDへの再参加を防止する。新しい`notifyActiveMeeting(meetingId)`メソッドにより、Classroomアダプターが本当に新しいミーティングを通知でき、ガードをリセットしてauth-block状態もクリアする。Classroomのリフレッシュループは簡略化され、すべての参加ガードロジックはjitsi-meetモジュール内に集約された。
+
+## ClassroomのJitsi退出でCognisに残る
+
+埋め込みのClassroom Jitsiミーティングから退出すると、iframeがJitsiの
+ホームページへ遷移する代わりに、Cognis内でミーティングウィンドウをすぐに
+閉じるようになった。退出後のワークスペースはアジェンダ表示へ戻る。
+
+## 同じミーティングへの再参加を抑止
+
+生徒がまだアクティブなClassroomミーティングを自分で退出した場合、
+Cognisはその退出を現在のミーティングIDに対して記録する。Classroomの
+リフレッシュループは、新しいミーティングが有効になるまで同じミーティングを
+再び自動参加させない。
+
+## ClassroomがMeetingsのオーバーレイ方式を使用
+
+Classroomのミーティングウィンドウは、Meetingsページと同じ参加中・終了時
+のオーバーレイ表示パターンを使うようになり、読み込み中や終了後の状態も
+CognisのUI内で分かりやすく表示される。

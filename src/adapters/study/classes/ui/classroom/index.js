@@ -232,12 +232,16 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         const defaultWorkspaceMode = getDefaultWorkspaceMode();
+        const meetingAutoJoinBlocked = Boolean(
+            activeMeetingId &&
+                classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+        );
         if (
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&
-            !activeMeetingId
+            (!activeMeetingId || meetingAutoJoinBlocked)
         ) {
-            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
+            setWorkspaceMode("agenda", { remember: false });
         }
         if (
             workspaceMode === "whiteboard" &&
@@ -246,10 +250,14 @@ export async function mount(root, { signal } = {}) {
         ) {
             setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
-        if (workspaceMode === "agenda") {
+        if (workspaceMode === "agenda" && !meetingAutoJoinBlocked) {
             setWorkspaceMode(defaultWorkspaceMode, { remember: false });
         }
-        if (activeMeetingId && workspaceMode !== "meeting") {
+        if (
+            activeMeetingId &&
+            workspaceMode !== "meeting" &&
+            !meetingAutoJoinBlocked
+        ) {
             setWorkspaceMode("meeting", { remember: false });
         }
         const activeWhiteboardId = getSelectedActiveWhiteboardId(snapshot);
@@ -763,9 +771,11 @@ export async function mount(root, { signal } = {}) {
         i18n,
         isTeacher: Boolean(teacherAccount && isTeacherView()),
         signal,
-        onMeetingVisibilityChange: (visible) => {
+        onMeetingVisibilityChange: ({ visible, returnMode } = {}) => {
             if (visible) {
                 setWorkspaceMode("meeting", { remember: false });
+            } else if (returnMode === "agenda") {
+                setWorkspaceMode("agenda", { remember: false });
             } else {
                 setWorkspaceMode(lastNonMeetingWorkspaceMode, {
                     remember: false,
@@ -803,7 +813,16 @@ export async function mount(root, { signal } = {}) {
             syncGlobalChatTarget();
             composer.refreshFooter();
             refreshSubNavigation();
-            if (selectedClassId && classroomWindows && activeMeetingId) {
+            const meetingAutoJoinBlocked = Boolean(
+                activeMeetingId &&
+                    classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+            );
+            if (
+                selectedClassId &&
+                classroomWindows &&
+                activeMeetingId &&
+                !meetingAutoJoinBlocked
+            ) {
                 if (!classroomWindows.isMeetingOpen()) {
                     await classroomWindows.tryAutoJoin(selectedClassId);
                     if (classroomWindows.isMeetingOpen()) {

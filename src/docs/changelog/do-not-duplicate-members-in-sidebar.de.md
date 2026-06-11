@@ -102,3 +102,23 @@ Das Absturz-Popup für Laufzeitfehler wurde unterhalb des Seitenladeoverlay (z-i
 ## Schüler-Meeting im Classroom verlässt die Endlosschleife
 
 Die automatische Join-Logik für Schüler im Classroom rief das Jitsi-Embed nach dem Verlassen eines Meetings bei jedem 3-Sekunden-Refresh-Zyklus erneut auf. Zwei Gleichzeitigkeits- und Wiedereintritts-Probleme wurden behoben: (1) Die `openMeetingEmbed`-Initialisierungsphase hält nun ein `openInProgress`-Flag, damit ein erneuter `tryAutoJoin`-Aufruf während der Jitsi-Initialisierung kein zweites Embed erstellen kann, und (2) ein `triedMeetingId`-Guard innerhalb von `classroom-meeting-embed.js` verhindert das erneute Beitreten derselben Meeting-ID. Eine neue Methode `notifyActiveMeeting(meetingId)` ermöglicht es dem Classroom-Adapter, ein wirklich neues Meeting zu signalisieren, was den Guard zurücksetzt und den Auth-Block-Status löscht. Die Refresh-Schleife des Classrooms wurde vereinfacht; die gesamte Join-Guard-Logik lebt nun im jitsi-meet-Modul.
+
+## Classroom-Jitsi bleibt in Cognis
+
+Beim Verlassen eines eingebetteten Classroom-Jitsi-Meetings wird das
+Meetingfenster jetzt sofort in Cognis geschlossen, statt den iframe auf die
+Jitsi-Startseite fallen zu lassen. Danach kehrt der Klassenraum wieder zur
+Agenda-Ansicht zurück.
+
+## Kein erneuter Beitritt zum selben Meeting nach Verlassen
+
+Wenn ein Schüler ein aktives Classroom-Meeting bewusst verlässt, merkt sich
+Cognis diese Ablehnung für die aktuelle Meeting-ID. Die Classroom-Refresh-
+Schleife tritt demselben Meeting erst wieder bei, wenn ein neueres Meeting
+aktiv wird.
+
+## Classroom nutzt das Meetings-Overlay-Muster
+
+Das Classroom-Meetingfenster zeigt jetzt dasselbe Overlay-Muster für Join- und
+Closed-Zustände wie die Meetings-Seite, sodass Lade- und Schließzustände in der
+Cognis-Oberfläche bleiben.
