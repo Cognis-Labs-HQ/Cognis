@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="module.study.classes.notepad">Notepad</string>
-  <string name="module.study.classes.notepad_download">Unduh sebagai Markdown</string>
+  <string name="module.study.classes.notepad_download">Unduh</string>
   <string name="module.study.classes.notepad_clear">Hapus</string>
   <string name="module.study.classes.notepad_save">Simpan ke Kelas</string>
   <string name="module.study.classes.notepad_open">Buka dari Kelas</string>

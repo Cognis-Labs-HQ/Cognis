@@ -10,8 +10,8 @@ test("dashboard layout applies scroll hysteresis for sub-navigation priority", (
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    assert.match(source, /SUBNAV_PRIORITY_ENTER_SCROLL_Y\s*=\s*20/);
-    assert.match(source, /SUBNAV_PRIORITY_EXIT_SCROLL_Y\s*=\s*6/);
+    assert.match(source, /SUBNAV_PRIORITY_ENTER_SCROLL_Y\s*=\s*48/);
+    assert.match(source, /SUBNAV_PRIORITY_EXIT_SCROLL_Y\s*=\s*18/);
 });
 
 test("dashboard layout unhides global chat toggle on initial render when enabled", () => {

@@ -1,5 +1,3 @@
-import { apiFetch } from "/static/reuse/api-client.js";
-import { showToast } from "/static/reuse/toast.js";
 
 const STORAGE_PREFIX = "classes_notepad_";
 
@@ -179,40 +177,6 @@ export function createClassroomNotepad({ classId, i18n }) {
         saveDraft(editor.innerHTML);
     }
 
-    async function saveToClass() {
-        const html = getEditorHtml();
-        const response = await apiFetch(
-            `/api/v1/study/classes/${encodeURIComponent(classId)}/resources`,
-            {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ materials: html }),
-            },
-        ).catch(() => null);
-        if (response?.ok) {
-            showToast(i18n.t("module.study.classes.notepad_saved"), {
-                variant: "success",
-            });
-        } else {
-            showToast(i18n.t("module.study.classes.notepad_save_failed"), {
-                variant: "error",
-            });
-        }
-    }
-
-    async function openFromClass() {
-        const response = await apiFetch(
-            `/api/v1/study/classes/${encodeURIComponent(classId)}/resources`,
-        ).catch(() => null);
-        if (!response?.ok) return;
-        const payload = await response.json().catch(() => null);
-        const materials = String(payload?.data?.materials ?? "").trim();
-        if (editor && materials) {
-            editor.innerHTML = sanitizeNotepadHtml(materials);
-            saveDraft(editor.innerHTML);
-        }
-    }
-
     function downloadAsMarkdown() {
         const text = editorToPlainText();
         const date = new Date().toISOString().slice(0, 10);
@@ -245,7 +209,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         toolbar.className = "classes-notepad-toolbar";
 
         const styleSelect = document.createElement("select");
-        styleSelect.className = "classes-notepad-style-select";
+        styleSelect.className = "classes-notepad-style-select theme-select";
         styleSelect.setAttribute(
             "aria-label",
             i18n.t("module.study.classes.notepad_format_paragraph"),
@@ -258,7 +222,7 @@ export function createClassroomNotepad({ classId, i18n }) {
         }
 
         const sizeSelect = document.createElement("select");
-        sizeSelect.className = "classes-notepad-size-select";
+        sizeSelect.className = "classes-notepad-size-select theme-select";
         sizeSelect.setAttribute(
             "aria-label",
             i18n.t("module.study.classes.notepad_font_size"),
@@ -280,16 +244,6 @@ export function createClassroomNotepad({ classId, i18n }) {
             i18n.t("module.study.classes.notepad_color"),
         );
 
-        const saveBtn = document.createElement("button");
-        saveBtn.type = "button";
-        saveBtn.className = "classes-notepad-save-btn";
-        saveBtn.textContent = i18n.t("module.study.classes.notepad_save");
-
-        const openBtn = document.createElement("button");
-        openBtn.type = "button";
-        openBtn.className = "classes-notepad-open-btn";
-        openBtn.textContent = i18n.t("module.study.classes.notepad_open");
-
         const downloadBtn = document.createElement("button");
         downloadBtn.type = "button";
         downloadBtn.className = "classes-notepad-download-btn";
@@ -305,8 +259,6 @@ export function createClassroomNotepad({ classId, i18n }) {
         toolbar.appendChild(styleSelect);
         toolbar.appendChild(sizeSelect);
         toolbar.appendChild(colorInput);
-        toolbar.appendChild(saveBtn);
-        toolbar.appendChild(openBtn);
         toolbar.appendChild(downloadBtn);
         toolbar.appendChild(clearBtn);
 
@@ -338,14 +290,6 @@ export function createClassroomNotepad({ classId, i18n }) {
 
         colorInput.addEventListener("input", () => {
             applyColor(colorInput.value);
-        });
-
-        saveBtn.addEventListener("click", () => {
-            void saveToClass();
-        });
-
-        openBtn.addEventListener("click", () => {
-            void openFromClass();
         });
 
         downloadBtn.addEventListener("click", () => {

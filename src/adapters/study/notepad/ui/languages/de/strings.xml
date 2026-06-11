@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="module.study.classes.notepad">Notizblock</string>
-  <string name="module.study.classes.notepad_download">Als Markdown herunterladen</string>
+  <string name="module.study.classes.notepad_download">Herunterladen</string>
   <string name="module.study.classes.notepad_clear">Löschen</string>
   <string name="module.study.classes.notepad_save">In Klasse speichern</string>
   <string name="module.study.classes.notepad_open">Aus Klasse öffnen</string>

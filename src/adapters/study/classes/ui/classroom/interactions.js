@@ -58,6 +58,8 @@ export function bindClassroomInteractions({
     setSearchQuery,
     setNotebookText,
     setBoardEntity,
+    getSidebarPanelMode,
+    setSidebarPanelMode,
 }) {
     if (getInteractionsBound()) {
         return;
@@ -95,7 +97,21 @@ export function bindClassroomInteractions({
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
-                if (nextWorkspaceMode === "whiteboard") {
+                if (nextWorkspaceMode === "meeting") {
+                    if (!snapshot) {
+                        return;
+                    }
+                    if (isTeacherView()) {
+                        await classroomWindows?.openMeeting(snapshot);
+                    } else {
+                        await classroomWindows?.tryAutoJoin(snapshot.id);
+                    }
+                    if (classroomWindows?.isMeetingOpen()) {
+                        setWorkspaceMode("meeting", {
+                            remember: false,
+                        });
+                        refreshDom();
+                    }
                     return;
                 }
                 if (nextWorkspaceMode === "agenda") {
@@ -113,6 +129,21 @@ export function bindClassroomInteractions({
                     }
                     setWorkspaceMode(nextWorkspaceMode);
                 }
+                refreshDom();
+                return;
+            }
+
+            const sidebarButton = event.target.closest(
+                ".classes-side-panel-btn[data-sidebar-mode]",
+            );
+            if (sidebarButton instanceof HTMLElement) {
+                const sidebarMode = String(
+                    sidebarButton.dataset.sidebarMode ?? "",
+                ).trim();
+                if (!sidebarMode || sidebarMode === getSidebarPanelMode()) {
+                    return;
+                }
+                setSidebarPanelMode(sidebarMode);
                 refreshDom();
                 return;
             }
@@ -161,7 +192,6 @@ export function bindClassroomInteractions({
                         );
                     } else {
                         classroomWindows.toggleChat(snapshot.chatUrl);
-                        refreshDom();
                     }
                     return;
                 }
@@ -180,7 +210,6 @@ export function bindClassroomInteractions({
                     chatToggle?.dataset.chatTarget ?? "",
                 ).trim();
                 classroomWindows.toggleChat(chatUrl);
-                refreshDom();
                 return;
             }
 
@@ -520,6 +549,23 @@ export function bindClassroomInteractions({
                 await loadAvailableClasses();
                 refreshDom();
             }
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "dblclick",
+        (event) => {
+            if (!(event.target instanceof Element)) return;
+            const materialButton = event.target.closest(
+                ".classes-sidebar-material-btn[data-material-key]",
+            );
+            if (!(materialButton instanceof HTMLElement)) return;
+            const materialKey = String(
+                materialButton.dataset.materialKey ?? "",
+            ).trim();
+            if (!materialKey) return;
+            const materialUrl = `/api/v1/files/${materialKey}`;
+            window.open(materialUrl, "_blank", "noopener,noreferrer");
         },
         { signal },
     );

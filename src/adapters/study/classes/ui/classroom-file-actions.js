@@ -132,6 +132,11 @@ export async function handleFileActions(
             `,
             actions: [
                 {
+                    id: "open",
+                    label: i18n.t("ui.reuse.open"),
+                    variant: "confirm",
+                },
+                {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",

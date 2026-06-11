@@ -59,6 +59,10 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
     const thread = panel.querySelector(".classes-chat-thread");
     const form = panel.querySelector(".classes-chat-form");
     const input = panel.querySelector(".classes-chat-input");
+    const panelHeader = panel.querySelector(".classes-chat-panel-header");
+    let draggingPanel = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
 
     async function fetchRoomKey(roomId) {
         const response = await apiFetch(
@@ -285,6 +289,61 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
         stopPolling();
         setPanelVisibility(false);
     }
+
+    function resetDockedPosition() {
+        panel.style.left = "";
+        panel.style.top = "";
+        panel.style.right = "";
+        panel.style.bottom = "";
+    }
+
+    function startPanelDrag(event) {
+        if (!(event instanceof MouseEvent)) return;
+        if (event.button !== 0) return;
+        if (window.innerWidth <= 900) return;
+        const panelBounds = panel.getBoundingClientRect();
+        draggingPanel = true;
+        dragOffsetX = event.clientX - panelBounds.left;
+        dragOffsetY = event.clientY - panelBounds.top;
+        panel.classList.add("classes-chat-panel--dragging");
+        panel.style.left = `${panelBounds.left}px`;
+        panel.style.top = `${panelBounds.top}px`;
+        panel.style.right = "auto";
+        panel.style.bottom = "auto";
+        event.preventDefault();
+    }
+
+    function handlePanelDrag(event) {
+        if (!draggingPanel) return;
+        const panelBounds = panel.getBoundingClientRect();
+        const maxLeft = Math.max(0, window.innerWidth - panelBounds.width);
+        const maxTop = Math.max(0, window.innerHeight - panelBounds.height);
+        const nextLeft = Math.min(
+            Math.max(event.clientX - dragOffsetX, 0),
+            maxLeft,
+        );
+        const nextTop = Math.min(
+            Math.max(event.clientY - dragOffsetY, 0),
+            maxTop,
+        );
+        panel.style.left = `${nextLeft}px`;
+        panel.style.top = `${nextTop}px`;
+    }
+
+    function stopPanelDrag() {
+        if (!draggingPanel) return;
+        draggingPanel = false;
+        panel.classList.remove("classes-chat-panel--dragging");
+    }
+
+    panelHeader?.addEventListener("mousedown", startPanelDrag);
+    window.addEventListener("mousemove", handlePanelDrag);
+    window.addEventListener("mouseup", stopPanelDrag);
+    window.addEventListener("resize", () => {
+        if (window.innerWidth <= 900) {
+            resetDockedPosition();
+        }
+    });
 
     function destroy() {
         stopPolling();

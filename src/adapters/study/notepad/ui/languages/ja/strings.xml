@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="module.study.classes.notepad">メモ帳</string>
-  <string name="module.study.classes.notepad_download">Markdownとしてダウンロード</string>
+  <string name="module.study.classes.notepad_download">ダウンロード</string>
   <string name="module.study.classes.notepad_clear">クリア</string>
   <string name="module.study.classes.notepad_save">クラスに保存</string>
   <string name="module.study.classes.notepad_open">クラスから開く</string>

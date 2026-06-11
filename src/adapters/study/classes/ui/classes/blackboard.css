@@ -28,7 +28,7 @@
 }
 
 #app.classes-meeting-active .classes-classroom-content {
-    --classes-classroom-blackboard-height: clamp(430px, 72vh, 860px);
+    --classes-classroom-blackboard-height: clamp(360px, 62vh, 720px);
 }
 
 .classes-blackboard-header {

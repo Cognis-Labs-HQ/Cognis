@@ -10,6 +10,10 @@
     white-space: nowrap;
 }
 
+.classes-chat-panel--dragging {
+    user-select: none;
+}
+
 .classes-window-close-btn:hover {
     background: var(--surface);
 }
@@ -165,6 +169,7 @@
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
     background: var(--surface-2);
+    cursor: move;
 }
 
 .classes-chat-panel-title {

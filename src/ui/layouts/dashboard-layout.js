@@ -29,8 +29,8 @@ import { bindProfilePreviews } from "../reuse/profile-preview.js";
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
 // Scroll hysteresis prevents subnav-priority flicker near the top of the page.
-const SUBNAV_PRIORITY_ENTER_SCROLL_Y = 20;
-const SUBNAV_PRIORITY_EXIT_SCROLL_Y = 6;
+const SUBNAV_PRIORITY_ENTER_SCROLL_Y = 48;
+const SUBNAV_PRIORITY_EXIT_SCROLL_Y = 18;
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
