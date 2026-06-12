@@ -100,7 +100,9 @@ export function createWorkspaceTileRefresher({
             tileLayout === "slideshow",
         );
 
-        const layoutToggle = root.querySelector(".classes-tile-layout-toggle-btn");
+        const layoutToggle = root.querySelector(
+            ".classes-tile-layout-toggle-btn",
+        );
         if (layoutToggle instanceof HTMLElement) {
             layoutToggle.dataset.tileLayout = tileLayout;
             layoutToggle.textContent =
@@ -109,8 +111,12 @@ export function createWorkspaceTileRefresher({
                     : i18n.t("module.study.classes.tile_view");
         }
 
-        const existingPrev = workspacePanel.querySelector(".classes-tile-nav-prev");
-        const existingNext = workspacePanel.querySelector(".classes-tile-nav-next");
+        const existingPrev = workspacePanel.querySelector(
+            ".classes-tile-nav-prev",
+        );
+        const existingNext = workspacePanel.querySelector(
+            ".classes-tile-nav-next",
+        );
         if (tileLayout === "slideshow") {
             if (!(existingPrev instanceof HTMLButtonElement)) {
                 const previousButton = document.createElement("button");
@@ -179,7 +185,10 @@ export function createWorkspaceTileRefresher({
             const tabMode = String(tabButton.dataset.workspaceMode ?? "");
             tabButton.classList.toggle("active", tabMode === workspaceMode);
             if (tabMode === "meeting") {
-                tabButton.classList.toggle("classes-meeting-pulse", meetingOpen);
+                tabButton.classList.toggle(
+                    "classes-meeting-pulse",
+                    meetingOpen,
+                );
             }
         }
         const meetingTile = tilesContainer.querySelector(

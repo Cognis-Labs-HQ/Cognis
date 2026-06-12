@@ -5,7 +5,7 @@ const PREFERENCE_PAGE_ID = "classes-classroom-ui-preferences";
 function hasPreferenceApiContext() {
     return Boolean(
         localStorage.getItem("cognis_account") &&
-            localStorage.getItem("cognis_access_token"),
+        localStorage.getItem("cognis_access_token"),
     );
 }
 
