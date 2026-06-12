@@ -99,6 +99,8 @@
     display: block;
     position: relative;
     overflow-y: auto;
+    font-family: var(--classes-blackboard-chalk-font);
+    font-size: 0.95rem;
 }
 
 .classes-blackboard-main {

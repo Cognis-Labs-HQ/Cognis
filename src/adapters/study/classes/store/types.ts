@@ -28,9 +28,10 @@ export interface ClassroomStateRow {
     classId: string;
     studentLimit: number;
     seatAssignments: Record<string, number>;
-    boardFocus: "agenda" | "classroom" | "chat";
+    boardFocus: "agenda" | "classroom" | "chat" | "whiteboard" | "notepad";
     activeWhiteboardId: string | null;
     activeMaterialKey: string | null;
+    viewLayout: "stacked" | "slideshow";
     updatedAt: string;
 }
 

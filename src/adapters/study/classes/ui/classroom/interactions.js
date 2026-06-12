@@ -67,6 +67,7 @@ export function bindClassroomInteractions({
     getTileOrder,
     setTileOrder,
     refreshWorkspaceTilesOnly,
+    getIsTeacherPresent,
 }) {
     if (getInteractionsBound()) {
         return;
@@ -74,6 +75,15 @@ export function bindClassroomInteractions({
     setInteractionsBound(true);
     bindProfilePreviews(i18n);
     let agendaAutosaveTimer = null;
+    const AGENDA_TOOLBAR_WRAPPERS = {
+        bold: { before: "**", after: "**" },
+        italic: { before: "*", after: "*" },
+        strikethrough: { before: "~~", after: "~~" },
+        code: { before: "`", after: "`" },
+        quote: { prefix: "> " },
+        heading: { prefix: "# " },
+        link: { template: (text) => `[${text || "text"}](url)` },
+    };
     root.addEventListener(
         "click",
         async (event) => {
@@ -82,6 +92,42 @@ export function bindClassroomInteractions({
             const classroomWindows = getClassroomWindows();
             const selectedClassId = getSelectedClassId();
             const activeWhiteboard = getActiveWhiteboard();
+
+            const toolbarBtn = event.target.closest(
+                ".classes-agenda-toolbar-btn",
+            );
+            if (toolbarBtn instanceof HTMLElement && isTeacherView()) {
+                const action = String(toolbarBtn.dataset.toolbarAction ?? "");
+                const handler = AGENDA_TOOLBAR_WRAPPERS[action];
+                const editor = root.querySelector(
+                    ".classes-agenda-document-editor",
+                );
+                if (handler && editor instanceof HTMLTextAreaElement) {
+                    const start = editor.selectionStart;
+                    const end = editor.selectionEnd;
+                    const selected = editor.value.slice(start, end);
+                    const before = editor.value.slice(0, start);
+                    const after = editor.value.slice(end);
+                    let insertion;
+                    if (handler.template) {
+                        insertion = handler.template(selected);
+                    } else if (handler.prefix) {
+                        insertion = handler.prefix + selected;
+                    } else {
+                        insertion = handler.before + selected + handler.after;
+                    }
+                    editor.value = before + insertion + after;
+                    const cursorPos = handler.template
+                        ? start + insertion.length
+                        : handler.prefix
+                          ? start + handler.prefix.length + selected.length
+                          : start + handler.before.length + selected.length;
+                    editor.setSelectionRange(cursorPos, cursorPos);
+                    editor.focus();
+                    editor.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+                return;
+            }
             const profileButton = event.target.closest(
                 ".classes-member-profile-btn",
             );
@@ -123,6 +169,7 @@ export function bindClassroomInteractions({
                 ".classes-tile-nav-prev, .classes-tile-nav-next",
             );
             if (slideshowNavButton instanceof HTMLElement) {
+                if (getIsTeacherPresent?.()) return;
                 const isPrev = slideshowNavButton.classList.contains(
                     "classes-tile-nav-prev",
                 );
@@ -153,6 +200,7 @@ export function bindClassroomInteractions({
                 ".classes-workspace-tab-btn[data-workspace-mode], .classes-workspace-tile-hitbox[data-workspace-mode]",
             );
             if (workspaceButton instanceof HTMLElement) {
+                if (!isTeacherView() && getIsTeacherPresent?.()) return;
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
@@ -358,6 +406,26 @@ export function bindClassroomInteractions({
                     },
                 );
                 if (!openResponse.ok) return;
+                await loadSelectedClassMeta();
+                refreshDom();
+                return;
+            }
+
+            if (event.target.closest(".classes-agenda-new-btn")) {
+                if (!isTeacherView() || !selectedClassId) return;
+                const editor = root.querySelector(
+                    ".classes-agenda-document-editor",
+                );
+                if (!(editor instanceof HTMLTextAreaElement)) return;
+                editor.value = "";
+                await apiFetch(
+                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/agenda`,
+                    {
+                        method: "PUT",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ document: "" }),
+                    },
+                );
                 await loadSelectedClassMeta();
                 refreshDom();
                 return;
@@ -692,6 +760,7 @@ export function bindClassroomInteractions({
             const isLeft = event.key === "ArrowLeft";
             const isRight = event.key === "ArrowRight";
             if (!isLeft && !isRight) return;
+            if (getIsTeacherPresent?.()) return;
             event.preventDefault();
             const currentOrder = getTileOrder();
             const activeMode = normalizeWorkspaceMode(

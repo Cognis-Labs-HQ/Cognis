@@ -1,5 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { getMaterialIcon } from "/static/adapters/study/classes/classroom-resource-actions.js";
+import { renderAgendaToolbar } from "/static/adapters/study/classes/classroom-agenda-toolbar.js";
 
 /**
  * @param {Set<string>} tiles
@@ -151,6 +152,7 @@ function renderAgendaDocumentPanel({
         .join("");
     return `
         <div class="classes-agenda-panel${compact ? " classes-agenda-panel--compact" : ""}">
+            ${isTeacherView ? renderAgendaToolbar() : ""}
             <textarea
                 class="classes-agenda-document-editor"
                 ${isTeacherView ? "" : "readonly"}
@@ -160,6 +162,7 @@ function renderAgendaDocumentPanel({
                 isTeacherView
                     ? `<div class="classes-agenda-document-actions">
                 <button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+                <button type="button" class="btn-animated classes-agenda-new-btn">${escapeHtml(i18n.t("module.study.classes.agenda_new"))}</button>
                 <select class="classes-agenda-snapshot-select"${hasSnapshots ? "" : " disabled"}>
                     ${
                         hasSnapshots
@@ -426,6 +429,7 @@ function renderSidebarMaterials({
         .join("");
     return `
         <div class="classes-sidebar-panel classes-sidebar-panel--materials">
+            <div class="classes-sidebar-section-label">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</div>
             ${
                 isTeacherView
                     ? `<button type="button" class="classes-icon-btn classes-material-add-btn">${escapeHtml(i18n.t("ui.reuse.add"))}</button>`

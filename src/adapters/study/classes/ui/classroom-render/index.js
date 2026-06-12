@@ -89,6 +89,7 @@ export function renderBlackboard({
     initializedTiles,
     tileLayout = "stacked",
     tileOrder = [],
+    isTeacherPresent = false,
 }) {
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
@@ -173,7 +174,7 @@ export function renderBlackboard({
     return `
         <div class="classes-blackboard${collapsed ? " classes-blackboard--collapsed" : ""}" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
-                <div class="classes-chalk-header classes-workspace-tabs">${renderWorkspaceTabs(
+                <div class="classes-chalk-header classes-workspace-tabs${isTeacherPresent ? " classes-teacher-locked" : ""}">${renderWorkspaceTabs(
                     {
                         i18n,
                         workspaceMode,
@@ -519,6 +520,7 @@ function renderClassroomView({
     initializedTiles,
     tileLayout = "stacked",
     tileOrder = [],
+    isTeacherPresent = false,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -557,6 +559,7 @@ function renderClassroomView({
                         initializedTiles,
                         tileLayout,
                         tileOrder,
+                        isTeacherPresent,
                     })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}

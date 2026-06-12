@@ -725,6 +725,7 @@
   <string name="module.study.classes.material_download">Download File</string>
   <string name="module.study.classes.teacher_materials">Teacher Materials</string>
   <string name="module.study.classes.no_saved_agendas">No Saved Agendas</string>
+  <string name="module.study.classes.agenda_new">New</string>
   <string name="module.study.classes.tile_view">Tile View</string>
   <string name="module.study.classes.slideshow_view">Slideshow View</string>
   <string name="ui.app.dashboard.element.student_classes.label">My Classes</string>

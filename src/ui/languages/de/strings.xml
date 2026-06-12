@@ -725,6 +725,7 @@
   <string name="module.study.classes.material_download">Datei herunterladen</string>
   <string name="module.study.classes.teacher_materials">Lehrermaterialien</string>
   <string name="module.study.classes.no_saved_agendas">Keine gespeicherten Agenden</string>
+  <string name="module.study.classes.agenda_new">Neu</string>
   <string name="module.study.classes.tile_view">Kachelansicht</string>
   <string name="module.study.classes.slideshow_view">Diashow-Ansicht</string>
   <string name="ui.app.dashboard.element.student_classes.label">Meine Klassen</string>

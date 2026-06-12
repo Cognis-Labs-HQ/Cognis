@@ -279,6 +279,13 @@ export async function mount(root, { signal } = {}) {
         ) {
             setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
+        const broadcastedLayout = snapshot?.classroom?.viewLayout;
+        if (
+            broadcastedLayout === "slideshow" ||
+            broadcastedLayout === "stacked"
+        ) {
+            tileLayout = broadcastedLayout;
+        }
         const boardFocus = normalizeBoardFocus(snapshot?.classroom?.boardFocus);
         if (workspaceMode !== "meeting" && !classroomWindows?.isMeetingOpen()) {
             if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
@@ -518,10 +525,29 @@ export async function mount(root, { signal } = {}) {
         } else if (snapshot.classroom) {
             snapshot.classroom.boardFocus = normalizedFocus;
         }
-        if (normalizedFocus === "chat") {
-            setWorkspaceMode("chat");
-        } else if (workspaceMode !== "agenda") {
-            setWorkspaceMode("agenda");
+    }
+
+    async function patchViewLayout(layout) {
+        const snapshot = selectedSnapshot();
+        if (!snapshot || !isTeacherView()) return;
+        const normalizedLayout =
+            layout === "slideshow" ? "slideshow" : "stacked";
+        const response = await apiFetch(
+            `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/layout`,
+            {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ viewLayout: normalizedLayout }),
+            },
+        );
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        const nextState = payload?.data;
+        if (nextState && snapshot.classroom) {
+            snapshot.classroom = {
+                ...(snapshot.classroom ?? {}),
+                ...nextState,
+            };
         }
     }
 
@@ -605,6 +631,16 @@ export async function mount(root, { signal } = {}) {
             initializedTiles,
             tileLayout,
             tileOrder,
+            isTeacherPresent: (() => {
+                if (isTeacherView()) return false;
+                const teacherAccountId = String(
+                    snapshot?.teacherAccountId ?? "",
+                ).trim();
+                return Boolean(
+                    teacherAccountId &&
+                    presenceByAccountId.get(teacherAccountId) === "online",
+                );
+            })(),
         });
     }
 
@@ -845,6 +881,9 @@ export async function mount(root, { signal } = {}) {
                                 layout === "slideshow"
                                     ? "slideshow"
                                     : "stacked";
+                            if (isTeacherView()) {
+                                void patchViewLayout(tileLayout);
+                            }
                         },
                         getTileOrder: () => tileOrder,
                         setTileOrder: (order) => {
@@ -853,6 +892,18 @@ export async function mount(root, { signal } = {}) {
                                 : tileOrder;
                         },
                         refreshWorkspaceTilesOnly,
+                        getIsTeacherPresent: () => {
+                            if (isTeacherView()) return false;
+                            const snap = selectedSnapshot();
+                            const teacherAccountId = String(
+                                snap?.teacherAccountId ?? "",
+                            ).trim();
+                            return Boolean(
+                                teacherAccountId &&
+                                presenceByAccountId.get(teacherAccountId) ===
+                                    "online",
+                            );
+                        },
                     });
                     root.addEventListener("error", handleProfileAvatarError, {
                         signal,
@@ -924,7 +975,8 @@ export async function mount(root, { signal } = {}) {
             if (!isTeacherView()) {
                 if (
                     activeMeetingId &&
-                    activeMeetingId !== previousActiveMeetingId
+                    activeMeetingId !== previousActiveMeetingId &&
+                    !selectedClassId
                 ) {
                     classroomWindows.notifyActiveMeeting(activeMeetingId);
                 }

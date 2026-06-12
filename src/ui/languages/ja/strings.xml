@@ -725,6 +725,7 @@
   <string name="module.study.classes.material_download">ファイルをダウンロード</string>
   <string name="module.study.classes.teacher_materials">教師用教材</string>
   <string name="module.study.classes.no_saved_agendas">保存されたアジェンダなし</string>
+  <string name="module.study.classes.agenda_new">新規</string>
   <string name="module.study.classes.tile_view">タイル表示</string>
   <string name="module.study.classes.slideshow_view">スライドショー表示</string>
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>

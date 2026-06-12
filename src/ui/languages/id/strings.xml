@@ -725,6 +725,7 @@
   <string name="module.study.classes.material_download">Unduh File</string>
   <string name="module.study.classes.teacher_materials">Materi Guru</string>
   <string name="module.study.classes.no_saved_agendas">Tidak Ada Agenda Tersimpan</string>
+  <string name="module.study.classes.agenda_new">Baru</string>
   <string name="module.study.classes.tile_view">Tampilan Ubin</string>
   <string name="module.study.classes.slideshow_view">Tampilan Slideshow</string>
   <string name="ui.app.dashboard.element.student_classes.label">Kelas Saya</string>

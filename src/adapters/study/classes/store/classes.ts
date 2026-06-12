@@ -117,6 +117,7 @@ export async function getClassroomState(
             "board_focus",
             "active_whiteboard_id",
             "active_material_key",
+            "view_layout",
             "updated_at",
         ],
         where: [{ column: "class_id", value: classId }],
@@ -130,6 +131,7 @@ export async function getClassroomState(
             boardFocus: "agenda",
             activeWhiteboardId: null,
             activeMaterialKey: null,
+            viewLayout: "stacked",
             updatedAt: new Date().toISOString(),
         };
     }
@@ -149,6 +151,10 @@ export async function getClassroomState(
             row.active_whiteboard_id,
         ),
         activeMaterialKey: normalizeActiveMaterialKey(row.active_material_key),
+        viewLayout:
+            String(row.view_layout ?? "stacked") === "slideshow"
+                ? "slideshow"
+                : "stacked",
         updatedAt: String(row.updated_at),
     };
 }
@@ -160,9 +166,10 @@ export async function updateClassroomStateForTeacher(
     options: {
         studentLimit?: number;
         seatAssignments?: Record<string, number>;
-        boardFocus?: "agenda" | "classroom" | "chat";
+        boardFocus?: "agenda" | "classroom" | "chat" | "whiteboard" | "notepad";
         activeWhiteboardId?: string | null;
         activeMaterialKey?: string | null;
+        viewLayout?: "stacked" | "slideshow";
     },
 ): Promise<ClassroomStateRow> {
     const classRow = await getClassById(db, classId);
@@ -228,6 +235,12 @@ export async function updateClassroomStateForTeacher(
         options.activeMaterialKey === undefined
             ? currentState.activeMaterialKey
             : normalizeActiveMaterialKey(options.activeMaterialKey);
+    const normalizedViewLayout =
+        options.viewLayout === undefined
+            ? currentState.viewLayout
+            : options.viewLayout === "slideshow"
+              ? "slideshow"
+              : "stacked";
     const updatedAt = new Date().toISOString();
     await db.executeCommand({
         option: "INSERT",
@@ -239,6 +252,7 @@ export async function updateClassroomStateForTeacher(
             board_focus: normalizedBoardFocus,
             active_whiteboard_id: normalizedActiveWhiteboardId,
             active_material_key: normalizedActiveMaterialKey,
+            view_layout: normalizedViewLayout,
             updated_at: updatedAt,
         },
         conflict: {
@@ -250,6 +264,7 @@ export async function updateClassroomStateForTeacher(
                 board_focus: normalizedBoardFocus,
                 active_whiteboard_id: normalizedActiveWhiteboardId,
                 active_material_key: normalizedActiveMaterialKey,
+                view_layout: normalizedViewLayout,
                 updated_at: updatedAt,
             },
         },
