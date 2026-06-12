@@ -14,6 +14,10 @@ function normalizeActiveMaterialKey(input: unknown): string | null {
     return normalizedKey || null;
 }
 
+function normalizeViewLayout(input: unknown): "stacked" | "slideshow" {
+    return input === "slideshow" ? "slideshow" : "stacked";
+}
+
 export async function getClassesForTeacher(
     db: DbExecutor,
     teacherAccountId: string,
@@ -151,10 +155,7 @@ export async function getClassroomState(
             row.active_whiteboard_id,
         ),
         activeMaterialKey: normalizeActiveMaterialKey(row.active_material_key),
-        viewLayout:
-            String(row.view_layout ?? "stacked") === "slideshow"
-                ? "slideshow"
-                : "stacked",
+        viewLayout: normalizeViewLayout(String(row.view_layout ?? "stacked")),
         updatedAt: String(row.updated_at),
     };
 }
@@ -237,8 +238,7 @@ export async function updateClassroomStateForTeacher(
             : normalizeActiveMaterialKey(options.activeMaterialKey);
     let normalizedViewLayout = currentState.viewLayout;
     if (options.viewLayout !== undefined) {
-        normalizedViewLayout =
-            options.viewLayout === "slideshow" ? "slideshow" : "stacked";
+        normalizedViewLayout = normalizeViewLayout(options.viewLayout);
     }
     const updatedAt = new Date().toISOString();
     await db.executeCommand({

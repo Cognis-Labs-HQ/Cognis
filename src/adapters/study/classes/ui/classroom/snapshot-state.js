@@ -31,10 +31,15 @@ export function createSnapshotStateHelpers({
         return key || null;
     }
 
+    function getSelectedViewLayout(snapshot = selectedSnapshot()) {
+        return snapshot?.classroom?.viewLayout;
+    }
+
     return {
         isTeacherView,
         computeIsTeacherPresent,
         getSelectedActiveWhiteboardId,
         getSelectedActiveMaterialKey,
+        getSelectedViewLayout,
     };
 }

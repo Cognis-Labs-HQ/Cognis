@@ -82,6 +82,21 @@ export function bindClassroomInteractions({
         return !isTeacherView() && getIsTeacherPresent?.();
     }
 
+    function getToolbarCursorPosition({
+        handler,
+        start,
+        selectedText,
+        insertion,
+    }) {
+        if (handler.template) {
+            return start + insertion.length;
+        }
+        if (handler.prefix) {
+            return start + handler.prefix.length + selectedText.length;
+        }
+        return start + handler.before.length + selectedText.length;
+    }
+
     root.addEventListener(
         "click",
         async (event) => {
@@ -115,11 +130,12 @@ export function bindClassroomInteractions({
                         insertion = handler.before + selected + handler.after;
                     }
                     editor.value = before + insertion + after;
-                    const cursorPos = handler.template
-                        ? start + insertion.length
-                        : handler.prefix
-                          ? start + handler.prefix.length + selected.length
-                          : start + handler.before.length + selected.length;
+                    const cursorPos = getToolbarCursorPosition({
+                        handler,
+                        start,
+                        selectedText: selected,
+                        insertion,
+                    });
                     editor.setSelectionRange(cursorPos, cursorPos);
                     editor.focus();
                     editor.dispatchEvent(new Event("input", { bubbles: true }));
@@ -939,7 +955,7 @@ export function bindClassroomInteractions({
             const isLeft = event.key === "ArrowLeft";
             const isRight = event.key === "ArrowRight";
             if (!isLeft && !isRight) return;
-            if (getIsTeacherPresent?.()) return;
+            if (shouldBlockStudentInteraction()) return;
             event.preventDefault();
             const currentOrder = getTileOrder();
             const activeMode = normalizeWorkspaceMode(

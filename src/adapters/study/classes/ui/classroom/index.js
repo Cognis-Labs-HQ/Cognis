@@ -145,6 +145,7 @@ export async function mount(root, { signal } = {}) {
         computeIsTeacherPresent,
         getSelectedActiveWhiteboardId,
         getSelectedActiveMaterialKey,
+        getSelectedViewLayout,
     } = createSnapshotStateHelpers({
         teacherAccount,
         getClassroomViewMode,
@@ -156,7 +157,7 @@ export async function mount(root, { signal } = {}) {
         if (teacherAccount && isTeacherView()) {
             return;
         }
-        tileLayout = normalizeTileLayout(snapshot?.classroom?.viewLayout);
+        tileLayout = normalizeTileLayout(getSelectedViewLayout(snapshot));
     }
 
     function applySnapshotPatch(classId, patch) {
