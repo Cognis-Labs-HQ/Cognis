@@ -240,7 +240,12 @@ export async function mount(root, { signal } = {}) {
         ) {
             tileLayout = broadcastedLayout;
         }
-        const boardFocus = normalizeBoardFocus(snapshot?.classroom?.boardFocus);
+        const rawBoardFocus = String(
+            snapshot?.classroom?.boardFocus ?? "",
+        ).trim();
+        const boardFocus = rawBoardFocus
+            ? normalizeBoardFocus(rawBoardFocus)
+            : null;
         if (workspaceMode !== "meeting" && !classroomWindows?.isMeetingOpen()) {
             if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
             if (boardFocus) setWorkspaceMode(boardFocus, { remember: false });
@@ -852,20 +857,21 @@ export async function mount(root, { signal } = {}) {
         signal,
         refresh: async () => {
             const previousActiveMeetingId = activeMeetingId;
+            const previousAgendaDocument = agendaDocument;
             const previousSelectedClassId = selectedClassId;
             await loadClassrooms();
             await loadSelectedClassMeta();
             const selectedClassChanged =
                 selectedClassId !== previousSelectedClassId;
+            const agendaChanged = agendaDocument !== previousAgendaDocument;
             if (!isTeacherView()) {
                 // activeMeetingId is loaded from loadSelectedClassMeta() for the
                 // currently selected class, so it can only be non-null when
                 // selectedClassId is also non-null. The !selectedClassId guard
                 // therefore prevents the popup notification when the student is
-                // already viewing the classroom (they will see the meeting tile
-                // directly). The notification path exists for external callers that
-                // may trigger this refresh from other contexts. — fall through to
-                // auto-join handling below (lines 891+).
+                // already viewing the classroom — they see the meeting tile
+                // directly. The notification path exists for external callers
+                // that may trigger this refresh from other contexts.
                 if (
                     activeMeetingId &&
                     activeMeetingId !== previousActiveMeetingId &&
@@ -921,7 +927,9 @@ export async function mount(root, { signal } = {}) {
                     !meetingAutoJoinBlocked
                 ) {
                     if (!classroomWindows.isMeetingOpen()) {
-                        await classroomWindows.tryAutoJoin(selectedClassId);
+                        if (activeMeetingId !== previousActiveMeetingId) {
+                            await classroomWindows.tryAutoJoin(selectedClassId);
+                        }
                         if (classroomWindows.isMeetingOpen()) {
                             setWorkspaceMode("meeting", { remember: false });
                             refreshDom();
@@ -931,7 +939,7 @@ export async function mount(root, { signal } = {}) {
                             if (workspaceMode !== previousMode) {
                                 refreshWorkspaceTilesOnly();
                             }
-                            refreshDynamicDom();
+                            agendaChanged ? refreshDom() : refreshDynamicDom();
                         }
                     } else {
                         refreshDynamicDom();
@@ -942,7 +950,7 @@ export async function mount(root, { signal } = {}) {
                     if (workspaceMode !== previousMode) {
                         refreshWorkspaceTilesOnly();
                     }
-                    refreshDynamicDom();
+                    agendaChanged ? refreshDom() : refreshDynamicDom();
                 }
             }
         },
