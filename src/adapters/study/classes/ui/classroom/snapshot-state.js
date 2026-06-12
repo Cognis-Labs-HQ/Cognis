@@ -15,7 +15,7 @@ export function createSnapshotStateHelpers({
         ).trim();
         return Boolean(
             teacherAccountId &&
-                presenceByAccountId.get(teacherAccountId) === "online",
+            presenceByAccountId.get(teacherAccountId) === "online",
         );
     }
 
