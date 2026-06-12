@@ -378,6 +378,8 @@
   <string name="ui.reuse.reset_layout">Setel ulang tata letak</string>
   <string name="ui.reuse.close">Tutup</string>
   <string name="ui.reuse.cancel">Batal</string>
+  <string name="ui.reuse.previous">Sebelumnya</string>
+  <string name="ui.reuse.next">Berikutnya</string>
   <string name="ui.reuse.return_to_dashboard">Kembali ke Dasbor</string>
 
   <string name="ui.app.profile.page_subtitle">Profil dan aktivitas sosial Anda.</string>
@@ -721,6 +723,10 @@
   <string name="module.study.classes.materials_file_remove_failed">Gagal menghapus file.</string>
   <string name="module.study.classes.material_viewer_back">Kembali ke Materi</string>
   <string name="module.study.classes.material_download">Unduh File</string>
+  <string name="module.study.classes.teacher_materials">Materi Guru</string>
+  <string name="module.study.classes.no_saved_agendas">Tidak Ada Agenda Tersimpan</string>
+  <string name="module.study.classes.tile_view">Tampilan Ubin</string>
+  <string name="module.study.classes.slideshow_view">Tampilan Slideshow</string>
   <string name="ui.app.dashboard.element.student_classes.label">Kelas Saya</string>
   <string name="ui.app.dashboard.element.student_classes.cta">Lihat dan kelola kelas yang Anda ikuti.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Ke Kelas Saya</string>

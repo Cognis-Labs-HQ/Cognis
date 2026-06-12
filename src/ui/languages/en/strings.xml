@@ -378,6 +378,8 @@
   <string name="ui.reuse.reset_layout">Reset Layout</string>
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
+  <string name="ui.reuse.previous">Previous</string>
+  <string name="ui.reuse.next">Next</string>
   <string name="ui.reuse.return_to_dashboard">Return to Dashboard</string>
 
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
@@ -721,6 +723,10 @@
   <string name="module.study.classes.materials_file_remove_failed">Failed to remove file.</string>
   <string name="module.study.classes.material_viewer_back">Back to Materials</string>
   <string name="module.study.classes.material_download">Download File</string>
+  <string name="module.study.classes.teacher_materials">Teacher Materials</string>
+  <string name="module.study.classes.no_saved_agendas">No Saved Agendas</string>
+  <string name="module.study.classes.tile_view">Tile View</string>
+  <string name="module.study.classes.slideshow_view">Slideshow View</string>
   <string name="ui.app.dashboard.element.student_classes.label">My Classes</string>
   <string name="ui.app.dashboard.element.student_classes.cta">View and manage the classes you are enrolled in.</string>
   <string name="ui.app.dashboard.element.student_classes.go">Go to My Classes</string>

@@ -378,6 +378,8 @@
   <string name="ui.reuse.reset_layout">レイアウトをリセット</string>
   <string name="ui.reuse.close">閉じる</string>
   <string name="ui.reuse.cancel">キャンセル</string>
+  <string name="ui.reuse.previous">前へ</string>
+  <string name="ui.reuse.next">次へ</string>
   <string name="ui.reuse.return_to_dashboard">ダッシュボードに戻る</string>
 
   <string name="ui.app.profile.page_subtitle">あなたのプロフィールとソーシャル活動。</string>
@@ -721,6 +723,10 @@
   <string name="module.study.classes.materials_file_remove_failed">ファイルの削除に失敗しました。</string>
   <string name="module.study.classes.material_viewer_back">素材に戻る</string>
   <string name="module.study.classes.material_download">ファイルをダウンロード</string>
+  <string name="module.study.classes.teacher_materials">教師用教材</string>
+  <string name="module.study.classes.no_saved_agendas">保存されたアジェンダなし</string>
+  <string name="module.study.classes.tile_view">タイル表示</string>
+  <string name="module.study.classes.slideshow_view">スライドショー表示</string>
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>
   <string name="ui.app.dashboard.element.student_classes.cta">参加しているクラスを確認・管理できます。</string>
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>

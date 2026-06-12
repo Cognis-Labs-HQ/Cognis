@@ -326,3 +326,43 @@ wurden entfernt.
 
 Bisher zeigte die Whiteboard-Kachel für alle einen einfachen Hinweistext. Lehrer sehen
 nun eine Schaltfläche „Neues Whiteboard", die den vorhandenen Auto-Erstellungsfluss auslöst.
+
+## Hochgeladene Dateien erscheinen sofort in der Materialliste
+
+Über das Popup „Lehrermaterialien" hochgeladene Dateien werden automatisch vorausgewählt und sind ohne manuelles Aktualisieren in der Liste sichtbar.
+
+## Upload-Popup in „Lehrermaterialien" umbenannt
+
+Der Titel des Upload-Popups lautete „Kursmaterialien". Er heißt jetzt „Lehrermaterialien", um ihn klar von schülerseitigen Inhalten zu unterscheiden.
+
+## Upload-Schaltfläche durch Symbol ersetzt
+
+Der Text „Datei hochladen" wurde durch ein Upload-Symbol ersetzt.
+
+## Agendaauswahl zeigt Platzhalter bei leerer Liste
+
+Das Dropdown für gespeicherte Agendas zeigt nun „Keine gespeicherten Agendas", wenn keine Snapshots vorhanden sind, und deaktiviert die Öffnen-Schaltfläche. Bei vorhandenen Snapshots ist der erste vorausgewählt.
+
+## Klassenrauminhalt beim Betreten für beide Rollen geladen
+
+Sowohl Lehrer als auch Schüler sehen die Klassenraumansicht jetzt sofort beim Betreten der Klasse.
+
+## Kachelwechsel setzt aktives Meeting nicht mehr zurück
+
+Das Öffnen einer neuen Arbeitsflächen-Kachel während eines laufenden Meetings lädt das Meeting nicht neu. Die Kachelfläche wird ohne Berührung des Meeting-iFrames aktualisiert.
+
+## Lehrer-zu-Schüler-Synchronisierung für alle Ansichten wiederhergestellt
+
+Die Synchronisierung zwischen der aktiven Arbeitsflächenansicht des Lehrers und der jedes Schülers funktioniert jetzt für alle Ansichten (Klassenraum, Agenda, Chat, Whiteboard, Notizblock), nicht nur für Meetings.
+
+## Gestapeltes Kachellayout mit Tiefenfächer
+
+Das standardmäßige Kachellayout zeigt Kacheln als Tiefenfächer. Ein Klick auf eine hintere Kachel bringt sie nach vorne.
+
+## Diashow-Kachellayout
+
+Ein neues Diashow-Layout zeigt jeweils eine Kachel mit Vorwärts- und Rückwärts-Schaltflächen. Die Pfeiltasten navigieren ebenfalls zwischen den Kacheln.
+
+## Schaltfläche zum Wechsel zwischen Kachelansicht und Diashow
+
+Eine Umschaltschaltfläche in der Registerkartenleiste wechselt zwischen dem gestapelten und dem Diashow-Layout. Die Beschriftung zeigt das Layout an, zu dem ein Klick führt.

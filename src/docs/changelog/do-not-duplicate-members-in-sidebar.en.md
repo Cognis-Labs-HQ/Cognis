@@ -325,3 +325,43 @@ its CSS have been removed.
 Previously the whiteboard tile showed a plain "No whiteboards yet." message for
 everyone. Teachers now see a "New Whiteboard" button which invokes the existing
 auto-create flow, matching the open/save pattern already present on the Agenda tile.
+
+## Uploaded files appear in the materials list immediately
+
+Files uploaded through the Teacher Materials popup are automatically pre-selected and visible in the list without requiring a manual refresh.
+
+## Upload popup renamed to "Teacher Materials"
+
+The upload popup title was "Class Materials". It is now "Teacher Materials" to clearly distinguish it from student-facing content.
+
+## Upload button replaced with an icon
+
+The "Upload File" text label in the Teacher Materials popup has been replaced with a dedicated upload icon for a cleaner interface.
+
+## Agenda dropdown shows placeholder when empty
+
+The saved-agenda dropdown now shows "No saved agendas" when no snapshots exist and disables the Open button. When snapshots are available, the first one is pre-selected.
+
+## Classroom content loads on entry for both roles
+
+Both teachers and students now see the Classroom view loaded immediately when entering the class, not only students.
+
+## Switching tiles no longer resets an active meeting
+
+Opening a new workspace tile while a meeting is in progress no longer reloads or resets the meeting. The tile area is updated surgically without touching the meeting iframe.
+
+## Teacher-to-student workspace sync restored for all views
+
+Sync between the teacher's active workspace view and each student's view now works across all views (Classroom, Agenda, Chat, Whiteboard, Notepad), not just Meetings.
+
+## Stacked tile layout with depth fan
+
+The default tile layout displays tiles as a depth-fan stack. Clicking a back tile swaps it to the front.
+
+## Slideshow tile layout
+
+A new slideshow layout shows one tile at a time with Previous and Next arrow buttons. The left and right arrow keys also navigate between tiles.
+
+## Tile View / Slideshow View toggle button
+
+A toggle button in the workspace tab bar switches between stacked and slideshow layouts. The button label reflects the layout that clicking it will switch to.

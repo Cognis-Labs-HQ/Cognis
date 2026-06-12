@@ -1,8 +1,9 @@
 .classes-workspace-tabs {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 0.4rem;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .classes-workspace-tab-btn {
@@ -597,4 +598,79 @@
     color: rgba(255, 255, 255, 0.9);
     overflow: visible;
     overflow-y: visible;
+}
+
+.classes-tile-layout-toggle-btn {
+    margin-left: auto;
+    padding: 0.25rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.classes-tile-layout-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.classes-workspace-tiles--stacked .classes-workspace-tile {
+    margin-left: calc(var(--tile-depth, 0) * 2rem);
+    transition: margin-left 0.2s ease;
+}
+
+.classes-workspace-tiles--stacked .classes-workspace-tile-hitbox {
+    cursor: pointer;
+}
+
+.classes-workspace-tiles--slideshow {
+    position: relative;
+}
+
+.classes-workspace-tiles--slideshow .classes-workspace-tile {
+    display: none;
+}
+
+.classes-workspace-tiles--slideshow .classes-workspace-tile.active {
+    display: flex;
+}
+
+.classes-workspace-panel--tiled {
+    position: relative;
+}
+
+.classes-tile-nav-prev,
+.classes-tile-nav-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.45);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.classes-tile-nav-prev {
+    left: 0.4rem;
+}
+
+.classes-tile-nav-next {
+    right: 0.4rem;
+}
+
+.classes-tile-nav-prev:hover,
+.classes-tile-nav-next:hover {
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 1);
 }

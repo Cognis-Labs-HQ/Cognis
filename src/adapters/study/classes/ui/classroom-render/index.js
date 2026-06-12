@@ -87,6 +87,8 @@ export function renderBlackboard({
     isMeetingOpen,
     blackboardExpanded,
     initializedTiles,
+    tileLayout = "stacked",
+    tileOrder = [],
 }) {
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
@@ -182,6 +184,7 @@ export function renderBlackboard({
                             isTeacherView ||
                             Boolean(activeWhiteboardId) ||
                             Boolean(activeWhiteboard?.embedUrl),
+                        tileLayout,
                     },
                 )}</div>
                 ${
@@ -211,6 +214,8 @@ export function renderBlackboard({
                             activeWhiteboard,
                             initializedTiles,
                             isMeetingOpen,
+                            tileLayout,
+                            tileOrder,
                         })}
                     </div>
                 </div>

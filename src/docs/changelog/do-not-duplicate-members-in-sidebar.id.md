@@ -317,3 +317,43 @@ sudah disediakan oleh `classes-workspace-tile-hitbox`. Elemen dan CSS-nya telah 
 
 Sebelumnya tile whiteboard menampilkan teks sederhana untuk semua orang. Guru kini
 melihat tombol "Whiteboard Baru" yang memanggil alur pembuatan otomatis yang sudah ada.
+
+## File yang diunggah langsung muncul di daftar materi
+
+File yang diunggah melalui popup Materi Guru langsung terlihat di daftar tanpa perlu memuat ulang halaman.
+
+## Popup unggah diubah namanya menjadi "Materi Guru"
+
+Judul popup unggah sebelumnya adalah "Materi Kelas". Sekarang menjadi "Materi Guru" untuk membedakannya dari konten milik siswa.
+
+## Tombol unggah diganti dengan ikon
+
+Label teks "Unggah File" di popup Materi Guru diganti dengan ikon unggah.
+
+## Dropdown agenda menampilkan teks pengganti saat kosong
+
+Dropdown agenda tersimpan kini menampilkan "Tidak ada agenda tersimpan" saat tidak ada snapshot dan menonaktifkan tombol Buka. Saat ada snapshot, yang pertama dipilih secara otomatis.
+
+## Konten kelas dimuat saat masuk untuk semua peran
+
+Baik guru maupun siswa kini melihat tampilan Kelas dimuat segera saat masuk ke kelas.
+
+## Berpindah tile tidak lagi mereset rapat yang sedang berlangsung
+
+Membuka tile ruang kerja baru saat rapat sedang berlangsung tidak lagi memuat ulang rapat. Area tile diperbarui tanpa menyentuh iframe rapat.
+
+## Sinkronisasi ruang kerja guru ke siswa dipulihkan untuk semua tampilan
+
+Sinkronisasi antara tampilan ruang kerja aktif guru dan siswa kini berfungsi di semua tampilan (Kelas, Agenda, Obrolan, Whiteboard, Catatan), bukan hanya Rapat.
+
+## Tata letak tile bertumpuk dengan kipas kedalaman
+
+Tata letak tile default menampilkan tile sebagai tumpukan kipas kedalaman. Mengklik tile di belakang memindahkannya ke depan.
+
+## Tata letak tile tayangan slide
+
+Tata letak tayangan slide baru menampilkan satu tile sekaligus dengan tombol Sebelumnya dan Berikutnya. Tombol panah kiri dan kanan juga menavigasi antar tile.
+
+## Tombol beralih Tampilan Tile / Tampilan Tayangan Slide
+
+Tombol beralih di bilah tab ruang kerja berpindah antara tata letak bertumpuk dan tayangan slide. Label tombol mencerminkan tata letak yang akan aktif setelah diklik.

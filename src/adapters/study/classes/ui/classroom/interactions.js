@@ -62,6 +62,11 @@ export function bindClassroomInteractions({
     setBoardEntity,
     getBlackboardExpanded,
     setBlackboardExpanded,
+    getTileLayout,
+    setTileLayout,
+    getTileOrder,
+    setTileOrder,
+    refreshWorkspaceTilesOnly,
 }) {
     if (getInteractionsBound()) {
         return;
@@ -102,6 +107,48 @@ export function bindClassroomInteractions({
                 return;
             }
 
+            const tileLayoutToggle = event.target.closest(
+                ".classes-tile-layout-toggle-btn",
+            );
+            if (tileLayoutToggle instanceof HTMLElement) {
+                const currentLayout = getTileLayout();
+                setTileLayout(
+                    currentLayout === "stacked" ? "slideshow" : "stacked",
+                );
+                refreshDom();
+                return;
+            }
+
+            const slideshowNavButton = event.target.closest(
+                ".classes-tile-nav-prev, .classes-tile-nav-next",
+            );
+            if (slideshowNavButton instanceof HTMLElement) {
+                const isPrev = slideshowNavButton.classList.contains(
+                    "classes-tile-nav-prev",
+                );
+                const currentOrder = getTileOrder();
+                const currentMode = normalizeWorkspaceMode(
+                    root.querySelector(".classes-workspace-tiles")?.dataset
+                        .activeWorkspaceMode ?? "agenda",
+                );
+                const currentIndex = currentOrder.indexOf(currentMode);
+                const nextIndex = isPrev
+                    ? (currentIndex - 1 + currentOrder.length) %
+                      currentOrder.length
+                    : (currentIndex + 1) % currentOrder.length;
+                const nextMode = normalizeWorkspaceMode(
+                    currentOrder[nextIndex] ?? "agenda",
+                );
+                setWorkspaceMode(nextMode);
+                setBlackboardExpanded(true);
+                if (classroomWindows?.isMeetingOpen()) {
+                    refreshWorkspaceTilesOnly();
+                } else {
+                    refreshDom();
+                }
+                return;
+            }
+
             const workspaceButton = event.target.closest(
                 ".classes-workspace-tab-btn[data-workspace-mode], .classes-workspace-tile-hitbox[data-workspace-mode]",
             );
@@ -109,13 +156,35 @@ export function bindClassroomInteractions({
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
+                const tileHitbox = event.target.closest(
+                    ".classes-workspace-tile-hitbox[data-workspace-mode]",
+                );
+                if (
+                    tileHitbox instanceof HTMLElement &&
+                    getTileLayout() === "stacked"
+                ) {
+                    const currentOrder = getTileOrder();
+                    const clickedMode = normalizeWorkspaceMode(
+                        tileHitbox.dataset.workspaceMode,
+                    );
+                    const clickedIndex = currentOrder.indexOf(clickedMode);
+                    const lastIndex = currentOrder.length - 1;
+                    if (clickedIndex >= 0 && clickedIndex !== lastIndex) {
+                        const newOrder = [...currentOrder];
+                        [newOrder[clickedIndex], newOrder[lastIndex]] = [
+                            newOrder[lastIndex],
+                            newOrder[clickedIndex],
+                        ];
+                        setTileOrder(newOrder);
+                    }
+                }
                 if (nextWorkspaceMode === "meeting") {
                     if (classroomWindows?.isMeetingOpen()) {
                         setWorkspaceMode("meeting", {
                             remember: false,
                         });
                         setBlackboardExpanded(true);
-                        refreshDom();
+                        refreshWorkspaceTilesOnly();
                         return;
                     }
                     if (!snapshot) {
@@ -148,10 +217,17 @@ export function bindClassroomInteractions({
                     ) {
                         setActiveWhiteboard(null);
                     }
+                    if (isTeacherView()) {
+                        await updateBoardFocus(nextWorkspaceMode);
+                    }
                     setWorkspaceMode(nextWorkspaceMode);
                 }
                 setBlackboardExpanded(true);
-                refreshDom();
+                if (classroomWindows?.isMeetingOpen()) {
+                    refreshWorkspaceTilesOnly();
+                } else {
+                    refreshDom();
+                }
                 return;
             }
 
@@ -589,6 +665,45 @@ export function bindClassroomInteractions({
                     await loadSelectedClassMeta();
                     refreshDom();
                 }, 450);
+            }
+        },
+        { signal },
+    );
+    window.addEventListener(
+        "keydown",
+        (event) => {
+            if (getTileLayout() !== "slideshow") return;
+            const tilesContainer = root.querySelector(
+                ".classes-workspace-tiles",
+            );
+            if (!(tilesContainer instanceof HTMLElement)) return;
+            if (
+                event.target instanceof HTMLInputElement ||
+                event.target instanceof HTMLTextAreaElement ||
+                event.target instanceof HTMLSelectElement
+            ) {
+                return;
+            }
+            const isLeft = event.key === "ArrowLeft";
+            const isRight = event.key === "ArrowRight";
+            if (!isLeft && !isRight) return;
+            event.preventDefault();
+            const currentOrder = getTileOrder();
+            const activeMode = normalizeWorkspaceMode(
+                tilesContainer.dataset.activeWorkspaceMode ?? "agenda",
+            );
+            const currentIndex = currentOrder.indexOf(activeMode);
+            const nextIndex = isLeft
+                ? (currentIndex - 1 + currentOrder.length) % currentOrder.length
+                : (currentIndex + 1) % currentOrder.length;
+            const nextMode = normalizeWorkspaceMode(
+                currentOrder[nextIndex] ?? "agenda",
+            );
+            setWorkspaceMode(nextMode);
+            if (getClassroomWindows()?.isMeetingOpen()) {
+                refreshWorkspaceTilesOnly();
+            } else {
+                refreshDom();
             }
         },
         { signal },

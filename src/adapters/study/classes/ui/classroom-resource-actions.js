@@ -50,7 +50,12 @@ export function getMaterialIcon(extension) {
     return "&#128196;";
 }
 
-function buildLibraryFileMarkup(files, i18n, escapeHtml) {
+function buildLibraryFileMarkup(
+    files,
+    i18n,
+    escapeHtml,
+    autoSelectedKeys = new Set(),
+) {
     if (!files.length) {
         return `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</p>`;
     }
@@ -60,9 +65,10 @@ function buildLibraryFileMarkup(files, i18n, escapeHtml) {
                 const key = String(file?.key ?? "").trim();
                 const name = String(file?.name ?? "").trim();
                 if (!key || !name) return "";
+                const checked = autoSelectedKeys.has(key) ? " checked" : "";
                 return `<li class="classes-file-item">
                     <label class="classes-file-name">
-                        <input type="checkbox" class="classes-library-select" value="${escapeHtml(key)}" />
+                        <input type="checkbox" class="classes-library-select" value="${escapeHtml(key)}"${checked} />
                         ${escapeHtml(name)}
                     </label>
                     <div class="classes-file-actions">
@@ -152,6 +158,7 @@ export async function handleResourceActions(
             return Array.isArray(payload?.data) ? payload.data : [];
         };
         const uploadLibraryFiles = async (files) => {
+            const uploadedKeys = [];
             for (const file of files) {
                 const extensionStart = String(file.name ?? "").lastIndexOf(".");
                 const ext =
@@ -165,26 +172,31 @@ export async function handleResourceActions(
                     continue;
                 }
                 const key = `class-materials/${encodeURIComponent(snapshot.teacherAccountId ?? "")}/${crypto.randomUUID()}${ext}`;
-                await apiFetch(`/api/v1/files/${key}`, {
+                const response = await apiFetch(`/api/v1/files/${key}`, {
                     method: "PUT",
                     headers: {
                         "content-type": file.type || "application/octet-stream",
                     },
                     body: await file.arrayBuffer(),
                 }).catch(() => null);
+                if (response?.ok) {
+                    uploadedKeys.push(key);
+                }
             }
+            return uploadedKeys;
         };
         let libraryFiles = await listLibrary();
         let selectedKeys = [];
+        const autoSelectedKeys = new Set();
         const action = await openPopup({
-            title: i18n.t("module.study.classes.class_materials"),
+            title: i18n.t("module.study.classes.teacher_materials"),
             body: `
                 <div class="stack">
                     <label class="classes-materials-upload-label">
-                        ${escapeHtml(i18n.t("module.study.classes.materials_upload"))}
+                        &#x1F4E4;
                         <input type="file" class="classes-library-upload-input" style="display:none" multiple>
                     </label>
-                    <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml)}</div>
+                    <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, autoSelectedKeys)}</div>
                 </div>
             `,
             actions: [
@@ -208,7 +220,12 @@ export async function handleResourceActions(
                         uploadInput instanceof HTMLInputElement &&
                         uploadInput.files?.length
                     ) {
-                        await uploadLibraryFiles(Array.from(uploadInput.files));
+                        const uploadedKeys = await uploadLibraryFiles(
+                            Array.from(uploadInput.files),
+                        );
+                        for (const key of uploadedKeys) {
+                            autoSelectedKeys.add(key);
+                        }
                         libraryFiles = await listLibrary();
                         const listWrap = overlay.querySelector(
                             ".classes-library-file-list",
@@ -218,6 +235,7 @@ export async function handleResourceActions(
                                 libraryFiles,
                                 i18n,
                                 escapeHtml,
+                                autoSelectedKeys,
                             );
                         }
                         uploadInput.value = "";
@@ -249,6 +267,7 @@ export async function handleResourceActions(
                                 libraryFiles,
                                 i18n,
                                 escapeHtml,
+                                autoSelectedKeys,
                             );
                         }
                         return;
@@ -269,6 +288,7 @@ export async function handleResourceActions(
                                 body: JSON.stringify({ key }),
                             },
                         ).catch(() => null);
+                        autoSelectedKeys.delete(key);
                         libraryFiles = await listLibrary();
                         const listWrap = overlay.querySelector(
                             ".classes-library-file-list",
@@ -278,6 +298,7 @@ export async function handleResourceActions(
                                 libraryFiles,
                                 i18n,
                                 escapeHtml,
+                                autoSelectedKeys,
                             );
                         }
                     }
@@ -285,9 +306,11 @@ export async function handleResourceActions(
             },
             onAction: (actionId, overlay) => {
                 if (actionId !== "add") return true;
-                selectedKeys = Array.from(
+                const checkedKeys = Array.from(
                     overlay.querySelectorAll(".classes-library-select:checked"),
                 ).map((checkbox) => String(checkbox.value ?? "").trim());
+                const merged = new Set([...autoSelectedKeys, ...checkedKeys]);
+                selectedKeys = [...merged].filter(Boolean);
                 return true;
             },
         });

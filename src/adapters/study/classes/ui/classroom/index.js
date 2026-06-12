@@ -29,7 +29,10 @@ import { openClassSettingsPopup } from "/static/adapters/study/classes/classroom
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
 import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
 import { createClassroomWindows } from "/static/adapters/study/classes/classroom-windows.js";
-import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
+import {
+    createDynamicDomRefresher,
+    createWorkspaceTileRefresher,
+} from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
 import { createClassroomNotepad } from "/static/adapters/study/notepad/classroom-notepad.js";
@@ -156,6 +159,10 @@ export async function mount(root, { signal } = {}) {
     let blackboardExpanded = false;
     /** Tracks which tiles have been initialized by user action or system auto-open. */
     let initializedTiles = new Set();
+    /** "stacked" (depth fan) or "slideshow" (single tile + arrows). */
+    let tileLayout = "stacked";
+    /** Ordered tile modes; last element is the front/active tile. */
+    let tileOrder = ["agenda"];
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -245,8 +252,14 @@ export async function mount(root, { signal } = {}) {
         workspaceMode = normalizedMode;
         if (normalizedMode === "whiteboard") {
             initializedTiles.add("whiteboard");
+            if (!tileOrder.includes("whiteboard")) {
+                tileOrder = [...tileOrder, "whiteboard"];
+            }
         } else if (normalizedMode === "meeting") {
             initializedTiles.add("meeting");
+            if (!tileOrder.includes("meeting")) {
+                tileOrder = [...tileOrder, "meeting"];
+            }
         }
         if (normalizedMode !== "meeting" && remember) {
             lastNonMeetingWorkspaceMode = normalizedMode;
@@ -267,12 +280,9 @@ export async function mount(root, { signal } = {}) {
             setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
         const boardFocus = normalizeBoardFocus(snapshot?.classroom?.boardFocus);
-        if (
-            boardFocus === "chat" &&
-            workspaceMode !== "meeting" &&
-            !classroomWindows?.isMeetingOpen()
-        ) {
-            setWorkspaceMode("chat", { remember: false });
+        if (workspaceMode !== "meeting" && !classroomWindows?.isMeetingOpen()) {
+            if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
+            if (boardFocus) setWorkspaceMode(boardFocus, { remember: false });
         }
     }
 
@@ -593,6 +603,8 @@ export async function mount(root, { signal } = {}) {
             isMeetingOpen: classroomWindows?.isMeetingOpen() ?? false,
             blackboardExpanded,
             initializedTiles,
+            tileLayout,
+            tileOrder,
         });
     }
 
@@ -630,6 +642,15 @@ export async function mount(root, { signal } = {}) {
         getSelectedSeatNumber: () => selectedSeatNumber,
         i18n,
         isTeacherView,
+    });
+
+    const refreshWorkspaceTilesOnly = createWorkspaceTileRefresher({
+        root,
+        getWorkspaceMode: () => workspaceMode,
+        getInitializedTiles: () => initializedTiles,
+        getTileOrder: () => tileOrder,
+        i18n,
+        fallbackRefreshDom: refreshDom,
     });
 
     async function refreshContent() {
@@ -691,6 +712,7 @@ export async function mount(root, { signal } = {}) {
             selectedSeatNumber = null;
             activeWhiteboard = null;
             initializedTiles = new Set();
+            tileOrder = ["agenda"];
             if (
                 previousClassId &&
                 previousClassId !== classId &&
@@ -814,6 +836,20 @@ export async function mount(root, { signal } = {}) {
                         setBlackboardExpanded: (value) => {
                             blackboardExpanded = Boolean(value);
                         },
+                        getTileLayout: () => tileLayout,
+                        setTileLayout: (layout) => {
+                            tileLayout =
+                                layout === "slideshow"
+                                    ? "slideshow"
+                                    : "stacked";
+                        },
+                        getTileOrder: () => tileOrder,
+                        setTileOrder: (order) => {
+                            tileOrder = Array.isArray(order)
+                                ? order
+                                : tileOrder;
+                        },
+                        refreshWorkspaceTilesOnly,
                     });
                     root.addEventListener("error", handleProfileAvatarError, {
                         signal,
@@ -875,7 +911,6 @@ export async function mount(root, { signal } = {}) {
     classroomWindows.reattach();
     startClassroomRealtimeRefresh({
         signal,
-        shouldRefresh: () => !isTeacherView(),
         refresh: async () => {
             const previousActiveMeetingId = activeMeetingId;
             const previousSelectedClassId = selectedClassId;
@@ -883,11 +918,13 @@ export async function mount(root, { signal } = {}) {
             await loadSelectedClassMeta();
             const selectedClassChanged =
                 selectedClassId !== previousSelectedClassId;
-            if (
-                activeMeetingId &&
-                activeMeetingId !== previousActiveMeetingId
-            ) {
-                classroomWindows.notifyActiveMeeting(activeMeetingId);
+            if (!isTeacherView()) {
+                if (
+                    activeMeetingId &&
+                    activeMeetingId !== previousActiveMeetingId
+                ) {
+                    classroomWindows.notifyActiveMeeting(activeMeetingId);
+                }
             }
             refreshSnapshotPresence();
             syncStudentWorkspaceAccess();
@@ -906,49 +943,45 @@ export async function mount(root, { signal } = {}) {
                 composer.refreshFooter();
                 refreshSubNavigation();
             }
-            // Teacher ended the meeting; close the overlay and notify the student.
-            const teacherJustLeft = Boolean(
-                previousActiveMeetingId && !activeMeetingId,
-            );
-            if (teacherJustLeft && classroomWindows?.isMeetingOpen()) {
-                showToast(
-                    i18n.t("module.study.classes.meeting_teacher_ended"),
-                    { variant: "info" },
+            if (!isTeacherView()) {
+                // Teacher ended the meeting; close the overlay and notify the student.
+                const teacherJustLeft = Boolean(
+                    previousActiveMeetingId && !activeMeetingId,
                 );
-                classroomWindows.closeMeeting();
-                // onMeetingVisibilityChange fires synchronously and handles
-                // setWorkspaceMode and refreshDom for the close transition.
-                return;
-            }
-            const meetingAutoJoinBlocked = Boolean(
-                activeMeetingId &&
-                classroomWindows?.isMeetingDismissed?.(activeMeetingId),
-            );
-            if (
-                selectedClassId &&
-                classroomWindows &&
-                activeMeetingId &&
-                !meetingAutoJoinBlocked
-            ) {
-                if (!classroomWindows.isMeetingOpen()) {
-                    await classroomWindows.tryAutoJoin(selectedClassId);
-                    if (classroomWindows.isMeetingOpen()) {
-                        setWorkspaceMode("meeting", { remember: false });
-                        refreshDom();
+                if (teacherJustLeft && classroomWindows?.isMeetingOpen()) {
+                    showToast(
+                        i18n.t("module.study.classes.meeting_teacher_ended"),
+                        { variant: "info" },
+                    );
+                    classroomWindows.closeMeeting();
+                    // onMeetingVisibilityChange fires synchronously and handles
+                    // setWorkspaceMode and refreshDom for the close transition.
+                    return;
+                }
+                const meetingAutoJoinBlocked = Boolean(
+                    activeMeetingId &&
+                    classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+                );
+                if (
+                    selectedClassId &&
+                    classroomWindows &&
+                    activeMeetingId &&
+                    !meetingAutoJoinBlocked
+                ) {
+                    if (!classroomWindows.isMeetingOpen()) {
+                        await classroomWindows.tryAutoJoin(selectedClassId);
+                        if (classroomWindows.isMeetingOpen()) {
+                            setWorkspaceMode("meeting", { remember: false });
+                            refreshDom();
+                        } else {
+                            syncStudentWorkspaceAccess();
+                            refreshDynamicDom();
+                        }
                     } else {
-                        syncStudentWorkspaceAccess();
                         refreshDynamicDom();
                     }
                 } else {
-                    refreshDynamicDom();
-                }
-            } else {
-                syncStudentWorkspaceAccess();
-                if (classroomWindows?.isMeetingOpen()) {
-                    // Meeting is open but there is no active meeting for this
-                    // class; avoid disrupting the overlay with a full redraw.
-                    refreshDynamicDom();
-                } else {
+                    syncStudentWorkspaceAccess();
                     refreshDynamicDom();
                 }
             }

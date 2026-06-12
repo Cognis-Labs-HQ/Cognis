@@ -4,5 +4,7 @@ export function normalizeBoardFocus(input) {
         .toLowerCase();
     if (normalized === "classroom") return "classroom";
     if (normalized === "chat") return "chat";
+    if (normalized === "whiteboard") return "whiteboard";
+    if (normalized === "notepad") return "notepad";
     return "agenda";
 }

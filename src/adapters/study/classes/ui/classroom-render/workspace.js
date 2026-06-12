@@ -50,7 +50,9 @@ export function renderWorkspaceTabs({
     hasActiveMeeting,
     canAccessWhiteboard,
     isTeacherView,
+    tileLayout = "stacked",
 }) {
+    const isTiledMode = workspaceMode !== "chat" && workspaceMode !== "notepad";
     const tabs = [
         {
             mode: "agenda",
@@ -68,7 +70,7 @@ export function renderWorkspaceTabs({
             disabled: !isTeacherView && !isMeetingOpen && !hasActiveMeeting,
         },
     ];
-    return tabs
+    const tabButtons = tabs
         .map(
             (tab) => `<button
                     type="button"
@@ -80,6 +82,17 @@ export function renderWorkspaceTabs({
                 >${escapeHtml(tab.label)}</button>`,
         )
         .join("");
+    const toggleLabel = isTiledMode
+        ? escapeHtml(
+              tileLayout === "stacked"
+                  ? i18n.t("module.study.classes.slideshow_view")
+                  : i18n.t("module.study.classes.tile_view"),
+          )
+        : "";
+    const toggleButton = isTiledMode
+        ? `<button type="button" class="classes-tile-layout-toggle-btn" data-tile-layout="${escapeHtml(tileLayout)}">${toggleLabel}</button>`
+        : "";
+    return tabButtons + toggleButton;
 }
 
 function renderWorkspaceWhiteboard({ activeWhiteboard, i18n }) {
@@ -121,14 +134,19 @@ function renderAgendaDocumentPanel({
     const snapshots = Array.isArray(classResources?.agendaSnapshots)
         ? classResources.agendaSnapshots
         : [];
+    const hasSnapshots = snapshots.some(
+        (snapshot) =>
+            String(snapshot?.id ?? "").trim() &&
+            String(snapshot?.name ?? "").trim(),
+    );
     const snapshotOptions = snapshots
-        .map((snapshot) => {
+        .map((snapshot, index) => {
             const snapshotId = String(snapshot?.id ?? "").trim();
             const snapshotName = String(snapshot?.name ?? "").trim();
             if (!snapshotId || !snapshotName) {
                 return "";
             }
-            return `<option value="${escapeHtml(snapshotId)}">${escapeHtml(snapshotName)}</option>`;
+            return `<option value="${escapeHtml(snapshotId)}"${index === 0 ? " selected" : ""}>${escapeHtml(snapshotName)}</option>`;
         })
         .join("");
     return `
@@ -142,11 +160,14 @@ function renderAgendaDocumentPanel({
                 isTeacherView
                     ? `<div class="classes-agenda-document-actions">
                 <button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
-                <select class="classes-agenda-snapshot-select">
-                    <option value="">${escapeHtml(i18n.t("ui.reuse.open"))}</option>
-                    ${snapshotOptions}
+                <select class="classes-agenda-snapshot-select"${hasSnapshots ? "" : " disabled"}>
+                    ${
+                        hasSnapshots
+                            ? snapshotOptions
+                            : `<option value="">${escapeHtml(i18n.t("module.study.classes.no_saved_agendas"))}</option>`
+                    }
                 </select>
-                <button type="button" class="btn-cancel btn-animated classes-agenda-snapshot-open-btn">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
+                <button type="button" class="btn-animated classes-agenda-snapshot-open-btn"${hasSnapshots ? "" : " disabled"}>${escapeHtml(i18n.t("ui.reuse.open"))}</button>
             </div>`
                     : ""
             }
@@ -193,6 +214,8 @@ export function renderWorkspaceContent({
     activeWhiteboard,
     initializedTiles,
     isMeetingOpen,
+    tileLayout = "stacked",
+    tileOrder = [],
 }) {
     if (workspaceMode === "chat") {
         return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
@@ -214,59 +237,63 @@ export function renderWorkspaceContent({
             : "agenda";
     const tiles =
         initializedTiles instanceof Set ? initializedTiles : new Set();
-    const whiteboardTile = tiles.has("whiteboard")
-        ? `
-                <section class="classes-workspace-tile classes-workspace-tile--whiteboard${
-                    activeTileMode === "whiteboard" ? " active" : ""
-                }" data-workspace-mode="whiteboard">
-                    <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>
-                    <div class="classes-workspace-tile-content classes-whiteboard-workspace-host">
-                        ${
-                            activeWhiteboard?.embedUrl
-                                ? ""
-                                : isTeacherView
-                                  ? `<div class="classes-whiteboard-empty-actions">
-                                           <button type="button" class="btn-confirm btn-animated classes-open-whiteboards-btn">${escapeHtml(i18n.t("module.study.classes.new_whiteboard"))}</button>
-                                       </div>`
-                                  : `<p class="classes-empty classes-workspace-tile-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>`
-                        }
-                    </div>
-                </section>`
-        : "";
-    const showMeetingTile = shouldShowMeetingTile(tiles, isMeetingOpen);
-    const meetingTile = showMeetingTile
-        ? `
-                <section class="classes-workspace-tile classes-workspace-tile--meeting${
-                    activeTileMode === "meeting" ? " active" : ""
-                }${isMeetingOpen ? " classes-meeting-pulse" : ""}" data-workspace-mode="meeting">
-                    <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="meeting">${escapeHtml(i18n.t("ui.reuse.meeting"))}</button>
-                    <div class="classes-workspace-tile-content classes-meeting-workspace-host"></div>
-                </section>`
-        : "";
+    const effectiveTileOrder = tileOrder.length
+        ? tileOrder
+        : [
+              "agenda",
+              ...(tiles.has("whiteboard") ? ["whiteboard"] : []),
+              ...(shouldShowMeetingTile(tiles, isMeetingOpen)
+                  ? ["meeting"]
+                  : []),
+          ];
+    const agendaTileContent = `
+        ${renderAgendaDocumentPanel({ classResources, isTeacherView, i18n, compact: true })}
+        ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}`;
+    const whiteboardTileContent = activeWhiteboard?.embedUrl
+        ? ""
+        : isTeacherView
+          ? `<div class="classes-whiteboard-empty-actions"><button type="button" class="btn-confirm btn-animated classes-open-whiteboards-btn">${escapeHtml(i18n.t("module.study.classes.new_whiteboard"))}</button></div>`
+          : `<p class="classes-empty classes-workspace-tile-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>`;
+    const tileHtml = (mode, depth) => {
+        const isActive = mode === activeTileMode;
+        const depthStyle = `style="--tile-depth: ${depth}"`;
+        if (mode === "agenda") {
+            return `<section class="classes-workspace-tile classes-workspace-tile--agenda${isActive ? " active" : ""}" data-workspace-mode="agenda" ${depthStyle}>
+                <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="agenda">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
+                <div class="classes-workspace-tile-content">${agendaTileContent}</div>
+            </section>`;
+        }
+        if (mode === "whiteboard" && tiles.has("whiteboard")) {
+            return `<section class="classes-workspace-tile classes-workspace-tile--whiteboard${isActive ? " active" : ""}" data-workspace-mode="whiteboard" ${depthStyle}>
+                <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>
+                <div class="classes-workspace-tile-content classes-whiteboard-workspace-host">${whiteboardTileContent}</div>
+            </section>`;
+        }
+        if (mode === "meeting" && shouldShowMeetingTile(tiles, isMeetingOpen)) {
+            return `<section class="classes-workspace-tile classes-workspace-tile--meeting${isActive ? " active" : ""}${isMeetingOpen ? " classes-meeting-pulse" : ""}" data-workspace-mode="meeting" ${depthStyle}>
+                <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="meeting">${escapeHtml(i18n.t("ui.reuse.meeting"))}</button>
+                <div class="classes-workspace-tile-content classes-meeting-workspace-host"></div>
+            </section>`;
+        }
+        return "";
+    };
+    const renderedTiles = effectiveTileOrder
+        .map((mode, index) => tileHtml(mode, index))
+        .join("");
+    const layoutClass =
+        tileLayout === "slideshow"
+            ? " classes-workspace-tiles--slideshow"
+            : " classes-workspace-tiles--stacked";
+    const navArrows =
+        tileLayout === "slideshow"
+            ? `<button type="button" class="classes-tile-nav-prev" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}">&#x25C4;</button>
+           <button type="button" class="classes-tile-nav-next" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}">&#x25BA;</button>`
+            : "";
     return `
         <section class="classes-workspace-panel classes-workspace-panel--tiled">
-            <div class="classes-workspace-tiles" data-active-workspace-mode="${escapeHtml(activeTileMode)}">
-                <section class="classes-workspace-tile classes-workspace-tile--agenda${
-                    activeTileMode === "agenda" ? " active" : ""
-                }" data-workspace-mode="agenda">
-                    <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="agenda">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
-                    <div class="classes-workspace-tile-content">
-                        ${renderAgendaDocumentPanel({
-                            classResources,
-                            isTeacherView,
-                            i18n,
-                            compact: true,
-                        })}
-                        ${renderSelectedDeskPanel({
-                            snapshot,
-                            selectedSeatNumber,
-                            selectedNotebookText,
-                            i18n,
-                        })}
-                    </div>
-                </section>
-                ${whiteboardTile}
-                ${meetingTile}
+            ${navArrows}
+            <div class="classes-workspace-tiles${layoutClass}" data-active-workspace-mode="${escapeHtml(activeTileMode)}">
+                ${renderedTiles}
             </div>
         </section>
     `;
