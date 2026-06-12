@@ -48,6 +48,7 @@ import {
     createDefaultClassResources,
 } from "/static/adapters/study/classes/classroom/helpers.js";
 import { createLayoutApi } from "/static/adapters/study/classes/classroom/layout-api.js";
+import { createSnapshotStateHelpers } from "/static/adapters/study/classes/classroom/snapshot-state.js";
 import {
     loadTileLayoutPreference,
     normalizeTileLayout,
@@ -71,7 +72,6 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "module.study.classes.classroom_page_title");
-
     if (!canToggleClassroomView()) {
         try {
             const accountId = localStorage.getItem("cognis_account");
@@ -132,21 +132,6 @@ export async function mount(root, { signal } = {}) {
     /** Ordered tile modes; last element is the front/active tile. */
     let tileOrder = ["agenda"];
 
-    function isTeacherView() {
-        return teacherAccount && getClassroomViewMode() === "teacher";
-    }
-
-    function computeIsTeacherPresent(snapshot = selectedSnapshot()) {
-        if (isTeacherView()) return false;
-        const teacherAccountId = String(
-            snapshot?.teacherAccountId ?? "",
-        ).trim();
-        return Boolean(
-            teacherAccountId &&
-            presenceByAccountId.get(teacherAccountId) === "online",
-        );
-    }
-
     function selectedSnapshot() {
         return (
             classroomSnapshots.find(
@@ -155,17 +140,17 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
-    function getSelectedActiveWhiteboardId(snapshot = selectedSnapshot()) {
-        const activeWhiteboardId = String(
-            snapshot?.classroom?.activeWhiteboardId ?? "",
-        ).trim();
-        return activeWhiteboardId || null;
-    }
-
-    function getSelectedActiveMaterialKey(snapshot = selectedSnapshot()) {
-        const key = String(snapshot?.classroom?.activeMaterialKey ?? "").trim();
-        return key || null;
-    }
+    const {
+        isTeacherView,
+        computeIsTeacherPresent,
+        getSelectedActiveWhiteboardId,
+        getSelectedActiveMaterialKey,
+    } = createSnapshotStateHelpers({
+        teacherAccount,
+        getClassroomViewMode,
+        selectedSnapshot,
+        presenceByAccountId,
+    });
 
     function syncTileLayoutWithSnapshot(snapshot = selectedSnapshot()) {
         if (teacherAccount && isTeacherView()) {
