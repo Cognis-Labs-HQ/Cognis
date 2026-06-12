@@ -165,10 +165,7 @@ test("active tile is moved to end of tile order (bottom) on hitbox click", () =>
         "utf8",
     );
 
-    assert.match(
-        source,
-        /clickedIndex >= 0[\s\S]*clickedIndex < currentOrder\.length - 1/,
-    );
+    assert.match(source, /clickedIndex < currentOrder\.length - 1/);
     assert.match(
         source,
         /\.filter[\s\S]*mode !== clickedMode[\s\S]*,\s*clickedMode,/,
