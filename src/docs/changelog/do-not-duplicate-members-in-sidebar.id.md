@@ -357,3 +357,27 @@ Tata letak tayangan slide baru menampilkan satu tile sekaligus dengan tombol Seb
 ## Tombol beralih Tampilan Tile / Tampilan Tayangan Slide
 
 Tombol beralih di bilah tab ruang kerja berpindah antara tata letak bertumpuk dan tayangan slide. Label tombol mencerminkan tata letak yang akan aktif setelah diklik.
+
+## Tampilan tayangan slide kini berfungsi untuk semua pengguna
+
+Beralih antara tata letak tile bertumpuk dan tayangan slide kini berlaku dengan benar untuk semua pengguna. Sebelumnya, `tileLayout` dan `tileOrder` tidak diteruskan melalui pipeline render, sehingga tombol tidak memberikan efek.
+
+## Urutan tumpukan tile diperbaiki
+
+Mengklik tile ruang kerja dalam tata letak bertumpuk kini memindahkan tile tersebut ke posisi pertama (depan tumpukan, tanpa indentasi). Sebelumnya tile secara keliru dipindahkan ke belakang.
+
+## Animasi tab dan header tile aktif diperlambat
+
+Animasi shimmer pada tab ruang kerja aktif dan header tile aktif kini berjalan dengan 4 d daripada 2,4 d, sehingga kurang mengganggu.
+
+## Tampilan guru dipulihkan dengan benar setelah navigasi Pencarian
+
+Berpindah dari Kelas → Pencarian → Kelas tidak lagi menempatkan guru dalam tampilan siswa. Tombol kelas di sub-navigasi dan pemilih kelas di footer kini memulihkan tampilan guru.
+
+## Siswa langsung mengikuti guru setelah guru kembali
+
+Saat guru berpindah halaman dan kembali, tile ruang kerja siswa diperbarui dalam siklus polling real-time berikutnya tanpa perlu me-refresh halaman secara manual.
+
+## Ruang kelas dimuat saat refresh halaman dan navigasi SPA
+
+Konten ruang kerja papan tulis kini terlihat saat pertama kali dimuat. Sebelumnya permukaan defaultnya tertutup sehingga tidak ada yang tampil sampai tab ruang kerja diklik.

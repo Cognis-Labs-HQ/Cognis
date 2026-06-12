@@ -362,6 +362,26 @@ The default tile layout displays tiles as a depth-fan stack. Clicking a back til
 
 A new slideshow layout shows one tile at a time with Previous and Next arrow buttons. The left and right arrow keys also navigate between tiles.
 
-## Tile View / Slideshow View toggle button
+## Slideshow view now works for all users
 
-A toggle button in the workspace tab bar switches between stacked and slideshow layouts. The button label reflects the layout that clicking it will switch to.
+Switching between stacked and slideshow tile layouts now correctly applies for every user. Previously, the `tileLayout` and `tileOrder` state were not forwarded through the render pipeline, so pressing the toggle had no visible effect.
+
+## Tile stack reorder fixed
+
+Clicking a workspace tile in stacked layout now promotes that tile to the front of the stack (depth 0, no indent). Previously the tile was incorrectly moved to the back.
+
+## Active tab and tile-header animation slowed down
+
+The shimmer on active workspace tabs and tile headers now cycles at 4 s instead of 2.4 s, making it less distracting.
+
+## Teacher view correctly restored after Search navigation
+
+Navigating Class → Search → Class no longer drops the teacher into student view. Both the sub-navigation class buttons and the footer class selector now restore teacher view when a teacher selects a class.
+
+## Students immediately re-follow teacher after teacher returns
+
+When a teacher navigates away and back, students' workspace tiles now update within the next realtime polling cycle without requiring a manual page refresh.
+
+## Classroom loads on page refresh and SPA navigation
+
+The blackboard workspace content is now visible on initial load. Previously the surface defaulted to collapsed, so nothing appeared until a workspace tab was clicked.

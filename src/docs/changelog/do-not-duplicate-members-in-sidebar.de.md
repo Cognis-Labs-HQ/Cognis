@@ -366,3 +366,27 @@ Ein neues Diashow-Layout zeigt jeweils eine Kachel mit Vorwärts- und Rückwärt
 ## Schaltfläche zum Wechsel zwischen Kachelansicht und Diashow
 
 Eine Umschaltschaltfläche in der Registerkartenleiste wechselt zwischen dem gestapelten und dem Diashow-Layout. Die Beschriftung zeigt das Layout an, zu dem ein Klick führt.
+
+## Diashow-Ansicht funktioniert jetzt für alle Nutzer
+
+Das Wechseln zwischen gestapeltem und Diashow-Kachellayout wirkt sich jetzt korrekt für alle Nutzer aus. Zuvor wurden `tileLayout` und `tileOrder` nicht durch die Render-Pipeline weitergegeben.
+
+## Kachel-Sortierung korrigiert
+
+Ein Klick auf eine Arbeitsflächen-Kachel im gestapelten Layout bringt diese nun an die erste Position (vorne im Stapel). Zuvor wurde die Kachel fälschlicherweise nach hinten verschoben.
+
+## Shimmer-Animation der aktiven Kachel verlangsamt
+
+Die Shimmer-Animation auf aktiven Arbeitsflächentabs und Kachel-Headern läuft jetzt mit 4 s statt 2,4 s, was sie weniger ablenkend macht.
+
+## Lehreransicht wird nach der Suche korrekt wiederhergestellt
+
+Navigieren von Klasse → Suche → Klasse setzt den Lehrer nicht mehr in die Schüleransicht. Sowohl die Unternavigations-Klassenschaltflächen als auch die Fußzeile stellen jetzt die Lehreransicht wieder her.
+
+## Schüler folgen dem Lehrer sofort nach dessen Rückkehr
+
+Wenn ein Lehrer weg- und zurücknavigiert, aktualisieren die Kacheln der Schüler innerhalb des nächsten Echtzeit-Abfrageintervalls, ohne manuellen Seitenrefresh.
+
+## Klassenraum lädt bei Seitenrefresh und SPA-Navigation
+
+Der Blackboard-Arbeitsflächeninhalt ist jetzt beim ersten Laden sichtbar. Zuvor war er standardmäßig eingeklappt, sodass nichts erschien, bis ein Tab geklickt wurde.

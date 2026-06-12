@@ -517,6 +517,8 @@ function renderClassroomView({
     isMeetingOpen,
     blackboardExpanded,
     initializedTiles,
+    tileLayout = "stacked",
+    tileOrder = [],
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -553,6 +555,8 @@ function renderClassroomView({
                         isMeetingOpen,
                         blackboardExpanded,
                         initializedTiles,
+                        tileLayout,
+                        tileOrder,
                     })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}

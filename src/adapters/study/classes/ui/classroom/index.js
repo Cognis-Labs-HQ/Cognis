@@ -156,7 +156,7 @@ export async function mount(root, { signal } = {}) {
     let activeMeetingId = null;
     let activeMaterialKey = null;
     let isClassSearchDetached = false;
-    let blackboardExpanded = false;
+    let blackboardExpanded = true;
     /** Tracks which tiles have been initialized by user action or system auto-open. */
     let initializedTiles = new Set();
     /** "stacked" (depth fan) or "slideshow" (single tile + arrows). */
@@ -709,6 +709,9 @@ export async function mount(root, { signal } = {}) {
                 activeWhiteboard?.boardId ?? null;
             isClassSearchDetached = false;
             selectedClassId = classId;
+            if (teacherAccount && getClassroomViewMode() !== "teacher") {
+                setClassroomViewMode("teacher");
+            }
             selectedSeatNumber = null;
             activeWhiteboard = null;
             initializedTiles = new Set();
@@ -927,6 +930,7 @@ export async function mount(root, { signal } = {}) {
                 }
             }
             refreshSnapshotPresence();
+            const previousWorkspaceMode = workspaceMode;
             syncStudentWorkspaceAccess();
             const broadcastedMaterialKey = getSelectedActiveMaterialKey();
             if (
@@ -935,6 +939,9 @@ export async function mount(root, { signal } = {}) {
             ) {
                 activeMaterialKey = broadcastedMaterialKey;
                 sidebarMode = "materials";
+            }
+            if (workspaceMode !== previousWorkspaceMode) {
+                refreshWorkspaceTilesOnly();
             }
             refreshDynamicDom();
             syncGlobalChatTarget();
@@ -974,14 +981,22 @@ export async function mount(root, { signal } = {}) {
                             setWorkspaceMode("meeting", { remember: false });
                             refreshDom();
                         } else {
+                            const previousMode = workspaceMode;
                             syncStudentWorkspaceAccess();
+                            if (workspaceMode !== previousMode) {
+                                refreshWorkspaceTilesOnly();
+                            }
                             refreshDynamicDom();
                         }
                     } else {
                         refreshDynamicDom();
                     }
                 } else {
+                    const previousMode = workspaceMode;
                     syncStudentWorkspaceAccess();
+                    if (workspaceMode !== previousMode) {
+                        refreshWorkspaceTilesOnly();
+                    }
                     refreshDynamicDom();
                 }
             }

@@ -168,14 +168,13 @@ export function bindClassroomInteractions({
                         tileHitbox.dataset.workspaceMode,
                     );
                     const clickedIndex = currentOrder.indexOf(clickedMode);
-                    const lastIndex = currentOrder.length - 1;
-                    if (clickedIndex >= 0 && clickedIndex !== lastIndex) {
-                        const newOrder = [...currentOrder];
-                        [newOrder[clickedIndex], newOrder[lastIndex]] = [
-                            newOrder[lastIndex],
-                            newOrder[clickedIndex],
-                        ];
-                        setTileOrder(newOrder);
+                    if (clickedIndex > 0) {
+                        setTileOrder([
+                            clickedMode,
+                            ...currentOrder.filter(
+                                (mode) => mode !== clickedMode,
+                            ),
+                        ]);
                     }
                 }
                 if (nextWorkspaceMode === "meeting") {
@@ -409,6 +408,12 @@ export function bindClassroomInteractions({
                 ).trim();
                 if (!classId) return;
                 setSelectedClassId(classId);
+                if (
+                    getTeacherAccount() &&
+                    getClassroomViewMode() !== "teacher"
+                ) {
+                    setClassroomViewMode("teacher");
+                }
                 setSelectedSeatNumber(null);
                 setActiveWhiteboard(null);
                 if (
