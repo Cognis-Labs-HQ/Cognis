@@ -51,3 +51,21 @@ Batas pemisah yang terlihat di antara bagian bilah sisi telah dihapus untuk tamp
 ## Notifikasi rapat dinonaktifkan jika sudah berada di kelas
 
 Siswa yang sudah melihat kelas tidak lagi menerima notifikasi rapat dimulai untuk kelas yang sama.
+
+## Pembaruan agenda kini langsung terlihat oleh siswa
+
+Ketika guru menyimpan perubahan agenda, tampilan siswa kini dirender ulang
+segera pada siklus refresh berikutnya, tanpa perlu melakukan navigasi halaman
+secara manual.
+
+## Siswa dapat berpindah tab ruang kerja secara bebas
+
+Sebuah bug menyebabkan pengaturan fokus papan guru menimpa tab ruang kerja yang
+dipilih siswa pada setiap siklus refresh 3 detik, bahkan ketika guru tidak
+menetapkan preferensi fokus secara eksplisit. Perbaikan ini memeriksa apakah
+nilai yang tidak kosong benar-benar ada sebelum menimpa pilihan tab siswa.
+
+## Siswa tidak lagi otomatis bergabung ke rapat saat membuka halaman
+
+Bergabung otomatis kini hanya dipicu ketika rapat baru terdeteksi pada siklus
+refresh, bukan untuk rapat yang sudah berlangsung ketika siswa membuka halaman.

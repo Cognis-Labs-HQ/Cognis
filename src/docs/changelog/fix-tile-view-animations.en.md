@@ -51,3 +51,22 @@ Visible separator borders between sidebar sections have been removed for a clean
 ## Meeting notification suppressed when already in classroom
 
 Students who are already viewing a classroom no longer receive a meeting-started notification for that same classroom.
+
+## Agenda updates now reach students in real time
+
+When a teacher saves agenda changes, the student view is now re-rendered
+immediately on the next refresh tick instead of waiting for a manual
+page navigation.
+
+## Students can freely switch workspace tabs
+
+A bug caused the teacher's board-focus setting to override the student's
+chosen workspace tab on every 3-second refresh tick, even when the teacher
+had not set an explicit focus preference. The fix checks for an actual
+non-empty value before overriding the student's tab selection.
+
+## Students no longer auto-joined to meetings on page load
+
+Auto-join now only fires when a new meeting is detected on a refresh tick,
+not for a meeting that was already in progress when the student loaded the
+page.

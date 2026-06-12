@@ -865,13 +865,9 @@ export async function mount(root, { signal } = {}) {
                 selectedClassId !== previousSelectedClassId;
             const agendaChanged = agendaDocument !== previousAgendaDocument;
             if (!isTeacherView()) {
-                // activeMeetingId is loaded from loadSelectedClassMeta() for the
-                // currently selected class, so it can only be non-null when
-                // selectedClassId is also non-null. The !selectedClassId guard
-                // therefore prevents the popup notification when the student is
-                // already viewing the classroom — they see the meeting tile
-                // directly. The notification path exists for external callers
-                // that may trigger this refresh from other contexts.
+                // activeMeetingId is only non-null when selectedClassId is set, so the
+                // !selectedClassId guard prevents a redundant notification when the student
+                // is already inside the selected class and will see the meeting tile directly.
                 if (
                     activeMeetingId &&
                     activeMeetingId !== previousActiveMeetingId &&

@@ -51,3 +51,23 @@ Sichtbare Trennlinien zwischen Seitenleisten-Abschnitten wurden für ein saubere
 ## Besprechungsbenachrichtigung unterdrückt, wenn bereits im Kursraum
 
 Schüler, die bereits einen Kursraum anzeigen, erhalten keine Besprechungs-Benachrichtigung für denselben Kursraum.
+
+## Tagesordnungs-Aktualisierungen erreichen Schüler jetzt in Echtzeit
+
+Wenn ein Lehrer Änderungen an der Tagesordnung speichert, wird die Schüleransicht
+beim nächsten Aktualisierungszyklus sofort neu gerendert, anstatt auf eine manuelle
+Seitennavigation zu warten.
+
+## Schüler können Arbeitsbereich-Tabs frei wechseln
+
+Ein Fehler führte dazu, dass die Board-Fokus-Einstellung des Lehrers bei jedem
+3-Sekunden-Tick den gewählten Arbeitsbereich-Tab des Schülers überschrieb, selbst
+wenn der Lehrer keine explizite Fokus-Präferenz gesetzt hatte. Die Korrektur prüft
+nun, ob tatsächlich ein nicht-leerer Wert vorliegt, bevor die Tab-Auswahl des
+Schülers überschrieben wird.
+
+## Schüler werden beim Laden der Seite nicht mehr automatisch in Meetings eingebunden
+
+Die automatische Einbindung wird nun nur noch ausgelöst, wenn ein neues Meeting
+in einem Aktualisierungszyklus erkannt wird – nicht mehr für ein Meeting, das
+bereits lief, als der Schüler die Seite geladen hat.
