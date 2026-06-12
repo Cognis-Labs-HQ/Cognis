@@ -74,7 +74,11 @@ function buildLibraryFileMarkup(
                 const name = String(file?.name ?? "").trim();
                 if (!key || !name) return "";
                 const checked = autoSelectedKeys.has(key) ? " checked" : "";
-                const ext = key.split(".").pop()?.toUpperCase() ?? "";
+                const dotIndex = key.lastIndexOf(".");
+                const ext =
+                    dotIndex > 0 && dotIndex < key.length - 1
+                        ? key.slice(dotIndex + 1).toUpperCase()
+                        : "";
                 const sizeLabel = formatFileSize(file?.size);
                 const dateLabel = file?.lastModified
                     ? new Date(file.lastModified).toLocaleDateString()

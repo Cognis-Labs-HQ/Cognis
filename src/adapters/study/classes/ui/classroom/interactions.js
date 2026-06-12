@@ -443,10 +443,15 @@ export function bindClassroomInteractions({
                                     const item = overlay.querySelector(
                                         `.classes-agenda-edit-item[data-snapshot-id="${CSS.escape(snapshotId)}"]`,
                                     );
-                                    const nameSpan = item?.querySelector(
-                                        ".classes-agenda-edit-name",
-                                    );
-                                    if (!(nameSpan instanceof HTMLElement))
+                                    const nameSpan = item
+                                        ? item.querySelector(
+                                              ".classes-agenda-edit-name",
+                                          )
+                                        : null;
+                                    if (
+                                        !item ||
+                                        !(nameSpan instanceof HTMLElement)
+                                    )
                                         return;
                                     const input =
                                         document.createElement("input");
@@ -490,12 +495,12 @@ export function bindClassroomInteractions({
                                                 await loadSelectedClassMeta();
                                                 refreshDom();
                                             } else {
-                                                showToast({
-                                                    type: "error",
-                                                    message: i18n.t(
+                                                showToast(
+                                                    i18n.t(
                                                         "module.study.classes.agenda_snapshot_rename_error",
                                                     ),
-                                                });
+                                                    { variant: "error" },
+                                                );
                                             }
                                         },
                                     );
@@ -525,12 +530,12 @@ export function bindClassroomInteractions({
                                         await loadSelectedClassMeta();
                                         refreshDom();
                                     } else {
-                                        showToast({
-                                            type: "error",
-                                            message: i18n.t(
+                                        showToast(
+                                            i18n.t(
                                                 "module.study.classes.agenda_snapshot_delete_error",
                                             ),
-                                        });
+                                            { variant: "error" },
+                                        );
                                     }
                                 }
                             },

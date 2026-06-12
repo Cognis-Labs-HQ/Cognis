@@ -98,6 +98,7 @@ export function createWorkspaceTileRefresher({
         )) {
             const tileMode = String(tile.dataset.workspaceMode ?? "");
             tile.classList.toggle("active", tileMode === activeTileMode);
+            // Tiles not in tileOrder are pushed to the back (depth = length).
             const depth = tileOrder.indexOf(tileMode);
             tile.style.setProperty(
                 "--tile-depth",
