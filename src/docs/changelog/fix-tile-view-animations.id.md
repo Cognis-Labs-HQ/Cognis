@@ -118,10 +118,22 @@ Mengalihkan layout tile tidak lagi mereset iframe rapat.
 Mode ruang kerja terakhir guru dibaca dari snapshot board-focus yang tersimpan
 dan dipulihkan saat halaman dimuat.
 
-## Preferensi tile/slideshow disimpan per pengguna
+## Preferensi tile/slideshow disimpan di preferensi pengguna
 
-Layout terakhir yang digunakan setiap pengguna disimpan di localStorage dan
-dipulihkan setiap kali halaman dimuat.
+Layout terakhir setiap pengguna kini disimpan melalui API preferensi pengguna
+berbasis database, bukan localStorage, sehingga tetap tersimpan lintas perangkat
+dan sesi browser.
+
+## Pemilih unggah materi guru berfungsi lagi
+
+Popup Materi Guru kini mengikat input unggah saat popup dibuka, sehingga pemilih
+berkas sistem dan alur unggah ke pustaka kembali bekerja.
+
+## Meeting kelas mempertahankan kontrol dan keepalive
+
+Tile meeting kini memperbarui kontrol slideshow tanpa membuat ulang iframe
+meeting, dan embed kelas mengirim penyegaran presence tambahan saat fokus atau
+visibilitas berubah untuk mengurangi putus karena tidak aktif.
 
 ## Siswa mempertahankan preferensi tile/slideshow mereka sendiri
 

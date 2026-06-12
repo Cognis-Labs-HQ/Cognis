@@ -48,6 +48,11 @@ import {
     createDefaultClassResources,
 } from "/static/adapters/study/classes/classroom/helpers.js";
 import { createLayoutApi } from "/static/adapters/study/classes/classroom/layout-api.js";
+import {
+    loadTileLayoutPreference,
+    normalizeTileLayout,
+    saveTileLayoutPreference,
+} from "/static/adapters/study/classes/classroom/tile-layout-preference.js";
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
@@ -123,12 +128,7 @@ export async function mount(root, { signal } = {}) {
     /** Tracks which tiles have been initialized by user action or system auto-open. */
     let initializedTiles = new Set();
     /** "stacked" (depth fan) or "slideshow" (single tile + arrows). */
-    const accountId = localStorage.getItem("cognis_account") ?? "";
-    const tileLayoutKey = accountId ? `cognis_tile_layout_${accountId}` : null;
-    const storedTileLayout = tileLayoutKey
-        ? localStorage.getItem(tileLayoutKey)
-        : null;
-    let tileLayout = storedTileLayout === "slideshow" ? "slideshow" : "stacked";
+    let tileLayout = "stacked";
     /** Ordered tile modes; last element is the front/active tile. */
     let tileOrder = ["agenda"];
 
@@ -165,6 +165,13 @@ export async function mount(root, { signal } = {}) {
     function getSelectedActiveMaterialKey(snapshot = selectedSnapshot()) {
         const key = String(snapshot?.classroom?.activeMaterialKey ?? "").trim();
         return key || null;
+    }
+
+    function syncTileLayoutWithSnapshot(snapshot = selectedSnapshot()) {
+        if (teacherAccount && isTeacherView()) {
+            return;
+        }
+        tileLayout = normalizeTileLayout(snapshot?.classroom?.viewLayout);
     }
 
     function applySnapshotPatch(classId, patch) {
@@ -334,8 +341,10 @@ export async function mount(root, { signal } = {}) {
             whiteboards = [];
             activeWhiteboard = null;
             activeMeetingId = null;
+            activeMaterialKey = null;
             return;
         }
+        syncTileLayoutWithSnapshot(snapshot);
         const selectedActiveWhiteboardId =
             getSelectedActiveWhiteboardId(snapshot);
         const [
@@ -483,6 +492,7 @@ export async function mount(root, { signal } = {}) {
                 initializedTiles.add("whiteboard");
             }
         }
+        activeMaterialKey = getSelectedActiveMaterialKey(snapshot);
         syncStudentWorkspaceAccess(snapshot);
     }
 
@@ -617,6 +627,7 @@ export async function mount(root, { signal } = {}) {
         getInitializedTiles: () => initializedTiles,
         getTileOrder: () => tileOrder,
         getTileLayout: () => tileLayout,
+        getIsMeetingOpen: () => classroomWindows?.isMeetingOpen() ?? false,
         i18n,
         fallbackRefreshDom: refreshDom,
     });
@@ -830,20 +841,8 @@ export async function mount(root, { signal } = {}) {
                         },
                         getTileLayout: () => tileLayout,
                         setTileLayout: (layout) => {
-                            tileLayout =
-                                layout === "slideshow"
-                                    ? "slideshow"
-                                    : "stacked";
-                            if (tileLayoutKey) {
-                                try {
-                                    localStorage.setItem(
-                                        tileLayoutKey,
-                                        tileLayout,
-                                    );
-                                } catch {
-                                    // Storage quota exceeded — non-fatal.
-                                }
-                            }
+                            tileLayout = normalizeTileLayout(layout);
+                            void saveTileLayoutPreference(tileLayout);
                             if (isTeacherView()) {
                                 void patchViewLayout(tileLayout);
                             }
@@ -881,6 +880,7 @@ export async function mount(root, { signal } = {}) {
         showChatToggle: true,
     });
     await composer.init();
+    tileLayout = await loadTileLayoutPreference();
     const pageContent = root.querySelector(".page-content");
     if (pageContent instanceof HTMLElement) {
         pageContent.classList.add("classes-classroom-page-content");
@@ -942,10 +942,7 @@ export async function mount(root, { signal } = {}) {
             const previousWorkspaceMode = workspaceMode;
             syncStudentWorkspaceAccess();
             const broadcastedMaterialKey = getSelectedActiveMaterialKey();
-            if (
-                broadcastedMaterialKey &&
-                broadcastedMaterialKey !== activeMaterialKey
-            ) {
+            if (broadcastedMaterialKey !== activeMaterialKey) {
                 activeMaterialKey = broadcastedMaterialKey;
                 sidebarMode = "materials";
             }

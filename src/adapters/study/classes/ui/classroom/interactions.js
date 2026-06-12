@@ -154,7 +154,11 @@ export function bindClassroomInteractions({
                 setTileLayout(
                     currentLayout === "stacked" ? "slideshow" : "stacked",
                 );
-                refreshDom();
+                if (classroomWindows?.isMeetingOpen()) {
+                    refreshWorkspaceTilesOnly();
+                } else {
+                    refreshDom();
+                }
                 return;
             }
 

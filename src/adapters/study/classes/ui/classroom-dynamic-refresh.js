@@ -64,12 +64,19 @@ export function createWorkspaceTileRefresher({
     getInitializedTiles,
     getTileOrder,
     getTileLayout,
+    getIsMeetingOpen,
     i18n,
     fallbackRefreshDom,
 }) {
     return function refreshWorkspaceTilesOnly() {
+        const workspacePanel = root.querySelector(
+            ".classes-workspace-panel--tiled",
+        );
         const tilesContainer = root.querySelector(".classes-workspace-tiles");
-        if (!(tilesContainer instanceof HTMLElement)) {
+        if (
+            !(workspacePanel instanceof HTMLElement) ||
+            !(tilesContainer instanceof HTMLElement)
+        ) {
             fallbackRefreshDom();
             return;
         }
@@ -77,6 +84,7 @@ export function createWorkspaceTileRefresher({
         const initializedTiles = getInitializedTiles();
         const tileOrder = getTileOrder();
         const tileLayout = getTileLayout?.() ?? "stacked";
+        const meetingOpen = Boolean(getIsMeetingOpen?.());
         const activeTileMode =
             workspaceMode === "whiteboard" || workspaceMode === "meeting"
                 ? workspaceMode
@@ -91,6 +99,42 @@ export function createWorkspaceTileRefresher({
             "classes-workspace-tiles--slideshow",
             tileLayout === "slideshow",
         );
+
+        const layoutToggle = root.querySelector(".classes-tile-layout-toggle-btn");
+        if (layoutToggle instanceof HTMLElement) {
+            layoutToggle.dataset.tileLayout = tileLayout;
+            layoutToggle.textContent =
+                tileLayout === "stacked"
+                    ? i18n.t("module.study.classes.slideshow_view")
+                    : i18n.t("module.study.classes.tile_view");
+        }
+
+        const existingPrev = workspacePanel.querySelector(".classes-tile-nav-prev");
+        const existingNext = workspacePanel.querySelector(".classes-tile-nav-next");
+        if (tileLayout === "slideshow") {
+            if (!(existingPrev instanceof HTMLButtonElement)) {
+                const previousButton = document.createElement("button");
+                previousButton.type = "button";
+                previousButton.className = "classes-tile-nav-prev";
+                previousButton.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.reuse.previous"),
+                );
+                previousButton.innerHTML = "&#x25C4;";
+                workspacePanel.insertBefore(previousButton, tilesContainer);
+            }
+            if (!(existingNext instanceof HTMLButtonElement)) {
+                const nextButton = document.createElement("button");
+                nextButton.type = "button";
+                nextButton.className = "classes-tile-nav-next";
+                nextButton.setAttribute("aria-label", i18n.t("ui.reuse.next"));
+                nextButton.innerHTML = "&#x25BA;";
+                workspacePanel.insertBefore(nextButton, tilesContainer);
+            }
+        } else {
+            existingPrev?.remove();
+            existingNext?.remove();
+        }
 
         tilesContainer.dataset.activeWorkspaceMode = activeTileMode;
         for (const tile of tilesContainer.querySelectorAll(
@@ -134,6 +178,15 @@ export function createWorkspaceTileRefresher({
         )) {
             const tabMode = String(tabButton.dataset.workspaceMode ?? "");
             tabButton.classList.toggle("active", tabMode === workspaceMode);
+            if (tabMode === "meeting") {
+                tabButton.classList.toggle("classes-meeting-pulse", meetingOpen);
+            }
+        }
+        const meetingTile = tilesContainer.querySelector(
+            ".classes-workspace-tile--meeting",
+        );
+        if (meetingTile instanceof HTMLElement) {
+            meetingTile.classList.toggle("classes-meeting-pulse", meetingOpen);
         }
     };
 }

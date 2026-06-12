@@ -121,10 +121,23 @@ Das Umschalten des Kachel-Layouts setzt das Meeting-Iframe nicht mehr zurück.
 Der letzte Arbeitsbereich-Modus der Lehrkraft wird aus dem gespeicherten
 Board-Fokus-Snapshot gelesen und beim Laden der Seite wiederhergestellt.
 
-## Kachel/Diashow-Einstellung wird pro Nutzer gespeichert
+## Kachel-/Diashow-Einstellung liegt in Nutzerpräferenzen
 
-Das zuletzt verwendete Layout jedes Nutzers wird im localStorage gespeichert
-und bei jedem Seitenaufruf wiederhergestellt.
+Das zuletzt verwendete Layout jedes Nutzers wird nun über die datenbankgestützte
+Nutzerpräferenz-API statt im localStorage gespeichert und dadurch über Geräte
+und Browsersitzungen hinweg erhalten.
+
+## Dateiauswahl für Lehrmaterialien funktioniert wieder
+
+Das Popup für Lehrmaterialien bindet sein Upload-Eingabefeld nun beim Öffnen
+korrekt ein und stellt damit den System-Dateidialog sowie den Bibliotheks-Upload
+wieder her.
+
+## Klassenraum-Meetings behalten Steuerung und Keepalive
+
+Meeting-Kacheln aktualisieren jetzt die Slideshow-Steuerung, ohne das Meeting-
+Iframe neu zu erstellen, und das Classroom-Embed sendet zusätzliche Präsenz-
+Aktualisierungen bei Fokus- und Sichtbarkeitswechseln.
 
 ## Schüler behalten ihre eigene Kachel/Diashow-Einstellung
 

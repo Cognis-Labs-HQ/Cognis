@@ -82,6 +82,20 @@ test("meetings page composer uses a dedicated layout preference key", () => {
     assert.match(source, /preferenceKey:\s*"meetings-layout-v3"/);
 });
 
+test("classroom meeting embed refreshes presence on visibility and focus changes", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/classroom-meeting-embed.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function refreshMeetingPresence\(\)/);
+    assert.match(source, /document\.addEventListener\(\s*"visibilitychange"/);
+    assert.match(source, /window\.addEventListener\(\s*"focus"/);
+    assert.match(source, /window\.addEventListener\(\s*"pageshow"/);
+    assert.match(source, /window\.addEventListener\(\s*"pointerdown"/);
+    assert.match(source, /window\.addEventListener\(\s*"keydown"/);
+});
+
 test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {
     const source = readJitsiUiBundle();
     const constantsSource = readFileSync(

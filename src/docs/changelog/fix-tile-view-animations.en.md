@@ -123,10 +123,22 @@ When a teacher refreshes while students are in the class, their last
 workspace mode is read from the persisted board-focus snapshot and restored
 on mount.
 
-## Per-user tile/slideshow preference is persisted across sessions
+## Per-user tile/slideshow preference is stored in user preferences
 
-Each user's last-used tile layout is saved to localStorage under their
-account ID and restored on every page load.
+Each user's last-used tile layout is now saved through the DB-backed user
+preferences API instead of localStorage, so the preference survives across
+devices and browser sessions.
+
+## Teacher materials upload picker works again
+
+The Teacher Materials popup now binds its upload input when the popup opens,
+restoring the system file picker and the upload-to-library flow.
+
+## Classroom meetings keep their layout controls and keepalive refreshes
+
+Meeting tiles now refresh slideshow controls without recreating the meeting
+iframe, and the classroom embed sends extra presence refreshes on focus and
+visibility changes to reduce inactivity-related disconnects.
 
 ## Students keep their own tile/slideshow preference
 

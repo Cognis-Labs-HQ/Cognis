@@ -89,6 +89,32 @@ test("classroom view sync detaches search and only forces live teacher meetings"
     );
 });
 
+test("classroom tile layout uses DB-backed preference helpers", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /loadTileLayoutPreference/);
+    assert.match(source, /saveTileLayoutPreference/);
+    assert.doesNotMatch(source, /cognis_tile_layout_/);
+});
+
+test("classroom meeting tile refresh updates slideshow controls in place", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-dynamic-refresh.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /classes-workspace-panel--tiled/);
+    assert.match(source, /classes-tile-nav-prev/);
+    assert.match(source, /classes-tile-nav-next/);
+    assert.match(source, /classes-tile-layout-toggle-btn/);
+});
+
 test("classroom resources route supports agenda document and snapshots", () => {
     const source = readFileSync(
         resolve(
@@ -115,4 +141,17 @@ test("classroom materials library routes support list rename and delete", () => 
     assert.match(source, /materials\\\/library\\\/rename/);
     assert.match(source, /materials\\\/library\\\/delete/);
     assert.match(source, /getClassesForTeacher/);
+});
+
+test("teacher materials upload popup binds upload logic on open", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-resource-actions.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /onOpen:\s*\(overlay\)/);
+    assert.doesNotMatch(source, /onMount:\s*\(overlay\)/);
 });

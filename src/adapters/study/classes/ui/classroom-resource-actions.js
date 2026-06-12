@@ -237,7 +237,7 @@ export async function handleResourceActions(
                     variant: "confirm",
                 },
             ],
-            onMount: (overlay) => {
+            onOpen: (overlay) => {
                 const hiddenInput = document.createElement("input");
                 hiddenInput.type = "file";
                 hiddenInput.multiple = true;
