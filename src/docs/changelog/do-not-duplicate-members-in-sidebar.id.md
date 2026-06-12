@@ -244,3 +244,39 @@ Tinggi kontainer tumpukan ubin telah diselaraskan dengan tampilan panel tunggal,
 ## Ubin papan tulis dan rapat dibuat secara malas
 
 Ubin papan tulis dan rapat di papan kelas tidak lagi dirender sebelumnya saat halaman dimuat. Setiap ubin hanya ditambahkan ke DOM pertama kali pengguna (atau sistem, untuk bergabung otomatis bagi siswa) mengaktifkan mode tersebut. Setelah diinisialisasi, ubin tetap berada di dek dan mempertahankan statusnya saat pengguna berpindah di antara ubin.
+
+## Bilah sisi selalu terlihat dengan daftar siswa dan materi
+
+Bilah sisi ruang kelas kini selalu menampilkan daftar siswa di atas materi. Tombol tiga tab (Materi / Siswa / Agenda) telah dihapus.
+
+## Agenda hanya di ubin ruang kerja
+
+Agenda bukan lagi tab bilah sisi. Agenda hanya ada sebagai ubin ruang kerja default di area papan utama.
+
+## Siswa melihat Agenda sebagai hanya-baca tanpa kontrol guru
+
+Siswa melihat area teks Agenda dalam mode hanya-baca. Kontrol simpan dan buka snapshot sepenuhnya tersembunyi dari siswa.
+
+## Semua tombol tab ruang kerja selalu terlihat oleh siswa
+
+Siswa kini selalu melihat ketiga tombol tab ruang kerja (Kelas, Papan Tulis, Rapat). Tombol yang tidak tersedia ditampilkan sebagai dinonaktifkan, bukan disembunyikan.
+
+## Ubin rapat tetap ada saat rapat berlangsung
+
+Ubin ruang kerja Rapat kini dirender kapan pun rapat sedang terbuka, terlepas dari ubin mana yang sebelumnya diinisialisasi.
+
+## Tata letak ubin bertumpuk — header tidak aktif selalu dapat diklik
+
+Ubin ruang kerja bertumpuk secara vertikal dalam kolom fleksibel. Ubin tidak aktif mengecil menjadi bilah header yang tetap dapat diklik sepenuhnya.
+
+## Animasi shimmer mengalir pada header ubin aktif dan tombol tab
+
+Tombol tab ruang kerja aktif dan header ubin aktif kini menampilkan animasi shimmer mengalir.
+
+## Animasi rapat pada tombol rapat dan header ubin
+
+Saat rapat berlangsung, tombol Rapat dan header ubin Rapat menampilkan animasi mengalir berwarna amber/merah.
+
+## Perbaikan kritis: penangkap keluar rapat tidak lagi mengizinkan pengalihan ke halaman utama Jitsi
+
+Interceptor navigasi klik di embed rapat kini memblokir semua navigasi dari halaman kelas saat rapat terbuka, termasuk URL eksternal. Sebelumnya, guard memiliki pemeriksaan origin yang terbalik sehingga link eksternal lolos. Sumber iframe Jitsi juga dikosongkan sebelum dibuang untuk mencegah halaman utama Jitsi dieksekusi di iframe.

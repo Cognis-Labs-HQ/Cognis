@@ -1,6 +1,15 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { getMaterialIcon } from "/static/adapters/study/classes/classroom-resource-actions.js";
 
+/**
+ * @param {Set<string>} tiles
+ * @param {boolean} isMeetingOpen
+ * @returns {boolean}
+ */
+function shouldShowMeetingTile(tiles, isMeetingOpen) {
+    return tiles.has("meeting") || Boolean(isMeetingOpen);
+}
+
 /** @param {unknown} rawSeatAssignments */
 export function normalizeSeatAssignments(rawSeatAssignments) {
     if (!rawSeatAssignments || typeof rawSeatAssignments !== "object") {
@@ -38,6 +47,7 @@ export function renderWorkspaceTabs({
     i18n,
     workspaceMode,
     isMeetingOpen,
+    hasActiveMeeting,
     canAccessWhiteboard,
     isTeacherView,
 }) {
@@ -45,28 +55,28 @@ export function renderWorkspaceTabs({
         {
             mode: "agenda",
             label: i18n.t("module.study.classes.classroom_panel"),
+            disabled: false,
         },
-    ];
-    if (canAccessWhiteboard) {
-        tabs.push({
+        {
             mode: "whiteboard",
             label: i18n.t("module.study.classes.whiteboard"),
-        });
-    }
-    if (isTeacherView || isMeetingOpen) {
-        tabs.push({
+            disabled: !canAccessWhiteboard,
+        },
+        {
             mode: "meeting",
             label: i18n.t("ui.reuse.meeting"),
-        });
-    }
+            disabled: !isTeacherView && !isMeetingOpen && !hasActiveMeeting,
+        },
+    ];
     return tabs
         .map(
             (tab) => `<button
                     type="button"
                     class="classes-workspace-tab-btn${
                         workspaceMode === tab.mode ? " active" : ""
-                    }"
+                    }${isMeetingOpen && tab.mode === "meeting" ? " classes-meeting-pulse" : ""}"
                     data-workspace-mode="${escapeHtml(tab.mode)}"
+                    ${tab.disabled ? "disabled" : ""}
                 >${escapeHtml(tab.label)}</button>`,
         )
         .join("");
@@ -128,18 +138,18 @@ function renderAgendaDocumentPanel({
                 ${isTeacherView ? "" : "readonly"}
                 placeholder="${escapeHtml(i18n.t("module.study.classes.class_agenda"))}"
             >${escapeHtml(agendaDocument)}</textarea>
-            <div class="classes-agenda-document-actions">
-                ${
-                    isTeacherView
-                        ? `<button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>`
-                        : ""
-                }
+            ${
+                isTeacherView
+                    ? `<div class="classes-agenda-document-actions">
+                <button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
                 <select class="classes-agenda-snapshot-select">
                     <option value="">${escapeHtml(i18n.t("ui.reuse.open"))}</option>
                     ${snapshotOptions}
                 </select>
                 <button type="button" class="btn-cancel btn-animated classes-agenda-snapshot-open-btn">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
-            </div>
+            </div>`
+                    : ""
+            }
         </div>
     `;
 }
@@ -182,6 +192,7 @@ export function renderWorkspaceContent({
     workspaceMode,
     activeWhiteboard,
     initializedTiles,
+    isMeetingOpen,
 }) {
     if (workspaceMode === "chat") {
         return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
@@ -218,11 +229,12 @@ export function renderWorkspaceContent({
                     </div>
                 </section>`
         : "";
-    const meetingTile = tiles.has("meeting")
+    const showMeetingTile = shouldShowMeetingTile(tiles, isMeetingOpen);
+    const meetingTile = showMeetingTile
         ? `
                 <section class="classes-workspace-tile classes-workspace-tile--meeting${
                     activeTileMode === "meeting" ? " active" : ""
-                }" data-workspace-mode="meeting">
+                }${isMeetingOpen ? " classes-meeting-pulse" : ""}" data-workspace-mode="meeting">
                     <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="meeting">${escapeHtml(i18n.t("ui.reuse.meeting"))}</button>
                     <div class="classes-workspace-tile-content classes-meeting-workspace-host"></div>
                 </section>`
@@ -399,58 +411,25 @@ function renderSidebarMaterials({
 
 export function renderSidebarPanel({
     classResources,
-    sidebarMode,
     activeMaterialKey,
     snapshot,
     isTeacherView,
     i18n,
 }) {
-    const tabs = [
-        {
-            mode: "materials",
-            label: i18n.t("module.study.classes.class_materials"),
-        },
-        {
-            mode: "students",
-            label: i18n.t("module.study.classes.students_section"),
-        },
-        {
-            mode: "agenda",
-            label: i18n.t("module.study.classes.class_agenda"),
-        },
-    ];
-    const tabsMarkup = `<div class="classes-sidebar-tabs">${tabs
-        .map(
-            (tab) => `<button
-                    type="button"
-                    class="classes-side-panel-btn${sidebarMode === tab.mode ? " active" : ""}"
-                    data-sidebar-mode="${escapeHtml(tab.mode)}"
-                >${escapeHtml(tab.label)}</button>`,
-        )
-        .join("")}</div>`;
-
-    let panelContent;
-    if (sidebarMode === "students") {
-        panelContent = renderRosterPanel({ snapshot, i18n });
-    } else if (sidebarMode === "agenda") {
-        panelContent = renderAgendaDocumentPanel({
-            classResources,
-            isTeacherView,
-            i18n,
-        });
-    } else {
-        panelContent = renderSidebarMaterials({
-            classResources,
-            activeMaterialKey,
-            isTeacherView,
-            i18n,
-        });
-    }
-
     return `
         <aside class="classes-sidebar-panel-wrap">
-            ${tabsMarkup}
-            ${panelContent}
+            <div class="classes-sidebar-students-section">
+                <div class="classes-sidebar-section-label">${escapeHtml(i18n.t("module.study.classes.students_section"))}</div>
+                ${renderRosterPanel({ snapshot, i18n })}
+            </div>
+            <div class="classes-sidebar-materials-section">
+                ${renderSidebarMaterials({
+                    classResources,
+                    activeMaterialKey,
+                    isTeacherView,
+                    i18n,
+                })}
+            </div>
         </aside>
     `;
 }

@@ -255,14 +255,14 @@ export async function mount(root, { signal } = {}) {
 
     function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
         if (isTeacherView() || !snapshot) return;
-        const meetingAutoJoinBlocked = Boolean(
+        const meetingDismissedByUser = Boolean(
             activeMeetingId &&
             classroomWindows?.isMeetingDismissed?.(activeMeetingId),
         );
         if (
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&
-            (!activeMeetingId || meetingAutoJoinBlocked)
+            (!activeMeetingId || meetingDismissedByUser)
         ) {
             setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
@@ -567,7 +567,6 @@ export async function mount(root, { signal } = {}) {
         const snapshot = selectedSnapshot();
         return renderClassroomPage({
             snapshot,
-            classResources,
             classResources: {
                 ...classResources,
                 agendaDocument,
@@ -585,7 +584,6 @@ export async function mount(root, { signal } = {}) {
             canEditMaterials: teacherAccount,
             boardEntities: getBoardEntities(snapshot),
             workspaceMode,
-            sidebarMode,
             activeMaterialKey,
             whiteboards,
             activeWhiteboard,
@@ -922,7 +920,7 @@ export async function mount(root, { signal } = {}) {
                 // setWorkspaceMode and refreshDom for the close transition.
                 return;
             }
-            const meetingAutoJoinBlocked = Boolean(
+            const meetingDismissedByUser = Boolean(
                 activeMeetingId &&
                 classroomWindows?.isMeetingDismissed?.(activeMeetingId),
             );
@@ -930,7 +928,7 @@ export async function mount(root, { signal } = {}) {
                 selectedClassId &&
                 classroomWindows &&
                 activeMeetingId &&
-                !meetingAutoJoinBlocked
+                !meetingDismissedByUser
             ) {
                 if (!classroomWindows.isMeetingOpen()) {
                     await classroomWindows.tryAutoJoin(selectedClassId);

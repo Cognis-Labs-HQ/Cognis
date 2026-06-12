@@ -249,3 +249,39 @@ The stacked tile deck container height has been aligned with the single-panel vi
 ## Whiteboard and meeting tiles are created lazily
 
 Whiteboard and meeting tiles in the classroom blackboard are no longer pre-rendered on page load. Each tile is only added to the DOM the first time the user (or the system, for student auto-join) activates that mode. Once initialized, tiles remain in the deck and retain their state while switching between them.
+
+## Sidebar always visible with Students roster and Materials
+
+The classroom sidebar now permanently shows the Students roster above the Materials list. The three-tab toggle (Materials / Students / Agenda) has been removed — there is no longer a need to switch tabs to see the class roster.
+
+## Agenda moved to workspace tiles only
+
+Agenda is no longer a sidebar tab. It lives exclusively as the default workspace tile in the main blackboard area, consistent with how Whiteboard and Meeting tiles work.
+
+## Students see read-only Agenda without teacher controls
+
+Students see the Agenda textarea in read-only mode. The snapshot save and open controls are hidden from students entirely. Only teacher accounts see the snapshot management toolbar.
+
+## All workspace tab buttons always visible for students
+
+Students now always see all three workspace tab buttons (Classroom, Whiteboard, Meeting). Buttons that are not available in the current state are rendered disabled rather than hidden.
+
+## Meeting tile persists when a meeting is running
+
+The Meeting workspace tile is now rendered whenever a meeting is open, regardless of which tiles were previously initialized.
+
+## Tile stacking layout — inactive headers always clickable
+
+Workspace tiles stack vertically in a flex column. Inactive tiles collapse to their header bar, which remains fully clickable to switch between tiles without needing the tab row.
+
+## Flowing shimmer animation on active tile header and tab button
+
+The active workspace tab button and the active tile header now display a flowing shimmer animation to make the current selection immediately obvious.
+
+## Meeting-running animation on meeting button and tile header
+
+While a meeting is running, the Meeting tab button and Meeting tile header show a distinct amber/red flowing animation so participants know a meeting is live even when viewing a different tile.
+
+## Critical fix: meeting exit catcher no longer allows Jitsi homepage redirect
+
+The click-navigation interceptor in the meeting embed now blocks all navigation away from the classroom page while a meeting is open, including external URLs. The previous guard had an inverted origin check that incorrectly allowed external links through. The Jitsi iframe src is also blanked before disposal to prevent the Jitsi homepage from executing in the iframe and opening popup windows.

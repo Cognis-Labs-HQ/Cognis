@@ -251,3 +251,39 @@ Die Höhe des gestapelten Kachel-Decks wurde an die Einzelpanelansicht angepasst
 ## Whiteboard- und Meeting-Kacheln werden verzögert erstellt
 
 Whiteboard- und Meeting-Kacheln im Unterrichtsraum werden nicht mehr beim Laden der Seite vorgerendert. Jede Kachel wird dem DOM erst beim ersten Aktivieren durch den Nutzer (oder automatisch beim Beitreten für Schüler) hinzugefügt. Nach der Initialisierung bleiben die Kacheln im Deck und behalten ihren Zustand beim Wechsel zwischen ihnen.
+
+## Seitenleiste immer sichtbar mit Schülerliste und Materialien
+
+Die Seitenleiste des Klassenraums zeigt jetzt dauerhaft die Schülerliste oberhalb der Materialien. Der Drei-Reiter-Umschalter (Materialien / Schüler / Agenda) wurde entfernt.
+
+## Agenda nur noch in den Workspace-Kacheln
+
+Agenda ist kein Seitenleisten-Reiter mehr. Sie befindet sich ausschließlich als Standard-Workspace-Kachel im Hauptbereich der Tafel.
+
+## Schüler sehen Agenda schreibgeschützt ohne Lehrersteuerung
+
+Schüler sehen das Agenda-Textfeld schreibgeschützt. Die Snapshot-Speicher- und Öffnen-Steuerelemente sind für Schüler vollständig ausgeblendet.
+
+## Alle Workspace-Schaltflächen immer für Schüler sichtbar
+
+Schüler sehen jetzt immer alle drei Workspace-Schaltflächen (Klassenraum, Whiteboard, Meeting). Nicht verfügbare Schaltflächen werden als deaktiviert dargestellt statt ausgeblendet.
+
+## Meeting-Kachel bleibt sichtbar, wenn ein Meeting läuft
+
+Die Meeting-Workspace-Kachel wird jetzt immer dann gerendert, wenn ein Meeting offen ist, unabhängig davon, welche Kacheln zuvor initialisiert wurden.
+
+## Gestapeltes Kachel-Layout — inaktive Header immer anklickbar
+
+Workspace-Kacheln stapeln sich vertikal in einer Flex-Spalte. Inaktive Kacheln kollabieren auf ihren Header-Balken, der vollständig anklickbar bleibt.
+
+## Fließende Shimmer-Animation auf aktivem Kachel-Header und Tab-Schaltfläche
+
+Die aktive Workspace-Schaltfläche und der aktive Kachel-Header zeigen jetzt eine fließende Shimmer-Animation.
+
+## Meeting-Animation auf Meeting-Schaltfläche und Kachel-Header
+
+Während ein Meeting läuft, zeigen die Meeting-Schaltfläche und der Meeting-Kachel-Header eine bernstein-rote fließende Animation.
+
+## Kritische Korrektur: Meeting-Ausstiegsfänger verhindert Jitsi-Startseiten-Weiterleitung
+
+Der Klick-Navigations-Interceptor im Meeting-Embed blockiert jetzt alle Navigationsvorgänge weg von der Klassenzimmerseite während ein Meeting offen ist, einschließlich externer URLs. Zuvor hatte der Guard eine invertierte Origin-Prüfung, die externe Links fälschlicherweise durchließ. Die Jitsi-iframe-Quelle wird auch vor der Entsorgung geleert, um zu verhindern, dass die Jitsi-Startseite im iframe ausgeführt wird.

@@ -18,7 +18,8 @@ test("classroom render includes workspace tabs and roster panel", () => {
     assert.match(source, /classes-roster-panel/);
     assert.match(source, /members_present/);
     assert.match(source, /members_absent/);
-    assert.match(source, /data-sidebar-mode=/);
+    assert.match(source, /classes-sidebar-students-section/);
+    assert.match(source, /classes-sidebar-materials-section/);
     assert.match(source, /classes-sidebar-panel-wrap/);
     assert.match(source, /classes-notepad-host/);
     assert.match(source, /classes-meeting-workspace-host/);

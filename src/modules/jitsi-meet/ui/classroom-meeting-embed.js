@@ -190,6 +190,13 @@ export function createClassroomMeetingEmbed({
 
     function destroyJitsiApi() {
         if (!jitsiApi) return;
+        const frame = element.querySelector("#classroom-jitsi-frame");
+        if (frame instanceof HTMLElement) {
+            const iframeEl = frame.querySelector("iframe");
+            if (iframeEl instanceof HTMLIFrameElement) {
+                iframeEl.src = "about:blank";
+            }
+        }
         try {
             jitsiApi.dispose?.();
         } catch (error) {
@@ -201,7 +208,6 @@ export function createClassroomMeetingEmbed({
         jitsiApi = null;
         jitsiParticipantId = "";
         jitsiModerator = false;
-        const frame = element.querySelector("#classroom-jitsi-frame");
         if (frame instanceof HTMLElement) {
             frame.replaceChildren();
         }
@@ -651,11 +657,17 @@ export function createClassroomMeetingEmbed({
                 if (!(linkEl instanceof HTMLAnchorElement)) return;
                 const href = String(linkEl.getAttribute("href") ?? "");
                 if (!href || href.startsWith("#")) return;
-                const targetUrl = new URL(linkEl.href, window.location.origin);
-                if (targetUrl.origin !== window.location.origin) return;
+                let targetUrl;
+                try {
+                    targetUrl = new URL(linkEl.href, window.location.origin);
+                } catch {
+                    return;
+                }
+                const isSameOrigin =
+                    targetUrl.origin === window.location.origin;
                 const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
                 const nextPath = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
-                if (currentPath === nextPath) return;
+                if (isSameOrigin && currentPath === nextPath) return;
                 event.preventDefault();
                 event.stopPropagation();
                 showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {

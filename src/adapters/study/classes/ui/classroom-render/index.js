@@ -176,6 +176,7 @@ export function renderBlackboard({
                         i18n,
                         workspaceMode,
                         isMeetingOpen,
+                        hasActiveMeeting,
                         isTeacherView,
                         canAccessWhiteboard:
                             isTeacherView ||
@@ -193,7 +194,6 @@ export function renderBlackboard({
                 <div class="classes-blackboard-body">
                     ${renderSidebarPanel({
                         classResources,
-                        sidebarMode,
                         activeMaterialKey,
                         snapshot,
                         isTeacherView,
@@ -210,6 +210,7 @@ export function renderBlackboard({
                             workspaceMode,
                             activeWhiteboard,
                             initializedTiles,
+                            isMeetingOpen,
                         })}
                     </div>
                 </div>

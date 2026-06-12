@@ -28,7 +28,6 @@ export function bindClassroomInteractions({
     updateBoardFocus,
     normalizeWorkspaceMode,
     setWorkspaceMode,
-    normalizeSidebarMode,
     getSidebarMode,
     setSidebarMode,
     handleSeatActionMenu,
@@ -88,20 +87,6 @@ export function bindClassroomInteractions({
                 if (handle) {
                     navigateTo(`/profile/${encodeURIComponent(handle)}`);
                 }
-                return;
-            }
-
-            const sidebarButton = event.target.closest(
-                ".classes-side-panel-btn[data-sidebar-mode]",
-            );
-            if (sidebarButton instanceof HTMLElement) {
-                setSidebarMode(
-                    normalizeSidebarMode(sidebarButton.dataset.sidebarMode),
-                );
-                if (sidebarButton.dataset.sidebarMode !== "materials") {
-                    setActiveMaterialKey(null);
-                }
-                refreshDom();
                 return;
             }
 
