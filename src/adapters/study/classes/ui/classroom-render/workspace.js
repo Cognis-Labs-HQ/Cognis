@@ -224,7 +224,11 @@ export function renderWorkspaceContent({
                         ${
                             activeWhiteboard?.embedUrl
                                 ? ""
-                                : `<p class="classes-empty classes-workspace-tile-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>`
+                                : isTeacherView
+                                  ? `<div class="classes-whiteboard-empty-actions">
+                                           <button type="button" class="btn-confirm btn-animated classes-open-whiteboards-btn">${escapeHtml(i18n.t("module.study.classes.new_whiteboard"))}</button>
+                                       </div>`
+                                  : `<p class="classes-empty classes-workspace-tile-empty">${escapeHtml(i18n.t("module.study.classes.no_whiteboards"))}</p>`
                         }
                     </div>
                 </section>`

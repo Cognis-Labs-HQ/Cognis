@@ -255,14 +255,14 @@ export async function mount(root, { signal } = {}) {
 
     function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
         if (isTeacherView() || !snapshot) return;
-        const meetingDismissedByUser = Boolean(
+        const meetingAutoJoinBlocked = Boolean(
             activeMeetingId &&
             classroomWindows?.isMeetingDismissed?.(activeMeetingId),
         );
         if (
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&
-            (!activeMeetingId || meetingDismissedByUser)
+            (!activeMeetingId || meetingAutoJoinBlocked)
         ) {
             setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
@@ -510,7 +510,7 @@ export async function mount(root, { signal } = {}) {
         }
         if (normalizedFocus === "chat") {
             setWorkspaceMode("chat");
-        } else if (workspaceMode === "chat") {
+        } else if (workspaceMode !== "agenda") {
             setWorkspaceMode("agenda");
         }
     }
@@ -920,7 +920,7 @@ export async function mount(root, { signal } = {}) {
                 // setWorkspaceMode and refreshDom for the close transition.
                 return;
             }
-            const meetingDismissedByUser = Boolean(
+            const meetingAutoJoinBlocked = Boolean(
                 activeMeetingId &&
                 classroomWindows?.isMeetingDismissed?.(activeMeetingId),
             );
@@ -928,7 +928,7 @@ export async function mount(root, { signal } = {}) {
                 selectedClassId &&
                 classroomWindows &&
                 activeMeetingId &&
-                !meetingDismissedByUser
+                !meetingAutoJoinBlocked
             ) {
                 if (!classroomWindows.isMeetingOpen()) {
                     await classroomWindows.tryAutoJoin(selectedClassId);

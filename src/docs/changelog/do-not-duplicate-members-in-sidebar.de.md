@@ -287,3 +287,42 @@ Während ein Meeting läuft, zeigen die Meeting-Schaltfläche und der Meeting-Ka
 ## Kritische Korrektur: Meeting-Ausstiegsfänger verhindert Jitsi-Startseiten-Weiterleitung
 
 Der Klick-Navigations-Interceptor im Meeting-Embed blockiert jetzt alle Navigationsvorgänge weg von der Klassenzimmerseite während ein Meeting offen ist, einschließlich externer URLs. Zuvor hatte der Guard eine invertierte Origin-Prüfung, die externe Links fälschlicherweise durchließ. Die Jitsi-iframe-Quelle wird auch vor der Entsorgung geleert, um zu verhindern, dass die Jitsi-Startseite im iframe ausgeführt wird.
+
+## Classroom-Ressourcen und Agenda-Endpunkte behoben (500 / 403 Fehler)
+
+`parseAgendaSnapshots` war versehentlich innerhalb von `parseAttachedFiles` nach dessen
+`return`-Anweisung verschachtelt und damit auf Modulebene nicht erreichbar. Jeder Aufruf
+in den Ressourcen- und Agenda-Routen warf einen `ReferenceError`. Die Funktion wurde auf
+Modulebene verschoben, wodurch die GET/PUT `/resources`-500-Fehler und der
+GET `/agenda`-403-Fehler behoben werden.
+
+## „Classroom"-Kachel wechselte bei aktivem Meeting nicht die Ansicht
+
+`updateBoardFocus` hat den Arbeitsbereichsmodus nur dann auf `"agenda"` gesetzt, wenn
+zuvor `"chat"` aktiv war. Ein Klick auf die Classroom-Kachel während eines Meetings
+ließ die Meeting-Kachel stumm aktiv. Die Bedingung deckt nun jede
+Nicht-`"chat"`-Fokusänderung ab.
+
+## Meeting-Verbindung wird beim Wechsel der Arbeitsbereichskacheln nicht mehr unterbrochen
+
+Der Jitsi-`iframe` befand sich in einem `display: none`-Container, wenn eine andere
+Kachel aktiv war, sodass Browser den JavaScript-Kontext drosseln konnten. Der
+Meeting-Kachel-Inhalt verwendet jetzt `height: 0; overflow: hidden`, damit der `iframe`
+in einem aktiven Rendering-Kontext bleibt.
+
+## Jitsi `conference.destroyed` schließt nun das Cognis-Meeting-Fenster
+
+Eine neue `isConferenceDestroyedReason`-Prüfung durchsucht alle External-API-Ereignisfelder.
+Sowohl `errorOccurred` als auch `notificationTriggered` rufen `handleMeetingTerminated`
+auf, wenn der Grund `conference.destroyed` erkannt wird.
+
+## Redundanter Meeting-Fenster-Header entfernt
+
+Das `classes-meeting-window-header`-Element im Meeting-Embed duplizierte die bereits von
+`classes-workspace-tile-hitbox` bereitgestellte Kachelbeschriftung. Element und CSS
+wurden entfernt.
+
+## Leerer Whiteboard-Kachel-Bereich zeigt Lehrern nun eine Schaltfläche „Neues Whiteboard"
+
+Bisher zeigte die Whiteboard-Kachel für alle einen einfachen Hinweistext. Lehrer sehen
+nun eine Schaltfläche „Neues Whiteboard", die den vorhandenen Auto-Erstellungsfluss auslöst.

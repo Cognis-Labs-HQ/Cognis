@@ -162,6 +162,21 @@
     display: block;
 }
 
+.classes-workspace-tile--meeting .classes-workspace-tile-content {
+    display: block;
+    flex: none;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.classes-workspace-tile--meeting.active .classes-workspace-tile-content {
+    flex: 1;
+    height: auto;
+    overflow: auto;
+    pointer-events: auto;
+}
+
 .classes-workspace-tile-empty {
     margin: 0;
     padding: 0.9rem;

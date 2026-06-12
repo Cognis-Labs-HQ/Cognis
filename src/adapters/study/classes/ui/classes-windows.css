@@ -32,22 +32,6 @@
     display: none;
 }
 
-.classes-meeting-window-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-}
-
-.classes-meeting-window-title {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--text);
-}
-
 .classes-meeting-frame {
     flex: 1;
     min-height: 0;

@@ -285,3 +285,43 @@ While a meeting is running, the Meeting tab button and Meeting tile header show 
 ## Critical fix: meeting exit catcher no longer allows Jitsi homepage redirect
 
 The click-navigation interceptor in the meeting embed now blocks all navigation away from the classroom page while a meeting is open, including external URLs. The previous guard had an inverted origin check that incorrectly allowed external links through. The Jitsi iframe src is also blanked before disposal to prevent the Jitsi homepage from executing in the iframe and opening popup windows.
+
+## Classroom resources and agenda endpoints fixed (500 / 403 errors)
+
+`parseAgendaSnapshots` was accidentally nested inside `parseAttachedFiles` after its
+`return` statement, making it inaccessible at module scope. Every call to it in the
+resources and agenda routes threw a `ReferenceError`. The function has been extracted to
+module scope, fixing the GET/PUT `/resources` 500 errors and the GET `/agenda` 403 error.
+
+## "Classroom" tile did not switch view when a meeting was active
+
+`updateBoardFocus` only moved the workspace mode to `"agenda"` when coming from
+`"chat"`. Clicking the Classroom tile from meeting mode silently left the meeting tile
+active. The transition condition now covers any non-`"chat"` focus, so the workspace
+always returns to agenda when the Classroom tile is selected.
+
+## Meeting connection no longer disrupted when switching workspace tiles
+
+The Jitsi iframe was placed inside a `display: none` container when another tile was
+active, allowing browsers to throttle its JavaScript context. The meeting tile content
+now uses `height: 0; overflow: hidden` instead, keeping the iframe in an active
+rendering context while visually hidden.
+
+## Jitsi `conference.destroyed` now closes the Cognis meeting window
+
+Added `isConferenceDestroyedReason` detection across all External API event fields.
+Both `errorOccurred` and `notificationTriggered` listeners call `handleMeetingTerminated`
+when the `conference.destroyed` reason is detected, ensuring the Cognis window closes
+when the Jitsi room is terminated server-side.
+
+## Redundant meeting window header removed
+
+The `classes-meeting-window-header` element inside the meeting embed duplicated the
+tile hitbox label already provided by `classes-workspace-tile-hitbox`. The element and
+its CSS have been removed.
+
+## Teacher whiteboard tile shows a "New Whiteboard" button when empty
+
+Previously the whiteboard tile showed a plain "No whiteboards yet." message for
+everyone. Teachers now see a "New Whiteboard" button which invokes the existing
+auto-create flow, matching the open/save pattern already present on the Agenda tile.

@@ -81,9 +81,6 @@ export function createClassroomMeetingEmbed({
         i18n.t("module.study.classes.open_meeting"),
     );
     element.innerHTML = `
-        <div class="classes-meeting-window-header">
-            <span class="classes-meeting-window-title">${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</span>
-        </div>
         <div class="classes-meeting-frame" id="classroom-jitsi-frame"></div>
         <div class="classes-meeting-overlay" hidden>
             <h3 class="classes-meeting-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
@@ -260,6 +257,19 @@ export function createClassroomMeetingEmbed({
             event?.details?.message,
         ].map((value) => String(value ?? ""));
         return fields.some((field) => field.includes("[app:conference-web]"));
+    }
+
+    function isConferenceDestroyedReason(event) {
+        const fields = [
+            event?.type,
+            event?.message,
+            event?.name,
+            event?.error,
+            event?.errorCode,
+            event?.details?.error,
+            event?.details?.message,
+        ].map((value) => String(value ?? "").toLowerCase());
+        return fields.some((field) => field.includes("conference.destroyed"));
     }
 
     function getParticipantId(candidate) {
@@ -465,11 +475,19 @@ export function createClassroomMeetingEmbed({
             });
 
             apiInstance.addEventListener("notificationTriggered", (event) => {
-                if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
+                if (
+                    isMeetingTerminatedNotice(event) ||
+                    isConferenceDestroyedReason(event)
+                ) {
+                    handleMeetingTerminated();
+                }
             });
 
             apiInstance.addEventListener("errorOccurred", (event) => {
-                if (isMeetingTerminatedNotice(event)) {
+                if (
+                    isMeetingTerminatedNotice(event) ||
+                    isConferenceDestroyedReason(event)
+                ) {
                     handleMeetingTerminated();
                     return;
                 }

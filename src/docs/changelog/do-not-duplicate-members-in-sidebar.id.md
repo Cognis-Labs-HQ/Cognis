@@ -280,3 +280,40 @@ Saat rapat berlangsung, tombol Rapat dan header ubin Rapat menampilkan animasi m
 ## Perbaikan kritis: penangkap keluar rapat tidak lagi mengizinkan pengalihan ke halaman utama Jitsi
 
 Interceptor navigasi klik di embed rapat kini memblokir semua navigasi dari halaman kelas saat rapat terbuka, termasuk URL eksternal. Sebelumnya, guard memiliki pemeriksaan origin yang terbalik sehingga link eksternal lolos. Sumber iframe Jitsi juga dikosongkan sebelum dibuang untuk mencegah halaman utama Jitsi dieksekusi di iframe.
+
+## Endpoint resource dan agenda kelas diperbaiki (error 500 / 403)
+
+`parseAgendaSnapshots` secara tidak sengaja bersarang di dalam `parseAttachedFiles`
+setelah pernyataan `return`-nya, sehingga tidak dapat diakses di lingkup modul. Setiap
+pemanggilan dari rute resource dan agenda melempar `ReferenceError`. Fungsi telah
+dipindahkan ke lingkup modul, memperbaiki error 500 pada GET/PUT `/resources` dan
+error 403 pada GET `/agenda`.
+
+## Tombol tile "Classroom" tidak beralih tampilan saat rapat aktif
+
+`updateBoardFocus` hanya memindahkan mode ruang kerja ke `"agenda"` saat berasal dari
+`"chat"`. Mengklik tile Classroom dari mode rapat secara diam-diam membiarkan tile rapat
+tetap aktif. Kondisi transisi kini mencakup semua fokus selain `"chat"`.
+
+## Koneksi rapat tidak lagi terganggu saat beralih tile ruang kerja
+
+`iframe` Jitsi ditempatkan di dalam kontainer `display: none` saat tile lain aktif,
+memungkinkan browser membatasi konteks JavaScript-nya. Konten tile rapat kini menggunakan
+`height: 0; overflow: hidden`, menjaga `iframe` tetap dalam konteks rendering aktif
+saat tidak terlihat.
+
+## `conference.destroyed` Jitsi kini menutup jendela rapat Cognis
+
+Ditambahkan deteksi `isConferenceDestroyedReason` di semua bidang event External API.
+Pendengar `errorOccurred` dan `notificationTriggered` memanggil `handleMeetingTerminated`
+saat alasan `conference.destroyed` terdeteksi.
+
+## Header jendela rapat yang redundan dihapus
+
+Elemen `classes-meeting-window-header` di dalam embed rapat menduplikasi label tile yang
+sudah disediakan oleh `classes-workspace-tile-hitbox`. Elemen dan CSS-nya telah dihapus.
+
+## Tile whiteboard kosong kini menampilkan tombol "Whiteboard Baru" untuk guru
+
+Sebelumnya tile whiteboard menampilkan teks sederhana untuk semua orang. Guru kini
+melihat tombol "Whiteboard Baru" yang memanggil alur pembuatan otomatis yang sudah ada.

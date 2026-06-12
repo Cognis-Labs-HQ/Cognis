@@ -23,23 +23,23 @@ function parseAttachedFiles(value: unknown): AttachedFileRef[] {
     } catch {
         return [];
     }
+}
 
-    function parseAgendaSnapshots(value: unknown): AgendaSnapshotRef[] {
-        try {
-            const parsed = JSON.parse(String(value ?? "[]"));
-            if (!Array.isArray(parsed)) return [];
-            return parsed.filter(
-                (item): item is AgendaSnapshotRef =>
-                    item !== null &&
-                    typeof item === "object" &&
-                    typeof item.id === "string" &&
-                    typeof item.name === "string" &&
-                    typeof item.content === "string" &&
-                    typeof item.updatedAt === "string",
-            );
-        } catch {
-            return [];
-        }
+function parseAgendaSnapshots(value: unknown): AgendaSnapshotRef[] {
+    try {
+        const parsed = JSON.parse(String(value ?? "[]"));
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(
+            (item): item is AgendaSnapshotRef =>
+                item !== null &&
+                typeof item === "object" &&
+                typeof item.id === "string" &&
+                typeof item.name === "string" &&
+                typeof item.content === "string" &&
+                typeof item.updatedAt === "string",
+        );
+    } catch {
+        return [];
     }
 }
 
