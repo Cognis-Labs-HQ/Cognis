@@ -41,50 +41,13 @@ import { handleResourceActions } from "/static/adapters/study/classes/classroom-
 import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
 import { bindClassroomInteractions } from "/static/adapters/study/classes/classroom/interactions.js";
 import { normalizeBoardFocus } from "/static/adapters/study/classes/board-focus.js";
-
-function buildQuery(params) {
-    const query = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
-        if (value == null || value === "") continue;
-        query.set(key, String(value));
-    }
-    return query.toString();
-}
-
-function normalizeWorkspaceMode(input) {
-    const normalized = String(input ?? "")
-        .trim()
-        .toLowerCase();
-    if (
-        normalized === "notepad" ||
-        normalized === "whiteboard" ||
-        normalized === "meeting" ||
-        normalized === "chat"
-    ) {
-        return normalized;
-    }
-    return "agenda";
-}
-
-function normalizeSidebarMode(input) {
-    const normalized = String(input ?? "")
-        .trim()
-        .toLowerCase();
-    if (normalized === "students" || normalized === "agenda") {
-        return normalized;
-    }
-    return "materials";
-}
-
-function createDefaultClassResources() {
-    return {
-        materials: "",
-        homework: "",
-        files: [],
-        agendaDocument: "",
-        agendaSnapshots: [],
-    };
-}
+import {
+    buildQuery,
+    normalizeWorkspaceMode,
+    normalizeSidebarMode,
+    createDefaultClassResources,
+} from "/static/adapters/study/classes/classroom/helpers.js";
+import { createLayoutApi } from "/static/adapters/study/classes/classroom/layout-api.js";
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
@@ -188,49 +151,29 @@ export async function mount(root, { signal } = {}) {
         return key || null;
     }
 
-    async function patchClassroomLayout(classId, fields) {
-        const normalizedClassId = String(classId ?? "").trim();
-        if (!teacherAccount || !normalizedClassId) {
-            return false;
-        }
-        const response = await apiFetch(
-            `/api/v1/study/classrooms/${encodeURIComponent(normalizedClassId)}/layout`,
-            {
-                method: "PATCH",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(fields),
-            },
-        );
-        if (!response.ok) {
-            return false;
-        }
-        const payload = await response.json().catch(() => null);
-        const nextState = payload?.data ?? fields;
-        classroomSnapshots = classroomSnapshots.map((snapshot) =>
-            snapshot.id === normalizedClassId
+    function applySnapshotPatch(classId, patch) {
+        classroomSnapshots = classroomSnapshots.map((snap) =>
+            snap.id === classId
                 ? {
-                      ...snapshot,
-                      classroom: {
-                          ...(snapshot.classroom ?? {}),
-                          ...nextState,
-                      },
+                      ...snap,
+                      classroom: { ...(snap.classroom ?? {}), ...patch },
                   }
-                : snapshot,
+                : snap,
         );
-        return true;
     }
 
-    async function persistActiveWhiteboardId(classId, nextActiveWhiteboardId) {
-        return patchClassroomLayout(classId, {
-            activeWhiteboardId: nextActiveWhiteboardId ?? null,
-        });
-    }
-
-    async function persistActiveMaterialKey(classId, nextActiveMaterialKey) {
-        return patchClassroomLayout(classId, {
-            activeMaterialKey: nextActiveMaterialKey ?? null,
-        });
-    }
+    const {
+        patchClassroomLayout,
+        persistActiveWhiteboardId,
+        persistActiveMaterialKey,
+        updateBoardFocus,
+        patchViewLayout,
+    } = createLayoutApi({
+        apiFetch,
+        isTeacherView,
+        selectedSnapshot,
+        applySnapshotPatch,
+    });
 
     function syncGlobalChatTarget() {
         const chatToggle = root.querySelector("#global-chat-toggle");
@@ -500,55 +443,6 @@ export async function mount(root, { signal } = {}) {
     async function refreshData() {
         await Promise.all([loadClassrooms(), loadAvailableClasses()]);
         await loadSelectedClassMeta();
-    }
-
-    async function updateBoardFocus(nextFocus) {
-        const snapshot = selectedSnapshot();
-        if (!snapshot || !isTeacherView()) return;
-        const normalizedFocus = normalizeBoardFocus(nextFocus);
-        const response = await apiFetch(
-            `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/layout`,
-            {
-                method: "PATCH",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ boardFocus: normalizedFocus }),
-            },
-        );
-        if (!response.ok) return;
-        const payload = await response.json().catch(() => null);
-        const nextState = payload?.data;
-        if (nextState) {
-            snapshot.classroom = {
-                ...(snapshot.classroom ?? {}),
-                ...nextState,
-            };
-        } else if (snapshot.classroom) {
-            snapshot.classroom.boardFocus = normalizedFocus;
-        }
-    }
-
-    async function patchViewLayout(layout) {
-        const snapshot = selectedSnapshot();
-        if (!snapshot || !isTeacherView()) return;
-        const normalizedLayout =
-            layout === "slideshow" ? "slideshow" : "stacked";
-        const response = await apiFetch(
-            `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/layout`,
-            {
-                method: "PATCH",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ viewLayout: normalizedLayout }),
-            },
-        );
-        if (!response.ok) return;
-        const payload = await response.json().catch(() => null);
-        const nextState = payload?.data;
-        if (nextState && snapshot.classroom) {
-            snapshot.classroom = {
-                ...(snapshot.classroom ?? {}),
-                ...nextState,
-            };
-        }
     }
 
     function renderSubNavigationMarkup() {
