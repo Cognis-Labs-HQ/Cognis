@@ -1,11 +1,47 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { getClassById } from "./classes.js";
 import type {
+    AgendaSnapshotRef,
+    AttachedFileRef,
     ClassroomNotebookAccessRequestRow,
     ClassroomNotebookAccessStatus,
     ClassroomNotebookRow,
     ClassroomResourceRow,
 } from "./types.js";
+
+function parseAttachedFiles(value: unknown): AttachedFileRef[] {
+    try {
+        const parsed = JSON.parse(String(value ?? "[]"));
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(
+            (item): item is AttachedFileRef =>
+                item !== null &&
+                typeof item === "object" &&
+                typeof item.key === "string" &&
+                typeof item.name === "string",
+        );
+    } catch {
+        return [];
+    }
+}
+
+function parseAgendaSnapshots(value: unknown): AgendaSnapshotRef[] {
+    try {
+        const parsed = JSON.parse(String(value ?? "[]"));
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(
+            (item): item is AgendaSnapshotRef =>
+                item !== null &&
+                typeof item === "object" &&
+                typeof item.id === "string" &&
+                typeof item.name === "string" &&
+                typeof item.content === "string" &&
+                typeof item.updatedAt === "string",
+        );
+    } catch {
+        return [];
+    }
+}
 
 async function getMembershipStatus(
     db: DbExecutor,
@@ -54,6 +90,9 @@ export async function getClassroomResourcesForViewer(
             "class_id",
             "materials",
             "homework",
+            "files",
+            "agenda_document",
+            "agenda_snapshots",
             "updated_by",
             "updated_at",
         ],
@@ -65,6 +104,9 @@ export async function getClassroomResourcesForViewer(
             classId,
             materials: "",
             homework: "",
+            files: [],
+            agendaDocument: "",
+            agendaSnapshots: [],
             updatedBy: null,
             updatedAt: new Date().toISOString(),
         };
@@ -73,6 +115,9 @@ export async function getClassroomResourcesForViewer(
         classId: String(row.class_id),
         materials: String(row.materials ?? ""),
         homework: String(row.homework ?? ""),
+        files: parseAttachedFiles(row.files),
+        agendaDocument: String(row.agenda_document ?? ""),
+        agendaSnapshots: parseAgendaSnapshots(row.agenda_snapshots),
         updatedBy: row.updated_by == null ? null : String(row.updated_by),
         updatedAt: String(row.updated_at),
     };
@@ -82,7 +127,13 @@ export async function updateClassroomResourcesForTeacher(
     db: DbExecutor,
     classId: string,
     teacherAccountId: string,
-    input: { materials?: string; homework?: string },
+    input: {
+        materials?: string;
+        homework?: string;
+        files?: AttachedFileRef[];
+        agendaDocument?: string;
+        agendaSnapshots?: AgendaSnapshotRef[];
+    },
 ): Promise<ClassroomResourceRow> {
     const classRow = await getClassById(db, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
@@ -98,6 +149,17 @@ export async function updateClassroomResourcesForTeacher(
         input.materials == null ? current.materials : String(input.materials);
     const nextHomework =
         input.homework == null ? current.homework : String(input.homework);
+    const nextFiles = input.files == null ? current.files : input.files;
+    const nextAgendaDocument =
+        input.agendaDocument == null
+            ? current.agendaDocument
+            : String(input.agendaDocument);
+    const nextAgendaSnapshots =
+        input.agendaSnapshots == null
+            ? current.agendaSnapshots
+            : input.agendaSnapshots;
+    const filesJson = JSON.stringify(nextFiles);
+    const agendaSnapshotsJson = JSON.stringify(nextAgendaSnapshots);
     await db.executeCommand({
         option: "INSERT",
         table: "classroom_resources",
@@ -105,6 +167,9 @@ export async function updateClassroomResourcesForTeacher(
             class_id: classId,
             materials: nextMaterials,
             homework: nextHomework,
+            files: filesJson,
+            agenda_document: nextAgendaDocument,
+            agenda_snapshots: agendaSnapshotsJson,
             updated_by: teacherAccountId,
             updated_at: updatedAt,
         },
@@ -114,6 +179,9 @@ export async function updateClassroomResourcesForTeacher(
             update: {
                 materials: nextMaterials,
                 homework: nextHomework,
+                files: filesJson,
+                agenda_document: nextAgendaDocument,
+                agenda_snapshots: agendaSnapshotsJson,
                 updated_by: teacherAccountId,
                 updated_at: updatedAt,
             },
@@ -123,6 +191,9 @@ export async function updateClassroomResourcesForTeacher(
         classId,
         materials: nextMaterials,
         homework: nextHomework,
+        files: nextFiles,
+        agendaDocument: nextAgendaDocument,
+        agendaSnapshots: nextAgendaSnapshots,
         updatedBy: teacherAccountId,
         updatedAt,
     };

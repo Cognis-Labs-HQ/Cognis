@@ -1,11 +1,12 @@
 .classes-whiteboard-panel {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     background: var(--color-surface, #fff);
-    z-index: 40;
     overflow: hidden;
+    border-radius: 0 0 10px 10px;
 }
 
 .classes-whiteboard-panel[hidden] {
@@ -102,8 +103,4 @@
     min-width: 0;
     height: auto;
     width: auto;
-}
-
-.classes-whiteboard-active .classes-blackboard-surface {
-    visibility: hidden;
 }

@@ -19,6 +19,10 @@
     opacity: 1;
 }
 
+.popup-overlay--critical {
+    z-index: 10000;
+}
+
 .popup-dialog {
     background: var(--surface-2);
     border: 1px solid var(--border);

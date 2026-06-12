@@ -1,8 +1,9 @@
 import {
     renderDeskFloor,
-    renderStudentRoster,
+    renderRosterPanel,
 } from "/static/adapters/study/classes/classroom-render.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 
 /**
  * Returns a `refreshDynamicDom()` function that surgically updates only the
@@ -16,13 +17,11 @@ export function createDynamicDomRefresher({
     getSelectedSeatNumber,
     i18n,
     isTeacherView,
-    getWorkspaceMode,
 }) {
     return function refreshDynamicDom() {
         const snapshot = selectedSnapshot();
         if (!snapshot) return;
         const selectedSeatNumber = getSelectedSeatNumber();
-        const workspaceMode = getWorkspaceMode();
 
         // Re-render the desk floor (seats, presence, roster changes)
         const deskFloor = root.querySelector(".classes-desk-floor");
@@ -44,20 +43,78 @@ export function createDynamicDomRefresher({
             }
         }
 
-        const rosterMarkup = renderStudentRoster({ snapshot, i18n });
-        const liveRailRoster = root.querySelector(".classes-live-rail-roster");
-        if (liveRailRoster instanceof HTMLElement) {
-            liveRailRoster.innerHTML = rosterMarkup;
-        }
-        if (workspaceMode === "roster") {
-            const rosterSection = root.querySelector(
-                ".classes-workspace-roster",
-            );
-            if (rosterSection instanceof HTMLElement) {
-                rosterSection.innerHTML = rosterMarkup;
-            }
+        const rosterPanelMarkup = renderRosterPanel({ snapshot, i18n });
+        const rosterPanel = root.querySelector(".classes-roster-panel");
+        if (rosterPanel instanceof HTMLElement) {
+            rosterPanel.outerHTML = rosterPanelMarkup;
         }
 
         void hydrateProfileAvatars(root);
+    };
+}
+
+/**
+ * Returns a `refreshWorkspaceTilesOnly()` function that surgically updates
+ * workspace tile active states and inserts newly initialized tiles without
+ * touching the meeting iframe — preventing WebRTC session resets.
+ */
+export function createWorkspaceTileRefresher({
+    root,
+    getWorkspaceMode,
+    getInitializedTiles,
+    getTileOrder,
+    i18n,
+    fallbackRefreshDom,
+}) {
+    return function refreshWorkspaceTilesOnly() {
+        const tilesContainer = root.querySelector(".classes-workspace-tiles");
+        if (!(tilesContainer instanceof HTMLElement)) {
+            fallbackRefreshDom();
+            return;
+        }
+        const workspaceMode = getWorkspaceMode();
+        const initializedTiles = getInitializedTiles();
+        const tileOrder = getTileOrder();
+        const activeTileMode =
+            workspaceMode === "whiteboard" || workspaceMode === "meeting"
+                ? workspaceMode
+                : "agenda";
+        tilesContainer.dataset.activeWorkspaceMode = activeTileMode;
+        for (const tile of tilesContainer.querySelectorAll(
+            ".classes-workspace-tile[data-workspace-mode]",
+        )) {
+            const tileMode = String(tile.dataset.workspaceMode ?? "");
+            tile.classList.toggle("active", tileMode === activeTileMode);
+        }
+        if (
+            initializedTiles.has("whiteboard") &&
+            !tilesContainer.querySelector(".classes-workspace-tile--whiteboard")
+        ) {
+            const depth = tileOrder.indexOf("whiteboard");
+            const whiteboardSection = document.createElement("section");
+            whiteboardSection.className = `classes-workspace-tile classes-workspace-tile--whiteboard${
+                activeTileMode === "whiteboard" ? " active" : ""
+            }`;
+            whiteboardSection.dataset.workspaceMode = "whiteboard";
+            whiteboardSection.style.setProperty(
+                "--tile-depth",
+                String(depth >= 0 ? depth : tileOrder.length - 1),
+            );
+            whiteboardSection.innerHTML = `<button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button><div class="classes-workspace-tile-content classes-whiteboard-workspace-host"></div>`;
+            const meetingTile = tilesContainer.querySelector(
+                ".classes-workspace-tile--meeting",
+            );
+            if (meetingTile) {
+                tilesContainer.insertBefore(whiteboardSection, meetingTile);
+            } else {
+                tilesContainer.appendChild(whiteboardSection);
+            }
+        }
+        for (const tabButton of root.querySelectorAll(
+            ".classes-workspace-tab-btn[data-workspace-mode]",
+        )) {
+            const tabMode = String(tabButton.dataset.workspaceMode ?? "");
+            tabButton.classList.toggle("active", tabMode === workspaceMode);
+        }
     };
 }

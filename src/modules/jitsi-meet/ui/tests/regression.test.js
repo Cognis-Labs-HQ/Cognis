@@ -112,15 +112,26 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.match(source, /"subject",[\s\S]*MEETING_SUBJECT/);
     assert.match(source, /preferredTheme: themeMode,/);
     assert.match(source, /disableDeepLinking: true,/);
-    assert.match(source, /avatarUrl: state\.currentProfile\?\.avatarUrl/);
-    assert.match(source, /"avatarUrl",[\s\S]*state\.currentProfile\.avatarUrl/);
+    assert.match(source, /const safeAvatarUrl = resolveSafeJitsiAvatarUrl\(/);
+    assert.match(source, /avatarUrl: safeAvatarUrl,/);
+    assert.match(source, /"avatarUrl",[\s\S]*safeAvatarUrl/);
     assert.match(
         embedSource,
         /hashParams\.set\("config\.disableDeepLinking", "true"\)/,
     );
+    assert.match(embedSource, /resolveSafeJitsiAvatarUrl\(/);
     assert.match(
         embedSource,
-        /hashParams\.set\("userInfo\.avatarUrl", profile\.avatarUrl\)/,
+        /new URL\(\s*normalizedAvatarUrl,\s*window\.location\.origin,\s*\)/,
+    );
+    assert.match(
+        embedSource,
+        /if \(parsedAvatarUrl\.origin !== meetingOrigin\) \{\s*return "";\s*\}/,
+    );
+    assert.match(embedSource, /return parsedAvatarUrl\.toString\(\);/);
+    assert.match(
+        embedSource,
+        /hashParams\.set\("userInfo\.avatarUrl", safeAvatarUrl\)/,
     );
     assert.match(
         embedSource,
@@ -269,6 +280,14 @@ test("meetings session state polling handles closed meetings and distinct leave 
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
     assert.match(source, /honorMeetingClosed: false/);
+    assert.match(
+        source,
+        /addEventListener\("toolbarButtonClicked",[\s\S]*"hangup"/,
+    );
+    assert.match(
+        source,
+        /addEventListener\("toolbarButtonClicked",[\s\S]*handleMeetingLeft\(\)/,
+    );
     assert.match(
         source,
         /addEventListener\("readyToClose", handleMeetingLeft\)/,
@@ -569,4 +588,66 @@ test("jitsi API exposes user active meetings endpoint", () => {
         classroomEmbedSource,
         /meetings\/active\?classroomId=\$\{encodeURIComponent\(id\)\}/,
     );
+    assert.match(classroomEmbedSource, /skipChatRoomCreation:\s*true/);
+    assert.match(
+        classroomEmbedSource,
+        /const safeAvatarUrl = resolveSafeJitsiAvatarUrl\(/,
+    );
+    assert.match(classroomEmbedSource, /avatarUrl: safeAvatarUrl,/);
+});
+
+test("classroom meetings intercept hangup, show the meeting overlay, and block same-meeting auto-rejoin", () => {
+    const classroomEmbedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/classroom-meeting-embed.js"),
+        "utf8",
+    );
+    const classroomWindowsSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-windows.js"),
+        "utf8",
+    );
+    const classroomPageSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+    assert.match(classroomEmbedSource, /classes-meeting-overlay/);
+    assert.match(classroomEmbedSource, /module\.jitsi_meet\.overlay\.joining/);
+    assert.match(classroomEmbedSource, /function updateOverlay\(/);
+    assert.match(classroomEmbedSource, /let dismissedMeetingId = null;/);
+    assert.match(
+        classroomEmbedSource,
+        /addEventListener\("toolbarButtonClicked",[\s\S]*"hangup"/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /closeMeeting\(\{\s*suppressAutoJoin: true,[\s\S]*returnMode: "agenda"/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /addEventListener\(\s*"videoConferenceLeft"/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /addEventListener\("readyToClose", handleMeetingLeft\)/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /window\.addEventListener\(\s*"click"[\s\S]*overlay\.leave_blocked/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /window\.addEventListener\(\s*"popstate"[\s\S]*overlay\.leave_blocked/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /isMeetingDismissed: \(meetingId\) =>[\s\S]*dismissedMeetingId/,
+    );
+    assert.match(
+        classroomWindowsSource,
+        /isMeetingDismissed: \(meetingId\) =>[\s\S]*meetingEmbed\.isMeetingDismissed\(meetingId\)/,
+    );
+    assert.match(
+        classroomPageSource,
+        /const meetingAutoJoinBlocked = Boolean\([\s\S]*isMeetingDismissed\?\.\(activeMeetingId\)/,
+    );
+    assert.match(classroomPageSource, /returnMode === "agenda"/);
 });

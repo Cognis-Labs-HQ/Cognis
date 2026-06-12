@@ -235,6 +235,10 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 type: "text",
             },
             {
+                name: "active_material_key",
+                type: "text",
+            },
+            {
                 name: "updated_at",
                 type: "timestamp",
                 notNull: true,
@@ -258,6 +262,24 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 type: "text",
                 notNull: true,
                 default: "",
+            },
+            {
+                name: "files",
+                type: "text",
+                notNull: true,
+                default: "[]",
+            },
+            {
+                name: "agenda_document",
+                type: "text",
+                notNull: true,
+                default: "",
+            },
+            {
+                name: "agenda_snapshots",
+                type: "text",
+                notNull: true,
+                default: "[]",
             },
             { name: "updated_by", type: "text" },
             {
@@ -337,6 +359,7 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
     await ensureStudyClassesColumns(db);
     await ensureTeacherRequestColumns(db);
     await ensureClassroomStateColumns(db);
+    await ensureClassroomResourcesColumns(db);
     await ensureStudyLanguagesSchema(db);
 }
 
@@ -375,6 +398,20 @@ async function ensureClassroomStateColumns(db: DbExecutor): Promise<void> {
         "classroom_state",
         "active_whiteboard_id",
     );
+    await ensureMissingColumn(
+        rawDb,
+        dialect,
+        "classroom_state",
+        "active_material_key",
+    );
+}
+
+async function ensureClassroomResourcesColumns(db: DbExecutor): Promise<void> {
+    const rawDb = db as Partial<RawDbExecutor>;
+    if (typeof rawDb.execute !== "function") return;
+    const dialect = await detectSqlDialect(rawDb);
+    await ensureMissingResourceColumn(rawDb, dialect, "agenda_document");
+    await ensureMissingResourceColumn(rawDb, dialect, "agenda_snapshots");
 }
 
 type SupportedSqlDialect = "sqlite" | "postgres" | "mariadb";
@@ -405,7 +442,8 @@ async function ensureMissingColumn(
         | "class_name"
         | "student_limit"
         | "board_focus"
-        | "active_whiteboard_id",
+        | "active_whiteboard_id"
+        | "active_material_key",
 ): Promise<void> {
     if (!db.execute) return;
     if (await hasColumn(db, dialect, tableName, columnName)) {
@@ -425,7 +463,8 @@ async function hasColumn(
         | "class_name"
         | "student_limit"
         | "board_focus"
-        | "active_whiteboard_id",
+        | "active_whiteboard_id"
+        | "active_material_key",
 ): Promise<boolean> {
     if (!db.execute) return false;
     if (dialect === "sqlite") {
@@ -455,13 +494,15 @@ function resolveAddColumnStatement(
         | "class_name"
         | "student_limit"
         | "board_focus"
-        | "active_whiteboard_id",
+        | "active_whiteboard_id"
+        | "active_material_key",
 ): string {
     if (tableName === "study_classes" && columnName === "join_mode") {
         return dialect === "mariadb"
             ? "ALTER TABLE study_classes ADD COLUMN join_mode VARCHAR(32) NOT NULL DEFAULT 'on_request'"
             : "ALTER TABLE study_classes ADD COLUMN join_mode TEXT NOT NULL DEFAULT 'on_request'";
     }
+
     if (tableName === "study_classes" && columnName === "is_listed") {
         return dialect === "mariadb"
             ? "ALTER TABLE study_classes ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"
@@ -500,9 +541,68 @@ function resolveAddColumnStatement(
             ? "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id VARCHAR(255) NULL"
             : "ALTER TABLE classroom_state ADD COLUMN active_whiteboard_id TEXT";
     }
+    if (
+        tableName === "classroom_state" &&
+        columnName === "active_material_key"
+    ) {
+        return dialect === "mariadb"
+            ? "ALTER TABLE classroom_state ADD COLUMN active_material_key VARCHAR(1024) NULL"
+            : "ALTER TABLE classroom_state ADD COLUMN active_material_key TEXT";
+    }
     return dialect === "mariadb"
         ? "ALTER TABLE teacher_requests ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"
         : "ALTER TABLE teacher_requests ADD COLUMN is_listed INTEGER NOT NULL DEFAULT 1";
+}
+
+async function ensureMissingResourceColumn(
+    db: Partial<RawDbExecutor>,
+    dialect: SupportedSqlDialect,
+    columnName: "agenda_document" | "agenda_snapshots",
+): Promise<void> {
+    if (!db.execute) return;
+    if (await hasResourceColumn(db, dialect, columnName)) {
+        return;
+    }
+    await db.execute(resolveAddResourceColumnStatement(dialect, columnName));
+}
+
+async function hasResourceColumn(
+    db: Partial<RawDbExecutor>,
+    dialect: SupportedSqlDialect,
+    columnName: "agenda_document" | "agenda_snapshots",
+): Promise<boolean> {
+    if (!db.execute) return false;
+    if (dialect === "sqlite") {
+        const result = await db.execute(
+            "PRAGMA table_info(classroom_resources)",
+        );
+        return (result.rows ?? []).some(
+            (row) =>
+                String((row as Record<string, unknown>).name) === columnName,
+        );
+    }
+    const schemaPredicate =
+        dialect === "mariadb"
+            ? "table_schema = DATABASE()"
+            : "table_schema = current_schema()";
+    const result = await db.execute(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = 'classroom_resources' AND column_name = '${columnName}' AND ${schemaPredicate}`,
+    );
+    return (result.rows?.length ?? 0) > 0;
+}
+
+function resolveAddResourceColumnStatement(
+    dialect: SupportedSqlDialect,
+    columnName: "agenda_document" | "agenda_snapshots",
+): string {
+    if (columnName === "agenda_document") {
+        return dialect === "mariadb"
+            ? "ALTER TABLE classroom_resources ADD COLUMN agenda_document TEXT NOT NULL DEFAULT ''"
+            : "ALTER TABLE classroom_resources ADD COLUMN agenda_document TEXT NOT NULL DEFAULT ''";
+    }
+    return dialect === "mariadb"
+        ? "ALTER TABLE classroom_resources ADD COLUMN agenda_snapshots TEXT NOT NULL DEFAULT '[]'"
+        : "ALTER TABLE classroom_resources ADD COLUMN agenda_snapshots TEXT NOT NULL DEFAULT '[]'";
 }
 
 export async function ensureStudyLanguagesSchema(

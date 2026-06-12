@@ -6,6 +6,34 @@ import {
 
 let jitsiExternalApiLoader = null;
 
+/**
+ * Resolves a profile avatar URL that is safe to pass into a Jitsi room URL.
+ * The avatar is only kept when it matches the meeting origin to avoid mixed
+ * content and cross-origin fetch failures inside the embedded meeting iframe.
+ *
+ * @param {string | null | undefined} avatarUrl
+ * @param {string | null | undefined} meetingUrl
+ * @returns {string}
+ */
+export function resolveSafeJitsiAvatarUrl(avatarUrl, meetingUrl) {
+    const normalizedAvatarUrl = String(avatarUrl ?? "").trim();
+    if (!normalizedAvatarUrl) return "";
+    const meetingOrigin = resolveUrlOrigin(meetingUrl);
+    if (!meetingOrigin) return "";
+    try {
+        const parsedAvatarUrl = new URL(
+            normalizedAvatarUrl,
+            window.location.origin,
+        );
+        if (parsedAvatarUrl.origin !== meetingOrigin) {
+            return "";
+        }
+        return parsedAvatarUrl.toString();
+    } catch {
+        return "";
+    }
+}
+
 function readThemeCookie() {
     const match = document.cookie.match(/(?:^|; )cognis_theme=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : "";
@@ -54,8 +82,11 @@ export function buildMeetingJoinUrl(meetingUrl, profile) {
         if (profile?.displayName)
             hashParams.set("userInfo.displayName", profile.displayName);
         if (profile?.email) hashParams.set("userInfo.email", profile.email);
-        if (profile?.avatarUrl)
-            hashParams.set("userInfo.avatarUrl", profile.avatarUrl);
+        const safeAvatarUrl = resolveSafeJitsiAvatarUrl(
+            profile?.avatarUrl,
+            meetingUrl,
+        );
+        if (safeAvatarUrl) hashParams.set("userInfo.avatarUrl", safeAvatarUrl);
         parsed.hash = hashParams.toString();
         return parsed.toString();
     } catch {

@@ -63,6 +63,16 @@ test("jitsi meeting creation resolves hidden participants only for admins", () =
     );
 });
 
+test("jitsi meeting creation supports chat-room creation opt-out", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /skipChatRoomCreation/);
+    assert.match(source, /body\?\.skipChatRoomCreation !== true/);
+});
+
 test("jitsi meetings API exposes current events query endpoint", () => {
     const apiSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),

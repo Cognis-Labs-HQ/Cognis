@@ -164,6 +164,26 @@
 
 **Reason ignored:** This is non-functional documentation feedback in a separate gateway area and not part of the classroom-page UX scope of this task.
 
+## Code Review — classroom view sync + meeting force fixes
+
+### classroom-notepad.js execStyle range edge cases
+
+**Reviewer suggestion:** Replace manual Selection/Range formatting in `execStyle` with a richer contenteditable abstraction (or document all known nested-formatting limits).
+
+**Reason ignored:** This task addressed meeting/view-sync regressions and removed deprecated `document.execCommand` usage for color/font changes. Replacing the entire notepad rich-text editing model with a new abstraction is a broader editor architecture project and requires dedicated compatibility testing beyond this fix.
+
+### classroom-files-route.ts and classroom-file-actions.js shared notepad prefix constant
+
+**Reviewer suggestion:** Extract the duplicated `classroom-notes/` prefix into a shared constant.
+
+**Reason ignored:** The current route/file-action paths are stable and this review note is unrelated to the meeting/view-sync regression path. I kept this task focused on the requested classroom sync behavior changes; shared prefix extraction can be addressed safely in a dedicated cleanup change.
+
+### classroom-file-actions.js server-side rename optimization
+
+**Reviewer suggestion:** Replace the read-write-delete rename flow with a dedicated server-side rename/move API to avoid loading full file content.
+
+**Reason ignored:** Implementing this suggestion requires adding new file-gateway capabilities and route contracts, then updating adapter behavior and tests together. That is a valid improvement, but it is a larger backend feature change separate from the classroom sync regression fix requested here.
+
 ### modules/study/languages/reuse/classroom-page.js teacher-view helper deduplication
 
 **Reviewer suggestion:** Extract duplicated teacher-view logic into a shared helper.
@@ -349,3 +369,155 @@
 **Reviewer suggestion:** Build the `claims.sub` JSON payload safely in `src/gateways/social/bootstrap.ts`.
 
 **Reason ignored:** This is an unrelated gateway issue outside the files changed for this classroom task.
+
+## Architecture compliance — classes.css over 1000 lines
+
+`src/adapters/study/classes/ui/classes.css` was already 1034 lines at the start of this PR (pre-existing). It needs to be split into a subdirectory with focused sibling files (e.g. `classes/base.css`, `classes/room.css`, `classes/desk.css`). Not addressed in this PR because it is a pre-existing issue unrelated to the classroom overhaul changes.
+
+## Pre-existing test failures (not introduced by this PR)
+
+### classroom-notepad.test.js — module resolution failure
+
+`src/adapters/study/notepad/tests/classroom-notepad.test.js` fails because `classroom-notepad.js` imports `/static/reuse/api-client.js` using a browser-rooted path that Node cannot resolve. The test infrastructure needs a module alias resolver or the import path needs to be made Node-compatible. Not addressed in this PR as this pre-dates these changes.
+
+### classes.css over 1000 lines
+
+`src/adapters/study/classes/ui/classes.css` is 1034 lines at HEAD, already above the 1000-line guardrail before this PR. Needs to be split into focused sibling files under a `classes/` subdirectory. Not addressed in this PR.
+
+## Code review items deferred from classroom overhaul PR
+
+### Server-side rename for notepad files
+
+`classroom-file-actions.js renameNotepadFile` reads the full file content into memory to perform a rename via read-write-delete. A dedicated server-side rename/move endpoint in the file gateway would avoid this. Requires a new route on the file gateway.
+
+### `document.execCommand` deprecated in classroom notepad
+
+`src/adapters/study/notepad/ui/classroom-notepad.js` lines 139 and 152 use the deprecated `document.execCommand` API for text formatting. Should be replaced with the modern Selection API. Pre-existing issue not introduced by this PR.
+
+## Code Review — classroom chat/workspace controls follow-up
+
+### notepad/classroom-notepad.js deprecates `document.execCommand`
+
+**Reviewer suggestion:** Replace `document.execCommand` usage in `src/adapters/study/notepad/ui/classroom-notepad.js` with Selection/Range APIs.
+
+**Reason ignored:** This change touches rich-text editing behavior in the standalone notepad adapter, which is outside this classroom chat/workspace fix and requires dedicated UX regression testing for editor commands.
+
+### classroom-file-actions.js rename reads full file content
+
+**Reviewer suggestion:** Add server-side rename/move support instead of client-side read/write/delete in `renameNotepadFile`.
+
+**Reason ignored:** Introducing a new file-gateway rename API is a cross-layer contract change and requires separate API design, routing, authorization validation, and tests that exceed this targeted UI/workflow fix.
+
+### jitsi meeting embed variable naming expansion
+
+**Reviewer suggestion:** Rename `authBlocked`, `triedMeetingId`, `dismissedMeetingId`, and `openInProgress` in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` to longer explicit names.
+
+**Reason ignored:** This is naming-only churn in a module outside the files touched for the current classroom and dashboard regressions. It does not impact correctness, security, or the requested behavior and is better handled in a focused readability pass.
+
+## Code Review — Tiled material viewer (feat/tiled-material-viewer)
+
+### classroom-file-actions.js uses textarea selector for contentEditable notepad
+
+**Source:** `src/adapters/study/classes/ui/classroom-file-actions.js` lines 159–162 and 347–353
+
+**Reason deferred:** Pre-existing issue unrelated to the tiled viewer feature. The notepad refactor that introduced the `contentEditable` editor is a separate concern; fixing it risks unintended regressions outside this PR's scope.
+
+### DEFAULT_AGENDA_DURATION_MS hardcoded in interactions.js
+
+**Source:** `src/adapters/study/classes/ui/classroom/interactions.js` line 3
+
+**Reason deferred:** Pre-existing constant unrelated to the tiled viewer feature. Adding a teacher-facing duration input is a separate UX enhancement.
+
+### server-side MIME type validation for classroom file uploads
+
+**Source:** `src/adapters/study/classes/ui/classroom-resource-actions.js` line 68
+
+**Reason deferred:** Pre-existing client-side extension whitelist. Full MIME sniffing requires server-side changes across the file gateway and is outside the tiled viewer scope.
+
+## Code Review — classroom tiled workspace stabilization
+
+### dashboard-layout-followups.test.js runtime-assertion gap
+
+**Reviewer suggestion:** Replace regex source checks with runtime behavior assertions for scroll hysteresis and chat-toggle visibility.
+
+**Reason ignored:** This feedback targets `src/ui/tests/dashboard-layout-followups.test.js`, which is unrelated to the classroom workspace tiling fix in this PR. Expanding into dashboard-layout test redesign would widen scope across a separate UI subsystem and is tracked here for a dedicated follow-up.
+
+### jitsi classroom embed authBlocked naming
+
+**Reviewer suggestion:** Rename `authBlocked` in `src/modules/jitsi-meet/ui/classroom-meeting-embed.js` to a clearer lifecycle-specific name.
+
+**Reason ignored:** The current task is focused on stabilizing classroom tiled behavior and interaction flow, not a naming refactor inside the Jitsi module internals. This can be handled in a dedicated readability cleanup without mixing concerns in this behavior-focused patch.
+
+### jitsi classroom embed openInProgress guard
+
+**Reviewer suggestion:** Re-check that `openInProgress` cannot stay stuck `true` in exceptional paths.
+
+**Reason ignored:** The flagged code path already resets `openInProgress` in `finally`, and this PR does not modify that logic. No regression evidence was introduced by the tiled workspace change, so this remains a separate hardening follow-up item.
+
+### classroom/index.js teacher-active helper extraction
+
+**Reviewer suggestion:** Extract teacher-active meeting detection into a dedicated helper for clarity.
+
+**Reason ignored:** The suggested extraction is a refactor to existing meeting-presence matching logic that predates this change and is not required for the tiled view stabilization behavior. I kept this patch scoped to interaction and rendering fixes.
+
+### classroom-resource-actions extensionless upload allowance
+
+**Reviewer suggestion:** Disallow extensionless uploads in `classroom-resource-actions.js`.
+
+**Reason ignored:** This is a broader file-upload policy/security change outside the requested tiled workspace behavior and requires product-level validation of accepted classroom material formats. It is tracked for a dedicated security-policy update.
+
+### classroom-file-actions default notepad filename helper
+
+**Reviewer suggestion:** Extract the default notes filename format into a dedicated helper.
+
+**Reason ignored:** This is a maintainability refactor in notepad file-export naming and unrelated to the meeting/whiteboard/nodes tiling stabilization delivered here. Deferred to a separate cleanup pass.
+
+### classroom-render material extension parsing robustness
+
+**Reviewer suggestion:** Harden extension parsing for material keys without dots or with path separators.
+
+**Reason ignored:** The noted parser issue is orthogonal to tiled workspace behavior and existed before this change set. It should be fixed in a dedicated material-viewer parsing task with focused tests.
+
+### meeting-embed.js JSDoc tags
+
+**Reviewer suggestion:** Add `@param`/`@returns` tags to `resolveSafeJitsiAvatarUrl`.
+
+**Reason ignored:** This is documentation hygiene in `src/modules/jitsi-meet/ui/meeting-embed.js`, unrelated to the classroom tile behavior fix. Deferred to a docs/readability sweep for the Jitsi UI module.
+
+## Code Review — Lazy classroom tile initialization
+
+### classroom/index.js — rename `isClassSearchDetached`
+
+**Reviewer suggestion:** Rename `isClassSearchDetached` to `isClassSelectionManual` or `hasExplicitClassSelection` to better convey that the user has manually navigated to the class search interface.
+
+**Reason ignored:** Pre-existing variable name not introduced by this PR. Renaming would require a coordinated update to the test in `workspace-regression.test.js` that asserts the exact string, for no behavioral change. Left for a dedicated rename/refactor pass.
+
+### classroom-meeting-embed.js — comments on state variables
+
+**Reviewer suggestion:** Add brief comments explaining the purpose of `authBlocked`, `triedMeetingId`, `dismissedMeetingId`, and `openInProgress` at lines 71–74.
+
+**Reason ignored:** File not touched in this PR. The opportunistic-improvement scope does not extend to `classroom-meeting-embed.js`.
+
+### classroom-resource-actions.js — clarify empty string in allowed extensions set
+
+**Reviewer suggestion:** Add a comment explaining that the empty string `""` in the allowed extensions set represents files without extensions, or use an explicit constant.
+
+**Reason ignored:** File not touched in this PR. Scope does not extend to `classroom-resource-actions.js`.
+
+### meeting-embed.js — distinguish missing avatar URL from missing meeting origin
+
+**Reviewer suggestion:** Return `null` instead of `""` for error cases in `meeting-embed.js` to distinguish them from intentionally empty avatars.
+
+**Reason ignored:** File not touched in this PR. Scope does not extend to `meeting-embed.js`.
+
+### classroom/index.js — `teacherActiveInMeeting` O(n) iteration on every refresh
+
+**Reviewer suggestion:** Cache the `teacherActiveInMeeting` result or use a Map for O(1) lookup instead of iterating `activeParticipants` on every refresh cycle.
+
+**Reason ignored:** Pre-existing logic not introduced by this PR. The participant list is bounded by classroom capacity (typically small). Caching would require invalidation logic. Left for a separate performance-focused pass.
+
+### dashboard-layout.js — magic hysteresis threshold numbers
+
+**Reviewer suggestion:** Add a comment explaining why 48 and 18 pixel thresholds were chosen at lines 32–33.
+
+**Reason ignored:** File not touched in this PR. Scope does not extend to `dashboard-layout.js`.

@@ -20,22 +20,27 @@ import {
     applyClassroomViewModeFromUrl,
     canToggleClassroomView,
     getClassroomViewMode,
+    setClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
 import { renderClassroomPage } from "/static/adapters/study/classes/classroom-render.js";
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
 import { openClassSettingsPopup } from "/static/adapters/study/classes/classroom-popups.js";
-import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
 import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
 import { createClassroomWindows } from "/static/adapters/study/classes/classroom-windows.js";
-import { createDynamicDomRefresher } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
+import {
+    createDynamicDomRefresher,
+    createWorkspaceTileRefresher,
+} from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
 import { createClassroomNotepad } from "/static/adapters/study/notepad/classroom-notepad.js";
 import { handleWhiteboardAndNotepadActions } from "/static/adapters/study/classes/classroom-whiteboard-actions.js";
 import { handleResourceActions } from "/static/adapters/study/classes/classroom-resource-actions.js";
+import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
 import { bindClassroomInteractions } from "/static/adapters/study/classes/classroom/interactions.js";
+import { normalizeBoardFocus } from "/static/adapters/study/classes/board-focus.js";
 
 function buildQuery(params) {
     const query = new URLSearchParams();
@@ -46,31 +51,51 @@ function buildQuery(params) {
     return query.toString();
 }
 
-function normalizeBoardFocus(input) {
-    return String(input ?? "")
-        .trim()
-        .toLowerCase() === "classroom"
-        ? "classroom"
-        : "agenda";
-}
-
 function normalizeWorkspaceMode(input) {
     const normalized = String(input ?? "")
         .trim()
         .toLowerCase();
     if (
-        normalized === "roster" ||
         normalized === "notepad" ||
         normalized === "whiteboard" ||
-        normalized === "meeting"
+        normalized === "meeting" ||
+        normalized === "chat"
     ) {
         return normalized;
     }
     return "agenda";
 }
 
+function normalizeSidebarMode(input) {
+    const normalized = String(input ?? "")
+        .trim()
+        .toLowerCase();
+    if (normalized === "students" || normalized === "agenda") {
+        return normalized;
+    }
+    return "materials";
+}
+
+function createDefaultClassResources() {
+    return {
+        materials: "",
+        homework: "",
+        files: [],
+        agendaDocument: "",
+        agendaSnapshots: [],
+    };
+}
+
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
+    const referrerUrl = document.referrer
+        ? new URL(document.referrer, window.location.origin)
+        : null;
+    const previousPath =
+        referrerUrl?.origin === window.location.origin &&
+        referrerUrl?.pathname !== window.location.pathname
+            ? referrerUrl.pathname + referrerUrl.search
+            : "/";
     const i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/adapters/study/notepad/languages",
@@ -111,12 +136,14 @@ export async function mount(root, { signal } = {}) {
     let selectedClassId = String(query.get("classId") ?? "").trim();
     let selectedSeatNumber = null;
     let selectedNotebookText = "";
-    let classResources = { materials: "", homework: "" };
-    let activeAgendaItems = [];
+    let classResources = createDefaultClassResources();
+    let agendaDocument = "";
+    let agendaSnapshots = [];
     let selectedLanguageFilter = "";
     let searchQuery = "";
     let workspaceMode = "agenda";
     let lastNonMeetingWorkspaceMode = "agenda";
+    let sidebarMode = "materials";
     const presenceByAccountId = new Map();
     const boardEntityStore = createBoardEntityStore();
     let interactionsBound = false;
@@ -127,6 +154,15 @@ export async function mount(root, { signal } = {}) {
     let whiteboards = [];
     let activeWhiteboard = null;
     let activeMeetingId = null;
+    let activeMaterialKey = null;
+    let isClassSearchDetached = false;
+    let blackboardExpanded = true;
+    /** Tracks which tiles have been initialized by user action or system auto-open. */
+    let initializedTiles = new Set();
+    /** "stacked" (depth fan) or "slideshow" (single tile + arrows). */
+    let tileLayout = "stacked";
+    /** Ordered tile modes; last element is the front/active tile. */
+    let tileOrder = ["agenda"];
 
     function isTeacherView() {
         return teacherAccount && getClassroomViewMode() === "teacher";
@@ -147,7 +183,12 @@ export async function mount(root, { signal } = {}) {
         return activeWhiteboardId || null;
     }
 
-    async function persistActiveWhiteboardId(classId, nextActiveWhiteboardId) {
+    function getSelectedActiveMaterialKey(snapshot = selectedSnapshot()) {
+        const key = String(snapshot?.classroom?.activeMaterialKey ?? "").trim();
+        return key || null;
+    }
+
+    async function patchClassroomLayout(classId, fields) {
         const normalizedClassId = String(classId ?? "").trim();
         if (!teacherAccount || !normalizedClassId) {
             return false;
@@ -157,18 +198,14 @@ export async function mount(root, { signal } = {}) {
             {
                 method: "PATCH",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    activeWhiteboardId: nextActiveWhiteboardId ?? null,
-                }),
+                body: JSON.stringify(fields),
             },
         );
         if (!response.ok) {
             return false;
         }
         const payload = await response.json().catch(() => null);
-        const nextState = payload?.data ?? {
-            activeWhiteboardId: nextActiveWhiteboardId ?? null,
-        };
+        const nextState = payload?.data ?? fields;
         classroomSnapshots = classroomSnapshots.map((snapshot) =>
             snapshot.id === normalizedClassId
                 ? {
@@ -183,6 +220,18 @@ export async function mount(root, { signal } = {}) {
         return true;
     }
 
+    async function persistActiveWhiteboardId(classId, nextActiveWhiteboardId) {
+        return patchClassroomLayout(classId, {
+            activeWhiteboardId: nextActiveWhiteboardId ?? null,
+        });
+    }
+
+    async function persistActiveMaterialKey(classId, nextActiveMaterialKey) {
+        return patchClassroomLayout(classId, {
+            activeMaterialKey: nextActiveMaterialKey ?? null,
+        });
+    }
+
     function syncGlobalChatTarget() {
         const chatToggle = root.querySelector("#global-chat-toggle");
         if (!(chatToggle instanceof HTMLElement)) return;
@@ -191,57 +240,55 @@ export async function mount(root, { signal } = {}) {
     }
 
     function getDefaultWorkspaceMode() {
-        const snapshot = selectedSnapshot();
-        return snapshot &&
-            normalizeBoardFocus(snapshot?.classroom?.boardFocus) === "classroom"
-            ? "roster"
-            : "agenda";
+        return "agenda";
     }
 
     function getWorkspaceMode() {
-        if (classroomWindows?.isMeetingOpen()) {
-            return "meeting";
-        }
         return workspaceMode;
     }
 
     function setWorkspaceMode(nextMode, { remember = true } = {}) {
         const normalizedMode = normalizeWorkspaceMode(nextMode);
         workspaceMode = normalizedMode;
+        if (normalizedMode === "whiteboard") {
+            initializedTiles.add("whiteboard");
+            if (!tileOrder.includes("whiteboard")) {
+                tileOrder = [...tileOrder, "whiteboard"];
+            }
+        } else if (normalizedMode === "meeting") {
+            initializedTiles.add("meeting");
+            if (!tileOrder.includes("meeting")) {
+                tileOrder = [...tileOrder, "meeting"];
+            }
+        }
         if (normalizedMode !== "meeting" && remember) {
             lastNonMeetingWorkspaceMode = normalizedMode;
         }
     }
 
     function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
-        if (isTeacherView()) {
-            return;
-        }
-        const defaultWorkspaceMode = getDefaultWorkspaceMode();
+        if (isTeacherView() || !snapshot) return;
+        const meetingAutoJoinBlocked = Boolean(
+            activeMeetingId &&
+            classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+        );
         if (
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&
-            !activeMeetingId
+            (!activeMeetingId || meetingAutoJoinBlocked)
         ) {
-            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
+            setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
-        if (
-            workspaceMode === "whiteboard" &&
-            !getSelectedActiveWhiteboardId(snapshot) &&
-            !activeWhiteboard?.embedUrl
-        ) {
-            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
+        const boardFocus = normalizeBoardFocus(snapshot?.classroom?.boardFocus);
+        if (workspaceMode !== "meeting" && !classroomWindows?.isMeetingOpen()) {
+            if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
+            if (boardFocus) setWorkspaceMode(boardFocus, { remember: false });
         }
     }
 
     function syncWorkspaceModeWithSnapshot({ force = false } = {}) {
         const nextMode = getDefaultWorkspaceMode();
-        if (
-            force ||
-            workspaceMode === "agenda" ||
-            workspaceMode === "roster" ||
-            workspaceMode === "meeting"
-        ) {
+        if (force && workspaceMode === "agenda") {
             setWorkspaceMode(nextMode);
             return;
         }
@@ -262,12 +309,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function loadClassrooms() {
-        const queryString = buildQuery({
-            student: teacherAccount && !isTeacherView() ? "true" : "",
-        });
-        const response = await apiFetch(
-            `/api/v1/study/classrooms?${queryString}`,
-        );
+        const response = await apiFetch(`/api/v1/study/classrooms`);
         if (!response.ok) {
             throw new Error("load_failed");
         }
@@ -290,8 +332,10 @@ export async function mount(root, { signal } = {}) {
                 (snapshot) => snapshot.id === selectedClassId,
             )
         ) {
-            selectedClassId = String(classroomSnapshots[0]?.id ?? "");
-            selectedSeatNumber = null;
+            if (!isClassSearchDetached) {
+                selectedClassId = String(classroomSnapshots[0]?.id ?? "");
+                selectedSeatNumber = null;
+            }
         }
         syncWorkspaceModeWithSnapshot({ force: true });
     }
@@ -320,8 +364,9 @@ export async function mount(root, { signal } = {}) {
         const snapshot = selectedSnapshot();
         if (!snapshot) {
             selectedNotebookText = "";
-            classResources = { materials: "", homework: "" };
-            activeAgendaItems = [];
+            classResources = createDefaultClassResources();
+            agendaDocument = "";
+            agendaSnapshots = [];
             whiteboards = [];
             activeWhiteboard = null;
             activeMeetingId = null;
@@ -351,17 +396,24 @@ export async function mount(root, { signal } = {}) {
             ).catch(() => null),
         ]);
         classResources = resourcesResponse.ok
-            ? ((await resourcesResponse.json())?.data ?? {
-                  materials: "",
-                  homework: "",
-              })
-            : { materials: "", homework: "" };
+            ? ((await resourcesResponse.json())?.data ??
+              createDefaultClassResources())
+            : createDefaultClassResources();
         selectedNotebookText = notebookResponse.ok
             ? String((await notebookResponse.json())?.data?.noteText ?? "")
             : "";
-        activeAgendaItems = agendaResponse.ok
-            ? ((await agendaResponse.json())?.data?.activeItems ?? [])
+        const agendaPayload = agendaResponse.ok
+            ? (await agendaResponse.json().catch(() => ({ data: null })))?.data
+            : null;
+        agendaDocument = String(agendaPayload?.document ?? "");
+        agendaSnapshots = Array.isArray(agendaPayload?.snapshots)
+            ? agendaPayload.snapshots
             : [];
+        classResources = {
+            ...classResources,
+            agendaDocument,
+            agendaSnapshots,
+        };
         const activeMeetingPayload = activeMeetingResponse?.ok
             ? await activeMeetingResponse.json().catch(() => ({ data: [] }))
             : { data: [] };
@@ -377,7 +429,29 @@ export async function mount(root, { signal } = {}) {
             ).trim();
             return meetingClassroomId === snapshot.id;
         });
-        activeMeetingId = String(activeMeeting?.id ?? "").trim() || null;
+        const teacherAccountId = String(
+            snapshot?.teacherAccountId ?? "",
+        ).trim();
+        const activeParticipants = Array.isArray(
+            activeMeeting?.activeParticipants,
+        )
+            ? activeMeeting.activeParticipants
+            : [];
+        // Active meeting participant payloads can expose either username or
+        // handle, while classroom snapshots only expose teacherAccountId.
+        const teacherActiveInMeeting = Boolean(
+            teacherAccountId &&
+            activeParticipants.some((participant) => {
+                const username = String(participant?.username ?? "").trim();
+                const handle = String(participant?.handle ?? "").trim();
+                return (
+                    username === teacherAccountId || handle === teacherAccountId
+                );
+            }),
+        );
+        activeMeetingId = teacherActiveInMeeting
+            ? String(activeMeeting?.id ?? "").trim() || null
+            : null;
         whiteboards = whiteboardsResponse.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
@@ -444,7 +518,11 @@ export async function mount(root, { signal } = {}) {
         } else if (snapshot.classroom) {
             snapshot.classroom.boardFocus = normalizedFocus;
         }
-        setWorkspaceMode(normalizedFocus === "classroom" ? "roster" : "agenda");
+        if (normalizedFocus === "chat") {
+            setWorkspaceMode("chat");
+        } else if (workspaceMode !== "agenda") {
+            setWorkspaceMode("agenda");
+        }
     }
 
     function renderSubNavigationMarkup() {
@@ -458,16 +536,26 @@ export async function mount(root, { signal } = {}) {
     function refreshSubNavigation() {
         const subNav = root.querySelector(".page-subnav");
         if (subNav instanceof HTMLElement) {
-            subNav.innerHTML = renderSubNavigationMarkup();
+            const nextMarkup = renderSubNavigationMarkup();
+            if (subNav.innerHTML !== nextMarkup) {
+                subNav.innerHTML = nextMarkup;
+            }
         }
     }
 
-    function openClassSearch() {
-        const nextUrl = new URL("/classroom", window.location.origin);
-        if (teacherAccount) {
-            nextUrl.searchParams.set("student", "true");
+    async function openClassSearch() {
+        if (teacherAccount && getClassroomViewMode() === "teacher") {
+            setClassroomViewMode("student");
         }
-        navigateTo(nextUrl.pathname + nextUrl.search);
+        isClassSearchDetached = true;
+        selectedClassId = "";
+        selectedSeatNumber = null;
+        activeWhiteboard = null;
+        setWorkspaceMode("agenda");
+        await loadAvailableClasses();
+        refreshDom();
+        refreshSubNavigation();
+        composer.refreshFooter();
     }
 
     async function handleSeatActionMenu(button) {
@@ -489,8 +577,11 @@ export async function mount(root, { signal } = {}) {
         const snapshot = selectedSnapshot();
         return renderClassroomPage({
             snapshot,
-            classResources,
-            activeAgendaItems,
+            classResources: {
+                ...classResources,
+                agendaDocument,
+                agendaSnapshots,
+            },
             selectedSeatNumber,
             selectedNotebookText,
             i18n,
@@ -502,13 +593,18 @@ export async function mount(root, { signal } = {}) {
             currentViewMode: getClassroomViewMode(),
             canEditMaterials: teacherAccount,
             boardEntities: getBoardEntities(snapshot),
-            workspaceMode: getWorkspaceMode(),
+            workspaceMode,
+            activeMaterialKey,
             whiteboards,
             activeWhiteboard,
             activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
             hasActiveMeeting: Boolean(activeMeetingId),
             isChatOpen: classroomWindows?.isChatOpen() ?? false,
             isMeetingOpen: classroomWindows?.isMeetingOpen() ?? false,
+            blackboardExpanded,
+            initializedTiles,
+            tileLayout,
+            tileOrder,
         });
     }
 
@@ -546,7 +642,15 @@ export async function mount(root, { signal } = {}) {
         getSelectedSeatNumber: () => selectedSeatNumber,
         i18n,
         isTeacherView,
-        getWorkspaceMode,
+    });
+
+    const refreshWorkspaceTilesOnly = createWorkspaceTileRefresher({
+        root,
+        getWorkspaceMode: () => workspaceMode,
+        getInitializedTiles: () => initializedTiles,
+        getTileOrder: () => tileOrder,
+        i18n,
+        fallbackRefreshDom: refreshDom,
     });
 
     async function refreshContent() {
@@ -603,9 +707,15 @@ export async function mount(root, { signal } = {}) {
             const previousClassId = selectedClassId;
             const previousInlineWhiteboardId =
                 activeWhiteboard?.boardId ?? null;
+            isClassSearchDetached = false;
             selectedClassId = classId;
+            if (teacherAccount && getClassroomViewMode() !== "teacher") {
+                setClassroomViewMode("teacher");
+            }
             selectedSeatNumber = null;
             activeWhiteboard = null;
+            initializedTiles = new Set();
+            tileOrder = ["agenda"];
             if (
                 previousClassId &&
                 previousClassId !== classId &&
@@ -613,6 +723,16 @@ export async function mount(root, { signal } = {}) {
                 !classroomWindows?.isWhiteboardOpen()
             ) {
                 void persistActiveWhiteboardId(previousClassId, null);
+            }
+            if (
+                previousClassId &&
+                previousClassId !== classId &&
+                classroomWindows?.isMeetingOpen()
+            ) {
+                // Close the meeting from the previous class before switching.
+                // onMeetingVisibilityChange fires synchronously and handles
+                // setWorkspaceMode and refreshDom for the close transition.
+                classroomWindows.closeMeeting();
             }
             syncWorkspaceModeWithSnapshot({ force: false });
             await loadSelectedClassMeta();
@@ -646,6 +766,7 @@ export async function mount(root, { signal } = {}) {
                         selectedSnapshot,
                         getSelectedClassId: () => selectedClassId,
                         setSelectedClassId: (classId) => {
+                            isClassSearchDetached = false;
                             selectedClassId = classId;
                         },
                         getSelectedSeatNumber: () => selectedSeatNumber,
@@ -660,13 +781,18 @@ export async function mount(root, { signal } = {}) {
                         getActiveMeetingId: () => activeMeetingId,
                         getTeacherAccount: () => teacherAccount,
                         getClassroomViewMode,
+                        setClassroomViewMode,
                         isTeacherView,
                         getClassroomWindows: () => classroomWindows,
                         updateBoardFocus,
                         normalizeWorkspaceMode,
                         setWorkspaceMode,
+                        normalizeSidebarMode,
+                        getSidebarMode: () => sidebarMode,
+                        setSidebarMode: (mode) => {
+                            sidebarMode = normalizeSidebarMode(mode);
+                        },
                         handleSeatActionMenu,
-                        openAgendaPopup,
                         openClassSettingsPopup,
                         openClassSearch,
                         refreshContent,
@@ -679,6 +805,7 @@ export async function mount(root, { signal } = {}) {
                         handleClassroomExit,
                         handleResourceActions,
                         handleWhiteboardAndNotepadActions,
+                        handleFileActions,
                         getClassResources: () => classResources,
                         loadSelectedClassMeta,
                         getClassroomNotepad: () => classroomNotepad,
@@ -692,6 +819,11 @@ export async function mount(root, { signal } = {}) {
                         },
                         createClassroomNotepad,
                         persistActiveWhiteboardId,
+                        getActiveMaterialKey: () => activeMaterialKey,
+                        setActiveMaterialKey: (key) => {
+                            activeMaterialKey = key ?? null;
+                        },
+                        persistActiveMaterialKey,
                         loadAvailableClasses,
                         setSelectedLanguageFilter: (language) => {
                             selectedLanguageFilter = language;
@@ -703,6 +835,24 @@ export async function mount(root, { signal } = {}) {
                             selectedNotebookText = text;
                         },
                         setBoardEntity,
+                        getBlackboardExpanded: () => blackboardExpanded,
+                        setBlackboardExpanded: (value) => {
+                            blackboardExpanded = Boolean(value);
+                        },
+                        getTileLayout: () => tileLayout,
+                        setTileLayout: (layout) => {
+                            tileLayout =
+                                layout === "slideshow"
+                                    ? "slideshow"
+                                    : "stacked";
+                        },
+                        getTileOrder: () => tileOrder,
+                        setTileOrder: (order) => {
+                            tileOrder = Array.isArray(order)
+                                ? order
+                                : tileOrder;
+                        },
+                        refreshWorkspaceTilesOnly,
                     });
                     root.addEventListener("error", handleProfileAvatarError, {
                         signal,
@@ -728,15 +878,22 @@ export async function mount(root, { signal } = {}) {
         showChatToggle: true,
     });
     await composer.init();
+    const pageContent = root.querySelector(".page-content");
+    if (pageContent instanceof HTMLElement) {
+        pageContent.classList.add("classes-classroom-page-content");
+    }
     void hydrateProfileAvatars(root);
     syncGlobalChatTarget();
     classroomWindows = createClassroomWindows({
         root,
         i18n,
+        isTeacher: Boolean(teacherAccount && isTeacherView()),
         signal,
-        onMeetingVisibilityChange: (visible) => {
+        onMeetingVisibilityChange: ({ visible, returnMode } = {}) => {
             if (visible) {
                 setWorkspaceMode("meeting", { remember: false });
+            } else if (returnMode === "agenda") {
+                setWorkspaceMode("agenda", { remember: false });
             } else {
                 setWorkspaceMode(lastNonMeetingWorkspaceMode, {
                     remember: false,
@@ -757,22 +914,90 @@ export async function mount(root, { signal } = {}) {
     classroomWindows.reattach();
     startClassroomRealtimeRefresh({
         signal,
-        shouldRefresh: () => !isTeacherView(),
         refresh: async () => {
+            const previousActiveMeetingId = activeMeetingId;
+            const previousSelectedClassId = selectedClassId;
             await loadClassrooms();
             await loadSelectedClassMeta();
+            const selectedClassChanged =
+                selectedClassId !== previousSelectedClassId;
+            if (!isTeacherView()) {
+                if (
+                    activeMeetingId &&
+                    activeMeetingId !== previousActiveMeetingId
+                ) {
+                    classroomWindows.notifyActiveMeeting(activeMeetingId);
+                }
+            }
             refreshSnapshotPresence();
-            syncWorkspaceModeWithSnapshot();
+            const previousWorkspaceMode = workspaceMode;
             syncStudentWorkspaceAccess();
+            const broadcastedMaterialKey = getSelectedActiveMaterialKey();
+            if (
+                broadcastedMaterialKey &&
+                broadcastedMaterialKey !== activeMaterialKey
+            ) {
+                activeMaterialKey = broadcastedMaterialKey;
+                sidebarMode = "materials";
+            }
+            if (workspaceMode !== previousWorkspaceMode) {
+                refreshWorkspaceTilesOnly();
+            }
             refreshDynamicDom();
             syncGlobalChatTarget();
-            composer.refreshFooter();
-            refreshSubNavigation();
-            if (selectedClassId && classroomWindows) {
-                await classroomWindows.tryAutoJoin(selectedClassId);
-                if (classroomWindows.isMeetingOpen()) {
-                    setWorkspaceMode("meeting", { remember: false });
-                    refreshDom();
+            if (selectedClassChanged) {
+                footerClasses = await loadFooterClasses();
+                composer.refreshFooter();
+                refreshSubNavigation();
+            }
+            if (!isTeacherView()) {
+                // Teacher ended the meeting; close the overlay and notify the student.
+                const teacherJustLeft = Boolean(
+                    previousActiveMeetingId && !activeMeetingId,
+                );
+                if (teacherJustLeft && classroomWindows?.isMeetingOpen()) {
+                    showToast(
+                        i18n.t("module.study.classes.meeting_teacher_ended"),
+                        { variant: "info" },
+                    );
+                    classroomWindows.closeMeeting();
+                    // onMeetingVisibilityChange fires synchronously and handles
+                    // setWorkspaceMode and refreshDom for the close transition.
+                    return;
+                }
+                const meetingAutoJoinBlocked = Boolean(
+                    activeMeetingId &&
+                    classroomWindows?.isMeetingDismissed?.(activeMeetingId),
+                );
+                if (
+                    selectedClassId &&
+                    classroomWindows &&
+                    activeMeetingId &&
+                    !meetingAutoJoinBlocked
+                ) {
+                    if (!classroomWindows.isMeetingOpen()) {
+                        await classroomWindows.tryAutoJoin(selectedClassId);
+                        if (classroomWindows.isMeetingOpen()) {
+                            setWorkspaceMode("meeting", { remember: false });
+                            refreshDom();
+                        } else {
+                            const previousMode = workspaceMode;
+                            syncStudentWorkspaceAccess();
+                            if (workspaceMode !== previousMode) {
+                                refreshWorkspaceTilesOnly();
+                            }
+                            refreshDynamicDom();
+                        }
+                    } else {
+                        refreshDynamicDom();
+                    }
+                } else {
+                    const previousMode = workspaceMode;
+                    syncStudentWorkspaceAccess();
+                    if (workspaceMode !== previousMode) {
+                        refreshWorkspaceTilesOnly();
+                    }
+                    refreshDynamicDom();
                 }
             }
         },

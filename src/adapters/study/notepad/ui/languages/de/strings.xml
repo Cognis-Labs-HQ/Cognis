@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="module.study.classes.notepad">Notizblock</string>
-  <string name="module.study.classes.notepad_download">Als Markdown herunterladen</string>
+  <string name="module.study.classes.notepad_download">Herunterladen</string>
   <string name="module.study.classes.notepad_clear">Löschen</string>
+  <string name="module.study.classes.notepad_save">In Klasse speichern</string>
+  <string name="module.study.classes.notepad_open">Aus Klasse öffnen</string>
+  <string name="module.study.classes.notepad_saved">Notiz in Klassenunterlagen gespeichert.</string>
+  <string name="module.study.classes.notepad_save_failed">Notiz konnte nicht gespeichert werden.</string>
+  <string name="module.study.classes.notepad_format_paragraph">Absatz</string>
+  <string name="module.study.classes.notepad_format_heading1">Überschrift 1</string>
+  <string name="module.study.classes.notepad_format_heading2">Überschrift 2</string>
+  <string name="module.study.classes.notepad_format_quote">Zitat</string>
+  <string name="module.study.classes.notepad_format_code">Code</string>
+  <string name="module.study.classes.notepad_font_size">Schriftgröße</string>
+  <string name="module.study.classes.notepad_color">Farbe</string>
 </strings>

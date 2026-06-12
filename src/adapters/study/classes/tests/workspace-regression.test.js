@@ -5,16 +5,27 @@ import { resolve } from "node:path";
 
 const ROOT = process.cwd();
 
-test("classroom render includes workspace tabs and live rail", () => {
+test("classroom render includes workspace tabs and roster panel", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
         "utf8",
     );
 
     assert.match(source, /classes-workspace-tab-btn/);
-    assert.match(source, /classes-live-rail/);
+    assert.match(source, /classes-roster-panel/);
+    assert.match(source, /members_present/);
+    assert.match(source, /members_absent/);
+    assert.match(source, /classes-sidebar-students-section/);
+    assert.match(source, /classes-sidebar-materials-section/);
+    assert.match(source, /classes-sidebar-panel-wrap/);
     assert.match(source, /classes-notepad-host/);
     assert.match(source, /classes-meeting-workspace-host/);
+    assert.match(source, /classes-agenda-document-editor/);
+    assert.match(source, /classes-material-add-btn/);
+    assert.match(source, /classes-material-unlink-btn/);
 });
 
 test("classroom whiteboard actions support inline and pop-out modes", () => {
@@ -26,7 +37,8 @@ test("classroom whiteboard actions support inline and pop-out modes", () => {
         "utf8",
     );
 
-    assert.match(source, /classes-open-whiteboards-btn/);
+    assert.match(source, /classes-workspace-tab-btn/);
+    assert.match(source, /suppressConnectionRecoveryToast:\s*true/);
     assert.match(source, /classes-inline-whiteboard-popout-btn/);
     assert.match(source, /classes-popout-whiteboard-btn/);
     assert.match(source, /setWorkspaceMode\("whiteboard"\)/);
@@ -35,11 +47,72 @@ test("classroom whiteboard actions support inline and pop-out modes", () => {
 
 test("classroom render gates student meeting and whiteboard controls", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/index.js",
+        ),
         "utf8",
     );
 
-    assert.match(source, /canAccessMeeting/);
     assert.match(source, /canAccessWhiteboard/);
     assert.match(source, /activeWhiteboardId/);
+    assert.match(source, /classes-blackboard-body/);
+});
+
+test("classroom sub-navigation always renders the search button", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-sub-navigation.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /classes-subnav-find-btn/);
+    assert.doesNotMatch(source, /isTeacherView \?/);
+});
+
+test("classroom view sync detaches search and only forces live teacher meetings", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /isClassSearchDetached/);
+    assert.match(source, /if \(!isClassSearchDetached\)/);
+    assert.match(source, /teacherActiveInMeeting/);
+    assert.match(source, /activeParticipants\.some/);
+    assert.match(source, /return workspaceMode;/);
+    assert.doesNotMatch(
+        source,
+        /setWorkspaceMode\("agenda"\);\s*await refreshContent\(\);/,
+    );
+});
+
+test("classroom resources route supports agenda document and snapshots", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-agenda-route.ts",
+        ),
+        "utf8",
+    );
+    assert.match(source, /agendaDocument/);
+    assert.match(source, /agendaSnapshots/);
+    assert.match(source, /agenda\\\/snapshots/);
+    assert.match(source, /agenda\\\/open/);
+});
+
+test("classroom materials library routes support list rename and delete", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-files-route.ts",
+        ),
+        "utf8",
+    );
+    assert.match(source, /materials\\\/library/);
+    assert.match(source, /materials\\\/library\\\/rename/);
+    assert.match(source, /materials\\\/library\\\/delete/);
+    assert.match(source, /getClassesForTeacher/);
 });

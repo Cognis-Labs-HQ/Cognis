@@ -262,7 +262,7 @@ export function setPageSecurityHeaders(res: ServerResponse): void {
             "font-src 'self' https://fonts.gstatic.com",
             buildScriptDirective("script-src"),
             buildScriptDirective("script-src-elem"),
-            "connect-src 'self'",
+            buildScriptDirective("connect-src"),
             "frame-src 'self' https: http:",
             "worker-src 'self'",
             "manifest-src 'self'",

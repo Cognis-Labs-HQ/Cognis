@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="module.study.classes.whiteboard">Whiteboard</string>
-  <string name="module.study.classes.whiteboards">Whiteboards</string>
+  <string name="module.study.classes.whiteboards">Whiteboard</string>
   <string name="module.study.classes.no_whiteboards">Noch keine Whiteboards.</string>
   <string name="module.study.classes.new_whiteboard">Neues Whiteboard</string>
   <string name="module.study.classes.whiteboard_name_label">Name</string>

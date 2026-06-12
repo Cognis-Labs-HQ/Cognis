@@ -19,10 +19,11 @@ export function renderClassroomSubNavigation({
             return `<li><button type="button" class="classes-subnav-class-btn${activeClass}" data-class-id="${escapeHtml(classId)}">${escapeHtml(classLabel)}</button></li>`;
         })
         .join("");
+    const findButton = `<li><button type="button" class="classes-subnav-find-btn">${escapeHtml(i18n.t("ui.layout.search.aria"))}</button></li>`;
     return `
         <div class="classes-classroom-subnav">
             <ul class="page-subnav-list classes-classroom-subnav-list">
-                <li><button type="button" class="classes-subnav-find-btn">${escapeHtml(i18n.t("ui.layout.search.aria"))}</button></li>
+                ${findButton}
                 ${classButtons}
             </ul>
         </div>

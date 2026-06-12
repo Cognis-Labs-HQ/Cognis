@@ -15,22 +15,24 @@ import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-white
 export function createClassroomWindows({
     root,
     i18n,
+    isTeacher = false,
     onMeetingVisibilityChange = () => {},
     onWhiteboardVisibilityChange = () => {},
     signal = null,
 }) {
-    const chatToggleButton = root.querySelector("#global-chat-toggle");
     const meetingEmbed = createClassroomMeetingEmbed({
         i18n,
-        onVisibilityChange: (visible) => {
+        isTeacher,
+        onVisibilityChange: ({ visible, returnMode, meetingId }) => {
             root.classList.toggle("classes-meeting-active", visible);
-            onMeetingVisibilityChange(visible);
+            onMeetingVisibilityChange({ visible, returnMode, meetingId });
         },
         signal,
     });
     const nativeChat = createClassroomNativeChat({
         i18n,
         onVisibilityChange: (visible) => {
+            const chatToggleButton = root.querySelector("#global-chat-toggle");
             if (!(chatToggleButton instanceof HTMLElement)) return;
             chatToggleButton.setAttribute(
                 "aria-expanded",
@@ -46,10 +48,6 @@ export function createClassroomWindows({
 
     function handleWindowButtonClick(event) {
         if (!(event.target instanceof Element)) return;
-        if (event.target.closest(".classes-meeting-close-btn")) {
-            meetingEmbed.closeMeeting();
-            return;
-        }
         if (event.target.closest(".classes-chat-close-btn")) {
             nativeChat.closeChat();
         }
@@ -75,7 +73,12 @@ export function createClassroomWindows({
                 blackboard.appendChild(meetingEmbed.element);
             }
         }
-        root.appendChild(nativeChat.panel);
+        const chatHost = root.querySelector(".classes-chat-workspace-host");
+        if (chatHost instanceof HTMLElement) {
+            chatHost.appendChild(nativeChat.panel);
+        } else {
+            root.appendChild(nativeChat.panel);
+        }
         whiteboardWindow.reattach();
     }
 
@@ -91,6 +94,12 @@ export function createClassroomWindows({
         closeMeeting: () => meetingEmbed.closeMeeting(),
         closeChat: () => nativeChat.closeChat(),
         tryAutoJoin: (classroomId) => meetingEmbed.tryAutoJoin(classroomId),
+        notifyActiveMeeting: (meetingId) =>
+            meetingEmbed.notifyActiveMeeting(meetingId),
+        isMeetingDismissed: (meetingId) =>
+            meetingEmbed.isMeetingDismissed(meetingId),
+        isAuthBlocked: () => meetingEmbed.isAuthBlocked(),
+        resetAuthBlocked: () => meetingEmbed.resetAuthBlocked(),
         openWhiteboard: (opts) => whiteboardWindow.openBoard(opts),
         closeWhiteboard: () => whiteboardWindow.closeBoard(),
         isWhiteboardOpen: () => whiteboardWindow.isOpen(),

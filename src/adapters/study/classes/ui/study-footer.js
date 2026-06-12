@@ -3,6 +3,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
     applyClassroomViewModeFromUrl,
+    canToggleClassroomView,
     getClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
 
@@ -53,7 +54,7 @@ function renderClassSelectorContent({
 export async function loadFooterClasses(languageCode = "") {
     applyClassroomViewModeFromUrl();
     const params = new URLSearchParams();
-    if (getClassroomViewMode() === "student") {
+    if (getClassroomViewMode() === "student" && !canToggleClassroomView()) {
         params.set("student", "true");
     }
     if (languageCode) {

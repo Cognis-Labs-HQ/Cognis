@@ -28,6 +28,9 @@ import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
+// Scroll hysteresis prevents subnav-priority flicker near the top of the page.
+const SUBNAV_PRIORITY_ENTER_SCROLL_Y = 48;
+const SUBNAV_PRIORITY_EXIT_SCROLL_Y = 18;
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
@@ -441,8 +444,19 @@ function syncHeaderScrollState(root) {
 
     const hasSubNavigation = Boolean(shell.querySelector(".page-subnav"));
     const hasPrimaryNavigation = Boolean(shell.querySelector(".global-navrow"));
-    const shouldPrioritizeSubnav =
-        hasSubNavigation && hasPrimaryNavigation && window.scrollY > 12;
+    const hadSubnavPriority = shell.classList.contains(
+        "app-shell--subnav-priority",
+    );
+    let shouldPrioritizeSubnav = false;
+    if (hasSubNavigation && hasPrimaryNavigation) {
+        if (hadSubnavPriority) {
+            shouldPrioritizeSubnav =
+                window.scrollY > SUBNAV_PRIORITY_EXIT_SCROLL_Y;
+        } else {
+            shouldPrioritizeSubnav =
+                window.scrollY >= SUBNAV_PRIORITY_ENTER_SCROLL_Y;
+        }
+    }
 
     shell.classList.toggle("app-shell--has-subnav", hasSubNavigation);
     shell.classList.toggle(
@@ -629,6 +643,8 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
     if (!showChatToggle) {
         root.querySelector("#global-chat-toggle")?.setAttribute("hidden", "");
+    } else {
+        root.querySelector("#global-chat-toggle")?.removeAttribute("hidden");
     }
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
     if (!showFooter) root.querySelector(".global-footer")?.remove();

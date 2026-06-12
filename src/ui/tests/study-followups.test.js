@@ -40,26 +40,25 @@ test("study hub detects native library child component by descriptor id", () => 
     );
 });
 
-test("classroom roster shows a Students header and prepends the teacher", () => {
+test("classroom roster keeps present and absent columns", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
         "utf8",
     );
-    assert.match(source, /module\.study\.classes\.students_section/);
-    assert.match(
-        source,
-        /const teacherAccountId = String\(snapshot\?\.teacherAccountId \?\? ""\)\.trim\(\)/,
-    );
-    assert.match(
-        source,
-        /rosterRoleLabel: i18n\.t\("module\.study\.classes\.teacher"\)/,
-    );
-    assert.match(source, /\.\.\.members,?/);
+    assert.match(source, /module\.study\.classes\.members_present/);
+    assert.match(source, /module\.study\.classes\.members_absent/);
+    assert.match(source, /classes-roster-panel-columns/);
 });
 
-test("classroom toolbar chat and meeting controls use text buttons with working action classes", () => {
+test("classroom toolbar chat control and meeting workspace tab use correct action classes", () => {
     const renderSource = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/index.js",
+        ),
         "utf8",
     );
     const controllerSource = readFileSync(
@@ -69,13 +68,20 @@ test("classroom toolbar chat and meeting controls use text buttons with working 
         ),
         "utf8",
     );
+    const workspaceSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
+        "utf8",
+    );
     assert.match(
         renderSource,
         /classes-board-entity-token classes-open-chat-btn[\s\S]*module\.study\.classes\.open_chat/,
     );
     assert.match(
-        renderSource,
-        /classes-board-entity-token classes-open-meeting-btn[\s\S]*module\.study\.classes\.open_meeting/,
+        workspaceSource,
+        /mode:\s*"meeting"[\s\S]*label:\s*i18n\.t\("ui\.reuse\.meeting"\)/,
     );
     assert.match(
         controllerSource,

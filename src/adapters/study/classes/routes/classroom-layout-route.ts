@@ -36,10 +36,12 @@ export async function handleClassroomLayoutRoute(
         seatAssignments?: unknown;
         boardFocus?: unknown;
         activeWhiteboardId?: unknown;
+        activeMaterialKey?: unknown;
     };
     const studentLimitRaw = body.studentLimit;
     const seatAssignmentsRaw = body.seatAssignments;
     const activeWhiteboardIdRaw = body.activeWhiteboardId;
+    const activeMaterialKeyRaw = body.activeMaterialKey;
     const boardFocusRaw =
         String(body.boardFocus ?? "")
             .trim()
@@ -50,6 +52,12 @@ export async function handleClassroomLayoutRoute(
             : activeWhiteboardIdRaw === null
               ? null
               : String(activeWhiteboardIdRaw ?? "").trim() || null;
+    const activeMaterialKey =
+        activeMaterialKeyRaw === undefined
+            ? undefined
+            : activeMaterialKeyRaw === null
+              ? null
+              : String(activeMaterialKeyRaw ?? "").trim() || null;
     const studentLimit =
         studentLimitRaw == null ? undefined : Number(studentLimitRaw);
     if (
@@ -82,13 +90,14 @@ export async function handleClassroomLayoutRoute(
     if (
         boardFocusRaw != null &&
         boardFocusRaw !== "agenda" &&
-        boardFocusRaw !== "classroom"
+        boardFocusRaw !== "classroom" &&
+        boardFocusRaw !== "chat"
     ) {
         jsonError(
             res,
             400,
             "bad_request",
-            "boardFocus must be either agenda or classroom.",
+            "boardFocus must be agenda, classroom, or chat.",
         );
         return true;
     }
@@ -102,6 +111,19 @@ export async function handleClassroomLayoutRoute(
             400,
             "bad_request",
             "activeWhiteboardId must be a string or null.",
+        );
+        return true;
+    }
+    if (
+        activeMaterialKeyRaw !== undefined &&
+        activeMaterialKeyRaw !== null &&
+        typeof activeMaterialKeyRaw !== "string"
+    ) {
+        jsonError(
+            res,
+            400,
+            "bad_request",
+            "activeMaterialKey must be a string or null.",
         );
         return true;
     }
@@ -123,8 +145,13 @@ export async function handleClassroomLayoutRoute(
             {
                 studentLimit,
                 seatAssignments,
-                boardFocus: boardFocusRaw as "agenda" | "classroom" | undefined,
+                boardFocus: boardFocusRaw as
+                    | "agenda"
+                    | "classroom"
+                    | "chat"
+                    | undefined,
                 activeWhiteboardId,
+                activeMaterialKey,
             },
         );
         jsonOk(res, classroomState);

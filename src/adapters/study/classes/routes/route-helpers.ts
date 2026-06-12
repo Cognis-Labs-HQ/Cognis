@@ -89,6 +89,7 @@ export interface ClassesRouteOptions {
         endAt: string;
         meetingUrl?: string | null;
     }>;
+    deleteEvent?: (calendarId: string, eventId: string) => Promise<boolean>;
     listCalendarSharedUsers?: (input: {
         ownerAccountId: string;
         calendarId: string;

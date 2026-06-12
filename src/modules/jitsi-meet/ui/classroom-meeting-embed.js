@@ -5,12 +5,14 @@ import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
     resolveRoomName,
+    resolveSafeJitsiAvatarUrl,
     resolveThemeMode,
 } from "./meeting-embed.js";
 import { fetchCurrentProfile } from "./jitsi-helpers.js";
 import { ensureSessionId } from "./session.js";
 import {
     HEARTBEAT_INTERVAL_MS,
+    JITSI_IFRAME_SANDBOX,
     JITSI_TOOLBAR_BUTTONS,
     MEETING_SUBJECT,
     MEETING_TERMINATED_TEXT,
@@ -33,23 +35,29 @@ import {
  *   blackboard.appendChild(embed.element);
  *   await embed.openMeeting(classroomSnapshot);  // teacher-initiated
  *   await embed.tryAutoJoin(classroomId);        // student auto-join
+ *   embed.notifyActiveMeeting(newMeetingId);     // teacher started a new meeting
  *   embed.closeMeeting();                        // manual or exit close
  *   ```
  *
  * @param {object} options
  * @param {Object} options.i18n - i18n helper created by createI18n().
  * @param {function(string): string} options.i18n.t - Translates a locale key.
+ * @param {boolean} [options.isTeacher] - Whether the current user is the teacher.
  * @param {(visible: boolean) => void} [options.onVisibilityChange]
  * @returns {{
  *   element: HTMLElement,
  *   openMeeting: (snapshot: object) => Promise<void>,
  *   openMeetingById: (meetingId: string) => Promise<void>,
  *   tryAutoJoin: (classroomId: string) => Promise<void>,
+ *   notifyActiveMeeting: (meetingId: string) => void,
  *   closeMeeting: () => void,
+ *   isAuthBlocked: () => boolean,
+ *   resetAuthBlocked: () => void,
  * }}
  */
 export function createClassroomMeetingEmbed({
     i18n,
+    isTeacher = false,
     onVisibilityChange = () => {},
     signal = null,
 }) {
@@ -60,6 +68,10 @@ export function createClassroomMeetingEmbed({
     let stateRefreshTimer = null;
     let currentMeetingId = null;
     let currentSessionId = null;
+    let authBlocked = false;
+    let triedMeetingId = null;
+    let dismissedMeetingId = null;
+    let openInProgress = false;
 
     const element = document.createElement("div");
     element.className = "classes-meeting-window";
@@ -69,14 +81,43 @@ export function createClassroomMeetingEmbed({
         i18n.t("module.study.classes.open_meeting"),
     );
     element.innerHTML = `
-        <div class="classes-meeting-window-header">
-            <span class="classes-meeting-window-title">${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</span>
-            <button type="button" class="classes-meeting-close-btn classes-window-close-btn">
-                ${escapeHtml(i18n.t("ui.reuse.close"))}
-            </button>
-        </div>
         <div class="classes-meeting-frame" id="classroom-jitsi-frame"></div>
+        <div class="classes-meeting-overlay" hidden>
+            <h3 class="classes-meeting-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
+            <p class="classes-meeting-overlay-body">${escapeHtml(i18n.t("module.jitsi_meet.overlay.joining"))}</p>
+            <div class="classes-meeting-overlay-loading" hidden>
+                <span class="classes-meeting-overlay-spinner" aria-hidden="true"></span>
+                <span class="classes-meeting-overlay-loading-text">${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
+            </div>
+        </div>
     `;
+
+    function updateOverlay({
+        message = "",
+        visible = true,
+        loading = false,
+    } = {}) {
+        const overlay = element.querySelector(".classes-meeting-overlay");
+        const body = element.querySelector(".classes-meeting-overlay-body");
+        const loadingWrap = element.querySelector(
+            ".classes-meeting-overlay-loading",
+        );
+        const loadingText = element.querySelector(
+            ".classes-meeting-overlay-loading-text",
+        );
+        if (body instanceof HTMLElement) {
+            body.textContent = message;
+        }
+        if (loadingWrap instanceof HTMLElement) {
+            loadingWrap.hidden = !loading;
+        }
+        if (loadingText instanceof HTMLElement) {
+            loadingText.textContent = message;
+        }
+        if (overlay instanceof HTMLElement) {
+            overlay.hidden = !visible;
+        }
+    }
 
     async function keepPresenceAlive(active, { terminated = false } = {}) {
         if (!currentMeetingId || !currentSessionId) return null;
@@ -114,7 +155,7 @@ export function createClassroomMeetingEmbed({
         if (!response?.ok) return;
         const payload = await response.json().catch(() => ({ data: null }));
         if (payload?.data?.state?.endedAt) {
-            closeMeeting();
+            closeMeeting({ returnMode: "agenda" });
         }
     }
 
@@ -146,6 +187,13 @@ export function createClassroomMeetingEmbed({
 
     function destroyJitsiApi() {
         if (!jitsiApi) return;
+        const frame = element.querySelector("#classroom-jitsi-frame");
+        if (frame instanceof HTMLElement) {
+            const iframeEl = frame.querySelector("iframe");
+            if (iframeEl instanceof HTMLIFrameElement) {
+                iframeEl.src = "about:blank";
+            }
+        }
         try {
             jitsiApi.dispose?.();
         } catch (error) {
@@ -157,20 +205,33 @@ export function createClassroomMeetingEmbed({
         jitsiApi = null;
         jitsiParticipantId = "";
         jitsiModerator = false;
-        const frame = element.querySelector("#classroom-jitsi-frame");
         if (frame instanceof HTMLElement) {
             frame.replaceChildren();
         }
     }
 
-    function closeMeeting({ terminated = false } = {}) {
+    function closeMeeting({
+        terminated = false,
+        suppressAutoJoin = false,
+        returnMode = null,
+    } = {}) {
+        const meetingId = String(currentMeetingId ?? "").trim();
+        if (suppressAutoJoin && meetingId) {
+            dismissedMeetingId = meetingId;
+            triedMeetingId = meetingId;
+        }
         stopTracking();
         void keepPresenceAlive(false, { terminated });
         destroyJitsiApi();
         currentMeetingId = null;
         currentSessionId = null;
+        updateOverlay({ visible: false });
         element.hidden = true;
-        onVisibilityChange(false);
+        onVisibilityChange({
+            visible: false,
+            returnMode,
+            meetingId,
+        });
     }
 
     function isMeetingTerminatedNotice(event) {
@@ -186,6 +247,29 @@ export function createClassroomMeetingEmbed({
             .map((value) => String(value ?? "").toLowerCase())
             .join(" ");
         return message.includes(MEETING_TERMINATED_TEXT);
+    }
+
+    function isConferenceWebError(event) {
+        const fields = [
+            event?.type,
+            event?.message,
+            event?.name,
+            event?.details?.message,
+        ].map((value) => String(value ?? ""));
+        return fields.some((field) => field.includes("[app:conference-web]"));
+    }
+
+    function isConferenceDestroyedReason(event) {
+        const fields = [
+            event?.type,
+            event?.message,
+            event?.name,
+            event?.error,
+            event?.errorCode,
+            event?.details?.error,
+            event?.details?.message,
+        ].map((value) => String(value ?? "").toLowerCase());
+        return fields.some((field) => field.includes("conference.destroyed"));
     }
 
     function getParticipantId(candidate) {
@@ -212,154 +296,229 @@ export function createClassroomMeetingEmbed({
     }
 
     async function openMeetingEmbed(meeting, sessionId, currentProfile) {
-        stopTracking();
-        void keepPresenceAlive(false);
-        destroyJitsiApi();
-
-        await loadJitsiExternalApi(meeting.instanceUrl || meeting.meetingUrl);
-
-        const meetingHost = resolveUrlHost(
-            meeting.instanceUrl || meeting.meetingUrl,
-        );
-        const roomName = resolveRoomName(meeting);
-        if (
-            !meetingHost ||
-            !roomName ||
-            typeof window.JitsiMeetExternalAPI !== "function"
-        ) {
-            showToast(i18n.t("module.study.classes.meeting_failed"), {
-                variant: "error",
+        openInProgress = true;
+        try {
+            element.hidden = false;
+            updateOverlay({
+                message: i18n.t("module.jitsi_meet.overlay.joining"),
+                visible: true,
+                loading: true,
             });
-            return;
-        }
+            onVisibilityChange({ visible: true });
+            stopTracking();
+            void keepPresenceAlive(false);
+            destroyJitsiApi();
 
-        const frame = element.querySelector("#classroom-jitsi-frame");
-        if (!(frame instanceof HTMLElement)) return;
-
-        const meetingPassword = String(meeting.meetingPassword ?? "").trim();
-        const themeMode = resolveThemeMode();
-        const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
-            roomName,
-            parentNode: frame,
-            configOverwrite: {
-                prejoinConfig: { enabled: false },
-                requireDisplayName: false,
-                disableDeepLinking: true,
-                subject: MEETING_SUBJECT,
-                preferredTheme: themeMode,
-                toolbarButtons: JITSI_TOOLBAR_BUTTONS,
-            },
-            userInfo: {
-                displayName: currentProfile?.displayName ?? "",
-                email: currentProfile?.email ?? "",
-                avatarUrl: currentProfile?.avatarUrl ?? "",
-            },
-        });
-        jitsiApi = apiInstance;
-        jitsiParticipantId = "";
-        jitsiModerator = false;
-
-        const applyPrivilegedSettings = () => {
-            if (jitsiApi !== apiInstance || !jitsiModerator) return;
-            executeJitsiCommandIfSupported(
-                apiInstance,
-                "subject",
-                MEETING_SUBJECT,
+            await loadJitsiExternalApi(
+                meeting.instanceUrl || meeting.meetingUrl,
             );
-            if (meetingPassword) {
+
+            const meetingHost = resolveUrlHost(
+                meeting.instanceUrl || meeting.meetingUrl,
+            );
+            const roomName = resolveRoomName(meeting);
+            if (
+                !meetingHost ||
+                !roomName ||
+                typeof window.JitsiMeetExternalAPI !== "function"
+            ) {
+                showToast(i18n.t("module.study.classes.meeting_failed"), {
+                    variant: "error",
+                });
+                closeMeeting();
+                return;
+            }
+
+            const frame = element.querySelector("#classroom-jitsi-frame");
+            if (!(frame instanceof HTMLElement)) return;
+
+            const meetingPassword = String(
+                meeting.meetingPassword ?? "",
+            ).trim();
+            const safeAvatarUrl = resolveSafeJitsiAvatarUrl(
+                currentProfile?.avatarUrl,
+                meeting.instanceUrl || meeting.meetingUrl,
+            );
+            const themeMode = resolveThemeMode();
+            const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
+                roomName,
+                parentNode: frame,
+                sandbox: JITSI_IFRAME_SANDBOX,
+                configOverwrite: {
+                    prejoinConfig: { enabled: false },
+                    requireDisplayName: false,
+                    disableDeepLinking: true,
+                    subject: MEETING_SUBJECT,
+                    preferredTheme: themeMode,
+                    toolbarButtons: JITSI_TOOLBAR_BUTTONS,
+                },
+                userInfo: {
+                    displayName: currentProfile?.displayName ?? "",
+                    email: currentProfile?.email ?? "",
+                    avatarUrl: safeAvatarUrl,
+                },
+            });
+            jitsiApi = apiInstance;
+            jitsiParticipantId = "";
+            jitsiModerator = false;
+
+            const applyPrivilegedSettings = () => {
+                if (jitsiApi !== apiInstance || !jitsiModerator) return;
                 executeJitsiCommandIfSupported(
                     apiInstance,
-                    "password",
-                    meetingPassword,
+                    "subject",
+                    MEETING_SUBJECT,
                 );
-            }
-        };
+                if (meetingPassword) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "password",
+                        meetingPassword,
+                    );
+                }
+            };
 
-        const applyParticipantProfile = () => {
-            if (jitsiApi !== apiInstance) return;
-            if (currentProfile?.displayName) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "displayName",
-                    currentProfile.displayName,
+            const applyParticipantProfile = () => {
+                if (jitsiApi !== apiInstance) return;
+                if (currentProfile?.displayName) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "displayName",
+                        currentProfile.displayName,
+                    );
+                }
+                if (currentProfile?.email) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "email",
+                        currentProfile.email,
+                    );
+                }
+                if (safeAvatarUrl) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "avatarUrl",
+                        safeAvatarUrl,
+                    );
+                }
+            };
+
+            const handleAuthBlocked = () => {
+                if (isTeacher) return false;
+                authBlocked = true;
+                showToast(
+                    i18n.t(
+                        "module.jitsi_meet.overlay.auth_required_description",
+                    ),
+                    { variant: "warning" },
                 );
-            }
-            if (currentProfile?.email) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "email",
-                    currentProfile.email,
-                );
-            }
-            if (currentProfile?.avatarUrl) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "avatarUrl",
-                    currentProfile.avatarUrl,
-                );
-            }
-        };
+                closeMeeting({ suppressAutoJoin: true });
+                return true;
+            };
 
-        const handleMeetingLeft = () => {
-            if (jitsiApi !== apiInstance) return;
-            closeMeeting();
-        };
+            const handleMeetingLeft = () => {
+                if (jitsiApi !== apiInstance) return;
+                closeMeeting({
+                    suppressAutoJoin: true,
+                    returnMode: "agenda",
+                });
+            };
 
-        const handleMeetingTerminated = () => {
-            if (jitsiApi !== apiInstance) return;
-            closeMeeting({ terminated: true });
-        };
+            const handleMeetingTerminated = () => {
+                if (jitsiApi !== apiInstance) return;
+                closeMeeting({
+                    terminated: true,
+                    returnMode: "agenda",
+                });
+            };
 
-        apiInstance.addEventListener("videoConferenceJoined", (event) => {
-            jitsiParticipantId = getParticipantId(event);
-            const participants = apiInstance.getParticipantsInfo?.() ?? [];
-            const localParticipant =
-                participants.find(
-                    (participant) => participant?.local === true,
-                ) ??
-                participants.find(
-                    (participant) =>
-                        getParticipantId(participant) === jitsiParticipantId,
-                ) ??
-                null;
-            jitsiModerator =
-                getParticipantRole(localParticipant) === "moderator";
-            applyParticipantProfile();
-            applyPrivilegedSettings();
-        });
+            apiInstance.addEventListener("videoConferenceJoined", (event) => {
+                jitsiParticipantId = getParticipantId(event);
+                const participants = apiInstance.getParticipantsInfo?.() ?? [];
+                const localParticipant =
+                    participants.find(
+                        (participant) => participant?.local === true,
+                    ) ??
+                    participants.find(
+                        (participant) =>
+                            getParticipantId(participant) ===
+                            jitsiParticipantId,
+                    ) ??
+                    null;
+                jitsiModerator =
+                    getParticipantRole(localParticipant) === "moderator";
+                applyParticipantProfile();
+                applyPrivilegedSettings();
+            });
 
-        apiInstance.addEventListener("participantRoleChanged", (event) => {
-            const participantId = getParticipantId(event);
-            if (participantId && participantId !== jitsiParticipantId) return;
-            jitsiModerator = getParticipantRole(event) === "moderator";
-            applyPrivilegedSettings();
-        });
+            apiInstance.addEventListener("participantRoleChanged", (event) => {
+                const participantId = getParticipantId(event);
+                if (participantId && participantId !== jitsiParticipantId)
+                    return;
+                jitsiModerator = getParticipantRole(event) === "moderator";
+                applyPrivilegedSettings();
+            });
 
-        apiInstance.addEventListener("passwordRequired", () => {
-            if (meetingPassword) {
-                executeJitsiCommandIfSupported(
-                    apiInstance,
-                    "password",
-                    meetingPassword,
-                );
-            }
-            applyPrivilegedSettings();
-        });
+            apiInstance.addEventListener("passwordRequired", () => {
+                if (meetingPassword) {
+                    executeJitsiCommandIfSupported(
+                        apiInstance,
+                        "password",
+                        meetingPassword,
+                    );
+                    applyPrivilegedSettings();
+                    return;
+                }
+                if (handleAuthBlocked()) {
+                    return;
+                }
+            });
 
-        apiInstance.addEventListener("notificationTriggered", (event) => {
-            if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
-        });
+            apiInstance.addEventListener("notificationTriggered", (event) => {
+                if (
+                    isMeetingTerminatedNotice(event) ||
+                    isConferenceDestroyedReason(event)
+                ) {
+                    handleMeetingTerminated();
+                }
+            });
 
-        apiInstance.addEventListener("errorOccurred", (event) => {
-            if (isMeetingTerminatedNotice(event)) handleMeetingTerminated();
-        });
+            apiInstance.addEventListener("errorOccurred", (event) => {
+                if (
+                    isMeetingTerminatedNotice(event) ||
+                    isConferenceDestroyedReason(event)
+                ) {
+                    handleMeetingTerminated();
+                    return;
+                }
+                if (isConferenceWebError(event)) {
+                    showToast(i18n.t("module.study.classes.meeting_failed"), {
+                        variant: "error",
+                    });
+                    closeMeeting({ returnMode: "agenda" });
+                }
+            });
+            apiInstance.addEventListener("toolbarButtonClicked", (event) => {
+                if (jitsiApi !== apiInstance) return;
+                if (String(event?.key ?? "").trim() !== "hangup") return;
+                closeMeeting({
+                    suppressAutoJoin: true,
+                    returnMode: "agenda",
+                });
+            });
 
-        apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
-        apiInstance.addEventListener("readyToClose", handleMeetingLeft);
+            apiInstance.addEventListener(
+                "videoConferenceLeft",
+                handleMeetingLeft,
+            );
+            apiInstance.addEventListener("readyToClose", handleMeetingLeft);
 
-        startTracking(meeting.id, sessionId);
-        element.hidden = false;
-        onVisibilityChange(true);
+            startTracking(meeting.id, sessionId);
+            updateOverlay({ visible: false });
+            onVisibilityChange({ visible: true });
+        } finally {
+            openInProgress = false;
+        }
     }
 
     async function openMeeting(snapshot) {
@@ -368,7 +527,10 @@ export function createClassroomMeetingEmbed({
             {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ classroomId: snapshot.id }),
+                body: JSON.stringify({
+                    classroomId: snapshot.id,
+                    skipChatRoomCreation: true,
+                }),
             },
         );
         if (!createResponse.ok) {
@@ -451,13 +613,14 @@ export function createClassroomMeetingEmbed({
             : meeting;
 
         if (!joinedMeeting?.meetingUrl) return;
+        triedMeetingId = normalizedId;
         const currentProfile = await fetchCurrentProfile().catch(() => null);
         await openMeetingEmbed(joinedMeeting, sessionId, currentProfile);
     }
 
     async function tryAutoJoin(classroomId) {
         const id = String(classroomId ?? "").trim();
-        if (!id || !element.hidden) return;
+        if (!id || !element.hidden || authBlocked || openInProgress) return;
 
         const response = await apiFetch(
             `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(id)}`,
@@ -475,7 +638,21 @@ export function createClassroomMeetingEmbed({
             return meetingClassroomId === id;
         });
         if (!match?.id) return;
+        if (match.id === dismissedMeetingId) return;
+        if (match.id === triedMeetingId) return;
         await openMeetingById(match.id);
+    }
+
+    function notifyActiveMeeting(meetingId) {
+        const id = String(meetingId ?? "").trim();
+        if (!id) return;
+        if (id !== dismissedMeetingId) {
+            dismissedMeetingId = null;
+        }
+        if (id === triedMeetingId) return;
+        triedMeetingId = null;
+        authBlocked = false;
+        updateOverlay({ visible: false });
     }
 
     if (signal) {
@@ -498,11 +675,17 @@ export function createClassroomMeetingEmbed({
                 if (!(linkEl instanceof HTMLAnchorElement)) return;
                 const href = String(linkEl.getAttribute("href") ?? "");
                 if (!href || href.startsWith("#")) return;
-                const targetUrl = new URL(linkEl.href, window.location.origin);
-                if (targetUrl.origin !== window.location.origin) return;
+                let targetUrl;
+                try {
+                    targetUrl = new URL(linkEl.href, window.location.origin);
+                } catch {
+                    return;
+                }
+                const isSameOrigin =
+                    targetUrl.origin === window.location.origin;
                 const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
                 const nextPath = `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
-                if (currentPath === nextPath) return;
+                if (isSameOrigin && currentPath === nextPath) return;
                 event.preventDefault();
                 event.stopPropagation();
                 showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {
@@ -530,5 +713,13 @@ export function createClassroomMeetingEmbed({
         openMeeting,
         openMeetingById,
         tryAutoJoin,
+        notifyActiveMeeting,
+        isMeetingDismissed: (meetingId) =>
+            String(meetingId ?? "").trim() === dismissedMeetingId,
+        isAuthBlocked: () => authBlocked,
+        resetAuthBlocked: () => {
+            authBlocked = false;
+            updateOverlay({ visible: false });
+        },
     };
 }

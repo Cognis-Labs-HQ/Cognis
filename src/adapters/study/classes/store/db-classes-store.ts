@@ -51,6 +51,8 @@ import {
     setWhiteboardFileKey,
 } from "./whiteboards.js";
 import type {
+    AgendaSnapshotRef,
+    AttachedFileRef,
     ClassMembershipRow,
     ClassRow,
     ClassroomStateRow,
@@ -164,7 +166,13 @@ export class DbClassesStore {
     async updateClassroomResourcesForTeacher(
         classId: string,
         teacherAccountId: string,
-        input: { materials?: string; homework?: string },
+        input: {
+            materials?: string;
+            homework?: string;
+            files?: AttachedFileRef[];
+            agendaDocument?: string;
+            agendaSnapshots?: AgendaSnapshotRef[];
+        },
     ): Promise<ClassroomResourceRow> {
         return updateClassroomResourcesForTeacher(
             this.db,
@@ -249,7 +257,7 @@ export class DbClassesStore {
         options: {
             studentLimit?: number;
             seatAssignments?: Record<string, number>;
-            boardFocus?: "agenda" | "classroom";
+            boardFocus?: "agenda" | "classroom" | "chat";
             activeWhiteboardId?: string | null;
         },
     ): Promise<ClassroomStateRow> {

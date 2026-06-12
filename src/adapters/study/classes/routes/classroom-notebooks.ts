@@ -54,6 +54,7 @@ export async function handleClassroomNotebookRoutes(input: {
             const body = (await readJson(req)) as {
                 materials?: unknown;
                 homework?: unknown;
+                files?: unknown;
             };
             if (body.materials != null && typeof body.materials !== "string") {
                 jsonError(
@@ -73,14 +74,33 @@ export async function handleClassroomNotebookRoutes(input: {
                 );
                 return true;
             }
+            if (body.files != null && !Array.isArray(body.files)) {
+                jsonError(res, 400, "bad_request", "files must be an array.");
+                return true;
+            }
             const materials =
-                typeof body.materials === "string" ? body.materials : "";
+                typeof body.materials === "string" ? body.materials : undefined;
             const homework =
-                typeof body.homework === "string" ? body.homework : "";
+                typeof body.homework === "string" ? body.homework : undefined;
+            const files = Array.isArray(body.files)
+                ? (
+                      body.files as Array<{
+                          key: string;
+                          name: string;
+                          contentType?: string;
+                      }>
+                  ).filter(
+                      (item) =>
+                          item !== null &&
+                          typeof item === "object" &&
+                          typeof item.key === "string" &&
+                          typeof item.name === "string",
+                  )
+                : undefined;
             const resources = await store.updateClassroomResourcesForTeacher(
                 classId,
                 claims.sub,
-                { materials, homework },
+                { materials, homework, files },
             );
             jsonOk(res, resources);
         } catch (err) {

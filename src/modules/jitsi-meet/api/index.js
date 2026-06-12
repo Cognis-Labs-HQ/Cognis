@@ -597,7 +597,10 @@ export function registerApiRoutes(router, ctx) {
             }
 
             let chatRoom = null;
-            if (typeof resolveGroupChat === "function") {
+            if (
+                body?.skipChatRoomCreation !== true &&
+                typeof resolveGroupChat === "function"
+            ) {
                 const meetingChatTitle = buildMeetingChatTitle();
                 chatRoom = await resolveGroupChat({
                     usernames: normalizedInput.participantUsernames,
@@ -605,7 +608,6 @@ export function registerApiRoutes(router, ctx) {
                     createdByAccountId: claims.sub,
                 }).catch(() => null);
             }
-
             const meeting = await store.createMeeting({
                 instanceUrl: config.instanceUrl,
                 meetingPrefix: config.meetingPrefix,
