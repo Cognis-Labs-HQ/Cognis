@@ -561,7 +561,7 @@ function resolveAddColumnStatement(
     }
     if (tableName === "classroom_state" && columnName === "view_layout") {
         return dialect === "mariadb"
-            ? "ALTER TABLE classroom_state ADD COLUMN view_layout VARCHAR(32) NOT NULL DEFAULT 'stacked'"
+            ? "ALTER TABLE classroom_state ADD COLUMN view_layout VARCHAR(16) NOT NULL DEFAULT 'stacked'"
             : "ALTER TABLE classroom_state ADD COLUMN view_layout TEXT NOT NULL DEFAULT 'stacked'";
     }
     return dialect === "mariadb"

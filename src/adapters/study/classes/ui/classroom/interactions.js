@@ -1,4 +1,5 @@
 import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
+import { TOOLBAR_ACTIONS } from "/static/adapters/study/classes/classroom-agenda-toolbar.js";
 
 export function bindClassroomInteractions({
     root,
@@ -75,15 +76,6 @@ export function bindClassroomInteractions({
     setInteractionsBound(true);
     bindProfilePreviews(i18n);
     let agendaAutosaveTimer = null;
-    const AGENDA_TOOLBAR_WRAPPERS = {
-        bold: { before: "**", after: "**" },
-        italic: { before: "*", after: "*" },
-        strikethrough: { before: "~~", after: "~~" },
-        code: { before: "`", after: "`" },
-        quote: { prefix: "> " },
-        heading: { prefix: "# " },
-        link: { template: (text) => `[${text || "text"}](url)` },
-    };
     root.addEventListener(
         "click",
         async (event) => {
@@ -98,7 +90,7 @@ export function bindClassroomInteractions({
             );
             if (toolbarBtn instanceof HTMLElement && isTeacherView()) {
                 const action = String(toolbarBtn.dataset.toolbarAction ?? "");
-                const handler = AGENDA_TOOLBAR_WRAPPERS[action];
+                const handler = TOOLBAR_ACTIONS[action];
                 const editor = root.querySelector(
                     ".classes-agenda-document-editor",
                 );

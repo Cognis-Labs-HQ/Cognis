@@ -131,6 +131,17 @@ export async function mount(root, { signal } = {}) {
         return teacherAccount && getClassroomViewMode() === "teacher";
     }
 
+    function computeIsTeacherPresent(snapshot = selectedSnapshot()) {
+        if (isTeacherView()) return false;
+        const teacherAccountId = String(
+            snapshot?.teacherAccountId ?? "",
+        ).trim();
+        return Boolean(
+            teacherAccountId &&
+            presenceByAccountId.get(teacherAccountId) === "online",
+        );
+    }
+
     function selectedSnapshot() {
         return (
             classroomSnapshots.find(
@@ -525,16 +536,7 @@ export async function mount(root, { signal } = {}) {
             initializedTiles,
             tileLayout,
             tileOrder,
-            isTeacherPresent: (() => {
-                if (isTeacherView()) return false;
-                const teacherAccountId = String(
-                    snapshot?.teacherAccountId ?? "",
-                ).trim();
-                return Boolean(
-                    teacherAccountId &&
-                    presenceByAccountId.get(teacherAccountId) === "online",
-                );
-            })(),
+            isTeacherPresent: computeIsTeacherPresent(snapshot),
         });
     }
 
@@ -786,18 +788,7 @@ export async function mount(root, { signal } = {}) {
                                 : tileOrder;
                         },
                         refreshWorkspaceTilesOnly,
-                        getIsTeacherPresent: () => {
-                            if (isTeacherView()) return false;
-                            const snap = selectedSnapshot();
-                            const teacherAccountId = String(
-                                snap?.teacherAccountId ?? "",
-                            ).trim();
-                            return Boolean(
-                                teacherAccountId &&
-                                presenceByAccountId.get(teacherAccountId) ===
-                                    "online",
-                            );
-                        },
+                        getIsTeacherPresent: computeIsTeacherPresent,
                     });
                     root.addEventListener("error", handleProfileAvatarError, {
                         signal,
@@ -867,6 +858,14 @@ export async function mount(root, { signal } = {}) {
             const selectedClassChanged =
                 selectedClassId !== previousSelectedClassId;
             if (!isTeacherView()) {
+                // activeMeetingId is loaded from loadSelectedClassMeta() for the
+                // currently selected class, so it can only be non-null when
+                // selectedClassId is also non-null. The !selectedClassId guard
+                // therefore prevents the popup notification when the student is
+                // already viewing the classroom (they will see the meeting tile
+                // directly). The notification path exists for external callers that
+                // may trigger this refresh from other contexts. — fall through to
+                // auto-join handling below (lines 891+).
                 if (
                     activeMeetingId &&
                     activeMeetingId !== previousActiveMeetingId &&
