@@ -40,11 +40,20 @@ export interface AttachedFileRef {
     contentType?: string;
 }
 
+export interface AgendaSnapshotRef {
+    id: string;
+    name: string;
+    content: string;
+    updatedAt: string;
+}
+
 export interface ClassroomResourceRow {
     classId: string;
     materials: string;
     homework: string;
     files: AttachedFileRef[];
+    agendaDocument: string;
+    agendaSnapshots: AgendaSnapshotRef[];
     updatedBy: string | null;
     updatedAt: string;
 }

@@ -623,6 +623,22 @@ test("classroom meetings intercept hangup, show the meeting overlay, and block s
     );
     assert.match(
         classroomEmbedSource,
+        /addEventListener\(\s*"videoConferenceLeft"/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /addEventListener\("readyToClose", handleMeetingLeft\)/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /window\.addEventListener\(\s*"click"[\s\S]*overlay\.leave_blocked/,
+    );
+    assert.match(
+        classroomEmbedSource,
+        /window\.addEventListener\(\s*"popstate"[\s\S]*overlay\.leave_blocked/,
+    );
+    assert.match(
+        classroomEmbedSource,
         /isMeetingDismissed: \(meetingId\) =>[\s\S]*dismissedMeetingId/,
     );
     assert.match(

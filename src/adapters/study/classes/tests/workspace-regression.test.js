@@ -22,6 +22,9 @@ test("classroom render includes workspace tabs and roster panel", () => {
     assert.match(source, /classes-sidebar-panel-wrap/);
     assert.match(source, /classes-notepad-host/);
     assert.match(source, /classes-meeting-workspace-host/);
+    assert.match(source, /classes-agenda-document-editor/);
+    assert.match(source, /classes-material-add-btn/);
+    assert.match(source, /classes-material-unlink-btn/);
 });
 
 test("classroom whiteboard actions support inline and pop-out modes", () => {
@@ -78,4 +81,37 @@ test("classroom view sync detaches search and only forces live teacher meetings"
     assert.match(source, /if \(!isClassSearchDetached\)/);
     assert.match(source, /teacherActiveInMeeting/);
     assert.match(source, /activeParticipants\.some/);
+    assert.match(source, /return workspaceMode;/);
+    assert.doesNotMatch(
+        source,
+        /setWorkspaceMode\("agenda"\);\s*await refreshContent\(\);/,
+    );
+});
+
+test("classroom resources route supports agenda document and snapshots", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-agenda-route.ts",
+        ),
+        "utf8",
+    );
+    assert.match(source, /agendaDocument/);
+    assert.match(source, /agendaSnapshots/);
+    assert.match(source, /agenda\\\/snapshots/);
+    assert.match(source, /agenda\\\/open/);
+});
+
+test("classroom materials library routes support list rename and delete", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-files-route.ts",
+        ),
+        "utf8",
+    );
+    assert.match(source, /materials\\\/library/);
+    assert.match(source, /materials\\\/library\\\/rename/);
+    assert.match(source, /materials\\\/library\\\/delete/);
+    assert.match(source, /getClassesForTeacher/);
 });

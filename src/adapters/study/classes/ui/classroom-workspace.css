@@ -27,7 +27,7 @@
 
 .classes-blackboard-body {
     display: grid;
-    grid-template-columns: minmax(15%, 15%) minmax(0, 1fr);
+    grid-template-columns: minmax(14rem, 16rem) minmax(0, 1fr);
     gap: 0;
     align-items: stretch;
     min-height: 22rem;
@@ -61,51 +61,19 @@
     min-height: 20rem;
 }
 
-.classes-workspace-tile-deck {
-    position: relative;
+.classes-workspace-tiles {
+    display: grid;
+    gap: 0.6rem;
     min-height: 20rem;
-    height: 100%;
-    isolation: isolate;
 }
 
 .classes-workspace-tile {
-    --classes-workspace-tile-offset-x: 0px;
-    --classes-workspace-tile-offset-y: 0px;
-    position: absolute;
-    inset: 0;
-    transform: translate(
-        var(--classes-workspace-tile-offset-x),
-        var(--classes-workspace-tile-offset-y)
-    );
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.2);
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-}
-
-.classes-workspace-tile--agenda {
-    --classes-workspace-tile-offset-x: 0px;
-    --classes-workspace-tile-offset-y: 0px;
-    z-index: 20;
-}
-
-.classes-workspace-tile--whiteboard {
-    --classes-workspace-tile-offset-x: -0.55rem;
-    --classes-workspace-tile-offset-y: 0.55rem;
-    z-index: 30;
-}
-
-.classes-workspace-tile--meeting {
-    --classes-workspace-tile-offset-x: -1.1rem;
-    --classes-workspace-tile-offset-y: 1.1rem;
-    z-index: 40;
-}
-
-.classes-workspace-tile.active {
-    z-index: 50;
 }
 
 .classes-workspace-tile-hitbox {
@@ -123,11 +91,16 @@
     cursor: pointer;
 }
 
-.classes-workspace-tile-body {
+.classes-workspace-tile-content {
     position: relative;
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow: auto;
+    display: none;
+}
+
+.classes-workspace-tile.active .classes-workspace-tile-content {
+    display: block;
 }
 
 .classes-workspace-tile-empty {
@@ -243,19 +216,42 @@
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.15rem 0.1rem;
+    min-height: 100%;
+}
+
+.classes-agenda-document-editor {
+    width: 100%;
+    min-height: 14rem;
+    resize: vertical;
+}
+
+.classes-agenda-panel--compact .classes-agenda-document-editor {
+    min-height: 10rem;
+}
+
+.classes-agenda-document-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.classes-agenda-snapshot-select {
+    flex: 1;
+    min-width: 6rem;
 }
 
 .classes-material-tiles {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
-    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
     padding: 0.25rem 0.1rem;
 }
 
 .classes-material-tile {
+    flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
     gap: 0.3rem;
     padding: 0.45rem 0.3rem;
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -263,7 +259,7 @@
     border-radius: 8px;
     color: rgba(255, 255, 255, 0.88);
     cursor: pointer;
-    text-align: center;
+    text-align: left;
     transition:
         background 0.15s,
         border-color 0.15s;
@@ -280,11 +276,22 @@
 }
 
 .classes-material-tile-name {
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.classes-material-tile-row {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.classes-material-unlink-btn {
+    width: 1.75rem;
+    height: 1.75rem;
 }
 
 .classes-sidebar-panel--viewer {
@@ -478,22 +485,8 @@
         grid-template-columns: 1fr;
     }
 
-    .classes-workspace-tile-deck {
-        display: flex;
-        flex-direction: column;
-        gap: 0.65rem;
+    .classes-workspace-tiles {
         min-height: 0;
-    }
-
-    .classes-workspace-tile {
-        position: relative;
-        inset: auto;
-        transform: none;
-        min-height: 15rem;
-    }
-
-    .classes-workspace-tile.active {
-        z-index: 1;
     }
 }
 

@@ -51,6 +51,7 @@ import {
     setWhiteboardFileKey,
 } from "./whiteboards.js";
 import type {
+    AgendaSnapshotRef,
     AttachedFileRef,
     ClassMembershipRow,
     ClassRow,
@@ -169,6 +170,8 @@ export class DbClassesStore {
             materials?: string;
             homework?: string;
             files?: AttachedFileRef[];
+            agendaDocument?: string;
+            agendaSnapshots?: AgendaSnapshotRef[];
         },
     ): Promise<ClassroomResourceRow> {
         return updateClassroomResourcesForTeacher(

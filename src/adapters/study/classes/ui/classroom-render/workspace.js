@@ -67,7 +67,6 @@ export function renderWorkspaceTabs({
                         workspaceMode === tab.mode ? " active" : ""
                     }"
                     data-workspace-mode="${escapeHtml(tab.mode)}"
-                    ${!isTeacherView ? 'disabled aria-disabled="true"' : ""}
                 >${escapeHtml(tab.label)}</button>`,
         )
         .join("");
@@ -102,43 +101,47 @@ function renderWorkspaceWhiteboard({ activeWhiteboard, i18n }) {
     `;
 }
 
-function renderInlineAgenda({ activeAgendaItems, isTeacherView, i18n }) {
-    const items = activeAgendaItems.length
-        ? activeAgendaItems
-              .map(
-                  (item) => `
-                <div class="classes-chalk-item" data-agenda-id="${escapeHtml(String(item.id ?? ""))}">
-                    <span class="classes-chalk-title">${escapeHtml(item.title ?? "")}</span>
-                    ${item.description ? `<span class="classes-chalk-desc">${escapeHtml(item.description)}</span>` : ""}
-                    ${
-                        isTeacherView
-                            ? `<button type="button" class="classes-agenda-delete-btn"
-                                data-agenda-id="${escapeHtml(String(item.id ?? ""))}"
-                                aria-label="${escapeHtml(i18n.t("ui.reuse.delete"))}">&times;</button>`
-                            : ""
-                    }
-                </div>
-            `,
-              )
-              .join("")
-        : `<span class="classes-chalk-empty">${escapeHtml(i18n.t("module.study.classes.no_active_agenda"))}</span>`;
-
-    const addForm = isTeacherView
-        ? `
-            <div class="classes-agenda-inline-form" hidden>
-                <input type="text" class="classes-agenda-inline-title"
-                    placeholder="${escapeHtml(i18n.t("module.study.classes.agenda_title"))}" />
-                <input type="text" class="classes-agenda-inline-desc"
-                    placeholder="${escapeHtml(i18n.t("module.study.classes.agenda_description_optional"))}" />
-                <button type="button" class="btn-confirm btn-animated classes-agenda-inline-save">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+function renderAgendaDocumentPanel({
+    classResources,
+    isTeacherView,
+    i18n,
+    compact = false,
+}) {
+    const agendaDocument = String(classResources?.agendaDocument ?? "");
+    const snapshots = Array.isArray(classResources?.agendaSnapshots)
+        ? classResources.agendaSnapshots
+        : [];
+    const snapshotOptions = snapshots
+        .map((snapshot) => {
+            const snapshotId = String(snapshot?.id ?? "").trim();
+            const snapshotName = String(snapshot?.name ?? "").trim();
+            if (!snapshotId || !snapshotName) {
+                return "";
+            }
+            return `<option value="${escapeHtml(snapshotId)}">${escapeHtml(snapshotName)}</option>`;
+        })
+        .join("");
+    return `
+        <div class="classes-agenda-panel${compact ? " classes-agenda-panel--compact" : ""}">
+            <textarea
+                class="classes-agenda-document-editor"
+                ${isTeacherView ? "" : "readonly"}
+                placeholder="${escapeHtml(i18n.t("module.study.classes.class_agenda"))}"
+            >${escapeHtml(agendaDocument)}</textarea>
+            <div class="classes-agenda-document-actions">
+                ${
+                    isTeacherView
+                        ? `<button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>`
+                        : ""
+                }
+                <select class="classes-agenda-snapshot-select">
+                    <option value="">${escapeHtml(i18n.t("ui.reuse.open"))}</option>
+                    ${snapshotOptions}
+                </select>
+                <button type="button" class="btn-cancel btn-animated classes-agenda-snapshot-open-btn">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
             </div>
-            <button type="button" class="classes-icon-btn classes-add-agenda-btn"
-                aria-label="${escapeHtml(i18n.t("module.study.classes.create_agenda"))}"
-            >${escapeHtml(i18n.t("module.study.classes.create_agenda"))}</button>
-        `
-        : "";
-
-    return `<div class="classes-agenda-panel">${items}${addForm}</div>`;
+        </div>
+    `;
 }
 
 function renderSelectedDeskPanel({
@@ -162,7 +165,6 @@ function renderSelectedDeskPanel({
             <h4 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.selected_desk"))}</h4>
             <strong>${escapeHtml(buildAccountLabel(selectedMember))}</strong>
             <button type="button" class="btn-confirm btn-animated classes-open-notebook-btn" data-student-id="${escapeHtml(selectedMember.studentAccountId)}">${escapeHtml(i18n.t("module.study.classes.open_notebook"))}</button>
-            <button type="button" class="btn-confirm btn-animated classes-open-homework-btn">${escapeHtml(i18n.t("module.study.classes.open_textbook"))}</button>
             <label class="classes-section-heading" for="classes-own-notebook">${escapeHtml(i18n.t("module.study.classes.my_notebook"))}</label>
             <textarea id="classes-own-notebook" class="classes-notebook-editor">${escapeHtml(selectedNotebookText)}</textarea>
             <button type="button" class="btn-confirm btn-animated classes-save-notebook-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
@@ -172,7 +174,7 @@ function renderSelectedDeskPanel({
 
 export function renderWorkspaceContent({
     snapshot,
-    activeAgendaItems,
+    classResources,
     selectedSeatNumber,
     selectedNotebookText,
     i18n,
@@ -207,7 +209,7 @@ export function renderWorkspaceContent({
                     activeTileMode === "whiteboard" ? " active" : ""
                 }" data-workspace-mode="whiteboard">
                     <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>
-                    <div class="classes-workspace-tile-body classes-whiteboard-workspace-host">
+                    <div class="classes-workspace-tile-content classes-whiteboard-workspace-host">
                         ${
                             activeWhiteboard?.embedUrl
                                 ? ""
@@ -222,24 +224,30 @@ export function renderWorkspaceContent({
                     activeTileMode === "meeting" ? " active" : ""
                 }" data-workspace-mode="meeting">
                     <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="meeting">${escapeHtml(i18n.t("ui.reuse.meeting"))}</button>
-                    <div class="classes-workspace-tile-body classes-meeting-workspace-host"></div>
+                    <div class="classes-workspace-tile-content classes-meeting-workspace-host"></div>
                 </section>`
         : "";
     return `
         <section class="classes-workspace-panel classes-workspace-panel--tiled">
-            <div class="classes-workspace-tile-deck" data-active-workspace-mode="${escapeHtml(activeTileMode)}">
+            <div class="classes-workspace-tiles" data-active-workspace-mode="${escapeHtml(activeTileMode)}">
                 <section class="classes-workspace-tile classes-workspace-tile--agenda${
                     activeTileMode === "agenda" ? " active" : ""
                 }" data-workspace-mode="agenda">
                     <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="agenda">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
-                    <div class="classes-workspace-tile-body">${renderSelectedDeskPanel(
-                        {
+                    <div class="classes-workspace-tile-content">
+                        ${renderAgendaDocumentPanel({
+                            classResources,
+                            isTeacherView,
+                            i18n,
+                            compact: true,
+                        })}
+                        ${renderSelectedDeskPanel({
                             snapshot,
                             selectedSeatNumber,
                             selectedNotebookText,
                             i18n,
-                        },
-                    )}</div>
+                        })}
+                    </div>
                 </section>
                 ${whiteboardTile}
                 ${meetingTile}
@@ -292,7 +300,12 @@ export function renderRosterPanel({ snapshot, i18n }) {
     `;
 }
 
-function renderSidebarMaterials({ classResources, activeMaterialKey, i18n }) {
+function renderSidebarMaterials({
+    classResources,
+    activeMaterialKey,
+    isTeacherView,
+    i18n,
+}) {
     const files = Array.isArray(classResources?.files)
         ? classResources.files
         : [];
@@ -338,35 +351,48 @@ function renderSidebarMaterials({ classResources, activeMaterialKey, i18n }) {
             </div>
         `;
     }
-    if (!files.length) {
-        return `
-            <div class="classes-sidebar-panel classes-sidebar-panel--materials">
-                <p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_homework_assigned"))}</p>
-            </div>
-        `;
-    }
     const tilesMarkup = files
-        .map((fileRef) => {
+        .map((fileRef, index) => {
             const fileName = String(fileRef?.name ?? "").trim();
             const fileKey = String(fileRef?.key ?? "").trim();
             if (!fileName || !fileKey) return "";
             const extension = fileKey.split(".").pop()?.toLowerCase() ?? "";
             const icon = getMaterialIcon(extension);
-            return `<button
-                type="button"
-                class="classes-material-tile"
-                data-material-key="${escapeHtml(fileKey)}"
-                data-material-name="${escapeHtml(fileName)}"
-                title="${escapeHtml(fileName)}"
-            >
-                <span class="classes-material-tile-icon">${icon}</span>
-                <span class="classes-material-tile-name">${escapeHtml(fileName)}</span>
-            </button>`;
+            return `<div class="classes-material-tile-row">
+                <button
+                    type="button"
+                    class="classes-material-tile"
+                    data-material-key="${escapeHtml(fileKey)}"
+                    data-material-name="${escapeHtml(fileName)}"
+                    title="${escapeHtml(fileName)}"
+                >
+                    <span class="classes-material-tile-icon">${icon}</span>
+                    <span class="classes-material-tile-name">${escapeHtml(fileName)}</span>
+                </button>
+                ${
+                    isTeacherView
+                        ? `<button type="button"
+                            class="classes-material-unlink-btn"
+                            data-material-index="${index}"
+                            aria-label="${escapeHtml(i18n.t("ui.reuse.remove"))}"
+                        >&times;</button>`
+                        : ""
+                }
+            </div>`;
         })
         .join("");
     return `
         <div class="classes-sidebar-panel classes-sidebar-panel--materials">
-            <div class="classes-material-tiles">${tilesMarkup}</div>
+            ${
+                isTeacherView
+                    ? `<button type="button" class="classes-icon-btn classes-material-add-btn">${escapeHtml(i18n.t("ui.reuse.add"))}</button>`
+                    : ""
+            }
+            ${
+                tilesMarkup
+                    ? `<div class="classes-material-tiles">${tilesMarkup}</div>`
+                    : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</p>`
+            }
         </div>
     `;
 }
@@ -376,7 +402,6 @@ export function renderSidebarPanel({
     sidebarMode,
     activeMaterialKey,
     snapshot,
-    activeAgendaItems,
     isTeacherView,
     i18n,
 }) {
@@ -408,8 +433,8 @@ export function renderSidebarPanel({
     if (sidebarMode === "students") {
         panelContent = renderRosterPanel({ snapshot, i18n });
     } else if (sidebarMode === "agenda") {
-        panelContent = renderInlineAgenda({
-            activeAgendaItems,
+        panelContent = renderAgendaDocumentPanel({
+            classResources,
             isTeacherView,
             i18n,
         });
@@ -417,6 +442,7 @@ export function renderSidebarPanel({
         panelContent = renderSidebarMaterials({
             classResources,
             activeMaterialKey,
+            isTeacherView,
             i18n,
         });
     }

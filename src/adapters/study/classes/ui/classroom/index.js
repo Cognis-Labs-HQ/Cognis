@@ -26,7 +26,6 @@ import { renderClassroomPage } from "/static/adapters/study/classes/classroom-re
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
 import { openClassSettingsPopup } from "/static/adapters/study/classes/classroom-popups.js";
-import { openAgendaPopup } from "/static/adapters/study/classes/classroom-agenda-popup.js";
 import { renderClassroomSubNavigation } from "/static/adapters/study/classes/classroom-sub-navigation.js";
 import { startClassroomRealtimeRefresh } from "/static/adapters/study/classes/classroom-realtime.js";
 import { createClassroomWindows } from "/static/adapters/study/classes/classroom-windows.js";
@@ -75,7 +74,13 @@ function normalizeSidebarMode(input) {
 }
 
 function createDefaultClassResources() {
-    return { materials: "", homework: "", files: [] };
+    return {
+        materials: "",
+        homework: "",
+        files: [],
+        agendaDocument: "",
+        agendaSnapshots: [],
+    };
 }
 
 export async function mount(root, { signal } = {}) {
@@ -129,7 +134,8 @@ export async function mount(root, { signal } = {}) {
     let selectedSeatNumber = null;
     let selectedNotebookText = "";
     let classResources = createDefaultClassResources();
-    let activeAgendaItems = [];
+    let agendaDocument = "";
+    let agendaSnapshots = [];
     let selectedLanguageFilter = "";
     let searchQuery = "";
     let workspaceMode = "agenda";
@@ -227,16 +233,10 @@ export async function mount(root, { signal } = {}) {
     }
 
     function getDefaultWorkspaceMode() {
-        if (!isTeacherView()) {
-            return "chat";
-        }
         return "agenda";
     }
 
     function getWorkspaceMode() {
-        if (classroomWindows?.isMeetingOpen()) {
-            return "meeting";
-        }
         return workspaceMode;
     }
 
@@ -254,19 +254,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
-        if (isTeacherView()) {
-            return;
-        }
-        if (!snapshot) {
-            if (
-                workspaceMode === "meeting" &&
-                !classroomWindows?.isMeetingOpen()
-            ) {
-                setWorkspaceMode("agenda", { remember: false });
-            }
-            return;
-        }
-        const defaultWorkspaceMode = getDefaultWorkspaceMode();
+        if (isTeacherView() || !snapshot) return;
         const meetingAutoJoinBlocked = Boolean(
             activeMeetingId &&
             classroomWindows?.isMeetingDismissed?.(activeMeetingId),
@@ -276,38 +264,21 @@ export async function mount(root, { signal } = {}) {
             !classroomWindows?.isMeetingOpen() &&
             (!activeMeetingId || meetingAutoJoinBlocked)
         ) {
-            setWorkspaceMode("agenda", { remember: false });
+            setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
+        const boardFocus = normalizeBoardFocus(snapshot?.classroom?.boardFocus);
         if (
-            workspaceMode === "whiteboard" &&
-            !getSelectedActiveWhiteboardId(snapshot) &&
-            !activeWhiteboard?.embedUrl
+            boardFocus === "chat" &&
+            workspaceMode !== "meeting" &&
+            !classroomWindows?.isMeetingOpen()
         ) {
-            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
-        }
-        if (workspaceMode === "agenda" && !meetingAutoJoinBlocked) {
-            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
-        }
-        if (workspaceMode === "meeting" && !classroomWindows?.isMeetingOpen()) {
-            setWorkspaceMode(defaultWorkspaceMode, { remember: false });
-        }
-        const activeWhiteboardId = getSelectedActiveWhiteboardId(snapshot);
-        if (
-            activeWhiteboardId &&
-            workspaceMode !== "whiteboard" &&
-            workspaceMode !== "meeting"
-        ) {
-            setWorkspaceMode("whiteboard", { remember: false });
+            setWorkspaceMode("chat", { remember: false });
         }
     }
 
     function syncWorkspaceModeWithSnapshot({ force = false } = {}) {
         const nextMode = getDefaultWorkspaceMode();
-        if (
-            force ||
-            workspaceMode === "agenda" ||
-            workspaceMode === "meeting"
-        ) {
+        if (force && workspaceMode === "agenda") {
             setWorkspaceMode(nextMode);
             return;
         }
@@ -384,7 +355,8 @@ export async function mount(root, { signal } = {}) {
         if (!snapshot) {
             selectedNotebookText = "";
             classResources = createDefaultClassResources();
-            activeAgendaItems = [];
+            agendaDocument = "";
+            agendaSnapshots = [];
             whiteboards = [];
             activeWhiteboard = null;
             activeMeetingId = null;
@@ -420,9 +392,18 @@ export async function mount(root, { signal } = {}) {
         selectedNotebookText = notebookResponse.ok
             ? String((await notebookResponse.json())?.data?.noteText ?? "")
             : "";
-        activeAgendaItems = agendaResponse.ok
-            ? ((await agendaResponse.json())?.data?.activeItems ?? [])
+        const agendaPayload = agendaResponse.ok
+            ? (await agendaResponse.json().catch(() => ({ data: null })))?.data
+            : null;
+        agendaDocument = String(agendaPayload?.document ?? "");
+        agendaSnapshots = Array.isArray(agendaPayload?.snapshots)
+            ? agendaPayload.snapshots
             : [];
+        classResources = {
+            ...classResources,
+            agendaDocument,
+            agendaSnapshots,
+        };
         const activeMeetingPayload = activeMeetingResponse?.ok
             ? await activeMeetingResponse.json().catch(() => ({ data: [] }))
             : { data: [] };
@@ -527,11 +508,9 @@ export async function mount(root, { signal } = {}) {
         } else if (snapshot.classroom) {
             snapshot.classroom.boardFocus = normalizedFocus;
         }
-        if (normalizedFocus === "classroom") {
-            setWorkspaceMode("agenda");
-        } else if (normalizedFocus === "chat") {
+        if (normalizedFocus === "chat") {
             setWorkspaceMode("chat");
-        } else {
+        } else if (workspaceMode === "chat") {
             setWorkspaceMode("agenda");
         }
     }
@@ -589,7 +568,11 @@ export async function mount(root, { signal } = {}) {
         return renderClassroomPage({
             snapshot,
             classResources,
-            activeAgendaItems,
+            classResources: {
+                ...classResources,
+                agendaDocument,
+                agendaSnapshots,
+            },
             selectedSeatNumber,
             selectedNotebookText,
             i18n,
@@ -601,7 +584,7 @@ export async function mount(root, { signal } = {}) {
             currentViewMode: getClassroomViewMode(),
             canEditMaterials: teacherAccount,
             boardEntities: getBoardEntities(snapshot),
-            workspaceMode: getWorkspaceMode(),
+            workspaceMode,
             sidebarMode,
             activeMaterialKey,
             whiteboards,
@@ -787,7 +770,6 @@ export async function mount(root, { signal } = {}) {
                             sidebarMode = normalizeSidebarMode(mode);
                         },
                         handleSeatActionMenu,
-                        openAgendaPopup,
                         openClassSettingsPopup,
                         openClassSearch,
                         refreshContent,

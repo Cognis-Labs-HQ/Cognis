@@ -66,26 +66,9 @@ function computeDeskLayout(studentLimit) {
     };
 }
 
-function renderChalkAgenda({ activeAgendaItems, i18n }) {
-    if (!activeAgendaItems.length) {
-        return `<span class="classes-chalk-empty">${escapeHtml(i18n.t("module.study.classes.no_active_agenda"))}</span>`;
-    }
-    return activeAgendaItems
-        .map(
-            (item) => `
-                <div class="classes-chalk-item" data-agenda-id="${escapeHtml(String(item.id ?? ""))}">
-                    <span class="classes-chalk-title">${escapeHtml(item.title ?? "")}</span>
-                    ${item.description ? `<span class="classes-chalk-desc">${escapeHtml(item.description)}</span>` : ""}
-                </div>
-            `,
-        )
-        .join("");
-}
-
 export function renderBlackboard({
     snapshot,
     classResources,
-    activeAgendaItems,
     selectedSeatNumber,
     selectedNotebookText,
     i18n,
@@ -213,14 +196,13 @@ export function renderBlackboard({
                         sidebarMode,
                         activeMaterialKey,
                         snapshot,
-                        activeAgendaItems,
                         isTeacherView,
                         i18n,
                     })}
                     <div class="classes-workspace-main">
                         ${renderWorkspaceContent({
                             snapshot,
-                            activeAgendaItems,
+                            classResources,
                             selectedSeatNumber,
                             selectedNotebookText,
                             i18n,
@@ -507,7 +489,6 @@ function renderWhiteboardList({ whiteboards, isTeacherView, i18n }) {
 function renderClassroomView({
     snapshot,
     classResources,
-    activeAgendaItems,
     selectedSeatNumber,
     selectedNotebookText,
     i18n,
@@ -548,7 +529,6 @@ function renderClassroomView({
                     ${renderBlackboard({
                         snapshot: { ...snapshot, isTeacherView },
                         classResources,
-                        activeAgendaItems,
                         selectedSeatNumber,
                         selectedNotebookText,
                         i18n,

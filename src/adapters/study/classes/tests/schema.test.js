@@ -67,3 +67,43 @@ test("classes schema adds active whiteboard state column when missing", async ()
         true,
     );
 });
+
+test("classes schema adds classroom agenda document columns when missing", async () => {
+    const executedStatements = [];
+    const executor = createRawExecutor(async (sql) => {
+        executedStatements.push(sql);
+        if (sql === "SELECT current_schema()") {
+            return { rows: [{ current_schema: "public" }], rowCount: 1 };
+        }
+        if (sql.includes("information_schema.columns")) {
+            return {
+                rows:
+                    sql.includes("agenda_document") ||
+                    sql.includes("agenda_snapshots")
+                        ? []
+                        : [{ column_name: "present" }],
+                rowCount:
+                    sql.includes("agenda_document") ||
+                    sql.includes("agenda_snapshots")
+                        ? 0
+                        : 1,
+            };
+        }
+        return { rows: [], rowCount: 0 };
+    });
+
+    await ensureSchema(executor);
+
+    assert.equal(
+        executedStatements.includes(
+            "ALTER TABLE classroom_resources ADD COLUMN agenda_document TEXT NOT NULL DEFAULT ''",
+        ),
+        true,
+    );
+    assert.equal(
+        executedStatements.includes(
+            "ALTER TABLE classroom_resources ADD COLUMN agenda_snapshots TEXT NOT NULL DEFAULT '[]'",
+        ),
+        true,
+    );
+});
