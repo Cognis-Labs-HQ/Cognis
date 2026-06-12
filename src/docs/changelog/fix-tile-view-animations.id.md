@@ -148,3 +148,15 @@ tersimpan dengan tindakan ubah nama dan hapus secara inline.
 
 `PATCH /agenda/snapshots/:snapshotId` dan `DELETE /agenda/snapshots/:snapshotId`
 kini tersedia untuk guru.
+
+## Ubin aktif dipindahkan ke bagian bawah tumpukan ruang kerja
+
+Mengklik header ubin di tata letak bertumpuk sekarang memindahkan ubin tersebut ke bagian bawah kolom, sehingga semua header ubin lainnya tetap terlihat di atasnya.
+
+## Perubahan tampilan guru disinkronkan ke murid bahkan saat rapat berlangsung
+
+Murid kini mengikuti tampilan ruang kerja guru (Kelas, Papan Tulis) bahkan saat jendela rapat aktif. Ketika guru beralih dari tampilan Rapat ke tampilan lain, ruang kerja murid langsung diperbarui.
+
+## Penutupan rapat oleh guru menyiarkan tampilan ruang kerja ke murid
+
+Ketika guru menutup jendela rapat melalui antarmuka rapat, tampilan ruang kerja yang dihasilkan segera disiarkan ke murid tanpa menunggu siklus polling berikutnya.

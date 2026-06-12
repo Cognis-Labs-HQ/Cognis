@@ -155,3 +155,52 @@ test("teacher materials upload popup binds upload logic on open", () => {
     assert.match(source, /onOpen:\s*\(overlay\)/);
     assert.doesNotMatch(source, /onMount:\s*\(overlay\)/);
 });
+
+test("active tile is moved to end of tile order (bottom) on hitbox click", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/interactions.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /clickedIndex >= 0[\s\S]*clickedIndex < currentOrder\.length - 1/,
+    );
+    assert.match(
+        source,
+        /\.filter[\s\S]*mode !== clickedMode[\s\S]*,\s*clickedMode,/,
+    );
+    assert.doesNotMatch(source, /setTileOrder\(\[\s*clickedMode,/);
+});
+
+test("student boardFocus sync applies regardless of meeting state", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /setWorkspaceMode\(boardFocus, \{ remember: true \}\)/,
+    );
+    assert.doesNotMatch(
+        source,
+        /workspaceMode !== "meeting" && !classroomWindows\?\.isMeetingOpen\(\)/,
+    );
+});
+
+test("teacher meeting close broadcasts boardFocus to students", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /isTeacherView\(\)\s*\)\s*\{\s*void updateBoardFocus\(returnWorkspaceMode\)/,
+    );
+    assert.match(source, /returnWorkspaceMode/);
+});

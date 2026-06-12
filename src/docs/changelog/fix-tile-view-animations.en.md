@@ -155,3 +155,15 @@ snapshots with inline rename and delete actions.
 `PATCH /agenda/snapshots/:snapshotId` and
 `DELETE /agenda/snapshots/:snapshotId` are now available for teachers
 to manage their saved agendas server-side.
+
+## Active tile moves to the bottom of the workspace stack
+
+Clicking a workspace tile header in stacked layout now shuffles that tile to the bottom of the column, keeping all other tile headers visible above it instead of the previous behaviour that moved the tile to the top.
+
+## Teacher view changes sync to students even during a meeting
+
+Students now follow the teacher's workspace view (Classroom, Whiteboard) even while a meeting overlay is active. When the teacher switches away from Meeting to another view, the student workspace updates immediately and lands on the correct panel when the meeting overlay closes.
+
+## Teacher meeting-close broadcasts workspace view to students
+
+When a teacher dismisses the meeting overlay via the meeting UI, the resulting workspace view is broadcast to students so their panels stay in sync without waiting for the next polling cycle.

@@ -202,15 +202,10 @@ export async function mount(root, { signal } = {}) {
     function setWorkspaceMode(nextMode, { remember = true } = {}) {
         const normalizedMode = normalizeWorkspaceMode(nextMode);
         workspaceMode = normalizedMode;
-        if (normalizedMode === "whiteboard") {
-            initializedTiles.add("whiteboard");
-            if (!tileOrder.includes("whiteboard")) {
-                tileOrder = [...tileOrder, "whiteboard"];
-            }
-        } else if (normalizedMode === "meeting") {
-            initializedTiles.add("meeting");
-            if (!tileOrder.includes("meeting")) {
-                tileOrder = [...tileOrder, "meeting"];
+        if (normalizedMode === "whiteboard" || normalizedMode === "meeting") {
+            initializedTiles.add(normalizedMode);
+            if (!tileOrder.includes(normalizedMode)) {
+                tileOrder = [...tileOrder, normalizedMode];
             }
         }
         if (normalizedMode !== "meeting" && remember) {
@@ -237,10 +232,8 @@ export async function mount(root, { signal } = {}) {
         const boardFocus = rawBoardFocus
             ? normalizeBoardFocus(rawBoardFocus)
             : null;
-        if (workspaceMode !== "meeting" && !classroomWindows?.isMeetingOpen()) {
-            if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
-            if (boardFocus) setWorkspaceMode(boardFocus, { remember: false });
-        }
+        if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
+        if (boardFocus) setWorkspaceMode(boardFocus, { remember: true });
     }
 
     function syncWorkspaceModeWithSnapshot({ force = false } = {}) {
@@ -881,12 +874,15 @@ export async function mount(root, { signal } = {}) {
         onMeetingVisibilityChange: ({ visible, returnMode } = {}) => {
             if (visible) {
                 setWorkspaceMode("meeting", { remember: false });
-            } else if (returnMode === "agenda") {
-                setWorkspaceMode("agenda", { remember: false });
             } else {
-                setWorkspaceMode(lastNonMeetingWorkspaceMode, {
-                    remember: false,
-                });
+                const returnWorkspaceMode =
+                    returnMode === "agenda"
+                        ? "agenda"
+                        : lastNonMeetingWorkspaceMode;
+                setWorkspaceMode(returnWorkspaceMode, { remember: false });
+                if (isTeacherView()) {
+                    void updateBoardFocus(returnWorkspaceMode);
+                }
             }
             refreshDom();
         },

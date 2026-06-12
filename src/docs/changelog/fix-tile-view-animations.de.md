@@ -153,3 +153,15 @@ Agenda-Snapshots, die inline umbenannt oder gelöscht werden können.
 
 `PATCH /agenda/snapshots/:snapshotId` und `DELETE /agenda/snapshots/:snapshotId`
 stehen nun für Lehrkräfte zur Verfügung.
+
+## Aktive Kachel wird ans Ende des Arbeitsbereich-Stapels verschoben
+
+Ein Klick auf den Kachelkopf im gestapelten Layout verschiebt die Kachel jetzt ans Ende der Spalte, sodass alle anderen Kachelköpfe darüber sichtbar bleiben.
+
+## Ansichtswechsel des Lehrers synchronisiert sich mit Schülern auch während einer Besprechung
+
+Schüler folgen nun der Arbeitsbereichsansicht des Lehrers (Klassenraum, Whiteboard), auch wenn ein Besprechungsfenster geöffnet ist. Wenn der Lehrer von der Besprechungsansicht zu einer anderen wechselt, wird der Schüler-Arbeitsbereich sofort aktualisiert.
+
+## Schließen der Besprechung durch den Lehrer sendet die Arbeitsbereichsansicht an Schüler
+
+Wenn ein Lehrer das Besprechungsfenster über die Besprechungsoberfläche schließt, wird die resultierende Arbeitsbereichsansicht sofort an die Schüler übertragen, ohne auf den nächsten Abfragezyklus zu warten.

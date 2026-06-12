@@ -234,12 +234,15 @@ export function bindClassroomInteractions({
                         tileHitbox.dataset.workspaceMode,
                     );
                     const clickedIndex = currentOrder.indexOf(clickedMode);
-                    if (clickedIndex > 0) {
+                    if (
+                        clickedIndex >= 0 &&
+                        clickedIndex < currentOrder.length - 1
+                    ) {
                         setTileOrder([
-                            clickedMode,
                             ...currentOrder.filter(
                                 (mode) => mode !== clickedMode,
                             ),
+                            clickedMode,
                         ]);
                     }
                 }
