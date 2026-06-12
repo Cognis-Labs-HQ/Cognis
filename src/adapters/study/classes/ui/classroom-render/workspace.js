@@ -152,7 +152,7 @@ function renderAgendaDocumentPanel({
         .join("");
     return `
         <div class="classes-agenda-panel${compact ? " classes-agenda-panel--compact" : ""}">
-            ${isTeacherView ? renderAgendaToolbar() : ""}
+            ${isTeacherView ? renderAgendaToolbar({ i18n }) : ""}
             <textarea
                 class="classes-agenda-document-editor"
                 ${isTeacherView ? "" : "readonly"}
@@ -171,6 +171,7 @@ function renderAgendaDocumentPanel({
                     }
                 </select>
                 <button type="button" class="btn-animated classes-agenda-snapshot-open-btn"${hasSnapshots ? "" : " disabled"}>${escapeHtml(i18n.t("ui.reuse.open"))}</button>
+                <button type="button" class="btn-animated classes-agenda-edit-btn">${escapeHtml(i18n.t("module.study.classes.agenda_edit_snapshots"))}</button>
             </div>`
                     : ""
             }
@@ -438,7 +439,7 @@ function renderSidebarMaterials({
             ${
                 tilesMarkup
                     ? `<div class="classes-material-tiles">${tilesMarkup}</div>`
-                    : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</p>`
+                    : `<p class="classes-workspace-nothing-found">${escapeHtml(i18n.t("module.study.classes.materials_nothing_found"))}</p>`
             }
         </div>
     `;

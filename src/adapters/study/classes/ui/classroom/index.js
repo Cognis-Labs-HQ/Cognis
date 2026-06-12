@@ -123,7 +123,12 @@ export async function mount(root, { signal } = {}) {
     /** Tracks which tiles have been initialized by user action or system auto-open. */
     let initializedTiles = new Set();
     /** "stacked" (depth fan) or "slideshow" (single tile + arrows). */
-    let tileLayout = "stacked";
+    const accountId = localStorage.getItem("cognis_account") ?? "";
+    const tileLayoutKey = accountId ? `cognis_tile_layout_${accountId}` : null;
+    const storedTileLayout = tileLayoutKey
+        ? localStorage.getItem(tileLayoutKey)
+        : null;
+    let tileLayout = storedTileLayout === "slideshow" ? "slideshow" : "stacked";
     /** Ordered tile modes; last element is the front/active tile. */
     let tileOrder = ["agenda"];
 
@@ -233,13 +238,6 @@ export async function mount(root, { signal } = {}) {
         ) {
             setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
-        const broadcastedLayout = snapshot?.classroom?.viewLayout;
-        if (
-            broadcastedLayout === "slideshow" ||
-            broadcastedLayout === "stacked"
-        ) {
-            tileLayout = broadcastedLayout;
-        }
         const rawBoardFocus = String(
             snapshot?.classroom?.boardFocus ?? "",
         ).trim();
@@ -338,12 +336,15 @@ export async function mount(root, { signal } = {}) {
             activeMeetingId = null;
             return;
         }
+        const selectedActiveWhiteboardId =
+            getSelectedActiveWhiteboardId(snapshot);
         const [
             resourcesResponse,
             notebookResponse,
             agendaResponse,
             whiteboardsResponse,
             activeMeetingResponse,
+            studentWhiteboardTokenResponse,
         ] = await Promise.all([
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
@@ -360,6 +361,12 @@ export async function mount(root, { signal } = {}) {
             apiFetch(
                 `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(snapshot.id)}`,
             ).catch(() => null),
+            !isTeacherView() && selectedActiveWhiteboardId
+                ? apiFetch(
+                      `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(selectedActiveWhiteboardId)}/token`,
+                      { suppressConnectionRecoveryToast: true },
+                  ).catch(() => null)
+                : Promise.resolve(null),
         ]);
         classResources = resourcesResponse.ok
             ? ((await resourcesResponse.json())?.data ??
@@ -421,8 +428,6 @@ export async function mount(root, { signal } = {}) {
         whiteboards = whiteboardsResponse.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
-        const selectedActiveWhiteboardId =
-            getSelectedActiveWhiteboardId(snapshot);
         if (!isTeacherView()) {
             whiteboards = selectedActiveWhiteboardId
                 ? whiteboards.filter(
@@ -452,6 +457,31 @@ export async function mount(root, { signal } = {}) {
             activeWhiteboard?.boardId !== selectedActiveWhiteboardId
         ) {
             activeWhiteboard = null;
+        }
+        if (
+            !isTeacherView() &&
+            selectedActiveWhiteboardId &&
+            !activeWhiteboard?.embedUrl &&
+            studentWhiteboardTokenResponse?.ok
+        ) {
+            const tokenPayload = await studentWhiteboardTokenResponse
+                .json()
+                .catch(() => ({ data: {} }));
+            const embedUrl = String(tokenPayload?.data?.embedUrl ?? "").trim();
+            if (embedUrl) {
+                const matchBoard = whiteboards.find(
+                    (board) =>
+                        String(board?.id ?? "") === selectedActiveWhiteboardId,
+                );
+                activeWhiteboard = {
+                    boardId: selectedActiveWhiteboardId,
+                    boardName:
+                        String(matchBoard?.name ?? "").trim() ||
+                        i18n.t("module.study.classes.whiteboard"),
+                    embedUrl,
+                };
+                initializedTiles.add("whiteboard");
+            }
         }
         syncStudentWorkspaceAccess(snapshot);
     }
@@ -586,6 +616,7 @@ export async function mount(root, { signal } = {}) {
         getWorkspaceMode: () => workspaceMode,
         getInitializedTiles: () => initializedTiles,
         getTileOrder: () => tileOrder,
+        getTileLayout: () => tileLayout,
         i18n,
         fallbackRefreshDom: refreshDom,
     });
@@ -623,6 +654,20 @@ export async function mount(root, { signal } = {}) {
     footerClasses = await loadFooterClasses();
     await refreshData();
     refreshSnapshotPresence();
+
+    // Restore the teacher's last workspace mode from the persisted board focus.
+    if (isTeacherView()) {
+        const initSnapshot = selectedSnapshot();
+        const savedFocus = String(
+            initSnapshot?.classroom?.boardFocus ?? "",
+        ).trim();
+        if (savedFocus && savedFocus !== "agenda") {
+            const restoredMode = normalizeWorkspaceMode(savedFocus);
+            if (restoredMode === "whiteboard" || restoredMode === "meeting") {
+                setWorkspaceMode(restoredMode);
+            }
+        }
+    }
     const presenceController = createClassroomPresenceController({
         apiFetch,
         signal,
@@ -771,6 +816,13 @@ export async function mount(root, { signal } = {}) {
                         setNotebookText: (text) => {
                             selectedNotebookText = text;
                         },
+                        setAgendaDocument: (text) => {
+                            agendaDocument = String(text ?? "");
+                            classResources = {
+                                ...classResources,
+                                agendaDocument,
+                            };
+                        },
                         setBoardEntity,
                         getBlackboardExpanded: () => blackboardExpanded,
                         setBlackboardExpanded: (value) => {
@@ -782,6 +834,16 @@ export async function mount(root, { signal } = {}) {
                                 layout === "slideshow"
                                     ? "slideshow"
                                     : "stacked";
+                            if (tileLayoutKey) {
+                                try {
+                                    localStorage.setItem(
+                                        tileLayoutKey,
+                                        tileLayout,
+                                    );
+                                } catch {
+                                    // Storage quota exceeded — non-fatal.
+                                }
+                            }
                             if (isTeacherView()) {
                                 void patchViewLayout(tileLayout);
                             }

@@ -69,3 +69,70 @@ nilai yang tidak kosong benar-benar ada sebelum menimpa pilihan tab siswa.
 
 Bergabung otomatis kini hanya dipicu ketika rapat baru terdeteksi pada siklus
 refresh, bukan untuk rapat yang sudah berlangsung ketika siswa membuka halaman.
+
+## Guru kini dapat kembali ke tampilan Classroom
+
+Mengklik tab Classroom kini mengatur mode ruang kerja dengan benar dan
+merender ulang panel untuk guru.
+
+## Siswa otomatis diarahkan ke Papan Tulis aktif
+
+Ketika guru mengaktifkan papan tulis, siswa menerima token embed saat pemuatan
+data awal dan langsung dinavigasi ke tile Papan Tulis.
+
+## Penyimpanan otomatis agenda tidak lagi mencuri fokus dari kotak teks
+
+Timer penyimpanan otomatis kini memperbarui status dokumen di memori secara
+langsung tanpa memuat ulang semua metadata kelas dan merender ulang seluruh DOM.
+
+## Toolbar agenda ditingkatkan dengan kontrol gaya teks
+
+Toolbar agenda kini menyertakan dropdown gaya teks (Normal, Judul 1–3, Kutipan,
+Blok Kode) seperti editor Markdown pada umumnya.
+
+## Upload materi menggunakan tombol unggah platform yang konsisten
+
+Pemicu upload di popup Materi Guru kini menggunakan elemen tombol yang tepat.
+
+## Alur upload materi mengirim toast konfirmasi dan kegagalan
+
+Mengunggah file kini menghasilkan toast berhasil atau gagal, dan file langsung
+muncul di daftar perpustakaan dengan nama, tipe, ukuran, dan tanggal.
+
+## Daftar perpustakaan materi menampilkan metadata file
+
+Setiap entri perpustakaan kini menampilkan nama file yang dipotong, ekstensi
+dalam huruf besar, ukuran file, dan tanggal pembuatan.
+
+## Status "Tidak ada yang ditemukan" ditampilkan saat tidak ada materi kelas
+
+Sidebar materi kini menampilkan pesan "Tidak ada yang ditemukan" yang teduh
+ketika tidak ada materi kelas tertaut.
+
+## Beralih antara tampilan tile dan slideshow mempertahankan rapat aktif
+
+Mengalihkan layout tile tidak lagi mereset iframe rapat.
+
+## Mode ruang kerja guru dipulihkan setelah refresh halaman
+
+Mode ruang kerja terakhir guru dibaca dari snapshot board-focus yang tersimpan
+dan dipulihkan saat halaman dimuat.
+
+## Preferensi tile/slideshow disimpan per pengguna
+
+Layout terakhir yang digunakan setiap pengguna disimpan di localStorage dan
+dipulihkan setiap kali halaman dimuat.
+
+## Siswa mempertahankan preferensi tile/slideshow mereka sendiri
+
+Layout yang disiarkan guru tidak lagi menimpa preferensi layout pribadi siswa.
+
+## Popup "Edit Agenda" untuk mengganti nama dan menghapus agenda tersimpan
+
+Tombol "Edit Agenda" baru membuka popup yang mencantumkan semua snapshot agenda
+tersimpan dengan tindakan ubah nama dan hapus secara inline.
+
+## Rute API untuk mengubah nama dan menghapus snapshot ditambahkan
+
+`PATCH /agenda/snapshots/:snapshotId` dan `DELETE /agenda/snapshots/:snapshotId`
+kini tersedia untuk guru.

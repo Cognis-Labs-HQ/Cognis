@@ -161,5 +161,54 @@ export async function handleClassroomAgendaRoutes({
         return true;
     }
 
+    const snapshotMatch = url.pathname.match(
+        /^\/api\/v1\/study\/classes\/([^/]+)\/agenda\/snapshots\/([^/]+)$/,
+    );
+    if (snapshotMatch && req.method === "DELETE") {
+        const claims = ctx.requireAuth(req, res, "teacher");
+        if (!claims) return true;
+        const classId = decodeURIComponent(snapshotMatch[1]);
+        const snapshotId = decodeURIComponent(snapshotMatch[2]);
+        const resources = await store.getClassroomResourcesForViewer(
+            classId,
+            claims.sub,
+        );
+        const remaining = resources.agendaSnapshots.filter(
+            (entry) => String(entry.id ?? "").trim() !== snapshotId,
+        );
+        await store.updateClassroomResourcesForTeacher(classId, claims.sub, {
+            agendaSnapshots: remaining,
+        });
+        jsonOk(res, { ok: true });
+        return true;
+    }
+
+    if (snapshotMatch && req.method === "PATCH") {
+        const claims = ctx.requireAuth(req, res, "teacher");
+        if (!claims) return true;
+        const classId = decodeURIComponent(snapshotMatch[1]);
+        const snapshotId = decodeURIComponent(snapshotMatch[2]);
+        const body = (await readJson(req)) as { name?: unknown };
+        const newName = String(body?.name ?? "").trim();
+        if (!newName) {
+            jsonError(res, 400, "bad_request", "name is required.");
+            return true;
+        }
+        const resources = await store.getClassroomResourcesForViewer(
+            classId,
+            claims.sub,
+        );
+        const updated = resources.agendaSnapshots.map((entry) =>
+            String(entry.id ?? "").trim() === snapshotId
+                ? { ...entry, name: newName }
+                : entry,
+        );
+        await store.updateClassroomResourcesForTeacher(classId, claims.sub, {
+            agendaSnapshots: updated,
+        });
+        jsonOk(res, { ok: true });
+        return true;
+    }
+
     return false;
 }

@@ -63,6 +63,7 @@ export function createWorkspaceTileRefresher({
     getWorkspaceMode,
     getInitializedTiles,
     getTileOrder,
+    getTileLayout,
     i18n,
     fallbackRefreshDom,
 }) {
@@ -75,16 +76,33 @@ export function createWorkspaceTileRefresher({
         const workspaceMode = getWorkspaceMode();
         const initializedTiles = getInitializedTiles();
         const tileOrder = getTileOrder();
+        const tileLayout = getTileLayout?.() ?? "stacked";
         const activeTileMode =
             workspaceMode === "whiteboard" || workspaceMode === "meeting"
                 ? workspaceMode
                 : "agenda";
+
+        // Update layout class if it has changed
+        tilesContainer.classList.toggle(
+            "classes-workspace-tiles--stacked",
+            tileLayout === "stacked",
+        );
+        tilesContainer.classList.toggle(
+            "classes-workspace-tiles--slideshow",
+            tileLayout === "slideshow",
+        );
+
         tilesContainer.dataset.activeWorkspaceMode = activeTileMode;
         for (const tile of tilesContainer.querySelectorAll(
             ".classes-workspace-tile[data-workspace-mode]",
         )) {
             const tileMode = String(tile.dataset.workspaceMode ?? "");
             tile.classList.toggle("active", tileMode === activeTileMode);
+            const depth = tileOrder.indexOf(tileMode);
+            tile.style.setProperty(
+                "--tile-depth",
+                String(depth >= 0 ? depth : tileOrder.length),
+            );
         }
         if (
             initializedTiles.has("whiteboard") &&

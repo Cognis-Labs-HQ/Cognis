@@ -60,6 +60,7 @@ export function bindClassroomInteractions({
     setSelectedLanguageFilter,
     setSearchQuery,
     setNotebookText,
+    setAgendaDocument,
     setBoardEntity,
     getBlackboardExpanded,
     setBlackboardExpanded,
@@ -246,6 +247,7 @@ export function bindClassroomInteractions({
                 if (nextWorkspaceMode === "agenda") {
                     if (isTeacherView()) {
                         await updateBoardFocus("agenda");
+                        setWorkspaceMode("agenda");
                     } else {
                         setWorkspaceMode(nextWorkspaceMode);
                     }
@@ -400,6 +402,141 @@ export function bindClassroomInteractions({
                 if (!openResponse.ok) return;
                 await loadSelectedClassMeta();
                 refreshDom();
+                return;
+            }
+
+            if (event.target.closest(".classes-agenda-edit-btn")) {
+                if (!isTeacherView() || !selectedClassId) return;
+                const classResources = getClassResources();
+                const snapshots = Array.isArray(classResources?.agendaSnapshots)
+                    ? classResources.agendaSnapshots
+                    : [];
+                openPopup({
+                    title: i18n.t("module.study.classes.agenda_edit_snapshots"),
+                    content: snapshots.length
+                        ? `<ul class="classes-agenda-edit-list">${snapshots
+                              .map(
+                                  (snap) =>
+                                      `<li class="classes-agenda-edit-item" data-snapshot-id="${escapeHtml(String(snap?.id ?? ""))}">
+                                        <span class="classes-agenda-edit-name">${escapeHtml(String(snap?.name ?? snap?.id ?? ""))}</span>
+                                        <button type="button" class="classes-agenda-edit-rename-btn" data-snapshot-id="${escapeHtml(String(snap?.id ?? ""))}">${escapeHtml(i18n.t("module.study.classes.agenda_snapshot_rename"))}</button>
+                                        <button type="button" class="classes-agenda-edit-delete-btn" data-snapshot-id="${escapeHtml(String(snap?.id ?? ""))}">${escapeHtml(i18n.t("module.study.classes.agenda_snapshot_delete"))}</button>
+                                      </li>`,
+                              )
+                              .join("")}</ul>`
+                        : `<p class="classes-agenda-edit-empty">${escapeHtml(i18n.t("module.study.classes.agenda_no_snapshots"))}</p>`,
+                    onMount: (overlay) => {
+                        overlay.addEventListener(
+                            "click",
+                            async (popupEvent) => {
+                                const renameBtn =
+                                    popupEvent.target instanceof Element
+                                        ? popupEvent.target.closest(
+                                              ".classes-agenda-edit-rename-btn",
+                                          )
+                                        : null;
+                                if (renameBtn instanceof HTMLElement) {
+                                    const snapshotId = String(
+                                        renameBtn.dataset.snapshotId ?? "",
+                                    ).trim();
+                                    if (!snapshotId) return;
+                                    const item = overlay.querySelector(
+                                        `.classes-agenda-edit-item[data-snapshot-id="${CSS.escape(snapshotId)}"]`,
+                                    );
+                                    const nameSpan = item?.querySelector(
+                                        ".classes-agenda-edit-name",
+                                    );
+                                    if (!(nameSpan instanceof HTMLElement))
+                                        return;
+                                    const input =
+                                        document.createElement("input");
+                                    input.type = "text";
+                                    input.value = nameSpan.textContent ?? "";
+                                    input.className =
+                                        "classes-agenda-edit-name-input";
+                                    nameSpan.replaceWith(input);
+                                    input.focus();
+                                    input.select();
+                                    input.addEventListener(
+                                        "keydown",
+                                        async (keyEvent) => {
+                                            if (keyEvent.key !== "Enter")
+                                                return;
+                                            const newName = input.value.trim();
+                                            if (!newName) return;
+                                            const patchResponse =
+                                                await apiFetch(
+                                                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/agenda/snapshots/${encodeURIComponent(snapshotId)}`,
+                                                    {
+                                                        method: "PATCH",
+                                                        headers: {
+                                                            "content-type":
+                                                                "application/json",
+                                                        },
+                                                        body: JSON.stringify({
+                                                            name: newName,
+                                                        }),
+                                                    },
+                                                );
+                                            if (patchResponse.ok) {
+                                                const newSpan =
+                                                    document.createElement(
+                                                        "span",
+                                                    );
+                                                newSpan.className =
+                                                    "classes-agenda-edit-name";
+                                                newSpan.textContent = newName;
+                                                input.replaceWith(newSpan);
+                                                await loadSelectedClassMeta();
+                                                refreshDom();
+                                            } else {
+                                                showToast({
+                                                    type: "error",
+                                                    message: i18n.t(
+                                                        "module.study.classes.agenda_snapshot_rename_error",
+                                                    ),
+                                                });
+                                            }
+                                        },
+                                    );
+                                    return;
+                                }
+
+                                const deleteBtn =
+                                    popupEvent.target instanceof Element
+                                        ? popupEvent.target.closest(
+                                              ".classes-agenda-edit-delete-btn",
+                                          )
+                                        : null;
+                                if (deleteBtn instanceof HTMLElement) {
+                                    const snapshotId = String(
+                                        deleteBtn.dataset.snapshotId ?? "",
+                                    ).trim();
+                                    if (!snapshotId) return;
+                                    const deleteResponse = await apiFetch(
+                                        `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/agenda/snapshots/${encodeURIComponent(snapshotId)}`,
+                                        { method: "DELETE" },
+                                    );
+                                    if (deleteResponse.ok) {
+                                        const item = overlay.querySelector(
+                                            `.classes-agenda-edit-item[data-snapshot-id="${CSS.escape(snapshotId)}"]`,
+                                        );
+                                        item?.remove();
+                                        await loadSelectedClassMeta();
+                                        refreshDom();
+                                    } else {
+                                        showToast({
+                                            type: "error",
+                                            message: i18n.t(
+                                                "module.study.classes.agenda_snapshot_delete_error",
+                                            ),
+                                        });
+                                    }
+                                }
+                            },
+                        );
+                    },
+                });
                 return;
             }
 
@@ -676,6 +813,43 @@ export function bindClassroomInteractions({
         "change",
         async (event) => {
             if (!(event.target instanceof Element)) return;
+
+            if (
+                event.target instanceof HTMLSelectElement &&
+                event.target.classList.contains(
+                    "classes-agenda-style-select",
+                ) &&
+                isTeacherView()
+            ) {
+                const style = event.target.value;
+                const editor = root.querySelector(
+                    ".classes-agenda-document-editor",
+                );
+                if (!(editor instanceof HTMLTextAreaElement)) return;
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const lineStart = editor.value.lastIndexOf("\n", start - 1) + 1;
+                const lineEnd = editor.value.indexOf("\n", end);
+                const actualLineEnd =
+                    lineEnd === -1 ? editor.value.length : lineEnd;
+                const lineText = editor.value.slice(lineStart, actualLineEnd);
+                const stripped = lineText.replace(/^(#{1,3} |> |```\n?)/u, "");
+                const prefixMap = {
+                    heading1: "# ",
+                    heading2: "## ",
+                    heading3: "### ",
+                    quote: "> ",
+                    codeblock: "```\n",
+                    normal: "",
+                };
+                const prefix = prefixMap[style] ?? "";
+                const newLine = prefix + stripped;
+                editor.setRangeText(newLine, lineStart, actualLineEnd, "end");
+                editor.focus();
+                event.target.value = style;
+                return;
+            }
+
             const snapshot = selectedSnapshot();
             const classResources = getClassResources();
             await handleResourceActions(event, {
@@ -727,8 +901,7 @@ export function bindClassroomInteractions({
                             body: JSON.stringify({ document: documentText }),
                         },
                     );
-                    await loadSelectedClassMeta();
-                    refreshDom();
+                    setAgendaDocument(documentText);
                 }, 450);
             }
         },

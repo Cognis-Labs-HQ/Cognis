@@ -50,6 +50,14 @@ export function getMaterialIcon(extension) {
     return "&#128196;";
 }
 
+function formatFileSize(bytes) {
+    const num = Number(bytes ?? 0);
+    if (!num) return "";
+    if (num < 1024) return `${num} B`;
+    if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
+    return `${(num / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function buildLibraryFileMarkup(
     files,
     i18n,
@@ -57,7 +65,7 @@ function buildLibraryFileMarkup(
     autoSelectedKeys = new Set(),
 ) {
     if (!files.length) {
-        return `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</p>`;
+        return `<p class="classes-workspace-nothing-found">${escapeHtml(i18n.t("module.study.classes.materials_nothing_found"))}</p>`;
     }
     return `<ul class="classes-file-list">
         ${files
@@ -66,10 +74,19 @@ function buildLibraryFileMarkup(
                 const name = String(file?.name ?? "").trim();
                 if (!key || !name) return "";
                 const checked = autoSelectedKeys.has(key) ? " checked" : "";
+                const ext = key.split(".").pop()?.toUpperCase() ?? "";
+                const sizeLabel = formatFileSize(file?.size);
+                const dateLabel = file?.lastModified
+                    ? new Date(file.lastModified).toLocaleDateString()
+                    : "";
+                const truncatedName =
+                    name.length > 32 ? `${name.slice(0, 29)}…` : name;
+                const metaParts = [ext, sizeLabel, dateLabel].filter(Boolean);
                 return `<li class="classes-file-item">
-                    <label class="classes-file-name">
+                    <label class="classes-file-name" title="${escapeHtml(name)}">
                         <input type="checkbox" class="classes-library-select" value="${escapeHtml(key)}"${checked} />
-                        ${escapeHtml(name)}
+                        <span class="classes-file-item-title">${escapeHtml(truncatedName)}</span>
+                        ${metaParts.length ? `<span class="classes-file-item-meta">${escapeHtml(metaParts.join(" · "))}</span>` : ""}
                     </label>
                     <div class="classes-file-actions">
                         <button type="button" class="btn-cancel btn-animated classes-library-rename-btn" data-library-key="${escapeHtml(key)}">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
@@ -181,6 +198,15 @@ export async function handleResourceActions(
                 }).catch(() => null);
                 if (response?.ok) {
                     uploadedKeys.push(key);
+                    showToast(
+                        `${i18n.t("module.study.classes.materials_upload_success")}: ${file.name}`,
+                        { variant: "success" },
+                    );
+                } else {
+                    showToast(
+                        `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                        { variant: "error" },
+                    );
                 }
             }
             return uploadedKeys;
@@ -192,13 +218,9 @@ export async function handleResourceActions(
             title: i18n.t("module.study.classes.teacher_materials"),
             body: `
                 <div class="stack">
-                    <label class="classes-materials-upload-label">
-                        &#x1F4E4;
-                        <input type="file" class="classes-library-upload-input" style="display:none" multiple>
-                    </label>
+                    <button type="button" class="btn-animated classes-materials-upload-btn">&#x1F4E4; ${escapeHtml(i18n.t("module.study.classes.materials_upload"))}</button>
                     <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, autoSelectedKeys)}</div>
-                </div>
-            `,
+                </div>`,
             actions: [
                 {
                     id: "cancel",
@@ -212,36 +234,45 @@ export async function handleResourceActions(
                 },
             ],
             onMount: (overlay) => {
-                overlay.addEventListener("change", async (changeEvent) => {
-                    const uploadInput = changeEvent.target.closest(
-                        ".classes-library-upload-input",
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "file";
+                hiddenInput.multiple = true;
+                hiddenInput.style.display = "none";
+                overlay.appendChild(hiddenInput);
+
+                hiddenInput.addEventListener("change", async () => {
+                    if (!hiddenInput.files?.length) return;
+                    const uploadedKeys = await uploadLibraryFiles(
+                        Array.from(hiddenInput.files),
                     );
-                    if (
-                        uploadInput instanceof HTMLInputElement &&
-                        uploadInput.files?.length
-                    ) {
-                        const uploadedKeys = await uploadLibraryFiles(
-                            Array.from(uploadInput.files),
-                        );
-                        for (const key of uploadedKeys) {
-                            autoSelectedKeys.add(key);
-                        }
-                        libraryFiles = await listLibrary();
-                        const listWrap = overlay.querySelector(
-                            ".classes-library-file-list",
-                        );
-                        if (listWrap instanceof HTMLElement) {
-                            listWrap.innerHTML = buildLibraryFileMarkup(
-                                libraryFiles,
-                                i18n,
-                                escapeHtml,
-                                autoSelectedKeys,
-                            );
-                        }
-                        uploadInput.value = "";
+                    for (const key of uploadedKeys) {
+                        autoSelectedKeys.add(key);
                     }
+                    libraryFiles = await listLibrary();
+                    const listWrap = overlay.querySelector(
+                        ".classes-library-file-list",
+                    );
+                    if (listWrap instanceof HTMLElement) {
+                        listWrap.innerHTML = buildLibraryFileMarkup(
+                            libraryFiles,
+                            i18n,
+                            escapeHtml,
+                            autoSelectedKeys,
+                        );
+                    }
+                    hiddenInput.value = "";
                 });
+
                 overlay.addEventListener("click", async (clickEvent) => {
+                    if (
+                        clickEvent.target.closest(
+                            ".classes-materials-upload-btn",
+                        )
+                    ) {
+                        hiddenInput.value = "";
+                        hiddenInput.click();
+                        return;
+                    }
                     const renameButton = clickEvent.target.closest(
                         ".classes-library-rename-btn[data-library-key]",
                     );

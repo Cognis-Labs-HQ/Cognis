@@ -70,3 +70,76 @@ non-empty value before overriding the student's tab selection.
 Auto-join now only fires when a new meeting is detected on a refresh tick,
 not for a meeting that was already in progress when the student loaded the
 page.
+
+## Teacher navigation back to Classroom now works
+
+Clicking the Classroom tab from any view correctly sets the workspace mode
+and re-renders the panel for the teacher.
+
+## Students are automatically led to the active Whiteboard
+
+When a teacher activates a whiteboard, students now receive the embed token
+as part of the initial data load and are navigated to the Whiteboard tile
+without manual interaction.
+
+## Agenda autosave no longer steals focus from the text box
+
+The autosave timer now updates the in-memory document state directly instead
+of reloading all class metadata and re-rendering the full DOM.
+
+## Improved agenda toolbar with text style controls
+
+The agenda toolbar now includes a text-style dropdown (Normal, Heading 1–3,
+Quote, Code Block) matching the experience of standard Markdown editors.
+
+## Materials upload uses a consistent platform upload button
+
+The upload trigger in the Teacher Materials popup now uses a proper button
+element instead of a label.
+
+## Materials upload flow sends confirmation and failure toasts
+
+Uploading a file now produces a success or failure toast, and the uploaded
+file immediately appears in the library list with its title, type, size,
+and upload date.
+
+## Materials library list shows file metadata
+
+Each library entry now displays a truncated file name, uppercase extension,
+human-readable file size, and creation date.
+
+## "Nothing found" state shown when no class materials exist
+
+The materials sidebar now renders a shaded "Nothing found" message when
+no symlinked class materials are present.
+
+## Switching between tile and slideshow view preserves the active meeting
+
+Toggling the tile layout no longer resets the meeting iframe.
+
+## Teacher workspace mode is restored after a page refresh
+
+When a teacher refreshes while students are in the class, their last
+workspace mode is read from the persisted board-focus snapshot and restored
+on mount.
+
+## Per-user tile/slideshow preference is persisted across sessions
+
+Each user's last-used tile layout is saved to localStorage under their
+account ID and restored on every page load.
+
+## Students keep their own tile/slideshow preference
+
+The teacher's broadcasted layout no longer overrides each student's
+personal tile-layout preference.
+
+## "Edit Agendas" popup for renaming and deleting saved agendas
+
+A new "Edit Agendas" button opens a popup listing all saved agenda
+snapshots with inline rename and delete actions.
+
+## Snapshot rename and delete API routes added
+
+`PATCH /agenda/snapshots/:snapshotId` and
+`DELETE /agenda/snapshots/:snapshotId` are now available for teachers
+to manage their saved agendas server-side.
