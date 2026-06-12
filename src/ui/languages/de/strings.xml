@@ -716,7 +716,7 @@
   <string name="module.study.classes.notepad_font_size">Schriftgröße</string>
   <string name="module.study.classes.notepad_color">Farbe</string>
   <string name="module.study.classes.materials_upload">Datei hochladen</string>
-  <string name="module.study.classes.materials_upload_failed">Datei konnte nicht hochgeladen werden.</string>
+  <string name="module.study.classes.materials_upload_failed">„{filename}“ konnte nicht hochgeladen werden.</string>
   <string name="module.study.classes.materials_files">Anhänge</string>
   <string name="module.study.classes.materials_file_remove">Entfernen</string>
   <string name="module.study.classes.materials_file_removed">Datei entfernt.</string>
@@ -725,7 +725,7 @@
   <string name="module.study.classes.material_download">Datei herunterladen</string>
   <string name="module.study.classes.teacher_materials">Lehrermaterialien</string>
   <string name="module.study.classes.no_saved_agendas">Keine gespeicherten Agenden</string>
-  <string name="module.study.classes.agenda_new">Neu</string>
+  <string name="module.study.classes.agenda_new_btn">Neu</string>
   <string name="module.study.classes.agenda_edit_snapshots">Agenden bearbeiten</string>
   <string name="module.study.classes.agenda_no_snapshots">Keine gespeicherten Agenden.</string>
   <string name="module.study.classes.agenda_snapshot_rename">Umbenennen</string>
@@ -740,7 +740,7 @@
   <string name="module.study.classes.agenda_style_quote">Zitat</string>
   <string name="module.study.classes.agenda_style_codeblock">Codeblock</string>
   <string name="module.study.classes.materials_nothing_found">Nichts gefunden.</string>
-  <string name="module.study.classes.materials_upload_success">Datei erfolgreich hochgeladen.</string>
+  <string name="module.study.classes.materials_upload_success">„{filename}“ wurde erfolgreich hochgeladen.</string>
   <string name="module.study.classes.tile_view">Kachelansicht</string>
   <string name="module.study.classes.slideshow_view">Diashow-Ansicht</string>
   <string name="ui.app.dashboard.element.student_classes.label">Meine Klassen</string>

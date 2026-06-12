@@ -28,6 +28,10 @@ const ALLOWED_CLASSROOM_FILE_EXTENSIONS = new Set([
     ".xlsx",
 ]);
 
+function formatFilenameToast(i18n, key, filename) {
+    return i18n.t(key).replace("{filename}", filename);
+}
+
 export function getMaterialIcon(extension) {
     const ext = String(extension ?? "")
         .toLowerCase()
@@ -203,12 +207,20 @@ export async function handleResourceActions(
                 if (response?.ok) {
                     uploadedKeys.push(key);
                     showToast(
-                        `${i18n.t("module.study.classes.materials_upload_success")}: ${file.name}`,
+                        formatFilenameToast(
+                            i18n,
+                            "module.study.classes.materials_upload_success",
+                            file.name,
+                        ),
                         { variant: "success" },
                     );
                 } else {
                     showToast(
-                        `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                        formatFilenameToast(
+                            i18n,
+                            "module.study.classes.materials_upload_failed",
+                            file.name,
+                        ),
                         { variant: "error" },
                     );
                 }
@@ -408,7 +420,11 @@ export async function handleResourceActions(
                     : "";
             if (!ALLOWED_CLASSROOM_FILE_EXTENSIONS.has(ext)) {
                 showToast(
-                    `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                    formatFilenameToast(
+                        i18n,
+                        "module.study.classes.materials_upload_failed",
+                        file.name,
+                    ),
                     { variant: "error" },
                 );
                 continue;
@@ -424,7 +440,11 @@ export async function handleResourceActions(
             }).catch(() => null);
             if (!uploadResponse?.ok) {
                 showToast(
-                    `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                    formatFilenameToast(
+                        i18n,
+                        "module.study.classes.materials_upload_failed",
+                        file.name,
+                    ),
                     { variant: "error" },
                 );
                 continue;

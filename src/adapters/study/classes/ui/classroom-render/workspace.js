@@ -162,7 +162,7 @@ function renderAgendaDocumentPanel({
                 isTeacherView
                     ? `<div class="classes-agenda-document-actions">
                 <button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
-                <button type="button" class="btn-animated classes-agenda-new-btn">${escapeHtml(i18n.t("module.study.classes.agenda_new"))}</button>
+                <button type="button" class="btn-animated classes-agenda-new-btn">${escapeHtml(i18n.t("module.study.classes.agenda_new_btn"))}</button>
                 <select class="classes-agenda-snapshot-select"${hasSnapshots ? "" : " disabled"}>
                     ${
                         hasSnapshots

@@ -716,7 +716,7 @@
   <string name="module.study.classes.notepad_font_size">Font Size</string>
   <string name="module.study.classes.notepad_color">Color</string>
   <string name="module.study.classes.materials_upload">Upload File</string>
-  <string name="module.study.classes.materials_upload_failed">Failed to upload file.</string>
+  <string name="module.study.classes.materials_upload_failed">Failed to upload "{filename}".</string>
   <string name="module.study.classes.materials_files">Attached Files</string>
   <string name="module.study.classes.materials_file_remove">Remove</string>
   <string name="module.study.classes.materials_file_removed">File removed.</string>
@@ -725,7 +725,7 @@
   <string name="module.study.classes.material_download">Download File</string>
   <string name="module.study.classes.teacher_materials">Teacher Materials</string>
   <string name="module.study.classes.no_saved_agendas">No Saved Agendas</string>
-  <string name="module.study.classes.agenda_new">New</string>
+  <string name="module.study.classes.agenda_new_btn">New</string>
   <string name="module.study.classes.agenda_edit_snapshots">Edit Agendas</string>
   <string name="module.study.classes.agenda_no_snapshots">No saved agendas.</string>
   <string name="module.study.classes.agenda_snapshot_rename">Rename</string>
@@ -740,7 +740,7 @@
   <string name="module.study.classes.agenda_style_quote">Quote</string>
   <string name="module.study.classes.agenda_style_codeblock">Code Block</string>
   <string name="module.study.classes.materials_nothing_found">Nothing found.</string>
-  <string name="module.study.classes.materials_upload_success">File uploaded successfully.</string>
+  <string name="module.study.classes.materials_upload_success">Uploaded "{filename}" successfully.</string>
   <string name="module.study.classes.tile_view">Tile View</string>
   <string name="module.study.classes.slideshow_view">Slideshow View</string>
   <string name="ui.app.dashboard.element.student_classes.label">My Classes</string>

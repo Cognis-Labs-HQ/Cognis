@@ -77,6 +77,11 @@ export function bindClassroomInteractions({
     setInteractionsBound(true);
     bindProfilePreviews(i18n);
     let agendaAutosaveTimer = null;
+
+    function shouldBlockStudentInteraction() {
+        return !isTeacherView() && getIsTeacherPresent?.();
+    }
+
     root.addEventListener(
         "click",
         async (event) => {
@@ -166,7 +171,7 @@ export function bindClassroomInteractions({
                 ".classes-tile-nav-prev, .classes-tile-nav-next",
             );
             if (slideshowNavButton instanceof HTMLElement) {
-                if (getIsTeacherPresent?.()) return;
+                if (shouldBlockStudentInteraction()) return;
                 const isPrev = slideshowNavButton.classList.contains(
                     "classes-tile-nav-prev",
                 );
@@ -197,7 +202,7 @@ export function bindClassroomInteractions({
                 ".classes-workspace-tab-btn[data-workspace-mode], .classes-workspace-tile-hitbox[data-workspace-mode]",
             );
             if (workspaceButton instanceof HTMLElement) {
-                if (!isTeacherView() && getIsTeacherPresent?.()) return;
+                if (shouldBlockStudentInteraction()) return;
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );

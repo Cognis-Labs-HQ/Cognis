@@ -716,7 +716,7 @@
   <string name="module.study.classes.notepad_font_size">フォントサイズ</string>
   <string name="module.study.classes.notepad_color">色</string>
   <string name="module.study.classes.materials_upload">ファイルをアップロード</string>
-  <string name="module.study.classes.materials_upload_failed">ファイルのアップロードに失敗しました。</string>
+  <string name="module.study.classes.materials_upload_failed">「{filename}」のアップロードに失敗しました。</string>
   <string name="module.study.classes.materials_files">添付ファイル</string>
   <string name="module.study.classes.materials_file_remove">削除</string>
   <string name="module.study.classes.materials_file_removed">ファイルが削除されました。</string>
@@ -725,7 +725,7 @@
   <string name="module.study.classes.material_download">ファイルをダウンロード</string>
   <string name="module.study.classes.teacher_materials">教師用教材</string>
   <string name="module.study.classes.no_saved_agendas">保存されたアジェンダなし</string>
-  <string name="module.study.classes.agenda_new">新規</string>
+  <string name="module.study.classes.agenda_new_btn">新規</string>
   <string name="module.study.classes.agenda_edit_snapshots">議題を編集</string>
   <string name="module.study.classes.agenda_no_snapshots">保存済みの議題はありません。</string>
   <string name="module.study.classes.agenda_snapshot_rename">名前変更</string>
@@ -740,7 +740,7 @@
   <string name="module.study.classes.agenda_style_quote">引用</string>
   <string name="module.study.classes.agenda_style_codeblock">コードブロック</string>
   <string name="module.study.classes.materials_nothing_found">見つかりませんでした。</string>
-  <string name="module.study.classes.materials_upload_success">ファイルが正常にアップロードされました。</string>
+  <string name="module.study.classes.materials_upload_success">「{filename}」を正常にアップロードしました。</string>
   <string name="module.study.classes.tile_view">タイル表示</string>
   <string name="module.study.classes.slideshow_view">スライドショー表示</string>
   <string name="ui.app.dashboard.element.student_classes.label">マイクラス</string>

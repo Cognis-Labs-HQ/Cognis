@@ -716,7 +716,7 @@
   <string name="module.study.classes.notepad_font_size">Ukuran Font</string>
   <string name="module.study.classes.notepad_color">Warna</string>
   <string name="module.study.classes.materials_upload">Unggah File</string>
-  <string name="module.study.classes.materials_upload_failed">Gagal mengunggah file.</string>
+  <string name="module.study.classes.materials_upload_failed">Gagal mengunggah "{filename}".</string>
   <string name="module.study.classes.materials_files">File Terlampir</string>
   <string name="module.study.classes.materials_file_remove">Hapus</string>
   <string name="module.study.classes.materials_file_removed">File dihapus.</string>
@@ -725,7 +725,7 @@
   <string name="module.study.classes.material_download">Unduh File</string>
   <string name="module.study.classes.teacher_materials">Materi Guru</string>
   <string name="module.study.classes.no_saved_agendas">Tidak Ada Agenda Tersimpan</string>
-  <string name="module.study.classes.agenda_new">Baru</string>
+  <string name="module.study.classes.agenda_new_btn">Baru</string>
   <string name="module.study.classes.agenda_edit_snapshots">Edit Agenda</string>
   <string name="module.study.classes.agenda_no_snapshots">Tidak ada agenda tersimpan.</string>
   <string name="module.study.classes.agenda_snapshot_rename">Ubah Nama</string>
@@ -740,7 +740,7 @@
   <string name="module.study.classes.agenda_style_quote">Kutipan</string>
   <string name="module.study.classes.agenda_style_codeblock">Blok Kode</string>
   <string name="module.study.classes.materials_nothing_found">Tidak ada yang ditemukan.</string>
-  <string name="module.study.classes.materials_upload_success">File berhasil diunggah.</string>
+  <string name="module.study.classes.materials_upload_success">"{filename}" berhasil diunggah.</string>
   <string name="module.study.classes.tile_view">Tampilan Ubin</string>
   <string name="module.study.classes.slideshow_view">Tampilan Slideshow</string>
   <string name="ui.app.dashboard.element.student_classes.label">Kelas Saya</string>

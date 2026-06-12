@@ -996,5 +996,4 @@ export async function mount(root, { signal } = {}) {
         },
     });
 }
-
 await mountWhenDirect(mount);

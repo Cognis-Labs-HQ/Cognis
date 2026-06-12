@@ -235,12 +235,11 @@ export async function updateClassroomStateForTeacher(
         options.activeMaterialKey === undefined
             ? currentState.activeMaterialKey
             : normalizeActiveMaterialKey(options.activeMaterialKey);
-    const normalizedViewLayout =
-        options.viewLayout === undefined
-            ? currentState.viewLayout
-            : options.viewLayout === "slideshow"
-              ? "slideshow"
-              : "stacked";
+    let normalizedViewLayout = currentState.viewLayout;
+    if (options.viewLayout !== undefined) {
+        normalizedViewLayout =
+            options.viewLayout === "slideshow" ? "slideshow" : "stacked";
+    }
     const updatedAt = new Date().toISOString();
     await db.executeCommand({
         option: "INSERT",
