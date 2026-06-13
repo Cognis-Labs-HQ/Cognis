@@ -43,8 +43,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.6`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.3`  |
-| Notepad (Study)       | `src/adapters/study/notepad/`       | `1.0.1`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.4`  |
+| Notepad (Study)       | `src/adapters/study/notepad/`       | `1.1.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 
 ## Gateways
@@ -80,6 +80,6 @@ Increment using [Semantic Versioning](https://semver.org/):
 | -------------------- | ----------------------------------- | ------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1` |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.1.3` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `1.0.1` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `1.1.0` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2` |

@@ -1,4 +1,9 @@
 import { createHmac } from "node:crypto";
+import { registerApiRoutes } from "./api/index.js";
+import {
+    getWhiteboardConfig,
+    setWhiteboardConfig,
+} from "./api/config-state.js";
 
 function mintToken(secret, payload) {
     const header = Buffer.from(
@@ -12,13 +17,13 @@ function mintToken(secret, payload) {
 }
 
 export function bootstrapModule(ctx) {
-    const whiteboardUrl = process.env.NEXTCLOUD_WHITEBOARD_URL ?? "";
-    const whiteboardSecret = process.env.NEXTCLOUD_WHITEBOARD_SECRET ?? "";
-    const tokenExpirySeconds = Math.max(
-        60,
-        Number(process.env.NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS ?? "") ||
-            3600,
-    );
+    registerApiRoutes(ctx.router, ctx);
+    setWhiteboardConfig({
+        whiteboardUrl: process.env.NEXTCLOUD_WHITEBOARD_URL ?? "",
+        whiteboardSecret: process.env.NEXTCLOUD_WHITEBOARD_SECRET ?? "",
+        tokenExpirySeconds:
+            process.env.NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS,
+    });
 
     const systemCtx = ctx.getCapability("system:ctx");
     if (systemCtx) {
@@ -34,15 +39,17 @@ export function bootstrapModule(ctx) {
         systemCtx.contributePublicCapability(
             "whiteboard:getEmbedUrl",
             async (boardId, userId, userName) => {
-                if (!whiteboardUrl || !whiteboardSecret) return null;
+                const config = getWhiteboardConfig();
+                if (!config.whiteboardUrl || !config.whiteboardSecret)
+                    return null;
                 const now = Math.floor(Date.now() / 1000);
-                const token = mintToken(whiteboardSecret, {
+                const token = mintToken(config.whiteboardSecret, {
                     user: { id: userId, name: userName },
                     room: boardId,
                     iat: now,
-                    exp: now + tokenExpirySeconds,
+                    exp: now + config.tokenExpirySeconds,
                 });
-                return `${whiteboardUrl.replace(/\/$/, "")}?token=${token}`;
+                return `${config.whiteboardUrl.replace(/\/$/, "")}?token=${token}`;
             },
         );
 
@@ -56,14 +63,16 @@ export function bootstrapModule(ctx) {
         systemCtx.contributePublicCapability(
             "whiteboard:fetchBoardData",
             async (boardId) => {
-                if (!whiteboardUrl || !whiteboardSecret) return null;
-                const serverToken = mintToken(whiteboardSecret, {
+                const config = getWhiteboardConfig();
+                if (!config.whiteboardUrl || !config.whiteboardSecret)
+                    return null;
+                const serverToken = mintToken(config.whiteboardSecret, {
                     user: { id: "server", name: "server" },
                     room: boardId,
                     iat: Math.floor(Date.now() / 1000),
                     exp: Math.floor(Date.now() / 1000) + 60,
                 });
-                const baseUrl = whiteboardUrl.replace(/\/$/, "");
+                const baseUrl = config.whiteboardUrl.replace(/\/$/, "");
                 const response = await fetch(
                     `${baseUrl}/api/v1/rooms/${boardId}/data`,
                     {

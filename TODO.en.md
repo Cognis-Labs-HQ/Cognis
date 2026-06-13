@@ -551,15 +551,3 @@
 **Reviewer suggestion:** Replace nested ternary at lines 238–243 with explicit if-else or a helper for clarity.
 
 **Reason ignored:** File not touched in this PR.
-
-### nextcloud-whiteboard — add configurable admin popup and persisted module config
-
-**Deferred from user request:** Add a Jitsi-style settings popup, persisted URL/token config routes, and mature Nextcloud Whiteboard integration for classroom usage.
-
-**Reason deferred:** This requires a new versioned module config surface plus runtime capability rewiring for the Nextcloud Whiteboard module. It was not completed in this pass, so it remains tracked here instead of being silently omitted.
-
-### study/notepad — move classroom agenda ownership into the adapter
-
-**Deferred from user request:** Give the Notepad adapter its own admin popup/config surface and consolidate the classroom agenda markdown/file logic under the adapter.
-
-**Reason deferred:** The classroom workspace fixes and notepad file API repair were completed first, but the larger adapter-ownership refactor still needs dedicated route/UI extraction work to avoid leaving the agenda half-migrated.

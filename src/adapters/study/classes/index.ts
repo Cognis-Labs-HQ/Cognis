@@ -206,6 +206,53 @@ export async function bootstrapStudyAdapter(
     }
 
     adapterReady = true;
+    ctx.capabilities.contribute("study:classes:resources", {
+        classExists: async (classId: string) => {
+            const classRow = await store.getClassById(classId);
+            return classRow !== null;
+        },
+        canViewClassroomResources: async (
+            classId: string,
+            accountId: string,
+        ) => {
+            try {
+                await store.getClassMembersForViewer(classId, accountId);
+                return true;
+            } catch {
+                return false;
+            }
+        },
+        isClassTeacher: async (classId: string, accountId: string) => {
+            const classRow = await store.getClassById(classId);
+            if (!classRow) return false;
+            return classRow.teacherAccountId === accountId;
+        },
+        getClassroomResourcesForViewer: async (
+            classId: string,
+            accountId: string,
+        ) => {
+            return store.getClassroomResourcesForViewer(classId, accountId);
+        },
+        updateClassroomResourcesForTeacher: async (
+            classId: string,
+            accountId: string,
+            updates: {
+                agendaDocument?: string;
+                agendaSnapshots?: Array<{
+                    id?: string;
+                    name?: string;
+                    content?: string;
+                    updatedAt?: string;
+                }>;
+            },
+        ) => {
+            return store.updateClassroomResourcesForTeacher(
+                classId,
+                accountId,
+                updates,
+            );
+        },
+    });
 
     const isEnabled = () => ctx.isAdapterEnabled();
     const preferenceStore =

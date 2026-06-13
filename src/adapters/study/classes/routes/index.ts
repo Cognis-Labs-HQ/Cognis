@@ -14,7 +14,6 @@ import {
 import { handleClassUpdateRoute } from "./class-update-route.js";
 import { handleClassroomLayoutRoute } from "./classroom-layout-route.js";
 import { handleClassroomFilesRoutes } from "./classroom-files-route.js";
-import { handleClassroomAgendaRoutes } from "./classroom-agenda-route.js";
 import { handleTeacherRequestsRoutes } from "./teacher-requests-route.js";
 import {
     decorateMemberships,
@@ -394,26 +393,12 @@ export function createClassesRoutes(
         }
 
         if (
-            await handleClassroomAgendaRoutes({
-                req,
-                res,
-                url,
-                ctx,
-                store,
-                options,
-            })
-        ) {
-            return true;
-        }
-
-        if (
             await handleClassroomFilesRoutes({
                 req,
                 res,
                 url,
                 ctx,
                 store,
-                log: options.log,
             })
         ) {
             return true;

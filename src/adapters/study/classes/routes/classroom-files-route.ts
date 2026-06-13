@@ -22,49 +22,18 @@ interface FileGatewayLike {
     >;
 }
 
-async function requireViewerAccess(
-    store: DbClassesStore,
-    classId: string,
-    accountId: string,
-    log?: (
-        level: string,
-        message: string,
-        meta?: Record<string, unknown>,
-    ) => void,
-): Promise<boolean> {
-    try {
-        await store.getClassMembersForViewer(classId, accountId);
-        return true;
-    } catch (error) {
-        log?.("info", "Denied classroom file access.", {
-            component: "study:classes",
-            operation: "require_viewer_access",
-            classId,
-            accountId,
-            error: error instanceof Error ? error.message : String(error),
-        });
-        return false;
-    }
-}
-
 export async function handleClassroomFilesRoutes({
     req,
     res,
     url,
     ctx,
     store,
-    log,
 }: {
     req: IncomingMessage;
     res: ServerResponse;
     url: URL;
     ctx: RouteContext;
     store: DbClassesStore;
-    log?: (
-        level: string,
-        message: string,
-        meta?: Record<string, unknown>,
-    ) => void;
 }): Promise<boolean> {
     const materialLibraryMatch = url.pathname.match(
         /^\/api\/v1\/study\/classes\/([^/]+)\/materials\/library$/,
@@ -248,184 +217,6 @@ export async function handleClassroomFilesRoutes({
             }),
         );
         jsonOk(res, { deleted: true });
-        return true;
-    }
-
-    const notepadFilesMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/notepad-files$/,
-    );
-    if (notepadFilesMatch && req.method === "GET") {
-        const claims = ctx.requireAuth(req, res, "user");
-        if (!claims) return true;
-        const classId = decodeURIComponent(notepadFilesMatch[1]);
-        const classRow = await store.getClassById(classId);
-        if (!classRow) {
-            jsonError(res, 404, "not_found", "Class not found.");
-            return true;
-        }
-        const hasViewerAccess = await requireViewerAccess(
-            store,
-            classId,
-            claims.sub,
-            log,
-        );
-        if (!hasViewerAccess) {
-            jsonError(
-                res,
-                403,
-                "forbidden",
-                "Class not found or access denied.",
-            );
-            return true;
-        }
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
-        if (!fileGateway) {
-            jsonError(
-                res,
-                503,
-                "service_unavailable",
-                "File storage is unavailable.",
-            );
-            return true;
-        }
-        const prefix = `classroom-notes/${encodeURIComponent(classId)}/`;
-        const files = await fileGateway.list(prefix).catch(() => []);
-        jsonOk(
-            res,
-            files.map((file) => ({
-                key: file.key,
-                size: file.size,
-                lastModified: file.lastModified,
-            })),
-        );
-        return true;
-    }
-
-    const notepadFileMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/notepad-files\/([^/]+)$/,
-    );
-    if (notepadFileMatch) {
-        const claims = ctx.requireAuth(req, res, "user");
-        if (!claims) return true;
-        const classId = decodeURIComponent(notepadFileMatch[1]);
-        const filename = decodeURIComponent(notepadFileMatch[2]);
-        const classRow = await store.getClassById(classId);
-        if (!classRow) {
-            jsonError(res, 404, "not_found", "Class not found.");
-            return true;
-        }
-        const hasViewerAccess = await requireViewerAccess(
-            store,
-            classId,
-            claims.sub,
-            log,
-        );
-        if (!hasViewerAccess) {
-            jsonError(
-                res,
-                403,
-                "forbidden",
-                "Class not found or access denied.",
-            );
-            return true;
-        }
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
-        if (!fileGateway) {
-            jsonError(
-                res,
-                503,
-                "service_unavailable",
-                "File storage is unavailable.",
-            );
-            return true;
-        }
-        const key = `classroom-notes/${encodeURIComponent(classId)}/${encodeURIComponent(filename)}`;
-        if (req.method === "GET") {
-            const content = await fileGateway.get(key).catch(() => null);
-            if (!content) {
-                jsonError(res, 404, "not_found", "File not found.");
-                return true;
-            }
-            res.writeHead(200, { "content-type": "text/plain; charset=utf-8" });
-            res.end(Buffer.from(content));
-            return true;
-        }
-        if (req.method === "PUT") {
-            const chunks: Buffer[] = [];
-            for await (const chunk of req) {
-                chunks.push(
-                    typeof chunk === "string" ? Buffer.from(chunk) : chunk,
-                );
-            }
-            const content = Buffer.concat(chunks);
-            await fileGateway.put(key, content, "text/plain; charset=utf-8");
-            jsonOk(res, { key });
-            return true;
-        }
-        if (req.method === "DELETE") {
-            const deleted = await fileGateway.delete(key).catch(() => false);
-            jsonOk(res, { deleted });
-            return true;
-        }
-    }
-
-    const notepadRenameMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/notepad-files\/rename$/,
-    );
-    if (notepadRenameMatch && req.method === "POST") {
-        const claims = ctx.requireAuth(req, res, "user");
-        if (!claims) return true;
-        const classId = decodeURIComponent(notepadRenameMatch[1]);
-        const hasViewerAccess = await requireViewerAccess(
-            store,
-            classId,
-            claims.sub,
-            log,
-        );
-        if (!hasViewerAccess) {
-            jsonError(
-                res,
-                403,
-                "forbidden",
-                "Class not found or access denied.",
-            );
-            return true;
-        }
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
-        if (!fileGateway) {
-            jsonError(
-                res,
-                503,
-                "service_unavailable",
-                "File storage is unavailable.",
-            );
-            return true;
-        }
-        const body = (await readJson(req)) as {
-            oldName?: unknown;
-            newName?: unknown;
-        };
-        const oldName = String(body?.oldName ?? "").trim();
-        const newName = String(body?.newName ?? "").trim();
-        if (!oldName || !newName) {
-            jsonError(
-                res,
-                400,
-                "bad_request",
-                "oldName and newName are required.",
-            );
-            return true;
-        }
-        const oldKey = `classroom-notes/${encodeURIComponent(classId)}/${encodeURIComponent(oldName)}`;
-        const newKey = `classroom-notes/${encodeURIComponent(classId)}/${encodeURIComponent(newName)}`;
-        const content = await fileGateway.get(oldKey).catch(() => null);
-        if (!content) {
-            jsonError(res, 404, "not_found", "File not found.");
-            return true;
-        }
-        await fileGateway.put(newKey, content, "text/plain; charset=utf-8");
-        await fileGateway.delete(oldKey).catch(() => false);
-        jsonOk(res, { key: newKey });
         return true;
     }
 

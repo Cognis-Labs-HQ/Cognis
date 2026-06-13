@@ -118,12 +118,9 @@ test("classroom meeting tile refresh updates slideshow controls in place", () =>
     assert.match(source, /classes-tile-layout-toggle-btn/);
 });
 
-test("classroom resources route supports agenda document and snapshots", () => {
+test("notepad adapter routes support agenda document and snapshots", () => {
     const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/study/classes/routes/classroom-agenda-route.ts",
-        ),
+        resolve(ROOT, "src/adapters/study/notepad/routes/index.ts"),
         "utf8",
     );
     assert.match(source, /agendaDocument/);
@@ -144,8 +141,16 @@ test("classroom materials library routes support list rename and delete", () => 
     assert.match(source, /materials\\\/library\\\/rename/);
     assert.match(source, /materials\\\/library\\\/delete/);
     assert.match(source, /teacher-materials/);
-    assert.match(source, /notepad-files\\\/rename/);
     assert.match(source, /getClassesForTeacher/);
+});
+
+test("notepad adapter routes support notepad file rename", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/notepad/routes/index.ts"),
+        "utf8",
+    );
+    assert.match(source, /notepad-files\\\/rename/);
+    assert.match(source, /classroom-notes/);
 });
 
 test("teacher materials upload popup binds upload logic on open", () => {
