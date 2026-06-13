@@ -19,3 +19,24 @@ Die API-Logik für Klassenraum-Agenda und Notepad-Dateien liegt jetzt im Study/N
 ## Nextcloud-Whiteboard-Admin-Konfiguration hinzufügen
 
 Das Nextcloud-Whiteboard-Modul bietet jetzt ein Einstellungs-Popup in der Administration sowie persistente Konfigurationsrouten unter `/api/v1/modules/nextcloud-whiteboard/config`. URL, Signaturgeheimnis und Token-Laufzeit werden in der Datenbank gespeichert und für die Laufzeit-Token-Erzeugung verwendet.
+
+## Chat-Schaltfläche zusammenführen und in „Chat" umbenennen
+
+Die doppelte Schaltfläche „Chat öffnen" wurde aus der Blackboard-Aktionsleiste entfernt. Die verbleibende Schaltfläche im Workspace-Tab trägt jetzt die kürzere Bezeichnung „Chat".
+
+## Aktive Kachel wird beim Auswählen mit allen anderen getauscht
+
+Nur die aktive Kachel besitzt einen Inhaltsbereich. Ein Klick auf eine inaktive Kachel tauscht sie mit der aktuell aktiven, sodass die aktive Kachel stets an letzter Stelle im Stapel erscheint.
+
+## Lehrer-Ansichtsstatus wird unabhängig vom Snapshot-Polling synchronisiert
+
+Schüler fragen einen eigenen API-Endpunkt nach dem aktuellen Board-Fokus und Kachellayout des Lehrers ab – bei jedem Datenabruf und bei SSE-Ereignissen – damit die Synchronisation in Diashow- und Kachelansicht funktioniert.
+
+## Chat-Fenster-CSS gehört zum Messages-Adapter
+
+Alle CSS-Regeln für das Chat-Panel im Klassenraum wurden in den Messages-Adapter verschoben, damit das Chat-Panel einheitlich mit der Nachrichten-Seite dargestellt wird.
+
+## Diashow-Navigationspfeile verwenden gemeinsame Vorlage
+
+Die Navigationspfeile werden aus einem einzigen Helfer erzeugt, der von der Erstdarstellung und dem dynamischen Kachel-Refresher gemeinsam genutzt wird. In der Chat-Ansicht werden Pfeile automatisch ausgeblendet.
+

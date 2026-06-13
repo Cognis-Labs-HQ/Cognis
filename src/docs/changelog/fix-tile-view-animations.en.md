@@ -19,3 +19,24 @@ Classroom agenda and notepad file APIs now live in the study/notepad adapter, wh
 ## Add Nextcloud Whiteboard Admin Configuration
 
 The Nextcloud Whiteboard module now provides an Administration settings popup and persisted module configuration routes at `/api/v1/modules/nextcloud-whiteboard/config`. URL, signing secret, and token-expiry settings are stored in the database and used by runtime embed-token generation.
+
+## Consolidate Open Chat button and rename to Chat
+
+The duplicate "Open Chat" button was removed from the blackboard actions toolbar. The remaining workspace tab button is now labelled "Chat" for brevity.
+
+## Active tile is swapped below all others on selection
+
+Only the active tile carries a content view. Clicking an inactive tile swaps it with the current active tile so the active tile always renders last in the stack.
+
+## Teacher view state sync is decoupled from snapshot polling
+
+Students independently query a dedicated API endpoint for the teacher's current board focus and tile layout on every data refresh and SSE event, enabling sync to work in both slideshow and tiled views.
+
+## Chat window styling owned by the messages adapter
+
+All classroom chat panel CSS rules moved to the messages adapter so the chat panel renders consistently with the Messages page.
+
+## Slideshow navigation arrows use shared boilerplate
+
+Navigation arrows are generated from a single helper shared by the initial render and the dynamic tile refresher. Arrows are suppressed automatically on the Chat view.
+

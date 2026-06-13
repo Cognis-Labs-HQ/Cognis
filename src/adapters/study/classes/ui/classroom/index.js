@@ -61,6 +61,7 @@ import {
     normalizeTileLayout,
     saveTileLayoutPreference,
 } from "/static/adapters/study/classes/classroom/tile-layout-preference.js";
+import { createStudentSync } from "/static/adapters/study/classes/classroom/student-sync.js";
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
@@ -193,27 +194,22 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    function syncStudentWorkspaceAccess(snapshot = selectedSnapshot()) {
-        if (isTeacherView() || !snapshot) return;
-        const meetingAutoJoinBlocked = Boolean(
-            activeMeetingId &&
-            classroomWindows?.isMeetingDismissed?.(activeMeetingId),
-        );
-        if (
-            workspaceMode === "meeting" &&
-            !classroomWindows?.isMeetingOpen() &&
-            (!activeMeetingId || meetingAutoJoinBlocked)
-        ) {
-            setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
-        }
-        const boardFocus = getNormalizedBoardFocus(
-            snapshot,
-            normalizeBoardFocus,
-        );
-        if (boardFocus === "chat") initializedTiles.add("chat");
-        if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
-        if (boardFocus) setWorkspaceMode(boardFocus, { remember: true });
-    }
+    const { pollTeacherViewState, syncStudentWorkspaceAccess } =
+        createStudentSync({
+            apiFetch,
+            isTeacherView,
+            normalizeTileLayout,
+            selectedSnapshot,
+            getNormalizedBoardFocus,
+            setWorkspaceMode,
+            initializedTiles,
+            getSelectedClassId: () => selectedClassId,
+            setTileLayout: (layout) => (tileLayout = layout),
+            getActiveMeetingId: () => activeMeetingId,
+            getClassroomWindows: () => classroomWindows,
+            getWorkspaceMode: () => workspaceMode,
+            getLastNonMeetingMode: () => lastNonMeetingWorkspaceMode,
+        });
 
     function syncWorkspaceModeWithSnapshot({ force = false } = {}) {
         const nextMode = DEFAULT_WORKSPACE_MODE;
@@ -449,6 +445,7 @@ export async function mount(root, { signal } = {}) {
         }
         activeMaterialKey = getSelectedActiveMaterialKey(snapshot);
         syncStudentWorkspaceAccess(snapshot);
+        await pollTeacherViewState();
     }
 
     async function refreshData() {
@@ -588,6 +585,7 @@ export async function mount(root, { signal } = {}) {
         getTileOrder: () => tileOrder,
         getTileLayout: () => tileLayout,
         getIsMeetingOpen: () => classroomWindows?.isMeetingOpen() ?? false,
+        getClassroomWindows: () => classroomWindows,
         i18n,
         fallbackRefreshDom: refreshDom,
     });
@@ -926,6 +924,7 @@ export async function mount(root, { signal } = {}) {
             refreshSnapshotPresence();
             const previousWorkspaceMode = workspaceMode;
             syncStudentWorkspaceAccess();
+            void pollTeacherViewState();
             const broadcastedMaterialKey = getSelectedActiveMaterialKey();
             if (broadcastedMaterialKey !== activeMaterialKey) {
                 activeMaterialKey = broadcastedMaterialKey;

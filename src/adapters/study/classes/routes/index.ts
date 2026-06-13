@@ -13,6 +13,7 @@ import {
 } from "./join-notifications.js";
 import { handleClassUpdateRoute } from "./class-update-route.js";
 import { handleClassroomLayoutRoute } from "./classroom-layout-route.js";
+import { handleClassroomViewStateRoute } from "./classroom-view-state-route.js";
 import { handleClassroomFilesRoutes } from "./classroom-files-route.js";
 import { handleTeacherRequestsRoutes } from "./teacher-requests-route.js";
 import {
@@ -324,6 +325,16 @@ export function createClassesRoutes(
             return true;
         if (
             await handleClassroomLayoutRoute(req, res, url, {
+                store,
+                options,
+                ctx,
+                logMeta,
+            })
+        ) {
+            return true;
+        }
+        if (
+            await handleClassroomViewStateRoute(req, res, url, {
                 store,
                 options,
                 ctx,

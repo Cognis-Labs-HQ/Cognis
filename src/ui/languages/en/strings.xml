@@ -583,7 +583,7 @@
   <string name="module.study.classes.request_sent">Your classroom creation request was submitted for admin review.</string>
   <string name="module.study.classes.class_created">Your class was created.</string>
   <string name="module.study.classes.request_failed">Failed to submit classroom creation request.</string>
-  <string name="module.study.classes.open_chat">Open Chat</string>
+  <string name="module.study.classes.open_chat">Chat</string>
   <string name="module.study.classes.open_meeting">Meeting</string>
   <string name="module.study.classes.chat_placeholder">Message…</string>
   <string name="module.study.classes.chat_empty">No messages yet.</string>

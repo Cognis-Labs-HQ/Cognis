@@ -332,6 +332,7 @@ export async function bootstrapSocialAdapter(
             "/static/gateways/social/languages",
         ],
         stylesheetUrls: [
+            "/static/adapters/social/messages/classroom-chat.css",
             "/static/adapters/social/messages/messages-chat-shared.css",
             "/static/adapters/social/messages/messages-style-variants.css",
         ],

@@ -168,7 +168,7 @@ test("teacher materials upload popup binds upload logic on open", () => {
     assert.match(source, /teacher-materials/);
 });
 
-test("active tile is moved to end of tile order (bottom) on hitbox click", () => {
+test("active tile swaps with previously active tile on hitbox click", () => {
     const source = readFileSync(
         resolve(
             ROOT,
@@ -179,22 +179,19 @@ test("active tile is moved to end of tile order (bottom) on hitbox click", () =>
 
     assert.match(
         source,
-        /function moveTileToFront\(currentOrder, clickedMode\)/,
+        /function swapWithActiveTile\(currentOrder, clickedMode\)/,
     );
-    assert.match(
-        source,
-        /clickedIndex < 0 \|\| clickedIndex === currentOrder\.length - 1/,
-    );
-    assert.match(
-        source,
-        /\.filter[\s\S]*mode !== clickedMode[\s\S]*,\s*clickedMode,/,
-    );
-    assert.doesNotMatch(source, /setTileOrder\(\[\s*clickedMode,/);
+    assert.match(source, /clickedIndex < 0 \|\| clickedIndex === lastIndex/);
+    assert.match(source, /updated\[clickedIndex\] = updated\[lastIndex\]/);
+    assert.match(source, /updated\[lastIndex\] = clickedMode/);
 });
 
 test("student boardFocus sync applies regardless of meeting state", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/student-sync.js",
+        ),
         "utf8",
     );
 

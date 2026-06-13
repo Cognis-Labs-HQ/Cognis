@@ -583,7 +583,7 @@
   <string name="module.study.classes.request_sent">Ihr Antrag zur Erstellung eines Klassenraums wurde zur Prüfung durch einen Administrator eingereicht.</string>
   <string name="module.study.classes.class_created">Ihre Klasse wurde erstellt.</string>
   <string name="module.study.classes.request_failed">Antrag zur Erstellung eines Klassenraums konnte nicht eingereicht werden.</string>
-  <string name="module.study.classes.open_chat">Chat öffnen</string>
+  <string name="module.study.classes.open_chat">Chat</string>
   <string name="module.study.classes.open_meeting">Meeting</string>
   <string name="module.study.classes.chat_placeholder">Nachricht…</string>
   <string name="module.study.classes.chat_empty">Noch keine Nachrichten.</string>

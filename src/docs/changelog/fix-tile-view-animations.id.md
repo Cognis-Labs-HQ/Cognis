@@ -19,3 +19,24 @@ Logika API agenda kelas dan berkas notepad sekarang berada di adapter study/note
 ## Tambahkan Konfigurasi Admin Nextcloud Whiteboard
 
 Modul Nextcloud Whiteboard sekarang menyediakan popup pengaturan Administration serta rute konfigurasi persisten di `/api/v1/modules/nextcloud-whiteboard/config`. URL, rahasia penandatanganan, dan masa berlaku token disimpan di database dan dipakai untuk pembuatan token embed saat runtime.
+
+## Gabungkan tombol Buka Obrolan menjadi Obrolan
+
+Tombol "Buka Obrolan" yang duplikat dihapus dari bilah aksi papan tulis. Tombol yang tersisa di tab workspace kini diberi label "Obrolan" agar lebih ringkas.
+
+## Tile aktif ditukar dengan tile lain saat dipilih
+
+Hanya tile aktif yang memiliki area konten. Mengklik tile yang tidak aktif menukarnya dengan tile aktif saat ini sehingga tile aktif selalu tampil paling akhir dalam tumpukan.
+
+## Sinkronisasi status tampilan guru dipisahkan dari polling snapshot
+
+Siswa secara mandiri menanyakan endpoint API khusus untuk fokus papan dan tata letak tile guru pada setiap pembaruan data dan kejadian SSE, sehingga sinkronisasi bekerja di tampilan slideshow maupun tile.
+
+## Gaya jendela obrolan dimiliki oleh adapter messages
+
+Semua aturan CSS panel obrolan kelas dipindahkan ke adapter messages agar panel obrolan tampil seragam dengan halaman Messages.
+
+## Tombol navigasi slideshow menggunakan boilerplate bersama
+
+Tombol navigasi kini dibuat dari satu fungsi pembantu yang dibagi antara render awal dan pembaruan tile dinamis. Tombol disembunyikan secara otomatis pada tampilan Obrolan.
+

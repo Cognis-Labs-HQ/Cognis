@@ -133,14 +133,6 @@ export function renderBlackboard({
     const toolbarActions = [];
     if (isTeacherView) {
         toolbarActions.push(
-            `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-chat-btn"
-                ${snapshot?.chatUrl ? "" : "disabled"}
-                data-entity-kind="chat"
-                draggable="true"
-                aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
-                title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>`,
-        );
-        toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-class-settings-btn"
                 aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
                 title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">${escapeHtml(i18n.t("module.study.classes.class_settings"))}</button>`,

@@ -84,15 +84,16 @@ export function bindClassroomClickHandler({
         return start + handler.before.length + selectedText.length;
     }
 
-    function moveTileToFront(currentOrder, clickedMode) {
+    function swapWithActiveTile(currentOrder, clickedMode) {
         const clickedIndex = currentOrder.indexOf(clickedMode);
-        if (clickedIndex < 0 || clickedIndex === currentOrder.length - 1) {
+        const lastIndex = currentOrder.length - 1;
+        if (clickedIndex < 0 || clickedIndex === lastIndex) {
             return currentOrder;
         }
-        return [
-            ...currentOrder.filter((mode) => mode !== clickedMode),
-            clickedMode,
-        ];
+        const updated = [...currentOrder];
+        updated[clickedIndex] = updated[lastIndex];
+        updated[lastIndex] = clickedMode;
+        return updated;
     }
 
     function getToolbarCursorPosition({
@@ -322,7 +323,7 @@ export function bindClassroomClickHandler({
                     const clickedMode = normalizeWorkspaceMode(
                         tileHitbox.dataset.workspaceMode,
                     );
-                    setTileOrder(moveTileToFront(currentOrder, clickedMode));
+                    setTileOrder(swapWithActiveTile(currentOrder, clickedMode));
                 }
                 if (nextWorkspaceMode === "meeting") {
                     if (classroomWindows?.isMeetingOpen()) {

@@ -77,7 +77,7 @@ test("classroom toolbar chat control and meeting workspace tab use correct actio
     );
     assert.match(
         renderSource,
-        /classes-board-entity-token classes-open-chat-btn[\s\S]*module\.study\.classes\.open_chat/,
+        /module\.study\.classes\.open_chat[\s\S]*classes-open-chat-btn[\s\S]*classes-board-entity/,
     );
     assert.match(
         workspaceSource,

@@ -2,6 +2,7 @@ import {
     renderDeskFloor,
     renderRosterPanel,
 } from "/static/adapters/study/classes/classroom-render.js";
+import { buildSlideNavButtonsHtml } from "/static/adapters/study/classes/classroom-render/workspace.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
@@ -65,9 +66,42 @@ export function createWorkspaceTileRefresher({
     getTileOrder,
     getTileLayout,
     getIsMeetingOpen,
+    getClassroomWindows,
     i18n,
     fallbackRefreshDom,
 }) {
+    function addTileContent(tile, mode) {
+        if (tile.querySelector(".classes-workspace-tile-content")) return;
+        const content = document.createElement("div");
+        if (mode === "chat") {
+            content.className = "classes-workspace-tile-content";
+            const chatHost = document.createElement("div");
+            chatHost.className = "classes-chat-workspace-host";
+            content.appendChild(chatHost);
+        } else if (mode === "whiteboard") {
+            content.className =
+                "classes-workspace-tile-content classes-whiteboard-workspace-host";
+        }
+        tile.appendChild(content);
+    }
+
+    function removeTileContent(tile) {
+        const content = tile.querySelector(".classes-workspace-tile-content");
+        if (!content) return;
+        const blackboard = root.querySelector(".classes-blackboard");
+        for (const panel of content.querySelectorAll(".classes-chat-panel")) {
+            root.appendChild(panel);
+        }
+        if (blackboard) {
+            for (const panel of content.querySelectorAll(
+                ".classes-whiteboard-panel",
+            )) {
+                blackboard.appendChild(panel);
+            }
+        }
+        content.remove();
+    }
+
     return function refreshWorkspaceTilesOnly() {
         const tiledWorkspacePanel = root.querySelector(
             ".classes-workspace-panel--tiled",
@@ -86,11 +120,12 @@ export function createWorkspaceTileRefresher({
         const tileLayout = getTileLayout?.() ?? "stacked";
         const meetingOpen = Boolean(getIsMeetingOpen?.());
         const activeTileMode =
-            workspaceMode === "whiteboard" || workspaceMode === "meeting"
+            workspaceMode === "chat" ||
+            workspaceMode === "whiteboard" ||
+            workspaceMode === "meeting"
                 ? workspaceMode
                 : "agenda";
 
-        // Update layout class if it has changed
         tilesContainer.classList.toggle(
             "classes-workspace-tiles--stacked",
             tileLayout === "stacked",
@@ -117,28 +152,18 @@ export function createWorkspaceTileRefresher({
         const existingNext = tiledWorkspacePanel.querySelector(
             ".classes-tile-nav-next",
         );
-        if (tileLayout === "slideshow") {
-            if (!(existingPrev instanceof HTMLButtonElement)) {
-                const previousButton = document.createElement("button");
-                previousButton.type = "button";
-                previousButton.className = "classes-tile-nav-prev";
-                previousButton.setAttribute(
-                    "aria-label",
-                    i18n.t("ui.reuse.previous"),
-                );
-                previousButton.innerHTML = "&#x25C4;";
-                tiledWorkspacePanel.insertBefore(
-                    previousButton,
-                    tilesContainer,
-                );
-            }
-            if (!(existingNext instanceof HTMLButtonElement)) {
-                const nextButton = document.createElement("button");
-                nextButton.type = "button";
-                nextButton.className = "classes-tile-nav-next";
-                nextButton.setAttribute("aria-label", i18n.t("ui.reuse.next"));
-                nextButton.innerHTML = "&#x25BA;";
-                tiledWorkspacePanel.insertBefore(nextButton, tilesContainer);
+        if (tileLayout === "slideshow" && activeTileMode !== "chat") {
+            const needsBuild =
+                !(existingPrev instanceof HTMLButtonElement) ||
+                !(existingNext instanceof HTMLButtonElement);
+            if (needsBuild) {
+                existingPrev?.remove();
+                existingNext?.remove();
+                const tmpl = document.createElement("template");
+                tmpl.innerHTML = buildSlideNavButtonsHtml(i18n);
+                for (const node of [...tmpl.content.children]) {
+                    tiledWorkspacePanel.insertBefore(node, tilesContainer);
+                }
             }
         } else {
             existingPrev?.remove();
@@ -147,17 +172,29 @@ export function createWorkspaceTileRefresher({
 
         tilesContainer.dataset.activeWorkspaceMode = activeTileMode;
         const existingTiles = new Map();
+        let contentDivChanged = false;
         for (const tile of tilesContainer.querySelectorAll(
             ".classes-workspace-tile[data-workspace-mode]",
         )) {
             const tileMode = String(tile.dataset.workspaceMode ?? "");
             existingTiles.set(tileMode, tile);
-            tile.classList.toggle("active", tileMode === activeTileMode);
+            const wasActive = tile.classList.contains("active");
+            const isNowActive = tileMode === activeTileMode;
+            tile.classList.toggle("active", isNowActive);
             const depth = tileOrder.indexOf(tileMode);
             tile.style.setProperty(
                 "--tile-depth",
                 String(depth >= 0 ? depth : tileOrder.length),
             );
+            if (tileMode === "chat" || tileMode === "whiteboard") {
+                if (!wasActive && isNowActive) {
+                    addTileContent(tile, tileMode);
+                    contentDivChanged = true;
+                } else if (wasActive && !isNowActive) {
+                    removeTileContent(tile);
+                    contentDivChanged = true;
+                }
+            }
         }
         const orderedTiles = tileOrder
             .map((tileMode) => existingTiles.get(tileMode))
@@ -179,7 +216,16 @@ export function createWorkspaceTileRefresher({
                 "--tile-depth",
                 String(depth >= 0 ? depth : tileOrder.length - 1),
             );
-            chatSection.innerHTML = `<button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="chat">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button><div class="classes-workspace-tile-content"><div class="classes-chat-workspace-host"></div></div>`;
+            chatSection.innerHTML = `<button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="chat">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>`;
+            if (activeTileMode === "chat") {
+                const content = document.createElement("div");
+                content.className = "classes-workspace-tile-content";
+                const chatHost = document.createElement("div");
+                chatHost.className = "classes-chat-workspace-host";
+                content.appendChild(chatHost);
+                chatSection.appendChild(content);
+                contentDivChanged = true;
+            }
             tilesContainer.appendChild(chatSection);
         }
         if (
@@ -196,7 +242,14 @@ export function createWorkspaceTileRefresher({
                 "--tile-depth",
                 String(depth >= 0 ? depth : tileOrder.length - 1),
             );
-            whiteboardSection.innerHTML = `<button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button><div class="classes-workspace-tile-content classes-whiteboard-workspace-host"></div>`;
+            whiteboardSection.innerHTML = `<button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>`;
+            if (activeTileMode === "whiteboard") {
+                const whiteboardHost = document.createElement("div");
+                whiteboardHost.className =
+                    "classes-workspace-tile-content classes-whiteboard-workspace-host";
+                whiteboardSection.appendChild(whiteboardHost);
+                contentDivChanged = true;
+            }
             const meetingTile = tilesContainer.querySelector(
                 ".classes-workspace-tile--meeting",
             );
@@ -205,6 +258,9 @@ export function createWorkspaceTileRefresher({
             } else {
                 tilesContainer.appendChild(whiteboardSection);
             }
+        }
+        if (contentDivChanged) {
+            getClassroomWindows?.()?.reattach();
         }
         for (const tabButton of root.querySelectorAll(
             ".classes-workspace-tab-btn[data-workspace-mode]",

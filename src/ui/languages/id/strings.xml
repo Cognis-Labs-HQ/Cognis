@@ -583,7 +583,7 @@
   <string name="module.study.classes.request_sent">Permintaan pembuatan kelas Anda telah dikirim untuk ditinjau admin.</string>
   <string name="module.study.classes.class_created">Kelas Anda telah dibuat.</string>
   <string name="module.study.classes.request_failed">Gagal mengirim permintaan pembuatan kelas.</string>
-  <string name="module.study.classes.open_chat">Buka Obrolan</string>
+  <string name="module.study.classes.open_chat">Obrolan</string>
   <string name="module.study.classes.open_meeting">Meeting</string>
   <string name="module.study.classes.chat_placeholder">Pesan…</string>
   <string name="module.study.classes.chat_empty">Belum ada pesan.</string>

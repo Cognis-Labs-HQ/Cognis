@@ -215,6 +215,11 @@ function renderSelectedDeskPanel({
     `;
 }
 
+export function buildSlideNavButtonsHtml(i18n) {
+    return `<button type="button" class="classes-tile-nav-prev" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}">&#x25C4;</button>
+        <button type="button" class="classes-tile-nav-next" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}">&#x25BA;</button>`;
+}
+
 export function renderWorkspaceContent({
     snapshot,
     classResources,
@@ -279,13 +284,13 @@ export function renderWorkspaceContent({
         if (mode === "chat" && hasChat) {
             return `<section class="classes-workspace-tile classes-workspace-tile--chat${isActive ? " active" : ""}" data-workspace-mode="chat" ${depthStyle}>
                 <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="chat">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
-                <div class="classes-workspace-tile-content"><div class="classes-chat-workspace-host"></div></div>
+                ${isActive ? `<div class="classes-workspace-tile-content"><div class="classes-chat-workspace-host"></div></div>` : ""}
             </section>`;
         }
         if (mode === "whiteboard" && tiles.has("whiteboard")) {
             return `<section class="classes-workspace-tile classes-workspace-tile--whiteboard${isActive ? " active" : ""}" data-workspace-mode="whiteboard" ${depthStyle}>
                 <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>
-                <div class="classes-workspace-tile-content classes-whiteboard-workspace-host">${whiteboardTileContent}</div>
+                ${isActive ? `<div class="classes-workspace-tile-content classes-whiteboard-workspace-host">${whiteboardTileContent}</div>` : ""}
             </section>`;
         }
         if (mode === "meeting" && shouldShowMeetingTile(tiles, isMeetingOpen)) {
@@ -304,9 +309,8 @@ export function renderWorkspaceContent({
             ? " classes-workspace-tiles--slideshow"
             : " classes-workspace-tiles--stacked";
     const navArrows =
-        tileLayout === "slideshow"
-            ? `<button type="button" class="classes-tile-nav-prev" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}">&#x25C4;</button>
-           <button type="button" class="classes-tile-nav-next" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}">&#x25BA;</button>`
+        tileLayout === "slideshow" && activeTileMode !== "chat"
+            ? buildSlideNavButtonsHtml(i18n)
             : "";
     return `
         <section class="classes-workspace-panel classes-workspace-panel--tiled">
