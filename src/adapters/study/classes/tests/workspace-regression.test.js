@@ -327,14 +327,8 @@ test("dedupeFileRefs is defined at module scope in classroom-resource-actions", 
 
     const dedupeIndex = source.indexOf("function dedupeFileRefs");
     const getMaterialIndex = source.indexOf("export function getMaterialIcon");
-    assert.ok(
-        dedupeIndex >= 0,
-        "dedupeFileRefs must be defined",
-    );
-    assert.ok(
-        getMaterialIndex >= 0,
-        "getMaterialIcon must be defined",
-    );
+    assert.ok(dedupeIndex >= 0, "dedupeFileRefs must be defined");
+    assert.ok(getMaterialIndex >= 0, "getMaterialIcon must be defined");
     assert.ok(
         dedupeIndex < getMaterialIndex,
         "dedupeFileRefs must appear before getMaterialIcon at module scope",
