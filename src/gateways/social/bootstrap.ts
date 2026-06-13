@@ -408,6 +408,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             presenceTracker.getStatuses(accountIds),
     );
 
+    ctx.capabilities.contribute(
+        "social:normalizeHandleKey",
+        normalizeHandleKey,
+    );
+    ctx.capabilities.contribute(
+        "social:normalizeHandleKeys",
+        normalizeHandleKeys,
+    );
+
     setInterval(() => {
         presenceTracker.pruneAndBroadcast();
     }, 15_000).unref?.();

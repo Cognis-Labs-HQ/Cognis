@@ -2,15 +2,17 @@ import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
 import { registerMeetingRoutes } from "./meetings-routes.js";
 import { registerAdminMeetingRoutes } from "./admin-meetings-routes.js";
-import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
-import {
-    normalizeHttpUrl,
-    resolveExternalBaseUrl,
-} from "../../../api/reuse/url-parts.js";
-import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
+import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import { isModeratorRole, normalizeMeetingPrefix } from "./meeting-values.js";
+import {
+    sendJson,
+    sendError,
+    buildMeetingChatTitle,
+    buildMeetingActionUrl,
+    appendMeetingLinkToBody,
+} from "./request-helpers.js";
 import {
     registerJitsiUiResourcesRoute,
     resolveMessagesUiResources,
@@ -19,55 +21,15 @@ import {
 
 const MODULE_ID = "jitsi-meet";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
-const MEETING_TITLE = "Cognis Classroom";
 const LIVELINESS_TIMEOUT_MS = 5000;
 
 const storeByExecutor = new WeakMap();
 
-function sendJson(res, status, payload) {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify(payload));
-}
-
-function sendError(res, status, code, message) {
-    sendJson(res, status, {
-        error: {
-            code,
-            message,
-        },
-    });
-}
-
-function buildMeetingChatTitle(createdAt = null) {
-    const parsedCreatedAt =
-        typeof createdAt === "string" ? Date.parse(createdAt) : Number.NaN;
-    const isoDate = Number.isFinite(parsedCreatedAt)
-        ? new Date(parsedCreatedAt).toISOString().slice(0, 10)
-        : new Date().toISOString().slice(0, 10);
-    return `${MEETING_TITLE} — ${isoDate}`;
-}
-
-function buildMeetingActionUrl(meetingId) {
-    const normalizedMeetingId = String(meetingId ?? "").trim();
-    if (!normalizedMeetingId) {
-        return "/meetings";
-    }
-    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
-}
-
-function buildMeetingEmailLink(meetingId) {
-    const actionUrl = buildMeetingActionUrl(meetingId);
-    const externalHost = resolveExternalBaseUrl();
-    return externalHost ? `${externalHost}${actionUrl}` : actionUrl;
-}
-
-function appendMeetingLinkToBody(body, meetingId) {
-    const meetingLink = buildMeetingEmailLink(meetingId);
-    if (!meetingLink) return body;
-    return `${body}\n\nMeeting link: ${meetingLink}`;
-}
-
-async function resolveRequesterUsername(profileStore, accountId) {
+async function resolveRequesterUsername(
+    profileStore,
+    accountId,
+    normalizeHandleKey,
+) {
     const profile = await profileStore.getProfile(accountId);
     const normalized = normalizeHandleKey(profile?.handle ?? "");
     if (!normalized) {
@@ -81,7 +43,7 @@ async function resolveRequesterUsername(profileStore, accountId) {
 async function resolveRequestedParticipants(
     profileStore,
     requestedHandles,
-    { includeHidden = false } = {},
+    { includeHidden = false, normalizeHandleKey } = {},
 ) {
     const usernames = [];
     for (const candidate of Array.isArray(requestedHandles)
@@ -123,10 +85,12 @@ async function resolveMeetingPayloadOrReject({
     claims,
     res,
     listClassroomParticipantHandles,
+    normalizeHandleKey,
 }) {
     const requesterUsername = await resolveRequesterUsername(
         profileStore,
         claims.sub,
+        normalizeHandleKey,
     );
     const meetingId = String(body.meetingId ?? "").trim();
     if (!meetingId) {
@@ -184,7 +148,12 @@ async function createMeetingPayload({
     });
 }
 
-function resolveStore(dbExecutor, log) {
+function resolveStore(
+    dbExecutor,
+    log,
+    normalizeHandleKey,
+    normalizeHandleKeys,
+) {
     const existingStore = storeByExecutor.get(dbExecutor);
     if (existingStore) {
         return existingStore;
@@ -192,6 +161,8 @@ function resolveStore(dbExecutor, log) {
     const nextStore = new JitsiMeetStore({
         db: dbExecutor,
         log,
+        normalizeHandleKey,
+        normalizeHandleKeys,
     });
     storeByExecutor.set(dbExecutor, nextStore);
     return nextStore;
@@ -256,6 +227,11 @@ export function registerUi(ctx) {
 }
 
 export function registerApiRoutes(router, ctx) {
+    const routeContext = ctx.getCapability("auth:routeContext");
+    const requireAuth = routeContext?.requireAuth.bind(routeContext);
+    const hasMinRole = routeContext?.hasMinRole.bind(routeContext);
+    const normalizeHandleKey = ctx.getCapability("social:normalizeHandleKey");
+    const normalizeHandleKeys = ctx.getCapability("social:normalizeHandleKeys");
     const dbExecutor = ctx.getCapability("db:executor");
     const profileStore = ctx.getCapability("social:profileStore");
     const messagesUiResources = resolveMessagesUiResources(ctx);
@@ -351,7 +327,12 @@ export function registerApiRoutes(router, ctx) {
     const registerScriptOrigins = ctx.getCapability(
         "auth:registerPageScriptOrigins",
     );
-    const store = resolveStore(dbExecutor, log);
+    const store = resolveStore(
+        dbExecutor,
+        log,
+        normalizeHandleKey,
+        normalizeHandleKeys,
+    );
     void registerStoredJitsiOrigin({ store, registerScriptOrigins, log });
 
     registerJitsiUiResourcesRoute({
@@ -550,6 +531,7 @@ export function registerApiRoutes(router, ctx) {
             const requesterUsername = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
+                normalizeHandleKey,
             ).catch((error) => {
                 sendError(res, 409, "profile_required", error.message);
                 return null;
@@ -559,7 +541,10 @@ export function registerApiRoutes(router, ctx) {
             let requestedParticipants = await resolveRequestedParticipants(
                 profileStore,
                 body.participants,
-                { includeHidden: hasMinRole(claims.role, "admin") },
+                {
+                    includeHidden: hasMinRole(claims.role, "admin"),
+                    normalizeHandleKey,
+                },
             );
             if (body.classroomId) {
                 const classroomHandles = await listClassroomParticipantHandles({
@@ -777,9 +762,15 @@ export function registerApiRoutes(router, ctx) {
         listCalendarsByOwner,
         listCalendarEvents,
         listClassroomParticipantHandles,
-        resolveMeetingPayloadOrReject,
+        resolveMeetingPayloadOrReject: (args) =>
+            resolveMeetingPayloadOrReject({ ...args, normalizeHandleKey }),
         createMeetingPayload,
-        resolveRequesterUsername,
+        resolveRequesterUsername: (profileStore, accountId) =>
+            resolveRequesterUsername(
+                profileStore,
+                accountId,
+                normalizeHandleKey,
+            ),
         canAccessMeeting,
         requireAuth,
         readJson,
@@ -806,6 +797,7 @@ export function registerApiRoutes(router, ctx) {
             const requesterUsername = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
+                normalizeHandleKey,
             );
             const meeting = await store.getMeetingByChatRoomId(chatRoomId);
             if (!meeting) {

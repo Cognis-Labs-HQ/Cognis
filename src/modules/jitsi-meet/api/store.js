@@ -4,10 +4,6 @@ import {
     extractUrlPathSlug,
     normalizeHttpUrl,
 } from "../../../api/reuse/url-parts.js";
-import {
-    normalizeHandleKey,
-    normalizeHandleKeys,
-} from "../../../gateways/social/bootstrap.js";
 import { normalizeMeetingPrefix } from "./meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
@@ -21,7 +17,11 @@ function buildRoomSlug(prefix) {
     return `${readablePrefix}-${entropy}`;
 }
 
-function buildParticipantKey(usernames, classroomId = null) {
+function buildParticipantKey(
+    normalizeHandleKeys,
+    usernames,
+    classroomId = null,
+) {
     const payload = JSON.stringify({
         classroomId: classroomId ? String(classroomId) : null,
         participants: normalizeHandleKeys(usernames),
@@ -44,12 +44,25 @@ function buildParticipantKey(usernames, classroomId = null) {
  *     transaction: (callback: (executor: object) => Promise<void>) => Promise<void>,
  *   },
  *   log?: (level: string, message: string, meta?: Record<string, unknown>) => void,
+ *   normalizeHandleKey?: (handle: string) => string,
+ *   normalizeHandleKeys?: (handles: string[]) => string[],
  * }} options
  */
 export class JitsiMeetStore {
-    constructor({ db, log }) {
+    constructor({ db, log, normalizeHandleKey, normalizeHandleKeys }) {
         this.db = db;
         this.log = log;
+        this.normalizeHandleKey =
+            normalizeHandleKey ??
+            ((handle) =>
+                String(handle ?? "")
+                    .trim()
+                    .replace(/^@+/, "")
+                    .toLowerCase());
+        this.normalizeHandleKeys =
+            normalizeHandleKeys ??
+            ((handles) =>
+                [...new Set(handles.map(this.normalizeHandleKey))].sort());
     }
 
     async ensureSchema() {
@@ -247,7 +260,11 @@ export class JitsiMeetStore {
         const participants = await this.listParticipants(meetingId);
         const participantKey =
             row.participant_key ??
-            buildParticipantKey(participants, row.classroom_id ?? null);
+            buildParticipantKey(
+                this.normalizeHandleKeys,
+                participants,
+                row.classroom_id ?? null,
+            );
         return {
             id: String(row.id),
             participantKey: String(participantKey),
@@ -288,7 +305,11 @@ export class JitsiMeetStore {
     }
 
     async findMeetingByParticipants(usernames, classroomId = null) {
-        const participantKey = buildParticipantKey(usernames, classroomId);
+        const participantKey = buildParticipantKey(
+            this.normalizeHandleKeys,
+            usernames,
+            classroomId,
+        );
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "jitsi_meetings",
@@ -318,7 +339,7 @@ export class JitsiMeetStore {
                 "A valid Jitsi instance URL is required before creating meetings.",
             );
         }
-        const participantUsernames = normalizeHandleKeys(usernames);
+        const participantUsernames = this.normalizeHandleKeys(usernames);
         const normalizedClassroomId =
             typeof classroomId === "string" && classroomId.trim().length > 0
                 ? classroomId.trim()
@@ -340,6 +361,7 @@ export class JitsiMeetStore {
         const meetingUrl = `${normalizedInstanceUrl}/${meetingSlug}`;
         const meetingPassword = randomBytes(12).toString("base64url");
         const participantKey = buildParticipantKey(
+            this.normalizeHandleKeys,
             participantUsernames,
             normalizedClassroomId,
         );
@@ -733,7 +755,7 @@ export class JitsiMeetStore {
         classroomId,
         creatorUsername,
     }) {
-        const normalizedParticipants = normalizeHandleKeys([
+        const normalizedParticipants = this.normalizeHandleKeys([
             ...(Array.isArray(participants) ? participants : []),
             creatorUsername,
         ]);

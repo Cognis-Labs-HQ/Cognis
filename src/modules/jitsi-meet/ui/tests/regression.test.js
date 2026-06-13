@@ -60,7 +60,14 @@ test("jitsi meeting group chats include the meeting date in their title", () => 
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
         "utf8",
     );
-    assert.match(source, /function buildMeetingChatTitle[\s\S]*slice\(0, 10\)/);
+    const helpersSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/request-helpers.js"),
+        "utf8",
+    );
+    assert.match(
+        helpersSource,
+        /function buildMeetingChatTitle[\s\S]*slice\(0, 10\)/,
+    );
     assert.match(source, /title:\s*meetingChatTitle/);
 });
 
@@ -478,6 +485,10 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
         "utf8",
     );
+    const helpersSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/request-helpers.js"),
+        "utf8",
+    );
     const uiResourcesSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
         "utf8",
@@ -491,10 +502,13 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
     assert.match(source, /subject: "Meeting Ended"/);
     assert.match(source, /subject: "Participant Joined"/);
     assert.match(source, /subject: "Participant Left"/);
-    assert.match(source, /function buildMeetingActionUrl\(meetingId\)/);
-    assert.match(source, /function buildMeetingEmailLink\(meetingId\)/);
-    assert.match(source, /function appendMeetingLinkToBody\(body, meetingId\)/);
-    assert.match(source, /Meeting link: /);
+    assert.match(helpersSource, /function buildMeetingActionUrl\(meetingId\)/);
+    assert.match(helpersSource, /function buildMeetingEmailLink\(meetingId\)/);
+    assert.match(
+        helpersSource,
+        /function appendMeetingLinkToBody\(body, meetingId\)/,
+    );
+    assert.match(helpersSource, /Meeting link: /);
     assert.match(source, /body: bodyWithMeetingLink/);
     assert.match(source, /organizerUsername: resolved\.meeting\.createdBy/);
     assert.match(source, /organizerUsername: meeting\.createdBy/);
