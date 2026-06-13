@@ -91,6 +91,8 @@
 .classes-blackboard-actions {
     display: flex;
     gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .classes-blackboard-surface {

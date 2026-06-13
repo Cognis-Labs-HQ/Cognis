@@ -563,6 +563,7 @@ export async function bootstrapStudyAdapter(
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
             "/static/adapters/study/classes/classes.css",
+            "/static/adapters/study/classes/classroom-workspace.css",
             ...(notepadStylesheetUrl ? [notepadStylesheetUrl] : []),
             "/static/modules/nextcloud-whiteboard/classes-whiteboard.css",
         ],

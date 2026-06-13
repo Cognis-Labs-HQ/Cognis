@@ -5,6 +5,7 @@ import {
     buildAccountAbbreviation,
     normalizeSeatAssignments,
     renderWorkspaceTabs,
+    renderTileLayoutToggleButton,
     renderWorkspaceContent,
     renderRosterPanel,
     renderSidebarPanel,
@@ -170,6 +171,14 @@ export function renderBlackboard({
                 )}</button>`,
         );
     }
+    if (workspaceMode !== "notepad") {
+        toolbarActions.unshift(
+            renderTileLayoutToggleButton({
+                i18n,
+                tileLayout,
+            }),
+        );
+    }
     const collapsed = !blackboardExpanded && !isMeetingOpen;
     return `
         <div class="classes-blackboard${collapsed ? " classes-blackboard--collapsed" : ""}" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
@@ -181,11 +190,13 @@ export function renderBlackboard({
                         isMeetingOpen,
                         hasActiveMeeting,
                         isTeacherView,
+                        hasChat: Boolean(
+                            String(snapshot?.chatUrl ?? "").trim(),
+                        ),
                         canAccessWhiteboard:
                             isTeacherView ||
                             Boolean(activeWhiteboardId) ||
                             Boolean(activeWhiteboard?.embedUrl),
-                        tileLayout,
                     },
                 )}</div>
                 ${

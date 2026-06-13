@@ -202,7 +202,11 @@ export async function mount(root, { signal } = {}) {
     function setWorkspaceMode(nextMode, { remember = true } = {}) {
         const normalizedMode = normalizeWorkspaceMode(nextMode);
         workspaceMode = normalizedMode;
-        if (normalizedMode === "whiteboard" || normalizedMode === "meeting") {
+        if (
+            normalizedMode === "chat" ||
+            normalizedMode === "whiteboard" ||
+            normalizedMode === "meeting"
+        ) {
             initializedTiles.add(normalizedMode);
             if (!tileOrder.includes(normalizedMode)) {
                 tileOrder = [...tileOrder, normalizedMode];
@@ -232,6 +236,7 @@ export async function mount(root, { signal } = {}) {
         const boardFocus = rawBoardFocus
             ? normalizeBoardFocus(rawBoardFocus)
             : null;
+        if (boardFocus === "chat") initializedTiles.add("chat");
         if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
         if (boardFocus) setWorkspaceMode(boardFocus, { remember: true });
     }
@@ -589,6 +594,11 @@ export async function mount(root, { signal } = {}) {
             }
             void hydrateProfileAvatars(root);
             classroomWindows?.reattach();
+            if (nextSnapshot?.chatUrl && workspaceMode === "chat") {
+                classroomWindows?.openChat(nextSnapshot.chatUrl);
+            } else if (classroomWindows?.isChatOpen()) {
+                classroomWindows.closeChat();
+            }
         }
     }
 
@@ -895,6 +905,19 @@ export async function mount(root, { signal } = {}) {
                 visible ? (boardId ?? null) : null,
             );
         },
+        onChatVisibilityChange: ({ visible } = {}) => {
+            if (visible) {
+                setWorkspaceMode("chat");
+            } else if (workspaceMode === "chat") {
+                setWorkspaceMode(lastNonMeetingWorkspaceMode, {
+                    remember: false,
+                });
+                if (isTeacherView()) {
+                    void updateBoardFocus(lastNonMeetingWorkspaceMode);
+                }
+                refreshDom();
+            }
+        },
     });
     classroomWindows.reattach();
     startClassroomRealtimeRefresh({
@@ -905,6 +928,28 @@ export async function mount(root, { signal } = {}) {
             const previousSelectedClassId = selectedClassId;
             await loadClassrooms();
             await loadSelectedClassMeta();
+            const selectedClassStillExists = classroomSnapshots.some(
+                (snapshot) => snapshot.id === previousSelectedClassId,
+            );
+            const teacherLeftClassroom =
+                !isTeacherView() &&
+                Boolean(previousSelectedClassId) &&
+                !selectedClassStillExists;
+            if (teacherLeftClassroom) {
+                classroomWindows?.closeMeeting();
+                classroomWindows?.closeChat();
+                showToast(
+                    i18n.t("module.study.classes.teacher_left_classroom"),
+                    {
+                        variant: "info",
+                    },
+                );
+                refreshDom();
+                syncGlobalChatTarget();
+                refreshSubNavigation();
+                composer.refreshFooter();
+                return;
+            }
             const selectedClassChanged =
                 selectedClassId !== previousSelectedClassId;
             const agendaChanged = agendaDocument !== previousAgendaDocument;

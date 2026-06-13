@@ -143,17 +143,41 @@ export function createWorkspaceTileRefresher({
         }
 
         tilesContainer.dataset.activeWorkspaceMode = activeTileMode;
+        const existingTiles = new Map();
         for (const tile of tilesContainer.querySelectorAll(
             ".classes-workspace-tile[data-workspace-mode]",
         )) {
             const tileMode = String(tile.dataset.workspaceMode ?? "");
+            existingTiles.set(tileMode, tile);
             tile.classList.toggle("active", tileMode === activeTileMode);
-            // Tiles not in tileOrder are pushed to the back (depth = length).
             const depth = tileOrder.indexOf(tileMode);
             tile.style.setProperty(
                 "--tile-depth",
                 String(depth >= 0 ? depth : tileOrder.length),
             );
+        }
+        const orderedTiles = tileOrder
+            .map((tileMode) => existingTiles.get(tileMode))
+            .filter(Boolean);
+        for (const tile of orderedTiles) {
+            tilesContainer.appendChild(tile);
+        }
+        if (
+            initializedTiles.has("chat") &&
+            !tilesContainer.querySelector(".classes-workspace-tile--chat")
+        ) {
+            const depth = tileOrder.indexOf("chat");
+            const chatSection = document.createElement("section");
+            chatSection.className = `classes-workspace-tile classes-workspace-tile--chat${
+                activeTileMode === "chat" ? " active" : ""
+            }`;
+            chatSection.dataset.workspaceMode = "chat";
+            chatSection.style.setProperty(
+                "--tile-depth",
+                String(depth >= 0 ? depth : tileOrder.length - 1),
+            );
+            chatSection.innerHTML = `<button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="chat">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button><div class="classes-workspace-tile-content"><div class="classes-chat-workspace-host"></div></div>`;
+            tilesContainer.appendChild(chatSection);
         }
         if (
             initializedTiles.has("whiteboard") &&

@@ -204,13 +204,81 @@ export function bindClassroomInteractions({
                 const nextMode = normalizeWorkspaceMode(
                     currentOrder[nextIndex] ?? "agenda",
                 );
+                if (
+                    nextMode === "chat" &&
+                    snapshot?.chatUrl &&
+                    classroomWindows
+                ) {
+                    if (isTeacherView()) {
+                        await updateBoardFocus("chat");
+                    }
+                    setWorkspaceMode("chat");
+                    setBlackboardExpanded(true);
+                    refreshDom();
+                    classroomWindows.openChat(snapshot.chatUrl);
+                    return;
+                }
+                if (nextMode === "whiteboard") {
+                    const whiteboardButton = root.querySelector(
+                        '.classes-workspace-tab-btn[data-workspace-mode="whiteboard"]',
+                    );
+                    if (whiteboardButton instanceof Element) {
+                        await handleWhiteboardAndNotepadActions(
+                            { target: whiteboardButton },
+                            {
+                                snapshot,
+                                apiFetch,
+                                i18n,
+                                showToast,
+                                openPopup,
+                                escapeHtml,
+                                classroomWindows,
+                                isTeacherView,
+                                loadSelectedClassMeta,
+                                refreshDom,
+                                getClassroomNotepad,
+                                setClassroomNotepad,
+                                getClassroomNotepadClassId,
+                                setClassroomNotepadClassId,
+                                createClassroomNotepad,
+                                getActiveWhiteboard,
+                                setActiveWhiteboard,
+                                getActiveWhiteboardId:
+                                    getSelectedActiveWhiteboardId,
+                                persistActiveWhiteboardId,
+                                setWorkspaceMode,
+                            },
+                        );
+                    }
+                    return;
+                }
+                if (nextMode === "meeting" && snapshot) {
+                    if (classroomWindows?.isMeetingOpen()) {
+                        setWorkspaceMode("meeting", { remember: false });
+                        setBlackboardExpanded(true);
+                        refreshWorkspaceTilesOnly();
+                        return;
+                    }
+                    if (isTeacherView()) {
+                        await classroomWindows?.openMeeting(snapshot);
+                    } else {
+                        await classroomWindows?.tryAutoJoin(snapshot.id);
+                    }
+                    if (classroomWindows?.isMeetingOpen()) {
+                        setWorkspaceMode("meeting", { remember: false });
+                        setBlackboardExpanded(true);
+                        refreshDom();
+                    }
+                    return;
+                }
+                if (nextMode === "agenda" && isTeacherView()) {
+                    await updateBoardFocus("agenda");
+                }
                 setWorkspaceMode(nextMode);
                 setBlackboardExpanded(true);
-                if (classroomWindows?.isMeetingOpen()) {
-                    refreshWorkspaceTilesOnly();
-                } else {
-                    refreshDom();
-                }
+                classroomWindows?.isMeetingOpen()
+                    ? refreshWorkspaceTilesOnly()
+                    : refreshDom();
                 return;
             }
 
@@ -267,6 +335,22 @@ export function bindClassroomInteractions({
                         setBlackboardExpanded(true);
                         refreshDom();
                     }
+                    return;
+                }
+                if (nextWorkspaceMode === "chat" && snapshot?.chatUrl) {
+                    if (!classroomWindows) {
+                        showToast(i18n.t("module.study.classes.chat_failed"), {
+                            variant: "error",
+                        });
+                        return;
+                    }
+                    if (isTeacherView()) {
+                        await updateBoardFocus("chat");
+                    }
+                    setWorkspaceMode("chat");
+                    setBlackboardExpanded(true);
+                    refreshDom();
+                    classroomWindows.openChat(snapshot.chatUrl);
                     return;
                 }
                 if (nextWorkspaceMode === "agenda") {
@@ -349,7 +433,11 @@ export function bindClassroomInteractions({
                     }
                     return;
                 }
+                if (isTeacherView()) {
+                    await updateBoardFocus("chat");
+                }
                 setWorkspaceMode("chat");
+                setBlackboardExpanded(true);
                 refreshDom();
                 classroomWindows.openChat(snapshot.chatUrl);
                 return;
@@ -363,6 +451,14 @@ export function bindClassroomInteractions({
                 const chatUrl = String(
                     chatToggle?.dataset.chatTarget ?? "",
                 ).trim();
+                if (!classroomWindows.isChatOpen() && chatUrl) {
+                    if (isTeacherView()) {
+                        await updateBoardFocus("chat");
+                    }
+                    setWorkspaceMode("chat");
+                    setBlackboardExpanded(true);
+                    refreshDom();
+                }
                 classroomWindows.toggleChat(chatUrl);
                 return;
             }

@@ -1,11 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const NOTEPAD_FILES_PREFIX = "classroom-notes";
-
-function buildFileKey(classId, filename) {
-    return `${NOTEPAD_FILES_PREFIX}/${encodeURIComponent(classId)}/${encodeURIComponent(filename)}`;
-}
-
 function extractFilename(key) {
     const parts = key.split("/");
     return decodeURIComponent(parts[parts.length - 1] ?? key);
@@ -21,49 +15,45 @@ async function listNotepadFiles(apiFetch, classId) {
 }
 
 async function saveNotepadFile(apiFetch, classId, filename, content) {
-    const key = buildFileKey(classId, filename);
-    const response = await apiFetch(`/api/v1/files/${key}`, {
-        method: "PUT",
-        headers: { "content-type": "text/plain; charset=utf-8" },
-        body: new TextEncoder().encode(content),
-    }).catch(() => null);
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        {
+            method: "PUT",
+            headers: { "content-type": "text/plain; charset=utf-8" },
+            body: new TextEncoder().encode(content),
+        },
+    ).catch(() => null);
     return response?.ok ?? false;
 }
 
 async function loadNotepadFile(apiFetch, classId, filename) {
-    const key = buildFileKey(classId, filename);
-    const response = await apiFetch(`/api/v1/files/${key}`).catch(() => null);
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+    ).catch(() => null);
     if (!response?.ok) return null;
     return response.text().catch(() => null);
 }
 
 async function deleteNotepadFile(apiFetch, classId, filename) {
-    const key = buildFileKey(classId, filename);
-    const response = await apiFetch(`/api/v1/files/${key}`, {
-        method: "DELETE",
-    }).catch(() => null);
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        {
+            method: "DELETE",
+        },
+    ).catch(() => null);
     return response?.ok ?? false;
 }
 
 async function renameNotepadFile(apiFetch, classId, oldName, newName) {
-    const oldKey = buildFileKey(classId, oldName);
-    const newKey = buildFileKey(classId, newName);
-    const getResponse = await apiFetch(`/api/v1/files/${oldKey}`).catch(
-        () => null,
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/rename`,
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ oldName, newName }),
+        },
     );
-    if (!getResponse?.ok) return false;
-    const content = await getResponse.arrayBuffer().catch(() => null);
-    if (!content) return false;
-    const putResponse = await apiFetch(`/api/v1/files/${newKey}`, {
-        method: "PUT",
-        headers: { "content-type": "text/plain; charset=utf-8" },
-        body: content,
-    }).catch(() => null);
-    if (!putResponse?.ok) return false;
-    await apiFetch(`/api/v1/files/${oldKey}`, { method: "DELETE" }).catch(
-        () => null,
-    );
-    return true;
+    return response?.ok ?? false;
 }
 
 function renderFilePickerBody(files, i18n) {

@@ -50,15 +50,19 @@ export function renderWorkspaceTabs({
     isMeetingOpen,
     hasActiveMeeting,
     canAccessWhiteboard,
+    hasChat,
     isTeacherView,
-    tileLayout = "stacked",
 }) {
-    const isTiledMode = workspaceMode !== "chat" && workspaceMode !== "notepad";
     const tabs = [
         {
             mode: "agenda",
             label: i18n.t("module.study.classes.classroom_panel"),
             disabled: false,
+        },
+        {
+            mode: "chat",
+            label: i18n.t("module.study.classes.open_chat"),
+            disabled: !hasChat,
         },
         {
             mode: "whiteboard",
@@ -83,17 +87,21 @@ export function renderWorkspaceTabs({
                 >${escapeHtml(tab.label)}</button>`,
         )
         .join("");
-    const toggleLabel = isTiledMode
-        ? escapeHtml(
-              tileLayout === "stacked"
-                  ? i18n.t("module.study.classes.slideshow_view")
-                  : i18n.t("module.study.classes.tile_view"),
-          )
-        : "";
-    const toggleButton = isTiledMode
-        ? `<button type="button" class="classes-tile-layout-toggle-btn" data-tile-layout="${escapeHtml(tileLayout)}">${toggleLabel}</button>`
-        : "";
-    return tabButtons + toggleButton;
+    return tabButtons;
+}
+
+export function renderTileLayoutToggleButton({ i18n, tileLayout = "stacked" }) {
+    const label =
+        tileLayout === "stacked"
+            ? i18n.t("module.study.classes.slideshow_view")
+            : i18n.t("module.study.classes.tile_view");
+    return `<button
+            type="button"
+            class="classes-icon-btn classes-tile-layout-toggle-btn"
+            data-tile-layout="${escapeHtml(tileLayout)}"
+            aria-label="${escapeHtml(label)}"
+            title="${escapeHtml(label)}"
+        >${escapeHtml(label)}</button>`;
 }
 
 function renderWorkspaceWhiteboard({ activeWhiteboard, i18n }) {
@@ -221,9 +229,6 @@ export function renderWorkspaceContent({
     tileLayout = "stacked",
     tileOrder = [],
 }) {
-    if (workspaceMode === "chat") {
-        return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
-    }
     if (workspaceMode === "notepad") {
         return `
             <section class="classes-workspace-panel classes-workspace-panel--notepad">
@@ -236,15 +241,19 @@ export function renderWorkspaceContent({
         `;
     }
     const activeTileMode =
-        workspaceMode === "whiteboard" || workspaceMode === "meeting"
+        workspaceMode === "chat" ||
+        workspaceMode === "whiteboard" ||
+        workspaceMode === "meeting"
             ? workspaceMode
             : "agenda";
     const tiles =
         initializedTiles instanceof Set ? initializedTiles : new Set();
+    const hasChat = Boolean(String(snapshot?.chatUrl ?? "").trim());
     const effectiveTileOrder = tileOrder.length
         ? tileOrder
         : [
               "agenda",
+              ...(hasChat ? ["chat"] : []),
               ...(tiles.has("whiteboard") ? ["whiteboard"] : []),
               ...(shouldShowMeetingTile(tiles, isMeetingOpen)
                   ? ["meeting"]
@@ -265,6 +274,12 @@ export function renderWorkspaceContent({
             return `<section class="classes-workspace-tile classes-workspace-tile--agenda${isActive ? " active" : ""}" data-workspace-mode="agenda" ${depthStyle}>
                 <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="agenda">${escapeHtml(i18n.t("module.study.classes.classroom_panel"))}</button>
                 <div class="classes-workspace-tile-content">${agendaTileContent}</div>
+            </section>`;
+        }
+        if (mode === "chat" && hasChat) {
+            return `<section class="classes-workspace-tile classes-workspace-tile--chat${isActive ? " active" : ""}" data-workspace-mode="chat" ${depthStyle}>
+                <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="chat">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
+                <div class="classes-workspace-tile-content"><div class="classes-chat-workspace-host"></div></div>
             </section>`;
         }
         if (mode === "whiteboard" && tiles.has("whiteboard")) {

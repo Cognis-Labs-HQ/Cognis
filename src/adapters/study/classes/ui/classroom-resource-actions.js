@@ -62,6 +62,15 @@ function formatFileSize(bytes) {
     return `${(num / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function buildUploadButtonLabel(i18n, escapeHtml) {
+    return `
+        <span class="classes-materials-upload-icon" aria-hidden="true">
+            <img src="/static/assets/reuse/upload.svg" alt="" />
+        </span>
+        <span>${escapeHtml(i18n.t("module.study.classes.materials_upload"))}</span>
+    `;
+}
+
 function buildLibraryFileMarkup(
     files,
     i18n,
@@ -174,6 +183,9 @@ export async function handleResourceActions(
 
     if (event.target.closest(".classes-material-add-btn")) {
         if (!snapshot) return true;
+        if (root?.dataset.materialsPopupOpen === "true") {
+            return true;
+        }
         const listLibrary = async () => {
             const response = await apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library`,
@@ -196,7 +208,7 @@ export async function handleResourceActions(
                 if (!ALLOWED_CLASSROOM_FILE_EXTENSIONS.has(ext)) {
                     continue;
                 }
-                const key = `class-materials/${encodeURIComponent(snapshot.teacherAccountId ?? "")}/${crypto.randomUUID()}${ext}`;
+                const key = `teacher-materials/${encodeURIComponent(snapshot.teacherAccountId ?? "")}/${crypto.randomUUID()}${ext}`;
                 const response = await apiFetch(`/api/v1/files/${key}`, {
                     method: "PUT",
                     headers: {
@@ -230,11 +242,12 @@ export async function handleResourceActions(
         let libraryFiles = await listLibrary();
         let selectedKeys = [];
         const autoSelectedKeys = new Set();
+        root.dataset.materialsPopupOpen = "true";
         const action = await openPopup({
             title: i18n.t("module.study.classes.teacher_materials"),
             body: `
                 <div class="stack">
-                    <button type="button" class="btn-animated classes-materials-upload-btn">&#x1F4E4; ${escapeHtml(i18n.t("module.study.classes.materials_upload"))}</button>
+                    <button type="button" class="btn-animated classes-materials-upload-btn">${buildUploadButtonLabel(i18n, escapeHtml)}</button>
                     <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, autoSelectedKeys)}</div>
                 </div>`,
             actions: [
@@ -361,6 +374,7 @@ export async function handleResourceActions(
                 return true;
             },
         });
+        delete root.dataset.materialsPopupOpen;
         if (action !== "add") return true;
         const existingFiles = Array.isArray(classResources.files)
             ? [...classResources.files]

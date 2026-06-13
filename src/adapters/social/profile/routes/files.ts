@@ -15,9 +15,10 @@ const MIME_FROM_EXT: Record<string, string> = {
     gif: "image/gif",
 };
 
-const BUCKET_CATEGORY: Record<"avatars" | "banners", "image"> = {
+const BUCKET_CATEGORY: Record<string, string> = {
     avatars: "image",
     banners: "image",
+    "teacher-materials": "documents",
 };
 
 function mimeFromKey(key: string): string {

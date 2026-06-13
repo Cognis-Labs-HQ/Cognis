@@ -203,7 +203,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
         panel.dataset.open = isOpen ? "true" : "false";
         panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
         if (typeof onVisibilityChange === "function") {
-            onVisibilityChange(isOpen);
+            onVisibilityChange({ visible: isOpen });
         }
     }
 
