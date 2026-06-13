@@ -30,10 +30,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "file-reader"),
         registerAdapterStaticDir: (gatewayId, adapterId, dir) =>
-            ctx.uiRegistry?.registerStaticDir(
-                `/static/adapters/${gatewayId}/${adapterId}`,
-                dir,
-            ),
+            ctx.uiRegistry?.registerAdapterStaticDir(gatewayId, adapterId, dir),
         log: ctx.log,
     });
 
