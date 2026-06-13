@@ -1,4 +1,5 @@
 import { bindClassroomClickHandler } from "/static/adapters/study/classes/classroom/click-handler.js";
+import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
 
 export function bindClassroomInteractions({
     root,
