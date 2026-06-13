@@ -15,6 +15,7 @@ export function registerMeetingRoutes({
     sendError,
     checkHttpLiveness,
     LIVELINESS_TIMEOUT_MS,
+    log = null,
 }) {
     const parseDateTime = (value) => {
         const parsed = new Date(String(value ?? ""));
@@ -256,7 +257,16 @@ export function registerMeetingRoutes({
                     profileStore,
                     claims.sub,
                 );
-            } catch {
+            } catch (error) {
+                log?.(
+                    "error",
+                    "Failed to resolve requester username for active meetings.",
+                    {
+                        operation: "list_active_meetings",
+                        sub: claims.sub,
+                        error,
+                    },
+                );
                 sendJson(res, 200, { data: [] });
                 return;
             }

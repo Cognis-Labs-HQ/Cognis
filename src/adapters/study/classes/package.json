@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-study-classes",
-    "version": "1.5.6",
+    "version": "1.5.7",
     "description": "Per-language class management and teacher assignment requests.",
     "type": "module",
     "main": "index.ts",

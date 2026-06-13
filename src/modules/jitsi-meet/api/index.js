@@ -787,6 +787,7 @@ export function registerApiRoutes(router, ctx) {
         sendError,
         checkHttpLiveness,
         LIVELINESS_TIMEOUT_MS,
+        log,
     });
 
     router.post(
