@@ -22,6 +22,9 @@ export function createStudentSync({
     getWorkspaceMode,
     getLastNonMeetingMode,
 }) {
+    const MEETING_SYNC_GRACE_MS = 12000;
+    let meetingModeWithoutMeetingSince = 0;
+
     async function pollTeacherViewState() {
         const selectedClassId = getSelectedClassId();
         if (isTeacherView() || !selectedClassId) return;
@@ -53,6 +56,22 @@ export function createStudentSync({
             activeMeetingId &&
             classroomWindows?.isMeetingDismissed?.(activeMeetingId),
         );
+        const shouldDelayMeetingFallback =
+            workspaceMode === "meeting" &&
+            !classroomWindows?.isMeetingOpen() &&
+            !activeMeetingId &&
+            !meetingAutoJoinBlocked;
+        if (shouldDelayMeetingFallback) {
+            const now = Date.now();
+            if (!meetingModeWithoutMeetingSince) {
+                meetingModeWithoutMeetingSince = now;
+            }
+            if (now - meetingModeWithoutMeetingSince < MEETING_SYNC_GRACE_MS) {
+                return;
+            }
+        } else {
+            meetingModeWithoutMeetingSince = 0;
+        }
         if (
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&

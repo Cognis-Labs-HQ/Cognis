@@ -878,6 +878,7 @@ export async function mount(root, { signal } = {}) {
     classroomWindows.reattach();
     startClassroomRealtimeRefresh({
         signal,
+        intervalMs: isTeacherView() ? 3000 : 1000,
         refresh: async () => {
             const previousActiveMeetingId = activeMeetingId;
             const previousAgendaDocument = agendaDocument;
@@ -924,7 +925,7 @@ export async function mount(root, { signal } = {}) {
             refreshSnapshotPresence();
             const previousWorkspaceMode = workspaceMode;
             syncStudentWorkspaceAccess();
-            void pollTeacherViewState();
+            await pollTeacherViewState();
             const broadcastedMaterialKey = getSelectedActiveMaterialKey();
             if (broadcastedMaterialKey !== activeMaterialKey) {
                 activeMaterialKey = broadcastedMaterialKey;

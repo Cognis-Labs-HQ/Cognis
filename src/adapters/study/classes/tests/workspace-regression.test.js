@@ -203,6 +203,18 @@ test("student boardFocus sync applies regardless of meeting state", () => {
         source,
         /workspaceMode !== "meeting" && !classroomWindows\?\.isMeetingOpen\(\)/,
     );
+    assert.match(source, /MEETING_SYNC_GRACE_MS = 12000/);
+    assert.match(source, /now - meetingModeWithoutMeetingSince < MEETING_SYNC_GRACE_MS/);
+});
+
+test("classroom student polling awaits teacher view-state and runs faster", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /intervalMs: isTeacherView\(\) \? 3000 : 1000/);
+    assert.match(source, /await pollTeacherViewState\(\)/);
 });
 
 test("teacher meeting close broadcasts boardFocus to students", () => {
