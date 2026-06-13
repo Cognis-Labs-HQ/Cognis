@@ -527,7 +527,10 @@ export async function mount(root, { signal } = {}) {
             }
         }
         activeMaterialKey = getSelectedActiveMaterialKey(snapshot);
-        await loadActiveMaterialPreview(activeMaterialKey, classResources.files);
+        await loadActiveMaterialPreview(
+            activeMaterialKey,
+            classResources.files,
+        );
         syncStudentWorkspaceAccess(snapshot);
         await pollTeacherViewState();
     }

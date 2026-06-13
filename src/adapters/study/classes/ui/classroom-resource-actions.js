@@ -34,14 +34,14 @@ function formatFilenameToast(i18n, key, filename) {
 
 export function getMaterialIcon(fileRef) {
     const contentType = String(
-        typeof fileRef === "object" ? fileRef?.contentType ?? "" : "",
+        typeof fileRef === "object" ? (fileRef?.contentType ?? "") : "",
     )
         .trim()
         .toLowerCase();
     const filename = String(
         typeof fileRef === "object"
-            ? fileRef?.name ?? fileRef?.key ?? ""
-            : fileRef ?? "",
+            ? (fileRef?.name ?? fileRef?.key ?? "")
+            : (fileRef ?? ""),
     ).trim();
     const extensionStart = filename.lastIndexOf(".");
     const ext =
@@ -96,7 +96,8 @@ export function getMaterialIcon(fileRef) {
             fileRefsByKey.set(fileKey, {
                 key: fileKey,
                 name: fileName,
-                contentType: String(fileRef?.contentType ?? "").trim() || undefined,
+                contentType:
+                    String(fileRef?.contentType ?? "").trim() || undefined,
             });
         }
         return [...fileRefsByKey.values()];

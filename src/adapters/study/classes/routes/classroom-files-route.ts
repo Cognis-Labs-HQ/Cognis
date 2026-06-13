@@ -38,7 +38,9 @@ function buildTeacherMaterialsMetadataKey(teacherAccountId: string) {
     return `${buildTeacherMaterialsPrefix(teacherAccountId)}.library-metadata.json`;
 }
 
-function dedupeFileRefs(files: Array<{ key: string; name: string; contentType?: string }>) {
+function dedupeFileRefs(
+    files: Array<{ key: string; name: string; contentType?: string }>,
+) {
     const fileRefsByKey = new Map<
         string,
         { key: string; name: string; contentType?: string }
@@ -63,13 +65,16 @@ async function readTeacherMaterialsMetadata(
     teacherAccountId: string,
 ) {
     const metadataKey = buildTeacherMaterialsMetadataKey(teacherAccountId);
-    const metadataContent = await fileGateway.get(metadataKey).catch(() => null);
+    const metadataContent = await fileGateway
+        .get(metadataKey)
+        .catch(() => null);
     if (!metadataContent) {
         return {} as Record<string, MaterialLibraryMetadataEntry>;
     }
-    const parsed = JSON.parse(
-        textDecoder.decode(metadataContent),
-    ) as Record<string, MaterialLibraryMetadataEntry>;
+    const parsed = JSON.parse(textDecoder.decode(metadataContent)) as Record<
+        string,
+        MaterialLibraryMetadataEntry
+    >;
     if (!parsed || typeof parsed !== "object") {
         return {};
     }
@@ -86,7 +91,8 @@ async function readTeacherMaterialsMetadata(
                     {
                         name: normalizedName,
                         contentType:
-                            String(value?.contentType ?? "").trim() || undefined,
+                            String(value?.contentType ?? "").trim() ||
+                            undefined,
                     },
                 ],
             ];
@@ -113,7 +119,8 @@ async function writeTeacherMaterialsMetadata(
                     {
                         name: normalizedName,
                         contentType:
-                            String(value?.contentType ?? "").trim() || undefined,
+                            String(value?.contentType ?? "").trim() ||
+                            undefined,
                     },
                 ],
             ];
@@ -185,10 +192,13 @@ export async function handleClassroomFilesRoutes({
                     key: file.key,
                     size: file.size,
                     contentType:
-                        metadataByKey[file.key]?.contentType ?? file.contentType,
+                        metadataByKey[file.key]?.contentType ??
+                        file.contentType,
                     name:
                         metadataByKey[file.key]?.name ??
-                        decodeURIComponent(file.key.split("/").pop() ?? file.key),
+                        decodeURIComponent(
+                            file.key.split("/").pop() ?? file.key,
+                        ),
                     lastModified: file.lastModified,
                 })),
         );
@@ -341,7 +351,11 @@ export async function handleClassroomFilesRoutes({
             claims.sub,
         );
         delete metadataByKey[key];
-        await writeTeacherMaterialsMetadata(fileGateway, claims.sub, metadataByKey);
+        await writeTeacherMaterialsMetadata(
+            fileGateway,
+            claims.sub,
+            metadataByKey,
+        );
         const teacherClasses = await store.getClassesForTeacher(claims.sub);
         await Promise.all(
             teacherClasses.map(async (teacherClass) => {

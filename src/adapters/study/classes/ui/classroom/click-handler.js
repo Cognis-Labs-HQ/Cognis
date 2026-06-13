@@ -341,9 +341,7 @@ export function bindClassroomClickHandler({
                     const clickedMode = normalizeWorkspaceMode(
                         tileHitbox.dataset.workspaceMode,
                     );
-                    setTileOrder(
-                        moveTileToStackEnd(currentOrder, clickedMode),
-                    );
+                    setTileOrder(moveTileToStackEnd(currentOrder, clickedMode));
                 }
                 if (nextWorkspaceMode === "meeting") {
                     if (classroomWindows?.isMeetingOpen()) {

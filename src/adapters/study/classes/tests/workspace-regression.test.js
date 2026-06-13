@@ -180,17 +180,17 @@ test("stacked tile ordering uses the shared move-to-end helper", () => {
         "utf8",
     );
     const helperSource = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/study/classes/ui/classroom/helpers.js",
-        ),
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/helpers.js"),
         "utf8",
     );
 
     assert.match(source, /moveTileToStackEnd/);
     assert.match(helperSource, /export function moveTileToStackEnd/);
     assert.match(helperSource, /tileIndex < 0 \|\| tileIndex === lastIndex/);
-    assert.match(helperSource, /normalizedOrder\[tileIndex\] = normalizedOrder\[lastIndex\]/);
+    assert.match(
+        helperSource,
+        /normalizedOrder\[tileIndex\] = normalizedOrder\[lastIndex\]/,
+    );
 });
 
 test("student boardFocus sync applies regardless of meeting state", () => {
@@ -246,17 +246,11 @@ test("teacher meeting close broadcasts boardFocus to students", () => {
 
 test("classroom chat uses shared messages adapter chat styles", () => {
     const chatSource = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/study/classes/ui/classroom-chat.js",
-        ),
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-chat.js"),
         "utf8",
     );
     const chatCssSource = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/social/messages/ui/classroom-chat.css",
-        ),
+        resolve(ROOT, "src/adapters/social/messages/ui/classroom-chat.css"),
         "utf8",
     );
 
