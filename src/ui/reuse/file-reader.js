@@ -43,11 +43,12 @@ export function registerFileType(ext, mimeType) {
  * @returns {boolean}
  */
 export function canRender(filename, mimeType) {
+    const name = String(filename ?? "");
+    const dotIndex = name.lastIndexOf(".");
     const ext =
-        String(filename ?? "")
-            .split(".")
-            .pop()
-            ?.toLowerCase() ?? "";
+        dotIndex > 0 && dotIndex < name.length - 1
+            ? name.slice(dotIndex + 1).toLowerCase()
+            : "";
     if (registeredTypes.has(ext)) return true;
     if (mimeType) {
         for (const registered of registeredTypes.values()) {
@@ -58,11 +59,12 @@ export function canRender(filename, mimeType) {
 }
 
 function resolveEffectiveMimeType(filename, mimeType) {
+    const name = String(filename ?? "");
+    const dotIndex = name.lastIndexOf(".");
     const ext =
-        String(filename ?? "")
-            .split(".")
-            .pop()
-            ?.toLowerCase() ?? "";
+        dotIndex > 0 && dotIndex < name.length - 1
+            ? name.slice(dotIndex + 1).toLowerCase()
+            : "";
     if (mimeType && mimeType !== "application/octet-stream") return mimeType;
     return registeredTypes.get(ext) ?? mimeType ?? "";
 }

@@ -892,9 +892,9 @@ export async function mount(root, { signal } = {}) {
                 selectedClassId !== previousSelectedClassId;
             const agendaChanged = agendaDocument !== previousAgendaDocument;
             if (!isTeacherView()) {
-                // activeMeetingId is only non-null when selectedClassId is set, so the
-                // !selectedClassId guard prevents a redundant notification when the student
-                // is already inside the selected class and will see the meeting tile directly.
+                // Only notify when a new meeting starts and no class is currently
+                // selected — the student will see the meeting tile directly when
+                // already inside the class.
                 if (
                     activeMeetingId &&
                     activeMeetingId !== previousActiveMeetingId &&

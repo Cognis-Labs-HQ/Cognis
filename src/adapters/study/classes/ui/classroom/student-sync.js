@@ -61,15 +61,15 @@ export function createStudentSync({
             setTileLayout(viewLayout);
             if (
                 broadcastedMaterialKey !== null &&
-                broadcastedMaterialKey !== getActiveMaterialKey?.()
+                broadcastedMaterialKey !== getActiveMaterialKey()
             ) {
-                setActiveMaterialKey?.(broadcastedMaterialKey);
-                await loadActiveMaterialPreview?.(broadcastedMaterialKey);
+                setActiveMaterialKey(broadcastedMaterialKey);
+                await loadActiveMaterialPreview(broadcastedMaterialKey);
             } else if (
                 broadcastedMaterialKey === null &&
-                getActiveMaterialKey?.()
+                getActiveMaterialKey()
             ) {
-                setActiveMaterialKey?.(null);
+                setActiveMaterialKey(null);
             }
             if (
                 data?.materialViewport &&

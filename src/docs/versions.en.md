@@ -43,8 +43,9 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.7`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.6`  |
-| Notepad (Study)       | `src/adapters/study/notepad/`       | `1.1.0`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.7`  |
+| Text File Reader      | `src/adapters/file-reader/text/`    | `1.2.0`  |
+| Image File Reader     | `src/adapters/file-reader/image/`   | `1.0.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 
 ## Gateways
@@ -60,6 +61,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
+| File Reader           | `src/gateways/file-reader/`  | `1.0.0`  |
 | Calendar              | `src/gateways/calendar/`     | `1.2.0`  |
 
 ## Core contracts

@@ -551,3 +551,15 @@
 **Reviewer suggestion:** Replace nested ternary at lines 238–243 with explicit if-else or a helper for clarity.
 
 **Reason ignored:** File not touched in this PR.
+
+### nextcloud-whiteboard/config-state.js — Number(null) returns 0
+
+**Reviewer suggestion:** `Number(null)` returns `0` which passes the `Number.isFinite` check silently. Add explicit null/undefined guards before calling `Number()`.
+
+**Reason ignored:** File not touched in this PR. Pre-existing in `src/modules/nextcloud-whiteboard/api/config-state.js` lines 13-17.
+
+### classroom-resource-actions.js — materials popup flag not cleared on early throw
+
+**Reviewer suggestion:** `dataset.materialsPopupOpen` flag at line 252-254 is only cleaned up in the `finally` block. If the popup throws before the try block (e.g. during `listLibrary`), the flag stays set and blocks future popup opens.
+
+**Reason ignored:** File not touched in this PR. Pre-existing in `src/adapters/study/classes/ui/classroom-resource-actions.js`.

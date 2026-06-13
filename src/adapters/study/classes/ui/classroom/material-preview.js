@@ -41,7 +41,6 @@ export function createClassroomMaterialPreviewManager({
                       normalizedMaterialKey,
               )
             : null;
-        const previousPreviewUrl = activeMaterialPreviewUrl;
         revokeActiveMaterialPreview();
         activeMaterialPreviewKey = normalizedMaterialKey;
         activeMaterialPreviewContentType = String(
@@ -64,9 +63,6 @@ export function createClassroomMaterialPreviewManager({
             return;
         }
         if (activeMaterialPreviewKey !== normalizedMaterialKey) {
-            if (previousPreviewUrl) {
-                URL.revokeObjectURL(previousPreviewUrl);
-            }
             return;
         }
         activeMaterialPreviewUrl = URL.createObjectURL(previewBlob);
