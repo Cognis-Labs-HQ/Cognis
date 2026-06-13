@@ -41,6 +41,7 @@ import { handleResourceActions } from "/static/adapters/study/classes/classroom-
 import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
 import { bindClassroomInteractions } from "/static/adapters/study/classes/classroom/interactions.js";
 import { normalizeBoardFocus } from "/static/adapters/study/classes/board-focus.js";
+import { createClassroomDataLoaders } from "/static/adapters/study/classes/classroom/data-loaders.js";
 import {
     applyPresenceToSnapshots,
     applyClassroomSnapshotPatch,
@@ -55,7 +56,9 @@ import {
     syncTileLayoutFromSnapshot,
 } from "/static/adapters/study/classes/classroom/helpers.js";
 import { createLayoutApi } from "/static/adapters/study/classes/classroom/layout-api.js";
+import { createClassroomMaterialPreviewManager } from "/static/adapters/study/classes/classroom/material-preview.js";
 import { createSnapshotStateHelpers } from "/static/adapters/study/classes/classroom/snapshot-state.js";
+import { createSubNavigationDomManager } from "/static/adapters/study/classes/classroom/sub-navigation-dom.js";
 import {
     loadTileLayoutPreference,
     normalizeTileLayout,
@@ -106,10 +109,6 @@ export async function mount(root, { signal } = {}) {
     let activeWhiteboard = null;
     let activeMeetingId = null;
     let activeMaterialKey = null;
-    let activeMaterialPreviewKey = "";
-    let activeMaterialPreviewUrl = "";
-    let activeMaterialPreviewContentType = "";
-    let activeMaterialPreviewFailed = false;
     let isClassSearchDetached = false;
     let blackboardExpanded = true;
     let initializedTiles = new Set();
@@ -118,77 +117,13 @@ export async function mount(root, { signal } = {}) {
 
     const selectedSnapshot = () =>
         findSelectedSnapshot(classroomSnapshots, selectedClassId);
-
-    function revokeActiveMaterialPreview() {
-        if (activeMaterialPreviewUrl) {
-            URL.revokeObjectURL(activeMaterialPreviewUrl);
-        }
-        activeMaterialPreviewUrl = "";
-        activeMaterialPreviewContentType = "";
-        activeMaterialPreviewFailed = false;
-        activeMaterialPreviewKey = "";
-    }
-
-    async function loadActiveMaterialPreview(materialKey, files = null) {
-        const normalizedMaterialKey = String(materialKey ?? "").trim();
-        if (!normalizedMaterialKey) {
-            revokeActiveMaterialPreview();
-            return;
-        }
-        if (
-            normalizedMaterialKey === activeMaterialPreviewKey &&
-            (activeMaterialPreviewUrl || activeMaterialPreviewFailed)
-        ) {
-            return;
-        }
-        const fileList = Array.isArray(files) ? files : classResources.files;
-        const matchedFile = Array.isArray(fileList)
-            ? fileList.find(
-                  (fileRef) =>
-                      String(fileRef?.key ?? "").trim() ===
-                      normalizedMaterialKey,
-              )
-            : null;
-        const previousPreviewUrl = activeMaterialPreviewUrl;
-        revokeActiveMaterialPreview();
-        activeMaterialPreviewKey = normalizedMaterialKey;
-        activeMaterialPreviewContentType = String(
-            matchedFile?.contentType ?? "",
-        ).trim();
-        const response = await apiFetch(
-            `/api/v1/files/${normalizedMaterialKey}`,
-            {
-                suppressConnectionRecoveryToast: true,
-            },
-        ).catch(() => null);
-        if (!response?.ok) {
-            activeMaterialPreviewFailed = true;
-            return;
-        }
-        const previewBlob = await response.blob().catch(() => null);
-        if (!(previewBlob instanceof Blob)) {
-            activeMaterialPreviewFailed = true;
-            return;
-        }
-        if (activeMaterialPreviewKey !== normalizedMaterialKey) {
-            if (previousPreviewUrl) {
-                URL.revokeObjectURL(previousPreviewUrl);
-            }
-            return;
-        }
-        activeMaterialPreviewUrl = URL.createObjectURL(previewBlob);
-        activeMaterialPreviewContentType =
-            previewBlob.type || activeMaterialPreviewContentType;
-        activeMaterialPreviewFailed = false;
-    }
-
-    signal?.addEventListener(
-        "abort",
-        () => {
-            revokeActiveMaterialPreview();
-        },
-        { once: true },
-    );
+    const classroomMaterialPreview = createClassroomMaterialPreviewManager({
+        apiFetch,
+        getFiles: () => classResources.files,
+        signal,
+    });
+    const { loadActiveMaterialPreview, revokeActiveMaterialPreview } =
+        classroomMaterialPreview;
 
     const {
         isTeacherView,
@@ -310,57 +245,30 @@ export async function mount(root, { signal } = {}) {
 
     const setBoardEntity = (classId, kind, x, y) =>
         boardEntityStore.set(classId, kind, x, y);
-
-    async function loadClassrooms() {
-        const response = await apiFetch(`/api/v1/study/classrooms`);
-        if (!response.ok) {
-            throw new Error("load_failed");
-        }
-        const payload = await response.json();
-        classroomSnapshots = Array.isArray(payload?.data) ? payload.data : [];
-        for (const snapshot of classroomSnapshots) {
-            const members = Array.isArray(snapshot?.members)
-                ? snapshot.members
-                : [];
-            for (const member of members) {
-                const accountId = String(member?.studentAccountId ?? "").trim();
-                const presence = String(member?.presence ?? "").trim();
-                if (!accountId || !presence) continue;
-                presenceByAccountId.set(accountId, presence);
-            }
-        }
-        if (
-            !selectedClassId ||
-            !classroomSnapshots.some(
-                (snapshot) => snapshot.id === selectedClassId,
-            )
-        ) {
-            if (!isClassSearchDetached) {
-                selectedClassId = String(classroomSnapshots[0]?.id ?? "");
-                selectedSeatNumber = null;
-            }
-        }
-        syncWorkspaceModeWithSnapshot({ force: true });
-    }
+    const { loadClassrooms, loadAvailableClasses: fetchAvailableClasses } =
+        createClassroomDataLoaders({
+            apiFetch,
+            buildQuery,
+            isTeacherView,
+            getSelectedLanguageFilter: () => selectedLanguageFilter,
+            getSearchQuery: () => searchQuery,
+            getIsClassSearchDetached: () => isClassSearchDetached,
+            getPresenceByAccountId: () => presenceByAccountId,
+            getSelectedClassId: () => selectedClassId,
+            setSelectedClassId: (nextClassId) => {
+                selectedClassId = nextClassId;
+            },
+            setSelectedSeatNumber: (nextSeatNumber) => {
+                selectedSeatNumber = nextSeatNumber;
+            },
+            setClassroomSnapshots: (nextSnapshots) => {
+                classroomSnapshots = nextSnapshots;
+            },
+            syncWorkspaceModeWithSnapshot,
+        });
 
     async function loadAvailableClasses() {
-        if (isTeacherView()) {
-            availableClasses = [];
-            return;
-        }
-        const queryString = buildQuery({
-            language: selectedLanguageFilter,
-            search: searchQuery,
-        });
-        const response = await apiFetch(
-            `/api/v1/study/available-classes${queryString ? `?${queryString}` : ""}`,
-        );
-        if (!response.ok) {
-            availableClasses = [];
-            return;
-        }
-        const payload = await response.json();
-        availableClasses = Array.isArray(payload?.data) ? payload.data : [];
+        availableClasses = await fetchAvailableClasses();
     }
 
     async function loadSelectedClassMeta() {
@@ -547,16 +455,10 @@ export async function mount(root, { signal } = {}) {
             selectedClassId,
         });
     }
-
-    function refreshSubNavigation() {
-        const subNav = root.querySelector(".page-subnav");
-        if (subNav instanceof HTMLElement) {
-            const nextMarkup = renderSubNavigationMarkup();
-            if (subNav.innerHTML !== nextMarkup) {
-                subNav.innerHTML = nextMarkup;
-            }
-        }
-    }
+    const { refreshSubNavigation } = createSubNavigationDomManager({
+        root,
+        renderSubNavigationMarkup,
+    });
 
     async function openClassSearch() {
         if (teacherAccount && getClassroomViewMode() === "teacher") {
@@ -610,11 +512,7 @@ export async function mount(root, { signal } = {}) {
             boardEntities: getBoardEntities(snapshot),
             workspaceMode,
             activeMaterialKey,
-            activeMaterialPreview: {
-                url: activeMaterialPreviewUrl,
-                contentType: activeMaterialPreviewContentType,
-                failed: activeMaterialPreviewFailed,
-            },
+            activeMaterialPreview: classroomMaterialPreview.getState(),
             whiteboards,
             activeWhiteboard,
             activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
