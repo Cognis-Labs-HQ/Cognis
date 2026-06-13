@@ -26,11 +26,23 @@ async function requireViewerAccess(
     store: DbClassesStore,
     classId: string,
     accountId: string,
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void,
 ): Promise<boolean> {
     try {
         await store.getClassMembersForViewer(classId, accountId);
         return true;
-    } catch {
+    } catch (error) {
+        log?.("info", "Denied classroom file access.", {
+            component: "study:classes",
+            operation: "require_viewer_access",
+            classId,
+            accountId,
+            error: error instanceof Error ? error.message : String(error),
+        });
         return false;
     }
 }
@@ -41,12 +53,18 @@ export async function handleClassroomFilesRoutes({
     url,
     ctx,
     store,
+    log,
 }: {
     req: IncomingMessage;
     res: ServerResponse;
     url: URL;
     ctx: RouteContext;
     store: DbClassesStore;
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void;
 }): Promise<boolean> {
     const materialLibraryMatch = url.pathname.match(
         /^\/api\/v1\/study\/classes\/([^/]+)\/materials\/library$/,
@@ -249,6 +267,7 @@ export async function handleClassroomFilesRoutes({
             store,
             classId,
             claims.sub,
+            log,
         );
         if (!hasViewerAccess) {
             jsonError(
@@ -298,6 +317,7 @@ export async function handleClassroomFilesRoutes({
             store,
             classId,
             claims.sub,
+            log,
         );
         if (!hasViewerAccess) {
             jsonError(
@@ -359,6 +379,7 @@ export async function handleClassroomFilesRoutes({
             store,
             classId,
             claims.sub,
+            log,
         );
         if (!hasViewerAccess) {
             jsonError(

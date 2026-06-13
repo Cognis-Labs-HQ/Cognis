@@ -413,6 +413,7 @@ export function createClassesRoutes(
                 url,
                 ctx,
                 store,
+                log: options.log,
             })
         ) {
             return true;

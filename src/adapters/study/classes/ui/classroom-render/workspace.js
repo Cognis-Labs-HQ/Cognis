@@ -160,7 +160,11 @@ function renderAgendaDocumentPanel({
         .join("");
     return `
         <div class="classes-agenda-panel${compact ? " classes-agenda-panel--compact" : ""}">
-            ${isTeacherView ? renderAgendaToolbar({ i18n }) : ""}
+            ${
+                isTeacherView
+                    ? renderAgendaToolbar({ i18n })
+                    : ""
+            }
             <textarea
                 class="classes-agenda-document-editor"
                 ${isTeacherView ? "" : "readonly"}

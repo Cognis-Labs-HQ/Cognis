@@ -78,8 +78,31 @@ export function bindClassroomInteractions({
     bindProfilePreviews(i18n);
     let agendaAutosaveTimer = null;
 
-    function shouldBlockStudentInteraction() {
+    function isStudentInteractionBlocked() {
         return !isTeacherView() && getIsTeacherPresent?.();
+    }
+
+    function getTemplateCursorPosition({ start, insertion }) {
+        return start + insertion.length;
+    }
+
+    function getPrefixCursorPosition({ handler, start, selectedText }) {
+        return start + handler.prefix.length + selectedText.length;
+    }
+
+    function getWrappedCursorPosition({ handler, start, selectedText }) {
+        return start + handler.before.length + selectedText.length;
+    }
+
+    function moveTileToFront(currentOrder, clickedMode) {
+        const clickedIndex = currentOrder.indexOf(clickedMode);
+        if (clickedIndex < 0 || clickedIndex === currentOrder.length - 1) {
+            return currentOrder;
+        }
+        return [
+            ...currentOrder.filter((mode) => mode !== clickedMode),
+            clickedMode,
+        ];
     }
 
     function getToolbarCursorPosition({
@@ -89,12 +112,20 @@ export function bindClassroomInteractions({
         insertion,
     }) {
         if (handler.template) {
-            return start + insertion.length;
+            return getTemplateCursorPosition({ start, insertion });
         }
         if (handler.prefix) {
-            return start + handler.prefix.length + selectedText.length;
+            return getPrefixCursorPosition({
+                handler,
+                start,
+                selectedText,
+            });
         }
-        return start + handler.before.length + selectedText.length;
+        return getWrappedCursorPosition({
+            handler,
+            start,
+            selectedText,
+        });
     }
 
     root.addEventListener(
@@ -187,7 +218,7 @@ export function bindClassroomInteractions({
                 ".classes-tile-nav-prev, .classes-tile-nav-next",
             );
             if (slideshowNavButton instanceof HTMLElement) {
-                if (shouldBlockStudentInteraction()) return;
+                if (isStudentInteractionBlocked()) return;
                 const isPrev = slideshowNavButton.classList.contains(
                     "classes-tile-nav-prev",
                 );
@@ -286,7 +317,7 @@ export function bindClassroomInteractions({
                 ".classes-workspace-tab-btn[data-workspace-mode], .classes-workspace-tile-hitbox[data-workspace-mode]",
             );
             if (workspaceButton instanceof HTMLElement) {
-                if (shouldBlockStudentInteraction()) return;
+                if (isStudentInteractionBlocked()) return;
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
@@ -301,15 +332,7 @@ export function bindClassroomInteractions({
                     const clickedMode = normalizeWorkspaceMode(
                         tileHitbox.dataset.workspaceMode,
                     );
-                    const clickedIndex = currentOrder.indexOf(clickedMode);
-                    if (clickedIndex < currentOrder.length - 1) {
-                        setTileOrder([
-                            ...currentOrder.filter(
-                                (mode) => mode !== clickedMode,
-                            ),
-                            clickedMode,
-                        ]);
-                    }
+                    setTileOrder(moveTileToFront(currentOrder, clickedMode));
                 }
                 if (nextWorkspaceMode === "meeting") {
                     if (classroomWindows?.isMeetingOpen()) {
@@ -1051,7 +1074,7 @@ export function bindClassroomInteractions({
             const isLeft = event.key === "ArrowLeft";
             const isRight = event.key === "ArrowRight";
             if (!isLeft && !isRight) return;
-            if (shouldBlockStudentInteraction()) return;
+            if (isStudentInteractionBlocked()) return;
             event.preventDefault();
             const currentOrder = getTileOrder();
             const activeMode = normalizeWorkspaceMode(

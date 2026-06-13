@@ -243,138 +243,148 @@ export async function handleResourceActions(
         let selectedKeys = [];
         const autoSelectedKeys = new Set();
         root.dataset.materialsPopupOpen = "true";
-        const action = await openPopup({
-            title: i18n.t("module.study.classes.teacher_materials"),
-            body: `
+        let action = null;
+        try {
+            action = await openPopup({
+                title: i18n.t("module.study.classes.teacher_materials"),
+                body: `
                 <div class="stack">
                     <button type="button" class="btn-animated classes-materials-upload-btn">${buildUploadButtonLabel(i18n, escapeHtml)}</button>
                     <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, autoSelectedKeys)}</div>
                 </div>`,
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-                {
-                    id: "add",
-                    label: i18n.t("ui.reuse.add"),
-                    variant: "confirm",
-                },
-            ],
-            onOpen: (overlay) => {
-                const hiddenInput = document.createElement("input");
-                hiddenInput.type = "file";
-                hiddenInput.multiple = true;
-                hiddenInput.style.display = "none";
-                overlay.appendChild(hiddenInput);
+                actions: [
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "add",
+                        label: i18n.t("ui.reuse.add"),
+                        variant: "confirm",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    const hiddenInput = document.createElement("input");
+                    hiddenInput.type = "file";
+                    hiddenInput.multiple = true;
+                    hiddenInput.style.display = "none";
+                    overlay.appendChild(hiddenInput);
 
-                hiddenInput.addEventListener("change", async () => {
-                    if (!hiddenInput.files?.length) return;
-                    const uploadedKeys = await uploadLibraryFiles(
-                        Array.from(hiddenInput.files),
-                    );
-                    for (const key of uploadedKeys) {
-                        autoSelectedKeys.add(key);
-                    }
-                    libraryFiles = await listLibrary();
-                    const listWrap = overlay.querySelector(
-                        ".classes-library-file-list",
-                    );
-                    if (listWrap instanceof HTMLElement) {
-                        listWrap.innerHTML = buildLibraryFileMarkup(
-                            libraryFiles,
-                            i18n,
-                            escapeHtml,
-                            autoSelectedKeys,
+                    hiddenInput.addEventListener("change", async () => {
+                        if (!hiddenInput.files?.length) return;
+                        const uploadedKeys = await uploadLibraryFiles(
+                            Array.from(hiddenInput.files),
                         );
-                    }
-                    hiddenInput.value = "";
-                });
-
-                overlay.addEventListener("click", async (clickEvent) => {
-                    if (
-                        clickEvent.target.closest(
-                            ".classes-materials-upload-btn",
-                        )
-                    ) {
+                        for (const key of uploadedKeys) {
+                            autoSelectedKeys.add(key);
+                        }
+                        libraryFiles = await listLibrary();
+                        const listWrap = overlay.querySelector(
+                            ".classes-library-file-list",
+                        );
+                        if (listWrap instanceof HTMLElement) {
+                            listWrap.innerHTML = buildLibraryFileMarkup(
+                                libraryFiles,
+                                i18n,
+                                escapeHtml,
+                                autoSelectedKeys,
+                            );
+                        }
                         hiddenInput.value = "";
-                        hiddenInput.click();
-                        return;
-                    }
-                    const renameButton = clickEvent.target.closest(
-                        ".classes-library-rename-btn[data-library-key]",
-                    );
-                    if (renameButton instanceof HTMLElement) {
-                        const key = String(
-                            renameButton.dataset.libraryKey ?? "",
-                        ).trim();
-                        if (!key) return;
-                        await apiFetch(
-                            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/rename`,
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({ key }),
-                            },
-                        ).catch(() => null);
-                        libraryFiles = await listLibrary();
-                        const listWrap = overlay.querySelector(
-                            ".classes-library-file-list",
-                        );
-                        if (listWrap instanceof HTMLElement) {
-                            listWrap.innerHTML = buildLibraryFileMarkup(
-                                libraryFiles,
-                                i18n,
-                                escapeHtml,
-                                autoSelectedKeys,
-                            );
+                    });
+
+                    overlay.addEventListener("click", async (clickEvent) => {
+                        if (
+                            clickEvent.target.closest(
+                                ".classes-materials-upload-btn",
+                            )
+                        ) {
+                            hiddenInput.value = "";
+                            hiddenInput.click();
+                            return;
                         }
-                        return;
-                    }
-                    const deleteButton = clickEvent.target.closest(
-                        ".classes-library-delete-btn[data-library-key]",
-                    );
-                    if (deleteButton instanceof HTMLElement) {
-                        const key = String(
-                            deleteButton.dataset.libraryKey ?? "",
-                        ).trim();
-                        if (!key) return;
-                        await apiFetch(
-                            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/delete`,
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({ key }),
-                            },
-                        ).catch(() => null);
-                        autoSelectedKeys.delete(key);
-                        libraryFiles = await listLibrary();
-                        const listWrap = overlay.querySelector(
-                            ".classes-library-file-list",
+                        const renameButton = clickEvent.target.closest(
+                            ".classes-library-rename-btn[data-library-key]",
                         );
-                        if (listWrap instanceof HTMLElement) {
-                            listWrap.innerHTML = buildLibraryFileMarkup(
-                                libraryFiles,
-                                i18n,
-                                escapeHtml,
-                                autoSelectedKeys,
+                        if (renameButton instanceof HTMLElement) {
+                            const key = String(
+                                renameButton.dataset.libraryKey ?? "",
+                            ).trim();
+                            if (!key) return;
+                            await apiFetch(
+                                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/rename`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    body: JSON.stringify({ key }),
+                                },
+                            ).catch(() => null);
+                            libraryFiles = await listLibrary();
+                            const listWrap = overlay.querySelector(
+                                ".classes-library-file-list",
                             );
+                            if (listWrap instanceof HTMLElement) {
+                                listWrap.innerHTML = buildLibraryFileMarkup(
+                                    libraryFiles,
+                                    i18n,
+                                    escapeHtml,
+                                    autoSelectedKeys,
+                                );
+                            }
+                            return;
                         }
-                    }
-                });
-            },
-            onAction: (actionId, overlay) => {
-                if (actionId !== "add") return true;
-                const checkedKeys = Array.from(
-                    overlay.querySelectorAll(".classes-library-select:checked"),
-                ).map((checkbox) => String(checkbox.value ?? "").trim());
-                const merged = new Set([...autoSelectedKeys, ...checkedKeys]);
-                selectedKeys = [...merged].filter(Boolean);
-                return true;
-            },
-        });
-        delete root.dataset.materialsPopupOpen;
+                        const deleteButton = clickEvent.target.closest(
+                            ".classes-library-delete-btn[data-library-key]",
+                        );
+                        if (deleteButton instanceof HTMLElement) {
+                            const key = String(
+                                deleteButton.dataset.libraryKey ?? "",
+                            ).trim();
+                            if (!key) return;
+                            await apiFetch(
+                                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/delete`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    body: JSON.stringify({ key }),
+                                },
+                            ).catch(() => null);
+                            autoSelectedKeys.delete(key);
+                            libraryFiles = await listLibrary();
+                            const listWrap = overlay.querySelector(
+                                ".classes-library-file-list",
+                            );
+                            if (listWrap instanceof HTMLElement) {
+                                listWrap.innerHTML = buildLibraryFileMarkup(
+                                    libraryFiles,
+                                    i18n,
+                                    escapeHtml,
+                                    autoSelectedKeys,
+                                );
+                            }
+                        }
+                    });
+                },
+                onAction: (actionId, overlay) => {
+                    if (actionId !== "add") return true;
+                    const checkedKeys = Array.from(
+                        overlay.querySelectorAll(
+                            ".classes-library-select:checked",
+                        ),
+                    ).map((checkbox) => String(checkbox.value ?? "").trim());
+                    const merged = new Set([...autoSelectedKeys, ...checkedKeys]);
+                    selectedKeys = [...merged].filter(Boolean);
+                    return true;
+                },
+            });
+        } finally {
+            delete root.dataset.materialsPopupOpen;
+        }
         if (action !== "add") return true;
         const existingFiles = Array.isArray(classResources.files)
             ? [...classResources.files]

@@ -230,12 +230,7 @@ export async function mount(root, { signal } = {}) {
         ) {
             setWorkspaceMode(lastNonMeetingWorkspaceMode, { remember: false });
         }
-        const rawBoardFocus = String(
-            snapshot?.classroom?.boardFocus ?? "",
-        ).trim();
-        const boardFocus = rawBoardFocus
-            ? normalizeBoardFocus(rawBoardFocus)
-            : null;
+        const boardFocus = getNormalizedBoardFocus(snapshot);
         if (boardFocus === "chat") initializedTiles.add("chat");
         if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
         if (boardFocus) setWorkspaceMode(boardFocus, { remember: true });
@@ -261,6 +256,13 @@ export async function mount(root, { signal } = {}) {
 
     function setBoardEntity(classId, kind, x, y) {
         boardEntityStore.set(classId, kind, x, y);
+    }
+
+    function getNormalizedBoardFocus(snapshot) {
+        const rawBoardFocus = String(
+            snapshot?.classroom?.boardFocus ?? "",
+        ).trim();
+        return rawBoardFocus ? normalizeBoardFocus(rawBoardFocus) : null;
     }
 
     async function loadClassrooms() {
@@ -658,9 +660,7 @@ export async function mount(root, { signal } = {}) {
     // Restore the teacher's last workspace mode from the persisted board focus.
     if (isTeacherView()) {
         const initSnapshot = selectedSnapshot();
-        const savedFocus = String(
-            initSnapshot?.classroom?.boardFocus ?? "",
-        ).trim();
+        const savedFocus = getNormalizedBoardFocus(initSnapshot);
         if (savedFocus && savedFocus !== "agenda") {
             const restoredMode = normalizeWorkspaceMode(savedFocus);
             if (restoredMode === "whiteboard" || restoredMode === "meeting") {
