@@ -204,7 +204,10 @@ test("student boardFocus sync applies regardless of meeting state", () => {
         /workspaceMode !== "meeting" && !classroomWindows\?\.isMeetingOpen\(\)/,
     );
     assert.match(source, /MEETING_SYNC_GRACE_MS = 12000/);
-    assert.match(source, /now - meetingModeWithoutMeetingSince < MEETING_SYNC_GRACE_MS/);
+    assert.match(
+        source,
+        /now - meetingModeWithoutMeetingSince < MEETING_SYNC_GRACE_MS/,
+    );
 });
 
 test("classroom student polling awaits teacher view-state and runs faster", () => {
