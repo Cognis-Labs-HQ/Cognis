@@ -678,4 +678,25 @@ test("classroom meetings intercept hangup, show the meeting overlay, and block s
         /const meetingAutoJoinBlocked = Boolean\([\s\S]*isMeetingDismissed\?\.\(activeMeetingId\)/,
     );
     assert.match(classroomPageSource, /returnMode === "agenda"/);
+    // Regression: element must be hidden BEFORE destroyJitsiApi() so the
+    // Jitsi homepage cannot flash through during API teardown on meeting close.
+    const closeMeetingOffset = classroomEmbedSource.indexOf(
+        "function closeMeeting(",
+    );
+    const elementHiddenOffset = classroomEmbedSource.indexOf(
+        "element.hidden = true",
+        closeMeetingOffset,
+    );
+    const destroyApiOffset = classroomEmbedSource.indexOf(
+        "destroyJitsiApi()",
+        closeMeetingOffset,
+    );
+    assert.ok(
+        elementHiddenOffset !== -1 && destroyApiOffset !== -1,
+        "closeMeeting must set element.hidden = true and call destroyJitsiApi()",
+    );
+    assert.ok(
+        elementHiddenOffset < destroyApiOffset,
+        "element.hidden = true must precede destroyJitsiApi() in closeMeeting to prevent homepage flash",
+    );
 });

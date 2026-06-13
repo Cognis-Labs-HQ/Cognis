@@ -1,3 +1,43 @@
+/**
+ * Shared Study alphabet page renderer for language module child components.
+ *
+ * Public exports:
+ *   mountStudyAlphabetPage — mounts a paginated character grid for a given
+ *   language and character class, wired to the study sub-navigation.
+ *
+ * Usage:
+ *   import { mountStudyAlphabetPage } from
+ *     '/static/modules/study/languages/reuse/alphabet-page.js';
+ *
+ *   export async function mount(root, { signal } = {}) {
+ *     await mountStudyAlphabetPage(root, {
+ *       languageCode: 'ja',
+ *       fallbackLanguageCode: 'ja',
+ *       characterClass: 'hiragana',
+ *       pageElementId: 'hiragana-grid',
+ *       pageLabel: 'Hiragana',
+ *       preferenceKey: 'hiragana-layout',
+ *       pageTitleKey: 'module.study.ja.hiragana_title',
+ *       pageSubtitleKey: 'module.study.ja.hiragana_subtitle',
+ *       renderSection: (characters) => renderHiraganaGrid(characters),
+ *     });
+ *   }
+ *
+ * @param {HTMLElement} root - Root element passed to the page mount function.
+ * @param {object} options
+ * @param {string} options.languageCode - BCP 47 code of the language to load characters for.
+ * @param {string} [options.fallbackLanguageCode] - Fallback BCP 47 code for sub-nav model; defaults to languageCode.
+ * @param {string} options.characterClass - Character class to load from the library (e.g. 'hiragana').
+ * @param {string[]} [options.componentStringBaseUrls] - Base URLs for i18n string bundles.
+ * @param {string} options.pageElementId - DOM element id for the page content section.
+ * @param {string} options.pageLabel - Display label for the page content section.
+ * @param {string} options.preferenceKey - User preference key for layout persistence.
+ * @param {string} options.pageTitleKey - i18n key for the page title.
+ * @param {string} options.pageSubtitleKey - i18n key for the page subtitle.
+ * @param {string} [options.subNavigationLabel] - Label for the sub-navigation entry; defaults to 'Study'.
+ * @param {(characters: object[]) => string} options.renderSection - Renders the character grid HTML.
+ * @returns {Promise<void>}
+ */
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";

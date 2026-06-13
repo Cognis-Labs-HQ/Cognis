@@ -1,3 +1,36 @@
+/**
+ * Shared Study child-page sub-navigation for language module pages.
+ *
+ * Public exports:
+ *   loadStudySubNavigationModel — loads the active learning languages,
+ *   resolves display labels and child component links, and returns a model
+ *   object ready for rendering.
+ *   renderStudySubNavigation — renders the sub-navigation HTML string from
+ *   the loaded model, marking the current path as active.
+ *   clearStudySubNavCache — clears the in-memory cache; call after the user
+ *   changes their learning-language preferences so the next render is fresh.
+ *
+ * Usage:
+ *   import {
+ *     loadStudySubNavigationModel,
+ *     renderStudySubNavigation,
+ *   } from '/static/modules/study/languages/reuse/study-sub-navigation.js';
+ *
+ *   const model = await loadStudySubNavigationModel({ fallbackLanguageCode: 'ja' });
+ *   const html = renderStudySubNavigation({ model, currentPath: window.location.pathname, i18n });
+ *
+ * @param {{ fallbackLanguageCode?: string }} options
+ *   fallbackLanguageCode: BCP 47 code used when the user has no saved Study
+ *   language preferences; also identifies which language's child pages to load
+ *   for the active sub-navigation column.
+ * @returns {Promise<{
+ *   selectedLanguageCode: string | undefined,
+ *   modules: Array<object>,
+ *   learningLanguages: string[],
+ *   languageCatalogByCode: Map<string, { code: string, flag: string, name: string }>,
+ *   languagePageUrlsByCode: Map<string, string>
+ * }>}
+ */
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {

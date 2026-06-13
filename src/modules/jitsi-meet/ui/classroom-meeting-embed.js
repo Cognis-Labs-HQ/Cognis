@@ -228,11 +228,15 @@ export function createClassroomMeetingEmbed({
         }
         stopTracking();
         void keepPresenceAlive(false, { terminated });
+        // Hide the element and overlay before tearing down the Jitsi API.
+        // readyToClose and videoConferenceLeft fire after Jitsi has navigated
+        // the iframe to its homepage; hiding first ensures that homepage is
+        // never visible to the user (mirrors Meetings page closeMeetingEmbed).
+        element.hidden = true;
+        updateOverlay({ visible: false });
         destroyJitsiApi();
         currentMeetingId = null;
         currentSessionId = null;
-        updateOverlay({ visible: false });
-        element.hidden = true;
         onVisibilityChange({
             visible: false,
             returnMode,
