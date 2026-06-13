@@ -15,7 +15,10 @@ function normalizeActiveMaterialKey(input: unknown): string | null {
 }
 
 function normalizeViewLayout(input: unknown): "stacked" | "slideshow" {
-    return input === "slideshow" ? "slideshow" : "stacked";
+    const normalizedLayout = String(input ?? "")
+        .trim()
+        .toLowerCase();
+    return normalizedLayout === "slideshow" ? "slideshow" : "stacked";
 }
 
 export async function getClassesForTeacher(

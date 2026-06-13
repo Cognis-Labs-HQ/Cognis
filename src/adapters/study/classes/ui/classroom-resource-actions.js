@@ -242,9 +242,9 @@ export async function handleResourceActions(
         let libraryFiles = await listLibrary();
         let selectedKeys = [];
         const autoSelectedKeys = new Set();
-        root.dataset.materialsPopupOpen = "true";
         let action = null;
         try {
+            root.dataset.materialsPopupOpen = "true";
             action = await openPopup({
                 title: i18n.t("module.study.classes.teacher_materials"),
                 body: `

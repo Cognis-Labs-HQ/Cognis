@@ -69,12 +69,12 @@ export function createWorkspaceTileRefresher({
     fallbackRefreshDom,
 }) {
     return function refreshWorkspaceTilesOnly() {
-        const workspacePanel = root.querySelector(
+        const tiledWorkspacePanel = root.querySelector(
             ".classes-workspace-panel--tiled",
         );
         const tilesContainer = root.querySelector(".classes-workspace-tiles");
         if (
-            !(workspacePanel instanceof HTMLElement) ||
+            !(tiledWorkspacePanel instanceof HTMLElement) ||
             !(tilesContainer instanceof HTMLElement)
         ) {
             fallbackRefreshDom();
@@ -111,10 +111,10 @@ export function createWorkspaceTileRefresher({
                     : i18n.t("module.study.classes.tile_view");
         }
 
-        const existingPrev = workspacePanel.querySelector(
+        const existingPrev = tiledWorkspacePanel.querySelector(
             ".classes-tile-nav-prev",
         );
-        const existingNext = workspacePanel.querySelector(
+        const existingNext = tiledWorkspacePanel.querySelector(
             ".classes-tile-nav-next",
         );
         if (tileLayout === "slideshow") {
@@ -127,7 +127,10 @@ export function createWorkspaceTileRefresher({
                     i18n.t("ui.reuse.previous"),
                 );
                 previousButton.innerHTML = "&#x25C4;";
-                workspacePanel.insertBefore(previousButton, tilesContainer);
+                tiledWorkspacePanel.insertBefore(
+                    previousButton,
+                    tilesContainer,
+                );
             }
             if (!(existingNext instanceof HTMLButtonElement)) {
                 const nextButton = document.createElement("button");
@@ -135,7 +138,7 @@ export function createWorkspaceTileRefresher({
                 nextButton.className = "classes-tile-nav-next";
                 nextButton.setAttribute("aria-label", i18n.t("ui.reuse.next"));
                 nextButton.innerHTML = "&#x25BA;";
-                workspacePanel.insertBefore(nextButton, tilesContainer);
+                tiledWorkspacePanel.insertBefore(nextButton, tilesContainer);
             }
         } else {
             existingPrev?.remove();

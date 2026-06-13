@@ -276,6 +276,7 @@ export async function handleClassroomFilesRoutes({
                 "forbidden",
                 "Class not found or access denied.",
             );
+            return true;
         }
         const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
         if (!fileGateway) {

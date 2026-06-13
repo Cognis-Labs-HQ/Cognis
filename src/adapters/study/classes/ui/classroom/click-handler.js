@@ -69,7 +69,7 @@ export function bindClassroomClickHandler({
     getIsTeacherPresent,
 }) {
     function isStudentInteractionBlocked() {
-        return !isTeacherView() && getIsTeacherPresent?.();
+        return !isTeacherView() && Boolean(getIsTeacherPresent?.());
     }
 
     function getTemplateCursorPosition({ start, insertion }) {
