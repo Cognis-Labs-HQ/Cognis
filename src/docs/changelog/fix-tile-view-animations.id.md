@@ -36,7 +36,18 @@ Siswa secara mandiri menanyakan endpoint API khusus untuk fokus papan dan tata l
 
 Semua aturan CSS panel obrolan kelas dipindahkan ke adapter messages agar panel obrolan tampil seragam dengan halaman Messages.
 
+## Materi guru menyimpan nama file asli
+
+Unggahan pustaka materi guru sekarang menyimpan nama file asli dan tipe konten sebagai metadata pustaka, sehingga pemilih dan materi kelas tertaut menampilkan nama yang bermakna alih-alih kunci UUID mentah.
+
+## Materi kelas terbuka di ruang kelas
+
+Membuka materi kelas sekarang beralih ke penampil inline di workspace ruang kelas, bukan mencoba merender berkas di sidebar. Ini mencegah pemuatan berkas inline tanpa otorisasi dan menjaga materi aktif tetap berada di permukaan utama pengajaran.
+
+## Meeting lebih tahan terhadap jeda idle
+
+Meeting kelas Jitsi sekarang mempertahankan entri kehadiran tetap aktif jauh lebih lama sebelum backend menganggap peserta hilang, sehingga penghentian meeting palsu akibat heartbeat browser yang terlambat berkurang.
+
 ## Tombol navigasi slideshow menggunakan boilerplate bersama
 
 Tombol navigasi kini dibuat dari satu fungsi pembantu yang dibagi antara render awal dan pembaruan tile dinamis. Tombol disembunyikan secara otomatis pada tampilan Obrolan.
-

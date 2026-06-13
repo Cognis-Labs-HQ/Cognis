@@ -166,9 +166,12 @@ test("teacher materials upload popup binds upload logic on open", () => {
     assert.doesNotMatch(source, /onMount:\s*\(overlay\)/);
     assert.match(source, /materialsPopupOpen/);
     assert.match(source, /teacher-materials/);
+    assert.match(source, /classes-library-file-card/);
+    assert.doesNotMatch(source, /classes-library-select/);
+    assert.doesNotMatch(source, /classes-library-rename-btn/);
 });
 
-test("active tile swaps with previously active tile on hitbox click", () => {
+test("stacked tile ordering uses the shared move-to-end helper", () => {
     const source = readFileSync(
         resolve(
             ROOT,
@@ -176,14 +179,18 @@ test("active tile swaps with previously active tile on hitbox click", () => {
         ),
         "utf8",
     );
-
-    assert.match(
-        source,
-        /function swapWithActiveTile\(currentOrder, clickedMode\)/,
+    const helperSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/helpers.js",
+        ),
+        "utf8",
     );
-    assert.match(source, /clickedIndex < 0 \|\| clickedIndex === lastIndex/);
-    assert.match(source, /updated\[clickedIndex\] = updated\[lastIndex\]/);
-    assert.match(source, /updated\[lastIndex\] = clickedMode/);
+
+    assert.match(source, /moveTileToStackEnd/);
+    assert.match(helperSource, /export function moveTileToStackEnd/);
+    assert.match(helperSource, /tileIndex < 0 \|\| tileIndex === lastIndex/);
+    assert.match(helperSource, /normalizedOrder\[tileIndex\] = normalizedOrder\[lastIndex\]/);
 });
 
 test("student boardFocus sync applies regardless of meeting state", () => {
@@ -211,6 +218,7 @@ test("student boardFocus sync applies regardless of meeting state", () => {
     assert.match(source, /let allowMeetingFallback = true/);
     assert.match(source, /allowMeetingFallback = false/);
     assert.match(source, /if \(\s*allowMeetingFallback &&/);
+    assert.match(source, /boardFocus === "classroom" \? "agenda" : boardFocus/);
 });
 
 test("classroom student polling awaits teacher view-state and runs faster", () => {
@@ -234,4 +242,50 @@ test("teacher meeting close broadcasts boardFocus to students", () => {
         /isTeacherView\(\)\s*\)\s*\{\s*void updateBoardFocus\(returnWorkspaceMode\)/,
     );
     assert.match(source, /returnWorkspaceMode/);
+});
+
+test("classroom chat uses shared messages adapter chat styles", () => {
+    const chatSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-chat.js",
+        ),
+        "utf8",
+    );
+    const chatCssSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/classroom-chat.css",
+        ),
+        "utf8",
+    );
+
+    assert.match(chatSource, /jitsi-chat-thread/);
+    assert.match(chatSource, /jitsi-chat-message/);
+    assert.match(chatCssSource, /messages-style-variants\.css/);
+    assert.match(chatCssSource, /messages-chat-shared\.css/);
+});
+
+test("classroom materials render in the workspace viewer instead of the sidebar", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /classes-workspace-panel--materials-viewer/);
+    assert.match(source, /activeMaterialPreview/);
+    assert.match(source, /classes-material-tile--active/);
+    assert.doesNotMatch(source, /classes-sidebar-panel--viewer/);
+});
+
+test("jitsi meetings keep presence alive for a longer active window", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/store.js"),
+        "utf8",
+    );
+
+    assert.match(source, /ACTIVE_PRESENCE_WINDOW_MS = 5 \* 60 \* 1000/);
 });

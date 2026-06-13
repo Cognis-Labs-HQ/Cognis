@@ -22,6 +22,114 @@ interface FileGatewayLike {
     >;
 }
 
+interface MaterialLibraryMetadataEntry {
+    name: string;
+    contentType?: string;
+}
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
+function buildTeacherMaterialsPrefix(teacherAccountId: string) {
+    return `teacher-materials/${encodeURIComponent(teacherAccountId)}/`;
+}
+
+function buildTeacherMaterialsMetadataKey(teacherAccountId: string) {
+    return `${buildTeacherMaterialsPrefix(teacherAccountId)}.library-metadata.json`;
+}
+
+function dedupeFileRefs(files: Array<{ key: string; name: string; contentType?: string }>) {
+    const fileRefsByKey = new Map<
+        string,
+        { key: string; name: string; contentType?: string }
+    >();
+    for (const fileRef of files) {
+        const fileKey = String(fileRef?.key ?? "").trim();
+        const fileName = String(fileRef?.name ?? "").trim();
+        if (!fileKey || !fileName) {
+            continue;
+        }
+        fileRefsByKey.set(fileKey, {
+            key: fileKey,
+            name: fileName,
+            contentType: String(fileRef?.contentType ?? "").trim() || undefined,
+        });
+    }
+    return [...fileRefsByKey.values()];
+}
+
+async function readTeacherMaterialsMetadata(
+    fileGateway: FileGatewayLike,
+    teacherAccountId: string,
+) {
+    const metadataKey = buildTeacherMaterialsMetadataKey(teacherAccountId);
+    const metadataContent = await fileGateway.get(metadataKey).catch(() => null);
+    if (!metadataContent) {
+        return {} as Record<string, MaterialLibraryMetadataEntry>;
+    }
+    const parsed = JSON.parse(
+        textDecoder.decode(metadataContent),
+    ) as Record<string, MaterialLibraryMetadataEntry>;
+    if (!parsed || typeof parsed !== "object") {
+        return {};
+    }
+    return Object.fromEntries(
+        Object.entries(parsed).flatMap(([key, value]) => {
+            const normalizedKey = String(key ?? "").trim();
+            const normalizedName = String(value?.name ?? "").trim();
+            if (!normalizedKey || !normalizedName) {
+                return [];
+            }
+            return [
+                [
+                    normalizedKey,
+                    {
+                        name: normalizedName,
+                        contentType:
+                            String(value?.contentType ?? "").trim() || undefined,
+                    },
+                ],
+            ];
+        }),
+    );
+}
+
+async function writeTeacherMaterialsMetadata(
+    fileGateway: FileGatewayLike,
+    teacherAccountId: string,
+    metadataEntries: Record<string, MaterialLibraryMetadataEntry>,
+) {
+    const metadataKey = buildTeacherMaterialsMetadataKey(teacherAccountId);
+    const normalizedEntries = Object.fromEntries(
+        Object.entries(metadataEntries).flatMap(([key, value]) => {
+            const normalizedKey = String(key ?? "").trim();
+            const normalizedName = String(value?.name ?? "").trim();
+            if (!normalizedKey || !normalizedName) {
+                return [];
+            }
+            return [
+                [
+                    normalizedKey,
+                    {
+                        name: normalizedName,
+                        contentType:
+                            String(value?.contentType ?? "").trim() || undefined,
+                    },
+                ],
+            ];
+        }),
+    );
+    if (!Object.keys(normalizedEntries).length) {
+        await fileGateway.delete(metadataKey).catch(() => null);
+        return;
+    }
+    await fileGateway.put(
+        metadataKey,
+        textEncoder.encode(JSON.stringify(normalizedEntries)),
+        "application/json",
+    );
+}
+
 export async function handleClassroomFilesRoutes({
     req,
     res,
@@ -62,17 +170,27 @@ export async function handleClassroomFilesRoutes({
             );
             return true;
         }
-        const prefix = `teacher-materials/${encodeURIComponent(claims.sub)}/`;
+        const prefix = buildTeacherMaterialsPrefix(claims.sub);
+        const metadataByKey = await readTeacherMaterialsMetadata(
+            fileGateway,
+            claims.sub,
+        );
+        const metadataKey = buildTeacherMaterialsMetadataKey(claims.sub);
         const files = await fileGateway.list(prefix).catch(() => []);
         jsonOk(
             res,
-            files.map((file) => ({
-                key: file.key,
-                size: file.size,
-                contentType: file.contentType,
-                name: decodeURIComponent(file.key.split("/").pop() ?? file.key),
-                lastModified: file.lastModified,
-            })),
+            files
+                .filter((file) => file.key !== metadataKey)
+                .map((file) => ({
+                    key: file.key,
+                    size: file.size,
+                    contentType:
+                        metadataByKey[file.key]?.contentType ?? file.contentType,
+                    name:
+                        metadataByKey[file.key]?.name ??
+                        decodeURIComponent(file.key.split("/").pop() ?? file.key),
+                    lastModified: file.lastModified,
+                })),
         );
         return true;
     }
@@ -104,36 +222,41 @@ export async function handleClassroomFilesRoutes({
             );
             return true;
         }
-        const body = (await readJson(req)) as { key?: unknown; name?: unknown };
+        const body = (await readJson(req)) as {
+            key?: unknown;
+            name?: unknown;
+            contentType?: unknown;
+        };
         const sourceKey = String(body?.key ?? "").trim();
+        const materialsPrefix = buildTeacherMaterialsPrefix(claims.sub);
         if (!sourceKey) {
             jsonError(res, 400, "bad_request", "key is required.");
             return true;
         }
-        const sourceParts = sourceKey.split("/");
-        const sourceName = decodeURIComponent(
-            sourceParts[sourceParts.length - 1] ?? "",
-        );
-        const extensionStart = sourceName.lastIndexOf(".");
-        const extension =
-            extensionStart >= 0 ? sourceName.slice(extensionStart) : "";
-        const nextNameBase =
-            String(body?.name ?? "").trim() ||
-            `${sourceName.replace(extension, "")}-renamed`;
-        const nextName = `${nextNameBase}${extension}`;
-        const targetPrefix = sourceParts.slice(0, -1).join("/");
-        const targetKey = `${targetPrefix}/${encodeURIComponent(nextName)}`;
-        const content = await fileGateway.get(sourceKey).catch(() => null);
-        if (!content) {
-            jsonError(res, 404, "not_found", "File not found.");
+        if (!sourceKey.startsWith(materialsPrefix)) {
+            jsonError(res, 403, "forbidden", "Access denied.");
             return true;
         }
-        await fileGateway
-            .put(targetKey, content)
-            .then(async () => {
-                await fileGateway.delete(sourceKey);
-            })
-            .catch(() => null);
+        const sourceName = decodeURIComponent(
+            sourceKey.split("/").pop() ?? sourceKey,
+        );
+        const nextName = String(body?.name ?? "").trim() || sourceName;
+        const nextContentType =
+            String(body?.contentType ?? "").trim() || undefined;
+        const metadataByKey = await readTeacherMaterialsMetadata(
+            fileGateway,
+            claims.sub,
+        );
+        metadataByKey[sourceKey] = {
+            name: nextName,
+            contentType:
+                nextContentType ?? metadataByKey[sourceKey]?.contentType,
+        };
+        await writeTeacherMaterialsMetadata(
+            fileGateway,
+            claims.sub,
+            metadataByKey,
+        );
         const teacherClasses = await store.getClassesForTeacher(claims.sub);
         await Promise.all(
             teacherClasses.map(async (teacherClass) => {
@@ -141,14 +264,21 @@ export async function handleClassroomFilesRoutes({
                     teacherClass.id,
                     claims.sub,
                 );
-                const nextFiles = resources.files.map((file) =>
-                    String(file.key ?? "").trim() === sourceKey
-                        ? { ...file, key: targetKey, name: nextName }
-                        : file,
+                const nextFiles = dedupeFileRefs(
+                    resources.files.map((file) =>
+                        String(file.key ?? "").trim() === sourceKey
+                            ? {
+                                  ...file,
+                                  name: nextName,
+                                  contentType:
+                                      nextContentType ?? file.contentType,
+                              }
+                            : file,
+                    ),
                 );
                 if (
                     nextFiles.some(
-                        (file) => String(file.key ?? "").trim() === targetKey,
+                        (file) => String(file.key ?? "").trim() === sourceKey,
                     )
                 ) {
                     await store.updateClassroomResourcesForTeacher(
@@ -159,7 +289,11 @@ export async function handleClassroomFilesRoutes({
                 }
             }),
         );
-        jsonOk(res, { key: targetKey, name: nextName });
+        jsonOk(res, {
+            key: sourceKey,
+            name: nextName,
+            contentType: nextContentType,
+        });
         return true;
     }
 
@@ -192,11 +326,22 @@ export async function handleClassroomFilesRoutes({
         }
         const body = (await readJson(req)) as { key?: unknown };
         const key = String(body?.key ?? "").trim();
+        const materialsPrefix = buildTeacherMaterialsPrefix(claims.sub);
         if (!key) {
             jsonError(res, 400, "bad_request", "key is required.");
             return true;
         }
+        if (!key.startsWith(materialsPrefix)) {
+            jsonError(res, 403, "forbidden", "Access denied.");
+            return true;
+        }
         await fileGateway.delete(key).catch(() => null);
+        const metadataByKey = await readTeacherMaterialsMetadata(
+            fileGateway,
+            claims.sub,
+        );
+        delete metadataByKey[key];
+        await writeTeacherMaterialsMetadata(fileGateway, claims.sub, metadataByKey);
         const teacherClasses = await store.getClassesForTeacher(claims.sub);
         await Promise.all(
             teacherClasses.map(async (teacherClass) => {
@@ -211,7 +356,7 @@ export async function handleClassroomFilesRoutes({
                     await store.updateClassroomResourcesForTeacher(
                         teacherClass.id,
                         claims.sub,
-                        { files: nextFiles },
+                        { files: dedupeFileRefs(nextFiles) },
                     );
                 }
             }),

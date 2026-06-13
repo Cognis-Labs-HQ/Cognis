@@ -1,5 +1,6 @@
 import { bindClassroomEnhancements } from "/static/adapters/study/classes/classroom-enhancements.js";
 import { TOOLBAR_ACTIONS } from "/static/adapters/study/classes/classroom-agenda-toolbar.js";
+import { moveTileToStackEnd } from "/static/adapters/study/classes/classroom/helpers.js";
 
 export function bindClassroomClickHandler({
     root,
@@ -67,6 +68,7 @@ export function bindClassroomClickHandler({
     setTileOrder,
     refreshWorkspaceTilesOnly,
     getIsTeacherPresent,
+    loadActiveMaterialPreview,
 }) {
     function isStudentInteractionBlocked() {
         return !isTeacherView() && Boolean(getIsTeacherPresent?.());
@@ -82,18 +84,6 @@ export function bindClassroomClickHandler({
 
     function getWrappedCursorPosition({ handler, start, selectedText }) {
         return start + handler.before.length + selectedText.length;
-    }
-
-    function swapWithActiveTile(currentOrder, clickedMode) {
-        const clickedIndex = currentOrder.indexOf(clickedMode);
-        const lastIndex = currentOrder.length - 1;
-        if (clickedIndex < 0 || clickedIndex === lastIndex) {
-            return currentOrder;
-        }
-        const updated = [...currentOrder];
-        updated[clickedIndex] = updated[lastIndex];
-        updated[lastIndex] = clickedMode;
-        return updated;
     }
 
     function getToolbarCursorPosition({
@@ -182,8 +172,36 @@ export function bindClassroomClickHandler({
             );
             if (viewerBackButton instanceof HTMLElement) {
                 setActiveMaterialKey(null);
+                void loadActiveMaterialPreview?.(null);
                 if (isTeacherView()) {
                     await persistActiveMaterialKey(getSelectedClassId(), null);
+                    await updateBoardFocus("agenda");
+                }
+                refreshDom();
+                return;
+            }
+
+            const materialTile = event.target.closest(
+                ".classes-material-tile[data-material-key]",
+            );
+            if (materialTile instanceof HTMLElement) {
+                const materialKey = String(
+                    materialTile.dataset.materialKey ?? "",
+                ).trim();
+                if (!materialKey) {
+                    return;
+                }
+                setActiveMaterialKey(materialKey);
+                await loadActiveMaterialPreview?.(materialKey);
+                setWorkspaceMode("agenda");
+                setTileOrder(moveTileToStackEnd(getTileOrder(), "agenda"));
+                setBlackboardExpanded(true);
+                if (isTeacherView()) {
+                    await persistActiveMaterialKey(
+                        getSelectedClassId(),
+                        materialKey,
+                    );
+                    await updateBoardFocus("classroom");
                 }
                 refreshDom();
                 return;
@@ -323,7 +341,9 @@ export function bindClassroomClickHandler({
                     const clickedMode = normalizeWorkspaceMode(
                         tileHitbox.dataset.workspaceMode,
                     );
-                    setTileOrder(swapWithActiveTile(currentOrder, clickedMode));
+                    setTileOrder(
+                        moveTileToStackEnd(currentOrder, clickedMode),
+                    );
                 }
                 if (nextWorkspaceMode === "meeting") {
                     if (classroomWindows?.isMeetingOpen()) {

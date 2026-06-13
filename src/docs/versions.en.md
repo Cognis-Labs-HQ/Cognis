@@ -42,8 +42,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.6`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.4`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.7`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.5`  |
 | Notepad (Study)       | `src/adapters/study/notepad/`       | `1.1.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 
@@ -79,7 +79,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component            | Path                                | Version |
 | -------------------- | ----------------------------------- | ------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1` |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.1.3` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.1.4` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `1.1.0` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2` |

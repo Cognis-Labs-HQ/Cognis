@@ -61,6 +61,18 @@ export function syncTileLayoutFromSnapshot({
     }
 }
 
+export function moveTileToStackEnd(tileOrder, tileMode) {
+    const normalizedOrder = Array.isArray(tileOrder) ? [...tileOrder] : [];
+    const tileIndex = normalizedOrder.indexOf(tileMode);
+    const lastIndex = normalizedOrder.length - 1;
+    if (tileIndex < 0 || tileIndex === lastIndex) {
+        return normalizedOrder;
+    }
+    normalizedOrder[tileIndex] = normalizedOrder[lastIndex];
+    normalizedOrder[lastIndex] = tileMode;
+    return normalizedOrder;
+}
+
 export function applyClassroomSnapshotPatch(
     classroomSnapshots,
     classId,

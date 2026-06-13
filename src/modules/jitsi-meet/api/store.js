@@ -11,7 +11,7 @@ import {
 import { normalizeMeetingPrefix } from "./meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
-const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
+const ACTIVE_PRESENCE_WINDOW_MS = 5 * 60 * 1000;
 const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
 
 function buildRoomSlug(prefix) {

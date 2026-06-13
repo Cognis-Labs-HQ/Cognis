@@ -36,7 +36,18 @@ Students independently query a dedicated API endpoint for the teacher's current 
 
 All classroom chat panel CSS rules moved to the messages adapter so the chat panel renders consistently with the Messages page.
 
+## Teacher materials keep real filenames
+
+Teacher material library uploads now persist the original filename and content type as library metadata, so the picker and linked class materials show meaningful names instead of raw UUID keys.
+
+## Class materials open in the classroom
+
+Opening a class material now switches the classroom workspace to an inline viewer instead of trying to render the file inside the sidebar, preventing unauthorized inline file loads and keeping the active material in the main teaching surface.
+
+## Meetings tolerate longer idle gaps
+
+Jitsi classroom meetings now keep presence entries active for a much longer window before the backend considers them gone, reducing false meeting shutdowns caused by delayed browser heartbeats.
+
 ## Slideshow navigation arrows use shared boilerplate
 
 Navigation arrows are generated from a single helper shared by the initial render and the dynamic tile refresher. Arrows are suppressed automatically on the Chat view.
-

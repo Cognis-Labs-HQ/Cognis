@@ -70,6 +70,7 @@ export function bindClassroomInteractions({
     setTileOrder,
     refreshWorkspaceTilesOnly,
     getIsTeacherPresent,
+    loadActiveMaterialPreview,
 }) {
     if (getInteractionsBound()) {
         return;
@@ -144,33 +145,8 @@ export function bindClassroomInteractions({
         setTileOrder,
         refreshWorkspaceTilesOnly,
         getIsTeacherPresent,
+        loadActiveMaterialPreview,
     });
-    root.addEventListener(
-        "dblclick",
-        async (event) => {
-            if (!(event.target instanceof Element)) return;
-            const materialTile = event.target.closest(
-                ".classes-material-tile[data-material-key]",
-            );
-            if (materialTile instanceof HTMLElement) {
-                const materialKey = String(
-                    materialTile.dataset.materialKey ?? "",
-                ).trim();
-                if (!materialKey) return;
-                setActiveMaterialKey(materialKey);
-                setSidebarMode("materials");
-                if (isTeacherView()) {
-                    await persistActiveMaterialKey(
-                        getSelectedClassId(),
-                        materialKey,
-                    );
-                }
-                refreshDom();
-                return;
-            }
-        },
-        { signal },
-    );
     root.addEventListener(
         "change",
         async (event) => {

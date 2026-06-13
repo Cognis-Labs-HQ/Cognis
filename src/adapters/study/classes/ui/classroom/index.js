@@ -106,6 +106,10 @@ export async function mount(root, { signal } = {}) {
     let activeWhiteboard = null;
     let activeMeetingId = null;
     let activeMaterialKey = null;
+    let activeMaterialPreviewKey = "";
+    let activeMaterialPreviewUrl = "";
+    let activeMaterialPreviewContentType = "";
+    let activeMaterialPreviewFailed = false;
     let isClassSearchDetached = false;
     let blackboardExpanded = true;
     let initializedTiles = new Set();
@@ -114,6 +118,77 @@ export async function mount(root, { signal } = {}) {
 
     const selectedSnapshot = () =>
         findSelectedSnapshot(classroomSnapshots, selectedClassId);
+
+    function revokeActiveMaterialPreview() {
+        if (activeMaterialPreviewUrl) {
+            URL.revokeObjectURL(activeMaterialPreviewUrl);
+        }
+        activeMaterialPreviewUrl = "";
+        activeMaterialPreviewContentType = "";
+        activeMaterialPreviewFailed = false;
+        activeMaterialPreviewKey = "";
+    }
+
+    async function loadActiveMaterialPreview(materialKey, files = null) {
+        const normalizedMaterialKey = String(materialKey ?? "").trim();
+        if (!normalizedMaterialKey) {
+            revokeActiveMaterialPreview();
+            return;
+        }
+        if (
+            normalizedMaterialKey === activeMaterialPreviewKey &&
+            (activeMaterialPreviewUrl || activeMaterialPreviewFailed)
+        ) {
+            return;
+        }
+        const fileList = Array.isArray(files) ? files : classResources.files;
+        const matchedFile = Array.isArray(fileList)
+            ? fileList.find(
+                  (fileRef) =>
+                      String(fileRef?.key ?? "").trim() ===
+                      normalizedMaterialKey,
+              )
+            : null;
+        const previousPreviewUrl = activeMaterialPreviewUrl;
+        revokeActiveMaterialPreview();
+        activeMaterialPreviewKey = normalizedMaterialKey;
+        activeMaterialPreviewContentType = String(
+            matchedFile?.contentType ?? "",
+        ).trim();
+        const response = await apiFetch(
+            `/api/v1/files/${normalizedMaterialKey}`,
+            {
+                suppressConnectionRecoveryToast: true,
+            },
+        ).catch(() => null);
+        if (!response?.ok) {
+            activeMaterialPreviewFailed = true;
+            return;
+        }
+        const previewBlob = await response.blob().catch(() => null);
+        if (!(previewBlob instanceof Blob)) {
+            activeMaterialPreviewFailed = true;
+            return;
+        }
+        if (activeMaterialPreviewKey !== normalizedMaterialKey) {
+            if (previousPreviewUrl) {
+                URL.revokeObjectURL(previousPreviewUrl);
+            }
+            return;
+        }
+        activeMaterialPreviewUrl = URL.createObjectURL(previewBlob);
+        activeMaterialPreviewContentType =
+            previewBlob.type || activeMaterialPreviewContentType;
+        activeMaterialPreviewFailed = false;
+    }
+
+    signal?.addEventListener(
+        "abort",
+        () => {
+            revokeActiveMaterialPreview();
+        },
+        { once: true },
+    );
 
     const {
         isTeacherView,
@@ -209,6 +284,12 @@ export async function mount(root, { signal } = {}) {
             getClassroomWindows: () => classroomWindows,
             getWorkspaceMode: () => workspaceMode,
             getLastNonMeetingMode: () => lastNonMeetingWorkspaceMode,
+            getTileOrder: () => tileOrder,
+            setTileOrder: (nextTileOrder) => {
+                tileOrder = Array.isArray(nextTileOrder)
+                    ? nextTileOrder
+                    : tileOrder;
+            },
         });
 
     function syncWorkspaceModeWithSnapshot({ force = false } = {}) {
@@ -293,6 +374,7 @@ export async function mount(root, { signal } = {}) {
             activeWhiteboard = null;
             activeMeetingId = null;
             activeMaterialKey = null;
+            revokeActiveMaterialPreview();
             return;
         }
         syncTileLayoutWithSnapshot(snapshot);
@@ -308,6 +390,7 @@ export async function mount(root, { signal } = {}) {
         ] = await Promise.all([
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
+                { suppressConnectionRecoveryToast: true },
             ),
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
@@ -444,6 +527,7 @@ export async function mount(root, { signal } = {}) {
             }
         }
         activeMaterialKey = getSelectedActiveMaterialKey(snapshot);
+        await loadActiveMaterialPreview(activeMaterialKey, classResources.files);
         syncStudentWorkspaceAccess(snapshot);
         await pollTeacherViewState();
     }
@@ -523,6 +607,11 @@ export async function mount(root, { signal } = {}) {
             boardEntities: getBoardEntities(snapshot),
             workspaceMode,
             activeMaterialKey,
+            activeMaterialPreview: {
+                url: activeMaterialPreviewUrl,
+                contentType: activeMaterialPreviewContentType,
+                failed: activeMaterialPreviewFailed,
+            },
             whiteboards,
             activeWhiteboard,
             activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
@@ -800,6 +889,7 @@ export async function mount(root, { signal } = {}) {
                         },
                         refreshWorkspaceTilesOnly,
                         getIsTeacherPresent: computeIsTeacherPresent,
+                        loadActiveMaterialPreview,
                     });
                     root.addEventListener("error", handleProfileAvatarError, {
                         signal,
@@ -929,7 +1019,10 @@ export async function mount(root, { signal } = {}) {
             const broadcastedMaterialKey = getSelectedActiveMaterialKey();
             if (broadcastedMaterialKey !== activeMaterialKey) {
                 activeMaterialKey = broadcastedMaterialKey;
-                sidebarMode = "materials";
+                await loadActiveMaterialPreview(
+                    activeMaterialKey,
+                    classResources.files,
+                );
             }
             if (workspaceMode !== previousWorkspaceMode) {
                 refreshWorkspaceTilesOnly();

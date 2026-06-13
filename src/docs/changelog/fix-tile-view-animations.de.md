@@ -36,7 +36,18 @@ Schüler fragen einen eigenen API-Endpunkt nach dem aktuellen Board-Fokus und Ka
 
 Alle CSS-Regeln für das Chat-Panel im Klassenraum wurden in den Messages-Adapter verschoben, damit das Chat-Panel einheitlich mit der Nachrichten-Seite dargestellt wird.
 
+## Lehrermaterial behält echte Dateinamen
+
+Uploads in die Lehrermaterial-Bibliothek speichern jetzt den ursprünglichen Dateinamen und den Inhaltstyp als Bibliotheksmetadaten, sodass Auswahlfenster und verknüpfte Klassenmaterialien verständliche Namen statt roher UUID-Schlüssel anzeigen.
+
+## Klassenmaterial öffnet im Klassenraum
+
+Das Öffnen eines Klassenmaterials wechselt jetzt zu einem Inline-Viewer im Klassenraum, statt die Datei in der Seitenleiste zu rendern. Dadurch werden unautorisierte Inline-Dateiladevorgänge vermieden und das aktive Material bleibt auf der Hauptunterrichtsfläche.
+
+## Meetings verkraften längere Leerlaufphasen
+
+Jitsi-Klassenraum-Meetings halten Präsenz-Einträge jetzt deutlich länger aktiv, bevor das Backend Teilnehmer als verschwunden einstuft. Dadurch werden versehentliche Meeting-Abbrüche durch verzögerte Browser-Heartbeats reduziert.
+
 ## Diashow-Navigationspfeile verwenden gemeinsame Vorlage
 
 Die Navigationspfeile werden aus einem einzigen Helfer erzeugt, der von der Erstdarstellung und dem dynamischen Kachel-Refresher gemeinsam genutzt wird. In der Chat-Ansicht werden Pfeile automatisch ausgeblendet.
-

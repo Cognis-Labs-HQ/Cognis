@@ -1,4 +1,5 @@
 import { normalizeBoardFocus } from "/static/adapters/study/classes/board-focus.js";
+import { moveTileToStackEnd } from "/static/adapters/study/classes/classroom/helpers.js";
 
 /**
  * Creates helpers that keep a student's workspace in sync with the teacher's
@@ -21,6 +22,8 @@ export function createStudentSync({
     getClassroomWindows,
     getWorkspaceMode,
     getLastNonMeetingMode,
+    getTileOrder,
+    setTileOrder,
 }) {
     const MEETING_SYNC_GRACE_MS = 12000;
     let meetingModeWithoutMeetingSince = 0;
@@ -40,7 +43,15 @@ export function createStudentSync({
             );
             if (boardFocus === "chat") initializedTiles.add("chat");
             if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
-            if (boardFocus) setWorkspaceMode(boardFocus, { remember: true });
+            if (boardFocus) {
+                setWorkspaceMode(boardFocus, { remember: true });
+                setTileOrder(
+                    moveTileToStackEnd(
+                        getTileOrder(),
+                        boardFocus === "classroom" ? "agenda" : boardFocus,
+                    ),
+                );
+            }
             setTileLayout(viewLayout);
         } catch {
             // view-state polling failures are non-fatal
@@ -87,7 +98,15 @@ export function createStudentSync({
         );
         if (boardFocus === "chat") initializedTiles.add("chat");
         if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
-        if (boardFocus) setWorkspaceMode(boardFocus, { remember: true });
+        if (boardFocus) {
+            setWorkspaceMode(boardFocus, { remember: true });
+            setTileOrder(
+                moveTileToStackEnd(
+                    getTileOrder(),
+                    boardFocus === "classroom" ? "agenda" : boardFocus,
+                ),
+            );
+        }
     }
 
     return { pollTeacherViewState, syncStudentWorkspaceAccess };

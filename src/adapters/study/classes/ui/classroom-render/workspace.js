@@ -215,6 +215,69 @@ function renderSelectedDeskPanel({
     `;
 }
 
+function renderActiveMaterialPanel({
+    classResources,
+    activeMaterialKey,
+    activeMaterialPreview,
+    i18n,
+}) {
+    const files = Array.isArray(classResources?.files)
+        ? classResources.files
+        : [];
+    const fileRef = files.find(
+        (entry) => String(entry?.key ?? "").trim() === activeMaterialKey,
+    );
+    const fileName = String(
+        fileRef?.name ?? activeMaterialKey.split("/").pop() ?? "",
+    ).trim();
+    const previewUrl = String(activeMaterialPreview?.url ?? "").trim();
+    const previewContentType = String(
+        activeMaterialPreview?.contentType ?? fileRef?.contentType ?? "",
+    )
+        .trim()
+        .toLowerCase();
+    const isImage =
+        previewContentType.startsWith("image/") ||
+        ["jpg", "jpeg", "png", "gif", "webp", "svg"].some((extension) =>
+            activeMaterialKey.toLowerCase().endsWith(`.${extension}`),
+        );
+    const isPdf =
+        previewContentType === "application/pdf" ||
+        activeMaterialKey.toLowerCase().endsWith(".pdf");
+    let mediaMarkup = `
+        <div class="classes-material-viewer-download-wrap">
+            <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
+            <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
+        </div>
+    `;
+    if (previewUrl && isImage) {
+        mediaMarkup = `<img class="classes-material-viewer-image" src="${escapeHtml(previewUrl)}" alt="${escapeHtml(fileName)}">`;
+    } else if (previewUrl && isPdf) {
+        mediaMarkup = `<iframe class="classes-material-viewer-embed" src="${escapeHtml(previewUrl)}" title="${escapeHtml(fileName)}"></iframe>`;
+    } else if (previewUrl) {
+        mediaMarkup = `
+            <div class="classes-material-viewer-download-wrap">
+                <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
+                <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
+                <a href="${escapeHtml(previewUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
+                    ${escapeHtml(i18n.t("module.study.classes.material_download"))}
+                </a>
+            </div>
+        `;
+    }
+    return `
+        <section class="classes-workspace-panel classes-workspace-panel--materials-viewer">
+            <div class="classes-material-viewer-header">
+                <button type="button" class="classes-material-viewer-back btn-cancel btn-animated" aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">
+                    &times;
+                </button>
+                <span class="classes-material-viewer-title" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>
+            </div>
+            <div class="classes-material-viewer-body">${mediaMarkup}</div>
+        </section>
+    `;
+}
+
 export function buildSlideNavButtonsHtml(i18n) {
     return `<button type="button" class="classes-tile-nav-prev" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}">&#x25C4;</button>
         <button type="button" class="classes-tile-nav-next" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}">&#x25BA;</button>`;
@@ -228,6 +291,8 @@ export function renderWorkspaceContent({
     i18n,
     isTeacherView,
     workspaceMode,
+    activeMaterialKey,
+    activeMaterialPreview,
     activeWhiteboard,
     initializedTiles,
     isMeetingOpen,
@@ -244,6 +309,14 @@ export function renderWorkspaceContent({
                 <div class="classes-notepad-host"></div>
             </section>
         `;
+    }
+    if (activeMaterialKey && workspaceMode === "agenda") {
+        return renderActiveMaterialPanel({
+            classResources,
+            activeMaterialKey,
+            activeMaterialPreview,
+            i18n,
+        });
     }
     const activeTileMode =
         workspaceMode === "chat" ||
@@ -375,59 +448,20 @@ function renderSidebarMaterials({
     const files = Array.isArray(classResources?.files)
         ? classResources.files
         : [];
-    if (activeMaterialKey) {
-        const fileRef = files.find(
-            (ref) => String(ref?.key ?? "").trim() === activeMaterialKey,
-        );
-        const fileName = fileRef
-            ? String(fileRef.name ?? "").trim()
-            : (activeMaterialKey.split("/").pop() ?? "");
-        const fileUrl = `/api/v1/files/${activeMaterialKey}`;
-        const extension =
-            activeMaterialKey.split(".").pop()?.toLowerCase() ?? "";
-        const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(
-            extension,
-        );
-        const isPdf = extension === "pdf";
-        let mediaMarkup;
-        if (isImage) {
-            mediaMarkup = `<img class="classes-material-viewer-image" src="${escapeHtml(fileUrl)}" alt="${escapeHtml(fileName)}">`;
-        } else if (isPdf) {
-            mediaMarkup = `<embed class="classes-material-viewer-embed" src="${escapeHtml(fileUrl)}" type="application/pdf" title="${escapeHtml(fileName)}">`;
-        } else {
-            mediaMarkup = `
-                <div class="classes-material-viewer-download-wrap">
-                    <span class="classes-material-viewer-file-icon">${getMaterialIcon(extension)}</span>
-                    <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
-                    <a href="${escapeHtml(fileUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
-                        ${escapeHtml(i18n.t("module.study.classes.material_download"))}
-                    </a>
-                </div>
-            `;
-        }
-        return `
-            <div class="classes-sidebar-panel classes-sidebar-panel--materials classes-sidebar-panel--viewer">
-                <div class="classes-material-viewer-header">
-                    <button type="button" class="classes-material-viewer-back">
-                        &#8592; ${escapeHtml(i18n.t("module.study.classes.material_viewer_back"))}
-                    </button>
-                    <span class="classes-material-viewer-title" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>
-                </div>
-                <div class="classes-material-viewer-body">${mediaMarkup}</div>
-            </div>
-        `;
-    }
     const tilesMarkup = files
         .map((fileRef, index) => {
             const fileName = String(fileRef?.name ?? "").trim();
             const fileKey = String(fileRef?.key ?? "").trim();
             if (!fileName || !fileKey) return "";
-            const extension = fileKey.split(".").pop()?.toLowerCase() ?? "";
-            const icon = getMaterialIcon(extension);
+            const icon = getMaterialIcon(fileRef);
             return `<div class="classes-material-tile-row">
                 <button
                     type="button"
-                    class="classes-material-tile"
+                    class="classes-material-tile${
+                        activeMaterialKey === fileKey
+                            ? " classes-material-tile--active"
+                            : ""
+                    }"
                     data-material-key="${escapeHtml(fileKey)}"
                     data-material-name="${escapeHtml(fileName)}"
                     title="${escapeHtml(fileName)}"

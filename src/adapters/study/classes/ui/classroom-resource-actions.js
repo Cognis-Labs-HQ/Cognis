@@ -32,15 +32,74 @@ function formatFilenameToast(i18n, key, filename) {
     return i18n.t(key).replace("{filename}", filename);
 }
 
-export function getMaterialIcon(extension) {
-    const ext = String(extension ?? "")
-        .toLowerCase()
-        .replace(/^\./, "");
+export function getMaterialIcon(fileRef) {
+    const contentType = String(
+        typeof fileRef === "object" ? fileRef?.contentType ?? "" : "",
+    )
+        .trim()
+        .toLowerCase();
+    const filename = String(
+        typeof fileRef === "object"
+            ? fileRef?.name ?? fileRef?.key ?? ""
+            : fileRef ?? "",
+    ).trim();
+    const extensionStart = filename.lastIndexOf(".");
+    const ext =
+        extensionStart >= 0
+            ? filename
+                  .slice(extensionStart + 1)
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]/g, "")
+            : "";
+    if (contentType.startsWith("image/")) {
+        return "&#128444;";
+    }
+    if (contentType === "application/pdf") {
+        return "&#128196;";
+    }
+    if (
+        contentType.includes("word") ||
+        contentType.startsWith("text/") ||
+        contentType === "application/json" ||
+        contentType.includes("markdown")
+    ) {
+        return "&#128221;";
+    }
+    if (
+        contentType.includes("sheet") ||
+        contentType.includes("excel") ||
+        contentType.includes("csv")
+    ) {
+        return "&#128200;";
+    }
+    if (
+        contentType.includes("presentation") ||
+        contentType.includes("powerpoint")
+    ) {
+        return "&#128204;";
+    }
     if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) {
         return "&#128444;";
     }
     if (ext === "pdf") {
         return "&#128196;";
+    }
+
+    function dedupeFileRefs(files) {
+        const fileRefsByKey = new Map();
+        for (const fileRef of Array.isArray(files) ? files : []) {
+            const fileKey = String(fileRef?.key ?? "").trim();
+            const fileName = String(fileRef?.name ?? "").trim();
+            if (!fileKey || !fileName) {
+                continue;
+            }
+            fileRefsByKey.set(fileKey, {
+                key: fileKey,
+                name: fileName,
+                contentType: String(fileRef?.contentType ?? "").trim() || undefined,
+            });
+        }
+        return [...fileRefsByKey.values()];
     }
     if (["doc", "docx", "txt", "md"].includes(ext)) {
         return "&#128221;";
@@ -75,44 +134,51 @@ function buildLibraryFileMarkup(
     files,
     i18n,
     escapeHtml,
-    autoSelectedKeys = new Set(),
+    selectedKeys = new Set(),
 ) {
     if (!files.length) {
         return `<p class="classes-workspace-nothing-found">${escapeHtml(i18n.t("module.study.classes.materials_nothing_found"))}</p>`;
     }
-    return `<ul class="classes-file-list">
+    return `<div class="classes-library-file-grid">
         ${files
             .map((file) => {
                 const key = String(file?.key ?? "").trim();
                 const name = String(file?.name ?? "").trim();
                 if (!key || !name) return "";
-                const checked = autoSelectedKeys.has(key) ? " checked" : "";
-                const dotIndex = key.lastIndexOf(".");
+                const isSelected = selectedKeys.has(key);
+                const dotIndex = name.lastIndexOf(".");
                 const ext =
-                    dotIndex > 0 && dotIndex < key.length - 1
-                        ? key.slice(dotIndex + 1).toUpperCase()
+                    dotIndex > 0 && dotIndex < name.length - 1
+                        ? name.slice(dotIndex + 1).toUpperCase()
                         : "";
                 const sizeLabel = formatFileSize(file?.size);
                 const dateLabel = file?.lastModified
                     ? new Date(file.lastModified).toLocaleDateString()
                     : "";
-                const truncatedName =
-                    name.length > 32 ? `${name.slice(0, 29)}…` : name;
                 const metaParts = [ext, sizeLabel, dateLabel].filter(Boolean);
-                return `<li class="classes-file-item">
-                    <label class="classes-file-name" title="${escapeHtml(name)}">
-                        <input type="checkbox" class="classes-library-select" value="${escapeHtml(key)}"${checked} />
-                        <span class="classes-file-item-title">${escapeHtml(truncatedName)}</span>
-                        ${metaParts.length ? `<span class="classes-file-item-meta">${escapeHtml(metaParts.join(" · "))}</span>` : ""}
-                    </label>
+                return `<div class="classes-library-file-row">
+                    <button
+                        type="button"
+                        class="classes-library-file-card${
+                            isSelected ? " is-selected" : ""
+                        }"
+                        data-library-key="${escapeHtml(key)}"
+                        aria-pressed="${isSelected ? "true" : "false"}"
+                        title="${escapeHtml(name)}"
+                    >
+                        <span class="classes-library-file-icon">${getMaterialIcon(file)}</span>
+                        <span class="classes-library-file-copy">
+                            <span class="classes-library-file-title">${escapeHtml(name)}</span>
+                            ${metaParts.length ? `<span class="classes-library-file-meta">${escapeHtml(metaParts.join(" · "))}</span>` : ""}
+                        </span>
+                    </button>
                     <div class="classes-file-actions">
-                        <button type="button" class="btn-cancel btn-animated classes-library-rename-btn" data-library-key="${escapeHtml(key)}">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
                         <button type="button" class="btn-cancel btn-animated classes-library-delete-btn" data-library-key="${escapeHtml(key)}">${escapeHtml(i18n.t("ui.reuse.delete"))}</button>
                     </div>
-                </li>`;
+                </div>`;
             })
             .join("")}
-    </ul>`;
+    </div>`;
 }
 
 export async function handleResourceActions(
@@ -217,6 +283,21 @@ export async function handleResourceActions(
                     body: await file.arrayBuffer(),
                 }).catch(() => null);
                 if (response?.ok) {
+                    await apiFetch(
+                        `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/rename`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                key,
+                                name: file.name,
+                                contentType:
+                                    file.type || "application/octet-stream",
+                            }),
+                        },
+                    ).catch(() => null);
                     uploadedKeys.push(key);
                     showToast(
                         formatFilenameToast(
@@ -241,7 +322,7 @@ export async function handleResourceActions(
         };
         let libraryFiles = await listLibrary();
         let selectedKeys = [];
-        const autoSelectedKeys = new Set();
+        const selectedLibraryKeys = new Set();
         let action = null;
         try {
             root.dataset.materialsPopupOpen = "true";
@@ -250,7 +331,7 @@ export async function handleResourceActions(
                 body: `
                 <div class="stack">
                     <button type="button" class="btn-animated classes-materials-upload-btn">${buildUploadButtonLabel(i18n, escapeHtml)}</button>
-                    <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, autoSelectedKeys)}</div>
+                    <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, selectedLibraryKeys)}</div>
                 </div>`,
                 actions: [
                     {
@@ -277,7 +358,7 @@ export async function handleResourceActions(
                             Array.from(hiddenInput.files),
                         );
                         for (const key of uploadedKeys) {
-                            autoSelectedKeys.add(key);
+                            selectedLibraryKeys.add(key);
                         }
                         libraryFiles = await listLibrary();
                         const listWrap = overlay.querySelector(
@@ -288,7 +369,7 @@ export async function handleResourceActions(
                                 libraryFiles,
                                 i18n,
                                 escapeHtml,
-                                autoSelectedKeys,
+                                selectedLibraryKeys,
                             );
                         }
                         hiddenInput.value = "";
@@ -304,36 +385,29 @@ export async function handleResourceActions(
                             hiddenInput.click();
                             return;
                         }
-                        const renameButton = clickEvent.target.closest(
-                            ".classes-library-rename-btn[data-library-key]",
+                        const libraryCard = clickEvent.target.closest(
+                            ".classes-library-file-card[data-library-key]",
                         );
-                        if (renameButton instanceof HTMLElement) {
+                        if (libraryCard instanceof HTMLElement) {
                             const key = String(
-                                renameButton.dataset.libraryKey ?? "",
+                                libraryCard.dataset.libraryKey ?? "",
                             ).trim();
-                            if (!key) return;
-                            await apiFetch(
-                                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/rename`,
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "content-type": "application/json",
-                                    },
-                                    body: JSON.stringify({ key }),
-                                },
-                            ).catch(() => null);
-                            libraryFiles = await listLibrary();
-                            const listWrap = overlay.querySelector(
-                                ".classes-library-file-list",
-                            );
-                            if (listWrap instanceof HTMLElement) {
-                                listWrap.innerHTML = buildLibraryFileMarkup(
-                                    libraryFiles,
-                                    i18n,
-                                    escapeHtml,
-                                    autoSelectedKeys,
-                                );
+                            if (!key) {
+                                return;
                             }
+                            if (selectedLibraryKeys.has(key)) {
+                                selectedLibraryKeys.delete(key);
+                            } else {
+                                selectedLibraryKeys.add(key);
+                            }
+                            libraryCard.classList.toggle(
+                                "is-selected",
+                                selectedLibraryKeys.has(key),
+                            );
+                            libraryCard.setAttribute(
+                                "aria-pressed",
+                                selectedLibraryKeys.has(key) ? "true" : "false",
+                            );
                             return;
                         }
                         const deleteButton = clickEvent.target.closest(
@@ -354,7 +428,7 @@ export async function handleResourceActions(
                                     body: JSON.stringify({ key }),
                                 },
                             ).catch(() => null);
-                            autoSelectedKeys.delete(key);
+                            selectedLibraryKeys.delete(key);
                             libraryFiles = await listLibrary();
                             const listWrap = overlay.querySelector(
                                 ".classes-library-file-list",
@@ -364,24 +438,15 @@ export async function handleResourceActions(
                                     libraryFiles,
                                     i18n,
                                     escapeHtml,
-                                    autoSelectedKeys,
+                                    selectedLibraryKeys,
                                 );
                             }
                         }
                     });
                 },
-                onAction: (actionId, overlay) => {
+                onAction: (actionId) => {
                     if (actionId !== "add") return true;
-                    const checkedKeys = Array.from(
-                        overlay.querySelectorAll(
-                            ".classes-library-select:checked",
-                        ),
-                    ).map((checkbox) => String(checkbox.value ?? "").trim());
-                    const merged = new Set([
-                        ...autoSelectedKeys,
-                        ...checkedKeys,
-                    ]);
-                    selectedKeys = [...merged].filter(Boolean);
+                    selectedKeys = [...selectedLibraryKeys].filter(Boolean);
                     return true;
                 },
             });
@@ -392,8 +457,9 @@ export async function handleResourceActions(
         const existingFiles = Array.isArray(classResources.files)
             ? [...classResources.files]
             : [];
+        const nextFiles = [...existingFiles];
         const existingByKey = new Set(
-            existingFiles.map((file) => String(file?.key ?? "").trim()),
+            nextFiles.map((file) => String(file?.key ?? "").trim()),
         );
         for (const key of selectedKeys) {
             const keyText = String(key ?? "").trim();
@@ -401,7 +467,7 @@ export async function handleResourceActions(
             const match = libraryFiles.find(
                 (entry) => String(entry?.key ?? "").trim() === keyText,
             );
-            existingFiles.push({
+            nextFiles.push({
                 key: keyText,
                 name:
                     String(match?.name ?? "").trim() ||
@@ -409,17 +475,19 @@ export async function handleResourceActions(
                 contentType:
                     String(match?.contentType ?? "").trim() || undefined,
             });
+            existingByKey.add(keyText);
         }
+        const dedupedLibraryFiles = dedupeFileRefs(nextFiles);
         const response = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ files: existingFiles }),
+                body: JSON.stringify({ files: dedupedLibraryFiles }),
             },
         ).catch(() => null);
         if (response?.ok) {
-            classResources.files = existingFiles;
+            classResources.files = dedupedLibraryFiles;
             await loadSelectedClassMeta();
             refreshDom();
         }
@@ -482,16 +550,17 @@ export async function handleResourceActions(
                 contentType: file.type || "application/octet-stream",
             });
         }
+        const dedupedFiles = dedupeFileRefs(existingFiles);
         const saveResponse = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ files: existingFiles }),
+                body: JSON.stringify({ files: dedupedFiles }),
             },
         ).catch(() => null);
         if (saveResponse?.ok) {
-            classResources.files = existingFiles;
+            classResources.files = dedupedFiles;
         }
         input.value = "";
         await loadSelectedClassMeta();
