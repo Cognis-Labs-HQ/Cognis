@@ -64,7 +64,7 @@ test("classroom toolbar chat control and meeting workspace tab use correct actio
     const controllerSource = readFileSync(
         resolve(
             ROOT,
-            "src/adapters/study/classes/ui/classroom/interactions.js",
+            "src/adapters/study/classes/ui/classroom/click-handler.js",
         ),
         "utf8",
     );

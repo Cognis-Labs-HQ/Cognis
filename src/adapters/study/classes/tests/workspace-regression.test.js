@@ -74,18 +74,20 @@ test("classroom sub-navigation always renders the search button", () => {
 });
 
 test("classroom view sync detaches search and only forces live teacher meetings", () => {
-    const source = readFileSync(
+    const indexSource = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
         "utf8",
     );
-
-    assert.match(source, /isClassSearchDetached/);
-    assert.match(source, /if \(!isClassSearchDetached\)/);
-    assert.match(source, /teacherActiveInMeeting/);
-    assert.match(source, /activeParticipants\.some/);
-    assert.match(source, /return workspaceMode;/);
+    assert.match(indexSource, /isClassSearchDetached/);
+    assert.match(indexSource, /if \(!isClassSearchDetached\)/);
+    assert.match(indexSource, /teacherActiveInMeeting/);
+    assert.match(indexSource, /activeParticipants\.some/);
+    assert.match(
+        indexSource,
+        /const getWorkspaceMode = \(\) => workspaceMode;/,
+    );
     assert.doesNotMatch(
-        source,
+        indexSource,
         /setWorkspaceMode\("agenda"\);\s*await refreshContent\(\);/,
     );
 });
@@ -165,7 +167,7 @@ test("active tile is moved to end of tile order (bottom) on hitbox click", () =>
     const source = readFileSync(
         resolve(
             ROOT,
-            "src/adapters/study/classes/ui/classroom/interactions.js",
+            "src/adapters/study/classes/ui/classroom/click-handler.js",
         ),
         "utf8",
     );
