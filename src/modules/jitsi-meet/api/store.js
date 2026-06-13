@@ -47,6 +47,10 @@ function buildParticipantKey(
  *   normalizeHandleKey?: (handle: string) => string,
  *   normalizeHandleKeys?: (handles: string[]) => string[],
  * }} options
+ *
+ * The normalizeHandleKey and normalizeHandleKeys functions are normally provided
+ * via social gateway capabilities. The inline fallbacks mirror that logic and
+ * guard against the social gateway being unavailable at store construction time.
  */
 export class JitsiMeetStore {
     constructor({ db, log, normalizeHandleKey, normalizeHandleKeys }) {
@@ -767,4 +771,26 @@ export class JitsiMeetStore {
                     : null,
         };
     }
+}
+
+const storeByExecutor = new WeakMap();
+
+export function resolveStore(
+    dbExecutor,
+    log,
+    normalizeHandleKey,
+    normalizeHandleKeys,
+) {
+    const existingStore = storeByExecutor.get(dbExecutor);
+    if (existingStore) {
+        return existingStore;
+    }
+    const nextStore = new JitsiMeetStore({
+        db: dbExecutor,
+        log,
+        normalizeHandleKey,
+        normalizeHandleKeys,
+    });
+    storeByExecutor.set(dbExecutor, nextStore);
+    return nextStore;
 }

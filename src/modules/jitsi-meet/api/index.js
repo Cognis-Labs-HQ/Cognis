@@ -1,5 +1,5 @@
 import path from "node:path";
-import { JitsiMeetStore } from "./store.js";
+import { JitsiMeetStore, resolveStore } from "./store.js";
 import { registerMeetingRoutes } from "./meetings-routes.js";
 import { registerAdminMeetingRoutes } from "./admin-meetings-routes.js";
 import { readJson } from "../../../api/reuse/read-json.js";
@@ -22,8 +22,6 @@ import {
 const MODULE_ID = "jitsi-meet";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
 const LIVELINESS_TIMEOUT_MS = 5000;
-
-const storeByExecutor = new WeakMap();
 
 async function resolveRequesterUsername(
     profileStore,
@@ -148,26 +146,6 @@ async function createMeetingPayload({
     });
 }
 
-function resolveStore(
-    dbExecutor,
-    log,
-    normalizeHandleKey,
-    normalizeHandleKeys,
-) {
-    const existingStore = storeByExecutor.get(dbExecutor);
-    if (existingStore) {
-        return existingStore;
-    }
-    const nextStore = new JitsiMeetStore({
-        db: dbExecutor,
-        log,
-        normalizeHandleKey,
-        normalizeHandleKeys,
-    });
-    storeByExecutor.set(dbExecutor, nextStore);
-    return nextStore;
-}
-
 function registerConfiguredJitsiOrigin(registerScriptOrigins, config) {
     if (typeof registerScriptOrigins !== "function") {
         return;
@@ -228,10 +206,29 @@ export function registerUi(ctx) {
 
 export function registerApiRoutes(router, ctx) {
     const routeContext = ctx.getCapability("auth:routeContext");
-    const requireAuth = routeContext?.requireAuth.bind(routeContext);
-    const hasMinRole = routeContext?.hasMinRole.bind(routeContext);
-    const normalizeHandleKey = ctx.getCapability("social:normalizeHandleKey");
-    const normalizeHandleKeys = ctx.getCapability("social:normalizeHandleKeys");
+    if (!routeContext) {
+        ctx.log?.(
+            "error",
+            "Jitsi Meet module requires auth:routeContext capability.",
+            {
+                component: "jitsi-meet-module",
+                operation: "register_api_routes",
+            },
+        );
+        return;
+    }
+    const requireAuth = routeContext.requireAuth.bind(routeContext);
+    const hasMinRole = routeContext.hasMinRole.bind(routeContext);
+    const normalizeHandleKey =
+        ctx.getCapability("social:normalizeHandleKey") ??
+        ((handle) =>
+            String(handle ?? "")
+                .trim()
+                .replace(/^@+/, "")
+                .toLowerCase());
+    const normalizeHandleKeys =
+        ctx.getCapability("social:normalizeHandleKeys") ??
+        ((handles) => [...new Set(handles.map(normalizeHandleKey))].sort());
     const dbExecutor = ctx.getCapability("db:executor");
     const profileStore = ctx.getCapability("social:profileStore");
     const messagesUiResources = resolveMessagesUiResources(ctx);
