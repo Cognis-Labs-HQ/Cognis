@@ -377,7 +377,10 @@ export async function handleResourceActions(
                             ".classes-library-select:checked",
                         ),
                     ).map((checkbox) => String(checkbox.value ?? "").trim());
-                    const merged = new Set([...autoSelectedKeys, ...checkedKeys]);
+                    const merged = new Set([
+                        ...autoSelectedKeys,
+                        ...checkedKeys,
+                    ]);
                     selectedKeys = [...merged].filter(Boolean);
                     return true;
                 },
