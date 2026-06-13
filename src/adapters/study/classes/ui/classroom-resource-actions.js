@@ -32,6 +32,23 @@ function formatFilenameToast(i18n, key, filename) {
     return i18n.t(key).replace("{filename}", filename);
 }
 
+function dedupeFileRefs(files) {
+    const fileRefsByKey = new Map();
+    for (const fileRef of Array.isArray(files) ? files : []) {
+        const fileKey = String(fileRef?.key ?? "").trim();
+        const fileName = String(fileRef?.name ?? "").trim();
+        if (!fileKey || !fileName) {
+            continue;
+        }
+        fileRefsByKey.set(fileKey, {
+            key: fileKey,
+            name: fileName,
+            contentType: String(fileRef?.contentType ?? "").trim() || undefined,
+        });
+    }
+    return [...fileRefsByKey.values()];
+}
+
 export function getMaterialIcon(fileRef) {
     const contentType = String(
         typeof fileRef === "object" ? (fileRef?.contentType ?? "") : "",
@@ -83,24 +100,6 @@ export function getMaterialIcon(fileRef) {
     }
     if (ext === "pdf") {
         return "&#128196;";
-    }
-
-    function dedupeFileRefs(files) {
-        const fileRefsByKey = new Map();
-        for (const fileRef of Array.isArray(files) ? files : []) {
-            const fileKey = String(fileRef?.key ?? "").trim();
-            const fileName = String(fileRef?.name ?? "").trim();
-            if (!fileKey || !fileName) {
-                continue;
-            }
-            fileRefsByKey.set(fileKey, {
-                key: fileKey,
-                name: fileName,
-                contentType:
-                    String(fileRef?.contentType ?? "").trim() || undefined,
-            });
-        }
-        return [...fileRefsByKey.values()];
     }
     if (["doc", "docx", "txt", "md"].includes(ext)) {
         return "&#128221;";

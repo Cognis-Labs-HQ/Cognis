@@ -28,7 +28,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.1`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6`  |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.0`  |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.1`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.5`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1`  |
@@ -43,7 +43,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.7`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.5`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.6`  |
 | Notepad (Study)       | `src/adapters/study/notepad/`       | `1.1.0`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 

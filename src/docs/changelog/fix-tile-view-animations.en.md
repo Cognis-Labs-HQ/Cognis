@@ -51,3 +51,15 @@ Jitsi classroom meetings now keep presence entries active for a much longer wind
 ## Slideshow navigation arrows use shared boilerplate
 
 Navigation arrows are generated from a single helper shared by the initial render and the dynamic tile refresher. Arrows are suppressed automatically on the Chat view.
+
+## Fix teacher materials popup displaying metadata file and unresolved filenames
+
+The metadata index file (`.library-metadata.json`) was incorrectly included in the teacher materials listing, and uploaded material filenames appeared as raw UUID keys. Both issues were caused by a double-slash path bug in the local file gateway. The gateway now normalises trailing slashes before constructing relative file keys.
+
+## Fix notepad file picker interactions
+
+The notepad file picker callback was registered under the unsupported `onMount` key instead of `onOpen`, preventing the Open, Rename, and Delete buttons from ever working. The save popup also carried a redundant green Open button alongside Save. Both issues are fixed; the Rename button is now styled as a neutral action rather than red.
+
+## Enforce class membership for student file access
+
+Teacher material files are now served through a class-scoped route that verifies the requesting user is enrolled in the class before delivering any content. Students and teachers use `/api/v1/study/classes/:id/materials/files/:key` instead of the generic file API, and the key is validated against the class resource list to prevent traversal.

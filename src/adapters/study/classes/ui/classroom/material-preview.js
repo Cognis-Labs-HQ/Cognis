@@ -1,6 +1,7 @@
 export function createClassroomMaterialPreviewManager({
     apiFetch,
     getFiles,
+    getClassId,
     signal = null,
 }) {
     let activeMaterialPreviewKey = "";
@@ -44,12 +45,13 @@ export function createClassroomMaterialPreviewManager({
         activeMaterialPreviewContentType = String(
             matchedFile?.contentType ?? "",
         ).trim();
-        const response = await apiFetch(
-            `/api/v1/files/${normalizedMaterialKey}`,
-            {
-                suppressConnectionRecoveryToast: true,
-            },
-        ).catch(() => null);
+        const classId = String(getClassId?.() ?? "").trim();
+        const fileUrl = classId
+            ? `/api/v1/study/classes/${encodeURIComponent(classId)}/materials/files/${normalizedMaterialKey}`
+            : `/api/v1/files/${normalizedMaterialKey}`;
+        const response = await apiFetch(fileUrl, {
+            suppressConnectionRecoveryToast: true,
+        }).catch(() => null);
         if (!response?.ok) {
             activeMaterialPreviewFailed = true;
             return;

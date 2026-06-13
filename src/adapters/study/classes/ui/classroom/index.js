@@ -120,6 +120,7 @@ export async function mount(root, { signal } = {}) {
     const classroomMaterialPreview = createClassroomMaterialPreviewManager({
         apiFetch,
         getFiles: () => classResources.files,
+        getClassId: () => selectedClassId,
         signal,
     });
     const { loadActiveMaterialPreview, revokeActiveMaterialPreview } =

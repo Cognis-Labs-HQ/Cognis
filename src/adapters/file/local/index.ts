@@ -74,14 +74,15 @@ export class LocalFileGateway implements FileStorageGateway {
 
     async list(prefix = ""): Promise<StoredObject[]> {
         const baseDir = join(this.rootPath, prefix);
+        const normalizedPrefix = prefix.replace(/\/+$/, "");
         try {
             const entries = await readdir(baseDir, { withFileTypes: true });
             const files = entries.filter((entry) => entry.isFile());
 
             return Promise.all(
                 files.map(async (entry) => {
-                    const relative = prefix
-                        ? `${prefix}/${entry.name}`
+                    const relative = normalizedPrefix
+                        ? `${normalizedPrefix}/${entry.name}`
                         : entry.name;
                     const fullPath = join(this.rootPath, relative);
                     const info = await stat(fullPath);

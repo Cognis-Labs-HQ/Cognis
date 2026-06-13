@@ -379,5 +379,55 @@ export async function handleClassroomFilesRoutes({
         return true;
     }
 
+    const materialFileMatch = url.pathname.match(
+        /^\/api\/v1\/study\/classes\/([^/]+)\/materials\/files\/(.+)$/,
+    );
+    if (materialFileMatch && req.method === "GET") {
+        const claims = ctx.requireAuth(req, res, "user");
+        if (!claims) return true;
+        const classId = decodeURIComponent(materialFileMatch[1]);
+        const fileKey = materialFileMatch[2];
+        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
+        if (!fileGateway) {
+            jsonError(
+                res,
+                503,
+                "service_unavailable",
+                "File storage is unavailable.",
+            );
+            return true;
+        }
+        let resources: Awaited<
+            ReturnType<typeof store.getClassroomResourcesForViewer>
+        >;
+        try {
+            resources = await store.getClassroomResourcesForViewer(
+                classId,
+                claims.sub,
+            );
+        } catch {
+            jsonError(res, 403, "not_authorized", "Access denied.");
+            return true;
+        }
+        const fileRef = resources.files.find(
+            (file) => String(file.key ?? "").trim() === fileKey,
+        );
+        if (!fileRef) {
+            jsonError(res, 404, "not_found", "File not found.");
+            return true;
+        }
+        const content = await fileGateway.get(fileKey).catch(() => null);
+        if (!content) {
+            jsonError(res, 404, "not_found", "File not found.");
+            return true;
+        }
+        const contentType =
+            String(fileRef.contentType ?? "").trim() ||
+            "application/octet-stream";
+        res.writeHead(200, { "Content-Type": contentType });
+        res.end(content);
+        return true;
+    }
+
     return false;
 }

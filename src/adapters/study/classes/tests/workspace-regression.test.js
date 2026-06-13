@@ -290,3 +290,81 @@ test("jitsi meetings keep presence alive for a longer active window", () => {
 
     assert.match(source, /ACTIVE_PRESENCE_WINDOW_MS = 5 \* 60 \* 1000/);
 });
+
+test("classroom file actions uses onOpen not onMount for file picker", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-file-actions.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /onOpen:\s*\(overlay\)/);
+    assert.doesNotMatch(source, /onMount:\s*\(overlay\)/);
+});
+
+test("classroom file actions save popup has no spurious open action", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-file-actions.js",
+        ),
+        "utf8",
+    );
+
+    assert.doesNotMatch(source, /id:\s*["']open["'],/);
+});
+
+test("dedupeFileRefs is defined at module scope in classroom-resource-actions", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-resource-actions.js",
+        ),
+        "utf8",
+    );
+
+    const dedupeIndex = source.indexOf("function dedupeFileRefs");
+    const getMaterialIndex = source.indexOf("export function getMaterialIcon");
+    assert.ok(
+        dedupeIndex >= 0,
+        "dedupeFileRefs must be defined",
+    );
+    assert.ok(
+        getMaterialIndex >= 0,
+        "getMaterialIcon must be defined",
+    );
+    assert.ok(
+        dedupeIndex < getMaterialIndex,
+        "dedupeFileRefs must appear before getMaterialIcon at module scope",
+    );
+});
+
+test("classroom materials file serving route enforces class membership", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-files-route.ts",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /materials\\\/files\\\//);
+    assert.match(source, /getClassroomResourcesForViewer/);
+    assert.match(source, /not_authorized/);
+});
+
+test("material preview uses class-scoped file route", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/material-preview.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(source, /materials\/files\//);
+    assert.match(source, /getClassId/);
+    assert.match(source, /encodeURIComponent\(classId\)/);
+});

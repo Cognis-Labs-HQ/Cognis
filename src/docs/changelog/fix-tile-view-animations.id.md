@@ -51,3 +51,15 @@ Meeting kelas Jitsi sekarang mempertahankan entri kehadiran tetap aktif jauh leb
 ## Tombol navigasi slideshow menggunakan boilerplate bersama
 
 Tombol navigasi kini dibuat dari satu fungsi pembantu yang dibagi antara render awal dan pembaruan tile dinamis. Tombol disembunyikan secara otomatis pada tampilan Obrolan.
+
+## Berkas metadata tidak lagi muncul dalam daftar materi guru
+
+Berkas indeks metadata (`.library-metadata.json`) salah ditampilkan dalam daftar materi, dan nama berkas yang diunggah tampil sebagai kunci UUID mentah. Kedua masalah disebabkan oleh bug garis miring ganda di gateway berkas lokal. Gateway kini menormalisasi garis miring di akhir sebelum membuat kunci jalur relatif.
+
+## Interaksi pemilih berkas notepad kini berfungsi dengan benar
+
+Callback pemilih berkas notepad terdaftar di bawah kunci `onMount` yang tidak didukung, bukan `onOpen`, sehingga tombol Buka, Ganti Nama, dan Hapus tidak pernah berfungsi. Dialog simpan juga memiliki tombol Buka hijau yang redundan di samping Simpan. Kedua masalah telah diperbaiki; tombol Ganti Nama kini bergaya netral, bukan merah.
+
+## Keanggotaan kelas diberlakukan untuk akses berkas siswa
+
+Berkas materi guru kini disajikan melalui rute berbasis kelas yang memverifikasi bahwa pengguna yang meminta terdaftar di kelas tersebut. Siswa dan guru menggunakan `/api/v1/study/classes/:id/materials/files/:key` sebagai pengganti API berkas umum. Kunci divalidasi terhadap daftar sumber daya kelas untuk mencegah path traversal.

@@ -73,7 +73,7 @@ function renderFilePickerBody(files, i18n) {
                                 class="btn-confirm btn-animated classes-file-open-btn"
                                 data-file-name="${escapeHtml(name)}">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
                             <button type="button"
-                                class="btn-cancel btn-animated classes-file-rename-btn"
+                                class="btn-animated classes-file-rename-btn"
                                 data-file-name="${escapeHtml(name)}">${escapeHtml(i18n.t("ui.reuse.rename"))}</button>
                             <button type="button"
                                 class="btn-cancel btn-animated classes-file-delete-btn"
@@ -121,11 +121,6 @@ export async function handleFileActions(
                 </label>
             `,
             actions: [
-                {
-                    id: "open",
-                    label: i18n.t("ui.reuse.open"),
-                    variant: "confirm",
-                },
                 {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
@@ -191,19 +186,16 @@ export async function handleFileActions(
                 }
                 return true;
             },
-            onMount: (overlay) => {
+            onOpen: (overlay) => {
                 overlay.addEventListener("click", async (evt) => {
                     const openBtn = evt.target.closest(
                         ".classes-file-open-btn",
                     );
                     if (openBtn instanceof HTMLElement) {
                         selectedFilename = openBtn.dataset.fileName ?? null;
-                        overlay.dispatchEvent(
-                            new CustomEvent("popup-action", {
-                                detail: { actionId: "open" },
-                                bubbles: true,
-                            }),
-                        );
+                        overlay
+                            .querySelector('[data-popup-action="cancel"]')
+                            ?.click();
                         return;
                     }
                     const deleteBtn = evt.target.closest(
@@ -319,7 +311,7 @@ export async function handleFileActions(
                 });
             },
         });
-        if ((action !== "open" && action !== "cancel") || !selectedFilename) {
+        if (!selectedFilename) {
             return true;
         }
         const content = await loadNotepadFile(
