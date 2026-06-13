@@ -208,6 +208,9 @@ test("student boardFocus sync applies regardless of meeting state", () => {
         source,
         /now - meetingModeWithoutMeetingSince < MEETING_SYNC_GRACE_MS/,
     );
+    assert.match(source, /let allowMeetingFallback = true/);
+    assert.match(source, /allowMeetingFallback = false/);
+    assert.match(source, /if \(\s*allowMeetingFallback &&/);
 });
 
 test("classroom student polling awaits teacher view-state and runs faster", () => {

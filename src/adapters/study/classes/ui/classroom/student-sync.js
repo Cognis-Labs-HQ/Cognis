@@ -56,6 +56,7 @@ export function createStudentSync({
             activeMeetingId &&
             classroomWindows?.isMeetingDismissed?.(activeMeetingId),
         );
+        let allowMeetingFallback = true;
         const shouldDelayMeetingFallback =
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&
@@ -67,12 +68,13 @@ export function createStudentSync({
                 meetingModeWithoutMeetingSince = now;
             }
             if (now - meetingModeWithoutMeetingSince < MEETING_SYNC_GRACE_MS) {
-                return;
+                allowMeetingFallback = false;
             }
         } else {
             meetingModeWithoutMeetingSince = 0;
         }
         if (
+            allowMeetingFallback &&
             workspaceMode === "meeting" &&
             !classroomWindows?.isMeetingOpen() &&
             (!activeMeetingId || meetingAutoJoinBlocked)
