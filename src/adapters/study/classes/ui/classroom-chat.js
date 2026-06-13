@@ -8,6 +8,7 @@ import {
     hexToBytes,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
+import { resolveMessageStyle } from "/static/adapters/social/messages/message-utils.js";
 
 const CHAT_REFRESH_INTERVAL_MS = 4_000;
 const textEncoder = new TextEncoder();
@@ -265,6 +266,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
 
     function openChat(chatUrl) {
         const roomId = parseRoomId(chatUrl);
+        document.documentElement.dataset.messageStyle = resolveMessageStyle();
         setPanelVisibility(true);
         if (!roomId) {
             showSelectChatPrompt();

@@ -8,6 +8,7 @@ export function createClassroomMaterialPreviewManager({
     let activeMaterialPreviewUrl = "";
     let activeMaterialPreviewContentType = "";
     let activeMaterialPreviewFailed = false;
+    let activeMaterialPreviewText = null;
 
     function revokeActiveMaterialPreview() {
         if (activeMaterialPreviewUrl) {
@@ -17,6 +18,7 @@ export function createClassroomMaterialPreviewManager({
         activeMaterialPreviewContentType = "";
         activeMaterialPreviewFailed = false;
         activeMaterialPreviewKey = "";
+        activeMaterialPreviewText = null;
     }
 
     async function loadActiveMaterialPreview(materialKey, files = null) {
@@ -71,6 +73,18 @@ export function createClassroomMaterialPreviewManager({
         activeMaterialPreviewContentType =
             previewBlob.type || activeMaterialPreviewContentType;
         activeMaterialPreviewFailed = false;
+        const effectiveMime = activeMaterialPreviewContentType.toLowerCase();
+        const keyLower = normalizedMaterialKey.toLowerCase();
+        const isTextFile =
+            effectiveMime.startsWith("text/") ||
+            keyLower.endsWith(".txt") ||
+            keyLower.endsWith(".md") ||
+            keyLower.endsWith(".markdown");
+        if (isTextFile) {
+            activeMaterialPreviewText = await previewBlob
+                .text()
+                .catch(() => null);
+        }
     }
 
     if (signal) {
@@ -90,6 +104,7 @@ export function createClassroomMaterialPreviewManager({
             url: activeMaterialPreviewUrl,
             contentType: activeMaterialPreviewContentType,
             failed: activeMaterialPreviewFailed,
+            textContent: activeMaterialPreviewText,
         }),
     };
 }

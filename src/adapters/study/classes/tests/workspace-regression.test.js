@@ -85,10 +85,14 @@ test("classroom view sync detaches search and only forces live teacher meetings"
         ),
         "utf8",
     );
+    const helpersSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/helpers.js"),
+        "utf8",
+    );
     assert.match(indexSource, /isClassSearchDetached/);
     assert.match(dataLoaderSource, /if \(!getIsClassSearchDetached\(\)\)/);
-    assert.match(indexSource, /teacherActiveInMeeting/);
-    assert.match(indexSource, /activeParticipants\.some/);
+    assert.match(helpersSource, /teacherActiveInMeeting/);
+    assert.match(helpersSource, /activeParticipants\.some/);
     assert.match(
         indexSource,
         /const getWorkspaceMode = \(\) => workspaceMode;/,
@@ -127,7 +131,7 @@ test("classroom meeting tile refresh updates slideshow controls in place", () =>
 
 test("notepad adapter routes support agenda document and snapshots", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/notepad/routes/index.ts"),
+        resolve(ROOT, "src/adapters/file-reader/text/routes/index.ts"),
         "utf8",
     );
     assert.match(source, /agendaDocument/);
@@ -153,7 +157,7 @@ test("classroom materials library routes support list rename and delete", () => 
 
 test("notepad adapter routes support notepad file rename", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/notepad/routes/index.ts"),
+        resolve(ROOT, "src/adapters/file-reader/text/routes/index.ts"),
         "utf8",
     );
     assert.match(source, /notepad-files\\\/rename/);

@@ -64,10 +64,16 @@ export function createLayoutApi({
         });
     }
 
+    async function persistMaterialViewport(classId, viewport) {
+        if (!viewport) return false;
+        return patchClassroomLayout(classId, { materialViewport: viewport });
+    }
+
     return {
         patchClassroomLayout,
         persistActiveWhiteboardId,
         persistActiveMaterialKey,
+        persistMaterialViewport,
         updateBoardFocus,
         patchViewLayout,
     };

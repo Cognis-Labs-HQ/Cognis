@@ -35,7 +35,7 @@ import {
 } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
-import { createClassroomNotepad } from "/static/adapters/study/notepad/classroom-notepad.js";
+import { createClassroomNotepad } from "/static/adapters/file-reader/text/classroom-notepad.js";
 import { handleWhiteboardAndNotepadActions } from "/static/adapters/study/classes/classroom-whiteboard-actions.js";
 import { handleResourceActions } from "/static/adapters/study/classes/classroom-resource-actions.js";
 import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
@@ -52,6 +52,7 @@ import {
     normalizeSidebarMode,
     normalizeWorkspaceMode,
     refreshClassroomRoleIfNeeded,
+    resolveActiveMeetingId,
     resolvePreviousPath,
     syncTileLayoutFromSnapshot,
 } from "/static/adapters/study/classes/classroom/helpers.js";
@@ -65,6 +66,7 @@ import {
     saveTileLayoutPreference,
 } from "/static/adapters/study/classes/classroom/tile-layout-preference.js";
 import { createStudentSync } from "/static/adapters/study/classes/classroom/student-sync.js";
+import { mountMaterialImageViewer } from "/static/adapters/study/classes/classroom/material-viewer-mount.js";
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
@@ -105,6 +107,7 @@ export async function mount(root, { signal } = {}) {
     let classroomWindows = null;
     let classroomNotepad = null;
     let classroomNotepadClassId = "";
+    let activeImageViewer = null;
     let whiteboards = [];
     let activeWhiteboard = null;
     let activeMeetingId = null;
@@ -226,6 +229,14 @@ export async function mount(root, { signal } = {}) {
                     ? nextTileOrder
                     : tileOrder;
             },
+            getActiveMaterialKey: () => activeMaterialKey,
+            setActiveMaterialKey: (key) => {
+                activeMaterialKey = key;
+            },
+            loadActiveMaterialPreview,
+            applyMaterialViewport: (viewport) => {
+                activeImageViewer?.applyViewport(viewport);
+            },
         });
 
     function syncWorkspaceModeWithSnapshot({ force = false } = {}) {
@@ -342,41 +353,10 @@ export async function mount(root, { signal } = {}) {
         const activeMeetingPayload = activeMeetingResponse?.ok
             ? await activeMeetingResponse.json().catch(() => ({ data: [] }))
             : { data: [] };
-        const activeMeetings = Array.isArray(activeMeetingPayload?.data)
-            ? activeMeetingPayload.data
-            : [];
-        const activeMeeting = activeMeetings.find((meeting) => {
-            const meetingClassroomId = String(
-                meeting?.classroomId ??
-                    meeting?.classId ??
-                    meeting?.classroom?.id ??
-                    "",
-            ).trim();
-            return meetingClassroomId === snapshot.id;
-        });
-        const teacherAccountId = String(
-            snapshot?.teacherAccountId ?? "",
-        ).trim();
-        const activeParticipants = Array.isArray(
-            activeMeeting?.activeParticipants,
-        )
-            ? activeMeeting.activeParticipants
-            : [];
-        // Active meeting participant payloads can expose either username or
-        // handle, while classroom snapshots only expose teacherAccountId.
-        const teacherActiveInMeeting = Boolean(
-            teacherAccountId &&
-            activeParticipants.some((participant) => {
-                const username = String(participant?.username ?? "").trim();
-                const handle = String(participant?.handle ?? "").trim();
-                return (
-                    username === teacherAccountId || handle === teacherAccountId
-                );
-            }),
+        activeMeetingId = resolveActiveMeetingId(
+            activeMeetingPayload,
+            snapshot,
         );
-        activeMeetingId = teacherActiveInMeeting
-            ? String(activeMeeting?.id ?? "").trim() || null
-            : null;
         whiteboards = whiteboardsResponse.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
@@ -532,6 +512,8 @@ export async function mount(root, { signal } = {}) {
         const content = root.querySelector(".classes-classroom-content");
         if (content instanceof HTMLElement) {
             classroomWindows?.hoist();
+            activeImageViewer?.destroy();
+            activeImageViewer = null;
             content.outerHTML = renderContentMarkup();
             const nextSnapshot = selectedSnapshot();
             const notepadHost = root.querySelector(".classes-notepad-host");
@@ -551,6 +533,13 @@ export async function mount(root, { signal } = {}) {
                     classroomNotepad.focus();
                 }
             }
+            activeImageViewer = mountMaterialImageViewer(root, {
+                previewState: classroomMaterialPreview.getState(),
+                isTeacher: isTeacherView(),
+                classId: selectedClassId,
+                apiFetch,
+                signal,
+            });
             void hydrateProfileAvatars(root);
             classroomWindows?.reattach();
             if (nextSnapshot?.chatUrl && workspaceMode === "chat") {

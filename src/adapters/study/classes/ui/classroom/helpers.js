@@ -158,3 +158,45 @@ export function applyPresenceToSnapshots(
             : [],
     }));
 }
+
+/**
+ * Resolves the active meeting ID for a classroom snapshot from the Jitsi-Meet
+ * active-meetings API response. Returns the meeting ID string when the teacher
+ * is an active participant, or null otherwise.
+ *
+ * @param {{ data: object[] } | null} activeMeetingPayload
+ * @param {{ id: string, teacherAccountId?: string }} snapshot
+ * @returns {string | null}
+ */
+export function resolveActiveMeetingId(activeMeetingPayload, snapshot) {
+    const activeMeetings = Array.isArray(activeMeetingPayload?.data)
+        ? activeMeetingPayload.data
+        : [];
+    const activeMeeting = activeMeetings.find((meeting) => {
+        const meetingClassroomId = String(
+            meeting?.classroomId ??
+                meeting?.classId ??
+                meeting?.classroom?.id ??
+                "",
+        ).trim();
+        return meetingClassroomId === snapshot.id;
+    });
+    if (!activeMeeting) return null;
+    const teacherAccountId = String(snapshot?.teacherAccountId ?? "").trim();
+    const activeParticipants = Array.isArray(activeMeeting?.activeParticipants)
+        ? activeMeeting.activeParticipants
+        : [];
+    // Active meeting participant payloads can expose either username or
+    // handle, while classroom snapshots only expose teacherAccountId.
+    const teacherActiveInMeeting = Boolean(
+        teacherAccountId &&
+        activeParticipants.some((participant) => {
+            const username = String(participant?.username ?? "").trim();
+            const handle = String(participant?.handle ?? "").trim();
+            return username === teacherAccountId || handle === teacherAccountId;
+        }),
+    );
+    return teacherActiveInMeeting
+        ? String(activeMeeting?.id ?? "").trim() || null
+        : null;
+}

@@ -1,0 +1,10 @@
+{
+    "id": "file-reader",
+    "name": "File Reader Gateway",
+    "version": "1.0.0",
+    "required": false,
+    "requires": [],
+    "description": "App-wide file rendering gateway. Discovers adapters under src/adapters/file-reader/ and registers supported MIME types and rendering capabilities via ctx.",
+    "publisher": "Cognis Labs HQ",
+    "hasAdapters": true
+}

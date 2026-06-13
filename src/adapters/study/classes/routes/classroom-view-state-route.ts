@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { jsonError, jsonOk } from "../../../../api/reuse/json-responses.js";
 import type { DbClassesStore } from "../store/index.js";
 import type { ClassesRouteOptions } from "./route-helpers.js";
+import { getMaterialViewport } from "./classroom-layout-route.js";
 
 export async function handleClassroomViewStateRoute(
     req: IncomingMessage,
@@ -35,6 +36,8 @@ export async function handleClassroomViewStateRoute(
         jsonOk(res, {
             boardFocus: state.boardFocus,
             viewLayout: state.viewLayout,
+            activeMaterialKey: state.activeMaterialKey,
+            materialViewport: getMaterialViewport(classId),
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

@@ -1,4 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { getMaterialIcon } from "/static/adapters/study/classes/classroom-resource-actions.js";
 import { renderAgendaToolbar } from "/static/adapters/study/classes/classroom-agenda-toolbar.js";
 
@@ -215,10 +216,17 @@ function renderSelectedDeskPanel({
     `;
 }
 
-function renderActiveMaterialPanel({
+/**
+ * Renders the selected material's content inline, inside the agenda tile.
+ * Images render as a placeholder div that image-viewer.js mounts into after
+ * the DOM refresh. Text/markdown files are rendered via the markdown renderer.
+ * PDFs render in an iframe. Other types show a download link.
+ */
+function renderMaterialInlineTile({
     classResources,
     activeMaterialKey,
     activeMaterialPreview,
+    isTeacherView,
     i18n,
 }) {
     const files = Array.isArray(classResources?.files)
@@ -236,46 +244,78 @@ function renderActiveMaterialPanel({
     )
         .trim()
         .toLowerCase();
+    const keyLower = activeMaterialKey.toLowerCase();
     const isImage =
         previewContentType.startsWith("image/") ||
-        ["jpg", "jpeg", "png", "gif", "webp", "svg"].some((extension) =>
-            activeMaterialKey.toLowerCase().endsWith(`.${extension}`),
+        ["jpg", "jpeg", "png", "gif", "webp", "svg", "avif"].some((ext) =>
+            keyLower.endsWith(`.${ext}`),
         );
     const isPdf =
-        previewContentType === "application/pdf" ||
-        activeMaterialKey.toLowerCase().endsWith(".pdf");
-    let mediaMarkup = `
-        <div class="classes-material-viewer-download-wrap">
-            <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
-            <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
-        </div>
-    `;
-    if (previewUrl && isImage) {
-        mediaMarkup = `<img class="classes-material-viewer-image" src="${escapeHtml(previewUrl)}" alt="${escapeHtml(fileName)}">`;
-    } else if (previewUrl && isPdf) {
-        mediaMarkup = `<iframe class="classes-material-viewer-embed" src="${escapeHtml(previewUrl)}" title="${escapeHtml(fileName)}"></iframe>`;
-    } else if (previewUrl) {
-        mediaMarkup = `
+        previewContentType === "application/pdf" || keyLower.endsWith(".pdf");
+    const isText =
+        previewContentType.startsWith("text/") ||
+        keyLower.endsWith(".txt") ||
+        keyLower.endsWith(".md") ||
+        keyLower.endsWith(".markdown");
+
+    const closeBtnHtml = isTeacherView
+        ? `<button type="button" class="classes-material-tile-close btn-cancel btn-animated classes-material-viewer-back" aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">&times;</button>`
+        : "";
+
+    const headerHtml = `
+        <div class="classes-material-tile-header">
+            ${closeBtnHtml}
+            <span class="classes-material-tile-label" title="${escapeHtml(fileName)}">${getMaterialIcon(fileRef ?? activeMaterialKey)} ${escapeHtml(fileName)}</span>
+        </div>`;
+
+    if (isImage && previewUrl) {
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--image" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <div class="classes-material-image-host"></div>
+            </div>`;
+    }
+
+    if (isText) {
+        const textContent = String(activeMaterialPreview?.textContent ?? "");
+        const rendered = textContent ? renderMarkdown(textContent) : "";
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--text" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <div class="classes-material-text-host markdown-body">${rendered}</div>
+            </div>`;
+    }
+
+    if (isPdf && previewUrl) {
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--pdf" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <iframe class="classes-material-viewer-embed" src="${escapeHtml(previewUrl)}" title="${escapeHtml(fileName)}"></iframe>
+            </div>`;
+    }
+
+    if (previewUrl) {
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--download" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <div class="classes-material-viewer-download-wrap">
+                    <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
+                    <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
+                    <a href="${escapeHtml(previewUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
+                        ${escapeHtml(i18n.t("module.study.classes.material_download"))}
+                    </a>
+                </div>
+            </div>`;
+    }
+
+    return `
+        <div class="classes-material-tile-viewer" data-material-key="${escapeHtml(activeMaterialKey)}">
+            ${headerHtml}
             <div class="classes-material-viewer-download-wrap">
                 <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
                 <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
-                <a href="${escapeHtml(previewUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
-                    ${escapeHtml(i18n.t("module.study.classes.material_download"))}
-                </a>
             </div>
-        `;
-    }
-    return `
-        <section class="classes-workspace-panel classes-workspace-panel--materials-viewer">
-            <div class="classes-material-viewer-header">
-                <button type="button" class="classes-material-viewer-back btn-cancel btn-animated" aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">
-                    &times;
-                </button>
-                <span class="classes-material-viewer-title" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>
-            </div>
-            <div class="classes-material-viewer-body">${mediaMarkup}</div>
-        </section>
-    `;
+        </div>`;
 }
 
 export function buildSlideNavButtonsHtml(i18n) {
@@ -310,14 +350,6 @@ export function renderWorkspaceContent({
             </section>
         `;
     }
-    if (activeMaterialKey && workspaceMode === "agenda") {
-        return renderActiveMaterialPanel({
-            classResources,
-            activeMaterialKey,
-            activeMaterialPreview,
-            i18n,
-        });
-    }
     const activeTileMode =
         workspaceMode === "chat" ||
         workspaceMode === "whiteboard" ||
@@ -337,7 +369,18 @@ export function renderWorkspaceContent({
                   ? ["meeting"]
                   : []),
           ];
-    const agendaTileContent = `
+    const materialViewerHtml = activeMaterialKey
+        ? renderMaterialInlineTile({
+              classResources,
+              activeMaterialKey,
+              activeMaterialPreview,
+              isTeacherView,
+              i18n,
+          })
+        : "";
+    const agendaTileContent = materialViewerHtml
+        ? materialViewerHtml
+        : `
         ${renderAgendaDocumentPanel({ classResources, isTeacherView, i18n, compact: true })}
         ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}`;
     const whiteboardTileContent = activeWhiteboard?.embedUrl

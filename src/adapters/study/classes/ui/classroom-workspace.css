@@ -918,3 +918,71 @@ body[data-theme="light"] .classes-agenda-toolbar-btn {
     font-size: 0.85rem;
     padding: 0.75rem 0;
 }
+
+.classes-material-tile-viewer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.classes-material-tile-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: rgba(0, 0, 0, 0.28);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.classes-material-tile-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.72);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.classes-material-tile-close {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.classes-material-tile-viewer--image .classes-material-image-host,
+.classes-material-tile-viewer--image {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.classes-material-tile-viewer--text .classes-material-text-host {
+    flex: 1;
+    overflow: auto;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.classes-material-tile-viewer--pdf {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.classes-material-tile-viewer--pdf .classes-material-viewer-embed {
+    flex: 1;
+    min-height: 0;
+}

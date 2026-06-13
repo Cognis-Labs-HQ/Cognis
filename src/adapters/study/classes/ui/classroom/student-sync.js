@@ -6,7 +6,7 @@ import { moveTileToStackEnd } from "/static/adapters/study/classes/classroom/hel
  * view state. One polls the dedicated API endpoint; the other reads the
  * classroom snapshot directly.
  *
- * @param {{ apiFetch: Function, isTeacherView: Function, normalizeTileLayout: Function, selectedSnapshot: Function, getNormalizedBoardFocus: Function, setWorkspaceMode: Function, initializedTiles: Set<string>, getSelectedClassId: Function, setTileLayout: Function, getActiveMeetingId: Function, getClassroomWindows: Function, getWorkspaceMode: Function, getLastNonMeetingMode: Function }} ctx
+ * @param {{ apiFetch: Function, isTeacherView: Function, normalizeTileLayout: Function, selectedSnapshot: Function, getNormalizedBoardFocus: Function, setWorkspaceMode: Function, initializedTiles: Set<string>, getSelectedClassId: Function, setTileLayout: Function, getActiveMeetingId: Function, getClassroomWindows: Function, getWorkspaceMode: Function, getLastNonMeetingMode: Function, getActiveMaterialKey: Function, setActiveMaterialKey: Function, loadActiveMaterialPreview: Function, applyMaterialViewport: Function }} ctx
  */
 export function createStudentSync({
     apiFetch,
@@ -24,6 +24,10 @@ export function createStudentSync({
     getLastNonMeetingMode,
     getTileOrder,
     setTileOrder,
+    getActiveMaterialKey,
+    setActiveMaterialKey,
+    loadActiveMaterialPreview,
+    applyMaterialViewport,
 }) {
     const MEETING_SYNC_GRACE_MS = 12000;
     let meetingModeWithoutMeetingSince = 0;
@@ -41,6 +45,8 @@ export function createStudentSync({
             const viewLayout = normalizeTileLayout(
                 String(data?.viewLayout ?? "stacked"),
             );
+            const broadcastedMaterialKey =
+                String(data?.activeMaterialKey ?? "").trim() || null;
             if (boardFocus === "chat") initializedTiles.add("chat");
             if (boardFocus === "whiteboard") initializedTiles.add("whiteboard");
             if (boardFocus) {
@@ -53,6 +59,24 @@ export function createStudentSync({
                 );
             }
             setTileLayout(viewLayout);
+            if (
+                broadcastedMaterialKey !== null &&
+                broadcastedMaterialKey !== getActiveMaterialKey?.()
+            ) {
+                setActiveMaterialKey?.(broadcastedMaterialKey);
+                await loadActiveMaterialPreview?.(broadcastedMaterialKey);
+            } else if (
+                broadcastedMaterialKey === null &&
+                getActiveMaterialKey?.()
+            ) {
+                setActiveMaterialKey?.(null);
+            }
+            if (
+                data?.materialViewport &&
+                typeof applyMaterialViewport === "function"
+            ) {
+                applyMaterialViewport(data.materialViewport);
+            }
         } catch {
             // view-state polling failures are non-fatal
         }

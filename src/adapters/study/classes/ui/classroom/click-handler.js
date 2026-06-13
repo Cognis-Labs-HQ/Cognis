@@ -185,6 +185,7 @@ export function bindClassroomClickHandler({
                 ".classes-material-tile[data-material-key]",
             );
             if (materialTile instanceof HTMLElement) {
+                if (!isTeacherView()) return;
                 const materialKey = String(
                     materialTile.dataset.materialKey ?? "",
                 ).trim();
@@ -196,13 +197,22 @@ export function bindClassroomClickHandler({
                 setWorkspaceMode("agenda");
                 setTileOrder(moveTileToStackEnd(getTileOrder(), "agenda"));
                 setBlackboardExpanded(true);
-                if (isTeacherView()) {
-                    await persistActiveMaterialKey(
-                        getSelectedClassId(),
-                        materialKey,
-                    );
-                    await updateBoardFocus("classroom");
-                }
+                await persistActiveMaterialKey(
+                    getSelectedClassId(),
+                    materialKey,
+                );
+                await updateBoardFocus("classroom");
+                refreshDom();
+                return;
+            }
+
+            const materialViewerClose = event.target.closest(
+                ".classes-material-viewer-back",
+            );
+            if (materialViewerClose instanceof HTMLElement) {
+                if (!isTeacherView()) return;
+                setActiveMaterialKey(null);
+                await persistActiveMaterialKey(getSelectedClassId(), null);
                 refreshDom();
                 return;
             }
@@ -326,10 +336,11 @@ export function bindClassroomClickHandler({
                 ".classes-workspace-tab-btn[data-workspace-mode], .classes-workspace-tile-hitbox[data-workspace-mode]",
             );
             if (workspaceButton instanceof HTMLElement) {
-                if (isStudentInteractionBlocked()) return;
                 const nextWorkspaceMode = normalizeWorkspaceMode(
                     workspaceButton.dataset.workspaceMode,
                 );
+                const isChatRequest = nextWorkspaceMode === "chat";
+                if (isStudentInteractionBlocked() && !isChatRequest) return;
                 const tileHitbox = event.target.closest(
                     ".classes-workspace-tile-hitbox[data-workspace-mode]",
                 );
