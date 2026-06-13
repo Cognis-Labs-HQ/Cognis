@@ -78,8 +78,15 @@ test("classroom view sync detaches search and only forces live teacher meetings"
         resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
         "utf8",
     );
+    const dataLoaderSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/data-loaders.js",
+        ),
+        "utf8",
+    );
     assert.match(indexSource, /isClassSearchDetached/);
-    assert.match(indexSource, /if \(!isClassSearchDetached\)/);
+    assert.match(dataLoaderSource, /if \(!getIsClassSearchDetached\(\)\)/);
     assert.match(indexSource, /teacherActiveInMeeting/);
     assert.match(indexSource, /activeParticipants\.some/);
     assert.match(
