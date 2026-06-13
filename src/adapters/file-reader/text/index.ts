@@ -1,0 +1,87 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import type {
+    FileReaderAdapter,
+    FileReaderAdapterBootstrapCtx,
+} from "../../../gateways/file-reader/gateway.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
+import { handleClassroomNotepadRoutes } from "./routes/index.js";
+
+const ADAPTER_UI_ROOT = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "ui",
+);
+const TEXT_SCRIPT_URL =
+    "/static/adapters/file-reader/text/classroom-notepad.js";
+const TEXT_STRINGS_BASE_URL = "/static/adapters/file-reader/text/languages";
+const TEXT_STYLESHEET_URL =
+    "/static/adapters/file-reader/text/classes-notepad.css";
+const DEFAULT_MAX_FILE_BYTES = 256 * 1024;
+const MIN_MAX_FILE_BYTES = 16 * 1024;
+const MAX_MAX_FILE_BYTES = 4 * 1024 * 1024;
+
+let maxFileBytes = DEFAULT_MAX_FILE_BYTES;
+
+function normalizeMaxFileBytes(input: unknown): number {
+    const numericValue = Number(input);
+    if (!Number.isFinite(numericValue)) {
+        return DEFAULT_MAX_FILE_BYTES;
+    }
+    const boundedValue = Math.floor(numericValue);
+    if (boundedValue < MIN_MAX_FILE_BYTES) {
+        return MIN_MAX_FILE_BYTES;
+    }
+    if (boundedValue > MAX_MAX_FILE_BYTES) {
+        return MAX_MAX_FILE_BYTES;
+    }
+    return boundedValue;
+}
+
+export function createFileReaderAdapter(): FileReaderAdapter {
+    return {
+        adapterId: "text",
+        adapterName: "Text / Markdown",
+        getSupportedTypes: () => [
+            { ext: "txt", mimeType: "text/plain" },
+            { ext: "md", mimeType: "text/markdown" },
+            { ext: "markdown", mimeType: "text/markdown" },
+        ],
+    };
+}
+
+export async function bootstrapFileReaderAdapter(
+    ctx: FileReaderAdapterBootstrapCtx,
+): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
+    const routeHelpers = resolveRouteContext(routeContext);
+    const getMaxFileBytes = () => maxFileBytes;
+
+    ctx.capabilities.contribute("file-reader:text:ui", {
+        scriptUrl: TEXT_SCRIPT_URL,
+        stringsBaseUrl: TEXT_STRINGS_BASE_URL,
+        stylesheetUrl: TEXT_STYLESHEET_URL,
+    });
+    ctx.capabilities.contribute(
+        "file-reader:text:maxFileBytes",
+        getMaxFileBytes,
+    );
+    ctx.registerAdapterStaticDir?.("file-reader", "text", ADAPTER_UI_ROOT);
+    ctx.registerRoute(async (req, res, url) => {
+        return handleClassroomNotepadRoutes({
+            req,
+            res,
+            url,
+            ctx: routeHelpers,
+            getMaxFileBytes,
+        });
+    }, "study");
+
+    ctx.log?.("info", "File-reader/text adapter: bootstrapped.", {
+        component: "file-reader-text",
+        maxFileBytes,
+    });
+}

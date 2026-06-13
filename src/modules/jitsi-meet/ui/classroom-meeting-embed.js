@@ -185,6 +185,12 @@ export function createClassroomMeetingEmbed({
         }
     }
 
+    function refreshMeetingPresence() {
+        if (element.hidden || !currentMeetingId || !currentSessionId) return;
+        void keepPresenceAlive(true);
+        void checkMeetingState();
+    }
+
     function destroyJitsiApi() {
         if (!jitsiApi) return;
         const frame = element.querySelector("#classroom-jitsi-frame");
@@ -702,6 +708,41 @@ export function createClassroomMeetingEmbed({
                 showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {
                     variant: "warning",
                 });
+            },
+            { signal },
+        );
+        document.addEventListener(
+            "visibilitychange",
+            () => {
+                refreshMeetingPresence();
+            },
+            { signal },
+        );
+        window.addEventListener(
+            "focus",
+            () => {
+                refreshMeetingPresence();
+            },
+            { signal },
+        );
+        window.addEventListener(
+            "pageshow",
+            () => {
+                refreshMeetingPresence();
+            },
+            { signal },
+        );
+        window.addEventListener(
+            "pointerdown",
+            () => {
+                refreshMeetingPresence();
+            },
+            { signal },
+        );
+        window.addEventListener(
+            "keydown",
+            () => {
+                refreshMeetingPresence();
             },
             { signal },
         );

@@ -1,5 +1,7 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { getMaterialIcon } from "/static/adapters/study/classes/classroom-resource-actions.js";
+import { renderAgendaToolbar } from "/static/adapters/study/classes/classroom-agenda-toolbar.js";
 
 /**
  * @param {Set<string>} tiles
@@ -49,15 +51,19 @@ export function renderWorkspaceTabs({
     isMeetingOpen,
     hasActiveMeeting,
     canAccessWhiteboard,
+    hasChat,
     isTeacherView,
-    tileLayout = "stacked",
 }) {
-    const isTiledMode = workspaceMode !== "chat" && workspaceMode !== "notepad";
     const tabs = [
         {
             mode: "agenda",
             label: i18n.t("module.study.classes.classroom_panel"),
             disabled: false,
+        },
+        {
+            mode: "chat",
+            label: i18n.t("module.study.classes.open_chat"),
+            disabled: !hasChat,
         },
         {
             mode: "whiteboard",
@@ -82,17 +88,21 @@ export function renderWorkspaceTabs({
                 >${escapeHtml(tab.label)}</button>`,
         )
         .join("");
-    const toggleLabel = isTiledMode
-        ? escapeHtml(
-              tileLayout === "stacked"
-                  ? i18n.t("module.study.classes.slideshow_view")
-                  : i18n.t("module.study.classes.tile_view"),
-          )
-        : "";
-    const toggleButton = isTiledMode
-        ? `<button type="button" class="classes-tile-layout-toggle-btn" data-tile-layout="${escapeHtml(tileLayout)}">${toggleLabel}</button>`
-        : "";
-    return tabButtons + toggleButton;
+    return tabButtons;
+}
+
+export function renderTileLayoutToggleButton({ i18n, tileLayout = "stacked" }) {
+    const label =
+        tileLayout === "stacked"
+            ? i18n.t("module.study.classes.slideshow_view")
+            : i18n.t("module.study.classes.tile_view");
+    return `<button
+            type="button"
+            class="classes-icon-btn classes-tile-layout-toggle-btn"
+            data-tile-layout="${escapeHtml(tileLayout)}"
+            aria-label="${escapeHtml(label)}"
+            title="${escapeHtml(label)}"
+        >${escapeHtml(label)}</button>`;
 }
 
 function renderWorkspaceWhiteboard({ activeWhiteboard, i18n }) {
@@ -151,6 +161,7 @@ function renderAgendaDocumentPanel({
         .join("");
     return `
         <div class="classes-agenda-panel${compact ? " classes-agenda-panel--compact" : ""}">
+            ${isTeacherView ? renderAgendaToolbar({ i18n }) : ""}
             <textarea
                 class="classes-agenda-document-editor"
                 ${isTeacherView ? "" : "readonly"}
@@ -160,6 +171,7 @@ function renderAgendaDocumentPanel({
                 isTeacherView
                     ? `<div class="classes-agenda-document-actions">
                 <button type="button" class="btn-confirm btn-animated classes-agenda-snapshot-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
+                <button type="button" class="btn-animated classes-agenda-new-btn">${escapeHtml(i18n.t("module.study.classes.agenda_new_btn"))}</button>
                 <select class="classes-agenda-snapshot-select"${hasSnapshots ? "" : " disabled"}>
                     ${
                         hasSnapshots
@@ -168,6 +180,7 @@ function renderAgendaDocumentPanel({
                     }
                 </select>
                 <button type="button" class="btn-animated classes-agenda-snapshot-open-btn"${hasSnapshots ? "" : " disabled"}>${escapeHtml(i18n.t("ui.reuse.open"))}</button>
+                <button type="button" class="btn-animated classes-agenda-edit-btn">${escapeHtml(i18n.t("module.study.classes.agenda_edit_snapshots"))}</button>
             </div>`
                     : ""
             }
@@ -203,6 +216,113 @@ function renderSelectedDeskPanel({
     `;
 }
 
+/**
+ * Renders the selected material's content inline, inside the agenda tile.
+ * Images render as a placeholder div that image-viewer.js mounts into after
+ * the DOM refresh. Text/markdown files are rendered via the markdown renderer.
+ * PDFs render in an iframe. Other types show a download link.
+ */
+function renderMaterialInlineTile({
+    classResources,
+    activeMaterialKey,
+    activeMaterialPreview,
+    isTeacherView,
+    i18n,
+}) {
+    const files = Array.isArray(classResources?.files)
+        ? classResources.files
+        : [];
+    const fileRef = files.find(
+        (entry) => String(entry?.key ?? "").trim() === activeMaterialKey,
+    );
+    const fileName = String(
+        fileRef?.name ?? activeMaterialKey.split("/").pop() ?? "",
+    ).trim();
+    const previewUrl = String(activeMaterialPreview?.url ?? "").trim();
+    const previewContentType = String(
+        activeMaterialPreview?.contentType ?? fileRef?.contentType ?? "",
+    )
+        .trim()
+        .toLowerCase();
+    const keyLower = activeMaterialKey.toLowerCase();
+    const isImage =
+        previewContentType.startsWith("image/") ||
+        ["jpg", "jpeg", "png", "gif", "webp", "svg", "avif"].some((ext) =>
+            keyLower.endsWith(`.${ext}`),
+        );
+    const isPdf =
+        previewContentType === "application/pdf" || keyLower.endsWith(".pdf");
+    const isText =
+        previewContentType.startsWith("text/") ||
+        keyLower.endsWith(".txt") ||
+        keyLower.endsWith(".md") ||
+        keyLower.endsWith(".markdown");
+
+    const closeBtnHtml = isTeacherView
+        ? `<button type="button" class="classes-material-tile-close btn-cancel btn-animated classes-material-viewer-back" aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">&times;</button>`
+        : "";
+
+    const headerHtml = `
+        <div class="classes-material-tile-header">
+            ${closeBtnHtml}
+            <span class="classes-material-tile-label" title="${escapeHtml(fileName)}">${getMaterialIcon(fileRef ?? activeMaterialKey)} ${escapeHtml(fileName)}</span>
+        </div>`;
+
+    if (isImage && previewUrl) {
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--image" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <div class="classes-material-image-host"></div>
+            </div>`;
+    }
+
+    if (isText) {
+        const textContent = String(activeMaterialPreview?.textContent ?? "");
+        const rendered = textContent ? renderMarkdown(textContent) : "";
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--text" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <div class="classes-material-text-host markdown-body">${rendered}</div>
+            </div>`;
+    }
+
+    if (isPdf && previewUrl) {
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--pdf" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <iframe class="classes-material-viewer-embed" src="${escapeHtml(previewUrl)}" title="${escapeHtml(fileName)}"></iframe>
+            </div>`;
+    }
+
+    if (previewUrl) {
+        return `
+            <div class="classes-workspace-panel--materials-viewer classes-material-tile-viewer classes-material-tile-viewer--download" data-material-key="${escapeHtml(activeMaterialKey)}">
+                ${headerHtml}
+                <div class="classes-material-viewer-download-wrap">
+                    <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
+                    <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
+                    <a href="${escapeHtml(previewUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
+                        ${escapeHtml(i18n.t("module.study.classes.material_download"))}
+                    </a>
+                </div>
+            </div>`;
+    }
+
+    return `
+        <div class="classes-material-tile-viewer" data-material-key="${escapeHtml(activeMaterialKey)}">
+            ${headerHtml}
+            <div class="classes-material-viewer-download-wrap">
+                <span class="classes-material-viewer-file-icon">${getMaterialIcon(fileRef ?? activeMaterialKey)}</span>
+                <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
+            </div>
+        </div>`;
+}
+
+export function buildSlideNavButtonsHtml(i18n) {
+    return `<button type="button" class="classes-tile-nav-prev" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}">&#x25C4;</button>
+        <button type="button" class="classes-tile-nav-next" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}">&#x25BA;</button>`;
+}
+
 export function renderWorkspaceContent({
     snapshot,
     classResources,
@@ -211,15 +331,14 @@ export function renderWorkspaceContent({
     i18n,
     isTeacherView,
     workspaceMode,
+    activeMaterialKey,
+    activeMaterialPreview,
     activeWhiteboard,
     initializedTiles,
     isMeetingOpen,
     tileLayout = "stacked",
     tileOrder = [],
 }) {
-    if (workspaceMode === "chat") {
-        return `<section class="classes-workspace-panel classes-workspace-panel--chat"><div class="classes-chat-workspace-host"></div></section>`;
-    }
     if (workspaceMode === "notepad") {
         return `
             <section class="classes-workspace-panel classes-workspace-panel--notepad">
@@ -232,21 +351,36 @@ export function renderWorkspaceContent({
         `;
     }
     const activeTileMode =
-        workspaceMode === "whiteboard" || workspaceMode === "meeting"
+        workspaceMode === "chat" ||
+        workspaceMode === "whiteboard" ||
+        workspaceMode === "meeting"
             ? workspaceMode
             : "agenda";
     const tiles =
         initializedTiles instanceof Set ? initializedTiles : new Set();
+    const hasChat = Boolean(String(snapshot?.chatUrl ?? "").trim());
     const effectiveTileOrder = tileOrder.length
         ? tileOrder
         : [
               "agenda",
+              ...(hasChat ? ["chat"] : []),
               ...(tiles.has("whiteboard") ? ["whiteboard"] : []),
               ...(shouldShowMeetingTile(tiles, isMeetingOpen)
                   ? ["meeting"]
                   : []),
           ];
-    const agendaTileContent = `
+    const materialViewerHtml = activeMaterialKey
+        ? renderMaterialInlineTile({
+              classResources,
+              activeMaterialKey,
+              activeMaterialPreview,
+              isTeacherView,
+              i18n,
+          })
+        : "";
+    const agendaTileContent = materialViewerHtml
+        ? materialViewerHtml
+        : `
         ${renderAgendaDocumentPanel({ classResources, isTeacherView, i18n, compact: true })}
         ${renderSelectedDeskPanel({ snapshot, selectedSeatNumber, selectedNotebookText, i18n })}`;
     const whiteboardTileContent = activeWhiteboard?.embedUrl
@@ -263,10 +397,16 @@ export function renderWorkspaceContent({
                 <div class="classes-workspace-tile-content">${agendaTileContent}</div>
             </section>`;
         }
+        if (mode === "chat" && hasChat) {
+            return `<section class="classes-workspace-tile classes-workspace-tile--chat${isActive ? " active" : ""}" data-workspace-mode="chat" ${depthStyle}>
+                <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="chat">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
+                ${isActive ? `<div class="classes-workspace-tile-content"><div class="classes-chat-workspace-host"></div></div>` : ""}
+            </section>`;
+        }
         if (mode === "whiteboard" && tiles.has("whiteboard")) {
             return `<section class="classes-workspace-tile classes-workspace-tile--whiteboard${isActive ? " active" : ""}" data-workspace-mode="whiteboard" ${depthStyle}>
                 <button type="button" class="classes-workspace-tile-hitbox" data-workspace-mode="whiteboard">${escapeHtml(i18n.t("module.study.classes.whiteboard"))}</button>
-                <div class="classes-workspace-tile-content classes-whiteboard-workspace-host">${whiteboardTileContent}</div>
+                ${isActive ? `<div class="classes-workspace-tile-content classes-whiteboard-workspace-host">${whiteboardTileContent}</div>` : ""}
             </section>`;
         }
         if (mode === "meeting" && shouldShowMeetingTile(tiles, isMeetingOpen)) {
@@ -285,9 +425,8 @@ export function renderWorkspaceContent({
             ? " classes-workspace-tiles--slideshow"
             : " classes-workspace-tiles--stacked";
     const navArrows =
-        tileLayout === "slideshow"
-            ? `<button type="button" class="classes-tile-nav-prev" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}">&#x25C4;</button>
-           <button type="button" class="classes-tile-nav-next" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}">&#x25BA;</button>`
+        tileLayout === "slideshow" && activeTileMode !== "chat"
+            ? buildSlideNavButtonsHtml(i18n)
             : "";
     return `
         <section class="classes-workspace-panel classes-workspace-panel--tiled">
@@ -352,59 +491,20 @@ function renderSidebarMaterials({
     const files = Array.isArray(classResources?.files)
         ? classResources.files
         : [];
-    if (activeMaterialKey) {
-        const fileRef = files.find(
-            (ref) => String(ref?.key ?? "").trim() === activeMaterialKey,
-        );
-        const fileName = fileRef
-            ? String(fileRef.name ?? "").trim()
-            : (activeMaterialKey.split("/").pop() ?? "");
-        const fileUrl = `/api/v1/files/${activeMaterialKey}`;
-        const extension =
-            activeMaterialKey.split(".").pop()?.toLowerCase() ?? "";
-        const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(
-            extension,
-        );
-        const isPdf = extension === "pdf";
-        let mediaMarkup;
-        if (isImage) {
-            mediaMarkup = `<img class="classes-material-viewer-image" src="${escapeHtml(fileUrl)}" alt="${escapeHtml(fileName)}">`;
-        } else if (isPdf) {
-            mediaMarkup = `<embed class="classes-material-viewer-embed" src="${escapeHtml(fileUrl)}" type="application/pdf" title="${escapeHtml(fileName)}">`;
-        } else {
-            mediaMarkup = `
-                <div class="classes-material-viewer-download-wrap">
-                    <span class="classes-material-viewer-file-icon">${getMaterialIcon(extension)}</span>
-                    <span class="classes-material-viewer-file-name">${escapeHtml(fileName)}</span>
-                    <a href="${escapeHtml(fileUrl)}" download="${escapeHtml(fileName)}" class="classes-material-download-btn btn-confirm btn-animated">
-                        ${escapeHtml(i18n.t("module.study.classes.material_download"))}
-                    </a>
-                </div>
-            `;
-        }
-        return `
-            <div class="classes-sidebar-panel classes-sidebar-panel--materials classes-sidebar-panel--viewer">
-                <div class="classes-material-viewer-header">
-                    <button type="button" class="classes-material-viewer-back">
-                        &#8592; ${escapeHtml(i18n.t("module.study.classes.material_viewer_back"))}
-                    </button>
-                    <span class="classes-material-viewer-title" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</span>
-                </div>
-                <div class="classes-material-viewer-body">${mediaMarkup}</div>
-            </div>
-        `;
-    }
     const tilesMarkup = files
         .map((fileRef, index) => {
             const fileName = String(fileRef?.name ?? "").trim();
             const fileKey = String(fileRef?.key ?? "").trim();
             if (!fileName || !fileKey) return "";
-            const extension = fileKey.split(".").pop()?.toLowerCase() ?? "";
-            const icon = getMaterialIcon(extension);
+            const icon = getMaterialIcon(fileRef);
             return `<div class="classes-material-tile-row">
                 <button
                     type="button"
-                    class="classes-material-tile"
+                    class="classes-material-tile${
+                        activeMaterialKey === fileKey
+                            ? " classes-material-tile--active"
+                            : ""
+                    }"
                     data-material-key="${escapeHtml(fileKey)}"
                     data-material-name="${escapeHtml(fileName)}"
                     title="${escapeHtml(fileName)}"
@@ -426,6 +526,7 @@ function renderSidebarMaterials({
         .join("");
     return `
         <div class="classes-sidebar-panel classes-sidebar-panel--materials">
+            <div class="classes-sidebar-section-label">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</div>
             ${
                 isTeacherView
                     ? `<button type="button" class="classes-icon-btn classes-material-add-btn">${escapeHtml(i18n.t("ui.reuse.add"))}</button>`
@@ -434,7 +535,7 @@ function renderSidebarMaterials({
             ${
                 tilesMarkup
                     ? `<div class="classes-material-tiles">${tilesMarkup}</div>`
-                    : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</p>`
+                    : `<p class="classes-workspace-nothing-found">${escapeHtml(i18n.t("module.study.classes.materials_nothing_found"))}</p>`
             }
         </div>
     `;

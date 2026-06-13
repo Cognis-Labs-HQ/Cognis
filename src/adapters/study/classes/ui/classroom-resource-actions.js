@@ -28,10 +28,73 @@ const ALLOWED_CLASSROOM_FILE_EXTENSIONS = new Set([
     ".xlsx",
 ]);
 
-export function getMaterialIcon(extension) {
-    const ext = String(extension ?? "")
-        .toLowerCase()
-        .replace(/^\./, "");
+function formatFilenameToast(i18n, key, filename) {
+    return i18n.t(key).replace("{filename}", filename);
+}
+
+function dedupeFileRefs(files) {
+    const fileRefsByKey = new Map();
+    for (const fileRef of Array.isArray(files) ? files : []) {
+        const fileKey = String(fileRef?.key ?? "").trim();
+        const fileName = String(fileRef?.name ?? "").trim();
+        if (!fileKey || !fileName) {
+            continue;
+        }
+        fileRefsByKey.set(fileKey, {
+            key: fileKey,
+            name: fileName,
+            contentType: String(fileRef?.contentType ?? "").trim() || undefined,
+        });
+    }
+    return [...fileRefsByKey.values()];
+}
+
+export function getMaterialIcon(fileRef) {
+    const contentType = String(
+        typeof fileRef === "object" ? (fileRef?.contentType ?? "") : "",
+    )
+        .trim()
+        .toLowerCase();
+    const filename = String(
+        typeof fileRef === "object"
+            ? (fileRef?.name ?? fileRef?.key ?? "")
+            : (fileRef ?? ""),
+    ).trim();
+    const extensionStart = filename.lastIndexOf(".");
+    const ext =
+        extensionStart >= 0
+            ? filename
+                  .slice(extensionStart + 1)
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]/g, "")
+            : "";
+    if (contentType.startsWith("image/")) {
+        return "&#128444;";
+    }
+    if (contentType === "application/pdf") {
+        return "&#128196;";
+    }
+    if (
+        contentType.includes("word") ||
+        contentType.startsWith("text/") ||
+        contentType === "application/json" ||
+        contentType.includes("markdown")
+    ) {
+        return "&#128221;";
+    }
+    if (
+        contentType.includes("sheet") ||
+        contentType.includes("excel") ||
+        contentType.includes("csv")
+    ) {
+        return "&#128200;";
+    }
+    if (
+        contentType.includes("presentation") ||
+        contentType.includes("powerpoint")
+    ) {
+        return "&#128204;";
+    }
     if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) {
         return "&#128444;";
     }
@@ -50,35 +113,72 @@ export function getMaterialIcon(extension) {
     return "&#128196;";
 }
 
+function formatFileSize(bytes) {
+    const num = Number(bytes ?? 0);
+    if (!num) return "";
+    if (num < 1024) return `${num} B`;
+    if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
+    return `${(num / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function buildUploadButtonLabel(i18n, escapeHtml) {
+    return `
+        <span class="classes-materials-upload-icon" aria-hidden="true">
+            <img src="/static/assets/reuse/upload.svg" alt="" />
+        </span>
+        <span>${escapeHtml(i18n.t("module.study.classes.materials_upload"))}</span>
+    `;
+}
+
 function buildLibraryFileMarkup(
     files,
     i18n,
     escapeHtml,
-    autoSelectedKeys = new Set(),
+    selectedKeys = new Set(),
 ) {
     if (!files.length) {
-        return `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.class_materials"))}</p>`;
+        return `<p class="classes-workspace-nothing-found">${escapeHtml(i18n.t("module.study.classes.materials_nothing_found"))}</p>`;
     }
-    return `<ul class="classes-file-list">
+    return `<div class="classes-library-file-grid">
         ${files
             .map((file) => {
                 const key = String(file?.key ?? "").trim();
                 const name = String(file?.name ?? "").trim();
                 if (!key || !name) return "";
-                const checked = autoSelectedKeys.has(key) ? " checked" : "";
-                return `<li class="classes-file-item">
-                    <label class="classes-file-name">
-                        <input type="checkbox" class="classes-library-select" value="${escapeHtml(key)}"${checked} />
-                        ${escapeHtml(name)}
-                    </label>
+                const isSelected = selectedKeys.has(key);
+                const dotIndex = name.lastIndexOf(".");
+                const ext =
+                    dotIndex > 0 && dotIndex < name.length - 1
+                        ? name.slice(dotIndex + 1).toUpperCase()
+                        : "";
+                const sizeLabel = formatFileSize(file?.size);
+                const dateLabel = file?.lastModified
+                    ? new Date(file.lastModified).toLocaleDateString()
+                    : "";
+                const metaParts = [ext, sizeLabel, dateLabel].filter(Boolean);
+                return `<div class="classes-library-file-row">
+                    <button
+                        type="button"
+                        class="classes-library-file-card${
+                            isSelected ? " is-selected" : ""
+                        }"
+                        data-library-key="${escapeHtml(key)}"
+                        aria-pressed="${isSelected ? "true" : "false"}"
+                        title="${escapeHtml(name)}"
+                    >
+                        <span class="classes-library-file-icon">${getMaterialIcon(file)}</span>
+                        <span class="classes-library-file-copy">
+                            <span class="classes-library-file-title">${escapeHtml(name)}</span>
+                            ${metaParts.length ? `<span class="classes-library-file-meta">${escapeHtml(metaParts.join(" · "))}</span>` : ""}
+                        </span>
+                    </button>
                     <div class="classes-file-actions">
-                        <button type="button" class="btn-cancel btn-animated classes-library-rename-btn" data-library-key="${escapeHtml(key)}">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
                         <button type="button" class="btn-cancel btn-animated classes-library-delete-btn" data-library-key="${escapeHtml(key)}">${escapeHtml(i18n.t("ui.reuse.delete"))}</button>
                     </div>
-                </li>`;
+                </div>`;
             })
             .join("")}
-    </ul>`;
+    </div>`;
 }
 
 export async function handleResourceActions(
@@ -149,6 +249,9 @@ export async function handleResourceActions(
 
     if (event.target.closest(".classes-material-add-btn")) {
         if (!snapshot) return true;
+        if (root?.dataset.materialsPopupOpen === "true") {
+            return true;
+        }
         const listLibrary = async () => {
             const response = await apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library`,
@@ -171,7 +274,7 @@ export async function handleResourceActions(
                 if (!ALLOWED_CLASSROOM_FILE_EXTENSIONS.has(ext)) {
                     continue;
                 }
-                const key = `class-materials/${encodeURIComponent(snapshot.teacherAccountId ?? "")}/${crypto.randomUUID()}${ext}`;
+                const key = `teacher-materials/${encodeURIComponent(snapshot.teacherAccountId ?? "")}/${crypto.randomUUID()}${ext}`;
                 const response = await apiFetch(`/api/v1/files/${key}`, {
                     method: "PUT",
                     headers: {
@@ -180,51 +283,82 @@ export async function handleResourceActions(
                     body: await file.arrayBuffer(),
                 }).catch(() => null);
                 if (response?.ok) {
+                    await apiFetch(
+                        `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/rename`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                key,
+                                name: file.name,
+                                contentType:
+                                    file.type || "application/octet-stream",
+                            }),
+                        },
+                    ).catch(() => null);
                     uploadedKeys.push(key);
+                    showToast(
+                        formatFilenameToast(
+                            i18n,
+                            "module.study.classes.materials_upload_success",
+                            file.name,
+                        ),
+                        { variant: "success" },
+                    );
+                } else {
+                    showToast(
+                        formatFilenameToast(
+                            i18n,
+                            "module.study.classes.materials_upload_failed",
+                            file.name,
+                        ),
+                        { variant: "error" },
+                    );
                 }
             }
             return uploadedKeys;
         };
         let libraryFiles = await listLibrary();
         let selectedKeys = [];
-        const autoSelectedKeys = new Set();
-        const action = await openPopup({
-            title: i18n.t("module.study.classes.teacher_materials"),
-            body: `
+        const selectedLibraryKeys = new Set();
+        let action = null;
+        try {
+            root.dataset.materialsPopupOpen = "true";
+            action = await openPopup({
+                title: i18n.t("module.study.classes.teacher_materials"),
+                body: `
                 <div class="stack">
-                    <label class="classes-materials-upload-label">
-                        &#x1F4E4;
-                        <input type="file" class="classes-library-upload-input" style="display:none" multiple>
-                    </label>
-                    <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, autoSelectedKeys)}</div>
-                </div>
-            `,
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-                {
-                    id: "add",
-                    label: i18n.t("ui.reuse.add"),
-                    variant: "confirm",
-                },
-            ],
-            onMount: (overlay) => {
-                overlay.addEventListener("change", async (changeEvent) => {
-                    const uploadInput = changeEvent.target.closest(
-                        ".classes-library-upload-input",
-                    );
-                    if (
-                        uploadInput instanceof HTMLInputElement &&
-                        uploadInput.files?.length
-                    ) {
+                    <button type="button" class="btn-animated classes-materials-upload-btn">${buildUploadButtonLabel(i18n, escapeHtml)}</button>
+                    <div class="classes-library-file-list">${buildLibraryFileMarkup(libraryFiles, i18n, escapeHtml, selectedLibraryKeys)}</div>
+                </div>`,
+                actions: [
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "add",
+                        label: i18n.t("ui.reuse.add"),
+                        variant: "confirm",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    const hiddenInput = document.createElement("input");
+                    hiddenInput.type = "file";
+                    hiddenInput.multiple = true;
+                    hiddenInput.style.display = "none";
+                    overlay.appendChild(hiddenInput);
+
+                    hiddenInput.addEventListener("change", async () => {
+                        if (!hiddenInput.files?.length) return;
                         const uploadedKeys = await uploadLibraryFiles(
-                            Array.from(uploadInput.files),
+                            Array.from(hiddenInput.files),
                         );
                         for (const key of uploadedKeys) {
-                            autoSelectedKeys.add(key);
+                            selectedLibraryKeys.add(key);
                         }
                         libraryFiles = await listLibrary();
                         const listWrap = overlay.querySelector(
@@ -235,91 +369,97 @@ export async function handleResourceActions(
                                 libraryFiles,
                                 i18n,
                                 escapeHtml,
-                                autoSelectedKeys,
+                                selectedLibraryKeys,
                             );
                         }
-                        uploadInput.value = "";
-                    }
-                });
-                overlay.addEventListener("click", async (clickEvent) => {
-                    const renameButton = clickEvent.target.closest(
-                        ".classes-library-rename-btn[data-library-key]",
-                    );
-                    if (renameButton instanceof HTMLElement) {
-                        const key = String(
-                            renameButton.dataset.libraryKey ?? "",
-                        ).trim();
-                        if (!key) return;
-                        await apiFetch(
-                            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/rename`,
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({ key }),
-                            },
-                        ).catch(() => null);
-                        libraryFiles = await listLibrary();
-                        const listWrap = overlay.querySelector(
-                            ".classes-library-file-list",
+                        hiddenInput.value = "";
+                    });
+
+                    overlay.addEventListener("click", async (clickEvent) => {
+                        if (
+                            clickEvent.target.closest(
+                                ".classes-materials-upload-btn",
+                            )
+                        ) {
+                            hiddenInput.value = "";
+                            hiddenInput.click();
+                            return;
+                        }
+                        const libraryCard = clickEvent.target.closest(
+                            ".classes-library-file-card[data-library-key]",
                         );
-                        if (listWrap instanceof HTMLElement) {
-                            listWrap.innerHTML = buildLibraryFileMarkup(
-                                libraryFiles,
-                                i18n,
-                                escapeHtml,
-                                autoSelectedKeys,
+                        if (libraryCard instanceof HTMLElement) {
+                            const key = String(
+                                libraryCard.dataset.libraryKey ?? "",
+                            ).trim();
+                            if (!key) {
+                                return;
+                            }
+                            if (selectedLibraryKeys.has(key)) {
+                                selectedLibraryKeys.delete(key);
+                            } else {
+                                selectedLibraryKeys.add(key);
+                            }
+                            libraryCard.classList.toggle(
+                                "is-selected",
+                                selectedLibraryKeys.has(key),
                             );
+                            libraryCard.setAttribute(
+                                "aria-pressed",
+                                selectedLibraryKeys.has(key) ? "true" : "false",
+                            );
+                            return;
                         }
-                        return;
-                    }
-                    const deleteButton = clickEvent.target.closest(
-                        ".classes-library-delete-btn[data-library-key]",
-                    );
-                    if (deleteButton instanceof HTMLElement) {
-                        const key = String(
-                            deleteButton.dataset.libraryKey ?? "",
-                        ).trim();
-                        if (!key) return;
-                        await apiFetch(
-                            `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/delete`,
-                            {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({ key }),
-                            },
-                        ).catch(() => null);
-                        autoSelectedKeys.delete(key);
-                        libraryFiles = await listLibrary();
-                        const listWrap = overlay.querySelector(
-                            ".classes-library-file-list",
+                        const deleteButton = clickEvent.target.closest(
+                            ".classes-library-delete-btn[data-library-key]",
                         );
-                        if (listWrap instanceof HTMLElement) {
-                            listWrap.innerHTML = buildLibraryFileMarkup(
-                                libraryFiles,
-                                i18n,
-                                escapeHtml,
-                                autoSelectedKeys,
+                        if (deleteButton instanceof HTMLElement) {
+                            const key = String(
+                                deleteButton.dataset.libraryKey ?? "",
+                            ).trim();
+                            if (!key) return;
+                            await apiFetch(
+                                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/materials/library/delete`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    body: JSON.stringify({ key }),
+                                },
+                            ).catch(() => null);
+                            selectedLibraryKeys.delete(key);
+                            libraryFiles = await listLibrary();
+                            const listWrap = overlay.querySelector(
+                                ".classes-library-file-list",
                             );
+                            if (listWrap instanceof HTMLElement) {
+                                listWrap.innerHTML = buildLibraryFileMarkup(
+                                    libraryFiles,
+                                    i18n,
+                                    escapeHtml,
+                                    selectedLibraryKeys,
+                                );
+                            }
                         }
-                    }
-                });
-            },
-            onAction: (actionId, overlay) => {
-                if (actionId !== "add") return true;
-                const checkedKeys = Array.from(
-                    overlay.querySelectorAll(".classes-library-select:checked"),
-                ).map((checkbox) => String(checkbox.value ?? "").trim());
-                const merged = new Set([...autoSelectedKeys, ...checkedKeys]);
-                selectedKeys = [...merged].filter(Boolean);
-                return true;
-            },
-        });
+                    });
+                },
+                onAction: (actionId) => {
+                    if (actionId !== "add") return true;
+                    selectedKeys = [...selectedLibraryKeys].filter(Boolean);
+                    return true;
+                },
+            });
+        } finally {
+            delete root.dataset.materialsPopupOpen;
+        }
         if (action !== "add") return true;
         const existingFiles = Array.isArray(classResources.files)
             ? [...classResources.files]
             : [];
+        const nextFiles = [...existingFiles];
         const existingByKey = new Set(
-            existingFiles.map((file) => String(file?.key ?? "").trim()),
+            nextFiles.map((file) => String(file?.key ?? "").trim()),
         );
         for (const key of selectedKeys) {
             const keyText = String(key ?? "").trim();
@@ -327,7 +467,7 @@ export async function handleResourceActions(
             const match = libraryFiles.find(
                 (entry) => String(entry?.key ?? "").trim() === keyText,
             );
-            existingFiles.push({
+            nextFiles.push({
                 key: keyText,
                 name:
                     String(match?.name ?? "").trim() ||
@@ -335,17 +475,19 @@ export async function handleResourceActions(
                 contentType:
                     String(match?.contentType ?? "").trim() || undefined,
             });
+            existingByKey.add(keyText);
         }
+        const dedupedLibraryFiles = dedupeFileRefs(nextFiles);
         const response = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ files: existingFiles }),
+                body: JSON.stringify({ files: dedupedLibraryFiles }),
             },
         ).catch(() => null);
         if (response?.ok) {
-            classResources.files = existingFiles;
+            classResources.files = dedupedLibraryFiles;
             await loadSelectedClassMeta();
             refreshDom();
         }
@@ -373,7 +515,11 @@ export async function handleResourceActions(
                     : "";
             if (!ALLOWED_CLASSROOM_FILE_EXTENSIONS.has(ext)) {
                 showToast(
-                    `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                    formatFilenameToast(
+                        i18n,
+                        "module.study.classes.materials_upload_failed",
+                        file.name,
+                    ),
                     { variant: "error" },
                 );
                 continue;
@@ -389,7 +535,11 @@ export async function handleResourceActions(
             }).catch(() => null);
             if (!uploadResponse?.ok) {
                 showToast(
-                    `${i18n.t("module.study.classes.materials_upload_failed")}: ${file.name}`,
+                    formatFilenameToast(
+                        i18n,
+                        "module.study.classes.materials_upload_failed",
+                        file.name,
+                    ),
                     { variant: "error" },
                 );
                 continue;
@@ -400,16 +550,17 @@ export async function handleResourceActions(
                 contentType: file.type || "application/octet-stream",
             });
         }
+        const dedupedFiles = dedupeFileRefs(existingFiles);
         const saveResponse = await apiFetch(
             `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ files: existingFiles }),
+                body: JSON.stringify({ files: dedupedFiles }),
             },
         ).catch(() => null);
         if (saveResponse?.ok) {
-            classResources.files = existingFiles;
+            classResources.files = dedupedFiles;
         }
         input.value = "";
         await loadSelectedClassMeta();

@@ -13,8 +13,8 @@ import {
 } from "./join-notifications.js";
 import { handleClassUpdateRoute } from "./class-update-route.js";
 import { handleClassroomLayoutRoute } from "./classroom-layout-route.js";
+import { handleClassroomViewStateRoute } from "./classroom-view-state-route.js";
 import { handleClassroomFilesRoutes } from "./classroom-files-route.js";
-import { handleClassroomAgendaRoutes } from "./classroom-agenda-route.js";
 import { handleTeacherRequestsRoutes } from "./teacher-requests-route.js";
 import {
     decorateMemberships,
@@ -333,6 +333,16 @@ export function createClassesRoutes(
         ) {
             return true;
         }
+        if (
+            await handleClassroomViewStateRoute(req, res, url, {
+                store,
+                options,
+                ctx,
+                logMeta,
+            })
+        ) {
+            return true;
+        }
 
         const classroomStudentMatch = url.pathname.match(
             /^\/api\/v1\/study\/classrooms\/([^/]+)\/students\/([^/]+)$/,
@@ -388,19 +398,6 @@ export function createClassesRoutes(
                 store,
                 options,
                 logMeta,
-            })
-        ) {
-            return true;
-        }
-
-        if (
-            await handleClassroomAgendaRoutes({
-                req,
-                res,
-                url,
-                ctx,
-                store,
-                options,
             })
         ) {
             return true;

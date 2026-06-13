@@ -13,4 +13,18 @@
   <string name="module.study.classes.whiteboard_not_configured">Whiteboard service is not configured.</string>
   <string name="module.study.classes.delete_whiteboard_title">Delete Whiteboard</string>
   <string name="module.study.classes.delete_whiteboard_confirm">Delete whiteboard "{name}"? This cannot be undone.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.title">Configure Nextcloud Whiteboard</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url">Whiteboard URL</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_description">Enter the full base URL of your Nextcloud Whiteboard deployment.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_placeholder">https://whiteboard.example.com</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret">Signing Secret</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_description">Set the signing secret used to mint embed tokens.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_placeholder">super-secret-token</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry">Token Expiry (Seconds)</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_description">Configure how long generated whiteboard access tokens stay valid.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_placeholder">3600</string>
+  <string name="module.nextcloud_whiteboard.admin.config.note">Classroom whiteboards stay unavailable until both URL and signing secret are configured.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.load_failed">Failed to load Nextcloud Whiteboard configuration.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_success">Nextcloud Whiteboard configuration saved.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_failed">Failed to save Nextcloud Whiteboard configuration.</string>
 </strings>

@@ -91,6 +91,8 @@
 .classes-blackboard-actions {
     display: flex;
     gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .classes-blackboard-surface {
@@ -99,6 +101,8 @@
     display: block;
     position: relative;
     overflow-y: auto;
+    font-family: var(--classes-blackboard-chalk-font);
+    font-size: 0.95rem;
 }
 
 .classes-blackboard-main {

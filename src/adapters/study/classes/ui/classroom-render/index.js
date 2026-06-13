@@ -5,6 +5,7 @@ import {
     buildAccountAbbreviation,
     normalizeSeatAssignments,
     renderWorkspaceTabs,
+    renderTileLayoutToggleButton,
     renderWorkspaceContent,
     renderRosterPanel,
     renderSidebarPanel,
@@ -79,6 +80,7 @@ export function renderBlackboard({
     workspaceMode,
     sidebarMode,
     activeMaterialKey,
+    activeMaterialPreview,
     whiteboards,
     activeWhiteboard,
     activeWhiteboardId,
@@ -89,6 +91,7 @@ export function renderBlackboard({
     initializedTiles,
     tileLayout = "stacked",
     tileOrder = [],
+    isTeacherPresent = false,
 }) {
     const entities = Array.isArray(boardEntities) ? boardEntities : [];
     const renderedEntities = entities
@@ -131,14 +134,6 @@ export function renderBlackboard({
     const toolbarActions = [];
     if (isTeacherView) {
         toolbarActions.push(
-            `<button type="button" class="classes-icon-btn classes-board-entity-token classes-open-chat-btn"
-                ${snapshot?.chatUrl ? "" : "disabled"}
-                data-entity-kind="chat"
-                draggable="true"
-                aria-label="${escapeHtml(i18n.t("module.study.classes.open_chat"))}"
-                title="${escapeHtml(i18n.t("module.study.classes.open_chat"))}">${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>`,
-        );
-        toolbarActions.push(
             `<button type="button" class="classes-icon-btn classes-class-settings-btn"
                 aria-label="${escapeHtml(i18n.t("module.study.classes.class_settings"))}"
                 title="${escapeHtml(i18n.t("module.study.classes.class_settings"))}">${escapeHtml(i18n.t("module.study.classes.class_settings"))}</button>`,
@@ -169,22 +164,32 @@ export function renderBlackboard({
                 )}</button>`,
         );
     }
+    if (workspaceMode !== "notepad") {
+        toolbarActions.unshift(
+            renderTileLayoutToggleButton({
+                i18n,
+                tileLayout,
+            }),
+        );
+    }
     const collapsed = !blackboardExpanded && !isMeetingOpen;
     return `
         <div class="classes-blackboard${collapsed ? " classes-blackboard--collapsed" : ""}" role="region" aria-label="${escapeHtml(i18n.t("module.study.classes.classroom_blackboard"))}">
             <div class="classes-blackboard-header">
-                <div class="classes-chalk-header classes-workspace-tabs">${renderWorkspaceTabs(
+                <div class="classes-chalk-header classes-workspace-tabs${isTeacherPresent ? " classes-teacher-locked" : ""}">${renderWorkspaceTabs(
                     {
                         i18n,
                         workspaceMode,
                         isMeetingOpen,
                         hasActiveMeeting,
                         isTeacherView,
+                        hasChat: Boolean(
+                            String(snapshot?.chatUrl ?? "").trim(),
+                        ),
                         canAccessWhiteboard:
                             isTeacherView ||
                             Boolean(activeWhiteboardId) ||
                             Boolean(activeWhiteboard?.embedUrl),
-                        tileLayout,
                     },
                 )}</div>
                 ${
@@ -211,6 +216,8 @@ export function renderBlackboard({
                             i18n,
                             isTeacherView,
                             workspaceMode,
+                            activeMaterialKey,
+                            activeMaterialPreview,
                             activeWhiteboard,
                             initializedTiles,
                             isMeetingOpen,
@@ -519,6 +526,7 @@ function renderClassroomView({
     initializedTiles,
     tileLayout = "stacked",
     tileOrder = [],
+    isTeacherPresent = false,
 }) {
     if (!snapshot) {
         return isTeacherView
@@ -557,6 +565,7 @@ function renderClassroomView({
                         initializedTiles,
                         tileLayout,
                         tileOrder,
+                        isTeacherPresent,
                     })}
                 </div>
                 ${renderDeskFloor({ snapshot, selectedSeatNumber, i18n, isTeacherView })}

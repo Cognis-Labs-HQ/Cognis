@@ -5,6 +5,34 @@ import type { DbClassesStore } from "../store/index.js";
 import { MAX_STUDENT_LIMIT } from "../store/constants.js";
 import type { ClassesRouteOptions } from "./route-helpers.js";
 
+export interface MaterialViewport {
+    scale: number;
+    x: number;
+    y: number;
+}
+
+const materialViewportCache = new Map<string, MaterialViewport>();
+
+export function getMaterialViewport(classId: string): MaterialViewport | null {
+    return materialViewportCache.get(classId) ?? null;
+}
+
+function parseMaterialViewport(raw: unknown): MaterialViewport | null {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const candidate = raw as Record<string, unknown>;
+    const scale = Number(candidate.scale);
+    const x = Number(candidate.x);
+    const y = Number(candidate.y);
+    if (!Number.isFinite(scale) || !Number.isFinite(x) || !Number.isFinite(y)) {
+        return null;
+    }
+    return {
+        scale: Math.max(0.05, Math.min(scale, 20)),
+        x,
+        y,
+    };
+}
+
 export async function handleClassroomLayoutRoute(
     req: IncomingMessage,
     res: ServerResponse,
@@ -37,11 +65,17 @@ export async function handleClassroomLayoutRoute(
         boardFocus?: unknown;
         activeWhiteboardId?: unknown;
         activeMaterialKey?: unknown;
+        viewLayout?: unknown;
+        materialViewport?: unknown;
     };
     const studentLimitRaw = body.studentLimit;
     const seatAssignmentsRaw = body.seatAssignments;
     const activeWhiteboardIdRaw = body.activeWhiteboardId;
     const activeMaterialKeyRaw = body.activeMaterialKey;
+    const viewLayoutRaw =
+        String(body.viewLayout ?? "")
+            .trim()
+            .toLowerCase() || undefined;
     const boardFocusRaw =
         String(body.boardFocus ?? "")
             .trim()
@@ -91,13 +125,28 @@ export async function handleClassroomLayoutRoute(
         boardFocusRaw != null &&
         boardFocusRaw !== "agenda" &&
         boardFocusRaw !== "classroom" &&
-        boardFocusRaw !== "chat"
+        boardFocusRaw !== "chat" &&
+        boardFocusRaw !== "whiteboard" &&
+        boardFocusRaw !== "notepad"
     ) {
         jsonError(
             res,
             400,
             "bad_request",
-            "boardFocus must be agenda, classroom, or chat.",
+            "boardFocus must be agenda, classroom, chat, whiteboard, or notepad.",
+        );
+        return true;
+    }
+    if (
+        viewLayoutRaw != null &&
+        viewLayoutRaw !== "stacked" &&
+        viewLayoutRaw !== "slideshow"
+    ) {
+        jsonError(
+            res,
+            400,
+            "bad_request",
+            "viewLayout must be stacked or slideshow.",
         );
         return true;
     }
@@ -138,6 +187,10 @@ export async function handleClassroomLayoutRoute(
                       Number(seatNumber),
                   ]),
               );
+    const materialViewport = parseMaterialViewport(body.materialViewport);
+    if (materialViewport) {
+        materialViewportCache.set(classId, materialViewport);
+    }
     try {
         const classroomState = await input.store.updateClassroomStateForTeacher(
             classId,
@@ -149,9 +202,15 @@ export async function handleClassroomLayoutRoute(
                     | "agenda"
                     | "classroom"
                     | "chat"
+                    | "whiteboard"
+                    | "notepad"
                     | undefined,
                 activeWhiteboardId,
                 activeMaterialKey,
+                viewLayout: viewLayoutRaw as
+                    | "stacked"
+                    | "slideshow"
+                    | undefined,
             },
         );
         jsonOk(res, classroomState);

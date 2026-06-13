@@ -13,4 +13,18 @@
   <string name="module.study.classes.whiteboard_not_configured">Layanan papan tulis belum dikonfigurasi.</string>
   <string name="module.study.classes.delete_whiteboard_title">Hapus Papan Tulis</string>
   <string name="module.study.classes.delete_whiteboard_confirm">Hapus papan tulis "{name}"? Tindakan ini tidak dapat dibatalkan.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.title">Konfigurasi Nextcloud Whiteboard</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url">URL Whiteboard</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_description">Masukkan URL dasar lengkap untuk deployment Nextcloud Whiteboard kamu.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_placeholder">https://whiteboard.example.com</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret">Rahasia Penandatanganan</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_description">Tetapkan rahasia penandatanganan yang dipakai untuk membuat token semat.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_placeholder">super-secret-token</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry">Kedaluwarsa Token (Detik)</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_description">Atur berapa lama token akses whiteboard yang dibuat tetap berlaku.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_placeholder">3600</string>
+  <string name="module.nextcloud_whiteboard.admin.config.note">Whiteboard kelas tetap tidak tersedia sampai URL dan rahasia penandatanganan dikonfigurasi.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.load_failed">Gagal memuat konfigurasi Nextcloud Whiteboard.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_success">Konfigurasi Nextcloud Whiteboard tersimpan.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_failed">Gagal menyimpan konfigurasi Nextcloud Whiteboard.</string>
 </strings>

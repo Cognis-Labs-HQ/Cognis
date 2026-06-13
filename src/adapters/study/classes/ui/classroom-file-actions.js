@@ -1,11 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const NOTEPAD_FILES_PREFIX = "classroom-notes";
-
-function buildFileKey(classId, filename) {
-    return `${NOTEPAD_FILES_PREFIX}/${encodeURIComponent(classId)}/${encodeURIComponent(filename)}`;
-}
-
 function extractFilename(key) {
     const parts = key.split("/");
     return decodeURIComponent(parts[parts.length - 1] ?? key);
@@ -21,49 +15,45 @@ async function listNotepadFiles(apiFetch, classId) {
 }
 
 async function saveNotepadFile(apiFetch, classId, filename, content) {
-    const key = buildFileKey(classId, filename);
-    const response = await apiFetch(`/api/v1/files/${key}`, {
-        method: "PUT",
-        headers: { "content-type": "text/plain; charset=utf-8" },
-        body: new TextEncoder().encode(content),
-    }).catch(() => null);
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        {
+            method: "PUT",
+            headers: { "content-type": "text/plain; charset=utf-8" },
+            body: new TextEncoder().encode(content),
+        },
+    ).catch(() => null);
     return response?.ok ?? false;
 }
 
 async function loadNotepadFile(apiFetch, classId, filename) {
-    const key = buildFileKey(classId, filename);
-    const response = await apiFetch(`/api/v1/files/${key}`).catch(() => null);
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+    ).catch(() => null);
     if (!response?.ok) return null;
     return response.text().catch(() => null);
 }
 
 async function deleteNotepadFile(apiFetch, classId, filename) {
-    const key = buildFileKey(classId, filename);
-    const response = await apiFetch(`/api/v1/files/${key}`, {
-        method: "DELETE",
-    }).catch(() => null);
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        {
+            method: "DELETE",
+        },
+    ).catch(() => null);
     return response?.ok ?? false;
 }
 
 async function renameNotepadFile(apiFetch, classId, oldName, newName) {
-    const oldKey = buildFileKey(classId, oldName);
-    const newKey = buildFileKey(classId, newName);
-    const getResponse = await apiFetch(`/api/v1/files/${oldKey}`).catch(
-        () => null,
+    const response = await apiFetch(
+        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/rename`,
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ oldName, newName }),
+        },
     );
-    if (!getResponse?.ok) return false;
-    const content = await getResponse.arrayBuffer().catch(() => null);
-    if (!content) return false;
-    const putResponse = await apiFetch(`/api/v1/files/${newKey}`, {
-        method: "PUT",
-        headers: { "content-type": "text/plain; charset=utf-8" },
-        body: content,
-    }).catch(() => null);
-    if (!putResponse?.ok) return false;
-    await apiFetch(`/api/v1/files/${oldKey}`, { method: "DELETE" }).catch(
-        () => null,
-    );
-    return true;
+    return response?.ok ?? false;
 }
 
 function renderFilePickerBody(files, i18n) {
@@ -83,7 +73,7 @@ function renderFilePickerBody(files, i18n) {
                                 class="btn-confirm btn-animated classes-file-open-btn"
                                 data-file-name="${escapeHtml(name)}">${escapeHtml(i18n.t("ui.reuse.open"))}</button>
                             <button type="button"
-                                class="btn-cancel btn-animated classes-file-rename-btn"
+                                class="btn-animated classes-file-rename-btn"
                                 data-file-name="${escapeHtml(name)}">${escapeHtml(i18n.t("ui.reuse.rename"))}</button>
                             <button type="button"
                                 class="btn-cancel btn-animated classes-file-delete-btn"
@@ -131,11 +121,6 @@ export async function handleFileActions(
                 </label>
             `,
             actions: [
-                {
-                    id: "open",
-                    label: i18n.t("ui.reuse.open"),
-                    variant: "confirm",
-                },
                 {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
@@ -201,19 +186,16 @@ export async function handleFileActions(
                 }
                 return true;
             },
-            onMount: (overlay) => {
+            onOpen: (overlay) => {
                 overlay.addEventListener("click", async (evt) => {
                     const openBtn = evt.target.closest(
                         ".classes-file-open-btn",
                     );
                     if (openBtn instanceof HTMLElement) {
                         selectedFilename = openBtn.dataset.fileName ?? null;
-                        overlay.dispatchEvent(
-                            new CustomEvent("popup-action", {
-                                detail: { actionId: "open" },
-                                bubbles: true,
-                            }),
-                        );
+                        overlay
+                            .querySelector('[data-popup-action="cancel"]')
+                            ?.click();
                         return;
                     }
                     const deleteBtn = evt.target.closest(
@@ -329,7 +311,7 @@ export async function handleFileActions(
                 });
             },
         });
-        if ((action !== "open" && action !== "cancel") || !selectedFilename) {
+        if (!selectedFilename) {
             return true;
         }
         const content = await loadNotepadFile(

@@ -239,6 +239,12 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 type: "text",
             },
             {
+                name: "view_layout",
+                type: "text",
+                notNull: true,
+                default: "stacked",
+            },
+            {
                 name: "updated_at",
                 type: "timestamp",
                 notNull: true,
@@ -404,6 +410,7 @@ async function ensureClassroomStateColumns(db: DbExecutor): Promise<void> {
         "classroom_state",
         "active_material_key",
     );
+    await ensureMissingColumn(rawDb, dialect, "classroom_state", "view_layout");
 }
 
 async function ensureClassroomResourcesColumns(db: DbExecutor): Promise<void> {
@@ -443,7 +450,8 @@ async function ensureMissingColumn(
         | "student_limit"
         | "board_focus"
         | "active_whiteboard_id"
-        | "active_material_key",
+        | "active_material_key"
+        | "view_layout",
 ): Promise<void> {
     if (!db.execute) return;
     if (await hasColumn(db, dialect, tableName, columnName)) {
@@ -464,7 +472,8 @@ async function hasColumn(
         | "student_limit"
         | "board_focus"
         | "active_whiteboard_id"
-        | "active_material_key",
+        | "active_material_key"
+        | "view_layout",
 ): Promise<boolean> {
     if (!db.execute) return false;
     if (dialect === "sqlite") {
@@ -495,7 +504,8 @@ function resolveAddColumnStatement(
         | "student_limit"
         | "board_focus"
         | "active_whiteboard_id"
-        | "active_material_key",
+        | "active_material_key"
+        | "view_layout",
 ): string {
     if (tableName === "study_classes" && columnName === "join_mode") {
         return dialect === "mariadb"
@@ -548,6 +558,11 @@ function resolveAddColumnStatement(
         return dialect === "mariadb"
             ? "ALTER TABLE classroom_state ADD COLUMN active_material_key VARCHAR(1024) NULL"
             : "ALTER TABLE classroom_state ADD COLUMN active_material_key TEXT";
+    }
+    if (tableName === "classroom_state" && columnName === "view_layout") {
+        return dialect === "mariadb"
+            ? "ALTER TABLE classroom_state ADD COLUMN view_layout VARCHAR(16) NOT NULL DEFAULT 'stacked'"
+            : "ALTER TABLE classroom_state ADD COLUMN view_layout TEXT NOT NULL DEFAULT 'stacked'";
     }
     return dialect === "mariadb"
         ? "ALTER TABLE teacher_requests ADD COLUMN is_listed TINYINT(1) NOT NULL DEFAULT 1"

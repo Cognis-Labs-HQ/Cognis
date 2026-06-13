@@ -8,6 +8,7 @@ import {
     hexToBytes,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
+import { resolveMessageStyle } from "/static/adapters/social/messages/message-utils.js";
 
 const CHAT_REFRESH_INTERVAL_MS = 4_000;
 const textEncoder = new TextEncoder();
@@ -48,7 +49,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
                 ${escapeHtml(i18n.t("ui.reuse.close"))}
             </button>
         </div>
-        <div class="classes-chat-thread" role="log" aria-live="polite" aria-busy="true"></div>
+        <div class="jitsi-chat-thread" role="log" aria-live="polite" aria-busy="true"></div>
         <form class="classes-chat-form">
             <textarea class="classes-chat-input" rows="2"
                 placeholder="${escapeHtml(i18n.t("module.study.classes.chat_placeholder"))}"
@@ -56,7 +57,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
         </form>
     `;
 
-    const thread = panel.querySelector(".classes-chat-thread");
+    const thread = panel.querySelector(".jitsi-chat-thread");
     const form = panel.querySelector(".classes-chat-form");
     const input = panel.querySelector(".classes-chat-input");
     const panelHeader = panel.querySelector(".classes-chat-panel-header");
@@ -110,7 +111,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
     function renderMessages(messages) {
         if (!(thread instanceof HTMLElement)) return;
         if (!Array.isArray(messages) || messages.length === 0) {
-            thread.innerHTML = `<p class="classes-chat-empty">${escapeHtml(i18n.t("module.study.classes.chat_empty"))}</p>`;
+            thread.innerHTML = `<p class="jitsi-chat-empty">${escapeHtml(i18n.t("module.study.classes.chat_empty"))}</p>`;
             return;
         }
         thread.innerHTML = messages
@@ -119,8 +120,8 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
                     String(msg?.senderId ?? "") ===
                     String(localStorage.getItem("cognis_account") ?? "");
                 const itemClass = isOwn
-                    ? "classes-chat-message classes-chat-message--own"
-                    : "classes-chat-message";
+                    ? "jitsi-chat-message jitsi-chat-message-own"
+                    : "jitsi-chat-message";
                 const sender = String(
                     msg?.senderDisplayName ??
                         msg?.senderHandle ??
@@ -134,11 +135,11 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
                     softBreaks: true,
                 });
                 return `<article class="${itemClass}">
-                    <header class="classes-chat-message-head">
+                    <header class="jitsi-chat-message-head">
                         <strong>${escapeHtml(sender)}</strong>
                         <time>${time}</time>
                     </header>
-                    <div class="classes-chat-message-body">${body}</div>
+                    <div class="jitsi-chat-message-body">${body}</div>
                 </article>`;
             })
             .join("");
@@ -203,7 +204,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
         panel.dataset.open = isOpen ? "true" : "false";
         panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
         if (typeof onVisibilityChange === "function") {
-            onVisibilityChange(isOpen);
+            onVisibilityChange({ visible: isOpen });
         }
     }
 
@@ -213,7 +214,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
         roomKey = null;
         if (thread instanceof HTMLElement) {
             thread.setAttribute("aria-busy", "false");
-            thread.innerHTML = `<p class="classes-chat-empty">${escapeHtml(i18n.t("module.study.classes.chat_select_class_prompt"))}</p>`;
+            thread.innerHTML = `<p class="jitsi-chat-empty">${escapeHtml(i18n.t("module.study.classes.chat_select_class_prompt"))}</p>`;
         }
         if (input instanceof HTMLTextAreaElement) {
             input.disabled = true;
@@ -265,6 +266,7 @@ export function createClassroomNativeChat({ i18n, onVisibilityChange }) {
 
     function openChat(chatUrl) {
         const roomId = parseRoomId(chatUrl);
+        document.documentElement.dataset.messageStyle = resolveMessageStyle();
         setPanelVisibility(true);
         if (!roomId) {
             showSelectChatPrompt();
