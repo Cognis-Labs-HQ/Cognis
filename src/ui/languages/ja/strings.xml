@@ -704,6 +704,7 @@
   <string name="module.study.classes.meeting_closed_title">授業は現在閉まっています</string>
   <string name="module.study.classes.meeting_closed_body">先生がまだミーティングを開始していません。開始されると自動的に参加します。</string>
   <string name="module.study.classes.meeting_teacher_ended">先生がミーティングを終了しました。</string>
+  <string name="module.study.classes.teacher_left_classroom">先生が教室を退出しました。</string>
   <string name="module.study.classes.notepad_save">クラスに保存</string>
   <string name="module.study.classes.notepad_open">クラスから開く</string>
   <string name="module.study.classes.notepad_saved">メモがクラス教材に保存されました。</string>

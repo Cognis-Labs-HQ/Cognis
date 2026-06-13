@@ -704,6 +704,7 @@
   <string name="module.study.classes.meeting_closed_title">Unterrichtsstunde geschlossen</string>
   <string name="module.study.classes.meeting_closed_body">Der Lehrer hat das Meeting noch nicht geöffnet. Sie werden automatisch beigetreten, sobald es beginnt.</string>
   <string name="module.study.classes.meeting_teacher_ended">Der Lehrer hat das Meeting beendet.</string>
+  <string name="module.study.classes.teacher_left_classroom">Der Lehrer hat das Klassenzimmer verlassen.</string>
   <string name="module.study.classes.notepad_save">In Klasse speichern</string>
   <string name="module.study.classes.notepad_open">Aus Klasse öffnen</string>
   <string name="module.study.classes.notepad_saved">Notiz in Klassenunterlagen gespeichert.</string>

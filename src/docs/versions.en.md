@@ -41,9 +41,9 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.9` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.6` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.1` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.2` |
 | Notepad (Study)       | `src/adapters/study/notepad/`       | `1.0.1` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
