@@ -206,3 +206,11 @@ Navigationsschutz-Listener wie die eigenständige Meetings-Seite:
 Capture-Phase-`click`-Guard fängt SPA-Link-Navigation ab, und ein
 `popstate`-Guard blockiert Vor-/Zurück-Navigation im Browser — alle zeigen
 den bestehenden „Meeting verlassen"-Toast, solange ein Meeting aktiv ist.
+
+## Modul-Laden der Classroom-Route
+
+Die Classroom-SPA-Route und der direkte `/classroom`-Seitenstart laden den
+Moduleinstieg jetzt direkt über
+`/static/adapters/study/classes/classroom/index.js`. Dadurch entfällt der
+anfällige Zwischenpfad und dynamische Import-Fehler beim Classroom-Wechsel
+werden behoben.

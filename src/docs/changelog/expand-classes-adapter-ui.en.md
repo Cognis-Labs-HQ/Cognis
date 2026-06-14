@@ -235,3 +235,10 @@ used by the standalone Meetings page: `beforeunload` blocks a full-page reload,
 a capture-phase `click` guard intercepts SPA link navigation, and a `popstate`
 guard blocks the browser back/forward action — all showing the existing
 "Leave the meeting before navigating away" toast when a meeting is active.
+
+## Classroom route module loading
+
+The classroom SPA route and direct `/classroom` page bootstrap now load the
+module entry from `/static/adapters/study/classes/classroom/index.js` directly.
+This removes the brittle intermediate shim path and resolves dynamic import
+fetch failures seen on classroom route transitions.

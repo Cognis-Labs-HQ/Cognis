@@ -197,3 +197,11 @@ muat ulang halaman penuh, guard `click` fase capture mencegat navigasi link
 SPA, dan guard `popstate` memblokir tombol back/forward browser — semuanya
 menampilkan toast "Tinggalkan meeting sebelum berpindah halaman" saat meeting
 sedang aktif.
+
+## Pemuatan modul rute classroom
+
+Rute SPA classroom dan bootstrap halaman langsung `/classroom` sekarang memuat
+entri modul langsung dari
+`/static/adapters/study/classes/classroom/index.js`. Ini menghapus jalur shim
+perantara yang rapuh dan memperbaiki kegagalan fetch dynamic import saat
+berpindah ke rute classroom.

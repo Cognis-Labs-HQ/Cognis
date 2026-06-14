@@ -197,3 +197,11 @@ Classroom ミーティング埋め込みは、スタンドアロンの Meetings 
 ナビゲーションを遮断し、`popstate` ガードでブラウザの戻る／進む操作を
 ブロックします。ミーティングがアクティブな間はすべて既存の
 「ページを離れる前にミーティングを退出してください」トーストを表示します。
+
+## Classroom ルートのモジュール読み込み
+
+Classroom の SPA ルートと `/classroom` 直接表示時のブートストラップは、
+モジュールのエントリーを
+`/static/adapters/study/classes/classroom/index.js` から直接読み込むように
+なりました。これにより脆い中継 shim パスを排除し、Classroom ルート遷移時の
+動的 import の fetch 失敗を解消します。
