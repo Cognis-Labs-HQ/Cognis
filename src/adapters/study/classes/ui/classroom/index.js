@@ -9,10 +9,6 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 import {
-    handleProfileAvatarError,
-    hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
-import {
     loadFooterClasses,
     createClassFooterItem,
 } from "/static/adapters/study/classes/study-footer.js";
@@ -72,12 +68,40 @@ import {
 import { loadWindowsFactories } from "/static/adapters/study/classes/classroom/windows-loader.js";
 import { mountMaterialImageViewer } from "/static/adapters/study/classes/classroom/material-viewer-mount.js";
 
+async function loadProfileAvatarHelpers() {
+    try {
+        const avatarModule = await import(
+            "/static/gateways/social/reuse/profile-avatar.js"
+        );
+        return {
+            handleProfileAvatarError:
+                typeof avatarModule.handleProfileAvatarError === "function"
+                    ? avatarModule.handleProfileAvatarError
+                    : null,
+            hydrateProfileAvatars:
+                typeof avatarModule.hydrateProfileAvatars === "function"
+                    ? avatarModule.hydrateProfileAvatars
+                    : null,
+        };
+    } catch (error) {
+        console.warn("[classroom] Failed to load profile avatar helpers.", {
+            operation: "loadProfileAvatarHelpers",
+            error: error instanceof Error ? error.message : String(error),
+        });
+        return {
+            handleProfileAvatarError: null,
+            hydrateProfileAvatars: null,
+        };
+    }
+}
+
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
     const previousPath = resolvePreviousPath();
 
     const createClassroomNotepad = await loadNotepadFactory();
     const notepadStringsBaseUrl = getNotepadStringsBaseUrl();
+    const profileAvatarHelpers = await loadProfileAvatarHelpers();
     const { createMeetingEmbed, createWhiteboardWindow } =
         await loadWindowsFactories();
 
@@ -553,7 +577,7 @@ export async function mount(root, { signal } = {}) {
                 apiFetch,
                 signal,
             });
-            void hydrateProfileAvatars(root);
+            void profileAvatarHelpers.hydrateProfileAvatars?.(root);
             classroomWindows?.reattach();
             if (nextSnapshot?.chatUrl && workspaceMode === "chat") {
                 classroomWindows?.openChat(nextSnapshot.chatUrl);
@@ -795,10 +819,16 @@ export async function mount(root, { signal } = {}) {
                         getIsTeacherPresent: computeIsTeacherPresent,
                         loadActiveMaterialPreview,
                     });
-                    root.addEventListener("error", handleProfileAvatarError, {
-                        signal,
-                        capture: true,
-                    });
+                    if (profileAvatarHelpers.handleProfileAvatarError) {
+                        root.addEventListener(
+                            "error",
+                            profileAvatarHelpers.handleProfileAvatarError,
+                            {
+                                signal,
+                                capture: true,
+                            },
+                        );
+                    }
                 },
             },
         ],
@@ -824,7 +854,7 @@ export async function mount(root, { signal } = {}) {
     if (pageContent instanceof HTMLElement) {
         pageContent.classList.add("classes-classroom-page-content");
     }
-    void hydrateProfileAvatars(root);
+    void profileAvatarHelpers.hydrateProfileAvatars?.(root);
     syncGlobalChatTarget();
     classroomWindows = createClassroomWindows({
         root,

@@ -271,6 +271,23 @@ test("classroom chat uses shared messages adapter chat styles", () => {
     assert.match(chatCssSource, /messages-chat-shared\.css/);
 });
 
+test("classroom avatar helpers load dynamically instead of hard-importing social UI assets", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /import\(\s*"\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+    );
+    assert.match(source, /Failed to load profile avatar helpers/);
+    assert.doesNotMatch(
+        source,
+        /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+    );
+});
+
 test("classroom materials render in the workspace viewer instead of the sidebar", () => {
     const source = readFileSync(
         resolve(

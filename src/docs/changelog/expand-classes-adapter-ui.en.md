@@ -40,6 +40,12 @@ injecting elements into the global footer bar.
 
 ## Classroom Toolbar Follow-Ups
 
+## Classroom Route Stability
+
+The `/classroom` SPA entry now loads profile-avatar helpers lazily. When the
+Social gateway UI assets are unavailable, the classroom still opens instead of
+failing during module import, while avatar hydration quietly falls back.
+
 The classroom roster now labels the section as "Students" and shows the teacher
 at the top of the list so the classroom panel matches the requested terminology.
 

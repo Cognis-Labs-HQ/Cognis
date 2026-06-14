@@ -24,7 +24,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Öffentliche Registrierung | `src/adapters/registration/public/` | `0.1.0` |
 | Profil (Social)           | `src/adapters/social/profile/`      | `1.0.7` |
 | Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.4.4` |
-| Klassen (Study)           | `src/adapters/study/classes/`       | `1.4.3` |
+| Klassen (Study)           | `src/adapters/study/classes/`       | `1.5.8` |
 
 ## Gateways
 

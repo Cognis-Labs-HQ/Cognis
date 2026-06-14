@@ -220,3 +220,10 @@ Adapter classes membaca capability ini saat bootstrap dan menyuntikkannya
 sebagai meta tag ke HTML classroom. Client membaca meta tag tersebut saat
 runtime dan mengimpor factory secara dinamis, serta tetap berfungsi dengan baik
 bila salah satu modul tidak tersedia.
+
+## Stabilitas rute classroom
+
+Halaman classroom sekarang memuat helper avatar profil secara dinamis alih-alih
+melalui impor gateway yang kaku. Jika aset UI gateway Social tidak tersedia,
+`/classroom` tetap bisa dibuka, dan hanya hidrasi avatar yang diam-diam jatuh
+ke fallback.

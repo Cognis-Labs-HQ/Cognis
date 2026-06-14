@@ -24,7 +24,7 @@
 | 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
 | プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.7`    |
 | メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
-| クラス (Study)             | `src/adapters/study/classes/`       | `1.4.3`    |
+| クラス (Study)             | `src/adapters/study/classes/`       | `1.5.8`    |
 
 ## ゲートウェイ
 

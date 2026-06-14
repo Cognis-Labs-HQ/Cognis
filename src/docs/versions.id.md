@@ -24,7 +24,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0` |
 | Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.7` |
 | Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.4` |
-| Kelas (Study)          | `src/adapters/study/classes/`       | `1.4.3` |
+| Kelas (Study)          | `src/adapters/study/classes/`       | `1.5.8` |
 
 ## Gateway
 

@@ -229,3 +229,10 @@ Classes-Adapter liest diese Capabilities beim Bootstrap und injiziert sie als
 Meta-Tags in das Classroom-HTML. Der Client liest die Meta-Tags zur Laufzeit und
 importiert die Factories bei Bedarf. Fehlt ein Modul, funktioniert die Seite
 weiterhin, und nur die jeweilige Funktion ist nicht verfügbar.
+
+## Classroom-Routenstabilität
+
+Die Classroom-Seite lädt die Helfer für Profil-Avatare jetzt dynamisch statt
+über einen harten Gateway-Import. Fehlen die UI-Assets des Social-Gateways,
+öffnet sich `/classroom` trotzdem weiter, und nur die Avatar-Hydrierung fällt
+still auf ihr Fallback zurück.
