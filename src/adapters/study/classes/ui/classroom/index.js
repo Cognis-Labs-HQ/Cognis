@@ -35,7 +35,10 @@ import { handleResourceActions } from "/static/adapters/study/classes/classroom-
 import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
 import { bindClassroomInteractions } from "/static/adapters/study/classes/classroom/interactions.js";
 import { normalizeBoardFocus } from "/static/adapters/study/classes/board-focus.js";
-import { createClassroomDataLoaders } from "/static/adapters/study/classes/classroom/data-loaders.js";
+import {
+    createClassroomDataLoaders,
+    createClassMetaLoader,
+} from "/static/adapters/study/classes/classroom/data-loaders.js";
 import {
     applyPresenceToSnapshots,
     applyClassroomSnapshotPatch,
@@ -291,148 +294,50 @@ export async function mount(root, { signal } = {}) {
         availableClasses = await fetchAvailableClasses();
     }
 
-    async function loadSelectedClassMeta() {
-        const snapshot = selectedSnapshot();
-        if (!snapshot) {
-            selectedNotebookText = "";
-            classResources = createDefaultClassResources();
-            agendaDocument = "";
-            agendaSnapshots = [];
-            whiteboards = [];
-            activeWhiteboard = null;
-            activeMeetingId = null;
-            activeMaterialKey = null;
-            lastBroadcastedMaterialKey = null;
-            revokeActiveMaterialPreview();
-            return;
-        }
-        syncTileLayoutWithSnapshot(snapshot);
-        const selectedActiveWhiteboardId =
-            getSelectedActiveWhiteboardId(snapshot);
-        const [
-            resourcesResponse,
-            notebookResponse,
-            agendaResponse,
-            whiteboardsResponse,
-            activeMeetingResponse,
-            studentWhiteboardTokenResponse,
-        ] = await Promise.all([
-            apiFetch(
-                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/resources`,
-                { suppressConnectionRecoveryToast: true },
-            ),
-            apiFetch(
-                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
-            ),
-            apiFetch(
-                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/agenda`,
-            ),
-            apiFetch(
-                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
-            ),
-            apiFetch(
-                `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(snapshot.id)}`,
-            ).catch(() => null),
-            !isTeacherView() && selectedActiveWhiteboardId
-                ? apiFetch(
-                      `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(selectedActiveWhiteboardId)}/token`,
-                      { suppressConnectionRecoveryToast: true },
-                  ).catch(() => null)
-                : Promise.resolve(null),
-        ]);
-        classResources = resourcesResponse.ok
-            ? ((await resourcesResponse.json())?.data ??
-              createDefaultClassResources())
-            : createDefaultClassResources();
-        selectedNotebookText = notebookResponse.ok
-            ? String((await notebookResponse.json())?.data?.noteText ?? "")
-            : "";
-        const agendaPayload = agendaResponse.ok
-            ? (await agendaResponse.json().catch(() => ({ data: null })))?.data
-            : null;
-        agendaDocument = String(agendaPayload?.document ?? "");
-        agendaSnapshots = Array.isArray(agendaPayload?.snapshots)
-            ? agendaPayload.snapshots
-            : [];
-        classResources = {
-            ...classResources,
-            agendaDocument,
-            agendaSnapshots,
-        };
-        const activeMeetingPayload = activeMeetingResponse?.ok
-            ? await activeMeetingResponse.json().catch(() => ({ data: [] }))
-            : { data: [] };
-        activeMeetingId = resolveActiveMeetingId(
-            activeMeetingPayload,
-            snapshot,
-        );
-        whiteboards = whiteboardsResponse.ok
-            ? ((await whiteboardsResponse.json())?.data ?? [])
-            : [];
-        if (!isTeacherView()) {
-            whiteboards = selectedActiveWhiteboardId
-                ? whiteboards.filter(
-                      (board) =>
-                          String(board?.id ?? "") ===
-                          selectedActiveWhiteboardId,
-                  )
-                : [];
-        }
-        if (activeWhiteboard) {
-            const match = whiteboards.find(
-                (board) => String(board?.id ?? "") === activeWhiteboard.boardId,
-            );
-            if (!match) {
-                activeWhiteboard = null;
-            } else {
-                activeWhiteboard = {
-                    ...activeWhiteboard,
-                    boardName: String(
-                        match?.name ?? activeWhiteboard.boardName,
-                    ),
-                };
-            }
-        }
-        if (
-            !isTeacherView() &&
-            activeWhiteboard?.boardId !== selectedActiveWhiteboardId
-        ) {
-            activeWhiteboard = null;
-        }
-        if (
-            !isTeacherView() &&
-            selectedActiveWhiteboardId &&
-            !activeWhiteboard?.embedUrl &&
-            studentWhiteboardTokenResponse?.ok
-        ) {
-            const tokenPayload = await studentWhiteboardTokenResponse
-                .json()
-                .catch(() => ({ data: {} }));
-            const embedUrl = String(tokenPayload?.data?.embedUrl ?? "").trim();
-            if (embedUrl) {
-                const matchBoard = whiteboards.find(
-                    (board) =>
-                        String(board?.id ?? "") === selectedActiveWhiteboardId,
-                );
-                activeWhiteboard = {
-                    boardId: selectedActiveWhiteboardId,
-                    boardName:
-                        String(matchBoard?.name ?? "").trim() ||
-                        i18n.t("module.study.classes.whiteboard"),
-                    embedUrl,
-                };
-                initializedTiles.add("whiteboard");
-            }
-        }
-        activeMaterialKey = getSelectedActiveMaterialKey(snapshot);
-        lastBroadcastedMaterialKey = activeMaterialKey;
-        await loadActiveMaterialPreview(
-            activeMaterialKey,
-            classResources.files,
-        );
-        syncStudentWorkspaceAccess(snapshot);
-        await pollTeacherViewState();
-    }
+    const { loadSelectedClassMeta } = createClassMetaLoader({
+        apiFetch,
+        getSnapshot: selectedSnapshot,
+        isTeacherView,
+        getSelectedActiveWhiteboardId,
+        getSelectedActiveMaterialKey,
+        resolveActiveMeetingId,
+        createDefaultClassResources,
+        loadActiveMaterialPreview,
+        revokeActiveMaterialPreview,
+        syncStudentWorkspaceAccess,
+        pollTeacherViewState,
+        syncTileLayoutWithSnapshot,
+        addInitializedTile: (tile) => initializedTiles.add(tile),
+        i18n,
+        getActiveWhiteboard: () => activeWhiteboard,
+        setClassResources: (value) => {
+            classResources = value;
+        },
+        setSelectedNotebookText: (value) => {
+            selectedNotebookText = value;
+        },
+        setAgendaDocument: (value) => {
+            agendaDocument = String(value ?? "");
+        },
+        setAgendaSnapshots: (value) => {
+            agendaSnapshots = Array.isArray(value) ? value : [];
+        },
+        setWhiteboards: (value) => {
+            whiteboards = value;
+        },
+        setActiveWhiteboard: (value) => {
+            activeWhiteboard = value;
+        },
+        setActiveMeetingId: (value) => {
+            activeMeetingId = value;
+        },
+        setActiveMaterialKey: (value) => {
+            activeMaterialKey = value;
+        },
+        setLastBroadcastedMaterialKey: (value) => {
+            lastBroadcastedMaterialKey = value;
+        },
+    });
 
     async function refreshData() {
         await Promise.all([loadClassrooms(), loadAvailableClasses()]);
