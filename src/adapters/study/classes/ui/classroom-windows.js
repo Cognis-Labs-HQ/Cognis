@@ -130,6 +130,18 @@ export function createClassroomWindows({
     };
 }
 
+/**
+ * Null stub used when the jitsi-meet module is not installed.
+ * Provides the minimum interface required by createClassroomWindows:
+ *   - element (HTMLElement, always hidden)
+ *   - openMeeting(snapshot) → Promise<void>
+ *   - tryAutoJoin(classroomId) → Promise<void>
+ *   - notifyActiveMeeting(meetingId) → void
+ *   - closeMeeting() → void
+ *   - isMeetingDismissed(meetingId) → boolean
+ *   - isAuthBlocked() → boolean
+ *   - resetAuthBlocked() → void
+ */
 function createNullMeetingEmbed() {
     const element = document.createElement("div");
     element.hidden = true;
@@ -145,6 +157,17 @@ function createNullMeetingEmbed() {
     };
 }
 
+/**
+ * Null stub used when the nextcloud-whiteboard module is not installed.
+ * Provides the minimum interface required by createClassroomWindows:
+ *   - getElement() → HTMLElement (always hidden)
+ *   - openBoard(opts) → Promise<void>
+ *   - closeBoard() → void
+ *   - isOpen() → boolean
+ *   - getActiveBoardId() → null
+ *   - hoist() → void
+ *   - reattach() → void
+ */
 function createNullWhiteboardWindow() {
     const element = document.createElement("div");
     element.hidden = true;

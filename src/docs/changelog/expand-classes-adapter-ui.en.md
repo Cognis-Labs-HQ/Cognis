@@ -256,4 +256,3 @@ study classes adapter reads these capabilities at bootstrap and injects them as
 meta tags into the classroom HTML. The classroom client reads the meta tags at
 runtime and imports the factories on demand, degrading gracefully when either
 module is absent.
-

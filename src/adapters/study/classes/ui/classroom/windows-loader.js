@@ -49,7 +49,15 @@ export async function loadMeetingEmbedFactory() {
     const scriptUrl = scriptMeta?.content?.trim() ?? "";
     if (!scriptUrl) return null;
     try {
-        return (await import(scriptUrl)).createClassroomMeetingEmbed;
+        const factory = (await import(scriptUrl)).createClassroomMeetingEmbed;
+        if (typeof factory !== "function") {
+            console.error(
+                "[classroom] Meeting embed module did not export createClassroomMeetingEmbed.",
+                { operation: "importMeetingEmbedScript", url: scriptUrl },
+            );
+            return null;
+        }
+        return factory;
     } catch (err) {
         console.error("[classroom] Failed to load meeting embed module.", {
             operation: "importMeetingEmbedScript",
@@ -74,7 +82,16 @@ export async function loadWhiteboardWindowFactory() {
     const scriptUrl = scriptMeta?.content?.trim() ?? "";
     if (!scriptUrl) return null;
     try {
-        return (await import(scriptUrl)).createClassroomWhiteboardWindow;
+        const factory = (await import(scriptUrl))
+            .createClassroomWhiteboardWindow;
+        if (typeof factory !== "function") {
+            console.error(
+                "[classroom] Whiteboard window module did not export createClassroomWhiteboardWindow.",
+                { operation: "importWhiteboardWindowScript", url: scriptUrl },
+            );
+            return null;
+        }
+        return factory;
     } catch (err) {
         console.error("[classroom] Failed to load whiteboard window module.", {
             operation: "importWhiteboardWindowScript",
