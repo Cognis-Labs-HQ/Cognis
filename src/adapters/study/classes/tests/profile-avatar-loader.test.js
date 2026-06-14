@@ -130,6 +130,10 @@ test("loadProfileAvatarHelpers falls back cleanly when the Social UI module is u
         assert.match(markup, /class="fallback"/);
         assert.match(markup, /href="\/profile\/alice"/);
         assert.match(markup, />AE</);
+        assert.doesNotThrow(() =>
+            helpers.handleProfileAvatarError({ target: null }),
+        );
+        await assert.doesNotReject(() => helpers.hydrateProfileAvatars(null));
         assert.equal(warnings.length, 1);
         assert.match(
             String(warnings[0][0]),

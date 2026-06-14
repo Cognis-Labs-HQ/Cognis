@@ -8,12 +8,10 @@ let socialAvatarModule = null;
 let socialAvatarModulePromise = null;
 let socialAvatarWarningLogged = false;
 
-const log = (...messageParts) => console.warn(...messageParts);
-
 function logSocialAvatarFailure(error) {
     if (socialAvatarWarningLogged) return;
     socialAvatarWarningLogged = true;
-    log("[classroom] Failed to load profile avatar helpers.", {
+    console.warn("[classroom] Failed to load profile avatar helpers.", {
         operation: "loadProfileAvatarHelpers",
         error: error instanceof Error ? error.message : String(error),
     });
