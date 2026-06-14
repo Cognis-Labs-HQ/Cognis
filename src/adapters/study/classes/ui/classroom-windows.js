@@ -1,6 +1,4 @@
-import { createClassroomMeetingEmbed } from "/static/modules/jitsi-meet/classroom-meeting-embed.js";
 import { createClassroomNativeChat } from "/static/adapters/study/classes/classroom-chat.js";
-import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-whiteboard/classroom-whiteboard-window.js";
 
 /**
  * Creates and manages the persistent meeting overlay, class chat panel, and
@@ -11,25 +9,42 @@ import { createClassroomWhiteboardWindow } from "/static/modules/nextcloud-white
  * Call hoist() before replacing .classes-classroom-content in the DOM so
  * meeting/chat/whiteboard elements are moved to root first and never detached
  * from the document. Call reattach() afterwards to move them back.
+ *
+ * @param {object} options
+ * @param {HTMLElement} options.root
+ * @param {object} options.i18n
+ * @param {boolean} [options.isTeacher]
+ * @param {Function|null} [options.createMeetingEmbed] - Factory from the
+ *   jitsi-meet module, or null when that module is not installed.
+ * @param {Function|null} [options.createWhiteboardWindow] - Factory from the
+ *   nextcloud-whiteboard module, or null when that module is not installed.
+ * @param {Function} [options.onMeetingVisibilityChange]
+ * @param {Function} [options.onWhiteboardVisibilityChange]
+ * @param {Function} [options.onChatVisibilityChange]
+ * @param {AbortSignal|null} [options.signal]
  */
 export function createClassroomWindows({
     root,
     i18n,
     isTeacher = false,
+    createMeetingEmbed = null,
+    createWhiteboardWindow = null,
     onMeetingVisibilityChange = () => {},
     onWhiteboardVisibilityChange = () => {},
     onChatVisibilityChange = () => {},
     signal = null,
 }) {
-    const meetingEmbed = createClassroomMeetingEmbed({
-        i18n,
-        isTeacher,
-        onVisibilityChange: ({ visible, returnMode, meetingId }) => {
-            root.classList.toggle("classes-meeting-active", visible);
-            onMeetingVisibilityChange({ visible, returnMode, meetingId });
-        },
-        signal,
-    });
+    const meetingEmbed = createMeetingEmbed
+        ? createMeetingEmbed({
+              i18n,
+              isTeacher,
+              onVisibilityChange: ({ visible, returnMode, meetingId }) => {
+                  root.classList.toggle("classes-meeting-active", visible);
+                  onMeetingVisibilityChange({ visible, returnMode, meetingId });
+              },
+              signal,
+          })
+        : createNullMeetingEmbed();
     const nativeChat = createClassroomNativeChat({
         i18n,
         onVisibilityChange: ({ visible }) => {
@@ -43,11 +58,13 @@ export function createClassroomWindows({
             onChatVisibilityChange({ visible });
         },
     });
-    const whiteboardWindow = createClassroomWhiteboardWindow({
-        root,
-        i18n,
-        onVisibilityChange: onWhiteboardVisibilityChange,
-    });
+    const whiteboardWindow = createWhiteboardWindow
+        ? createWhiteboardWindow({
+              root,
+              i18n,
+              onVisibilityChange: onWhiteboardVisibilityChange,
+          })
+        : createNullWhiteboardWindow();
 
     function handleWindowButtonClick(event) {
         if (!(event.target instanceof Element)) return;
@@ -110,5 +127,34 @@ export function createClassroomWindows({
         whiteboardElement: whiteboardWindow.getElement(),
         hoist,
         reattach,
+    };
+}
+
+function createNullMeetingEmbed() {
+    const element = document.createElement("div");
+    element.hidden = true;
+    return {
+        element,
+        openMeeting: () => Promise.resolve(),
+        tryAutoJoin: () => Promise.resolve(),
+        notifyActiveMeeting: () => {},
+        closeMeeting: () => {},
+        isMeetingDismissed: () => false,
+        isAuthBlocked: () => false,
+        resetAuthBlocked: () => {},
+    };
+}
+
+function createNullWhiteboardWindow() {
+    const element = document.createElement("div");
+    element.hidden = true;
+    return {
+        getElement: () => element,
+        openBoard: () => Promise.resolve(),
+        closeBoard: () => {},
+        isOpen: () => false,
+        getActiveBoardId: () => null,
+        hoist: () => {},
+        reattach: () => {},
     };
 }

@@ -205,3 +205,20 @@ Classroom の SPA ルートと `/classroom` 直接表示時のブートストラ
 `/static/adapters/study/classes/classroom/index.js` から直接読み込むように
 なりました。これにより脆い中継 shim パスを排除し、Classroom ルート遷移時の
 動的 import の fetch 失敗を解消します。
+
+## Classroom のオプションモジュールを CTX 経由で読み込み
+
+以前、Classroom ページは Jitsi Meet のミーティング埋め込みと
+Nextcloud Whiteboard のウィンドウスクリプトを静的な ES モジュールインポートで
+読み込んでいました。どちらかのモジュールがインストールされていない場合、
+インポート時の 404 エラーが原因で Classroom ページ全体が読み込めなくなって
+いました。
+
+両スクリプトは CTX の Capability システムを通じて動的に読み込まれるよう
+になりました。各モジュールは Classroom の UI スクリプト URL を公開 Capability
+（`meetings:classroomEmbedScriptUrl`、`whiteboard:classroomWindowScriptUrl`）
+として登録します。Classes アダプターはブートストラップ時にこれらの Capability
+を読み取り、Classroom HTML の meta タグとして注入します。クライアントは
+実行時に meta タグを読み取り、必要に応じて Factory を動的インポートします。
+どちらかのモジュールが存在しない場合もページは正常に動作し、対応機能のみ
+利用不可となります。

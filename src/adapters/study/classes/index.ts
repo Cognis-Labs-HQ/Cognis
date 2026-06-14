@@ -44,14 +44,17 @@ export function createStudyAdapter(): StudyAdapter {
 
 /**
  * Page-serving route for `/classroom`. Serves the classroom hub SPA page with
- * notepad config injected via meta tags so the client can dynamically load the
- * notepad adapter without a hardcoded static import.
+ * notepad, meeting embed, and whiteboard window config injected via meta tags
+ * so the client can dynamically load optional module factories without
+ * hardcoded static imports.
  */
 function createClassroomHubPageRoute(
     routeContext: RouteContext | undefined,
     isAdapterEnabled: () => boolean,
     notepadScriptUrl: string,
     notepadStringsBaseUrl: string,
+    meetingEmbedScriptUrl: string,
+    whiteboardWindowScriptUrl: string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -77,6 +80,14 @@ function createClassroomHubPageRoute(
             .replace(
                 "{{classroom.notepadStringsBaseUrl}}",
                 notepadStringsBaseUrl,
+            )
+            .replace(
+                "{{classroom.meetingEmbedScriptUrl}}",
+                meetingEmbedScriptUrl,
+            )
+            .replace(
+                "{{classroom.whiteboardWindowScriptUrl}}",
+                whiteboardWindowScriptUrl,
             );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
@@ -193,6 +204,20 @@ export async function bootstrapStudyAdapter(
     const notepadStylesheetUrl =
         typeof notepadUi?.stylesheetUrl === "string"
             ? notepadUi.stylesheetUrl.trim()
+            : "";
+    const rawMeetingEmbedScriptUrl = ctx.capabilities.get<string>(
+        "meetings:classroomEmbedScriptUrl",
+    );
+    const meetingEmbedScriptUrl =
+        typeof rawMeetingEmbedScriptUrl === "string"
+            ? rawMeetingEmbedScriptUrl.trim()
+            : "";
+    const rawWhiteboardWindowScriptUrl = ctx.capabilities.get<string>(
+        "whiteboard:classroomWindowScriptUrl",
+    );
+    const whiteboardWindowScriptUrl =
+        typeof rawWhiteboardWindowScriptUrl === "string"
+            ? rawWhiteboardWindowScriptUrl.trim()
             : "";
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
@@ -541,6 +566,8 @@ export async function bootstrapStudyAdapter(
             isEnabled,
             notepadScriptUrl,
             notepadStringsBaseUrl,
+            meetingEmbedScriptUrl,
+            whiteboardWindowScriptUrl,
         ),
         "study",
     );

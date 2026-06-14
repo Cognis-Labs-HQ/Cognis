@@ -242,3 +242,18 @@ The classroom SPA route and direct `/classroom` page bootstrap now load the
 module entry from `/static/adapters/study/classes/classroom/index.js` directly.
 This removes the brittle intermediate shim path and resolves dynamic import
 fetch failures seen on classroom route transitions.
+
+## Classroom optional modules loaded via CTX
+
+The classroom page previously used static ES module imports for the Jitsi Meet
+meeting embed and Nextcloud Whiteboard window scripts. If either module was not
+installed, the 404 on the import broke the entire classroom page load.
+
+Both scripts are now loaded dynamically through the CTX capability system. Each
+module registers its classroom UI script URL as a public capability
+(`meetings:classroomEmbedScriptUrl`, `whiteboard:classroomWindowScriptUrl`). The
+study classes adapter reads these capabilities at bootstrap and injects them as
+meta tags into the classroom HTML. The classroom client reads the meta tags at
+runtime and imports the factories on demand, degrading gracefully when either
+module is absent.
+

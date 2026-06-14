@@ -214,3 +214,18 @@ Moduleinstieg jetzt direkt über
 `/static/adapters/study/classes/classroom/index.js`. Dadurch entfällt der
 anfällige Zwischenpfad und dynamische Import-Fehler beim Classroom-Wechsel
 werden behoben.
+
+## Optionale Module der Classroom-Seite über CTX geladen
+
+Die Classroom-Seite verwendete bisher statische ES-Module-Imports für die
+Jitsi-Meet-Meeting-Einbettung und das Nextcloud-Whiteboard-Fenster-Skript. Wenn
+eines dieser Module nicht installiert war, führte der 404-Fehler beim Import
+dazu, dass die gesamte Classroom-Seite nicht mehr geladen werden konnte.
+
+Beide Skripte werden jetzt dynamisch über das CTX-Capability-System geladen.
+Jedes Modul registriert seine Classroom-UI-Skript-URL als öffentliche Capability
+(`meetings:classroomEmbedScriptUrl`, `whiteboard:classroomWindowScriptUrl`). Der
+Classes-Adapter liest diese Capabilities beim Bootstrap und injiziert sie als
+Meta-Tags in das Classroom-HTML. Der Client liest die Meta-Tags zur Laufzeit und
+importiert die Factories bei Bedarf. Fehlt ein Modul, funktioniert die Seite
+weiterhin, und nur die jeweilige Funktion ist nicht verfügbar.

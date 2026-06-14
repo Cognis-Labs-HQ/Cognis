@@ -205,3 +205,18 @@ entri modul langsung dari
 `/static/adapters/study/classes/classroom/index.js`. Ini menghapus jalur shim
 perantara yang rapuh dan memperbaiki kegagalan fetch dynamic import saat
 berpindah ke rute classroom.
+
+## Modul opsional classroom dimuat via CTX
+
+Sebelumnya, halaman classroom menggunakan impor modul ES statis untuk skrip
+meeting embed Jitsi Meet dan jendela whiteboard Nextcloud. Jika salah satu
+modul tidak terpasang, error 404 pada impor menyebabkan seluruh halaman
+classroom gagal dimuat.
+
+Kedua skrip kini dimuat secara dinamis melalui sistem capability CTX.
+Setiap modul mendaftarkan URL skrip UI classroom-nya sebagai capability publik
+(`meetings:classroomEmbedScriptUrl`, `whiteboard:classroomWindowScriptUrl`).
+Adapter classes membaca capability ini saat bootstrap dan menyuntikkannya
+sebagai meta tag ke HTML classroom. Client membaca meta tag tersebut saat
+runtime dan mengimpor factory secara dinamis, serta tetap berfungsi dengan baik
+bila salah satu modul tidak tersedia.

@@ -69,6 +69,7 @@ import {
     loadNotepadFactory,
     getNotepadStringsBaseUrl,
 } from "/static/adapters/study/classes/classroom/notepad-loader.js";
+import { loadWindowsFactories } from "/static/adapters/study/classes/classroom/windows-loader.js";
 import { mountMaterialImageViewer } from "/static/adapters/study/classes/classroom/material-viewer-mount.js";
 
 export async function mount(root, { signal } = {}) {
@@ -77,6 +78,8 @@ export async function mount(root, { signal } = {}) {
 
     const createClassroomNotepad = await loadNotepadFactory();
     const notepadStringsBaseUrl = getNotepadStringsBaseUrl();
+    const { createMeetingEmbed, createWhiteboardWindow } =
+        await loadWindowsFactories();
 
     const componentStringBaseUrls = [
         ...(notepadStringsBaseUrl ? [notepadStringsBaseUrl] : []),
@@ -827,6 +830,8 @@ export async function mount(root, { signal } = {}) {
         root,
         i18n,
         isTeacher: Boolean(teacherAccount && isTeacherView()),
+        createMeetingEmbed,
+        createWhiteboardWindow,
         signal,
         onMeetingVisibilityChange: ({ visible, returnMode } = {}) => {
             if (visible) {

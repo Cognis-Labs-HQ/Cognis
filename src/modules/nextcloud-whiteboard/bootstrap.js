@@ -54,6 +54,17 @@ export function bootstrapModule(ctx) {
         );
 
         /**
+         * URL of the classroom whiteboard window UI script served by this
+         * module. Consumed by the Study classes adapter to inject a meta tag
+         * so the classroom page can dynamically import the factory without a
+         * hardcoded static import.
+         */
+        systemCtx.contributePublicCapability(
+            "whiteboard:classroomWindowScriptUrl",
+            "/static/modules/nextcloud-whiteboard/classroom-whiteboard-window.js",
+        );
+
+        /**
          * Fetches the raw JSON data for a whiteboard from the Nextcloud
          * Whiteboard server-to-server API, or returns null if not configured.
          *
