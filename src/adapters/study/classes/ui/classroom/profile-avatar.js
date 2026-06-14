@@ -8,6 +8,10 @@ let avatarModule = null;
 let avatarModulePromise = null;
 let avatarWarningLogged = false;
 
+function normalizeValue(value) {
+    return String(value ?? "").trim();
+}
+
 function logAvatarFailure(error) {
     if (avatarWarningLogged) return;
     avatarWarningLogged = true;
@@ -21,10 +25,9 @@ async function loadAvatarModule() {
     if (!avatarModulePromise) {
         avatarModulePromise =
             import("/static/gateways/social/reuse/profile-avatar.js")
-                .then((loadedAvatarModule) => {
-                    avatarModule = loadedAvatarModule;
-                    return loadedAvatarModule;
-                })
+                .then(
+                    (loadedAvatarModule) => (avatarModule = loadedAvatarModule),
+                )
                 .catch((error) => {
                     avatarModule = null;
                     logAvatarFailure(error);
@@ -35,9 +38,9 @@ async function loadAvatarModule() {
 }
 
 function buildInitialsHtml(label, colorSeed, fallbackClass) {
-    const resolvedLabel = String(label ?? "").trim();
-    const resolvedColorSeed = String(colorSeed ?? "").trim() || resolvedLabel;
-    const resolvedFallbackClass = String(fallbackClass ?? "").trim();
+    const resolvedLabel = normalizeValue(label);
+    const resolvedColorSeed = normalizeValue(colorSeed) || resolvedLabel;
+    const resolvedFallbackClass = normalizeValue(fallbackClass);
     const backgroundColor = pickInitialsColor(resolvedColorSeed);
     return [
         `<span class="${escapeHtml(resolvedFallbackClass)}"`,
@@ -54,16 +57,18 @@ function buildFallbackProfileAvatarMarkup({
     profileHandle = null,
     linkClass = "",
 }) {
-    const resolvedLabel = String(label ?? "").trim();
+    const resolvedLabel = normalizeValue(label);
     const avatarContent = buildInitialsHtml(
         resolvedLabel,
         colorSeed,
         fallbackClass,
     );
-    const profileLink = profileHandle
-        ? `/profile/${encodeURIComponent(
-              String(profileHandle).replace(/^@/, ""),
-          )}`
+    const resolvedProfileHandle = normalizeValue(profileHandle).replace(
+        /^@/,
+        "",
+    );
+    const profileLink = resolvedProfileHandle
+        ? `/profile/${encodeURIComponent(resolvedProfileHandle)}`
         : "";
     if (profileLink) {
         const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
@@ -73,7 +78,7 @@ function buildFallbackProfileAvatarMarkup({
             ` aria-label="${escapeHtml(resolvedLabel)}">${avatarContent}</a>`,
         ].join("");
     }
-    return `<span class="${escapeHtml(String(avatarClass ?? "").trim())}">${avatarContent}</span>`;
+    return `<span class="${escapeHtml(normalizeValue(avatarClass))}">${avatarContent}</span>`;
 }
 
 export async function fetchProfileAvatarBlobUrl(avatarKey) {
