@@ -1,3 +1,5 @@
+const log = (...messageParts) => console.warn(...messageParts);
+
 export async function loadProfileAvatarHelpers() {
     try {
         const avatarModule =
@@ -13,7 +15,7 @@ export async function loadProfileAvatarHelpers() {
                     : null,
         };
     } catch (error) {
-        console.warn("[classroom] Failed to load profile avatar helpers.", {
+        log("[classroom] Failed to load profile avatar helpers.", {
             operation: "loadProfileAvatarHelpers",
             error: error instanceof Error ? error.message : String(error),
         });

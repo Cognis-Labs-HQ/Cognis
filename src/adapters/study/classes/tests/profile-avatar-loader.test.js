@@ -12,24 +12,29 @@ const HELPER_PATH = resolve(
 );
 const SOCIAL_HELPER_PATH = "/static/gateways/social/reuse/profile-avatar.js";
 
+function createTempModulePath(prefix) {
+    return resolve(
+        tmpdir(),
+        `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}.mjs`,
+    );
+}
+
 async function importLoaderModule(replacementModuleUrl) {
     const helperSource = await readFile(HELPER_PATH, "utf8");
     const rewrittenSource = helperSource.replace(
         SOCIAL_HELPER_PATH,
         replacementModuleUrl,
     );
-    const tempModulePath = resolve(
-        tmpdir(),
-        `classroom-profile-avatar-loader-${Date.now()}-${Math.random().toString(16).slice(2)}.mjs`,
+    const tempModulePath = createTempModulePath(
+        "classroom-profile-avatar-loader",
     );
     await writeFile(tempModulePath, rewrittenSource, "utf8");
     return import(pathToFileURL(tempModulePath).href);
 }
 
 test("loadProfileAvatarHelpers returns avatar helpers when the Social UI module is available", async () => {
-    const socialModulePath = resolve(
-        tmpdir(),
-        `classroom-social-avatar-helpers-${Date.now()}.mjs`,
+    const socialModulePath = createTempModulePath(
+        "classroom-social-avatar-helpers",
     );
     await writeFile(
         socialModulePath,
@@ -57,13 +62,19 @@ test("loadProfileAvatarHelpers falls back cleanly when the Social UI module is u
         ).href,
     );
     const originalWarn = console.warn;
-    console.warn = () => {};
+    const warnings = [];
+    console.warn = (...messageParts) => warnings.push(messageParts);
 
     try {
         const helpers = await loaderModule.loadProfileAvatarHelpers();
 
         assert.equal(helpers.handleProfileAvatarError, null);
         assert.equal(helpers.hydrateProfileAvatars, null);
+        assert.equal(warnings.length, 1);
+        assert.match(
+            String(warnings[0][0]),
+            /Failed to load profile avatar helpers/,
+        );
     } finally {
         console.warn = originalWarn;
     }
