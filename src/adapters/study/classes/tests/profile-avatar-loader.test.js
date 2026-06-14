@@ -73,10 +73,19 @@ test("loadProfileAvatarHelpers returns avatar helpers when the Social UI module 
     await writeFile(
         socialModulePath,
         [
-            "export function handleProfileAvatarError() {}",
-            "export async function hydrateProfileAvatars() {}",
+            "let errorCallCount = 0;",
+            "let hydrateCallCount = 0;",
+            "export function handleProfileAvatarError() {",
+            "    errorCallCount += 1;",
+            "}",
+            "export async function hydrateProfileAvatars() {",
+            "    hydrateCallCount += 1;",
+            "}",
             'export function buildProfileAvatarMarkup() { return "<social-avatar>"; }',
             'export async function fetchProfileAvatarBlobUrl() { return "blob:test"; }',
+            "export function getCallCounts() {",
+            "    return { errorCallCount, hydrateCallCount };",
+            "}",
             "",
         ].join("\n"),
         "utf8",
@@ -99,6 +108,14 @@ test("loadProfileAvatarHelpers returns avatar helpers when the Social UI module 
     assert.equal(typeof helpers.hydrateProfileAvatars, "function");
     assert.equal(markup, "<social-avatar>");
     assert.equal(avatarBlobUrl, "blob:test");
+    assert.doesNotThrow(() => helpers.handleProfileAvatarError({}));
+    await assert.doesNotReject(() => helpers.hydrateProfileAvatars(null));
+
+    const socialModule = await import(pathToFileURL(socialModulePath).href);
+    assert.deepEqual(socialModule.getCallCounts(), {
+        errorCallCount: 1,
+        hydrateCallCount: 1,
+    });
 });
 
 test("loadProfileAvatarHelpers falls back cleanly when the Social UI module is unavailable", async () => {

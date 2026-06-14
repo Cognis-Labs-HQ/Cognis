@@ -4,34 +4,34 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-let socialAvatarModule = null;
-let socialAvatarModulePromise = null;
-let socialAvatarWarningLogged = false;
+let avatarModule = null;
+let avatarModulePromise = null;
+let avatarWarningLogged = false;
 
-function logSocialAvatarFailure(error) {
-    if (socialAvatarWarningLogged) return;
-    socialAvatarWarningLogged = true;
+function logAvatarFailure(error) {
+    if (avatarWarningLogged) return;
+    avatarWarningLogged = true;
     console.warn("[classroom] Failed to load profile avatar helpers.", {
         operation: "loadProfileAvatarHelpers",
         error: error instanceof Error ? error.message : String(error),
     });
 }
 
-async function loadSocialAvatarModule() {
-    if (!socialAvatarModulePromise) {
-        socialAvatarModulePromise =
+async function loadAvatarModule() {
+    if (!avatarModulePromise) {
+        avatarModulePromise =
             import("/static/gateways/social/reuse/profile-avatar.js")
-                .then((avatarModule) => {
-                    socialAvatarModule = avatarModule;
-                    return avatarModule;
+                .then((loadedAvatarModule) => {
+                    avatarModule = loadedAvatarModule;
+                    return loadedAvatarModule;
                 })
                 .catch((error) => {
-                    socialAvatarModule = null;
-                    logSocialAvatarFailure(error);
+                    avatarModule = null;
+                    logAvatarFailure(error);
                     return null;
                 });
     }
-    return socialAvatarModulePromise;
+    return avatarModulePromise;
 }
 
 function buildInitialsHtml(label, colorSeed, fallbackClass) {
@@ -77,37 +77,37 @@ function buildFallbackProfileAvatarMarkup({
 }
 
 export async function fetchProfileAvatarBlobUrl(avatarKey) {
-    const avatarModule = await loadSocialAvatarModule();
-    if (typeof avatarModule?.fetchProfileAvatarBlobUrl !== "function") {
+    const loadedAvatarModule = await loadAvatarModule();
+    if (typeof loadedAvatarModule?.fetchProfileAvatarBlobUrl !== "function") {
         return null;
     }
-    return avatarModule.fetchProfileAvatarBlobUrl(avatarKey);
+    return loadedAvatarModule.fetchProfileAvatarBlobUrl(avatarKey);
 }
 
 export function buildProfileAvatarMarkup(params) {
-    if (typeof socialAvatarModule?.buildProfileAvatarMarkup === "function") {
-        return socialAvatarModule.buildProfileAvatarMarkup(params);
+    if (typeof avatarModule?.buildProfileAvatarMarkup === "function") {
+        return avatarModule.buildProfileAvatarMarkup(params);
     }
     return buildFallbackProfileAvatarMarkup(params ?? {});
 }
 
 export async function hydrateProfileAvatars(container) {
-    const avatarModule = await loadSocialAvatarModule();
-    if (typeof avatarModule?.hydrateProfileAvatars !== "function") {
+    const loadedAvatarModule = await loadAvatarModule();
+    if (typeof loadedAvatarModule?.hydrateProfileAvatars !== "function") {
         return;
     }
-    await avatarModule.hydrateProfileAvatars(container);
+    await loadedAvatarModule.hydrateProfileAvatars(container);
 }
 
 export function handleProfileAvatarError(event) {
-    if (typeof socialAvatarModule?.handleProfileAvatarError !== "function") {
+    if (typeof avatarModule?.handleProfileAvatarError !== "function") {
         return;
     }
-    socialAvatarModule.handleProfileAvatarError(event);
+    avatarModule.handleProfileAvatarError(event);
 }
 
 export async function loadProfileAvatarHelpers() {
-    await loadSocialAvatarModule();
+    await loadAvatarModule();
     return {
         handleProfileAvatarError,
         hydrateProfileAvatars,
