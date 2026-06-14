@@ -199,8 +199,19 @@ export function createWorkspaceTileRefresher({
         const orderedTiles = tileOrder
             .map((tileMode) => existingTiles.get(tileMode))
             .filter(Boolean);
-        for (const tile of orderedTiles) {
-            tilesContainer.appendChild(tile);
+        const currentTileOrder = [...tilesContainer.children].filter(
+            (element) =>
+                element instanceof HTMLElement &&
+                element.dataset.workspaceMode &&
+                existingTiles.has(element.dataset.workspaceMode),
+        );
+        const needsReorder = orderedTiles.some(
+            (tile, index) => tile !== currentTileOrder[index],
+        );
+        if (needsReorder) {
+            for (const tile of orderedTiles) {
+                tilesContainer.appendChild(tile);
+            }
         }
         if (
             initializedTiles.has("chat") &&

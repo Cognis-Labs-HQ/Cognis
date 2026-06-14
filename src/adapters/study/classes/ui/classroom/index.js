@@ -18,7 +18,6 @@ import {
     getClassroomViewMode,
     setClassroomViewMode,
 } from "/static/adapters/study/classes/view-mode.js";
-import { renderClassroomPage } from "/static/adapters/study/classes/classroom-render.js";
 import { handleClassroomExit } from "/static/adapters/study/classes/classroom-exit.js";
 import { createClassroomPresenceController } from "/static/adapters/study/classes/classroom-presence.js";
 import { openClassSettingsPopup } from "/static/adapters/study/classes/classroom-popups.js";
@@ -64,10 +63,13 @@ import { createStudentSync } from "/static/adapters/study/classes/classroom/stud
 import {
     loadNotepadFactory,
     getNotepadStringsBaseUrl,
+    mountClassroomNotepad,
 } from "/static/adapters/study/classes/classroom/notepad-loader.js";
 import { loadProfileAvatarHelpers } from "/static/adapters/study/classes/classroom/profile-avatar.js";
 import { loadWindowsFactories } from "/static/adapters/study/classes/classroom/windows-loader.js";
 import { mountMaterialImageViewer } from "/static/adapters/study/classes/classroom/material-viewer-mount.js";
+import { captureFocus, restoreFocus } from "/static/reuse/focus-guard.js";
+import { createContentMarkupRenderer } from "/static/adapters/study/classes/classroom/content-markup.js";
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
@@ -119,6 +121,7 @@ export async function mount(root, { signal } = {}) {
     let activeWhiteboard = null;
     let activeMeetingId = null;
     let activeMaterialKey = null;
+    let lastBroadcastedMaterialKey = null;
     let isClassSearchDetached = false;
     let blackboardExpanded = true;
     let initializedTiles = new Set();
@@ -166,14 +169,6 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
-    function applySnapshotPatch(classId, patch) {
-        classroomSnapshots = applyClassroomSnapshotPatch(
-            classroomSnapshots,
-            classId,
-            patch,
-        );
-    }
-
     const {
         patchClassroomLayout,
         persistActiveWhiteboardId,
@@ -184,7 +179,13 @@ export async function mount(root, { signal } = {}) {
         apiFetch,
         isTeacherView,
         selectedSnapshot,
-        applySnapshotPatch,
+        applySnapshotPatch: (classId, patch) => {
+            classroomSnapshots = applyClassroomSnapshotPatch(
+                classroomSnapshots,
+                classId,
+                patch,
+            );
+        },
     });
 
     const syncGlobalChatTarget = () => {
@@ -301,6 +302,7 @@ export async function mount(root, { signal } = {}) {
             activeWhiteboard = null;
             activeMeetingId = null;
             activeMaterialKey = null;
+            lastBroadcastedMaterialKey = null;
             revokeActiveMaterialPreview();
             return;
         }
@@ -423,6 +425,7 @@ export async function mount(root, { signal } = {}) {
             }
         }
         activeMaterialKey = getSelectedActiveMaterialKey(snapshot);
+        lastBroadcastedMaterialKey = activeMaterialKey;
         await loadActiveMaterialPreview(
             activeMaterialKey,
             classResources.files,
@@ -478,72 +481,61 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
-    function renderContentMarkup() {
-        const snapshot = selectedSnapshot();
-        return renderClassroomPage({
-            snapshot,
-            classResources: {
-                ...classResources,
-                agendaDocument,
-                agendaSnapshots,
-            },
-            selectedSeatNumber,
-            selectedNotebookText,
-            i18n,
-            isTeacherView: isTeacherView(),
-            availableClasses,
-            selectedLanguageFilter,
-            searchQuery,
-            canToggleView: teacherAccount,
-            currentViewMode: getClassroomViewMode(),
-            canEditMaterials: teacherAccount,
-            boardEntities: getBoardEntities(snapshot),
-            workspaceMode,
-            activeMaterialKey,
-            activeMaterialPreview: classroomMaterialPreview.getState(),
-            whiteboards,
-            activeWhiteboard,
-            activeWhiteboardId: getSelectedActiveWhiteboardId(snapshot),
-            hasActiveMeeting: Boolean(activeMeetingId),
-            isChatOpen: classroomWindows?.isChatOpen() ?? false,
-            isMeetingOpen: classroomWindows?.isMeetingOpen() ?? false,
-            blackboardExpanded,
-            initializedTiles,
-            tileLayout,
-            tileOrder,
-            isTeacherPresent: computeIsTeacherPresent(snapshot),
-        });
-    }
+    const renderContentMarkup = createContentMarkupRenderer({
+        selectedSnapshot,
+        getFullClassResources: () => ({
+            ...classResources,
+            agendaDocument,
+            agendaSnapshots,
+        }),
+        getSelectedSeatNumber: () => selectedSeatNumber,
+        getSelectedNotebookText: () => selectedNotebookText,
+        i18n,
+        isTeacherView,
+        getAvailableClasses: () => availableClasses,
+        getSelectedLanguageFilter: () => selectedLanguageFilter,
+        getSearchQuery: () => searchQuery,
+        getTeacherAccount: () => teacherAccount,
+        getClassroomViewMode,
+        getBoardEntities,
+        getWorkspaceMode: () => workspaceMode,
+        getActiveMaterialKey: () => activeMaterialKey,
+        getMaterialPreviewState: () => classroomMaterialPreview.getState(),
+        getWhiteboards: () => whiteboards,
+        getActiveWhiteboard: () => activeWhiteboard,
+        getSelectedActiveWhiteboardId,
+        getActiveMeetingId: () => activeMeetingId,
+        getClassroomWindows: () => classroomWindows,
+        getBlackboardExpanded: () => blackboardExpanded,
+        getInitializedTiles: () => initializedTiles,
+        getWhiteboardEnabled: () =>
+            Boolean(classroomSnapshots[0]?.whiteboardEnabled),
+        getTileState: () => ({ tileLayout, tileOrder }),
+        computeIsTeacherPresent,
+    });
 
     function refreshDom() {
         const content = root.querySelector(".classes-classroom-content");
         if (content instanceof HTMLElement) {
+            const savedFocus = captureFocus();
             classroomWindows?.hoist();
             activeImageViewer?.destroy();
             activeImageViewer = null;
             content.outerHTML = renderContentMarkup();
             const nextSnapshot = selectedSnapshot();
-            const notepadHost = root.querySelector(".classes-notepad-host");
-            if (
-                notepadHost instanceof HTMLElement &&
-                nextSnapshot &&
-                createClassroomNotepad
-            ) {
-                if (
-                    !classroomNotepad ||
-                    classroomNotepadClassId !== nextSnapshot.id
-                ) {
-                    classroomNotepad = createClassroomNotepad({
-                        classId: nextSnapshot.id,
-                        i18n,
-                    });
-                    classroomNotepadClassId = nextSnapshot.id;
-                }
-                notepadHost.replaceChildren(classroomNotepad.getElement());
-                if (getWorkspaceMode() === "notepad") {
-                    classroomNotepad.focus();
-                }
-            }
+            const notepadMountResult = mountClassroomNotepad(
+                root.querySelector(".classes-notepad-host"),
+                {
+                    nextSnapshot,
+                    createClassroomNotepad,
+                    classroomNotepad,
+                    classroomNotepadClassId,
+                    i18n,
+                    getWorkspaceMode,
+                },
+            );
+            classroomNotepad = notepadMountResult.notepad;
+            classroomNotepadClassId = notepadMountResult.notepadClassId;
             activeImageViewer = mountMaterialImageViewer(root, {
                 previewState: classroomMaterialPreview.getState(),
                 isTeacher: isTeacherView(),
@@ -558,6 +550,7 @@ export async function mount(root, { signal } = {}) {
             } else if (classroomWindows?.isChatOpen()) {
                 classroomWindows.closeChat();
             }
+            restoreFocus(savedFocus);
         }
     }
 
@@ -922,7 +915,10 @@ export async function mount(root, { signal } = {}) {
             syncStudentWorkspaceAccess();
             await pollTeacherViewState();
             const broadcastedMaterialKey = getSelectedActiveMaterialKey();
-            if (broadcastedMaterialKey !== activeMaterialKey) {
+            const materialKeyBroadcastChanged =
+                broadcastedMaterialKey !== lastBroadcastedMaterialKey;
+            if (materialKeyBroadcastChanged) {
+                lastBroadcastedMaterialKey = broadcastedMaterialKey;
                 activeMaterialKey = broadcastedMaterialKey;
                 await loadActiveMaterialPreview(
                     activeMaterialKey,
@@ -931,6 +927,16 @@ export async function mount(root, { signal } = {}) {
             }
             if (workspaceMode !== previousWorkspaceMode) {
                 refreshWorkspaceTilesOnly();
+            }
+            if (materialKeyBroadcastChanged) {
+                refreshDom();
+                syncGlobalChatTarget();
+                if (selectedClassChanged) {
+                    footerClasses = await loadFooterClasses();
+                    composer.refreshFooter();
+                    refreshSubNavigation();
+                }
+                return;
             }
             refreshDynamicDom();
             syncGlobalChatTarget();

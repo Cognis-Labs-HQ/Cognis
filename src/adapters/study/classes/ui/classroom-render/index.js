@@ -89,6 +89,7 @@ export function renderBlackboard({
     isMeetingOpen,
     blackboardExpanded,
     initializedTiles,
+    whiteboardEnabled = false,
     tileLayout = "stacked",
     tileOrder = [],
     isTeacherPresent = false,
@@ -190,6 +191,7 @@ export function renderBlackboard({
                             isTeacherView ||
                             Boolean(activeWhiteboardId) ||
                             Boolean(activeWhiteboard?.embedUrl),
+                        whiteboardEnabled,
                     },
                 )}</div>
                 ${
@@ -516,6 +518,7 @@ function renderClassroomView({
     workspaceMode,
     sidebarMode,
     activeMaterialKey,
+    activeMaterialPreview,
     whiteboards,
     activeWhiteboard,
     activeWhiteboardId,
@@ -524,6 +527,7 @@ function renderClassroomView({
     isMeetingOpen,
     blackboardExpanded,
     initializedTiles,
+    whiteboardEnabled = false,
     tileLayout = "stacked",
     tileOrder = [],
     isTeacherPresent = false,
@@ -555,6 +559,7 @@ function renderClassroomView({
                         workspaceMode,
                         sidebarMode,
                         activeMaterialKey,
+                        activeMaterialPreview,
                         whiteboards,
                         activeWhiteboard,
                         activeWhiteboardId,
@@ -563,6 +568,7 @@ function renderClassroomView({
                         isMeetingOpen,
                         blackboardExpanded,
                         initializedTiles,
+                        whiteboardEnabled,
                         tileLayout,
                         tileOrder,
                         isTeacherPresent,

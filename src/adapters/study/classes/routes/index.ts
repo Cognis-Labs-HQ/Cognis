@@ -286,6 +286,9 @@ export function createClassesRoutes(
                             members: decoratedMembers,
                             pendingMembers: decoratedPendingMembers,
                             chatUrl: synced?.chat?.url ?? null,
+                            whiteboardEnabled: Boolean(
+                                options.whiteboardGetEmbedUrl,
+                            ),
                             teacher: {
                                 accountId: classRow.teacherAccountId,
                                 handle: teacherProfile?.handle ?? null,

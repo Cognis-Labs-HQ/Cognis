@@ -51,6 +51,7 @@ export function renderWorkspaceTabs({
     isMeetingOpen,
     hasActiveMeeting,
     canAccessWhiteboard,
+    whiteboardEnabled,
     hasChat,
     isTeacherView,
 }) {
@@ -65,11 +66,15 @@ export function renderWorkspaceTabs({
             label: i18n.t("module.study.classes.open_chat"),
             disabled: !hasChat,
         },
-        {
-            mode: "whiteboard",
-            label: i18n.t("module.study.classes.whiteboard"),
-            disabled: !canAccessWhiteboard,
-        },
+        ...(whiteboardEnabled
+            ? [
+                  {
+                      mode: "whiteboard",
+                      label: i18n.t("module.study.classes.whiteboard"),
+                      disabled: !canAccessWhiteboard,
+                  },
+              ]
+            : []),
         {
             mode: "meeting",
             label: i18n.t("ui.reuse.meeting"),

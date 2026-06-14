@@ -37,3 +37,53 @@ export function getNotepadStringsBaseUrl() {
     );
     return stringsMeta?.content?.trim() ?? "";
 }
+
+/**
+ * Mounts the classroom notepad into the given host element for the current
+ * snapshot. Creates a new notepad instance when the class changes; reuses the
+ * existing one otherwise. Automatically focuses the notepad when workspace
+ * mode is "notepad". Safe to call with a null host (no-op).
+ *
+ * @param {HTMLElement|null} host - The `.classes-notepad-host` element.
+ * @param {object} options
+ * @param {object|null} options.nextSnapshot - Current classroom snapshot.
+ * @param {Function|null} options.createClassroomNotepad - Notepad factory.
+ * @param {object|null} options.classroomNotepad - Existing notepad instance.
+ * @param {string} options.classroomNotepadClassId - Class ID of existing notepad.
+ * @param {object} options.i18n - i18n helper.
+ * @param {() => string} options.getWorkspaceMode - Returns current workspace mode.
+ * @returns {{ notepad: object|null, notepadClassId: string }}
+ */
+export function mountClassroomNotepad(
+    host,
+    {
+        nextSnapshot,
+        createClassroomNotepad,
+        classroomNotepad,
+        classroomNotepadClassId,
+        i18n,
+        getWorkspaceMode,
+    },
+) {
+    if (
+        !(host instanceof HTMLElement) ||
+        !nextSnapshot ||
+        !createClassroomNotepad
+    ) {
+        return {
+            notepad: classroomNotepad,
+            notepadClassId: classroomNotepadClassId,
+        };
+    }
+    let notepad = classroomNotepad;
+    let notepadClassId = classroomNotepadClassId;
+    if (!notepad || notepadClassId !== nextSnapshot.id) {
+        notepad = createClassroomNotepad({ classId: nextSnapshot.id, i18n });
+        notepadClassId = nextSnapshot.id;
+    }
+    host.replaceChildren(notepad.getElement());
+    if (getWorkspaceMode() === "notepad") {
+        notepad.focus();
+    }
+    return { notepad, notepadClassId };
+}
