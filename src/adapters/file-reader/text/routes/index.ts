@@ -3,24 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonError, jsonOk } from "../../../../api/reuse/json-responses.js";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
-
-interface FileGatewayLike {
-    get(key: string): Promise<Uint8Array | null>;
-    put(
-        key: string,
-        content: Uint8Array,
-        contentType?: string,
-    ): Promise<{ key: string; contentType?: string }>;
-    delete(key: string): Promise<boolean>;
-    list(prefix?: string): Promise<
-        Array<{
-            key: string;
-            size: number;
-            contentType?: string;
-            lastModified: Date;
-        }>
-    >;
-}
+import type { FileStorageGateway } from "../../../../core/contracts/files-gateway.js";
 
 interface ClassroomSnapshot {
     id?: string;
@@ -69,8 +52,8 @@ function getResourcesCapability(
     );
 }
 
-function getFileGateway(ctx: RouteContext): FileGatewayLike | null {
-    return ctx.getCapability<FileGatewayLike>("file:gateway") ?? null;
+function getFileGateway(ctx: RouteContext): FileStorageGateway | null {
+    return ctx.getCapability<FileStorageGateway>("file:gateway") ?? null;
 }
 
 function resolveMaxFileBytes(getMaxFileBytes?: () => number): number {
@@ -118,7 +101,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const agendaMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/agenda$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/agenda$/,
     );
     if (agendaMatch && req.method === "GET") {
         const claims = ctx.requireAuth(req, res, "user");
@@ -205,7 +188,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const snapshotCreateMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/agenda\/snapshots$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/agenda\/snapshots$/,
     );
     if (snapshotCreateMatch && req.method === "POST") {
         const claims = ctx.requireAuth(req, res, "teacher");
@@ -274,7 +257,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const openSnapshotMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/agenda\/open$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/agenda\/open$/,
     );
     if (openSnapshotMatch && req.method === "POST") {
         const claims = ctx.requireAuth(req, res, "teacher");
@@ -329,7 +312,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const snapshotMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/agenda\/snapshots\/([^/]+)$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/agenda\/snapshots\/([^/]+)$/,
     );
     if (snapshotMatch && req.method === "DELETE") {
         const claims = ctx.requireAuth(req, res, "teacher");
@@ -414,7 +397,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const notepadFilesMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/notepad-files$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/files$/,
     );
     if (notepadFilesMatch && req.method === "GET") {
         const claims = ctx.requireAuth(req, res, "user");
@@ -462,7 +445,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const notepadFileMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/notepad-files\/([^/]+)$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/files\/([^/]+)$/,
     );
     if (notepadFileMatch) {
         const claims = ctx.requireAuth(req, res, "user");
@@ -537,7 +520,7 @@ export async function handleClassroomNotepadRoutes({
     }
 
     const notepadRenameMatch = url.pathname.match(
-        /^\/api\/v1\/study\/classes\/([^/]+)\/notepad-files\/rename$/,
+        /^\/api\/v1\/file-reader\/text\/classroom-notes\/([^/]+)\/files\/rename$/,
     );
     if (notepadRenameMatch && req.method === "POST") {
         const claims = ctx.requireAuth(req, res, "user");

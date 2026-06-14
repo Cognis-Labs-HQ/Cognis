@@ -139,6 +139,23 @@ export async function setMemberMutedUntil(
     });
 }
 
+export async function setMemberRole(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+    role: MemberRole,
+): Promise<void> {
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatroom_members",
+        set: { role },
+        where: [
+            { column: "chatroom_id", value: roomId },
+            { column: "account_id", value: accountId },
+        ],
+    });
+}
+
 export async function listRoomsForAccount(
     db: DbExecutor,
     accountId: string,

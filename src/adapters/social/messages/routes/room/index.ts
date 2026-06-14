@@ -2,54 +2,13 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../../api/reuse/read-json.js";
 import {
-    canMessage,
     enrichMembersWithProfiles,
     hasAdminBypass,
     normalizeReactionEmoji,
     summarizeRoomRequest,
     type MessagesRoutesDeps,
 } from "../shared.js";
-
-const MEMBER_MUTE_DURATION_HOURS = 24;
-
-function hasModerationPrivileges(input: {
-    roomKind: string;
-    actorRole: string;
-    actorAccountId: string;
-    roomMembers: Array<{ accountId: string }>;
-}): boolean {
-    if (input.actorRole === "owner") return true;
-    if (input.roomKind !== "dm") return false;
-    const memberIds = new Set(
-        input.roomMembers.map((roomMember) => roomMember.accountId),
-    );
-    return (
-        input.roomMembers.length === 2 && memberIds.has(input.actorAccountId)
-    );
-}
-
-async function resolveMemberProfileBySelector(
-    selector: string,
-    getProfileByHandle: (handle: string) => Promise<{
-        accountId: string;
-        handle: string;
-        displayName: string | null;
-    } | null>,
-    getProfile: (accountId: string) => Promise<{
-        accountId: string;
-        handle: string;
-        displayName: string | null;
-    } | null>,
-) {
-    const normalizedSelector = String(selector ?? "")
-        .trim()
-        .replace(/^@/, "");
-    if (!normalizedSelector) return null;
-    return (
-        (await getProfileByHandle(normalizedSelector)) ??
-        (await getProfile(normalizedSelector))
-    );
-}
+import { handleMemberRoutes } from "./room-members.js";
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;
@@ -566,216 +525,21 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             }
         }
 
-        if (sub === "members" && !subArg && req.method === "POST") {
-            if (member.role !== "owner" && member.role !== "admin") {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message: "Only owners/admins can add members.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const body = (await readJson(req)) as { handle?: unknown };
-            const handle = typeof body.handle === "string" ? body.handle : null;
-            if (!handle) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "bad_request",
-                            message: "handle required.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const target = await profileStore.getProfileByHandle(handle);
-            if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "not_found",
-                            message: "User not found.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const allowed =
-                hasBypass ||
-                (await canMessage(profileStore, accountId, target.accountId));
-            if (!allowed) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message: "Cannot add this user.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            await messagesStore.addMember(roomId, target.accountId, "member");
-            await messagesStore.appendRoomEvent({
-                roomId,
-                actorId: accountId,
-                eventType: "member_joined",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
-            });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ok: true } }));
-            return true;
-        }
-
-        if (sub === "members" && subArg && req.method === "DELETE") {
-            const target = await resolveMemberProfileBySelector(
-                subArg,
-                profileStore.getProfileByHandle.bind(profileStore),
-                profileStore.getProfile.bind(profileStore),
-            );
-            if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "not_found",
-                            message: "User not found.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const isSelfLeave = target.accountId === accountId;
-            const roomMembers = await messagesStore.listMembers(roomId);
-            const canModerateOthers = hasModerationPrivileges({
-                roomKind: room.kind,
-                actorRole: member.role,
-                actorAccountId: accountId,
-                roomMembers,
-            });
-            if (!isSelfLeave && !canModerateOthers) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message: "Only owners can remove other members.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            await messagesStore.appendRoomEvent({
-                roomId,
-                actorId: accountId,
-                eventType: "member_left",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
-            });
-            await messagesStore.removeMember(roomId, target.accountId);
-            const remainingMembers = await messagesStore.listMembers(roomId);
-            if (isSelfLeave && remainingMembers.length === 1) {
-                await messagesStore.setArchived(
-                    roomId,
-                    remainingMembers[0].accountId,
-                    true,
-                );
-            }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ok: true } }));
-            return true;
-        }
-
-        if (
-            sub === "members" &&
-            subArg &&
-            subArg2 === "mute" &&
-            req.method === "POST"
-        ) {
-            const target = await resolveMemberProfileBySelector(
-                subArg,
-                profileStore.getProfileByHandle.bind(profileStore),
-                profileStore.getProfile.bind(profileStore),
-            );
-            if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "not_found",
-                            message: "User not found.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (target.accountId === accountId) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "bad_request",
-                            message: "Cannot mute yourself.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const roomMembers = await messagesStore.listMembers(roomId);
-            const canModerateOthers = hasModerationPrivileges({
-                roomKind: room.kind,
-                actorRole: member.role,
-                actorAccountId: accountId,
-                roomMembers,
-            });
-            if (!canModerateOthers) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message: "Only owners can mute members.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const targetIsMember = roomMembers.some(
-                (roomMember) => roomMember.accountId === target.accountId,
-            );
-            if (!targetIsMember) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "not_member",
-                            message: "Target is not a room member.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const mutedUntil = new Date(
-                Date.now() + MEMBER_MUTE_DURATION_HOURS * 60 * 60 * 1000,
-            ).toISOString();
-            await messagesStore.setMemberMutedUntil(
-                roomId,
-                target.accountId,
-                mutedUntil,
-            );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ok: true, mutedUntil } }));
-            return true;
-        }
+        const memberHandled = await handleMemberRoutes({
+            req,
+            res,
+            sub,
+            subArg,
+            subArg2,
+            room,
+            member,
+            accountId,
+            hasBypass,
+            roomId,
+            messagesStore,
+            profileStore,
+        });
+        if (memberHandled) return true;
 
         if (
             sub === "messages" &&

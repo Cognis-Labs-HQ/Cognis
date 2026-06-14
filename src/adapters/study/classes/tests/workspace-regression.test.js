@@ -160,7 +160,7 @@ test("notepad adapter routes support notepad file rename", () => {
         resolve(ROOT, "src/adapters/file-reader/text/routes/index.ts"),
         "utf8",
     );
-    assert.match(source, /notepad-files\\\/rename/);
+    assert.match(source, /classroom-notes.*\/files.*\/rename/s);
     assert.match(source, /classroom-notes/);
 });
 

@@ -5,17 +5,7 @@
     overflow: hidden;
     background: var(--surface);
     border-radius: 0.5rem;
-    cursor: grab;
-    user-select: none;
     touch-action: none;
-}
-
-.image-viewer-wrap--dragging {
-    cursor: grabbing;
-}
-
-.image-viewer-wrap:not(.image-viewer-wrap--dragging) {
-    cursor: grab;
 }
 
 .image-viewer-viewport {

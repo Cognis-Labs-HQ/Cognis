@@ -1,9 +1,6 @@
 import { createHmac } from "node:crypto";
 import { registerApiRoutes } from "./api/index.js";
-import {
-    getWhiteboardConfig,
-    setWhiteboardConfig,
-} from "./api/config-state.js";
+import { getWhiteboardConfig } from "./api/config-state.js";
 
 function mintToken(secret, payload) {
     const header = Buffer.from(
@@ -18,12 +15,6 @@ function mintToken(secret, payload) {
 
 export function bootstrapModule(ctx) {
     registerApiRoutes(ctx.router, ctx);
-    setWhiteboardConfig({
-        whiteboardUrl: process.env.NEXTCLOUD_WHITEBOARD_URL ?? "",
-        whiteboardSecret: process.env.NEXTCLOUD_WHITEBOARD_SECRET ?? "",
-        tokenExpirySeconds:
-            process.env.NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS,
-    });
 
     const systemCtx = ctx.getCapability("system:ctx");
     if (systemCtx) {

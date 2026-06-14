@@ -31,7 +31,7 @@ export function createImageViewer(container, src, options = {}) {
     let broadcastTimer = null;
 
     const wrapper = document.createElement("div");
-    wrapper.className = "image-viewer-wrap";
+    wrapper.className = "image-viewer-wrap can-drag";
 
     const viewport = document.createElement("div");
     viewport.className = "image-viewer-viewport";
@@ -88,7 +88,7 @@ export function createImageViewer(container, src, options = {}) {
         const centerX = pivotX - wRect.left - wRect.width / 2;
         const centerY = pivotY - wRect.top - wRect.height / 2;
         const prevScale = scale;
-        scale = Math.max(0.1, Math.min(scale * deltaScale, 10));
+        scale = Math.max(0.25, Math.min(scale * deltaScale, 5));
         const scaleFactor = scale / prevScale;
         offsetX = centerX - (centerX - offsetX) * scaleFactor;
         offsetY = centerY - (centerY - offsetY) * scaleFactor;
@@ -100,7 +100,7 @@ export function createImageViewer(container, src, options = {}) {
     function handleWheel(event) {
         if (!isTeacher) return;
         event.preventDefault();
-        const deltaScale = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+        const deltaScale = event.deltaY < 0 ? 1.07 : 1 / 1.07;
         zoom(deltaScale, event.clientX, event.clientY);
     }
 
@@ -113,7 +113,7 @@ export function createImageViewer(container, src, options = {}) {
         dragStartOffsetX = offsetX;
         dragStartOffsetY = offsetY;
         wrapper.setPointerCapture(event.pointerId);
-        wrapper.classList.add("image-viewer-wrap--dragging");
+        wrapper.classList.add("is-dragging");
         event.preventDefault();
     }
 
@@ -129,7 +129,7 @@ export function createImageViewer(container, src, options = {}) {
         if (!isDragging) return;
         isDragging = false;
         wrapper.releasePointerCapture(event.pointerId);
-        wrapper.classList.remove("image-viewer-wrap--dragging");
+        wrapper.classList.remove("is-dragging");
         scheduleBroadcast();
     }
 
@@ -147,7 +147,7 @@ export function createImageViewer(container, src, options = {}) {
 
     function applyViewport(newViewport) {
         if (!newViewport) return;
-        scale = Math.max(0.05, Math.min(Number(newViewport.scale) || 1, 20));
+        scale = Math.max(0.25, Math.min(Number(newViewport.scale) || 1, 5));
         offsetX = Number(newViewport.x) || 0;
         offsetY = Number(newViewport.y) || 0;
         applyTransform();

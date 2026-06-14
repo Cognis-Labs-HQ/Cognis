@@ -28,6 +28,7 @@ import {
     removeMember,
     resolveClassroomRoom,
     setMemberMutedUntil,
+    setMemberRole,
     updateRoomAvatar,
     updateRoomTitle,
 } from "./rooms.js";
@@ -217,6 +218,14 @@ export class DbMessagesStore {
         mutedUntil: string | null,
     ): Promise<void> {
         await setMemberMutedUntil(this.db, roomId, accountId, mutedUntil);
+    }
+
+    async setMemberRole(
+        roomId: string,
+        accountId: string,
+        role: MemberRole,
+    ): Promise<void> {
+        await setMemberRole(this.db, roomId, accountId, role);
     }
 
     async setArchived(

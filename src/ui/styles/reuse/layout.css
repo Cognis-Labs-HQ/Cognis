@@ -826,3 +826,12 @@ button.dropdown-item {
 .profile-mini-preview__stats {
     margin: 10px 0 0;
 }
+
+.can-drag {
+    cursor: grab;
+    user-select: none;
+}
+
+.can-drag.is-dragging {
+    cursor: grabbing;
+}

@@ -3,24 +3,7 @@ import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore } from "../store/index.js";
-
-interface FileGatewayLike {
-    get(key: string): Promise<Uint8Array | null>;
-    put(
-        key: string,
-        content: Uint8Array,
-        contentType?: string,
-    ): Promise<{ key: string; contentType?: string }>;
-    delete(key: string): Promise<boolean>;
-    list(prefix?: string): Promise<
-        Array<{
-            key: string;
-            size: number;
-            contentType?: string;
-            lastModified: Date;
-        }>
-    >;
-}
+import type { FileStorageGateway } from "../../../../core/contracts/files-gateway.js";
 
 interface MaterialLibraryMetadataEntry {
     name: string;
@@ -61,7 +44,7 @@ function dedupeFileRefs(
 }
 
 async function readTeacherMaterialsMetadata(
-    fileGateway: FileGatewayLike,
+    fileGateway: FileStorageGateway,
     teacherAccountId: string,
 ) {
     const metadataKey = buildTeacherMaterialsMetadataKey(teacherAccountId);
@@ -101,7 +84,7 @@ async function readTeacherMaterialsMetadata(
 }
 
 async function writeTeacherMaterialsMetadata(
-    fileGateway: FileGatewayLike,
+    fileGateway: FileStorageGateway,
     teacherAccountId: string,
     metadataEntries: Record<string, MaterialLibraryMetadataEntry>,
 ) {
@@ -167,7 +150,8 @@ export async function handleClassroomFilesRoutes({
             );
             return true;
         }
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
+        const fileGateway =
+            ctx.getCapability<FileStorageGateway>("file:gateway");
         if (!fileGateway) {
             jsonError(
                 res,
@@ -222,7 +206,8 @@ export async function handleClassroomFilesRoutes({
             );
             return true;
         }
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
+        const fileGateway =
+            ctx.getCapability<FileStorageGateway>("file:gateway");
         if (!fileGateway) {
             jsonError(
                 res,
@@ -324,7 +309,8 @@ export async function handleClassroomFilesRoutes({
             );
             return true;
         }
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
+        const fileGateway =
+            ctx.getCapability<FileStorageGateway>("file:gateway");
         if (!fileGateway) {
             jsonError(
                 res,
@@ -387,7 +373,8 @@ export async function handleClassroomFilesRoutes({
         if (!claims) return true;
         const classId = decodeURIComponent(materialFileMatch[1]);
         const fileKey = materialFileMatch[2];
-        const fileGateway = ctx.getCapability<FileGatewayLike>("file:gateway");
+        const fileGateway =
+            ctx.getCapability<FileStorageGateway>("file:gateway");
         if (!fileGateway) {
             jsonError(
                 res,

@@ -7,7 +7,7 @@ function extractFilename(key) {
 
 async function listNotepadFiles(apiFetch, classId) {
     const response = await apiFetch(
-        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files`,
+        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(classId)}/files`,
     ).catch(() => null);
     if (!response?.ok) return [];
     const payload = await response.json().catch(() => ({ data: [] }));
@@ -16,7 +16,7 @@ async function listNotepadFiles(apiFetch, classId) {
 
 async function saveNotepadFile(apiFetch, classId, filename, content) {
     const response = await apiFetch(
-        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(classId)}/files/${encodeURIComponent(filename)}`,
         {
             method: "PUT",
             headers: { "content-type": "text/plain; charset=utf-8" },
@@ -28,7 +28,7 @@ async function saveNotepadFile(apiFetch, classId, filename, content) {
 
 async function loadNotepadFile(apiFetch, classId, filename) {
     const response = await apiFetch(
-        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(classId)}/files/${encodeURIComponent(filename)}`,
     ).catch(() => null);
     if (!response?.ok) return null;
     return response.text().catch(() => null);
@@ -36,7 +36,7 @@ async function loadNotepadFile(apiFetch, classId, filename) {
 
 async function deleteNotepadFile(apiFetch, classId, filename) {
     const response = await apiFetch(
-        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/${encodeURIComponent(filename)}`,
+        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(classId)}/files/${encodeURIComponent(filename)}`,
         {
             method: "DELETE",
         },
@@ -46,7 +46,7 @@ async function deleteNotepadFile(apiFetch, classId, filename) {
 
 async function renameNotepadFile(apiFetch, classId, oldName, newName) {
     const response = await apiFetch(
-        `/api/v1/study/classes/${encodeURIComponent(classId)}/notepad-files/rename`,
+        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(classId)}/files/rename`,
         {
             method: "POST",
             headers: { "content-type": "application/json" },
