@@ -24,7 +24,9 @@ test("study/classes registers classroom assets before DB bootstrap can skip", as
         },
         gatewayRegistry: {},
         registerRoute() {},
-        registerStaticDir() {},
+        registerStaticDir() {
+            // Study/classes bootstrap should not register gateway static dirs.
+        },
         registerAdapterStaticDir(gatewayId, adapterId, absoluteDir) {
             staticDirRegistrations.push({
                 gatewayId,
