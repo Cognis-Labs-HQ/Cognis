@@ -8,7 +8,9 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { handleClassroomNotepadRoutes } from "./routes/index.js";
+import { createTextAdapterConfigRoutes } from "./routes/config.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -58,6 +60,7 @@ export async function bootstrapFileReaderAdapter(
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const routeHelpers = resolveRouteContext(routeContext);
+    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const getMaxFileBytes = () => maxFileBytes;
 
     ctx.capabilities.contribute("file-reader:text:ui", {
@@ -70,6 +73,23 @@ export async function bootstrapFileReaderAdapter(
         getMaxFileBytes,
     );
     ctx.registerAdapterStaticDir?.("file-reader", "text", ADAPTER_UI_ROOT);
+
+    if (dbExecutor) {
+        const configRoute = createTextAdapterConfigRoutes({
+            ctx: routeHelpers,
+            dbExecutor,
+            defaultMaxFileBytes: DEFAULT_MAX_FILE_BYTES,
+            minMaxFileBytes: MIN_MAX_FILE_BYTES,
+            maxMaxFileBytes: MAX_MAX_FILE_BYTES,
+            normalizeMaxFileBytes,
+            onConfigChanged: (value) => {
+                maxFileBytes = value;
+            },
+            log: ctx.log,
+        });
+        ctx.registerRoute(configRoute, "file-reader");
+    }
+
     ctx.registerRoute(async (req, res, url) => {
         return handleClassroomNotepadRoutes({
             req,

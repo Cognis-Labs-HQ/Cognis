@@ -295,6 +295,18 @@ export async function bootstrapStudyAdapter(
                 updates,
             );
         },
+        getActiveWhiteboardId: async (
+            classId: string,
+            accountId: string,
+        ): Promise<string | null> => {
+            const classRow = await store.getClassById(classId);
+            if (!classRow) return null;
+            if (classRow.teacherAccountId === accountId) return null;
+            const classroomState = await store.getClassroomState(classId);
+            return (
+                String(classroomState.activeWhiteboardId ?? "").trim() || null
+            );
+        },
     });
 
     const isEnabled = () => ctx.isAdapterEnabled();
@@ -618,16 +630,6 @@ export async function bootstrapStudyAdapter(
             archiveClassroomChat,
             archiveClassroomMeetings,
             getPresenceStatuses,
-            whiteboardGetEmbedUrl: ctx.capabilities.get<
-                (
-                    boardId: string,
-                    userId: string,
-                    userName: string,
-                ) => Promise<string | null>
-            >("whiteboard:getEmbedUrl"),
-            whiteboardFetchBoardData: ctx.capabilities.get<
-                (boardId: string) => Promise<string | null>
-            >("whiteboard:fetchBoardData"),
             routeContext,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<

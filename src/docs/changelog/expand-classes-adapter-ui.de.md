@@ -236,3 +236,78 @@ Die Classroom-Seite lädt die Helfer für Profil-Avatare jetzt dynamisch statt
 über einen harten Gateway-Import. Fehlen die UI-Assets des Social-Gateways,
 öffnet sich `/classroom` trotzdem weiter, und nur die Avatar-Hydrierung fällt
 still auf ihr Fallback zurück.
+
+## Verbesserungen nach Review-Feedback
+
+Dieser Abschnitt dokumentiert die Änderungen infolge des Review-Feedbacks zu
+diesem Pull Request.
+
+## Whiteboard-Modul übernimmt Einbettungszugang
+
+Der Classroom-Adapter orchestriert JWT-Generierung und Sichtbarkeitspr&uuml;fung des
+aktiven Boards nicht mehr intern. Die neue Capability
+`whiteboard:getClassroomBoardEmbed` im Nextcloud-Whiteboard-Modul &uuml;bernimmt die
+vollständige Zugriffskontrolle (Pr&uuml;fung des lehrerseitig aktivierten Boards f&uuml;r
+Sch&uuml;ler via `study:classes:resources`) und liefert entweder eine Einbettungs-URL
+oder einen Fehlercode zur&uuml;ck. Die Classroom-Route ruft diese Capability auf und
+antwortet entsprechend. Der Helfer `getActiveWhiteboardId` wurde dem
+`study:classes:resources`-Capability-Vertrag hinzugef&uuml;gt.
+
+## Whiteboard-Modul ohne Umgebungsvariablen
+
+Das Nextcloud-Whiteboard-Modul liest seine Konfiguration ausschlie&szlig;lich aus der
+datenbankgest&uuml;tzten Einstellungs-UI. Die Umgebungsvariablen
+`NEXTCLOUD_WHITEBOARD_URL`, `NEXTCLOUD_WHITEBOARD_SECRET` und
+`NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS` wurden aus `docker/Dockerfile` entfernt.
+Administratoren konfigurieren das Modul &uuml;ber Administration → Module.
+
+## Generische Drag-Cursor-Klassen im Reuse-CSS
+
+Die CSS-Klassen `.can-drag` und `.can-drag.is-dragging` wurden in
+`src/ui/styles/reuse/layout.css` verschoben. Der Bild-Viewer definiert keine
+eigenen Drag-Cursor-Regeln mehr.
+
+## Zoom-Empfindlichkeit und -Grenzen im Bild-Viewer
+
+Der Zoom-Faktor beim Pinch/Scroll wurde von 1,12 auf 1,07 verringert. Der
+Zoombereich ist jetzt auf 0,25× bis 5× begrenzt (vorher 0,1×–10×).
+
+## URL-Namensraum des Classroom-Notepads korrigiert
+
+Alle API-Routen des Classroom-Notepads und der Tagesordnung liegen jetzt unter
+`/api/v1/file-reader/text/classroom-notes/:id/` statt unter
+`/api/v1/study/classes/:id/`. Dadurch wird die Verletzung der
+komponentenübergreifenden URL-Bekanntheit beseitigt.
+
+## FileGatewayLike entfernt
+
+Die ad-hoc-Schnittstelle `FileGatewayLike` in classroom-files-route.ts und
+text/routes/index.ts wurde durch den kanonischen `FileStorageGateway`-Vertrag
+aus `src/core/contracts/files-gateway.ts` ersetzt.
+
+## Admin-Rolle im Gruppenchat
+
+Gruppenraume unterstützen nun eine **Admin**-Rolle zwischen Mitglied und Eigentümer.
+Der Raum-Eigentümer kann Mitglieder &uuml;ber den neuen Endpunkt
+`PATCH /api/v1/social/messages/rooms/:id/members/:selector/role` befördern und
+zur&uuml;ckstufen. Admins k&ouml;nnen normale Mitglieder entfernen und stummschalten,
+aber nicht andere Admins oder den Eigentümer. Direktnachrichten bleiben unver&auml;ndert.
+
+## Avatar-Raster im Gruppenchat korrigiert
+
+Das Drei-Mitglieder-Avatar-Raster zeigt das erste Mitglied nun &uuml;ber die gesamte
+obere Zeile, die anderen beiden nebeneinander darunter. Das Vier-Mitglieder-Layout
+verwendet ein standardm&auml;&szlig;iges 2×2-Raster.
+
+## Konfigurierbare maximale Dateigr&ouml;&szlig;e im Text-Adapter
+
+Der Text-File-Reader-Adapter speichert seine maximale Dateigr&ouml;&szlig;e jetzt in der
+Datenbank. Administratoren k&ouml;nnen den Wert &uuml;ber Administration → Adapter unter
+dem File-Reader-Gateway anpassen. Der Wert ist auf 16 KB bis 4 MB begrenzt
+(Standard: 256 KB).
+
+## File-Reader-Gateway-Adapter-Auflistung
+
+Das File-Reader-Gateway registriert jetzt einen
+`GET /api/v1/gateways/file-reader/adapters`-Endpunkt, der installierte Adapter
+mit ihren Admin-Steuerelement-URLs auflistet.

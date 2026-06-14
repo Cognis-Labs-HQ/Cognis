@@ -86,5 +86,52 @@ export function bootstrapModule(ctx) {
                 return response.text();
             },
         );
+
+        /**
+         * Returns an embed URL with a user-scoped JWT for the given board in the
+         * context of a classroom, enforcing the classroom's active-whiteboard
+         * visibility policy for students. Teachers always receive an embed URL;
+         * students only receive one when the board matches the teacher-selected
+         * active board.
+         *
+         * @param {object} input
+         * @param {string} input.classId - The classroom identifier.
+         * @param {string} input.boardId - The whiteboard room identifier.
+         * @param {string} input.userId - The authenticated user's ID.
+         * @param {string} input.userName - The authenticated user's display name.
+         * @param {boolean} input.isTeacher - Whether the requesting user is the class teacher.
+         * @returns {Promise<{embedUrl: string} | {error: string}>}
+         */
+        systemCtx.contributePublicCapability(
+            "whiteboard:getClassroomBoardEmbed",
+            async ({ classId, boardId, userId, userName, isTeacher }) => {
+                if (!isTeacher) {
+                    const classResources = systemCtx.capabilities.get(
+                        "study:classes:resources",
+                    );
+                    const activeId =
+                        await classResources?.getActiveWhiteboardId?.(
+                            classId,
+                            userId,
+                        );
+                    if (!activeId || activeId !== boardId) {
+                        return { error: "not_active" };
+                    }
+                }
+                const config = getWhiteboardConfig();
+                if (!config.whiteboardUrl || !config.whiteboardSecret) {
+                    return { error: "not_configured" };
+                }
+                const now = Math.floor(Date.now() / 1000);
+                const token = mintToken(config.whiteboardSecret, {
+                    user: { id: userId, name: userName },
+                    room: boardId,
+                    iat: now,
+                    exp: now + config.tokenExpirySeconds,
+                });
+                const embedUrl = `${config.whiteboardUrl.replace(/\/$/, "")}?token=${token}`;
+                return { embedUrl };
+            },
+        );
     }
 }

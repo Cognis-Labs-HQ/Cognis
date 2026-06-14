@@ -227,3 +227,81 @@ Halaman classroom sekarang memuat helper avatar profil secara dinamis alih-alih
 melalui impor gateway yang kaku. Jika aset UI gateway Social tidak tersedia,
 `/classroom` tetap bisa dibuka, dan hanya hidrasi avatar yang diam-diam jatuh
 ke fallback.
+
+## Perbaikan Berdasarkan Umpan Balik Tinjauan
+
+Bagian ini mendokumentasikan perubahan yang dilakukan sebagai respons terhadap
+umpan balik tinjauan pada pull request ini.
+
+## Modul whiteboard mengelola akses embed kelas
+
+Adaptor classroom tidak lagi mengorkestrasi pembuatan JWT atau pemeriksaan
+visibilitas papan aktif secara internal. Kemampuan baru
+`whiteboard:getClassroomBoardEmbed` pada modul Nextcloud Whiteboard menangani
+seluruh alur kontrol akses (memeriksa papan yang diaktifkan guru untuk siswa
+melalui kemampuan `study:classes:resources`) dan mengembalikan URL embed atau
+kode kesalahan. Rute classroom cukup memanggil kemampuan ini dan merespons
+sesuai kebutuhan. Pembantu `getActiveWhiteboardId` telah ditambahkan ke kontrak
+kemampuan `study:classes:resources`.
+
+## Konfigurasi modul whiteboard tidak lagi menggunakan variabel lingkungan
+
+Modul Nextcloud Whiteboard kini membaca konfigurasinya secara eksklusif dari
+UI pengaturan berbasis database. Variabel lingkungan
+`NEXTCLOUD_WHITEBOARD_URL`, `NEXTCLOUD_WHITEBOARD_SECRET`, dan
+`NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS` telah dihapus dari
+`docker/Dockerfile`. Administrator mengonfigurasi modul melalui panel
+Administrasi → Modul.
+
+## Kelas drag cursor generik di CSS reuse
+
+Kelas utilitas `.can-drag` dan `.can-drag.is-dragging` telah dipindahkan ke
+`src/ui/styles/reuse/layout.css`. Penampil gambar tidak lagi mendefinisikan
+aturan kursor drag khusus komponen.
+
+## Sensitivitas dan batas zoom penampil gambar
+
+Faktor zoom pinch/scroll dikurangi dari 1,12 menjadi 1,07 untuk sensitivitas
+yang lebih rendah. Zoom kini dibatasi pada rentang 0,25× – 5× (sebelumnya
+0,1×–10×).
+
+## Ruang nama URL notepad kelas dikoreksi
+
+Semua rute API notepad dan agenda kelas kini berada di bawah
+`/api/v1/file-reader/text/classroom-notes/:id/` alih-alih
+`/api/v1/study/classes/:id/`. Ini menghilangkan pelanggaran kesadaran URL
+lintas komponen.
+
+## FileGatewayLike dihapus
+
+Antarmuka ad-hoc `FileGatewayLike` di classroom-files-route.ts dan
+text/routes/index.ts telah diganti dengan kontrak `FileStorageGateway` kanonik
+dari `src/core/contracts/files-gateway.ts`.
+
+## Peran admin di obrolan grup
+
+Ruang obrolan grup kini mendukung peran **admin** yang berada di antara anggota
+dan pemilik. Pemilik ruangan dapat mempromosikan dan menurunkan jabatan anggota
+melalui endpoint baru
+`PATCH /api/v1/social/messages/rooms/:id/members/:selector/role`. Admin dapat
+menghapus dan membisukan anggota biasa tetapi tidak dapat bertindak terhadap
+admin lain atau pemilik. Ruang pesan langsung tetap tidak berubah.
+
+## Tata letak kisi avatar obrolan grup diperbaiki
+
+Kisi avatar tiga anggota kini menampilkan anggota pertama di seluruh baris atas
+dengan dua anggota lainnya berdampingan di bawah. Tata letak empat anggota
+menggunakan kisi 2×2 standar.
+
+## Ukuran file maksimum yang dapat dikonfigurasi di adaptor teks
+
+Adaptor Text File Reader kini menyimpan ukuran file maksimum yang diterima di
+database. Administrator dapat melihat dan mengubahnya dari panel Administrasi →
+Adaptor di bawah gateway File Reader. Pengaturan dibatasi antara 16 KB dan 4 MB
+(default 256 KB).
+
+## Daftar adaptor gateway File Reader
+
+Gateway File Reader kini mendaftarkan endpoint
+`GET /api/v1/gateways/file-reader/adapters` yang mencantumkan adaptor yang
+dipasang beserta URL kontrol adminnya.

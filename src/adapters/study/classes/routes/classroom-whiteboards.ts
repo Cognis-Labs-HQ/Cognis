@@ -5,35 +5,11 @@ import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore } from "../store/index.js";
 
 interface WhiteboardRouteOptions {
-    /** Returns the embed URL with a user-scoped JWT, or null when not configured. */
-    getEmbedUrl?: (
-        boardId: string,
-        userId: string,
-        userName: string,
-    ) => Promise<string | null>;
-    /** Fetches raw board JSON from the NC WB server-to-server API, or null when not configured. */
-    fetchBoardData?: (boardId: string) => Promise<string | null>;
     log?: (
         level: string,
         message: string,
         meta?: Record<string, unknown>,
     ) => void;
-}
-
-async function getStudentVisibleWhiteboardId(
-    store: DbClassesStore,
-    classId: string,
-    accountId: string,
-): Promise<string | null> {
-    const classRow = await store.getClassById(classId);
-    if (!classRow) {
-        throw new Error("not_authorized");
-    }
-    if (classRow.teacherAccountId === accountId) {
-        return null;
-    }
-    const classroomState = await store.getClassroomState(classId);
-    return String(classroomState.activeWhiteboardId ?? "").trim() || null;
 }
 
 export async function handleClassroomWhiteboardRoutes(input: {
@@ -191,7 +167,17 @@ export async function handleClassroomWhiteboardRoutes(input: {
         const classId = decodeURIComponent(tokenMatch[1]);
         const boardId = decodeURIComponent(tokenMatch[2]);
 
-        if (!options.getEmbedUrl) {
+        const getClassroomBoardEmbed = ctx.getCapability<
+            (input: {
+                classId: string;
+                boardId: string;
+                userId: string;
+                userName: string;
+                isTeacher: boolean;
+            }) => Promise<{ embedUrl: string } | { error: string }>
+        >("whiteboard:getClassroomBoardEmbed");
+
+        if (!getClassroomBoardEmbed) {
             jsonError(
                 res,
                 503,
@@ -202,23 +188,6 @@ export async function handleClassroomWhiteboardRoutes(input: {
         }
 
         try {
-            const visibleWhiteboardId = await getStudentVisibleWhiteboardId(
-                store,
-                classId,
-                claims.sub,
-            );
-            if (
-                claims.role !== "teacher" &&
-                (!visibleWhiteboardId || visibleWhiteboardId !== boardId)
-            ) {
-                jsonError(
-                    res,
-                    403,
-                    "forbidden",
-                    "Whiteboard is not currently active.",
-                );
-                return true;
-            }
             const board = await store.getClassroomWhiteboard(
                 classId,
                 boardId,
@@ -228,32 +197,33 @@ export async function handleClassroomWhiteboardRoutes(input: {
                 jsonError(res, 404, "not_found", "Whiteboard not found.");
                 return true;
             }
-            const embedUrl = await options.getEmbedUrl(
+            const result = await getClassroomBoardEmbed({
+                classId,
                 boardId,
-                claims.sub,
-                claims.sub,
-            );
-            if (!embedUrl) {
-                jsonError(
-                    res,
-                    503,
-                    "not_configured",
-                    "Whiteboard service is not configured.",
-                );
+                userId: claims.sub,
+                userName: claims.sub,
+                isTeacher: claims.role === "teacher",
+            });
+            if ("error" in result) {
+                const status = result.error === "not_configured" ? 503 : 403;
+                const code =
+                    result.error === "not_configured"
+                        ? "not_configured"
+                        : "forbidden";
+                const message =
+                    result.error === "not_configured"
+                        ? "Whiteboard service is not configured."
+                        : "Whiteboard is not currently active.";
+                jsonError(res, status, code, message);
                 return true;
             }
-            jsonOk(res, { embedUrl, boardId, name: board.name });
+            jsonOk(res, {
+                embedUrl: result.embedUrl,
+                boardId,
+                name: board.name,
+            });
         } catch (err) {
-            if (err instanceof Error && err.message === "not_authorized") {
-                jsonError(
-                    res,
-                    403,
-                    "forbidden",
-                    "Class not found or access denied.",
-                );
-                return true;
-            }
-            options.log?.("error", "Failed to mint whiteboard token.", {
+            options.log?.("error", "Failed to open whiteboard.", {
                 ...logMeta,
                 accountId: claims.sub,
                 classId,
@@ -274,7 +244,11 @@ export async function handleClassroomWhiteboardRoutes(input: {
         const classId = decodeURIComponent(saveMatch[1]);
         const boardId = decodeURIComponent(saveMatch[2]);
 
-        if (!options.fetchBoardData) {
+        const fetchBoardData = ctx.getCapability<
+            (boardId: string) => Promise<string | null>
+        >("whiteboard:fetchBoardData");
+
+        if (!fetchBoardData) {
             jsonError(
                 res,
                 503,
@@ -284,23 +258,28 @@ export async function handleClassroomWhiteboardRoutes(input: {
             return true;
         }
 
+        const isTeacher = claims.role === "teacher";
         try {
-            const visibleWhiteboardId = await getStudentVisibleWhiteboardId(
-                store,
-                classId,
-                claims.sub,
-            );
-            if (
-                claims.role !== "teacher" &&
-                (!visibleWhiteboardId || visibleWhiteboardId !== boardId)
-            ) {
-                jsonError(
-                    res,
-                    403,
-                    "forbidden",
-                    "Whiteboard is not currently active.",
+            if (!isTeacher) {
+                const classResources = ctx.getCapability<{
+                    getActiveWhiteboardId: (
+                        classId: string,
+                        userId: string,
+                    ) => Promise<string | null>;
+                }>("study:classes:resources");
+                const activeId = await classResources?.getActiveWhiteboardId?.(
+                    classId,
+                    claims.sub,
                 );
-                return true;
+                if (!activeId || activeId !== boardId) {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Whiteboard is not currently active.",
+                    );
+                    return true;
+                }
             }
             const board = await store.getClassroomWhiteboard(
                 classId,
@@ -311,7 +290,7 @@ export async function handleClassroomWhiteboardRoutes(input: {
                 jsonError(res, 404, "not_found", "Whiteboard not found.");
                 return true;
             }
-            const data = await options.fetchBoardData(boardId);
+            const data = await fetchBoardData(boardId);
             if (data === null) {
                 jsonError(
                     res,
@@ -325,15 +304,6 @@ export async function handleClassroomWhiteboardRoutes(input: {
             await store.setWhiteboardFileKey(classId, boardId, fileKey);
             jsonOk(res, { fileKey, size: data.length });
         } catch (err) {
-            if (err instanceof Error && err.message === "not_authorized") {
-                jsonError(
-                    res,
-                    403,
-                    "forbidden",
-                    "Class not found or access denied.",
-                );
-                return true;
-            }
             options.log?.("error", "Failed to save whiteboard.", {
                 ...logMeta,
                 accountId: claims.sub,

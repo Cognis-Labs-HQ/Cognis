@@ -262,3 +262,79 @@ study classes adapter reads these capabilities at bootstrap and injects them as
 meta tags into the classroom HTML. The classroom client reads the meta tags at
 runtime and imports the factories on demand, degrading gracefully when either
 module is absent.
+
+## PR Review Feedback Improvements
+
+This section documents the changes made in response to review feedback on this
+pull request.
+
+## Whiteboard module now owns classroom embed access
+
+The classroom adapter no longer orchestrates JWT minting or active-board
+visibility checks internally. A new `whiteboard:getClassroomBoardEmbed`
+capability on the Nextcloud Whiteboard module handles the full access-control
+flow (checking the teacher-activated board for students via the
+`study:classes:resources` capability) and returns either an embed URL or an
+error code. The classroom route simply calls this capability and responds
+accordingly. The `getActiveWhiteboardId` helper has been added to the
+`study:classes:resources` capability contract.
+
+## Whiteboard module config no longer uses env vars
+
+The Nextcloud Whiteboard module now reads its configuration exclusively from the
+database-backed settings UI. The `NEXTCLOUD_WHITEBOARD_URL`,
+`NEXTCLOUD_WHITEBOARD_SECRET`, and `NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS`
+environment variables have been removed from `docker/Dockerfile`. Administrators
+configure the module through the Administration → Modules panel.
+
+## Generic drag cursor classes in reuse CSS
+
+The `.can-drag` and `.can-drag.is-dragging` utility classes have been moved to
+`src/ui/styles/reuse/layout.css`. The image viewer no longer defines its own
+component-specific drag cursor rules.
+
+## Image viewer zoom sensitivity and bounds
+
+The pinch/scroll zoom factor has been reduced from 1.12 to 1.07 for less
+sensitivity. Zoom is now clamped to a 0.25× – 5× range (previously 0.1×–10×).
+
+## Classroom notepad URL namespace corrected
+
+All classroom notepad and agenda API routes now live under
+`/api/v1/file-reader/text/classroom-notes/:id/` instead of
+`/api/v1/study/classes/:id/`. This removes the cross-component URL awareness
+violation where the text file-reader adapter knew it was being used by the
+study/classes adapter.
+
+## FileGatewayLike removed
+
+The ad-hoc `FileGatewayLike` interface in classroom-files-route.ts and
+text/routes/index.ts has been replaced with the canonical `FileStorageGateway`
+contract from `src/core/contracts/files-gateway.ts`.
+
+## Group chat admin role
+
+Group chat rooms now support an **admin** role that sits between member and
+owner. The room owner can promote and demote members to admin via the new
+`PATCH /api/v1/social/messages/rooms/:id/members/:selector/role` endpoint.
+Admins can remove and mute regular members but cannot act on other admins or
+the owner. DM rooms remain unchanged.
+
+## Group chat avatar grid layout fixed
+
+The three-member avatar grid now displays the first member across the full
+top row with the remaining two side-by-side below. The four-member layout
+renders a standard 2×2 grid.
+
+## Configurable max file size in text adapter admin settings
+
+The Text File Reader adapter now stores its maximum accepted file size in the
+database. Administrators can view and change it from the Administration →
+Adapters panel under the File Reader gateway. The setting is bounded between
+16 KB and 4 MB (default 256 KB).
+
+## File Reader gateway adapter listing
+
+The File Reader gateway now registers a `GET /api/v1/gateways/file-reader/adapters`
+endpoint that lists installed adapters with their admin control URLs. This lets
+the Administration panel display the gateway's adapters section correctly.

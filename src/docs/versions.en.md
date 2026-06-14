@@ -42,10 +42,10 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.7`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.8`  |
-| Text File Reader      | `src/adapters/file-reader/text/`    | `1.2.0`  |
-| Image File Reader     | `src/adapters/file-reader/image/`   | `1.0.0`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.5.0`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.9`  |
+| Text File Reader      | `src/adapters/file-reader/text/`    | `1.3.0`  |
+| Image File Reader     | `src/adapters/file-reader/image/`   | `1.0.1`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 
 ## Gateways
@@ -61,7 +61,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
-| File Reader           | `src/gateways/file-reader/`  | `1.0.0`  |
+| File Reader           | `src/gateways/file-reader/`  | `1.1.0`  |
 | Calendar              | `src/gateways/calendar/`     | `1.2.0`  |
 
 ## Core contracts
@@ -82,6 +82,6 @@ Increment using [Semantic Versioning](https://semver.org/):
 | -------------------- | ----------------------------------- | ------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1` |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.1.5` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `1.1.0` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `1.1.1` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2` |
