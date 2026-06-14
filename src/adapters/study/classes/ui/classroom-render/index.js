@@ -1,5 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { buildProfileAvatarMarkup } from "/static/gateways/social/reuse/profile-avatar.js";
+import { buildProfileAvatarMarkup } from "/static/adapters/study/classes/classroom/profile-avatar.js";
 import {
     buildAccountLabel,
     buildAccountAbbreviation,

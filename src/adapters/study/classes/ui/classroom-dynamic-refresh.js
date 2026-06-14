@@ -3,7 +3,7 @@ import {
     renderRosterPanel,
 } from "/static/adapters/study/classes/classroom-render.js";
 import { buildSlideNavButtonsHtml } from "/static/adapters/study/classes/classroom-render/workspace.js";
-import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
+import { hydrateProfileAvatars } from "/static/adapters/study/classes/classroom/profile-avatar.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
 /**

@@ -283,6 +283,21 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
         ),
         "utf8",
     );
+    const renderSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render/index.js"),
+        "utf8",
+    );
+    const refreshSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-dynamic-refresh.js",
+        ),
+        "utf8",
+    );
+    const popupsSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom-popups.js"),
+        "utf8",
+    );
 
     assert.match(indexSource, /classroom\/profile-avatar\.js/);
     assert.match(
@@ -290,8 +305,32 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
         /import\(\s*"\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
     );
     assert.match(helperSource, /Failed to load profile avatar helpers/);
+    assert.match(
+        renderSource,
+        /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
+    );
+    assert.match(
+        refreshSource,
+        /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
+    );
+    assert.match(
+        popupsSource,
+        /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
+    );
     assert.doesNotMatch(
         indexSource,
+        /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+    );
+    assert.doesNotMatch(
+        renderSource,
+        /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+    );
+    assert.doesNotMatch(
+        refreshSource,
+        /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+    );
+    assert.doesNotMatch(
+        popupsSource,
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
     );
 });

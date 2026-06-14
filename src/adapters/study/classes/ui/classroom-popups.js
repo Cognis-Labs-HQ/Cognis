@@ -1,6 +1,6 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { fetchProfileAvatarBlobUrl } from "/static/gateways/social/reuse/profile-avatar.js";
+import { fetchProfileAvatarBlobUrl } from "/static/adapters/study/classes/classroom/profile-avatar.js";
 
 export async function openMemberProfilePreview({
     memberButton,
