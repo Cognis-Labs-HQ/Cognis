@@ -1,4 +1,4 @@
-# Classroom UI Stability Improvements
+# Classroom UI Stability
 
 ## Smooth tile and tab animations during realtime refresh
 

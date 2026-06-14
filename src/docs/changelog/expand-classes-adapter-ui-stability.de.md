@@ -1,4 +1,4 @@
-# Stabilitätsverbesserungen der Unterrichts-UI
+# Unterrichts-UI Stabilisierung
 
 ## Flüssige Kachel- und Tab-Animationen bei dynamischer Aktualisierung
 

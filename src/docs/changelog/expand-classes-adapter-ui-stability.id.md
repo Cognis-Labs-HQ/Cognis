@@ -1,4 +1,4 @@
-# Peningkatan Stabilitas UI Kelas
+# Peningkatan Stabilitas UI
 
 ## Animasi ubin dan tab yang mulus saat pembaruan waktu nyata
 
