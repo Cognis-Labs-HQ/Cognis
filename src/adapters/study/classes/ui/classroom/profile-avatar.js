@@ -4,9 +4,6 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const SOCIAL_AVATAR_HELPER_PATH =
-    "/static/gateways/social/reuse/profile-avatar.js";
-
 let socialAvatarModule = null;
 let socialAvatarModulePromise = null;
 let socialAvatarWarningLogged = false;
@@ -24,7 +21,9 @@ function logSocialAvatarFailure(error) {
 
 async function loadSocialAvatarModule() {
     if (!socialAvatarModulePromise) {
-        socialAvatarModulePromise = import(SOCIAL_AVATAR_HELPER_PATH)
+        socialAvatarModulePromise = import(
+            "/static/gateways/social/reuse/profile-avatar.js"
+        )
             .then((avatarModule) => {
                 socialAvatarModule = avatarModule;
                 return avatarModule;
