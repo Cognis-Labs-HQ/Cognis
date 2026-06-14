@@ -179,6 +179,7 @@ export async function bootstrapStudyAdapter(
             : "";
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
+    ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
     const dbExecutor = ctx.capabilities.get("db:executor");
     if (!dbExecutor) {
         ctx.log?.(
@@ -616,8 +617,6 @@ export async function bootstrapStudyAdapter(
         ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
-
-    ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
     ctx.registerNavbarPlugin("/static/adapters/study/classes/nav-link.js", () =>
         ctx.isAdapterEnabled(),
     );
