@@ -272,18 +272,26 @@ test("classroom chat uses shared messages adapter chat styles", () => {
 });
 
 test("classroom avatar helpers load dynamically instead of hard-importing social UI assets", () => {
-    const source = readFileSync(
+    const indexSource = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
         "utf8",
     );
+    const helperSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/profile-avatar.js",
+        ),
+        "utf8",
+    );
 
+    assert.match(indexSource, /classroom\/profile-avatar\.js/);
     assert.match(
-        source,
+        helperSource,
         /import\(\s*"\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
     );
-    assert.match(source, /Failed to load profile avatar helpers/);
+    assert.match(helperSource, /Failed to load profile avatar helpers/);
     assert.doesNotMatch(
-        source,
+        indexSource,
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
     );
 });

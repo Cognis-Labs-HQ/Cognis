@@ -65,35 +65,9 @@ import {
     loadNotepadFactory,
     getNotepadStringsBaseUrl,
 } from "/static/adapters/study/classes/classroom/notepad-loader.js";
+import { loadProfileAvatarHelpers } from "/static/adapters/study/classes/classroom/profile-avatar.js";
 import { loadWindowsFactories } from "/static/adapters/study/classes/classroom/windows-loader.js";
 import { mountMaterialImageViewer } from "/static/adapters/study/classes/classroom/material-viewer-mount.js";
-
-async function loadProfileAvatarHelpers() {
-    try {
-        const avatarModule = await import(
-            "/static/gateways/social/reuse/profile-avatar.js"
-        );
-        return {
-            handleProfileAvatarError:
-                typeof avatarModule.handleProfileAvatarError === "function"
-                    ? avatarModule.handleProfileAvatarError
-                    : null,
-            hydrateProfileAvatars:
-                typeof avatarModule.hydrateProfileAvatars === "function"
-                    ? avatarModule.hydrateProfileAvatars
-                    : null,
-        };
-    } catch (error) {
-        console.warn("[classroom] Failed to load profile avatar helpers.", {
-            operation: "loadProfileAvatarHelpers",
-            error: error instanceof Error ? error.message : String(error),
-        });
-        return {
-            handleProfileAvatarError: null,
-            hydrateProfileAvatars: null,
-        };
-    }
-}
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
@@ -819,16 +793,12 @@ export async function mount(root, { signal } = {}) {
                         getIsTeacherPresent: computeIsTeacherPresent,
                         loadActiveMaterialPreview,
                     });
-                    if (profileAvatarHelpers.handleProfileAvatarError) {
+                    profileAvatarHelpers.handleProfileAvatarError &&
                         root.addEventListener(
                             "error",
                             profileAvatarHelpers.handleProfileAvatarError,
-                            {
-                                signal,
-                                capture: true,
-                            },
+                            { signal, capture: true },
                         );
-                    }
                 },
             },
         ],
@@ -851,9 +821,8 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     tileLayout = await loadTileLayoutPreference();
     const pageContent = root.querySelector(".page-content");
-    if (pageContent instanceof HTMLElement) {
+    if (pageContent instanceof HTMLElement)
         pageContent.classList.add("classes-classroom-page-content");
-    }
     void profileAvatarHelpers.hydrateProfileAvatars?.(root);
     syncGlobalChatTarget();
     classroomWindows = createClassroomWindows({
