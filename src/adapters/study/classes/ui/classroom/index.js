@@ -35,7 +35,6 @@ import {
 } from "/static/adapters/study/classes/classroom-dynamic-refresh.js";
 import { createBoardEntityStore } from "/static/adapters/study/classes/classroom-board.js";
 import { openSeatActionMenu } from "/static/adapters/study/classes/classroom-seat-menu.js";
-import { createClassroomNotepad } from "/static/adapters/file-reader/text/classroom-notepad.js";
 import { handleWhiteboardAndNotepadActions } from "/static/adapters/study/classes/classroom-whiteboard-actions.js";
 import { handleResourceActions } from "/static/adapters/study/classes/classroom-resource-actions.js";
 import { handleFileActions } from "/static/adapters/study/classes/classroom-file-actions.js";
@@ -66,17 +65,24 @@ import {
     saveTileLayoutPreference,
 } from "/static/adapters/study/classes/classroom/tile-layout-preference.js";
 import { createStudentSync } from "/static/adapters/study/classes/classroom/student-sync.js";
+import {
+    loadNotepadFactory,
+    getNotepadStringsBaseUrl,
+} from "/static/adapters/study/classes/classroom/notepad-loader.js";
 import { mountMaterialImageViewer } from "/static/adapters/study/classes/classroom/material-viewer-mount.js";
 
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
     const previousPath = resolvePreviousPath();
-    const i18n = await createI18n({
-        componentStringBaseUrls: [
-            "/static/adapters/study/notepad/languages",
-            "/static/modules/nextcloud-whiteboard/languages",
-        ],
-    });
+
+    const createClassroomNotepad = await loadNotepadFactory();
+    const notepadStringsBaseUrl = getNotepadStringsBaseUrl();
+
+    const componentStringBaseUrls = [
+        ...(notepadStringsBaseUrl ? [notepadStringsBaseUrl] : []),
+        "/static/modules/nextcloud-whiteboard/languages",
+    ];
+    const i18n = await createI18n({ componentStringBaseUrls });
     applyDocumentTitle(i18n, "module.study.classes.classroom_page_title");
     await refreshClassroomRoleIfNeeded({
         canToggleClassroomView,
@@ -517,7 +523,11 @@ export async function mount(root, { signal } = {}) {
             content.outerHTML = renderContentMarkup();
             const nextSnapshot = selectedSnapshot();
             const notepadHost = root.querySelector(".classes-notepad-host");
-            if (notepadHost instanceof HTMLElement && nextSnapshot) {
+            if (
+                notepadHost instanceof HTMLElement &&
+                nextSnapshot &&
+                createClassroomNotepad
+            ) {
                 if (
                     !classroomNotepad ||
                     classroomNotepadClassId !== nextSnapshot.id

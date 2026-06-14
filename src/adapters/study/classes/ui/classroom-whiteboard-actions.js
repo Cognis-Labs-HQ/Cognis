@@ -34,7 +34,7 @@ export async function handleWhiteboardAndNotepadActions(
     if (!(event.target instanceof Element)) return false;
 
     function ensureNotepad() {
-        if (!snapshot) return null;
+        if (!snapshot || !createClassroomNotepad) return null;
         const currentClassId = getClassroomNotepadClassId();
         let notepad = getClassroomNotepad();
         if (!notepad || currentClassId !== snapshot.id) {

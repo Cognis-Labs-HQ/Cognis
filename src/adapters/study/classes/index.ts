@@ -31,7 +31,6 @@ export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "classes",
         adapterName: "Classes",
-        requires: ["notepad"],
         getConfig: () => ({ requireTeacherManualApproval }),
         setConfig: async (config) => {
             const rawValue = config?.requireTeacherManualApproval;
@@ -44,11 +43,15 @@ export function createStudyAdapter(): StudyAdapter {
 }
 
 /**
- * Page-serving route for `/classroom`. Serves the classroom hub SPA page.
+ * Page-serving route for `/classroom`. Serves the classroom hub SPA page with
+ * notepad config injected via meta tags so the client can dynamically load the
+ * notepad adapter without a hardcoded static import.
  */
 function createClassroomHubPageRoute(
     routeContext: RouteContext | undefined,
     isAdapterEnabled: () => boolean,
+    notepadScriptUrl: string,
+    notepadStringsBaseUrl: string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -66,9 +69,15 @@ function createClassroomHubPageRoute(
             return true;
         }
         ctx.setPageSecurityHeaders(res);
-        const html = await import("node:fs/promises").then((fs) =>
+        let html = await import("node:fs/promises").then((fs) =>
             fs.readFile(path.join(ADAPTER_UI_ROOT, "classroom.html"), "utf8"),
         );
+        html = html
+            .replace("{{classroom.notepadScriptUrl}}", notepadScriptUrl)
+            .replace(
+                "{{classroom.notepadStringsBaseUrl}}",
+                notepadStringsBaseUrl,
+            );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
         return true;
@@ -172,7 +181,15 @@ export async function bootstrapStudyAdapter(
         scriptUrl?: string;
         stringsBaseUrl?: string;
         stylesheetUrl?: string;
-    }>("study:notepad:ui");
+    }>("file-reader:text:ui");
+    const notepadScriptUrl =
+        typeof notepadUi?.scriptUrl === "string"
+            ? notepadUi.scriptUrl.trim()
+            : "";
+    const notepadStringsBaseUrl =
+        typeof notepadUi?.stringsBaseUrl === "string"
+            ? notepadUi.stringsBaseUrl.trim()
+            : "";
     const notepadStylesheetUrl =
         typeof notepadUi?.stylesheetUrl === "string"
             ? notepadUi.stylesheetUrl.trim()
@@ -519,7 +536,12 @@ export async function bootstrapStudyAdapter(
         "study",
     );
     ctx.registerRoute(
-        createClassroomHubPageRoute(routeContext, isEnabled),
+        createClassroomHubPageRoute(
+            routeContext,
+            isEnabled,
+            notepadScriptUrl,
+            notepadStringsBaseUrl,
+        ),
         "study",
     );
     ctx.registerRoute(
