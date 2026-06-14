@@ -23,22 +23,24 @@ function createTempModulePath(prefix) {
 
 async function importLoaderModule(replacementModuleUrl) {
     const helperSource = await readFile(HELPER_PATH, "utf8");
-    const avatarUtilsModulePath = createTempModulePath("classroom-avatar-utils");
+    const avatarUtilsModulePath = createTempModulePath(
+        "classroom-avatar-utils",
+    );
     const escapeHtmlModulePath = createTempModulePath("classroom-escape-html");
     await writeFile(
         avatarUtilsModulePath,
         [
-            'export function getInitialsText(value) {',
+            "export function getInitialsText(value) {",
             '    return String(value ?? "")',
-            '        .split(/\\s+/)',
-            '        .filter(Boolean)',
+            "        .split(/\\s+/)",
+            "        .filter(Boolean)",
             '        .map((segment) => segment[0]?.toUpperCase() ?? "")',
             '        .join("")',
-            '        .slice(0, 2);',
-            '}',
-            'export function pickInitialsColor() {',
+            "        .slice(0, 2);",
+            "}",
+            "export function pickInitialsColor() {",
             '    return "#123456";',
-            '}',
+            "}",
             "",
         ].join("\n"),
         "utf8",
@@ -55,10 +57,7 @@ async function importLoaderModule(replacementModuleUrl) {
     );
     const rewrittenSource = helperSource
         .replace(SOCIAL_HELPER_PATH, replacementModuleUrl)
-        .replace(
-            AVATAR_UTILS_PATH,
-            pathToFileURL(avatarUtilsModulePath).href,
-        )
+        .replace(AVATAR_UTILS_PATH, pathToFileURL(avatarUtilsModulePath).href)
         .replace(ESCAPE_HTML_PATH, pathToFileURL(escapeHtmlModulePath).href);
     const tempModulePath = createTempModulePath(
         "classroom-profile-avatar-loader",
@@ -93,9 +92,8 @@ test("loadProfileAvatarHelpers returns avatar helpers when the Social UI module 
         label: "Alice Example",
         colorSeed: "alice",
     });
-    const avatarBlobUrl = await loaderModule.fetchProfileAvatarBlobUrl(
-        "avatar-key",
-    );
+    const avatarBlobUrl =
+        await loaderModule.fetchProfileAvatarBlobUrl("avatar-key");
 
     assert.equal(typeof helpers.handleProfileAvatarError, "function");
     assert.equal(typeof helpers.hydrateProfileAvatars, "function");
@@ -122,9 +120,8 @@ test("loadProfileAvatarHelpers falls back cleanly when the Social UI module is u
             colorSeed: "alice",
             profileHandle: "@alice",
         });
-        const avatarBlobUrl = await loaderModule.fetchProfileAvatarBlobUrl(
-            "avatar-key",
-        );
+        const avatarBlobUrl =
+            await loaderModule.fetchProfileAvatarBlobUrl("avatar-key");
 
         assert.equal(typeof helpers.handleProfileAvatarError, "function");
         assert.equal(typeof helpers.hydrateProfileAvatars, "function");

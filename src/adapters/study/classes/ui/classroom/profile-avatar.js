@@ -21,18 +21,17 @@ function logSocialAvatarFailure(error) {
 
 async function loadSocialAvatarModule() {
     if (!socialAvatarModulePromise) {
-        socialAvatarModulePromise = import(
-            "/static/gateways/social/reuse/profile-avatar.js"
-        )
-            .then((avatarModule) => {
-                socialAvatarModule = avatarModule;
-                return avatarModule;
-            })
-            .catch((error) => {
-                socialAvatarModule = null;
-                logSocialAvatarFailure(error);
-                return null;
-            });
+        socialAvatarModulePromise =
+            import("/static/gateways/social/reuse/profile-avatar.js")
+                .then((avatarModule) => {
+                    socialAvatarModule = avatarModule;
+                    return avatarModule;
+                })
+                .catch((error) => {
+                    socialAvatarModule = null;
+                    logSocialAvatarFailure(error);
+                    return null;
+                });
     }
     return socialAvatarModulePromise;
 }

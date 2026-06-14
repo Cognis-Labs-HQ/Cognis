@@ -284,7 +284,10 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
         "utf8",
     );
     const renderSource = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/classroom-render/index.js"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/index.js",
+        ),
         "utf8",
     );
     const refreshSource = readFileSync(
