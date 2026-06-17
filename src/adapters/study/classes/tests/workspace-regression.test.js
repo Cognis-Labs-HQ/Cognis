@@ -311,7 +311,7 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
     assert.match(indexSource, /classroom\/profile-avatar\.js/);
     assert.match(
         helperSource,
-        /import\(\s*"\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+        /meta\[name="classroom-profile-avatar-script"\]/,
     );
     assert.match(helperSource, /Failed to load profile avatar helpers/);
     assert.match(

@@ -22,6 +22,10 @@ export function bootstrapModule(ctx) {
             "meetings:classroomEmbedScriptUrl",
             "/static/modules/jitsi-meet/classroom-meeting-embed.js",
         );
+        systemCtx.contributePublicCapability(
+            "jitsi:activeMeetingsUrl",
+            "/api/v1/modules/jitsi-meet/meetings/active",
+        );
         for (const flow of MEETINGS_FLOW_CATALOG) {
             registerCanonicalFlow(systemCtx, flow);
         }

@@ -56,6 +56,8 @@ function createClassroomHubPageRoute(
     notepadStringsBaseUrl: string,
     meetingEmbedScriptUrl: string,
     whiteboardWindowScriptUrl: string,
+    profileAvatarScriptUrl: string,
+    jitsiActiveMeetingsUrl: string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -89,6 +91,14 @@ function createClassroomHubPageRoute(
             .replace(
                 "{{classroom.whiteboardWindowScriptUrl}}",
                 whiteboardWindowScriptUrl,
+            )
+            .replace(
+                "{{classroom.profileAvatarScriptUrl}}",
+                profileAvatarScriptUrl,
+            )
+            .replace(
+                "{{classroom.jitsiActiveMeetingsUrl}}",
+                jitsiActiveMeetingsUrl,
             );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
@@ -219,6 +229,20 @@ export async function bootstrapStudyAdapter(
     const whiteboardWindowScriptUrl =
         typeof rawWhiteboardWindowScriptUrl === "string"
             ? rawWhiteboardWindowScriptUrl.trim()
+            : "";
+    const rawProfileAvatarScriptUrl = ctx.capabilities.get<string>(
+        "social:profileAvatarScriptUrl",
+    );
+    const profileAvatarScriptUrl =
+        typeof rawProfileAvatarScriptUrl === "string"
+            ? rawProfileAvatarScriptUrl.trim()
+            : "";
+    const rawJitsiActiveMeetingsUrl = ctx.capabilities.get<string>(
+        "jitsi:activeMeetingsUrl",
+    );
+    const jitsiActiveMeetingsUrl =
+        typeof rawJitsiActiveMeetingsUrl === "string"
+            ? rawJitsiActiveMeetingsUrl.trim()
             : "";
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
@@ -581,6 +605,8 @@ export async function bootstrapStudyAdapter(
             notepadStringsBaseUrl,
             meetingEmbedScriptUrl,
             whiteboardWindowScriptUrl,
+            profileAvatarScriptUrl,
+            jitsiActiveMeetingsUrl,
         ),
         "study",
     );

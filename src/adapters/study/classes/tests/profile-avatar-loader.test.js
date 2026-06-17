@@ -55,10 +55,27 @@ async function importLoaderModule(replacementModuleUrl) {
         ].join("\n"),
         "utf8",
     );
-    const rewrittenSource = helperSource
-        .replace(SOCIAL_HELPER_PATH, replacementModuleUrl)
-        .replace(AVATAR_UTILS_PATH, pathToFileURL(avatarUtilsModulePath).href)
-        .replace(ESCAPE_HTML_PATH, pathToFileURL(escapeHtmlModulePath).href);
+    const documentMock = `
+const document = {
+    querySelector(selector) {
+        if (selector === 'meta[name="classroom-profile-avatar-script"]') {
+            return { content: ${JSON.stringify(replacementModuleUrl)} };
+        }
+        return null;
+    },
+};
+`;
+    const rewrittenSource =
+        documentMock +
+        helperSource
+            .replace(
+                AVATAR_UTILS_PATH,
+                pathToFileURL(avatarUtilsModulePath).href,
+            )
+            .replace(
+                ESCAPE_HTML_PATH,
+                pathToFileURL(escapeHtmlModulePath).href,
+            );
     const tempModulePath = createTempModulePath(
         "classroom-profile-avatar-loader",
     );

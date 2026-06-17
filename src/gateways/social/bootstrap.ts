@@ -416,6 +416,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "social:normalizeHandleKeys",
         normalizeHandleKeys,
     );
+    ctx.capabilities.contribute(
+        "social:profileAvatarScriptUrl",
+        "/static/gateways/social/reuse/profile-avatar.js",
+    );
 
     setInterval(() => {
         presenceTracker.pruneAndBroadcast();

@@ -33,6 +33,11 @@ export function createClassMetaLoader({
     setLastBroadcastedMaterialKey,
 }) {
     async function loadSelectedClassMeta() {
+        const jitsiActiveMeetingsUrl = String(
+            document.querySelector(
+                'meta[name="classroom-jitsi-active-meetings-url"]',
+            )?.content ?? "",
+        ).trim();
         const snapshot = getSnapshot();
         if (!snapshot) {
             setSelectedNotebookText("");
@@ -71,9 +76,11 @@ export function createClassMetaLoader({
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
             ),
-            apiFetch(
-                `/api/v1/modules/jitsi-meet/meetings/active?classroomId=${encodeURIComponent(snapshot.id)}`,
-            ).catch(() => null),
+            jitsiActiveMeetingsUrl
+                ? apiFetch(
+                      `${jitsiActiveMeetingsUrl}?classroomId=${encodeURIComponent(snapshot.id)}`,
+                  ).catch(() => null)
+                : Promise.resolve(null),
             !isTeacherView() && selectedActiveWhiteboardId
                 ? apiFetch(
                       `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(selectedActiveWhiteboardId)}/token`,

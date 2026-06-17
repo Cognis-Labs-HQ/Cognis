@@ -23,16 +23,22 @@ function logAvatarFailure(error) {
 
 async function loadAvatarModule() {
     if (!avatarModulePromise) {
-        avatarModulePromise =
-            import("/static/gateways/social/reuse/profile-avatar.js")
-                .then(
-                    (loadedAvatarModule) => (avatarModule = loadedAvatarModule),
-                )
-                .catch((error) => {
-                    avatarModule = null;
-                    logAvatarFailure(error);
-                    return null;
-                });
+        const scriptUrl = String(
+            document.querySelector(
+                'meta[name="classroom-profile-avatar-script"]',
+            )?.content ?? "",
+        ).trim();
+        if (!scriptUrl) {
+            avatarModule = null;
+            return null;
+        }
+        avatarModulePromise = import(scriptUrl)
+            .then((loadedAvatarModule) => (avatarModule = loadedAvatarModule))
+            .catch((error) => {
+                avatarModule = null;
+                logAvatarFailure(error);
+                return null;
+            });
     }
     return avatarModulePromise;
 }
