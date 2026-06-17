@@ -261,9 +261,16 @@ test("teacher meeting close broadcasts boardFocus to students", () => {
     assert.match(source, /returnWorkspaceMode/);
 });
 
-test("classroom chat uses shared messages adapter chat styles", () => {
+test("classroom chat delegates to the social gateway embedded chat factory", () => {
     const chatSource = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom-chat.js"),
+        "utf8",
+    );
+    const embedSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/classroom-chat-embed.js",
+        ),
         "utf8",
     );
     const chatCssSource = readFileSync(
@@ -271,8 +278,9 @@ test("classroom chat uses shared messages adapter chat styles", () => {
         "utf8",
     );
 
-    assert.match(chatSource, /jitsi-chat-thread/);
-    assert.match(chatSource, /jitsi-chat-message/);
+    assert.match(chatSource, /meta\[name="classroom-chat-script"\]/);
+    assert.match(embedSource, /classes-chat-thread/);
+    assert.match(embedSource, /classes-chat-message/);
     assert.match(chatCssSource, /messages-style-variants\.css/);
     assert.match(chatCssSource, /messages-chat-shared\.css/);
 });
@@ -322,7 +330,7 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
         refreshSource,
         /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
     );
-    assert.match(popupsSource, /from "\/static\/reuse\/profile-preview\.js"/);
+    assert.match(popupsSource, /meta\[name="classroom-profile-preview-script"\]/);
     assert.doesNotMatch(
         indexSource,
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
@@ -334,6 +342,10 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
     assert.doesNotMatch(
         refreshSource,
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+    );
+    assert.doesNotMatch(
+        popupsSource,
+        /from "\/static\/reuse\/profile-preview\.js"/,
     );
     assert.doesNotMatch(
         popupsSource,

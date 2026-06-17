@@ -69,7 +69,7 @@
     color: var(--text);
 }
 
-.classes-chat-panel .jitsi-chat-thread {
+.classes-chat-panel .classes-chat-thread {
     width: 100%;
     flex: 1 1 auto;
     min-height: 0;
@@ -78,11 +78,11 @@
     padding: 0.75rem;
 }
 
-.classes-chat-panel .jitsi-chat-message {
+.classes-chat-panel .classes-chat-message {
     max-width: 85%;
 }
 
-.classes-chat-panel .jitsi-chat-message-own {
+.classes-chat-panel .classes-chat-message--own {
     margin-left: auto;
 }
 

@@ -1,13 +1,38 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { openProfilePopup } from "/static/reuse/profile-preview.js";
+
+let profilePreviewModule = null;
+let profilePreviewModulePromise = null;
+
+async function loadProfilePreviewModule() {
+    if (!profilePreviewModulePromise) {
+        const scriptUrl = String(
+            document.querySelector(
+                'meta[name="classroom-profile-preview-script"]',
+            )?.content ?? "",
+        ).trim();
+        if (!scriptUrl) {
+            profilePreviewModule = null;
+            return null;
+        }
+        profilePreviewModulePromise = import(scriptUrl)
+            .then((loaded) => (profilePreviewModule = loaded))
+            .catch(() => {
+                profilePreviewModule = null;
+                return null;
+            });
+    }
+    return profilePreviewModulePromise;
+}
 
 export async function openMemberProfilePreview({
     memberButton,
     i18n,
     openPopup,
 }) {
-    await openProfilePopup({
+    const loaded = await loadProfilePreviewModule();
+    if (typeof loaded?.openProfilePopup !== "function") return;
+    await loaded.openProfilePopup({
         handle: String(memberButton?.dataset?.studentHandle ?? "").trim(),
         fallbackName: String(memberButton?.dataset?.studentName ?? "").trim(),
         fallbackAvatarKey: String(

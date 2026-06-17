@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DbExecutor } from "./types.js";
 import {
     getClassById,
     getClassroomState,
@@ -304,4 +304,13 @@ async function getMembership(
         return null;
     }
     return rowToClassMembership(result.rows[0] as Record<string, unknown>);
+}
+
+export async function getStudentMembershipStatus(
+    db: DbExecutor,
+    classId: string,
+    studentAccountId: string,
+): Promise<string | null> {
+    const membership = await getMembership(db, classId, studentAccountId);
+    return membership ? String(membership.status ?? "") : null;
 }

@@ -12,6 +12,46 @@ interface WhiteboardRouteOptions {
     ) => void;
 }
 
+type WhiteboardRow = {
+    id: string;
+    classId: string;
+    name: string;
+    fileKey: string | null;
+    createdBy: string;
+    createdAt: string;
+};
+
+async function assertClassMember(
+    store: DbClassesStore,
+    classId: string,
+    accountId: string,
+): Promise<{ isTeacher: boolean }> {
+    const classRow = await store.getClassById(classId);
+    if (!classRow) throw new Error("not_authorized");
+    if (classRow.teacherAccountId === accountId) return { isTeacher: true };
+    const status = await store.getStudentMembershipStatus(classId, accountId);
+    if (status !== "member") throw new Error("not_authorized");
+    return { isTeacher: false };
+}
+
+async function assertClassTeacher(
+    store: DbClassesStore,
+    classId: string,
+    accountId: string,
+): Promise<void> {
+    const classRow = await store.getClassById(classId);
+    if (!classRow || classRow.teacherAccountId !== accountId) {
+        throw new Error("not_authorized");
+    }
+}
+
+function requireWhiteboardCapability<T>(
+    ctx: RouteContext,
+    name: string,
+): T | null {
+    return ctx.getCapability<T>(name) ?? null;
+}
+
 export async function handleClassroomWhiteboardRoutes(input: {
     req: IncomingMessage;
     res: ServerResponse;
@@ -30,25 +70,45 @@ export async function handleClassroomWhiteboardRoutes(input: {
         const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const classId = decodeURIComponent(listMatch[1]);
+
+        const listBoards = requireWhiteboardCapability<
+            (classId: string) => Promise<WhiteboardRow[]>
+        >(ctx, "whiteboard:classroom.list");
+        if (!listBoards) {
+            jsonError(
+                res,
+                503,
+                "not_configured",
+                "Whiteboard service is not configured.",
+            );
+            return true;
+        }
+
         try {
-            const visibleWhiteboardId = await getStudentVisibleWhiteboardId(
-                store,
-                classId,
-                claims.sub,
-            );
-            const boards = await store.listClassroomWhiteboards(
-                classId,
-                claims.sub,
-            );
+            await assertClassMember(store, classId, claims.sub);
+            const boards = await listBoards(classId);
+            if (claims.role === "teacher") {
+                jsonOk(res, boards);
+                return true;
+            }
+            const classResources = ctx.getCapability<{
+                getActiveWhiteboardId: (
+                    classId: string,
+                    userId: string,
+                ) => Promise<string | null>;
+            }>("study:classes:resources");
+            const activeId =
+                await classResources?.getActiveWhiteboardId?.(
+                    classId,
+                    claims.sub,
+                ) ?? null;
             jsonOk(
                 res,
-                visibleWhiteboardId
+                activeId
                     ? boards.filter(
-                          (board) => String(board.id) === visibleWhiteboardId,
+                          (board) => String(board.id) === activeId,
                       )
-                    : claims.role === "teacher"
-                      ? boards
-                      : [],
+                    : [],
             );
         } catch (err) {
             if (err instanceof Error && err.message === "not_authorized") {
@@ -86,8 +146,27 @@ export async function handleClassroomWhiteboardRoutes(input: {
             return true;
         }
         const name = typeof body.name === "string" ? body.name.trim() : "";
+
+        const createBoard = requireWhiteboardCapability<
+            (
+                classId: string,
+                createdBy: string,
+                name: string,
+            ) => Promise<WhiteboardRow>
+        >(ctx, "whiteboard:classroom.create");
+        if (!createBoard) {
+            jsonError(
+                res,
+                503,
+                "not_configured",
+                "Whiteboard service is not configured.",
+            );
+            return true;
+        }
+
         try {
-            const board = await store.createClassroomWhiteboard(
+            await assertClassTeacher(store, classId, claims.sub);
+            const board = await createBoard(
                 classId,
                 claims.sub,
                 name || "Whiteboard",
@@ -128,8 +207,23 @@ export async function handleClassroomWhiteboardRoutes(input: {
         if (!claims) return true;
         const classId = decodeURIComponent(boardMatch[1]);
         const boardId = decodeURIComponent(boardMatch[2]);
+
+        const deleteBoard = requireWhiteboardCapability<
+            (classId: string, boardId: string) => Promise<void>
+        >(ctx, "whiteboard:classroom.delete");
+        if (!deleteBoard) {
+            jsonError(
+                res,
+                503,
+                "not_configured",
+                "Whiteboard service is not configured.",
+            );
+            return true;
+        }
+
         try {
-            await store.deleteClassroomWhiteboard(classId, boardId, claims.sub);
+            await assertClassTeacher(store, classId, claims.sub);
+            await deleteBoard(classId, boardId);
             jsonOk(res, { success: true });
         } catch (err) {
             if (err instanceof Error && err.message === "not_authorized") {
@@ -187,12 +281,25 @@ export async function handleClassroomWhiteboardRoutes(input: {
             return true;
         }
 
-        try {
-            const board = await store.getClassroomWhiteboard(
-                classId,
-                boardId,
-                claims.sub,
+        const getBoard = requireWhiteboardCapability<
+            (
+                classId: string,
+                boardId: string,
+            ) => Promise<WhiteboardRow | null>
+        >(ctx, "whiteboard:classroom.get");
+        if (!getBoard) {
+            jsonError(
+                res,
+                503,
+                "not_configured",
+                "Whiteboard service is not configured.",
             );
+            return true;
+        }
+
+        try {
+            await assertClassMember(store, classId, claims.sub);
+            const board = await getBoard(classId, boardId);
             if (!board) {
                 jsonError(res, 404, "not_found", "Whiteboard not found.");
                 return true;
@@ -258,8 +365,33 @@ export async function handleClassroomWhiteboardRoutes(input: {
             return true;
         }
 
+        const getBoard = requireWhiteboardCapability<
+            (
+                classId: string,
+                boardId: string,
+            ) => Promise<WhiteboardRow | null>
+        >(ctx, "whiteboard:classroom.get");
+        const setFileKey = requireWhiteboardCapability<
+            (
+                classId: string,
+                boardId: string,
+                fileKey: string,
+            ) => Promise<void>
+        >(ctx, "whiteboard:classroom.setFileKey");
+
+        if (!getBoard || !setFileKey) {
+            jsonError(
+                res,
+                503,
+                "not_configured",
+                "Whiteboard service is not configured.",
+            );
+            return true;
+        }
+
         const isTeacher = claims.role === "teacher";
         try {
+            await assertClassMember(store, classId, claims.sub);
             if (!isTeacher) {
                 const classResources = ctx.getCapability<{
                     getActiveWhiteboardId: (
@@ -267,10 +399,11 @@ export async function handleClassroomWhiteboardRoutes(input: {
                         userId: string,
                     ) => Promise<string | null>;
                 }>("study:classes:resources");
-                const activeId = await classResources?.getActiveWhiteboardId?.(
-                    classId,
-                    claims.sub,
-                );
+                const activeId =
+                    await classResources?.getActiveWhiteboardId?.(
+                        classId,
+                        claims.sub,
+                    ) ?? null;
                 if (!activeId || activeId !== boardId) {
                     jsonError(
                         res,
@@ -281,11 +414,7 @@ export async function handleClassroomWhiteboardRoutes(input: {
                     return true;
                 }
             }
-            const board = await store.getClassroomWhiteboard(
-                classId,
-                boardId,
-                claims.sub,
-            );
+            const board = await getBoard(classId, boardId);
             if (!board) {
                 jsonError(res, 404, "not_found", "Whiteboard not found.");
                 return true;
@@ -301,7 +430,7 @@ export async function handleClassroomWhiteboardRoutes(input: {
                 return true;
             }
             const fileKey = `whiteboards/${classId}/${boardId}.json`;
-            await store.setWhiteboardFileKey(classId, boardId, fileKey);
+            await setFileKey(classId, boardId, fileKey);
             jsonOk(res, { fileKey, size: data.length });
         } catch (err) {
             options.log?.("error", "Failed to save whiteboard.", {

@@ -420,6 +420,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "social:profileAvatarScriptUrl",
         "/static/gateways/social/reuse/profile-avatar.js",
     );
+    ctx.capabilities.contribute(
+        "social:classroomChatScriptUrl",
+        "/static/adapters/social/messages/classroom-chat-embed.js",
+    );
+    ctx.capabilities.contribute(
+        "social:profilePreviewScriptUrl",
+        "/static/reuse/profile-preview.js",
+    );
 
     setInterval(() => {
         presenceTracker.pruneAndBroadcast();

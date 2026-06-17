@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DbExecutor } from "./types.js";
 import { getClassById } from "./classes.js";
 import type {
     AgendaSnapshotRef,

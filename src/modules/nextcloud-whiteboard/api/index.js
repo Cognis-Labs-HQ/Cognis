@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
     getWhiteboardConfig,
@@ -6,6 +7,7 @@ import {
 } from "./config-state.js";
 
 const MODULE_CONFIG_TABLE = "nextcloud_whiteboard_module_config";
+const CLASSROOM_WHITEBOARDS_TABLE = "classroom_whiteboards";
 
 function sendJson(res, status, payload) {
     res.writeHead(status, { "content-type": "application/json" });
@@ -106,6 +108,129 @@ async function saveConfig(dbExecutor, nextConfig) {
     });
 }
 
+async function ensureWhiteboardsSchema(dbExecutor) {
+    await dbExecutor.ensureTable({
+        name: CLASSROOM_WHITEBOARDS_TABLE,
+        columns: [
+            { name: "id", type: "text", notNull: true },
+            { name: "class_id", type: "text", notNull: true },
+            { name: "name", type: "text", notNull: true, default: "" },
+            { name: "file_key", type: "text" },
+            { name: "created_by", type: "text", notNull: true },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+        ],
+        primaryKey: ["id"],
+    });
+}
+
+function mapWhiteboardRow(raw) {
+    return {
+        id: String(raw.id),
+        classId: String(raw.class_id),
+        name: String(raw.name ?? ""),
+        fileKey: raw.file_key == null ? null : String(raw.file_key),
+        createdBy: String(raw.created_by),
+        createdAt: String(raw.created_at),
+    };
+}
+
+/**
+ * Creates a store object that performs raw whiteboard CRUD operations on
+ * `classroom_whiteboards`. Access control is the caller's responsibility.
+ */
+export function createClassroomWhiteboardStore(dbExecutor) {
+    return {
+        async list(classId) {
+            const result = await dbExecutor.executeCommand({
+                option: "SELECT",
+                table: CLASSROOM_WHITEBOARDS_TABLE,
+                columns: [
+                    "id",
+                    "class_id",
+                    "name",
+                    "file_key",
+                    "created_by",
+                    "created_at",
+                ],
+                where: [{ column: "class_id", value: classId }],
+                orderBy: [{ column: "created_at", direction: "ASC" }],
+            });
+            return (result.rows ?? []).map(mapWhiteboardRow);
+        },
+
+        async create(classId, createdBy, name) {
+            const id = randomUUID();
+            const createdAt = new Date().toISOString();
+            await dbExecutor.executeCommand({
+                option: "INSERT",
+                table: CLASSROOM_WHITEBOARDS_TABLE,
+                values: {
+                    id,
+                    class_id: classId,
+                    name: String(name).trim() || "Whiteboard",
+                    file_key: null,
+                    created_by: createdBy,
+                    created_at: createdAt,
+                },
+            });
+            return {
+                id,
+                classId,
+                name: String(name).trim() || "Whiteboard",
+                fileKey: null,
+                createdBy,
+                createdAt,
+            };
+        },
+
+        async delete(classId, boardId) {
+            await dbExecutor.executeCommand({
+                option: "DELETE",
+                table: CLASSROOM_WHITEBOARDS_TABLE,
+                where: [
+                    { column: "id", value: boardId },
+                    { column: "class_id", value: classId },
+                ],
+            });
+        },
+
+        async get(classId, boardId) {
+            const result = await dbExecutor.executeCommand({
+                option: "SELECT",
+                table: CLASSROOM_WHITEBOARDS_TABLE,
+                columns: [
+                    "id",
+                    "class_id",
+                    "name",
+                    "file_key",
+                    "created_by",
+                    "created_at",
+                ],
+                where: [
+                    { column: "id", value: boardId },
+                    { column: "class_id", value: classId },
+                ],
+            });
+            const row = result.rows?.[0];
+            return row ? mapWhiteboardRow(row) : null;
+        },
+
+        async setFileKey(classId, boardId, fileKey) {
+            await dbExecutor.executeCommand({
+                option: "UPDATE",
+                table: CLASSROOM_WHITEBOARDS_TABLE,
+                values: { file_key: fileKey },
+                where: { id: boardId, class_id: classId },
+            });
+        },
+    };
+}
+
 export function registerApiRoutes(router, ctx) {
     const dbExecutor = ctx.getCapability("db:executor");
     const log = ctx.getCapability("logging:log");
@@ -138,6 +263,7 @@ export function registerApiRoutes(router, ctx) {
     const initializeStoredConfig = async () => {
         try {
             await ensureSchema(dbExecutor);
+            await ensureWhiteboardsSchema(dbExecutor);
             const storedConfig = await loadStoredConfig(dbExecutor);
             if (storedConfig) {
                 setWhiteboardConfig(storedConfig);

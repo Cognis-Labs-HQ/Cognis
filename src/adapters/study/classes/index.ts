@@ -58,6 +58,8 @@ function createClassroomHubPageRoute(
     whiteboardWindowScriptUrl: string,
     profileAvatarScriptUrl: string,
     jitsiActiveMeetingsUrl: string,
+    chatScriptUrl: string,
+    profilePreviewScriptUrl: string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -99,6 +101,11 @@ function createClassroomHubPageRoute(
             .replace(
                 "{{classroom.jitsiActiveMeetingsUrl}}",
                 jitsiActiveMeetingsUrl,
+            )
+            .replace("{{classroom.chatScriptUrl}}", chatScriptUrl)
+            .replace(
+                "{{classroom.profilePreviewScriptUrl}}",
+                profilePreviewScriptUrl,
             );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
@@ -243,6 +250,18 @@ export async function bootstrapStudyAdapter(
     const jitsiActiveMeetingsUrl =
         typeof rawJitsiActiveMeetingsUrl === "string"
             ? rawJitsiActiveMeetingsUrl.trim()
+            : "";
+    const rawChatScriptUrl = ctx.capabilities.get<string>(
+        "social:classroomChatScriptUrl",
+    );
+    const chatScriptUrl =
+        typeof rawChatScriptUrl === "string" ? rawChatScriptUrl.trim() : "";
+    const rawProfilePreviewScriptUrl = ctx.capabilities.get<string>(
+        "social:profilePreviewScriptUrl",
+    );
+    const profilePreviewScriptUrl =
+        typeof rawProfilePreviewScriptUrl === "string"
+            ? rawProfilePreviewScriptUrl.trim()
             : "";
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
@@ -607,6 +626,8 @@ export async function bootstrapStudyAdapter(
             whiteboardWindowScriptUrl,
             profileAvatarScriptUrl,
             jitsiActiveMeetingsUrl,
+            chatScriptUrl,
+            profilePreviewScriptUrl,
         ),
         "study",
     );

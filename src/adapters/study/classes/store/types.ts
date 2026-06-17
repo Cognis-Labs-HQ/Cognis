@@ -1,3 +1,5 @@
+export type { DbExecutor, RawDbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+
 export type TeacherRequestStatus =
     | "pending"
     | "approved"

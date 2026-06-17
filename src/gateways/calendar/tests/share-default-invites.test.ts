@@ -108,8 +108,8 @@ test("shared calendar events auto-invite all users with calendar visibility", as
         `/api/v1/calendar/calendars/${encodeURIComponent(bobSharedCalendarId)}/events`,
         {
             title: "Team sync",
-            startAt: "2026-06-16T09:00:00.000Z",
-            endAt: "2026-06-16T09:30:00.000Z",
+            startAt: "2099-01-15T09:00:00.000Z",
+            endAt: "2099-01-15T09:30:00.000Z",
         },
     );
     assert.equal(createViaBob.statusCode, 201);

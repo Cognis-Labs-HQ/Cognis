@@ -1,5 +1,8 @@
 import { createHmac } from "node:crypto";
-import { registerApiRoutes } from "./api/index.js";
+import {
+    createClassroomWhiteboardStore,
+    registerApiRoutes,
+} from "./api/index.js";
 import { getWhiteboardConfig } from "./api/config-state.js";
 
 function mintToken(secret, payload) {
@@ -133,5 +136,73 @@ export function bootstrapModule(ctx) {
                 return { embedUrl };
             },
         );
+
+        const dbExecutor = ctx.getCapability("db:executor");
+        if (dbExecutor) {
+            const whiteboardStore = createClassroomWhiteboardStore(dbExecutor);
+            /**
+             * Lists all whiteboards for a class. No access control — callers
+             * must verify authorization before invoking.
+             *
+             * @param {string} classId
+             * @returns {Promise<Array>}
+             */
+            systemCtx.contributePublicCapability(
+                "whiteboard:classroom.list",
+                (classId) => whiteboardStore.list(classId),
+            );
+            /**
+             * Creates a whiteboard record for a class. No access control —
+             * callers must verify the creator is the class teacher.
+             *
+             * @param {string} classId
+             * @param {string} createdBy
+             * @param {string} name
+             * @returns {Promise<object>}
+             */
+            systemCtx.contributePublicCapability(
+                "whiteboard:classroom.create",
+                (classId, createdBy, name) =>
+                    whiteboardStore.create(classId, createdBy, name),
+            );
+            /**
+             * Deletes a whiteboard record. No access control — callers must
+             * verify authorization before invoking.
+             *
+             * @param {string} classId
+             * @param {string} boardId
+             * @returns {Promise<void>}
+             */
+            systemCtx.contributePublicCapability(
+                "whiteboard:classroom.delete",
+                (classId, boardId) =>
+                    whiteboardStore.delete(classId, boardId),
+            );
+            /**
+             * Fetches a single whiteboard record. No access control — callers
+             * must verify authorization before invoking.
+             *
+             * @param {string} classId
+             * @param {string} boardId
+             * @returns {Promise<object|null>}
+             */
+            systemCtx.contributePublicCapability(
+                "whiteboard:classroom.get",
+                (classId, boardId) => whiteboardStore.get(classId, boardId),
+            );
+            /**
+             * Updates the file key for a saved whiteboard snapshot.
+             *
+             * @param {string} classId
+             * @param {string} boardId
+             * @param {string} fileKey
+             * @returns {Promise<void>}
+             */
+            systemCtx.contributePublicCapability(
+                "whiteboard:classroom.setFileKey",
+                (classId, boardId, fileKey) =>
+                    whiteboardStore.setFileKey(classId, boardId, fileKey),
+            );
+        }
     }
 }

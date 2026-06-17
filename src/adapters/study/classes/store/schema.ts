@@ -1,7 +1,7 @@
 import type {
     DbExecutor,
     RawDbExecutor,
-} from "../../../../gateways/db/reuse/db-executor.js";
+} from "./types.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 
 const STUDY_LANGUAGE_SEEDS = [
@@ -342,24 +342,6 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
             "owner_student_account_id",
             "viewer_student_account_id",
         ],
-    });
-
-    await db.ensureTable({
-        name: "classroom_whiteboards",
-        columns: [
-            { name: "id", type: "text", notNull: true },
-            { name: "class_id", type: "text", notNull: true },
-            { name: "name", type: "text", notNull: true, default: "" },
-            { name: "file_key", type: "text" },
-            { name: "created_by", type: "text", notNull: true },
-            {
-                name: "created_at",
-                type: "timestamp",
-                notNull: true,
-                default: "now",
-            },
-        ],
-        primaryKey: ["id"],
     });
 
     await ensureStudyClassesColumns(db);

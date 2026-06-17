@@ -1,4 +1,9 @@
-import { extractRoomId } from "/static/adapters/social/messages/message-utils.js";
+function extractRoomId(chatUrl) {
+    const raw = String(chatUrl ?? "").trim();
+    if (!raw) return "";
+    const match = raw.match(/^\/messages\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
+}
 
 function extensionFromType(type) {
     const normalized = String(type ?? "")

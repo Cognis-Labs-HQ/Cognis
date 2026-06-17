@@ -1,6 +1,7 @@
 import {
     getInitialsText,
     pickInitialsColor,
+    buildInitialsAvatarHtml,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
