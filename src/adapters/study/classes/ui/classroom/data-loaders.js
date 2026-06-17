@@ -66,7 +66,7 @@ export function createClassMetaLoader({
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notebook`,
             ),
             apiFetch(
-                `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(snapshot.id)}/agenda`,
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notes/agenda`,
             ),
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,

@@ -3,7 +3,7 @@ import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbClassesStore } from "../store/index.js";
-import type { FileStorageGateway } from "../../../../core/contracts/files-gateway.js";
+import type { FileStorageGateway } from "@cognis/core";
 
 interface MaterialLibraryMetadataEntry {
     name: string;

@@ -1,0 +1,39 @@
+.profile-popup-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.profile-popup-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    object-fit: cover;
+    flex: 0 0 auto;
+    background: var(--initials-bg, var(--accent));
+}
+
+.profile-popup-avatar--initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    user-select: none;
+}
+
+.profile-popup-identity {
+    min-width: 0;
+}
+
+.text-muted {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.profile-popup-bio {
+    margin-top: 4px;
+    line-height: 1.45;
+    font-size: 0.875rem;
+}

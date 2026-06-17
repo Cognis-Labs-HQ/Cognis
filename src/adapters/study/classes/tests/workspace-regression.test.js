@@ -131,7 +131,10 @@ test("classroom meeting tile refresh updates slideshow controls in place", () =>
 
 test("notepad adapter routes support agenda document and snapshots", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/file-reader/text/routes/index.ts"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-notes-route.ts",
+        ),
         "utf8",
     );
     assert.match(source, /agendaDocument/);
@@ -157,7 +160,10 @@ test("classroom materials library routes support list rename and delete", () => 
 
 test("notepad adapter routes support notepad file rename", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/file-reader/text/routes/index.ts"),
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/routes/classroom-notes-route.ts",
+        ),
         "utf8",
     );
     assert.match(source, /classroom-notes.*\/files.*\/rename/s);
@@ -316,10 +322,7 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
         refreshSource,
         /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
     );
-    assert.match(
-        popupsSource,
-        /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
-    );
+    assert.match(popupsSource, /from "\/static\/reuse\/profile-preview\.js"/);
     assert.doesNotMatch(
         indexSource,
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,

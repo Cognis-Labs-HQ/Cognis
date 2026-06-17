@@ -1,3 +1,5 @@
+import { extractRoomId } from "/static/adapters/social/messages/message-utils.js";
+
 function extensionFromType(type) {
     const normalized = String(type ?? "")
         .split(";")[0]
@@ -8,15 +10,8 @@ function extensionFromType(type) {
     return "jpg";
 }
 
-function extractMessagesRoomId(chatUrl) {
-    const raw = String(chatUrl ?? "").trim();
-    if (!raw) return "";
-    const match = raw.match(/^\/messages\/([^/?#]+)/);
-    return match ? decodeURIComponent(match[1]) : "";
-}
-
 async function uploadClassroomAvatar({ apiFetch, file, snapshot }) {
-    const roomId = extractMessagesRoomId(snapshot?.chatUrl);
+    const roomId = extractRoomId(snapshot?.chatUrl);
     if (!roomId || !file) return false;
     const extension = extensionFromType(file.type);
     const key = `chatrooms/${roomId}-${Date.now()}.${extension}`;

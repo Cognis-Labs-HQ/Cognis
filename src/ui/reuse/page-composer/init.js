@@ -976,5 +976,24 @@ export function createPageComposer(
         restoreWindowScrollPosition(previousScrollLeft, previousScrollTop);
     }
 
-    return { init, refresh, refreshFooter, getFloatingSlot, showToast };
+    function refreshSubNavigation() {
+        if (!Array.isArray(subNavigation) || subNavigation.length === 0) {
+            return;
+        }
+        const subNavEl = root.querySelector(".page-subnav");
+        if (!(subNavEl instanceof HTMLElement)) return;
+        const nextHtml = subNavigation.map((item) => item.render()).join("");
+        if (subNavEl.innerHTML !== nextHtml) {
+            subNavEl.innerHTML = nextHtml;
+        }
+    }
+
+    return {
+        init,
+        refresh,
+        refreshFooter,
+        refreshSubNavigation,
+        getFloatingSlot,
+        showToast,
+    };
 }

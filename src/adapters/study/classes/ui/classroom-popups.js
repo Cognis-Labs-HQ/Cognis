@@ -1,73 +1,20 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { fetchProfileAvatarBlobUrl } from "/static/adapters/study/classes/classroom/profile-avatar.js";
+import { openProfilePopup } from "/static/reuse/profile-preview.js";
 
 export async function openMemberProfilePreview({
     memberButton,
     i18n,
-    apiFetch,
     openPopup,
 }) {
-    const handle = String(memberButton?.dataset?.studentHandle ?? "").trim();
-    const fallbackName = String(
-        memberButton?.dataset?.studentName ?? "",
-    ).trim();
-    const fallbackAvatarKey = String(
-        memberButton?.dataset?.studentAvatarKey ?? "",
-    ).trim();
-    let profile = null;
-    if (handle) {
-        const profileResponse = await apiFetch(
-            `/api/v1/social/users/${encodeURIComponent(handle)}/profile`,
-        ).catch(() => null);
-        if (profileResponse?.ok) {
-            profile = (await profileResponse.json()).data ?? null;
-        }
-    }
-    const displayName =
-        String(profile?.displayName ?? "").trim() ||
-        String(profile?.handle ?? "").trim() ||
-        fallbackName ||
-        i18n.t("module.study.classes.profile_unknown");
-    const avatarKey =
-        String(profile?.avatarKey ?? "").trim() || fallbackAvatarKey;
-    const avatarBlobUrl = avatarKey
-        ? await fetchProfileAvatarBlobUrl(avatarKey)
-        : null;
-    const bio = String(profile?.bio ?? "").trim();
-    await openPopup({
-        title: i18n.t("module.study.classes.profile_preview"),
-        body: `
-            <div class="stack">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    ${
-                        avatarBlobUrl
-                            ? `<img src="${escapeHtml(avatarBlobUrl)}" alt="" style="width:52px;height:52px;border-radius:999px;object-fit:cover;border:1px solid var(--border);" />`
-                            : `<span style="width:52px;height:52px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px solid var(--border);font-weight:700;">${escapeHtml(displayName.slice(0, 2).toUpperCase())}</span>`
-                    }
-                    <div class="stack" style="gap:2px;">
-                        <strong>${escapeHtml(displayName)}</strong>
-                        ${
-                            handle
-                                ? `<span style="color:var(--text-muted);">@${escapeHtml(handle)}</span>`
-                                : ""
-                        }
-                    </div>
-                </div>
-                ${
-                    bio
-                        ? `<p style="margin:0;color:var(--text-muted);">${escapeHtml(bio)}</p>`
-                        : ""
-                }
-            </div>
-        `,
-        actions: [
-            {
-                id: "close",
-                label: i18n.t("ui.reuse.close"),
-                variant: "confirm",
-            },
-        ],
+    await openProfilePopup({
+        handle: String(memberButton?.dataset?.studentHandle ?? "").trim(),
+        fallbackName: String(memberButton?.dataset?.studentName ?? "").trim(),
+        fallbackAvatarKey: String(
+            memberButton?.dataset?.studentAvatarKey ?? "",
+        ).trim(),
+        openPopup,
+        i18n,
     });
 }
 

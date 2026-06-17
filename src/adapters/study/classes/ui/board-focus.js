@@ -1,10 +1,13 @@
+const NAMED_BOARD_FOCUSES = new Set([
+    "classroom",
+    "chat",
+    "whiteboard",
+    "notepad",
+]);
+
 export function normalizeBoardFocus(input) {
     const normalized = String(input ?? "")
         .trim()
         .toLowerCase();
-    if (normalized === "classroom") return "classroom";
-    if (normalized === "chat") return "chat";
-    if (normalized === "whiteboard") return "whiteboard";
-    if (normalized === "notepad") return "notepad";
-    return "agenda";
+    return NAMED_BOARD_FOCUSES.has(normalized) ? normalized : "agenda";
 }

@@ -5,6 +5,7 @@
   <string name="ui.reuse.study">Lernen</string>
   <string name="ui.reuse.calendar">Kalender</string>
   <string name="ui.reuse.profile">Profil</string>
+  <string name="ui.reuse.profile_preview">Profilvorschau</string>
   <string name="ui.reuse.settings">Einstellungen</string>
   <string name="ui.reuse.docs">Dokumente</string>
   <string name="ui.reuse.users">Benutzer</string>

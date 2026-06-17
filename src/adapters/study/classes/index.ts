@@ -7,6 +7,7 @@ import type {
 } from "../../../gateways/study/gateway.js";
 import { DbClassesStore } from "./store/index.js";
 import { createClassesRoutes } from "./routes/index.js";
+import { handleClassroomNotesRoutes } from "./routes/classroom-notes-route.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
     parseSecuritySettings,
@@ -688,6 +689,17 @@ export async function bootstrapStudyAdapter(
         (id: string, label: string) => void
     >("notify:registerCategory");
     registerNotificationCategory?.("study", "Study");
+
+    ctx.registerRoute(
+        async (req, res, url) =>
+            handleClassroomNotesRoutes(
+                req,
+                res,
+                url,
+                resolveRouteContext(routeContext),
+            ),
+        "study",
+    );
 
     ctx.log?.("info", "Study/classes adapter: bootstrapped.", {
         component: "study-classes",

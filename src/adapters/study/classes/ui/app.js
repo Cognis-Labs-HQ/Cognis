@@ -36,27 +36,6 @@ export async function mount(root, { signal } = {}) {
     let pendingTeacherRequests = [];
 
     if (!isTeacher) {
-        try {
-            const accountId = localStorage.getItem("cognis_account");
-            if (accountId) {
-                const response = await apiFetch(
-                    `/api/v1/users/${encodeURIComponent(accountId)}/info`,
-                );
-                if (response.ok) {
-                    const payload = await response.json();
-                    const refreshedRole = String(
-                        payload?.data?.role ?? "",
-                    ).trim();
-                    localStorage.setItem("cognis_role", refreshedRole);
-                    isTeacher = isTeacherScope();
-                }
-            }
-        } catch {
-            isTeacher = false;
-        }
-    }
-
-    if (!isTeacher) {
         navigateTo("/dashboard");
         return;
     }

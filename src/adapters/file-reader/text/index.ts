@@ -9,7 +9,6 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { handleClassroomNotepadRoutes } from "./routes/index.js";
 import { createTextAdapterConfigRoutes } from "./routes/config.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
@@ -89,16 +88,6 @@ export async function bootstrapFileReaderAdapter(
         });
         ctx.registerRoute(configRoute, "file-reader");
     }
-
-    ctx.registerRoute(async (req, res, url) => {
-        return handleClassroomNotepadRoutes({
-            req,
-            res,
-            url,
-            ctx: routeHelpers,
-            getMaxFileBytes,
-        });
-    }, "study");
 
     ctx.log?.("info", "File-reader/text adapter: bootstrapped.", {
         component: "file-reader-text",

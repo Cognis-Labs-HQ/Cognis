@@ -185,3 +185,75 @@ export function bindProfilePreviews(i18n = null) {
     });
     document.addEventListener("scroll", scheduleHide, true);
 }
+
+/**
+ * Opens a popup displaying a user's profile card. Fetches the profile from the
+ * API when a handle is available, falling back to data attributes otherwise.
+ *
+ * @param {object} options
+ * @param {string | null | undefined} options.handle - Profile handle to look up.
+ * @param {string | null | undefined} options.fallbackName - Display name used when the API is unavailable.
+ * @param {string | null | undefined} options.fallbackAvatarKey - Avatar key used when the API is unavailable.
+ * @param {Function} options.openPopup - Popup factory, e.g. from popup.js.
+ * @param {{ t: (key: string) => string }} options.i18n - i18n instance.
+ * @returns {Promise<void>}
+ */
+export async function openProfilePopup({
+    handle,
+    fallbackName,
+    fallbackAvatarKey,
+    openPopup,
+    i18n,
+}) {
+    const normalizedHandle = String(handle ?? "").trim();
+    const normalizedFallbackName = String(fallbackName ?? "").trim();
+    const normalizedFallbackAvatarKey = String(fallbackAvatarKey ?? "").trim();
+
+    let profile = null;
+    if (normalizedHandle) {
+        profile = await loadProfilePreview(normalizedHandle);
+    }
+
+    const displayName =
+        String(profile?.displayName ?? "").trim() ||
+        String(profile?.handle ?? "").trim() ||
+        normalizedFallbackName ||
+        i18n.t("ui.reuse.unknown");
+    const avatarKey =
+        String(profile?.avatarKey ?? "").trim() || normalizedFallbackAvatarKey;
+    const avatarBlobUrl = avatarKey ? await loadAvatarUrl(avatarKey) : null;
+    const bio = String(profile?.bio ?? "").trim();
+
+    const initialsBackground = pickInitialsColor(
+        normalizedHandle || displayName,
+    );
+    const initialsText = getInitialsText(displayName);
+    const avatarHtml = avatarBlobUrl
+        ? `<img src="${escapeHtml(avatarBlobUrl)}" alt="" class="profile-popup-avatar" />`
+        : `<span class="profile-popup-avatar profile-popup-avatar--initials"
+               style="--initials-bg: ${escapeHtml(initialsBackground)};"
+             >${escapeHtml(initialsText)}</span>`;
+
+    await openPopup({
+        title: i18n.t("ui.reuse.profile_preview"),
+        body: `
+            <div class="stack">
+                <div class="profile-popup-header">
+                    ${avatarHtml}
+                    <div class="stack profile-popup-identity">
+                        <strong>${escapeHtml(displayName)}</strong>
+                        ${normalizedHandle ? `<span class="text-muted">@${escapeHtml(normalizedHandle)}</span>` : ""}
+                    </div>
+                </div>
+                ${bio ? `<p class="text-muted profile-popup-bio">${escapeHtml(bio)}</p>` : ""}
+            </div>
+        `,
+        actions: [
+            {
+                id: "close",
+                label: i18n.t("ui.reuse.close"),
+                variant: "confirm",
+            },
+        ],
+    });
+}

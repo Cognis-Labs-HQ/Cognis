@@ -531,7 +531,7 @@ export function bindClassroomClickHandler({
                 );
                 if (!(editor instanceof HTMLTextAreaElement)) return;
                 const saveResponse = await apiFetch(
-                    `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(selectedClassId)}/agenda/snapshots`,
+                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/notes/agenda/snapshots`,
                     {
                         method: "POST",
                         headers: { "content-type": "application/json" },
@@ -556,7 +556,7 @@ export function bindClassroomClickHandler({
                 const snapshotId = String(snapshotSelect.value ?? "").trim();
                 if (!snapshotId) return;
                 const openResponse = await apiFetch(
-                    `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(selectedClassId)}/agenda/open`,
+                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/notes/agenda/open`,
                     {
                         method: "POST",
                         headers: { "content-type": "application/json" },
@@ -635,7 +635,7 @@ export function bindClassroomClickHandler({
                                             if (!newName) return;
                                             const patchResponse =
                                                 await apiFetch(
-                                                    `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(selectedClassId)}/agenda/snapshots/${encodeURIComponent(snapshotId)}`,
+                                                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/notes/agenda/snapshots/${encodeURIComponent(snapshotId)}`,
                                                     {
                                                         method: "PATCH",
                                                         headers: {
@@ -683,7 +683,7 @@ export function bindClassroomClickHandler({
                                     ).trim();
                                     if (!snapshotId) return;
                                     const deleteResponse = await apiFetch(
-                                        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(selectedClassId)}/agenda/snapshots/${encodeURIComponent(snapshotId)}`,
+                                        `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/notes/agenda/snapshots/${encodeURIComponent(snapshotId)}`,
                                         { method: "DELETE" },
                                     );
                                     if (deleteResponse.ok) {
@@ -717,7 +717,7 @@ export function bindClassroomClickHandler({
                 if (!(editor instanceof HTMLTextAreaElement)) return;
                 editor.value = "";
                 await apiFetch(
-                    `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(selectedClassId)}/agenda`,
+                    `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/notes/agenda`,
                     {
                         method: "PUT",
                         headers: { "content-type": "application/json" },

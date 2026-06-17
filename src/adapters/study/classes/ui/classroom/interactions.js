@@ -232,7 +232,7 @@ export function bindClassroomInteractions({
                 const documentText = event.target.value ?? "";
                 agendaAutosaveTimer = window.setTimeout(async () => {
                     await apiFetch(
-                        `/api/v1/file-reader/text/classroom-notes/${encodeURIComponent(selectedClassId)}/agenda`,
+                        `/api/v1/study/classes/${encodeURIComponent(selectedClassId)}/notes/agenda`,
                         {
                             method: "PUT",
                             headers: { "content-type": "application/json" },

@@ -56,7 +56,6 @@ import {
 import { createLayoutApi } from "/static/adapters/study/classes/classroom/layout-api.js";
 import { createClassroomMaterialPreviewManager } from "/static/adapters/study/classes/classroom/material-preview.js";
 import { createSnapshotStateHelpers } from "/static/adapters/study/classes/classroom/snapshot-state.js";
-import { createSubNavigationDomManager } from "/static/adapters/study/classes/classroom/sub-navigation-dom.js";
 import {
     loadTileLayoutPreference,
     normalizeTileLayout,
@@ -351,10 +350,9 @@ export async function mount(root, { signal } = {}) {
             selectedClassId,
         });
     }
-    const { refreshSubNavigation } = createSubNavigationDomManager({
-        root,
-        renderSubNavigationMarkup,
-    });
+    function refreshSubNavigation() {
+        composer.refreshSubNavigation();
+    }
 
     async function openClassSearch() {
         if (teacherAccount && getClassroomViewMode() === "teacher") {
@@ -568,7 +566,7 @@ export async function mount(root, { signal } = {}) {
         },
     });
 
-    const composer = createPageComposer(root, {
+    let composer = createPageComposer(root, {
         allowCustomization: false,
         elements: [
             {
