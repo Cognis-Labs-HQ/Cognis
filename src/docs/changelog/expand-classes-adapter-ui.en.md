@@ -338,3 +338,13 @@ Adapters panel under the File Reader gateway. The setting is bounded between
 The File Reader gateway now registers a `GET /api/v1/gateways/file-reader/adapters`
 endpoint that lists installed adapters with their admin control URLs. This lets
 the Administration panel display the gateway's adapters section correctly.
+
+## Classroom follow-up fixes
+
+Removed an unused `buildInitialsAvatarHtml` import from the classroom profile
+avatar loader so fallback avatar tests pass when only minimal avatar utility
+exports are available.
+
+The classroom slideshow keyboard navigation now uses a dedicated
+`isStudentInteractionBlocked` guard helper and a clearer `if/else` branch for
+left/right cursor movement.

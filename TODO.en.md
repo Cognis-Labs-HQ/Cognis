@@ -528,18 +528,6 @@
 
 **Reason ignored:** A single-expression form would require repeating the `.trim()` call (syntax compression). A dedicated helper would be over-engineering two lines. Current two-variable form is the most readable option.
 
-### classroom/interactions.js — extract nested ternary for cursor position
-
-**Reviewer suggestion:** Replace the nested ternary at lines 112–116 with a named function or if-else for the three cursor-positioning strategies.
-
-**Reason ignored:** File not touched in this PR.
-
-### classroom/interactions.js — extract `!isTeacherView() && getIsTeacherPresent?.()` guard
-
-**Reviewer suggestion:** Extract the repeated guard condition (lines 164, 195, 755) into a named function `shouldBlockStudentNavigation()`.
-
-**Reason ignored:** File not touched in this PR.
-
 ### classroom-render/workspace.js — explicit conditional for agenda toolbar rendering
 
 **Reviewer suggestion:** Replace ternary-with-empty-fallback at line 155 with `${isTeacherView ? renderAgendaToolbar() : ''}` for consistency with other conditional markup.

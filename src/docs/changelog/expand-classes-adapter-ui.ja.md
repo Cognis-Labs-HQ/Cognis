@@ -306,3 +306,14 @@ File Readerゲートウェイから値を確認・変更できます。設定は
 File Readerゲートウェイが、インストール済みアダプターとその管理コントロール
 URLを一覧表示する`GET /api/v1/gateways/file-reader/adapters`エンドポイントを
 登録するようになりました。
+
+## Classroom フォローアップ修正
+
+Classroom のプロフィールアバターローダーから未使用の
+`buildInitialsAvatarHtml` インポートを削除し、最小限のアバターユーティリティ
+エクスポートしかない場合でもフォールバックアバターのテストが通るように
+しました。
+
+Classroom のスライドショー用キーボード操作は、専用ガード
+`isStudentInteractionBlocked` と左右移動の明確な `if/else` 分岐を使うように
+改善しました。

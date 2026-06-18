@@ -147,6 +147,20 @@ export function bindClassroomInteractions({
         getIsTeacherPresent,
         loadActiveMaterialPreview,
     });
+    function isStudentInteractionBlocked() {
+        return !isTeacherView() && Boolean(getIsTeacherPresent?.());
+    }
+
+    function resolveNextSlideshowIndex({
+        currentIndex,
+        totalCount,
+        shouldMoveLeft,
+    }) {
+        if (shouldMoveLeft) {
+            return (currentIndex - 1 + totalCount) % totalCount;
+        }
+        return (currentIndex + 1) % totalCount;
+    }
     root.addEventListener(
         "change",
         async (event) => {
@@ -270,9 +284,11 @@ export function bindClassroomInteractions({
                 tilesContainer.dataset.activeWorkspaceMode ?? "agenda",
             );
             const currentIndex = currentOrder.indexOf(activeMode);
-            const nextIndex = isLeft
-                ? (currentIndex - 1 + currentOrder.length) % currentOrder.length
-                : (currentIndex + 1) % currentOrder.length;
+            const nextIndex = resolveNextSlideshowIndex({
+                currentIndex,
+                totalCount: currentOrder.length,
+                shouldMoveLeft: isLeft,
+            });
             const nextMode = normalizeWorkspaceMode(
                 currentOrder[nextIndex] ?? "agenda",
             );

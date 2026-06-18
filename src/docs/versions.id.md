@@ -8,23 +8,23 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 ## Adapter
 
-| Komponen               | Path                                | Versi   |
-| ---------------------- | ----------------------------------- | ------- |
-| Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.2` |
-| Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
-| Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.5` |
-| Autentikasi LDAP       | `src/adapters/auth/ldap/`           | `0.1.4` |
-| Autentikasi OIDC       | `src/adapters/auth/oidc/`           | `0.1.1` |
-| Autentikasi SAML       | `src/adapters/auth/saml/`           | `0.1.1` |
-| Database PostgreSQL    | `src/adapters/db/postgres/`         | `0.1.0` |
-| Database MariaDB       | `src/adapters/db/mariadb/`          | `0.1.0` |
-| Undangan Registrasi    | `src/adapters/registration/invite/` | `0.1.1` |
-| Token Registrasi       | `src/adapters/registration/token/`  | `0.1.1` |
-| Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0` |
-| Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.7` |
-| Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.4` |
-| Kelas (Study)          | `src/adapters/study/classes/`       | `1.5.8` |
+| Komponen               | Path                                | Versi    |
+| ---------------------- | ----------------------------------- | -------- |
+| Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0`  |
+| Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.2`  |
+| Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0`  |
+| Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.5`  |
+| Autentikasi LDAP       | `src/adapters/auth/ldap/`           | `0.1.4`  |
+| Autentikasi OIDC       | `src/adapters/auth/oidc/`           | `0.1.1`  |
+| Autentikasi SAML       | `src/adapters/auth/saml/`           | `0.1.1`  |
+| Database PostgreSQL    | `src/adapters/db/postgres/`         | `0.1.0`  |
+| Database MariaDB       | `src/adapters/db/mariadb/`          | `0.1.0`  |
+| Undangan Registrasi    | `src/adapters/registration/invite/` | `0.1.1`  |
+| Token Registrasi       | `src/adapters/registration/token/`  | `0.1.1`  |
+| Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0`  |
+| Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.7`  |
+| Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.4`  |
+| Kelas (Study)          | `src/adapters/study/classes/`       | `1.5.10` |
 
 ## Gateway
 

@@ -305,3 +305,13 @@ Adaptor di bawah gateway File Reader. Pengaturan dibatasi antara 16 KB dan 4 MB
 Gateway File Reader kini mendaftarkan endpoint
 `GET /api/v1/gateways/file-reader/adapters` yang mencantumkan adaptor yang
 dipasang beserta URL kontrol adminnya.
+
+## Perbaikan lanjutan classroom
+
+Impor `buildInitialsAvatarHtml` yang tidak dipakai di loader avatar profil
+classroom dihapus, sehingga tes fallback avatar tetap lolos ketika hanya ekspor
+utilitas avatar minimal yang tersedia.
+
+Navigasi keyboard mode slideshow classroom sekarang memakai helper guard khusus
+`isStudentInteractionBlocked` dan percabangan `if/else` yang lebih jelas untuk
+pergerakan kiri/kanan.

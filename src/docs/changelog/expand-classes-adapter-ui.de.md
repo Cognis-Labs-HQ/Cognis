@@ -311,3 +311,13 @@ dem File-Reader-Gateway anpassen. Der Wert ist auf 16 KB bis 4 MB begrenzt
 Das File-Reader-Gateway registriert jetzt einen
 `GET /api/v1/gateways/file-reader/adapters`-Endpunkt, der installierte Adapter
 mit ihren Admin-Steuerelement-URLs auflistet.
+
+## Classroom-Nachkorrekturen
+
+Ein ungenutzter `buildInitialsAvatarHtml`-Import wurde aus dem
+Classroom-Profilavatar-Loader entfernt, damit die Fallback-Avatar-Tests auch
+mit minimalen Avatar-Utility-Exports zuverlässig bestehen.
+
+Die Tastaturnavigation im Classroom-Slideshow-Modus nutzt jetzt einen dedizierten
+`isStudentInteractionBlocked`-Guard-Helfer und eine klarere `if/else`-Verzweigung
+für die Links/Rechts-Navigation.
