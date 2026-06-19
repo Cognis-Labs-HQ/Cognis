@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-test("legacy classes routes redirect to /classroom", () => {
+test("classes routes redirect to /classroom", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/index.ts"),
         "utf8",
