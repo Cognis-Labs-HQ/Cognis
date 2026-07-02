@@ -5,15 +5,16 @@
  * classroom to degrade gracefully without those features.
  *
  * Public exports:
- *   - `loadMeetingEmbedFactory()` — loads `createClassroomMeetingEmbed` from
+ *   - `loadMeetingEmbedFactory()` — loads `createMeetingEmbed` from
  *     the `classroom-meeting-embed-script` meta tag, or returns null.
  *   - `loadWhiteboardWindowFactory()` — loads `createClassroomWhiteboardWindow`
  *     from the `classroom-whiteboard-window-script` meta tag, or returns null.
+ *   - `loadWhiteboardActionHandler()` — loads `handleWhiteboardActions` from
+ *     the `classroom-whiteboard-actions-script` meta tag, or returns null.
  *
  * Usage:
  *   ```js
- *   const createMeetingEmbed = await loadMeetingEmbedFactory();
- *   const createWhiteboardWindow = await loadWhiteboardWindowFactory();
+ *   const { createMeetingEmbed, createWhiteboardWindow, handleWhiteboardActions } = await loadWindowsFactories();
  *   const windows = createClassroomWindows({ ..., createMeetingEmbed, createWhiteboardWindow });
  *   ```
  *
@@ -25,18 +26,27 @@
  * for each when the corresponding module meta tag is absent or the script
  * fails to load.
  *
- * @returns {Promise<{ createMeetingEmbed: Function|null, createWhiteboardWindow: Function|null }>}
+ * @returns {Promise<{ createMeetingEmbed: Function|null, createWhiteboardWindow: Function|null, handleWhiteboardActions: Function|null }>}
  */
 export async function loadWindowsFactories() {
-    const [createMeetingEmbed, createWhiteboardWindow] = await Promise.all([
+    const [
+        createMeetingEmbed,
+        createWhiteboardWindow,
+        handleWhiteboardActions,
+    ] = await Promise.all([
         loadMeetingEmbedFactory(),
         loadWhiteboardWindowFactory(),
+        loadWhiteboardActionHandler(),
     ]);
-    return { createMeetingEmbed, createWhiteboardWindow };
+    return {
+        createMeetingEmbed,
+        createWhiteboardWindow,
+        handleWhiteboardActions,
+    };
 }
 
 /**
- * Loads the `createClassroomMeetingEmbed` factory from the URL in the
+ * Loads the `createMeetingEmbed` factory from the URL in the
  * `classroom-meeting-embed-script` meta tag. Returns null when the tag is
  * absent or the module script fails to load.
  *
@@ -49,10 +59,10 @@ export async function loadMeetingEmbedFactory() {
     const scriptUrl = scriptMeta?.content?.trim() ?? "";
     if (!scriptUrl) return null;
     try {
-        const factory = (await import(scriptUrl)).createClassroomMeetingEmbed;
+        const factory = (await import(scriptUrl)).createMeetingEmbed;
         if (typeof factory !== "function") {
             console.error(
-                "[classroom] Meeting embed module did not export createClassroomMeetingEmbed.",
+                "[classroom] Meeting embed module did not export createMeetingEmbed.",
                 { operation: "importMeetingEmbedScript", url: scriptUrl },
             );
             return null;
@@ -95,6 +105,39 @@ export async function loadWhiteboardWindowFactory() {
     } catch (err) {
         console.error("[classroom] Failed to load whiteboard window module.", {
             operation: "importWhiteboardWindowScript",
+            url: scriptUrl,
+            error: err instanceof Error ? err.message : String(err),
+        });
+        return null;
+    }
+}
+
+/**
+ * Loads the `handleWhiteboardActions` function from the URL in the
+ * `classroom-whiteboard-actions-script` meta tag. Returns null when the tag is
+ * absent or the module script fails to load.
+ *
+ * @returns {Promise<Function|null>}
+ */
+export async function loadWhiteboardActionHandler() {
+    const scriptMeta = document.querySelector(
+        'meta[name="classroom-whiteboard-actions-script"]',
+    );
+    const scriptUrl = scriptMeta?.content?.trim() ?? "";
+    if (!scriptUrl) return null;
+    try {
+        const handler = (await import(scriptUrl)).handleWhiteboardActions;
+        if (typeof handler !== "function") {
+            console.error(
+                "[classroom] Whiteboard action module did not export handleWhiteboardActions.",
+                { operation: "importWhiteboardActionScript", url: scriptUrl },
+            );
+            return null;
+        }
+        return handler;
+    } catch (err) {
+        console.error("[classroom] Failed to load whiteboard action module.", {
+            operation: "importWhiteboardActionScript",
             url: scriptUrl,
             error: err instanceof Error ? err.message : String(err),
         });

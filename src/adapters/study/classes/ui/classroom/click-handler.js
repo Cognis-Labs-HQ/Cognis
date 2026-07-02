@@ -42,6 +42,7 @@ export function bindClassroomClickHandler({
     handleClassroomExit,
     handleResourceActions,
     handleWhiteboardAndNotepadActions,
+    handleWhiteboardActions,
     handleFileActions,
     getClassResources,
     loadSelectedClassMeta,
@@ -297,6 +298,7 @@ export function bindClassroomClickHandler({
                                     getSelectedActiveWhiteboardId,
                                 persistActiveWhiteboardId,
                                 setWorkspaceMode,
+                                handleWhiteboardActions,
                             },
                         );
                     }
@@ -915,6 +917,7 @@ export function bindClassroomClickHandler({
                         getSelectedActiveWhiteboardId(snapshot),
                     persistActiveWhiteboardId,
                     setWorkspaceMode,
+                    handleWhiteboardActions,
                 })
             ) {
                 return;

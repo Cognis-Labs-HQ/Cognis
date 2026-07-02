@@ -13,13 +13,12 @@ export function bootstrapModule(ctx) {
         );
 
         /**
-         * URL of the classroom meeting embed UI script served by this module.
-         * Consumed by the Study classes adapter to inject a meta tag so the
-         * classroom page can dynamically import the factory without a
-         * hardcoded static import.
+         * URL of the meeting embed UI script served by this module. Consumers
+         * can inject this into any page and dynamically import the factory
+         * without hardcoded static imports.
          */
         systemCtx.contributePublicCapability(
-            "meetings:classroomEmbedScriptUrl",
+            "meetings:embedScriptUrl",
             "/static/modules/jitsi-meet/classroom-meeting-embed.js",
         );
         systemCtx.contributePublicCapability(

@@ -80,8 +80,11 @@ export async function mount(root, { signal } = {}) {
     const createClassroomNotepad = await loadNotepadFactory();
     const notepadStringsBaseUrl = getNotepadStringsBaseUrl();
     const profileAvatarHelpers = await loadProfileAvatarHelpers();
-    const { createMeetingEmbed, createWhiteboardWindow } =
-        await loadWindowsFactories();
+    const {
+        createMeetingEmbed,
+        createWhiteboardWindow,
+        handleWhiteboardActions,
+    } = await loadWindowsFactories();
 
     const componentStringBaseUrls = [
         ...(notepadStringsBaseUrl ? [notepadStringsBaseUrl] : []),
@@ -630,6 +633,7 @@ export async function mount(root, { signal } = {}) {
                         handleClassroomExit,
                         handleResourceActions,
                         handleWhiteboardAndNotepadActions,
+                        handleWhiteboardActions,
                         handleFileActions,
                         getClassResources: () => classResources,
                         loadSelectedClassMeta,

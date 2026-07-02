@@ -68,11 +68,6 @@
     min-height: 22rem;
 }
 
-.classes-workspace-main {
-    min-width: 0;
-    min-height: 0;
-}
-
 .classes-workspace-panel {
     min-height: 100%;
     height: auto;

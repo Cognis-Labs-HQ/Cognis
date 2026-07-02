@@ -26,12 +26,12 @@ import {
  * renders the returned element without reimplementing any meeting logic.
  *
  * Exports:
- *   - `createClassroomMeetingEmbed(options)` — factory that returns the
+ *   - `createMeetingEmbed(options)` — factory that returns the
  *     meeting window element and control methods.
  *
  * Usage:
  *   ```js
- *   const embed = createClassroomMeetingEmbed({ i18n });
+ *   const embed = createMeetingEmbed({ i18n });
  *   blackboard.appendChild(embed.element);
  *   await embed.openMeeting(classroomSnapshot);  // teacher-initiated
  *   await embed.tryAutoJoin(classroomId);        // student auto-join
@@ -55,7 +55,7 @@ import {
  *   resetAuthBlocked: () => void,
  * }}
  */
-export function createClassroomMeetingEmbed({
+export function createMeetingEmbed({
     i18n,
     isTeacher = false,
     onVisibilityChange = () => {},

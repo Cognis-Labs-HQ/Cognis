@@ -116,12 +116,16 @@ test("study/classes bootstrap reads file-reader:text:ui capability for notepad c
         `bootstrap must not read stale "study:notepad:ui" capability`,
     );
     assert.ok(
-        fetchedKeys.includes("meetings:classroomEmbedScriptUrl"),
-        `bootstrap must read "meetings:classroomEmbedScriptUrl" capability; got: ${JSON.stringify(fetchedKeys)}`,
+        fetchedKeys.includes("meetings:embedScriptUrl"),
+        `bootstrap must read "meetings:embedScriptUrl" capability; got: ${JSON.stringify(fetchedKeys)}`,
     );
     assert.ok(
-        fetchedKeys.includes("whiteboard:classroomWindowScriptUrl"),
-        `bootstrap must read "whiteboard:classroomWindowScriptUrl" capability; got: ${JSON.stringify(fetchedKeys)}`,
+        fetchedKeys.includes("whiteboard:windowScriptUrl"),
+        `bootstrap must read "whiteboard:windowScriptUrl" capability; got: ${JSON.stringify(fetchedKeys)}`,
+    );
+    assert.ok(
+        fetchedKeys.includes("whiteboard:actionScriptUrl"),
+        `bootstrap must read "whiteboard:actionScriptUrl" capability; got: ${JSON.stringify(fetchedKeys)}`,
     );
 });
 
@@ -202,11 +206,14 @@ test("study/classes classroom page injects meeting embed and whiteboard window U
         buildBaseCtx({
             capabilities: {
                 get(key) {
-                    if (key === "meetings:classroomEmbedScriptUrl") {
+                    if (key === "meetings:embedScriptUrl") {
                         return "/static/modules/jitsi-meet/classroom-meeting-embed.js";
                     }
-                    if (key === "whiteboard:classroomWindowScriptUrl") {
+                    if (key === "whiteboard:windowScriptUrl") {
                         return "/static/modules/nextcloud-whiteboard/classroom-whiteboard-window.js";
+                    }
+                    if (key === "whiteboard:actionScriptUrl") {
+                        return "/static/modules/nextcloud-whiteboard/classroom-whiteboard-actions.js";
                     }
                     if (key === "auth:routeContext") {
                         return mockRouteContext;
@@ -252,12 +259,22 @@ test("study/classes classroom page injects meeting embed and whiteboard window U
         "classroom HTML must contain injected whiteboard window script URL",
     );
     assert.ok(
+        servedHtml.includes(
+            "/static/modules/nextcloud-whiteboard/classroom-whiteboard-actions.js",
+        ),
+        "classroom HTML must contain injected whiteboard action script URL",
+    );
+    assert.ok(
         !servedHtml.includes("{{classroom.meetingEmbedScriptUrl}}"),
         "classroom HTML must not contain unresolved meeting embed placeholder",
     );
     assert.ok(
         !servedHtml.includes("{{classroom.whiteboardWindowScriptUrl}}"),
         "classroom HTML must not contain unresolved whiteboard window placeholder",
+    );
+    assert.ok(
+        !servedHtml.includes("{{classroom.whiteboardActionScriptUrl}}"),
+        "classroom HTML must not contain unresolved whiteboard action placeholder",
     );
 });
 

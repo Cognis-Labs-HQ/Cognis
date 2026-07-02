@@ -30,20 +30,34 @@ test("classroom render includes workspace tabs and roster panel", () => {
 });
 
 test("classroom whiteboard actions support inline and pop-out modes", () => {
-    const source = readFileSync(
+    const classroomSource = readFileSync(
         resolve(
             ROOT,
             "src/adapters/study/classes/ui/classroom-whiteboard-actions.js",
         ),
         "utf8",
     );
+    const whiteboardModuleSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/modules/nextcloud-whiteboard/ui/classroom-whiteboard-actions.js",
+        ),
+        "utf8",
+    );
 
-    assert.match(source, /classes-workspace-tab-btn/);
-    assert.match(source, /suppressConnectionRecoveryToast:\s*true/);
-    assert.match(source, /classes-inline-whiteboard-popout-btn/);
-    assert.match(source, /classes-popout-whiteboard-btn/);
-    assert.match(source, /setWorkspaceMode\("whiteboard"\)/);
-    assert.match(source, /persistActiveWhiteboardId/);
+    assert.match(classroomSource, /handleWhiteboardActions/);
+    assert.match(whiteboardModuleSource, /classes-workspace-tab-btn/);
+    assert.match(
+        whiteboardModuleSource,
+        /suppressConnectionRecoveryToast:\s*true/,
+    );
+    assert.match(
+        whiteboardModuleSource,
+        /classes-inline-whiteboard-popout-btn/,
+    );
+    assert.match(whiteboardModuleSource, /classes-popout-whiteboard-btn/);
+    assert.match(whiteboardModuleSource, /setWorkspaceMode\("whiteboard"\)/);
+    assert.match(whiteboardModuleSource, /persistActiveWhiteboardId/);
 });
 
 test("classroom render gates student meeting and whiteboard controls", () => {
@@ -330,7 +344,10 @@ test("classroom avatar helpers load dynamically instead of hard-importing social
         refreshSource,
         /from "\/static\/adapters\/study\/classes\/classroom\/profile-avatar\.js"/,
     );
-    assert.match(popupsSource, /meta\[name="classroom-profile-preview-script"\]/);
+    assert.match(
+        popupsSource,
+        /meta\[name="classroom-profile-preview-script"\]/,
+    );
     assert.doesNotMatch(
         indexSource,
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,

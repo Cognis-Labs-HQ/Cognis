@@ -56,6 +56,7 @@ function createClassroomHubPageRoute(
     notepadStringsBaseUrl: string,
     meetingEmbedScriptUrl: string,
     whiteboardWindowScriptUrl: string,
+    whiteboardActionScriptUrl: string,
     profileAvatarScriptUrl: string,
     jitsiActiveMeetingsUrl: string,
     chatScriptUrl: string,
@@ -93,6 +94,10 @@ function createClassroomHubPageRoute(
             .replace(
                 "{{classroom.whiteboardWindowScriptUrl}}",
                 whiteboardWindowScriptUrl,
+            )
+            .replace(
+                "{{classroom.whiteboardActionScriptUrl}}",
+                whiteboardActionScriptUrl,
             )
             .replace(
                 "{{classroom.profileAvatarScriptUrl}}",
@@ -224,18 +229,25 @@ export async function bootstrapStudyAdapter(
             ? notepadUi.stylesheetUrl.trim()
             : "";
     const rawMeetingEmbedScriptUrl = ctx.capabilities.get<string>(
-        "meetings:classroomEmbedScriptUrl",
+        "meetings:embedScriptUrl",
     );
     const meetingEmbedScriptUrl =
         typeof rawMeetingEmbedScriptUrl === "string"
             ? rawMeetingEmbedScriptUrl.trim()
             : "";
     const rawWhiteboardWindowScriptUrl = ctx.capabilities.get<string>(
-        "whiteboard:classroomWindowScriptUrl",
+        "whiteboard:windowScriptUrl",
     );
     const whiteboardWindowScriptUrl =
         typeof rawWhiteboardWindowScriptUrl === "string"
             ? rawWhiteboardWindowScriptUrl.trim()
+            : "";
+    const rawWhiteboardActionScriptUrl = ctx.capabilities.get<string>(
+        "whiteboard:actionScriptUrl",
+    );
+    const whiteboardActionScriptUrl =
+        typeof rawWhiteboardActionScriptUrl === "string"
+            ? rawWhiteboardActionScriptUrl.trim()
             : "";
     const rawProfileAvatarScriptUrl = ctx.capabilities.get<string>(
         "social:profileAvatarScriptUrl",
@@ -624,6 +636,7 @@ export async function bootstrapStudyAdapter(
             notepadStringsBaseUrl,
             meetingEmbedScriptUrl,
             whiteboardWindowScriptUrl,
+            whiteboardActionScriptUrl,
             profileAvatarScriptUrl,
             jitsiActiveMeetingsUrl,
             chatScriptUrl,

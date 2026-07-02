@@ -209,7 +209,7 @@ export function renderBlackboard({
                         isTeacherView,
                         i18n,
                     })}
-                    <div class="classes-workspace-main">
+                    <div class="classes-workspace-main no-min-size">
                         ${renderWorkspaceContent({
                             snapshot,
                             classResources,

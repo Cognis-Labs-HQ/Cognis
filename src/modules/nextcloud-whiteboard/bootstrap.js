@@ -48,14 +48,17 @@ export function bootstrapModule(ctx) {
         );
 
         /**
-         * URL of the classroom whiteboard window UI script served by this
-         * module. Consumed by the Study classes adapter to inject a meta tag
-         * so the classroom page can dynamically import the factory without a
-         * hardcoded static import.
+         * URL of the whiteboard window UI script served by this module.
+         * Consumers can inject this into any page and dynamically import the
+         * factory without hardcoded static imports.
          */
         systemCtx.contributePublicCapability(
-            "whiteboard:classroomWindowScriptUrl",
+            "whiteboard:windowScriptUrl",
             "/static/modules/nextcloud-whiteboard/classroom-whiteboard-window.js",
+        );
+        systemCtx.contributePublicCapability(
+            "whiteboard:actionScriptUrl",
+            "/static/modules/nextcloud-whiteboard/classroom-whiteboard-actions.js",
         );
 
         /**
@@ -175,8 +178,7 @@ export function bootstrapModule(ctx) {
              */
             systemCtx.contributePublicCapability(
                 "whiteboard:classroom.delete",
-                (classId, boardId) =>
-                    whiteboardStore.delete(classId, boardId),
+                (classId, boardId) => whiteboardStore.delete(classId, boardId),
             );
             /**
              * Fetches a single whiteboard record. No access control — callers
