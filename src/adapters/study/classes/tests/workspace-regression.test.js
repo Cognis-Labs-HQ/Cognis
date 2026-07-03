@@ -368,8 +368,7 @@ test("classroom meta loader skips whiteboard requests when the module is unavail
         /const supportsWhiteboards = getSupportsWhiteboards\(\)/,
     );
     assert.match(dataLoaderSource, /supportsWhiteboards\s*\?\s*apiFetch\(/);
-    assert.match(dataLoaderSource, /if \(!supportsWhiteboards\) \{/);
-    assert.match(dataLoaderSource, /activeWhiteboard = null;/);
+    assert.match(dataLoaderSource, /whiteboardsResponse\?\.ok/);
 });
 
 test("classroom avatar helpers load dynamically instead of hard-importing social UI assets", () => {

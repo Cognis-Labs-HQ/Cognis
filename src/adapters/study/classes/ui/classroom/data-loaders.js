@@ -78,7 +78,6 @@ export function createClassMetaLoader({
             supportsWhiteboards
                 ? apiFetch(
                       `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
-                      { suppressConnectionRecoveryToast: true },
                   )
                 : Promise.resolve(null),
             jitsiActiveMeetingsUrl
@@ -177,9 +176,6 @@ export function createClassMetaLoader({
                 };
                 addInitializedTile("whiteboard");
             }
-        }
-        if (!supportsWhiteboards) {
-            activeWhiteboard = null;
         }
         const materialKey = getSelectedActiveMaterialKey(snapshot);
         setClassResources(classResources);
