@@ -73,6 +73,8 @@ import { mountMaterialImageViewer } from "/static/adapters/study/classes/classro
 import { captureFocus, restoreFocus } from "/static/reuse/focus-guard.js";
 import { createContentMarkupRenderer } from "/static/adapters/study/classes/classroom/content-markup.js";
 
+const CLASSES_STRINGS_BASE_URL = "/static/adapters/study/classes/languages";
+
 export async function mount(root, { signal } = {}) {
     applyClassroomViewModeFromUrl();
     const previousPath = resolvePreviousPath();
@@ -87,6 +89,7 @@ export async function mount(root, { signal } = {}) {
     } = await loadWindowsFactories();
 
     const componentStringBaseUrls = [
+        CLASSES_STRINGS_BASE_URL,
         ...(notepadStringsBaseUrl ? [notepadStringsBaseUrl] : []),
         "/static/modules/nextcloud-whiteboard/languages",
     ];
@@ -100,6 +103,9 @@ export async function mount(root, { signal } = {}) {
 
     const teacherAccount = canToggleClassroomView();
     const query = new URL(window.location.href).searchParams;
+    const supportsWhiteboards =
+        typeof createWhiteboardWindow === "function" &&
+        typeof handleWhiteboardActions === "function";
 
     let classroomSnapshots = [];
     let availableClasses = [];
@@ -311,6 +317,7 @@ export async function mount(root, { signal } = {}) {
         syncTileLayoutWithSnapshot,
         addInitializedTile: (tile) => initializedTiles.add(tile),
         i18n,
+        getSupportsWhiteboards: () => supportsWhiteboards,
         getActiveWhiteboard: () => activeWhiteboard,
         setClassResources: (value) => {
             classResources = value;

@@ -299,6 +299,79 @@ test("classroom chat delegates to the social gateway embedded chat factory", () 
     assert.match(chatCssSource, /messages-chat-shared\.css/);
 });
 
+test("study classes pages load their adapter language bundles", () => {
+    const classroomSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+    const classesSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/app.js"),
+        "utf8",
+    );
+    const myClassesSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/my-classes.js"),
+        "utf8",
+    );
+    const requestsSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/requests.js"),
+        "utf8",
+    );
+    const navSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/nav-link.js"),
+        "utf8",
+    );
+
+    assert.match(
+        classroomSource,
+        /const CLASSES_STRINGS_BASE_URL = "\/static\/adapters\/study\/classes\/languages"/,
+    );
+    assert.match(classroomSource, /componentStringBaseUrls = \[/);
+    assert.match(classroomSource, /CLASSES_STRINGS_BASE_URL/);
+    assert.match(
+        classesSource,
+        /componentStringBaseUrls:\s*\[\s*CLASSES_STRINGS_BASE_URL\s*\]/,
+    );
+    assert.match(
+        myClassesSource,
+        /componentStringBaseUrls:\s*\[\s*CLASSES_STRINGS_BASE_URL\s*\]/,
+    );
+    assert.match(
+        requestsSource,
+        /componentStringBaseUrls:\s*\[\s*CLASSES_STRINGS_BASE_URL\s*\]/,
+    );
+    assert.match(
+        navSource,
+        /componentStringBaseUrls:\s*\[\s*"\/static\/adapters\/study\/classes\/languages"\s*\]/,
+    );
+});
+
+test("classroom meta loader skips whiteboard requests when the module is unavailable", () => {
+    const indexSource = readFileSync(
+        resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),
+        "utf8",
+    );
+    const dataLoaderSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/data-loaders.js",
+        ),
+        "utf8",
+    );
+
+    assert.match(indexSource, /const supportsWhiteboards =/);
+    assert.match(
+        indexSource,
+        /getSupportsWhiteboards: \(\) => supportsWhiteboards/,
+    );
+    assert.match(
+        dataLoaderSource,
+        /const supportsWhiteboards = getSupportsWhiteboards\(\)/,
+    );
+    assert.match(dataLoaderSource, /supportsWhiteboards\s*\?\s*apiFetch\(/);
+    assert.match(dataLoaderSource, /if \(!supportsWhiteboards\) \{/);
+    assert.match(dataLoaderSource, /activeWhiteboard = null;/);
+});
+
 test("classroom avatar helpers load dynamically instead of hard-importing social UI assets", () => {
     const indexSource = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/classroom/index.js"),

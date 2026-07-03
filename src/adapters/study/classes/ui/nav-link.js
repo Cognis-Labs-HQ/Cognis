@@ -1,6 +1,8 @@
 import { createI18n } from "/static/reuse/i18n.js";
 
-const i18n = await createI18n();
+const i18n = await createI18n({
+    componentStringBaseUrls: ["/static/adapters/study/classes/languages"],
+});
 
 const topnav = document.querySelector(".topnav");
 if (topnav instanceof HTMLElement) {

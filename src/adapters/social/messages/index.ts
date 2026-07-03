@@ -104,6 +104,7 @@ function createMessagesPageRoutes(
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
+    ctx.registerAdapterStaticDir?.("social", "messages", ADAPTER_UI_ROOT);
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const profileStore = ctx.capabilities.get<SocialMessagesProfileStore>(
@@ -339,6 +340,10 @@ export async function bootstrapSocialAdapter(
         reactionHelpersModuleUrl:
             "/static/adapters/social/messages/reactions.js",
     });
+    ctx.capabilities.contribute(
+        "social:classroomChatScriptUrl",
+        "/static/adapters/social/messages/classroom-chat-embed.js",
+    );
 
     ctx.registerRoute(
         createMessagesRoutes({
@@ -476,11 +481,6 @@ export async function bootstrapSocialAdapter(
         "social",
     );
 
-    const uiDir = path.resolve(
-        path.dirname(fileURLToPath(import.meta.url)),
-        "ui",
-    );
-    ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
     ctx.registerSpaRoute?.({
         id: "social-messages-page",
         pattern: "^/messages(?:/[^/]+)?$",

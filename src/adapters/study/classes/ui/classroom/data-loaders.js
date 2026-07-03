@@ -3,7 +3,7 @@
  * currently selected classroom: resources, notebook, agenda, whiteboards,
  * active meeting, and whiteboard embed token.
  *
- * @param {{ apiFetch: Function, getSnapshot: Function, isTeacherView: Function, getSelectedActiveWhiteboardId: Function, getSelectedActiveMaterialKey: Function, resolveActiveMeetingId: Function, createDefaultClassResources: Function, loadActiveMaterialPreview: Function, revokeActiveMaterialPreview: Function, syncStudentWorkspaceAccess: Function, pollTeacherViewState: Function, syncTileLayoutWithSnapshot: Function, addInitializedTile: Function, i18n: object, getActiveWhiteboard: Function, setClassResources: Function, setSelectedNotebookText: Function, setAgendaDocument: Function, setAgendaSnapshots: Function, setWhiteboards: Function, setActiveWhiteboard: Function, setActiveMeetingId: Function, setActiveMaterialKey: Function, setLastBroadcastedMaterialKey: Function }} ctx
+ * @param {{ apiFetch: Function, getSnapshot: Function, isTeacherView: Function, getSelectedActiveWhiteboardId: Function, getSelectedActiveMaterialKey: Function, resolveActiveMeetingId: Function, createDefaultClassResources: Function, loadActiveMaterialPreview: Function, revokeActiveMaterialPreview: Function, syncStudentWorkspaceAccess: Function, pollTeacherViewState: Function, syncTileLayoutWithSnapshot: Function, addInitializedTile: Function, i18n: object, getSupportsWhiteboards: Function, getActiveWhiteboard: Function, setClassResources: Function, setSelectedNotebookText: Function, setAgendaDocument: Function, setAgendaSnapshots: Function, setWhiteboards: Function, setActiveWhiteboard: Function, setActiveMeetingId: Function, setActiveMaterialKey: Function, setLastBroadcastedMaterialKey: Function }} ctx
  * @returns {{ loadSelectedClassMeta: Function }}
  */
 export function createClassMetaLoader({
@@ -21,6 +21,7 @@ export function createClassMetaLoader({
     syncTileLayoutWithSnapshot,
     addInitializedTile,
     i18n,
+    getSupportsWhiteboards,
     getActiveWhiteboard,
     setClassResources,
     setSelectedNotebookText,
@@ -55,6 +56,7 @@ export function createClassMetaLoader({
         syncTileLayoutWithSnapshot(snapshot);
         const selectedActiveWhiteboardId =
             getSelectedActiveWhiteboardId(snapshot);
+        const supportsWhiteboards = getSupportsWhiteboards();
         const [
             resourcesResponse,
             notebookResponse,
@@ -73,15 +75,20 @@ export function createClassMetaLoader({
             apiFetch(
                 `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/notes/agenda`,
             ),
-            apiFetch(
-                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
-            ),
+            supportsWhiteboards
+                ? apiFetch(
+                      `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards`,
+                      { suppressConnectionRecoveryToast: true },
+                  )
+                : Promise.resolve(null),
             jitsiActiveMeetingsUrl
                 ? apiFetch(
                       `${jitsiActiveMeetingsUrl}?classroomId=${encodeURIComponent(snapshot.id)}`,
                   ).catch(() => null)
                 : Promise.resolve(null),
-            !isTeacherView() && selectedActiveWhiteboardId
+            supportsWhiteboards &&
+            !isTeacherView() &&
+            selectedActiveWhiteboardId
                 ? apiFetch(
                       `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}/whiteboards/${encodeURIComponent(selectedActiveWhiteboardId)}/token`,
                       { suppressConnectionRecoveryToast: true },
@@ -110,7 +117,7 @@ export function createClassMetaLoader({
             activeMeetingPayload,
             snapshot,
         );
-        let whiteboards = whiteboardsResponse.ok
+        let whiteboards = whiteboardsResponse?.ok
             ? ((await whiteboardsResponse.json())?.data ?? [])
             : [];
         if (!isTeacherView()) {
@@ -139,12 +146,14 @@ export function createClassMetaLoader({
             }
         }
         if (
+            supportsWhiteboards &&
             !isTeacherView() &&
             activeWhiteboard?.boardId !== selectedActiveWhiteboardId
         ) {
             activeWhiteboard = null;
         }
         if (
+            supportsWhiteboards &&
             !isTeacherView() &&
             selectedActiveWhiteboardId &&
             !activeWhiteboard?.embedUrl &&
@@ -168,6 +177,9 @@ export function createClassMetaLoader({
                 };
                 addInitializedTile("whiteboard");
             }
+        }
+        if (!supportsWhiteboards) {
+            activeWhiteboard = null;
         }
         const materialKey = getSelectedActiveMaterialKey(snapshot);
         setClassResources(classResources);

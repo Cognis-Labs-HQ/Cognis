@@ -352,6 +352,14 @@ function createSocialAdapterRoutes(
  * Standard gateway bootstrap entry point for the Social Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "social",
+        "ui",
+    );
+    ctx.uiRegistry?.registerStaticDir("social", uiDir);
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
@@ -421,10 +429,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/gateways/social/reuse/profile-avatar.js",
     );
     ctx.capabilities.contribute(
-        "social:classroomChatScriptUrl",
-        "/static/adapters/social/messages/classroom-chat-embed.js",
-    );
-    ctx.capabilities.contribute(
         "social:profilePreviewScriptUrl",
         "/static/reuse/profile-preview.js",
     );
@@ -452,15 +456,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
-
-    const uiDir = path.resolve(
-        process.cwd(),
-        "src",
-        "gateways",
-        "social",
-        "ui",
-    );
-    ctx.uiRegistry?.registerStaticDir("social", uiDir);
 
     ctx.log?.("info", "Social gateway: initialized.", {
         component: "social-gateway",

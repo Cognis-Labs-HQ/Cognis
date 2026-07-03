@@ -19,8 +19,12 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 
+const CLASSES_STRINGS_BASE_URL = "/static/adapters/study/classes/languages";
+
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: [CLASSES_STRINGS_BASE_URL],
+    });
     applyDocumentTitle(i18n, "module.study.classes.my_classes_page_title");
 
     let enrolledClasses = [];

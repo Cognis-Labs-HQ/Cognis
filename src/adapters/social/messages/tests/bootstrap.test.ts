@@ -100,6 +100,27 @@ test("messages avatars fall back after failed image loads", () => {
     );
 });
 
+test("messages adapter owns classroom chat asset registration", () => {
+    const adapterSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+    const gatewaySource = readFileSync(
+        resolve(ROOT, "src/gateways/social/bootstrap.ts"),
+        "utf8",
+    );
+
+    assert.match(
+        adapterSource,
+        /ctx\.registerAdapterStaticDir\?\.\("social", "messages", ADAPTER_UI_ROOT\)/,
+    );
+    assert.match(
+        adapterSource,
+        /ctx\.capabilities\.contribute\(\s*"social:classroomChatScriptUrl",\s*"\/static\/adapters\/social\/messages\/classroom-chat-embed\.js"/,
+    );
+    assert.doesNotMatch(gatewaySource, /social:classroomChatScriptUrl/);
+});
+
 test("messages reaction chips render hover popup metadata and styles", () => {
     const appSource = readMessagesUiBundle();
     const stylesheetSource = readFileSync(
