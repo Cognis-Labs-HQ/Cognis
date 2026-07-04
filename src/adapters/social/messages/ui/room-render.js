@@ -47,6 +47,7 @@ export function roomListRenderSignature(rooms, selectedRoomId) {
             id: room.id,
             title: room.title,
             kind: room.kind,
+            classId: room.classId ?? null,
             unread: room.unread,
             isArchived: room.isArchived,
             canSend: room.canSend,
@@ -108,7 +109,7 @@ export function selectedRoomTitle(room, currentAccountId) {
 
 function renderMemberCountControl(room, members, i18n) {
     const label = `${String(members.length)} ${i18n.t("module.social.messages.members")}`;
-    if (room?.kind !== "group") {
+    if (room?.kind === "dm") {
         return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
     }
     return `<span class="messages-thread-subtitle messages-thread-subtitle-action" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
@@ -128,6 +129,24 @@ function renderMemberInitials(member) {
     return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
 }
 
+function pickClassroomAvatarMembers(room, currentAccountId) {
+    const members = Array.isArray(room?.members) ? room.members : [];
+    const others = members.filter(
+        (member) => member.accountId !== currentAccountId,
+    );
+    const baseCandidates = others.length ? others : members;
+    if (baseCandidates.length <= 4) {
+        return baseCandidates.slice(0, 4);
+    }
+    const nonTeacherCandidates = baseCandidates.filter(
+        (member) => member.role !== "owner",
+    );
+    const randomPool = nonTeacherCandidates.length
+        ? nonTeacherCandidates
+        : baseCandidates;
+    return randomSample(randomPool, 4);
+}
+
 function renderRoomAvatar(room, currentAccountId) {
     if (!room) return "";
     const members = room.members ?? [];
@@ -143,11 +162,9 @@ function renderRoomAvatar(room, currentAccountId) {
                 fallbackClass: "messages-thread-initials",
             });
         }
-        const picked = randomSample(members, 4);
-        while (picked.length < 4) {
-            picked.push({ handle: "", displayName: "" });
-        }
-        return `<div class="messages-classroom-collage">${picked.map(renderMemberInitials).join("")}</div>`;
+        const picked = pickClassroomAvatarMembers(room, currentAccountId);
+        const count = Math.max(1, picked.length);
+        return `<div class="messages-classroom-collage messages-classroom-collage--count-${count}">${picked.map(renderMemberInitials).join("")}</div>`;
     }
     const other =
         members.find((member) => member.accountId !== currentAccountId) ??
@@ -174,22 +191,25 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         (member) => member.accountId === currentAccountId,
     );
     const leaveHandle = currentMember?.handle || "";
-    const canSetAvatar =
-        room.kind === "classroom" &&
-        ["teacher", "admin", "owner"].includes(
-            localStorage.getItem("cognis_role") ?? "",
-        );
+    const roomTitle = selectedRoomTitle(room, currentAccountId);
+    const classroomHref =
+        room.kind === "classroom" && room.classId
+            ? `/classroom?classId=${encodeURIComponent(room.classId)}`
+            : "";
     return `
     <header class="messages-thread-header" id="messages-thread-header">
       ${renderRoomAvatar(room, currentAccountId)}
       <div class="messages-thread-title-wrap">
-        <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
+        <h2 class="messages-thread-title">${
+            classroomHref
+                ? `<a class="messages-thread-title-link" href="${escapeHtml(classroomHref)}">${escapeHtml(roomTitle)}</a>`
+                : escapeHtml(roomTitle)
+        }</h2>
         ${renderMemberCountControl(room, members, i18n)}
       </div>
       <div class="messages-thread-actions">
-        ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
         ${
-            leaveHandle
+            leaveHandle && room.kind !== "classroom"
                 ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn" type="button" data-leave-handle="${escapeHtml(leaveHandle)}" aria-label="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}" title="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z" fill="currentColor" />

@@ -27,7 +27,7 @@ export function createPageElement({ i18n, role }) {
       <p class="dashboard-classes-placeholder">
         ${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.cta"))}
       </p>
-      <a href="/my-classes" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.go"))}</a>
+      <a href="/classroom" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.go"))}</a>
     `,
         };
     }

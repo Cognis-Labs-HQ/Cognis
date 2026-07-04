@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
+        <title>{{module.study.classes.classroom_page_title}}</title>
+        <link
+            rel="icon"
+            href="/static/assets/icons/cognis-icon.png"
+            type="image/png"
+        />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#0f172a" />
+        <meta name="application-name" content="Cognis" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-title" content="Cognis" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta
+            name="classroom-notepad-script"
+            content="{{classroom.notepadScriptUrl}}"
+        />
+        <meta
+            name="classroom-notepad-strings"
+            content="{{classroom.notepadStringsBaseUrl}}"
+        />
+        <meta
+            name="classroom-meeting-embed-script"
+            content="{{classroom.meetingEmbedScriptUrl}}"
+        />
+        <meta
+            name="classroom-whiteboard-window-script"
+            content="{{classroom.whiteboardWindowScriptUrl}}"
+        />
+        <meta
+            name="classroom-whiteboard-actions-script"
+            content="{{classroom.whiteboardActionScriptUrl}}"
+        />
+        <meta
+            name="classroom-profile-avatar-script"
+            content="{{classroom.profileAvatarScriptUrl}}"
+        />
+        <meta
+            name="classroom-jitsi-active-meetings-url"
+            content="{{classroom.jitsiActiveMeetingsUrl}}"
+        />
+        <meta
+            name="classroom-chat-script"
+            content="{{classroom.chatScriptUrl}}"
+        />
+        <meta
+            name="classroom-profile-preview-script"
+            content="{{classroom.profilePreviewScriptUrl}}"
+        />
+        <link
+            rel="apple-touch-icon"
+            href="/static/assets/icons/cognis-apple-touch-180.png"
+        />
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/page-sections.css" />
+        <link
+            rel="stylesheet"
+            href="/static/adapters/study/classes/classes.css"
+        />
+        <link
+            rel="stylesheet"
+            href="/static/adapters/study/classes/classroom-workspace.css"
+        />
+        <link
+            rel="stylesheet"
+            href="/static/adapters/social/messages/classroom-chat.css"
+        />
+        <link
+            rel="stylesheet"
+            href="/static/adapters/file-reader/image/image-viewer.css"
+        />
+    </head>
+    <body>
+        <div id="app"></div>
+        <script
+            type="module"
+            src="/static/reuse/runtime-error-bootstrap.js"
+        ></script>
+        <script
+            type="module"
+            src="/static/adapters/study/classes/classroom/index.js"
+        ></script>
+    </body>
+</html>

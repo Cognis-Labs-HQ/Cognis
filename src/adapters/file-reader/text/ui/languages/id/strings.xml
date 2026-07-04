@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.notepad">Buku Catatan</string>
+  <string name="module.study.classes.notepad_download">Unduh</string>
+  <string name="module.study.classes.notepad_clear">Hapus</string>
+  <string name="module.study.classes.notepad_save">Simpan ke Kelas</string>
+  <string name="module.study.classes.notepad_open">Buka dari Kelas</string>
+  <string name="module.study.classes.notepad_saved">Catatan disimpan ke materi kelas.</string>
+  <string name="module.study.classes.notepad_save_failed">Gagal menyimpan catatan ke materi kelas.</string>
+  <string name="module.study.classes.notepad_format_paragraph">Paragraf</string>
+  <string name="module.study.classes.notepad_format_heading1">Judul 1</string>
+  <string name="module.study.classes.notepad_format_heading2">Judul 2</string>
+  <string name="module.study.classes.notepad_format_quote">Kutipan</string>
+  <string name="module.study.classes.notepad_format_code">Kode</string>
+  <string name="module.study.classes.notepad_font_size">Ukuran Font</string>
+  <string name="module.study.classes.notepad_color">Warna</string>
+</strings>

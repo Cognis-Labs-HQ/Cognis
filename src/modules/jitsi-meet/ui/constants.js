@@ -8,16 +8,14 @@ export const SESSION_ID_STORAGE_KEY = "jitsi-meet:session-id";
 export const TEXT_ENCODER = new TextEncoder();
 export const MEETING_SUBJECT = "Cognis Classroom";
 export const MEETING_TERMINATED_TEXT = "meeting terminated";
+export const JITSI_IFRAME_SANDBOX =
+    "allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin";
 export const JITSI_TOOLBAR_BUTTONS = [
     "microphone",
     "camera",
     "desktop",
-    "fullscreen",
     "hangup",
     "participants-pane",
     "tileview",
-    "select-background",
-    "videoquality",
     "raisehand",
-    "fodeviceselection",
 ];

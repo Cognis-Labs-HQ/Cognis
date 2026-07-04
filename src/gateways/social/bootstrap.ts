@@ -19,6 +19,184 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 
+const PRESENCE_STALE_TIMEOUT_MS = 120_000;
+const PRESENCE_AWAY_TIMEOUT_MS = 45_000;
+
+type PresenceState = "online" | "away" | "offline";
+
+class PresenceTracker {
+    private readonly entries = new Map<
+        string,
+        { status: Exclude<PresenceState, "offline">; lastSeenAt: number }
+    >();
+    private readonly subscribers = new Set<ServerResponse>();
+
+    setStatus(accountId: string, status: PresenceState): PresenceState {
+        const normalizedAccountId = String(accountId ?? "").trim();
+        if (!normalizedAccountId) return "offline";
+        if (status === "offline") {
+            this.entries.delete(normalizedAccountId);
+            this.broadcast({
+                accountId: normalizedAccountId,
+                status: "offline",
+            });
+            return "offline";
+        }
+        const now = Date.now();
+        this.entries.set(normalizedAccountId, {
+            status: status === "away" ? "away" : "online",
+            lastSeenAt: now,
+        });
+        this.broadcast({
+            accountId: normalizedAccountId,
+            status,
+        });
+        return status;
+    }
+
+    getStatus(accountId: string): PresenceState {
+        const normalizedAccountId = String(accountId ?? "").trim();
+        if (!normalizedAccountId) return "offline";
+        const entry = this.entries.get(normalizedAccountId);
+        if (!entry) return "offline";
+        const age = Date.now() - entry.lastSeenAt;
+        if (age >= PRESENCE_STALE_TIMEOUT_MS) {
+            this.entries.delete(normalizedAccountId);
+            return "offline";
+        }
+        if (entry.status === "away" || age >= PRESENCE_AWAY_TIMEOUT_MS) {
+            return "away";
+        }
+        return "online";
+    }
+
+    getStatuses(accountIds: string[]): Record<string, PresenceState> {
+        const statuses: Record<string, PresenceState> = {};
+        for (const accountId of accountIds) {
+            const normalizedAccountId = String(accountId ?? "").trim();
+            if (!normalizedAccountId) continue;
+            statuses[normalizedAccountId] = this.getStatus(normalizedAccountId);
+        }
+        return statuses;
+    }
+
+    subscribe(res: ServerResponse): void {
+        this.subscribers.add(res);
+    }
+
+    unsubscribe(res: ServerResponse): void {
+        this.subscribers.delete(res);
+    }
+
+    pruneAndBroadcast(): void {
+        const updates: Array<{ accountId: string; status: PresenceState }> = [];
+        for (const [accountId] of this.entries) {
+            const status = this.getStatus(accountId);
+            if (status === "offline") {
+                updates.push({ accountId, status });
+            }
+        }
+        for (const update of updates) {
+            this.broadcast(update);
+        }
+    }
+
+    private broadcast(payload: {
+        accountId: string;
+        status: PresenceState;
+    }): void {
+        const eventPayload = `event: presence\ndata: ${JSON.stringify(payload)}\n\n`;
+        for (const subscriber of this.subscribers) {
+            try {
+                subscriber.write(eventPayload);
+            } catch {
+                this.subscribers.delete(subscriber);
+            }
+        }
+    }
+}
+
+function normalizePresenceState(value: unknown): PresenceState {
+    const normalizedValue = String(value ?? "")
+        .trim()
+        .toLowerCase();
+    if (normalizedValue === "away") return "away";
+    if (normalizedValue === "offline") return "offline";
+    return "online";
+}
+
+function createSocialPresenceRoutes(
+    routeContext: RouteContext | undefined,
+    tracker: PresenceTracker,
+) {
+    const ctx = resolveRouteContext(routeContext);
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (
+            url.pathname === "/api/v1/social/presence" &&
+            req.method === "POST"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = (await readJson(req)) as { status?: unknown };
+            const status = normalizePresenceState(body?.status);
+            const nextStatus = tracker.setStatus(claims.sub, status);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { accountId: claims.sub, status: nextStatus },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/social/presence" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const accountIds = String(url.searchParams.get("accountIds") ?? "")
+                .split(",")
+                .map((entry) => entry.trim())
+                .filter(Boolean);
+            const normalizedAccountIds = Array.from(
+                new Set(accountIds.length ? accountIds : [claims.sub]),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: tracker.getStatuses(normalizedAccountIds),
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/social/presence/stream" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            res.writeHead(200, {
+                "content-type": "text/event-stream",
+                "cache-control": "no-cache",
+                connection: "keep-alive",
+            });
+            res.write(`event: ready\ndata: {"accountId":"${claims.sub}"}\n\n`);
+            tracker.subscribe(res);
+            req.on("close", () => {
+                tracker.unsubscribe(res);
+            });
+            return true;
+        }
+        return false;
+    };
+}
+
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
 export {
     normalizeHandleKey,
@@ -174,6 +352,14 @@ function createSocialAdapterRoutes(
  * Standard gateway bootstrap entry point for the Social Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "social",
+        "ui",
+    );
+    ctx.uiRegistry?.registerStaticDir("social", uiDir);
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
@@ -181,6 +367,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await configStore.ensureSchema();
 
     const gateway = new CoreSocialGateway(configStore);
+    const presenceTracker = new PresenceTracker();
     const adaptersRoot = path.join(ctx.adaptersRoot, "social");
 
     await gateway.discoverAdapters(adaptersRoot);
@@ -219,6 +406,38 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.routeRegistry.register(
+        createSocialPresenceRoutes(routeContext, presenceTracker),
+        "social",
+    );
+
+    ctx.capabilities.contribute(
+        "social:presence:getStatuses",
+        async (accountIds: string[]): Promise<Record<string, PresenceState>> =>
+            presenceTracker.getStatuses(accountIds),
+    );
+
+    ctx.capabilities.contribute(
+        "social:normalizeHandleKey",
+        normalizeHandleKey,
+    );
+    ctx.capabilities.contribute(
+        "social:normalizeHandleKeys",
+        normalizeHandleKeys,
+    );
+    ctx.capabilities.contribute(
+        "social:profileAvatarScriptUrl",
+        "/static/gateways/social/reuse/profile-avatar.js",
+    );
+    ctx.capabilities.contribute(
+        "social:profilePreviewScriptUrl",
+        "/static/reuse/profile-preview.js",
+    );
+
+    setInterval(() => {
+        presenceTracker.pruneAndBroadcast();
+    }, 15_000).unref?.();
+
+    ctx.routeRegistry.register(
         createSocialAdapterRoutes(
             "social",
             gateway,
@@ -237,15 +456,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
-
-    const uiDir = path.resolve(
-        process.cwd(),
-        "src",
-        "gateways",
-        "social",
-        "ui",
-    );
-    ctx.uiRegistry?.registerStaticDir("social", uiDir);
 
     ctx.log?.("info", "Social gateway: initialized.", {
         component: "social-gateway",

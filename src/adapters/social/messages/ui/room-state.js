@@ -616,12 +616,34 @@ export function createMessagesRoomState({
             if (!selectedRoomId) return;
             const selectedRoom = getSelectedRoom();
             if (!selectedRoom) return;
+            const selectedMembers = Array.isArray(selectedRoom.members)
+                ? selectedRoom.members
+                : [];
+            const currentViewerMember = selectedMembers.find(
+                (roomMember) => roomMember.accountId === currentAccountId,
+            );
+            const canModerateMembers =
+                currentViewerMember?.role === "owner" ||
+                (selectedRoom.kind === "dm" &&
+                    selectedMembers.length === 2 &&
+                    selectedMembers.some(
+                        (roomMember) =>
+                            roomMember.accountId === currentAccountId,
+                    ));
             await openPopup({
                 title: i18n.t("module.social.messages.member_summary_title"),
                 body: renderMemberSummaryBody({
-                    members: selectedRoom.members ?? [],
+                    members: selectedMembers,
                     emptyText: i18n.t(
                         "module.social.messages.member_summary_empty",
+                    ),
+                    viewerAccountId: currentAccountId,
+                    canModerateMembers,
+                    kickLabel: i18n.t(
+                        "module.social.messages.member_action_kick",
+                    ),
+                    muteLabel: i18n.t(
+                        "module.social.messages.member_action_mute",
                     ),
                 }),
                 onOpen: (overlay) => {
@@ -633,6 +655,104 @@ export function createMessagesRoomState({
                         },
                     );
                     void hydrateProfileAvatars(overlay);
+                    overlay.addEventListener("click", async (event) => {
+                        const actionButton = event.target.closest(
+                            "[data-member-action]",
+                        );
+                        if (!(actionButton instanceof HTMLButtonElement)) {
+                            return;
+                        }
+                        if (!selectedRoomId) return;
+                        const selector = String(
+                            actionButton.getAttribute("data-member-selector") ??
+                                "",
+                        ).trim();
+                        const accountId = String(
+                            actionButton.getAttribute(
+                                "data-member-account-id",
+                            ) ?? "",
+                        ).trim();
+                        if (!selector || !accountId) return;
+                        actionButton.disabled = true;
+                        const action =
+                            actionButton.getAttribute("data-member-action");
+                        try {
+                            if (action === "mute") {
+                                const response = await apiFetch(
+                                    `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/members/${encodeURIComponent(selector)}/mute`,
+                                    { method: "POST" },
+                                );
+                                if (!response.ok) {
+                                    showToast(
+                                        i18n.t(
+                                            "module.social.messages.member_mute_failed",
+                                        ),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
+                                    return;
+                                }
+                                showToast(
+                                    i18n.t(
+                                        "module.social.messages.member_muted_success",
+                                    ),
+                                    {
+                                        variant: "success",
+                                    },
+                                );
+                            } else if (action === "kick") {
+                                const response =
+                                    selectedRoom.kind === "classroom" &&
+                                    selectedRoom.classId
+                                        ? await apiFetch(
+                                              `/api/v1/study/classrooms/${encodeURIComponent(selectedRoom.classId)}/students/${encodeURIComponent(accountId)}`,
+                                              { method: "DELETE" },
+                                          )
+                                        : await apiFetch(
+                                              `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/members/${encodeURIComponent(selector)}`,
+                                              { method: "DELETE" },
+                                          );
+                                if (!response.ok) {
+                                    showToast(
+                                        i18n.t(
+                                            "module.social.messages.member_kick_failed",
+                                        ),
+                                        {
+                                            variant: "error",
+                                        },
+                                    );
+                                    return;
+                                }
+                                showToast(
+                                    i18n.t(
+                                        "module.social.messages.member_kicked_success",
+                                    ),
+                                    {
+                                        variant: "success",
+                                    },
+                                );
+                            } else {
+                                return;
+                            }
+                            (
+                                overlay.querySelector(
+                                    '[data-popup-action="close"]',
+                                ) ?? overlay.querySelector("[data-popup-close]")
+                            )?.dispatchEvent(
+                                new MouseEvent("click", {
+                                    bubbles: true,
+                                    cancelable: true,
+                                }),
+                            );
+                            await reloadRoomsList();
+                            if (selectedRoomId) {
+                                await openRoom(selectedRoomId);
+                            }
+                        } finally {
+                            actionButton.disabled = false;
+                        }
+                    });
                 },
                 actions: [
                     {

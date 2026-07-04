@@ -1,4 +1,11 @@
-export type TeacherRequestStatus = "pending" | "approved" | "rejected";
+export type { DbExecutor, RawDbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+
+export type TeacherRequestStatus =
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "expired";
+export type ClassJoinMode = "invite_only" | "on_request" | "open";
 
 export interface StudyLanguageRow {
     code: string;
@@ -11,8 +18,11 @@ export interface StudyLanguageRow {
 
 export interface ClassRow {
     id: string;
+    name: string;
     languageCode: string;
     teacherAccountId: string;
+    joinMode: ClassJoinMode;
+    isListed: boolean;
     createdAt: string;
 }
 
@@ -20,13 +30,71 @@ export interface ClassroomStateRow {
     classId: string;
     studentLimit: number;
     seatAssignments: Record<string, number>;
+    boardFocus: "agenda" | "classroom" | "chat" | "whiteboard" | "notepad";
+    activeWhiteboardId: string | null;
+    activeMaterialKey: string | null;
+    viewLayout: "stacked" | "slideshow";
     updatedAt: string;
+}
+
+export interface AttachedFileRef {
+    key: string;
+    name: string;
+    contentType?: string;
+}
+
+export interface AgendaSnapshotRef {
+    id: string;
+    name: string;
+    content: string;
+    updatedAt: string;
+}
+
+export interface ClassroomResourceRow {
+    classId: string;
+    materials: string;
+    homework: string;
+    files: AttachedFileRef[];
+    agendaDocument: string;
+    agendaSnapshots: AgendaSnapshotRef[];
+    updatedBy: string | null;
+    updatedAt: string;
+}
+
+export interface ClassroomNotebookRow {
+    classId: string;
+    studentAccountId: string;
+    noteText: string;
+    updatedAt: string;
+}
+
+export type ClassroomNotebookAccessStatus = "pending" | "approved" | "rejected";
+
+export interface ClassroomNotebookAccessRequestRow {
+    classId: string;
+    ownerStudentAccountId: string;
+    viewerStudentAccountId: string;
+    status: ClassroomNotebookAccessStatus;
+    updatedAt: string;
+}
+
+export interface ClassroomWhiteboardRow {
+    id: string;
+    classId: string;
+    name: string;
+    fileKey: string | null;
+    createdBy: string;
+    createdAt: string;
 }
 
 export interface TeacherRequestRow {
     id: string;
     accountId: string;
     languageCode: string;
+    className: string;
+    studentLimit: number;
+    joinMode: ClassJoinMode;
+    isListed: boolean;
     status: TeacherRequestStatus;
     reason: string | null;
     reviewedBy: string | null;

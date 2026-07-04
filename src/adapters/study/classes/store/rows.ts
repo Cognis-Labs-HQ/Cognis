@@ -1,4 +1,5 @@
 import type {
+    ClassJoinMode,
     ClassMembershipRow,
     ClassMembershipStatus,
     ClassRow,
@@ -6,6 +7,16 @@ import type {
     TeacherRequestRow,
     TeacherRequestStatus,
 } from "./types.js";
+
+function normalizeJoinMode(value: unknown): ClassJoinMode {
+    const joinMode = String(value ?? "")
+        .trim()
+        .toLowerCase();
+    if (joinMode === "invite_only" || joinMode === "open") {
+        return joinMode;
+    }
+    return "on_request";
+}
 
 export function rowToStudyLanguage(
     row: Record<string, unknown>,
@@ -23,8 +34,11 @@ export function rowToStudyLanguage(
 export function rowToClassRow(row: Record<string, unknown>): ClassRow {
     return {
         id: String(row.id),
+        name: String(row.name ?? ""),
         languageCode: String(row.language_code),
         teacherAccountId: String(row.teacher_account_id),
+        joinMode: normalizeJoinMode(row.join_mode),
+        isListed: Boolean(row.is_listed),
         createdAt: String(row.created_at),
     };
 }
@@ -36,6 +50,10 @@ export function rowToTeacherRequest(
         id: String(row.id),
         accountId: String(row.account_id),
         languageCode: String(row.language_code),
+        className: String(row.class_name ?? ""),
+        studentLimit: Number(row.student_limit ?? 0),
+        joinMode: normalizeJoinMode(row.join_mode),
+        isListed: Boolean(row.is_listed),
         status: String(row.status) as TeacherRequestStatus,
         reason: row.reason != null ? String(row.reason) : null,
         reviewedBy: row.reviewed_by != null ? String(row.reviewed_by) : null,

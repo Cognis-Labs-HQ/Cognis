@@ -38,6 +38,7 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
             },
             { name: "last_read_at", type: "timestamp" },
             { name: "muted", type: "integer", notNull: true, default: 0 },
+            { name: "muted_until", type: "timestamp" },
             {
                 name: "archived",
                 type: "integer",
@@ -50,6 +51,20 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
             {
                 columns: ["account_id"],
                 name: "idx_chatroom_members_account",
+            },
+        ],
+    });
+
+    await db.ensureTable({
+        name: "chatroom_classrooms",
+        columns: [
+            { name: "class_id", type: "text", primaryKey: true },
+            { name: "room_id", type: "text", notNull: true },
+        ],
+        indexes: [
+            {
+                columns: ["room_id"],
+                name: "idx_chatroom_classrooms_room",
             },
         ],
     });

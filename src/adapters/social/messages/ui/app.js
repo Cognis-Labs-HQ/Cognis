@@ -670,6 +670,17 @@ export async function mount(root, { signal } = {}) {
                             await roomState.reloadRoomsList();
                             return;
                         }
+                        if (code === "member_muted") {
+                            showToast(
+                                i18n.t(
+                                    "module.social.messages.member_muted_cannot_send",
+                                ),
+                                {
+                                    variant: "error",
+                                },
+                            );
+                            return;
+                        }
                         showToast(
                             i18n.t("module.social.messages.send_failed"),
                             { variant: "error" },

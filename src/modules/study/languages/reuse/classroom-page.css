@@ -4,14 +4,6 @@
     gap: 16px;
 }
 
-.study-classroom-topbar {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.study-classroom-topbar label,
 .study-classroom-controls label {
     display: flex;
     flex-direction: column;
@@ -20,7 +12,6 @@
     font-size: 0.84rem;
 }
 
-.study-classroom-topbar select,
 .study-classroom-controls input {
     min-width: 240px;
     border: 1px solid var(--border);
@@ -78,6 +69,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
     gap: 8px;
+    width: min(80%, 1000px);
+    margin: 0 auto;
 }
 
 .study-classroom-seat {
@@ -95,6 +88,11 @@
 
 .study-classroom-seat.occupied {
     border-color: var(--accent);
+}
+
+.study-classroom-seat--teacher {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 }
 
 .study-classroom-seat.selected {

@@ -1,0 +1,106 @@
+.classes-whiteboard-panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface, #fff);
+    overflow: hidden;
+    border-radius: 0 0 10px 10px;
+}
+
+.classes-whiteboard-panel[hidden] {
+    display: none;
+}
+
+.classes-whiteboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: var(--surface-2, #f5f5f5);
+    border-bottom: 1px solid var(--border, #d0d0d0);
+    flex-shrink: 0;
+}
+
+.classes-whiteboard-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text, #111);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classes-whiteboard-close-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm, 4px);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--text-muted, #555);
+}
+
+.classes-whiteboard-close-btn::before {
+    content: "✕";
+}
+
+.classes-whiteboard-close-btn:hover {
+    background: var(--surface-soft, #e8e8e8);
+}
+
+.classes-whiteboard-iframe {
+    flex: 1;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+.classes-whiteboards-drawer {
+    margin-top: 12px;
+}
+
+.classes-whiteboards-body {
+    padding: 8px 0;
+}
+
+.classes-whiteboard-list {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.classes-whiteboard-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.classes-whiteboard-name {
+    flex: 1;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classes-create-whiteboard-btn {
+    margin-top: 6px;
+}
+
+.classes-open-whiteboards-btn {
+    min-height: 0;
+    min-width: 0;
+    height: auto;
+    width: auto;
+}

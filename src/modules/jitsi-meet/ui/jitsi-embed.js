@@ -3,9 +3,14 @@ import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
     resolveRoomName,
+    resolveSafeJitsiAvatarUrl,
     resolveThemeMode,
 } from "./meeting-embed.js";
-import { JITSI_TOOLBAR_BUTTONS, MEETING_SUBJECT } from "./constants.js";
+import {
+    JITSI_IFRAME_SANDBOX,
+    JITSI_TOOLBAR_BUTTONS,
+    MEETING_SUBJECT,
+} from "./constants.js";
 
 export function createEmbedHandlers({
     root,
@@ -45,10 +50,15 @@ export function createEmbedHandlers({
         const meetingPassword = String(
             state.meeting.meetingPassword ?? "",
         ).trim();
+        const safeAvatarUrl = resolveSafeJitsiAvatarUrl(
+            state.currentProfile?.avatarUrl,
+            state.meeting.instanceUrl || state.meeting.meetingUrl,
+        );
         const themeMode = resolveThemeMode();
         const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
             roomName,
             parentNode: frame,
+            sandbox: JITSI_IFRAME_SANDBOX,
             configOverwrite: {
                 prejoinConfig: {
                     enabled: false,
@@ -62,7 +72,7 @@ export function createEmbedHandlers({
             userInfo: {
                 displayName: state.currentProfile?.displayName ?? "",
                 email: state.currentProfile?.email ?? "",
-                avatarUrl: state.currentProfile?.avatarUrl ?? "",
+                avatarUrl: safeAvatarUrl,
             },
         });
         state.jitsiApi = apiInstance;
@@ -109,11 +119,11 @@ export function createEmbedHandlers({
                     state.currentProfile.email,
                 );
             }
-            if (state.currentProfile?.avatarUrl) {
+            if (safeAvatarUrl) {
                 callbacks.executeJitsiCommandIfSupported(
                     apiInstance,
                     "avatarUrl",
-                    state.currentProfile.avatarUrl,
+                    safeAvatarUrl,
                 );
             }
         };
@@ -162,6 +172,11 @@ export function createEmbedHandlers({
         apiInstance.addEventListener("errorOccurred", (event) => {
             if (!callbacks.isMeetingTerminatedNotice(event)) return;
             handleMeetingTerminated();
+        });
+        apiInstance.addEventListener("toolbarButtonClicked", (event) => {
+            if (state.jitsiApi !== apiInstance) return;
+            if (String(event?.key ?? "").trim() !== "hangup") return;
+            handleMeetingLeft();
         });
         apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
         apiInstance.addEventListener("readyToClose", handleMeetingLeft);

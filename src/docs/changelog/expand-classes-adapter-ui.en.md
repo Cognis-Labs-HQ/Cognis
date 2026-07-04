@@ -1,0 +1,350 @@
+# PR Changelog — Classrooms
+
+## Summary
+
+Migrated the classroom experience onto `/classroom` and redirected the legacy
+`/classes` and `/my-classes` pages there.
+
+Moved class selection into the shared study footer, removed the classroom
+language-module sub-navigation entry, and updated the unified classroom page to
+support teacher and student view switching, in-room chat/meeting actions,
+available-class browsing, and popup-driven class creation.
+
+Extended the classes adapter for join modes, duplicate-language protection,
+agenda scheduling, classroom chat resolution, and guaranteed classroom records,
+then updated translations and regression tests for the new flow.
+
+The class selector dropdown has been moved out of the page body and into the
+global footer as a page-composer footer element, rendering inline as
+"Class: [dropdown]" with instant apply. The "Teacher:" prefix has been removed
+from the available-classes list and from the language-module classroom teacher
+display.
+
+The classroom view has been completely redesigned as a 2D top-down composite.
+The room is bordered to represent walls. On the front wall a dark-green blackboard
+shows the active class agenda written in a cursive chalk-style font with action
+buttons (chat, meeting, create agenda). A scrollable student roster panel sits to
+the left of the blackboard. A wooden door with a visible swing arc is positioned
+on the right side wall; for students it is the leave-class control, for teachers
+it doubles as a drag target to remove students.
+
+The floor fills with dynamic rows of paired desk-and-chair units that scale with
+the student capacity. Desks are styled as top-down wooden rectangles and chairs as
+smaller rounded elements below each desk; no button borders or table cell visuals
+are used. Occupied desks show a two-letter student badge. Clicking a desk opens
+the per-student management panel below the room.
+
+The materials and homework editor (teacher view) has been moved below the room as
+a collapsible section. The page-composer now supports a `footer` parameter for
+injecting elements into the global footer bar.
+
+## Classroom Toolbar Follow-Ups
+
+## Classroom Route Stability
+
+The `/classroom` SPA entry now loads profile-avatar helpers lazily. When the
+Social gateway UI assets are unavailable, the classroom still opens instead of
+failing during module import, while avatar hydration quietly falls back.
+
+The classroom roster now labels the section as "Students" and shows the teacher
+at the top of the list so the classroom panel matches the requested terminology.
+
+The classroom toolbar now uses text labels instead of emoji-only controls,
+hides its action strip when a real student is viewing the room, and wires the
+chat/meeting toolbar buttons into the existing classroom windows so they open
+reliably.
+
+## Classroom UI Improvements
+
+Clicking a student's avatar or name button in the classroom roster now navigates
+directly to their `/profile/` page, consistent with the avatar interaction model
+used elsewhere in the app.
+
+The teacher row in the classroom roster is now rendered above the "Students"
+heading rather than inside the student grid.
+
+The classroom meeting window is now contained within the blackboard element
+instead of covering the full page. The meeting overlay and chat panel are
+positioned absolutely inside the blackboard's stacking context so they never
+escape its bounds.
+
+The meeting flow in the classroom now mirrors the full API flow used by the
+Meetings page: a create call is followed by a join call with a persistent session
+ID, and the Jitsi embed is initialised with the current user's display name,
+email, and avatar as well as the standard toolbar button set.
+
+Fixed a bug where a teacher could not see their classes and appeared stuck in
+student view. The root causes were a stale role in localStorage not being
+refreshed on mount, and a `classroomBound` flag on the persistent `#app` element
+that prevented interaction handlers from re-binding after SPA navigation. The
+role is now refreshed from the API on mount when needed, and the bound flag is
+now tracked with a mount-scoped local variable.
+
+## Classroom meetings now open correctly for students
+
+Students clicking a meeting button placed on the classroom board now join the
+active meeting rather than attempting to create one (which is a teacher-only
+action and always failed for students). Students without an active meeting to
+join see no change in behaviour.
+
+## DOM refresh no longer resets the Jitsi meeting iframe
+
+Presence update events previously triggered a full classroom content replacement,
+briefly detaching the meeting iframe from the document — a browser-defined
+condition that causes iframes to reload. The frame was destroyed every time any
+participant's status changed. Presence changes now use the targeted
+`refreshDynamicDom` path, which only replaces the desk-floor and member-roster
+nodes without touching the meeting overlay.
+
+## Full DOM refreshes preserve active meetings and chat windows
+
+For DOM refreshes that replace the entire classroom content element (class
+settings, seat management, etc.), the meeting and chat overlay elements are now
+moved to a live ancestor before the content is swapped and moved back into the
+blackboard afterwards. This keeps both elements — and any iframes inside them —
+connected to the document throughout the operation.
+
+The meeting lifecycle inside the classroom now exactly matches what the
+Meetings page does. The new `createClassroomMeetingEmbed` factory in the
+`jitsi-meet` module owns:
+
+- `videoConferenceJoined` — captures the local participant ID, resolves
+  moderator status, and applies display name, email, and avatar via Jitsi
+  commands.
+- `participantRoleChanged` — keeps moderator state updated so privileged
+  settings (`subject`, `password`) are re-applied when the role changes.
+- `passwordRequired` — submits the stored meeting password.
+- `notificationTriggered` / `errorOccurred` — detects server-side termination
+  notices and closes the window with a `terminated` presence flag so the
+  server records the meeting as ended by the host rather than abandoned.
+- `videoConferenceLeft` / `readyToClose` — clean up on participant-initiated
+  exit.
+- Heartbeat timer — sends `presence active=true` every 10 s to keep the
+  session alive.
+- State-refresh timer — polls the meeting state every 5 s and closes the
+  window as soon as the server reports `endedAt`, so students see the window
+  disappear the moment the teacher ends the meeting.
+
+The `classroom-windows.js` adapter now delegates entirely to
+`createClassroomMeetingEmbed` and contains no meeting logic of its own,
+eliminating the duplication that previously caused the two surfaces to drift.
+
+## Classroom Notepad and Whiteboard
+
+Added a per-class **Notepad** — a lightweight in-session scratch pad accessible
+to all class members via the toolbar. Notes are stored in `sessionStorage` keyed
+by class ID (auto-cleared when the browser tab is closed) and never reach the
+server. A "Download as Markdown" button exports the current text as a `.md` file.
+The notepad panel is a persistent floating element anchored to the blackboard
+corner, toggled by a toolbar button.
+
+Added a **Whiteboard** capability backed by the Nextcloud Whiteboard server
+(`NEXTCLOUD_WHITEBOARD_URL` / `NEXTCLOUD_WHITEBOARD_SECRET`). Teachers can
+create and delete named whiteboards per class; all class members can open a
+whiteboard in a full-screen overlay. The server mints a short-lived HS256 JWT
+and returns an `embedUrl`; the Nextcloud Whiteboard frontend loads inside a
+sandboxed iframe with no external CDN dependency. Board state is stored in
+real-time by the NC WB server via WebSockets. A `classroom_whiteboards` database
+table tracks board metadata and optional file keys for persisted snapshots.
+
+- `src/adapters/study/classes/store/types.ts`
+- `src/adapters/study/classes/store/schema.ts`
+- `src/adapters/study/classes/store/whiteboards.ts`
+- `src/adapters/study/classes/store/db-classes-store.ts`
+- `src/adapters/study/classes/routes/classroom-whiteboards.ts`
+- `src/adapters/study/classes/routes/route-helpers.ts`
+- `src/adapters/study/classes/routes/index.ts`
+- `src/adapters/study/classes/index.ts`
+- `src/adapters/study/classes/ui/classroom-notepad.js`
+- `src/adapters/study/classes/ui/classroom-whiteboard-window.js`
+- `src/adapters/study/classes/ui/classroom-windows.js`
+- `src/adapters/study/classes/ui/classroom-render.js`
+- `src/adapters/study/classes/ui/classroom.js`
+- `src/adapters/study/classes/ui/classes-notepad.css`
+- `src/adapters/study/classes/ui/classes-whiteboard.css`
+- `docker/Dockerfile`
+    - `src/adapters/study/classes/index.ts`
+    - `src/adapters/study/classes/routes/index.ts`
+    - `src/adapters/study/classes/routes/route-helpers.ts`
+    - `src/adapters/study/classes/routes/available-classes-route.ts`
+    - `src/adapters/study/classes/routes/enrolled-classes-route.ts`
+    - `src/adapters/study/classes/store/classes.ts`
+    - `src/adapters/study/classes/store/memberships.ts`
+    - `src/adapters/study/classes/store/schema.ts`
+    - `src/adapters/study/classes/store/teacher-requests.ts`
+    - `src/adapters/study/classes/store/types.ts`
+    - `src/adapters/study/classes/store/rows.ts`
+
+- Classroom UI and shared study navigation:
+    - `src/adapters/study/classes/ui/classroom.js`
+    - `src/adapters/study/classes/ui/classroom-render.js`
+    - `src/adapters/study/classes/ui/study-footer.js`
+    - `src/adapters/study/classes/ui/view-mode.js`
+    - `src/adapters/study/classes/ui/classes.css`
+    - `src/modules/study/languages/reuse/study-sub-navigation.js`
+    - `src/modules/study/languages/reuse/classroom-page.js`
+    - `src/modules/study/languages/reuse/classroom-page.css`
+    - `src/modules/study/languages/reuse/alphabet-page.js`
+    - `src/modules/study/languages/reuse/library-page.js`
+    - `src/ui/reuse/page-composer/init.js`
+- Supporting integrations, strings, and tests:
+    - `src/adapters/social/messages/index.ts`
+    - `src/adapters/social/messages/store/schema.ts`
+    - `src/adapters/social/messages/store/rooms.ts`
+    - `src/adapters/social/messages/store/db-messages-store.ts`
+    - `src/gateways/study/ui/classes-dashboard-element.js`
+    - `src/ui/languages/en/strings.xml`
+    - `src/ui/languages/de/strings.xml`
+    - `src/ui/languages/id/strings.xml`
+    - `src/ui/languages/ja/strings.xml`
+    - `src/ui/tests/app-router.test.js`
+    - `src/ui/tests/study-followups.test.js`
+
+    ## Workspace and schema follow-ups
+
+    The classes schema bootstrap no longer probes Postgres with SQLite `PRAGMA`
+    statements during dialect detection, so meeting startup stops generating
+    intentional SQL errors in Postgres logs.
+
+    The classroom blackboard now uses a shared workspace model with Agenda,
+    Students, Notepad, Whiteboards, and Meeting modes. Notepad now lives in the
+    main workspace instead of as a floating overlay, and the whiteboard toolbar
+    button now opens the whiteboard workspace directly while still offering an
+    explicit pop-out action.
+
+## Student controls now follow active teacher sessions
+
+Student meeting and whiteboard controls are now hidden until the teacher
+actually has an active classroom meeting or an active whiteboard open.
+
+The classes adapter now persists the active classroom whiteboard in classroom
+state, limits student whiteboard API access to that active board, and removes
+stale whiteboard controls as soon as the teacher closes the board. The
+classroom meeting availability check now also fails soft and returns an empty
+active-meetings list instead of repeated 400 responses when the viewer cannot
+resolve a meeting handle.
+
+The floating classroom chat window now renders above the dashboard header with
+more top clearance so it no longer opens clipped underneath the sticky heading.
+
+## Active meeting lookup fixed and classroom navigation guard added
+
+Fixed a runtime error (`store.getClass is not a function`) that caused the
+`/api/v1/modules/jitsi-meet/meetings/active` endpoint to fail whenever the
+classroom participant-handle resolver ran. The capability used a non-existent
+`store.getClass` call; corrected to `store.getClassById`, and the companion
+`store.listClassMembers` call corrected to `store.getClassMembers` with the
+teacher account ID supplied from the fetched class row.
+
+The classroom meeting embed now registers the same navigation-guard listeners
+used by the standalone Meetings page: `beforeunload` blocks a full-page reload,
+a capture-phase `click` guard intercepts SPA link navigation, and a `popstate`
+guard blocks the browser back/forward action — all showing the existing
+"Leave the meeting before navigating away" toast when a meeting is active.
+
+## Classroom route module loading
+
+The classroom SPA route and direct `/classroom` page bootstrap now load the
+module entry from `/static/adapters/study/classes/classroom/index.js` directly.
+This removes the brittle intermediate shim path and resolves dynamic import
+fetch failures seen on classroom route transitions.
+
+## Classroom optional modules loaded via CTX
+
+The classroom page previously used static ES module imports for the Jitsi Meet
+meeting embed and Nextcloud Whiteboard window scripts. If either module was not
+installed, the 404 on the import broke the entire classroom page load.
+
+Both scripts are now loaded dynamically through the CTX capability system. Each
+module registers its classroom UI script URL as a public capability
+(`meetings:classroomEmbedScriptUrl`, `whiteboard:classroomWindowScriptUrl`). The
+study classes adapter reads these capabilities at bootstrap and injects them as
+meta tags into the classroom HTML. The classroom client reads the meta tags at
+runtime and imports the factories on demand, degrading gracefully when either
+module is absent.
+
+## PR Review Feedback Improvements
+
+This section documents the changes made in response to review feedback on this
+pull request.
+
+## Whiteboard module now owns classroom embed access
+
+The classroom adapter no longer orchestrates JWT minting or active-board
+visibility checks internally. A new `whiteboard:getClassroomBoardEmbed`
+capability on the Nextcloud Whiteboard module handles the full access-control
+flow (checking the teacher-activated board for students via the
+`study:classes:resources` capability) and returns either an embed URL or an
+error code. The classroom route simply calls this capability and responds
+accordingly. The `getActiveWhiteboardId` helper has been added to the
+`study:classes:resources` capability contract.
+
+## Whiteboard module config no longer uses env vars
+
+The Nextcloud Whiteboard module now reads its configuration exclusively from the
+database-backed settings UI. The `NEXTCLOUD_WHITEBOARD_URL`,
+`NEXTCLOUD_WHITEBOARD_SECRET`, and `NEXTCLOUD_WHITEBOARD_TOKEN_EXPIRY_SECONDS`
+environment variables have been removed from `docker/Dockerfile`. Administrators
+configure the module through the Administration → Modules panel.
+
+## Generic drag cursor classes in reuse CSS
+
+The `.can-drag` and `.can-drag.is-dragging` utility classes have been moved to
+`src/ui/styles/reuse/layout.css`. The image viewer no longer defines its own
+component-specific drag cursor rules.
+
+## Image viewer zoom sensitivity and bounds
+
+The pinch/scroll zoom factor has been reduced from 1.12 to 1.07 for less
+sensitivity. Zoom is now clamped to a 0.25× – 5× range (previously 0.1×–10×).
+
+## Classroom notepad URL namespace corrected
+
+All classroom notepad and agenda API routes now live under
+`/api/v1/file-reader/text/classroom-notes/:id/` instead of
+`/api/v1/study/classes/:id/`. This removes the cross-component URL awareness
+violation where the text file-reader adapter knew it was being used by the
+study/classes adapter.
+
+## FileGatewayLike removed
+
+The ad-hoc `FileGatewayLike` interface in classroom-files-route.ts and
+text/routes/index.ts has been replaced with the canonical `FileStorageGateway`
+contract from `src/core/contracts/files-gateway.ts`.
+
+## Group chat admin role
+
+Group chat rooms now support an **admin** role that sits between member and
+owner. The room owner can promote and demote members to admin via the new
+`PATCH /api/v1/social/messages/rooms/:id/members/:selector/role` endpoint.
+Admins can remove and mute regular members but cannot act on other admins or
+the owner. DM rooms remain unchanged.
+
+## Group chat avatar grid layout fixed
+
+The three-member avatar grid now displays the first member across the full
+top row with the remaining two side-by-side below. The four-member layout
+renders a standard 2×2 grid.
+
+## Configurable max file size in text adapter admin settings
+
+The Text File Reader adapter now stores its maximum accepted file size in the
+database. Administrators can view and change it from the Administration →
+Adapters panel under the File Reader gateway. The setting is bounded between
+16 KB and 4 MB (default 256 KB).
+
+## File Reader gateway adapter listing
+
+The File Reader gateway now registers a `GET /api/v1/gateways/file-reader/adapters`
+endpoint that lists installed adapters with their admin control URLs. This lets
+the Administration panel display the gateway's adapters section correctly.
+
+## Classroom follow-up fixes
+
+Removed an unused `buildInitialsAvatarHtml` import from the classroom profile
+avatar loader so fallback avatar tests pass when only minimal avatar utility
+exports are available.
+
+The classroom slideshow keyboard navigation now uses a dedicated
+`isStudentInteractionBlocked` guard helper and a clearer `if/else` branch for
+left/right cursor movement.

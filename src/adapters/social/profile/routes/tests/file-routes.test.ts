@@ -170,6 +170,35 @@ test("file routes - upload blocked when exceeding size limit", async () => {
     }
 });
 
+test("file routes - teacher materials use documents size limit", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = new DbProfileStore(executor);
+        await profileStore.ensureSchema();
+        await profileStore.setFileSizeLimit("documents", 10);
+        const gateway = fakeFileGateway();
+        const route = createFileRoutes(profileStore, gateway);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+
+        await route(
+            makeReq("PUT", token, Buffer.alloc(20, "x"), "application/pdf"),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end() {},
+            } as any,
+            new URL(
+                "http://localhost/api/v1/files/teacher-materials/alice/test.pdf",
+            ),
+        );
+        assert.equal(status, 413);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("file routes - non-admin DELETE is rejected", async () => {
     const { dir, executor } = makeTempDb();
     try {

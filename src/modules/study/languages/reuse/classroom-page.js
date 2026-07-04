@@ -28,6 +28,14 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { showToast } from "/static/reuse/toast.js";
 import { isTeacherScope } from "/static/reuse/access-role.js";
 import {
+    loadFooterClasses,
+    createClassFooterItem,
+} from "/static/adapters/study/classes/study-footer.js";
+import {
+    applyClassroomViewModeFromUrl,
+    getClassroomViewMode,
+} from "/static/adapters/study/classes/view-mode.js";
+import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
 } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
@@ -59,6 +67,7 @@ function buildAccountInitials(accountId) {
 }
 
 export async function mountStudyClassroomPage(root, { signal, languageCode }) {
+    applyClassroomViewModeFromUrl();
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
@@ -70,10 +79,11 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     });
 
     let classroomSnapshots = [];
+    let footerClasses = [];
     let selectedClassId = "";
     let selectedSeatNumber = null;
 
-    const isTeacher = isTeacherScope();
+    const isTeacher = isTeacherScope() && getClassroomViewMode() === "teacher";
     const viewerAccountId = String(
         localStorage.getItem("cognis_account") ?? "",
     ).trim();
@@ -87,11 +97,15 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     }
 
     async function loadClassrooms() {
-        const languageQuery = languageCode
-            ? `?language=${encodeURIComponent(languageCode)}`
-            : "";
+        const params = new URLSearchParams();
+        if (languageCode) {
+            params.set("language", languageCode);
+        }
+        if (isTeacherScope() && getClassroomViewMode() === "student") {
+            params.set("student", "true");
+        }
         const response = await apiFetch(
-            `/api/v1/study/classrooms${languageQuery}`,
+            `/api/v1/study/classrooms${params.toString() ? `?${params.toString()}` : ""}`,
         );
         if (!response.ok) {
             throw new Error(i18n.t("gateway.study.classroom_load_failed"));
@@ -220,6 +234,24 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
         const members = Array.isArray(selectedSnapshot.members)
             ? selectedSnapshot.members
             : [];
+        const maxColumns = Math.min(
+            10,
+            Math.max(2, Math.ceil(Math.sqrt(normalizedStudentLimit * 1.8))),
+        );
+        let gridColumns = Math.min(4, normalizedStudentLimit);
+        let bestScore = Number.POSITIVE_INFINITY;
+        for (let columns = 2; columns <= maxColumns; columns++) {
+            const rows = Math.ceil(normalizedStudentLimit / columns);
+            const emptySeats = rows * columns - normalizedStudentLimit;
+            const score =
+                Math.abs(rows - columns) * 2 +
+                emptySeats * 1.25 +
+                (normalizedStudentLimit % columns === 1 ? 1.5 : 0);
+            if (score < bestScore) {
+                bestScore = score;
+                gridColumns = columns;
+            }
+        }
         const studentBySeatNumber = new Map();
         for (const member of members) {
             const studentAccountId = String(member.studentAccountId ?? "");
@@ -262,7 +294,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 <div class="study-classroom-controls">
                     <label>
                         ${escapeHtml(i18n.t("gateway.study.classroom_student_limit"))}
-                        <input type="number" min="1" max="300" step="1" id="study-classroom-student-limit" value="${normalizedStudentLimit}" />
+                        <input type="number" min="1" max="100" step="1" id="study-classroom-student-limit" value="${normalizedStudentLimit}" />
                     </label>
                     <button type="button" class="btn-confirm btn-animated" id="study-classroom-save-limit">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
                 </div>
@@ -276,18 +308,21 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                     <button type="button" class="btn-cancel btn-animated" id="study-classroom-leave">${escapeHtml(i18n.t("module.study.classes.leave_class"))}</button>
                 </div>
             `;
+        const teacherDeskTile = `
+            <div class="study-classroom-seat study-classroom-seat--teacher">
+                <span class="study-classroom-seat-icon">👩‍🏫</span>
+                <span class="study-classroom-seat-label">${escapeHtml(i18n.t("ui.reuse.teacher"))}</span>
+                <span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(selectedSnapshot.teacherAccountId))}</span>
+            </div>
+        `;
 
         return `
             <div class="study-classroom-board-area">
                 <div class="study-classroom-board">${escapeHtml(i18n.t("gateway.study.classroom_blackboard"))}</div>
-                <div class="study-classroom-teacher">
-                    <span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(selectedSnapshot.teacherAccountId))}</span>
-                    <span>${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(selectedSnapshot.teacherAccountId)}</span>
-                </div>
                 <div class="study-classroom-door" id="study-classroom-door" data-door="true">🚪 ${escapeHtml(i18n.t("gateway.study.classroom_door"))}</div>
             </div>
             ${teacherControls}
-            <div class="study-classroom-grid" id="study-classroom-grid">${seatTiles}</div>
+            <div class="study-classroom-grid" id="study-classroom-grid" style="grid-template-columns: repeat(${gridColumns}, minmax(126px, 1fr));">${teacherDeskTile}${seatTiles}</div>
         `;
     }
 
@@ -309,43 +344,21 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () => `
                     <section class="study-classroom-page">
-                        <div class="study-classroom-topbar">
-                            <label>
-                                ${escapeHtml(i18n.t("gateway.study.classroom_select_class"))}
-                                <select id="study-classroom-class-select">${renderClassOptions()}</select>
-                            </label>
-                        </div>
                         <div id="study-classroom-content">${renderClassroom()}</div>
                     </section>
                 `,
                 onRender: () => {
                     if (root.dataset.classroomBound === "true") return;
                     root.dataset.classroomBound = "true";
-                    const classSelectElement = root.querySelector(
-                        "#study-classroom-class-select",
-                    );
                     const classroomContentElement = root.querySelector(
                         "#study-classroom-content",
                     );
-                    if (!(classSelectElement instanceof HTMLElement)) return;
                     if (!(classroomContentElement instanceof HTMLElement))
                         return;
 
                     function refreshClassroomContent() {
                         classroomContentElement.innerHTML = renderClassroom();
                     }
-
-                    classSelectElement.addEventListener(
-                        "change",
-                        () => {
-                            selectedClassId = String(
-                                classSelectElement.value ?? "",
-                            );
-                            selectedSeatNumber = null;
-                            refreshClassroomContent();
-                        },
-                        { signal },
-                    );
 
                     classroomContentElement.addEventListener(
                         "click",
@@ -655,8 +668,28 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 render: renderSubNavigation,
             },
         ],
+        footer: [
+            createClassFooterItem({
+                i18n,
+                signal,
+                getClasses: () => footerClasses,
+                getSelectedClassId: () => selectedClassId,
+                onSelectClass: async (classId) => {
+                    selectedClassId = classId;
+                    selectedSeatNumber = null;
+                    await loadClassrooms();
+                    const content = root.querySelector(
+                        "#study-classroom-content",
+                    );
+                    if (content instanceof HTMLElement) {
+                        content.innerHTML = renderClassroom();
+                    }
+                },
+            }),
+        ],
     });
 
     await loadClassrooms();
+    footerClasses = await loadFooterClasses(languageCode);
     await pageComposer.init();
 }

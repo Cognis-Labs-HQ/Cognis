@@ -119,6 +119,13 @@
                                 data-i18n="ui.reuse.users"
                             ></a>
                         </li>
+                        <li class="admin-only" hidden>
+                            <a
+                                class="dropdown-item"
+                                href="/requests"
+                                data-i18n="ui.reuse.requests"
+                            ></a>
+                        </li>
                         <li class="teacher-only" hidden>
                             <a
                                 class="dropdown-item"
@@ -161,6 +168,16 @@
             ></a>
         </div>
     </footer>
+    <button
+        id="global-chat-toggle"
+        class="chat-toggle"
+        data-i18n-aria-label="module.study.classes.open_chat"
+        aria-label="Open chat"
+        aria-expanded="false"
+        hidden
+    >
+        💬
+    </button>
     <button
         id="theme-toggle"
         class="theme-toggle"

@@ -11,6 +11,20 @@ export function bootstrapModule(ctx) {
             "meetings:isProviderAvailable",
             (providerId) => providerId === "jitsi-meet",
         );
+
+        /**
+         * URL of the meeting embed UI script served by this module. Consumers
+         * can inject this into any page and dynamically import the factory
+         * without hardcoded static imports.
+         */
+        systemCtx.contributePublicCapability(
+            "meetings:embedScriptUrl",
+            "/static/modules/jitsi-meet/classroom-meeting-embed.js",
+        );
+        systemCtx.contributePublicCapability(
+            "jitsi:activeMeetingsUrl",
+            "/api/v1/modules/jitsi-meet/meetings/active",
+        );
         for (const flow of MEETINGS_FLOW_CATALOG) {
             registerCanonicalFlow(systemCtx, flow);
         }

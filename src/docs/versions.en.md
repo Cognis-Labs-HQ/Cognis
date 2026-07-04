@@ -24,27 +24,29 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 ## Adapters
 
-| Component             | Path                                | Version |
-| --------------------- | ----------------------------------- | ------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.1` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.1` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.9` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.6` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.3` |
-| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
+| Component             | Path                                | Version  |
+| --------------------- | ----------------------------------- | -------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.1`  |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6`  |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.1`  |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.5`  |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4`  |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1`  |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1`  |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.1`  |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1`  |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1`  |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.1`  |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.1`  |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.10` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.5.0`  |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.5.10` |
+| Text File Reader      | `src/adapters/file-reader/text/`    | `1.3.0`  |
+| Image File Reader     | `src/adapters/file-reader/image/`   | `1.0.1`  |
+| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 
 ## Gateways
 
@@ -54,11 +56,12 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
-| Social                | `src/gateways/social/`       | `1.2.7`  |
+| Social                | `src/gateways/social/`       | `1.2.8`  |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
+| File Reader           | `src/gateways/file-reader/`  | `1.1.0`  |
 | Calendar              | `src/gateways/calendar/`     | `1.2.0`  |
 
 ## Core contracts
@@ -75,9 +78,10 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 ## Modules
 
-| Component       | Path                              | Version |
-| --------------- | --------------------------------- | ------- |
-| Analytics       | `src/modules/analytics/`          | `2.0.1` |
-| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.0.8` |
-| Cognis Japanese | `src/modules/study/languages/ja/` | `1.2.4` |
-| Cognis English  | `src/modules/study/languages/en/` | `1.2.2` |
+| Component            | Path                                | Version |
+| -------------------- | ----------------------------------- | ------- |
+| Analytics            | `src/modules/analytics/`            | `2.0.1` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.1.5` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `1.1.1` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4` |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2` |

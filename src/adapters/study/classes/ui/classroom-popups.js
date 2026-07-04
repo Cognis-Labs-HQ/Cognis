@@ -1,0 +1,313 @@
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+
+let profilePreviewModule = null;
+let profilePreviewModulePromise = null;
+
+async function loadProfilePreviewModule() {
+    if (!profilePreviewModulePromise) {
+        const scriptUrl = String(
+            document.querySelector(
+                'meta[name="classroom-profile-preview-script"]',
+            )?.content ?? "",
+        ).trim();
+        if (!scriptUrl) {
+            profilePreviewModule = null;
+            return null;
+        }
+        profilePreviewModulePromise = import(scriptUrl)
+            .then((loaded) => (profilePreviewModule = loaded))
+            .catch(() => {
+                profilePreviewModule = null;
+                return null;
+            });
+    }
+    return profilePreviewModulePromise;
+}
+
+export async function openMemberProfilePreview({
+    memberButton,
+    i18n,
+    openPopup,
+}) {
+    const loaded = await loadProfilePreviewModule();
+    if (typeof loaded?.openProfilePopup !== "function") return;
+    await loaded.openProfilePopup({
+        handle: String(memberButton?.dataset?.studentHandle ?? "").trim(),
+        fallbackName: String(memberButton?.dataset?.studentName ?? "").trim(),
+        fallbackAvatarKey: String(
+            memberButton?.dataset?.studentAvatarKey ?? "",
+        ).trim(),
+        openPopup,
+        i18n,
+    });
+}
+
+export async function openClassSettingsPopup({
+    snapshot,
+    i18n,
+    apiFetch,
+    openPopup,
+    showToast,
+    refreshContent,
+}) {
+    if (!snapshot) return;
+    const currentMembers = Array.isArray(snapshot?.members)
+        ? snapshot.members
+        : [];
+    const rawLimit = Number(snapshot?.classroom?.studentLimit);
+    const currentLimit =
+        Number.isInteger(rawLimit) && rawLimit > 0 ? rawLimit : 20;
+    const currentName = String(snapshot?.name ?? "").trim();
+    const formBuilder = createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "classes-settings-form",
+            includeSubmitButton: false,
+            submitLabelKey: "ui.reuse.save",
+            fields: [
+                {
+                    name: "className",
+                    labelKey: "module.study.classes.class_name_label",
+                    type: "text",
+                    required: true,
+                    value: currentName,
+                    attributes: { maxlength: 120 },
+                },
+                {
+                    name: "studentLimit",
+                    labelKey: "module.study.classes.class_cap_label",
+                    type: "number",
+                    required: true,
+                    value: String(currentLimit),
+                    attributes: { min: 1, max: 100, step: 1 },
+                },
+            ],
+        },
+    );
+    let controller = null;
+    let nextClassName = currentName;
+    let nextStudentLimit = currentLimit;
+    const action = await openPopup({
+        title: i18n.t("module.study.classes.class_settings"),
+        body: formBuilder.render(),
+        variant: "confirm",
+        actions: [
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+            {
+                id: "save",
+                label: i18n.t("ui.reuse.save"),
+                variant: "confirm",
+            },
+        ],
+        closeProtection: true,
+        onOpen: (overlay) => {
+            const form = overlay.querySelector("#classes-settings-form");
+            controller =
+                form instanceof HTMLFormElement
+                    ? formBuilder.attach(form)
+                    : null;
+        },
+        onAction: (actionId) => {
+            if (actionId !== "save") return true;
+            if (!controller?.validateAll(true)) return false;
+            const values = controller.getValues();
+            nextClassName = String(values.className ?? "").trim();
+            const parsedLimit = Number(values.studentLimit ?? "");
+            nextStudentLimit =
+                Number.isInteger(parsedLimit) &&
+                parsedLimit >= 1 &&
+                parsedLimit <= 100
+                    ? parsedLimit
+                    : currentLimit;
+            return Boolean(nextClassName);
+        },
+    });
+    if (action !== "save") return;
+    let membersToRemove = [];
+    if (nextStudentLimit < currentMembers.length) {
+        const requiredRemovals = currentMembers.length - nextStudentLimit;
+        const sortedMembers = [...currentMembers].sort((left, right) => {
+            const rightJoinedAt = Date.parse(String(right?.joinedAt ?? ""));
+            const leftJoinedAt = Date.parse(String(left?.joinedAt ?? ""));
+            const normalizedRight = Number.isFinite(rightJoinedAt)
+                ? rightJoinedAt
+                : Number.NEGATIVE_INFINITY;
+            const normalizedLeft = Number.isFinite(leftJoinedAt)
+                ? leftJoinedAt
+                : Number.NEGATIVE_INFINITY;
+            return normalizedRight - normalizedLeft;
+        });
+        const removableMembers = sortedMembers
+            .map((member) => {
+                const accountId = String(member?.studentAccountId ?? "").trim();
+                if (!accountId) return null;
+                const displayName = String(member?.displayName ?? "").trim();
+                const handle = String(member?.handle ?? "").trim();
+                const label =
+                    displayName || (handle ? `@${handle}` : "") || accountId;
+                return { accountId, handle, label };
+            })
+            .filter(Boolean);
+        const selectedAccountIds = new Set();
+        const reductionAction = await openPopup({
+            title: i18n.t("module.study.classes.class_cap_reduce_title"),
+            body: `
+                <div class="stack">
+                    <p style="margin:0;">${escapeHtml(i18n.t("module.study.classes.class_cap_reduce_prompt"))}</p>
+                    <p style="margin:0;font-size:.92em;color:var(--text-muted);" data-class-cap-reduce-count></p>
+                    <div style="display:grid;gap:8px;max-height:260px;overflow:auto;padding-right:4px;">
+                        ${removableMembers
+                            .map(
+                                (member, index) => `
+                                    <label style="display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:10px;">
+                                        <input type="checkbox" value="${escapeHtml(member.accountId)}" data-class-cap-reduce-candidate="${escapeHtml(String(index))}" />
+                                        <span style="display:flex;flex-direction:column;gap:2px;">
+                                            <strong>${escapeHtml(member.label)}</strong>
+                                            ${
+                                                member.handle
+                                                    ? `<span style="font-size:.9em;color:var(--text-muted);">@${escapeHtml(member.handle)}</span>`
+                                                    : ""
+                                            }
+                                        </span>
+                                    </label>
+                                `,
+                            )
+                            .join("")}
+                    </div>
+                </div>
+            `,
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "confirm-remove",
+                    label: i18n.t(
+                        "module.study.classes.class_cap_reduce_confirm",
+                    ),
+                    variant: "confirm",
+                },
+            ],
+            onOpen: (overlay) => {
+                const countNode = overlay.querySelector(
+                    "[data-class-cap-reduce-count]",
+                );
+                const confirmButton = overlay.querySelector(
+                    '[data-popup-action="confirm-remove"]',
+                );
+                const candidates = Array.from(
+                    overlay.querySelectorAll(
+                        "input[data-class-cap-reduce-candidate]",
+                    ),
+                );
+                const refreshSelectionState = () => {
+                    const selectedCount = selectedAccountIds.size;
+                    if (countNode instanceof HTMLElement) {
+                        countNode.textContent = i18n.t(
+                            "module.study.classes.class_cap_reduce_count",
+                            {
+                                selected: String(selectedCount),
+                                required: String(requiredRemovals),
+                            },
+                        );
+                    }
+                    const atLimit = selectedCount >= requiredRemovals;
+                    for (const input of candidates) {
+                        if (!(input instanceof HTMLInputElement)) continue;
+                        input.disabled = atLimit && !input.checked;
+                    }
+                    if (confirmButton instanceof HTMLButtonElement) {
+                        confirmButton.disabled =
+                            selectedCount !== requiredRemovals;
+                    }
+                };
+                for (const input of candidates) {
+                    if (!(input instanceof HTMLInputElement)) continue;
+                    input.addEventListener("change", () => {
+                        const accountId = String(input.value ?? "").trim();
+                        if (!accountId) return;
+                        if (input.checked) {
+                            selectedAccountIds.add(accountId);
+                        } else {
+                            selectedAccountIds.delete(accountId);
+                        }
+                        refreshSelectionState();
+                    });
+                }
+                refreshSelectionState();
+            },
+            onAction: (actionId) => {
+                if (actionId !== "confirm-remove") return true;
+                return selectedAccountIds.size === requiredRemovals;
+            },
+        });
+        if (reductionAction !== "confirm-remove") {
+            nextStudentLimit = currentLimit;
+        } else {
+            membersToRemove = Array.from(selectedAccountIds);
+        }
+    }
+    const updates = [];
+    if (membersToRemove.length) {
+        const removalResponses = await Promise.all(
+            membersToRemove.map((accountId) =>
+                apiFetch(
+                    `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/students/${encodeURIComponent(accountId)}`,
+                    { method: "DELETE" },
+                ),
+            ),
+        );
+        if (!removalResponses.every((response) => response.ok)) {
+            showToast(i18n.t("module.study.classes.class_settings_failed"), {
+                variant: "error",
+            });
+            await refreshContent();
+            return;
+        }
+    }
+    if (nextClassName !== currentName) {
+        updates.push(
+            apiFetch(
+                `/api/v1/study/classes/${encodeURIComponent(snapshot.id)}`,
+                {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ name: nextClassName }),
+                },
+            ),
+        );
+    }
+    if (nextStudentLimit !== currentLimit) {
+        updates.push(
+            apiFetch(
+                `/api/v1/study/classrooms/${encodeURIComponent(snapshot.id)}/layout`,
+                {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ studentLimit: nextStudentLimit }),
+                },
+            ),
+        );
+    }
+    if (!updates.length) return;
+    const responses = await Promise.all(updates);
+    const success = responses.every((response) => response.ok);
+    showToast(
+        i18n.t(
+            success
+                ? "module.study.classes.class_settings_saved"
+                : "module.study.classes.class_settings_failed",
+        ),
+        { variant: success ? "success" : "error" },
+    );
+    if (success) {
+        await refreshContent();
+    }
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.notepad">Notepad</string>
+  <string name="module.study.classes.notepad_download">Download</string>
+  <string name="module.study.classes.notepad_clear">Clear</string>
+  <string name="module.study.classes.notepad_save">Save to Class</string>
+  <string name="module.study.classes.notepad_open">Open from Class</string>
+  <string name="module.study.classes.notepad_saved">Note saved to class materials.</string>
+  <string name="module.study.classes.notepad_save_failed">Failed to save note to class materials.</string>
+  <string name="module.study.classes.notepad_format_paragraph">Paragraph</string>
+  <string name="module.study.classes.notepad_format_heading1">Heading 1</string>
+  <string name="module.study.classes.notepad_format_heading2">Heading 2</string>
+  <string name="module.study.classes.notepad_format_quote">Quote</string>
+  <string name="module.study.classes.notepad_format_code">Code</string>
+  <string name="module.study.classes.notepad_font_size">Font Size</string>
+  <string name="module.study.classes.notepad_color">Color</string>
+</strings>

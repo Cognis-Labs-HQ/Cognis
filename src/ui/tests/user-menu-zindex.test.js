@@ -16,7 +16,7 @@ function parseZIndexValue(source, selector) {
     return Number(match[1]);
 }
 
-test("user menu dropdown stacks above notification popups", () => {
+test("popup overlays stack above dropdown and toast layers", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/styles/reuse/layout.css"),
         "utf8",
@@ -35,11 +35,11 @@ test("user menu dropdown stacks above notification popups", () => {
     const toastZIndex = parseZIndexValue(toastSource, ".toast-tray");
 
     assert.ok(
-        dropdownZIndex > popupZIndex,
-        "user menu dropdown must render above popup overlays",
+        popupZIndex >= dropdownZIndex,
+        "popup overlays must render at or above user menu dropdowns",
     );
     assert.ok(
-        dropdownZIndex > toastZIndex,
-        "user menu dropdown must render above toast notifications",
+        popupZIndex >= toastZIndex,
+        "popup overlays must render at or above toast notifications",
     );
 });

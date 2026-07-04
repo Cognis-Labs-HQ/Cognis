@@ -78,3 +78,16 @@ export async function decryptMessageOrReturnPlaintext(key, message) {
 export function stableJson(value) {
     return JSON.stringify(value);
 }
+
+/**
+ * Extracts the room ID from a messages chat URL of the form `/messages/{roomId}`.
+ *
+ * @param {string | null | undefined} chatUrl - Chat URL to parse.
+ * @returns {string} The decoded room ID, or an empty string when not found.
+ */
+export function extractRoomId(chatUrl) {
+    const raw = String(chatUrl ?? "").trim();
+    if (!raw) return "";
+    const match = raw.match(/^\/messages\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
+}

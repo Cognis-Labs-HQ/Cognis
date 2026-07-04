@@ -8,22 +8,23 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 
 ## Adapter
 
-| Komponente                | Pfad                                | Version |
-| ------------------------- | ----------------------------------- | ------- |
-| SMTP-Benachrichtigung     | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Interne Benachrichtigung  | `src/adapters/notify/internal/`     | `0.5.2` |
-| Lokaler Dateispeicher     | `src/adapters/file/local/`          | `0.1.0` |
-| Lokale Auth               | `src/adapters/auth/local/`          | `0.2.5` |
-| LDAP-Auth                 | `src/adapters/auth/ldap/`           | `0.1.4` |
-| OIDC-Auth                 | `src/adapters/auth/oidc/`           | `0.1.1` |
-| SAML-Auth                 | `src/adapters/auth/saml/`           | `0.1.1` |
-| PostgreSQL-Datenbank      | `src/adapters/db/postgres/`         | `0.1.0` |
-| MariaDB-Datenbank         | `src/adapters/db/mariadb/`          | `0.1.0` |
-| Registrierungs-Einladung  | `src/adapters/registration/invite/` | `0.1.1` |
-| Registrierungs-Token      | `src/adapters/registration/token/`  | `0.1.1` |
-| Öffentliche Registrierung | `src/adapters/registration/public/` | `0.1.0` |
-| Profil (Social)           | `src/adapters/social/profile/`      | `1.0.7` |
-| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.4.4` |
+| Komponente                | Pfad                                | Version  |
+| ------------------------- | ----------------------------------- | -------- |
+| SMTP-Benachrichtigung     | `src/adapters/notify/smtp/`         | `0.1.0`  |
+| Interne Benachrichtigung  | `src/adapters/notify/internal/`     | `0.5.2`  |
+| Lokaler Dateispeicher     | `src/adapters/file/local/`          | `0.1.0`  |
+| Lokale Auth               | `src/adapters/auth/local/`          | `0.2.5`  |
+| LDAP-Auth                 | `src/adapters/auth/ldap/`           | `0.1.4`  |
+| OIDC-Auth                 | `src/adapters/auth/oidc/`           | `0.1.1`  |
+| SAML-Auth                 | `src/adapters/auth/saml/`           | `0.1.1`  |
+| PostgreSQL-Datenbank      | `src/adapters/db/postgres/`         | `0.1.0`  |
+| MariaDB-Datenbank         | `src/adapters/db/mariadb/`          | `0.1.0`  |
+| Registrierungs-Einladung  | `src/adapters/registration/invite/` | `0.1.1`  |
+| Registrierungs-Token      | `src/adapters/registration/token/`  | `0.1.1`  |
+| Öffentliche Registrierung | `src/adapters/registration/public/` | `0.1.0`  |
+| Profil (Social)           | `src/adapters/social/profile/`      | `1.0.7`  |
+| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.4.4`  |
+| Klassen (Study)           | `src/adapters/study/classes/`       | `1.5.10` |
 
 ## Gateways
 
@@ -55,6 +56,6 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Komponente       | Pfad                              | Version |
 | ---------------- | --------------------------------- | ------- |
 | Analytik         | `src/modules/analytics/`          | `2.0.1` |
-| Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.0.0` |
+| Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.1.3` |
 | Cognis Japanisch | `src/modules/study/languages/ja/` | `1.2.4` |
 | Cognis Englisch  | `src/modules/study/languages/en/` | `1.2.2` |

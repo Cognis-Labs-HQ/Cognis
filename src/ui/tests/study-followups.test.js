@@ -6,15 +6,14 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-test("classes page redirects non-teachers back to dashboard", () => {
+test("classes routes redirect to /classroom", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/study/classes/ui/app.js"),
+        resolve(ROOT, "src/adapters/study/classes/index.ts"),
         "utf8",
     );
-    assert.match(
-        source,
-        /if\s*\(!isTeacher\)\s*\{\s*navigateTo\("\/dashboard"\);/,
-    );
+    assert.match(source, /url\.pathname !== "\/classes"/);
+    assert.match(source, /location: "\/classroom"/);
+    assert.match(source, /url\.pathname !== "\/my-classes"/);
 });
 
 test("hiragana component stylesheet does not override shared study sub-navigation layout", () => {
@@ -38,5 +37,58 @@ test("study hub detects native library child component by descriptor id", () => 
     assert.match(
         source,
         /hasLibraryModule[\s\S]*component\?\.id[\s\S]*===\s*"library"/,
+    );
+});
+
+test("classroom roster keeps present and absent columns", () => {
+    const source = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
+        "utf8",
+    );
+    assert.match(source, /module\.study\.classes\.members_present/);
+    assert.match(source, /module\.study\.classes\.members_absent/);
+    assert.match(source, /classes-roster-panel-columns/);
+});
+
+test("classroom toolbar chat control and meeting workspace tab use correct action classes", () => {
+    const renderSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/index.js",
+        ),
+        "utf8",
+    );
+    const controllerSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom/click-handler.js",
+        ),
+        "utf8",
+    );
+    const workspaceSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/study/classes/ui/classroom-render/workspace.js",
+        ),
+        "utf8",
+    );
+    assert.match(
+        renderSource,
+        /module\.study\.classes\.open_chat[\s\S]*classes-open-chat-btn[\s\S]*classes-board-entity/,
+    );
+    assert.match(
+        workspaceSource,
+        /mode:\s*"meeting"[\s\S]*label:\s*i18n\.t\("ui\.reuse\.meeting"\)/,
+    );
+    assert.match(
+        controllerSource,
+        /event\.target\.closest\("\.classes-open-chat-btn"\)/,
+    );
+    assert.match(
+        controllerSource,
+        /classroomWindows\.openChat\(snapshot\.chatUrl\)/,
     );
 });

@@ -165,6 +165,7 @@ export class DbProfileStore implements ProfileCreateStore {
             ["image", 5_242_880],
             ["video", 104_857_600],
             ["text", 1_048_576],
+            ["documents", 52_428_800],
             ["global", 10_485_760],
         ];
         for (const [category, maxBytes] of defaults) {

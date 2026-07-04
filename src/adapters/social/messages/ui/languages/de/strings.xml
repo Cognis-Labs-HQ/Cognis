@@ -71,5 +71,12 @@
   <string name="module.social.messages.member_summary_empty">Für diese Unterhaltung wurden keine Mitglieder gefunden.</string>
   <string name="module.social.messages.emoji_more">Mehr Reaktionen</string>
   <string name="module.social.messages.emoji_search_placeholder">Emojis suchen…</string>
+  <string name="module.social.messages.member_action_kick">Mitglied entfernen</string>
+  <string name="module.social.messages.member_action_mute">24 Stunden stummschalten</string>
+  <string name="module.social.messages.member_mute_failed">Mitglied konnte nicht stummgeschaltet werden.</string>
+  <string name="module.social.messages.member_muted_success">Mitglied wurde für 24 Stunden stummgeschaltet.</string>
+  <string name="module.social.messages.member_kick_failed">Mitglied konnte nicht entfernt werden.</string>
+  <string name="module.social.messages.member_kicked_success">Mitglied wurde aus dem Chat entfernt.</string>
+  <string name="module.social.messages.member_muted_cannot_send">Sie sind für 24 Stunden stummgeschaltet und können in diesem Chat keine Nachrichten senden.</string>
   <string name="module.social.messages.nav_title">Nachrichten</string>
 </resources>

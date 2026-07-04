@@ -16,14 +16,19 @@ import {
 } from "./keys.js";
 import {
     addMember,
+    archiveClassroomRoomMembers,
     createRoom,
     findDmBetween,
     findGroupByExactMembers,
+    getClassroomIdForRoom,
     getMember,
     getRoom,
     listMembers,
     listRoomsForAccount,
     removeMember,
+    resolveClassroomRoom,
+    setMemberMutedUntil,
+    setMemberRole,
     updateRoomAvatar,
     updateRoomTitle,
 } from "./rooms.js";
@@ -126,10 +131,31 @@ export class DbMessagesStore {
         return updateRoomTitle(this.db, roomId, title);
     }
 
+    async resolveClassroomRoom(input: {
+        classId: string;
+        title: string | null;
+        teacherAccountId: string;
+        memberAccountIds: string[];
+    }): Promise<{ room: RoomRow; created: boolean }> {
+        const resolved = await resolveClassroomRoom(this.db, input);
+        if (resolved.created) {
+            await generateAndStoreRoomKey(this.db, resolved.room.id);
+        }
+        return resolved;
+    }
+
     async findGroupByExactMembers(
         memberAccountIds: string[],
     ): Promise<RoomRow | null> {
         return findGroupByExactMembers(this.db, memberAccountIds);
+    }
+
+    async archiveClassroomRoomMembers(classId: string): Promise<void> {
+        await archiveClassroomRoomMembers(this.db, classId);
+    }
+
+    async getClassroomIdForRoom(roomId: string): Promise<string | null> {
+        return getClassroomIdForRoom(this.db, roomId);
     }
 
     async appendMessage(input: {
@@ -184,6 +210,22 @@ export class DbMessagesStore {
         muted: boolean,
     ): Promise<void> {
         await setMuted(this.db, roomId, accountId, muted);
+    }
+
+    async setMemberMutedUntil(
+        roomId: string,
+        accountId: string,
+        mutedUntil: string | null,
+    ): Promise<void> {
+        await setMemberMutedUntil(this.db, roomId, accountId, mutedUntil);
+    }
+
+    async setMemberRole(
+        roomId: string,
+        accountId: string,
+        role: MemberRole,
+    ): Promise<void> {
+        await setMemberRole(this.db, roomId, accountId, role);
     }
 
     async setArchived(

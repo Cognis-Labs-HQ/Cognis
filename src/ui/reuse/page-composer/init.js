@@ -24,17 +24,19 @@
  *   toolbarScrollable?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
+ *   footer?: Array<{ id: string, render: () => string, onRender?: () => void }>,
  *   subPageNavigation?: boolean,
  *   columns?: number,
  *   showTopbar?: boolean,
  *   showNavbar?: boolean,
+ *   showChatToggle?: boolean,
  *   showThemeToggle?: boolean,
  *   showFooter?: boolean,
  *   persistLayoutPreferences?: boolean,
- *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
+ *   pageOverrides?: Record<string, { showThemeToggle?: boolean, showChatToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshFooter(): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
@@ -67,10 +69,12 @@ export function createPageComposer(
         toolbarScrollable = false,
         subNavigation = [],
         floatingMenu = [],
+        footer = [],
         subPageNavigation = false,
         columns = 1,
         showTopbar = true,
         showNavbar = true,
+        showChatToggle = false,
         showThemeToggle = true,
         showFooter = true,
         frameless = false,
@@ -563,8 +567,14 @@ export function createPageComposer(
             "showThemeToggle" in overrides
                 ? overrides.showThemeToggle
                 : showThemeToggle;
+        const effectiveShowChatToggle =
+            "showChatToggle" in overrides
+                ? overrides.showChatToggle
+                : showChatToggle;
         const toggleEl = root.querySelector("#theme-toggle");
         if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
+        const chatToggleEl = root.querySelector("#global-chat-toggle");
+        if (chatToggleEl) chatToggleEl.hidden = !effectiveShowChatToggle;
     }
 
     async function switchSubPage(id) {
@@ -604,6 +614,28 @@ export function createPageComposer(
         return true;
     }
 
+    function injectFooterElements() {
+        if (!Array.isArray(footer) || !footer.length) return;
+        const footerInner = root.querySelector(".global-footer-inner");
+        if (!footerInner) return;
+        for (const item of footer) {
+            let slot = footerInner.querySelector(
+                `[data-footer-slot="${CSS.escape(item.id)}"]`,
+            );
+            if (!slot) {
+                slot = document.createElement("div");
+                slot.dataset.footerSlot = item.id;
+                footerInner.appendChild(slot);
+            }
+            slot.innerHTML = item.render();
+            item.onRender?.(slot);
+        }
+    }
+
+    function refreshFooter() {
+        injectFooterElements();
+    }
+
     async function init() {
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
@@ -637,6 +669,7 @@ export function createPageComposer(
             content: "",
             showTopbar,
             showNavbar,
+            showChatToggle,
             showThemeToggle,
             showFooter,
         });
@@ -675,6 +708,7 @@ export function createPageComposer(
             }
         }
 
+        injectFooterElements();
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
@@ -942,5 +976,24 @@ export function createPageComposer(
         restoreWindowScrollPosition(previousScrollLeft, previousScrollTop);
     }
 
-    return { init, refresh, getFloatingSlot, showToast };
+    function refreshSubNavigation() {
+        if (!Array.isArray(subNavigation) || subNavigation.length === 0) {
+            return;
+        }
+        const subNavEl = root.querySelector(".page-subnav");
+        if (!(subNavEl instanceof HTMLElement)) return;
+        const nextHtml = subNavigation.map((item) => item.render()).join("");
+        if (subNavEl.innerHTML !== nextHtml) {
+            subNavEl.innerHTML = nextHtml;
+        }
+    }
+
+    return {
+        init,
+        refresh,
+        refreshFooter,
+        refreshSubNavigation,
+        getFloatingSlot,
+        showToast,
+    };
 }

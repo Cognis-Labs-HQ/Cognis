@@ -15,6 +15,7 @@ export function registerMeetingRoutes({
     sendError,
     checkHttpLiveness,
     LIVELINESS_TIMEOUT_MS,
+    log = null,
 }) {
     const parseDateTime = (value) => {
         const parsed = new Date(String(value ?? ""));
@@ -246,10 +247,29 @@ export function registerMeetingRoutes({
             await store.ensureSchema();
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
-            const requesterUsername = await resolveRequesterUsername(
-                profileStore,
-                claims.sub,
-            );
+            const requestUrl = new URL(req.url ?? "", "http://localhost");
+            const classroomFilter = String(
+                requestUrl.searchParams.get("classroomId") ?? "",
+            ).trim();
+            let requesterUsername = "";
+            try {
+                requesterUsername = await resolveRequesterUsername(
+                    profileStore,
+                    claims.sub,
+                );
+            } catch (error) {
+                log?.(
+                    "error",
+                    "Failed to resolve requester username for active meetings.",
+                    {
+                        operation: "list_active_meetings",
+                        sub: claims.sub,
+                        error,
+                    },
+                );
+                sendJson(res, 200, { data: [] });
+                return;
+            }
             const activeMeetings = await store.listActiveMeetings();
             const visibleMeetings = [];
             for (const activeMeeting of activeMeetings) {
@@ -262,6 +282,12 @@ export function registerMeetingRoutes({
                     listClassroomParticipantHandles,
                 });
                 if (!authorized) continue;
+                const meetingClassroomId = String(
+                    meeting.classroomId ?? activeMeeting.classroomId ?? "",
+                ).trim();
+                if (classroomFilter && meetingClassroomId !== classroomFilter) {
+                    continue;
+                }
                 const [participants, state] = await Promise.all([
                     store.listParticipants(meeting.id),
                     store.getMeetingState(meeting.id),
@@ -300,6 +326,7 @@ export function registerMeetingRoutes({
                     meetingUrl: meeting.meetingUrl,
                     roomSlug: activeMeeting.roomSlug ?? null,
                     chatRoomId: meeting.chatRoomId,
+                    classroomId: meetingClassroomId || null,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
                     activeSessionCount: Number(

@@ -11,19 +11,12 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
         "utf8",
     );
 
-    const sharedGatewayImport = source
-        .split("\n")
-        .find((line) => line.includes("../../../gateways/shared.js"));
-
     assert.match(source, /auth:registerPageScriptOrigins/);
     assert.match(
         source,
         /registerConfiguredJitsiOrigin\(registerScriptOrigins, saved\)/,
     );
-    assert.equal(
-        sharedGatewayImport,
-        'import { hasMinRole, requireAuth } from "../../../gateways/shared.js";',
-    );
+    assert.match(source, /ctx\.getCapability\("auth:routeContext"\)/);
 });
 
 test("jitsi API logs stored CSP origin registration failures", () => {
@@ -57,10 +50,17 @@ test("jitsi meeting creation resolves hidden participants only for admins", () =
         source,
         /if \(!includeHidden && profile\.visibility === "hidden"\) continue/,
     );
-    assert.match(
-        source,
-        /\{ includeHidden: hasMinRole\(claims\.role, "admin"\) \}/,
+    assert.match(source, /includeHidden: hasMinRole\(claims\.role, "admin"\)/);
+});
+
+test("jitsi meeting creation supports chat-room creation opt-out", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
     );
+
+    assert.match(source, /skipChatRoomCreation/);
+    assert.match(source, /body\?\.skipChatRoomCreation !== true/);
 });
 
 test("jitsi meetings API exposes current events query endpoint", () => {

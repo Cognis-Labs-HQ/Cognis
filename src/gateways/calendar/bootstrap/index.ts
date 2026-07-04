@@ -167,6 +167,34 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (ownerAccountId: string) => gateway.listCalendars(ownerAccountId),
     );
     ctx.capabilities.contribute(
+        "calendar:deleteCalendar",
+        (ownerAccountId: string, calendarId: string) =>
+            gateway.deleteCalendar({ ownerAccountId, calendarId }),
+    );
+    ctx.capabilities.contribute(
+        "calendar:updateCalendar",
+        (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            name?: string;
+            visibility?: CalendarVisibility;
+            color?: string;
+            defaultReminderOffsetsMinutes?: number[];
+        }) =>
+            gateway.updateCalendar({
+                ownerAccountId: input.ownerAccountId,
+                calendarId: input.calendarId,
+                name: input.name,
+                visibility: input.visibility,
+                color:
+                    input.color == null
+                        ? undefined
+                        : normalizeCalendarColor(input.color),
+                defaultReminderOffsetsMinutes:
+                    input.defaultReminderOffsetsMinutes,
+            }),
+    );
+    ctx.capabilities.contribute(
         "calendar:addEvent",
         (input: {
             ownerAccountId: string;
@@ -185,6 +213,111 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.capabilities.contribute("calendar:listEvents", (calendarId: string) =>
         gateway.listEvents(calendarId),
+    );
+    ctx.capabilities.contribute(
+        "calendar:listSharedUsers",
+        async (input: { ownerAccountId: string; calendarId: string }) =>
+            (
+                await shareRegistry.listCalendarUserShares(
+                    input.ownerAccountId,
+                    input.calendarId,
+                )
+            ).map((share) => ({
+                recipientAccountId: share.recipientAccountId,
+            })),
+    );
+    ctx.capabilities.contribute(
+        "calendar:shareCalendarWithUser",
+        async (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            recipientAccountId: string;
+            recipientHandle?: string | null;
+            recipientDisplayName?: string | null;
+            recipientAvatarKey?: string | null;
+            permission?: "read" | "write";
+        }) => {
+            const ownerCalendar = gateway.getOwnedCalendar(
+                input.ownerAccountId,
+                input.calendarId,
+            );
+            if (!ownerCalendar) {
+                throw new Error("calendar_not_found");
+            }
+            if (input.recipientAccountId === input.ownerAccountId) {
+                return;
+            }
+            let recipientCalendarId = (
+                await shareRegistry.listCalendarUserShares(
+                    input.ownerAccountId,
+                    input.calendarId,
+                )
+            ).find(
+                (share) =>
+                    share.recipientAccountId === input.recipientAccountId,
+            )?.recipientCalendarId;
+            if (!recipientCalendarId) {
+                recipientCalendarId = gateway.createCalendar({
+                    ownerAccountId: input.recipientAccountId,
+                    name: `${ownerCalendar.name} (Shared by ${input.ownerAccountId})`,
+                    visibility: "shared",
+                    color: normalizeCalendarColor(ownerCalendar.color),
+                }).id;
+            }
+            await shareRegistry.upsertCalendarUserShare({
+                ownerAccountId: input.ownerAccountId,
+                ownerCalendarId: input.calendarId,
+                recipientAccountId: input.recipientAccountId,
+                recipientCalendarId,
+                recipientHandle:
+                    typeof input.recipientHandle === "string"
+                        ? input.recipientHandle
+                        : null,
+                recipientDisplayName:
+                    typeof input.recipientDisplayName === "string"
+                        ? input.recipientDisplayName
+                        : null,
+                recipientAvatarKey:
+                    typeof input.recipientAvatarKey === "string"
+                        ? input.recipientAvatarKey
+                        : null,
+                permission: input.permission === "write" ? "write" : "read",
+            });
+        },
+    );
+    ctx.capabilities.contribute(
+        "calendar:removeCalendarShareForUser",
+        async (input: {
+            ownerAccountId: string;
+            calendarId: string;
+            recipientAccountId: string;
+        }) => {
+            const shares = await shareRegistry.listCalendarUserShares(
+                input.ownerAccountId,
+                input.calendarId,
+            );
+            const share = shares.find(
+                (entry) =>
+                    entry.recipientAccountId === input.recipientAccountId,
+            );
+            if (!share) return;
+            await shareRegistry.deleteCalendarUserShare({
+                ownerAccountId: input.ownerAccountId,
+                ownerCalendarId: input.calendarId,
+                shareId: share.id,
+            });
+            const recipientCalendar = gateway.getOwnedCalendar(
+                share.recipientAccountId,
+                share.recipientCalendarId,
+            );
+            if (recipientCalendar?.visibility === "shared") {
+                gateway.deleteCalendar({
+                    ownerAccountId: share.recipientAccountId,
+                    calendarId: share.recipientCalendarId,
+                });
+                await gateway.flushStore();
+            }
+        },
     );
     ctx.capabilities.contribute("calendar:exportIcs", (calendarId: string) =>
         gateway.exportCalendarAsIcs(calendarId),

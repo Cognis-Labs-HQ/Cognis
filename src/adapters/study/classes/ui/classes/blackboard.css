@@ -1,0 +1,380 @@
+.classes-blackboard {
+    --classes-blackboard-chalk-font:
+        "Comic Sans MS", "Bradley Hand", "Chalkboard SE", "Marker Felt",
+        cursive, var(--app-font), sans-serif;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(255, 255, 255, 0.012) 3px,
+            rgba(255, 255, 255, 0.012) 4px
+        ),
+        var(--classroom-blackboard-bg);
+    margin: 12px 8px;
+    border-radius: 10px;
+    border: 6px solid var(--classroom-blackboard-frame);
+    box-shadow:
+        inset 0 0 40px rgba(0, 0, 0, 0.5),
+        inset 0 0 8px rgba(255, 255, 255, 0.02),
+        3px 4px 12px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    position: relative;
+    transition: min-height 0.26s ease;
+}
+
+#app.classes-meeting-active .classes-blackboard {
+    min-height: clamp(360px, 62vh, 720px);
+}
+
+.classes-blackboard--collapsed .classes-blackboard-surface,
+.classes-blackboard--collapsed .classes-blackboard-ledge {
+    display: none;
+}
+
+.classes-workspace-main,
+.classes-roster-panel {
+    font-family: var(--classes-blackboard-chalk-font);
+}
+
+.classes-workspace-main button,
+.classes-workspace-main input,
+.classes-workspace-main textarea,
+.classes-workspace-main select,
+.classes-roster-panel button,
+.classes-roster-panel input,
+.classes-roster-panel textarea,
+.classes-roster-panel select {
+    font-family: inherit;
+}
+
+.classes-blackboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-family: var(--classes-blackboard-chalk-font);
+}
+
+.classes-board-panel-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.classes-board-panel-btn {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.16);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.classes-board-panel-btn.active {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.classes-board-panel-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.classes-blackboard-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.classes-blackboard-surface {
+    flex: 1;
+    padding: 10px 14px;
+    display: block;
+    position: relative;
+    overflow-y: auto;
+    font-family: var(--classes-blackboard-chalk-font);
+    font-size: 0.95rem;
+}
+
+.classes-blackboard-main {
+    display: grid;
+    grid-template-columns: var(--classroom-board-agenda-width, 62%) var(
+            --classroom-board-members-width,
+            38%
+        );
+    gap: 12px;
+    min-height: 140px;
+}
+
+.classes-blackboard-main--single {
+    grid-template-columns: 1fr;
+}
+
+.classes-blackboard-section {
+    min-width: 0;
+}
+
+.classes-blackboard-section--hidden {
+    display: none;
+}
+
+.classes-blackboard-entity-layer {
+    position: relative;
+    min-height: 70px;
+    margin-top: 8px;
+}
+
+.classes-blackboard-ledge {
+    height: 10px;
+    background: linear-gradient(to bottom, #7a5c30, #5a4020);
+    border-top: 2px solid var(--classroom-blackboard-frame);
+    border-radius: 0 0 4px 4px;
+}
+
+.classes-chalk-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.classes-chalk-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    padding: 2px 0;
+}
+
+.classes-chalk-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.02em;
+}
+
+.classes-chalk-desc {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.62);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+    padding-left: 12px;
+}
+
+.classes-chalk-empty {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.38);
+    font-style: italic;
+}
+
+.classes-room-doorwall {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 6px 12px;
+}
+
+.classes-room-door {
+    position: relative;
+    cursor: pointer;
+    width: 14px;
+    height: 56px;
+    border: 2px solid var(--classroom-wall-border);
+    background: var(--classroom-wall);
+    border-radius: 2px;
+}
+
+.classes-door-panel {
+    position: absolute;
+    top: 3px;
+    left: 2px;
+    width: 10px;
+    height: 46px;
+    background: var(--classroom-door);
+    border: 1px solid var(--classroom-door-outline);
+    border-radius: 2px;
+    transform-origin: top left;
+    transition: transform 0.3s ease;
+}
+
+.classes-room-door:hover .classes-door-panel,
+.classes-room-door:focus-visible .classes-door-panel {
+    transform: rotate(90deg);
+}
+
+.classes-desk-floor {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 28px 32px 32px;
+    width: min(92%, 1200px);
+    margin: 0 auto;
+}
+
+.classes-desk-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 32px;
+}
+
+.classes-desk-pair {
+    display: flex;
+    gap: 10px;
+}
+
+.classes-desk-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    width: 112px;
+}
+
+.classes-desk-nameplate {
+    min-height: 18px;
+    width: 100%;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--classroom-nameplate-bg);
+    color: var(--classroom-nameplate-text);
+    font-size: 0.62rem;
+    line-height: 1.35;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-sizing: border-box;
+}
+
+.classes-desk-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.classes-status-light {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+    background: #64748b;
+}
+
+.classes-status-light--online {
+    background: #22c55e;
+}
+
+.classes-status-light--away {
+    background: #f59e0b;
+}
+
+.classes-status-light--offline {
+    background: #64748b;
+}
+
+.classes-desk-unit:hover .classes-desk-surface {
+    filter: brightness(0.92);
+}
+
+.classes-desk-unit.selected .classes-desk-surface {
+    box-shadow: 0 0 0 2px var(--accent, #4a90d9);
+}
+
+.classes-desk-surface {
+    width: 62px;
+    height: 44px;
+    background: linear-gradient(160deg, #d4a96a 0%, #b8875a 100%);
+    border: 2px solid #8b6040;
+    border-radius: 4px;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.classes-desk-avatar,
+.classes-desk-avatar-img,
+.classes-desk-avatar-fallback {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.classes-desk-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.classes-desk-avatar-img {
+    object-fit: cover;
+    display: block;
+}
+
+.classes-desk-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--initials-bg, rgba(255, 255, 255, 0.35));
+    color: #2f1b0f;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.classes-desk-unit.occupied .classes-desk-surface {
+    background: linear-gradient(160deg, #c49a60 0%, #a87848 100%);
+    border-color: #6b4828;
+}
+
+.classes-desk-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #3a2010;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+}
+
+.classes-chair-element {
+    width: 34px;
+    height: 30px;
+    background: linear-gradient(160deg, #a87848 0%, #8a6030 100%);
+    border: 2px solid #6a4020;
+    border-radius: 3px 3px 6px 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.classes-chair-element::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 6px;
+    background: #7a5028;
+    border: 1px solid #5a3818;
+    border-radius: 2px;
+}

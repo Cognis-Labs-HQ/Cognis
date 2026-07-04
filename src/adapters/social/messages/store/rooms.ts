@@ -70,7 +70,11 @@ export async function addMember(
         option: "INSERT",
         table: "chatroom_members",
         values: { chatroom_id: roomId, account_id: accountId, role },
-        conflict: { action: "ignore" },
+        conflict: {
+            action: "update",
+            target: ["chatroom_id", "account_id"],
+            update: { role, archived: 0, muted_until: null },
+        },
     });
 }
 
@@ -116,6 +120,40 @@ export async function listMembers(
         orderBy: [{ column: "joined_at", direction: "ASC" }],
     });
     return (result.rows ?? []).map((row) => rowToMember(row));
+}
+
+export async function setMemberMutedUntil(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+    mutedUntil: string | null,
+): Promise<void> {
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatroom_members",
+        set: { muted_until: mutedUntil },
+        where: [
+            { column: "chatroom_id", value: roomId },
+            { column: "account_id", value: accountId },
+        ],
+    });
+}
+
+export async function setMemberRole(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+    role: MemberRole,
+): Promise<void> {
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatroom_members",
+        set: { role },
+        where: [
+            { column: "chatroom_id", value: roomId },
+            { column: "account_id", value: accountId },
+        ],
+    });
 }
 
 export async function listRoomsForAccount(
@@ -188,6 +226,131 @@ export async function updateRoomTitle(
         where: [{ column: "id", value: roomId }],
     });
     return getRoom(db, roomId);
+}
+
+export async function resolveClassroomRoom(
+    db: DbExecutor,
+    {
+        classId,
+        title,
+        teacherAccountId,
+        memberAccountIds,
+    }: {
+        classId: string;
+        title: string | null;
+        teacherAccountId: string;
+        memberAccountIds: string[];
+    },
+): Promise<{ room: RoomRow; created: boolean }> {
+    const normalizedClassId = String(classId ?? "").trim();
+    const normalizedTeacherAccountId = String(teacherAccountId ?? "").trim();
+    const desiredAccountIds = Array.from(
+        new Set(
+            [normalizedTeacherAccountId, ...(memberAccountIds ?? [])]
+                .map((accountId) => String(accountId ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+    if (!normalizedClassId || !normalizedTeacherAccountId) {
+        throw new Error("classroom_room_invalid_input");
+    }
+
+    const mappingResult = await db.executeCommand({
+        option: "SELECT",
+        table: "chatroom_classrooms",
+        columns: ["room_id"],
+        where: [{ column: "class_id", value: normalizedClassId }],
+        limit: 1,
+    });
+    const mappedRoomId = String(mappingResult.rows?.[0]?.room_id ?? "").trim();
+    let room = mappedRoomId ? await getRoom(db, mappedRoomId) : null;
+    let created = false;
+    if (!room) {
+        room = await createRoom(
+            db,
+            "classroom",
+            title,
+            normalizedTeacherAccountId,
+        );
+        created = true;
+        await db.executeCommand({
+            option: "INSERT",
+            table: "chatroom_classrooms",
+            values: {
+                class_id: normalizedClassId,
+                room_id: room.id,
+            },
+            conflict: {
+                action: "update",
+                target: ["class_id"],
+                update: { room_id: room.id },
+            },
+        });
+    } else if ((room.title ?? null) !== (title ?? null)) {
+        room = (await updateRoomTitle(db, room.id, title)) ?? room;
+    }
+
+    const existingMembers = await listMembers(db, room.id);
+    const existingAccountIds = new Set(
+        existingMembers.map((member) => member.accountId),
+    );
+    for (const accountId of desiredAccountIds) {
+        if (existingAccountIds.has(accountId)) continue;
+        await addMember(
+            db,
+            room.id,
+            accountId,
+            accountId === normalizedTeacherAccountId ? "owner" : "member",
+        );
+    }
+    for (const member of existingMembers) {
+        if (desiredAccountIds.includes(member.accountId)) continue;
+        await removeMember(db, room.id, member.accountId);
+    }
+
+    return { room, created };
+}
+
+export async function archiveClassroomRoomMembers(
+    db: DbExecutor,
+    classId: string,
+): Promise<void> {
+    const normalizedClassId = String(classId ?? "").trim();
+    if (!normalizedClassId) return;
+    const mappingResult = await db.executeCommand({
+        option: "SELECT",
+        table: "chatroom_classrooms",
+        columns: ["room_id"],
+        where: [{ column: "class_id", value: normalizedClassId }],
+        limit: 1,
+    });
+    const roomId = String(mappingResult.rows?.[0]?.room_id ?? "").trim();
+    if (!roomId) return;
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatroom_members",
+        set: { archived: 1 },
+        where: [{ column: "chatroom_id", value: roomId }],
+    });
+}
+
+export async function getClassroomIdForRoom(
+    db: DbExecutor,
+    roomId: string,
+): Promise<string | null> {
+    const normalizedRoomId = String(roomId ?? "").trim();
+    if (!normalizedRoomId) {
+        return null;
+    }
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "chatroom_classrooms",
+        columns: ["class_id"],
+        where: [{ column: "room_id", value: normalizedRoomId }],
+        limit: 1,
+    });
+    const classId = String(result.rows?.[0]?.class_id ?? "").trim();
+    return classId || null;
 }
 
 export async function findGroupByExactMembers(

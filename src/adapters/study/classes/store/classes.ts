@@ -1,7 +1,25 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
+import type { DbExecutor } from "./types.js";
+import { DEFAULT_STUDENT_LIMIT, MAX_STUDENT_LIMIT } from "./constants.js";
 import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
+import { normalizeBoardFocus } from "./board-focus.js";
+
+function normalizeActiveWhiteboardId(input: unknown): string | null {
+    const normalizedId = String(input ?? "").trim();
+    return normalizedId || null;
+}
+
+function normalizeActiveMaterialKey(input: unknown): string | null {
+    const normalizedKey = String(input ?? "").trim();
+    return normalizedKey || null;
+}
+
+function normalizeViewLayout(input: unknown): "stacked" | "slideshow" {
+    const normalizedLayout = String(input ?? "")
+        .trim()
+        .toLowerCase();
+    return normalizedLayout === "slideshow" ? "slideshow" : "stacked";
+}
 
 export async function getClassesForTeacher(
     db: DbExecutor,
@@ -10,7 +28,15 @@ export async function getClassesForTeacher(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "name",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         where: [{ column: "teacher_account_id", value: teacherAccountId }],
         orderBy: [{ column: "language_code", direction: "ASC" }],
     });
@@ -26,8 +52,45 @@ export async function getClassById(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "name",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         where: [{ column: "id", value: classId }],
+    });
+    if (!result.rows?.length) {
+        return null;
+    }
+    return rowToClassRow(result.rows[0] as Record<string, unknown>);
+}
+
+export async function getTeacherClassForLanguage(
+    db: DbExecutor,
+    teacherAccountId: string,
+    languageCode: string,
+): Promise<ClassRow | null> {
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "study_classes",
+        columns: [
+            "id",
+            "name",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
+        where: [
+            { column: "teacher_account_id", value: teacherAccountId },
+            { column: "language_code", value: languageCode },
+        ],
+        limit: 1,
     });
     if (!result.rows?.length) {
         return null;
@@ -39,6 +102,18 @@ export async function getClassroomState(
     db: DbExecutor,
     classId: string,
 ): Promise<ClassroomStateRow> {
+    await db.executeCommand({
+        option: "INSERT",
+        table: "classroom_state",
+        values: {
+            class_id: classId,
+            student_limit: DEFAULT_STUDENT_LIMIT,
+            seat_assignments: "{}",
+            board_focus: "agenda",
+            updated_at: new Date().toISOString(),
+        },
+        conflict: { action: "ignore" },
+    });
     const result = await db.executeCommand({
         option: "SELECT",
         table: "classroom_state",
@@ -46,6 +121,10 @@ export async function getClassroomState(
             "class_id",
             "student_limit",
             "seat_assignments",
+            "board_focus",
+            "active_whiteboard_id",
+            "active_material_key",
+            "view_layout",
             "updated_at",
         ],
         where: [{ column: "class_id", value: classId }],
@@ -56,6 +135,10 @@ export async function getClassroomState(
             classId,
             studentLimit: DEFAULT_STUDENT_LIMIT,
             seatAssignments: {},
+            boardFocus: "agenda",
+            activeWhiteboardId: null,
+            activeMaterialKey: null,
+            viewLayout: "stacked",
             updatedAt: new Date().toISOString(),
         };
     }
@@ -70,6 +153,12 @@ export async function getClassroomState(
                 ? normalizedStudentLimit
                 : DEFAULT_STUDENT_LIMIT,
         seatAssignments: parseSeatAssignments(row.seat_assignments),
+        boardFocus: normalizeBoardFocus(row.board_focus),
+        activeWhiteboardId: normalizeActiveWhiteboardId(
+            row.active_whiteboard_id,
+        ),
+        activeMaterialKey: normalizeActiveMaterialKey(row.active_material_key),
+        viewLayout: normalizeViewLayout(String(row.view_layout ?? "stacked")),
         updatedAt: String(row.updated_at),
     };
 }
@@ -81,6 +170,10 @@ export async function updateClassroomStateForTeacher(
     options: {
         studentLimit?: number;
         seatAssignments?: Record<string, number>;
+        boardFocus?: "agenda" | "classroom" | "chat" | "whiteboard" | "notepad";
+        activeWhiteboardId?: string | null;
+        activeMaterialKey?: string | null;
+        viewLayout?: "stacked" | "slideshow";
     },
 ): Promise<ClassroomStateRow> {
     const classRow = await getClassById(db, classId);
@@ -92,13 +185,64 @@ export async function updateClassroomStateForTeacher(
     const normalizedStudentLimit = hasStudentLimit
         ? Number(options.studentLimit)
         : currentState.studentLimit;
-    if (normalizedStudentLimit < 1 || normalizedStudentLimit > 300) {
+    if (
+        normalizedStudentLimit < 1 ||
+        normalizedStudentLimit > MAX_STUDENT_LIMIT
+    ) {
         throw new Error("invalid_student_limit");
+    }
+    if (hasStudentLimit) {
+        const membersResult = await db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: ["student_account_id"],
+            where: [
+                { column: "class_id", value: classId },
+                { column: "status", value: "member" },
+            ],
+        });
+        const memberCount = Array.isArray(membersResult.rows)
+            ? membersResult.rows.length
+            : 0;
+        if (normalizedStudentLimit < memberCount) {
+            throw new Error("student_limit_below_members");
+        }
     }
     const normalizedSeatAssignments =
         options.seatAssignments != null
             ? parseSeatAssignments(JSON.stringify(options.seatAssignments))
             : currentState.seatAssignments;
+    const normalizedBoardFocus =
+        options.boardFocus == null
+            ? currentState.boardFocus
+            : normalizeBoardFocus(options.boardFocus);
+    const normalizedActiveWhiteboardId =
+        options.activeWhiteboardId === undefined
+            ? currentState.activeWhiteboardId
+            : normalizeActiveWhiteboardId(options.activeWhiteboardId);
+    if (normalizedActiveWhiteboardId) {
+        const whiteboardResult = await db.executeCommand({
+            option: "SELECT",
+            table: "classroom_whiteboards",
+            columns: ["id"],
+            where: [
+                { column: "id", value: normalizedActiveWhiteboardId },
+                { column: "class_id", value: classId },
+            ],
+            limit: 1,
+        });
+        if (!whiteboardResult.rows?.length) {
+            throw new Error("invalid_active_whiteboard");
+        }
+    }
+    const normalizedActiveMaterialKey =
+        options.activeMaterialKey === undefined
+            ? currentState.activeMaterialKey
+            : normalizeActiveMaterialKey(options.activeMaterialKey);
+    const normalizedViewLayout =
+        options.viewLayout !== undefined
+            ? normalizeViewLayout(options.viewLayout)
+            : currentState.viewLayout;
     const updatedAt = new Date().toISOString();
     await db.executeCommand({
         option: "INSERT",
@@ -107,6 +251,10 @@ export async function updateClassroomStateForTeacher(
             class_id: classId,
             student_limit: normalizedStudentLimit,
             seat_assignments: JSON.stringify(normalizedSeatAssignments),
+            board_focus: normalizedBoardFocus,
+            active_whiteboard_id: normalizedActiveWhiteboardId,
+            active_material_key: normalizedActiveMaterialKey,
+            view_layout: normalizedViewLayout,
             updated_at: updatedAt,
         },
         conflict: {
@@ -115,6 +263,10 @@ export async function updateClassroomStateForTeacher(
             update: {
                 student_limit: normalizedStudentLimit,
                 seat_assignments: JSON.stringify(normalizedSeatAssignments),
+                board_focus: normalizedBoardFocus,
+                active_whiteboard_id: normalizedActiveWhiteboardId,
+                active_material_key: normalizedActiveMaterialKey,
+                view_layout: normalizedViewLayout,
                 updated_at: updatedAt,
             },
         },
@@ -158,14 +310,24 @@ export async function getAvailableClasses(
     languageCode?: string,
     excludeAccountId?: string,
 ): Promise<ClassRow[]> {
-    const whereClause: Array<{ column: string; value: unknown }> = [];
+    const whereClause: Array<{ column: string; value: unknown }> = [
+        { column: "is_listed", value: 1 },
+    ];
     if (languageCode) {
         whereClause.push({ column: "language_code", value: languageCode });
     }
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "name",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         ...(whereClause.length ? { where: whereClause } : {}),
         orderBy: [{ column: "language_code", direction: "ASC" }],
     });
@@ -186,7 +348,11 @@ export async function getAvailableClasses(
             String((row as Record<string, unknown>).class_id),
         ),
     );
-    return allClasses.filter((classRow) => !excludedIds.has(classRow.id));
+    return allClasses.filter(
+        (classRow) =>
+            !excludedIds.has(classRow.id) &&
+            classRow.teacherAccountId !== excludeAccountId,
+    );
 }
 
 export async function getClassesForTeacherWithFilter(
@@ -203,7 +369,15 @@ export async function getClassesForTeacherWithFilter(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "study_classes",
-        columns: ["id", "language_code", "teacher_account_id", "created_at"],
+        columns: [
+            "id",
+            "name",
+            "language_code",
+            "teacher_account_id",
+            "join_mode",
+            "is_listed",
+            "created_at",
+        ],
         where: whereClause,
         orderBy: [{ column: "language_code", direction: "ASC" }],
     });
@@ -232,5 +406,82 @@ export async function getClassesForTeacherWithFilter(
         result.status === "fulfilled"
             ? result.value
             : { ...classes[index], memberCount: 0 },
+    );
+}
+
+export async function disbandClassForTeacher(
+    db: DbExecutor,
+    classId: string,
+    teacherAccountId: string,
+): Promise<ClassRow | null> {
+    const classRow = await getClassById(db, classId);
+    if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+        throw new Error("not_authorized");
+    }
+    await db.transaction(async (executor) => {
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "class_memberships",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_state",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_resources",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_notebooks",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "classroom_note_access_requests",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "teacher_assignments",
+            where: [{ column: "class_id", value: classId }],
+        });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "study_classes",
+            where: [{ column: "id", value: classId }],
+        });
+    });
+    return classRow;
+}
+
+export async function updateClassNameForTeacher(
+    db: DbExecutor,
+    classId: string,
+    teacherAccountId: string,
+    className: string,
+): Promise<ClassRow> {
+    const classRow = await getClassById(db, classId);
+    if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+        throw new Error("not_authorized");
+    }
+    const normalizedClassName = String(className ?? "").trim();
+    if (!normalizedClassName) {
+        throw new Error("invalid_class_name");
+    }
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "study_classes",
+        set: { name: normalizedClassName },
+        where: [{ column: "id", value: classId }],
+    });
+    return (
+        (await getClassById(db, classId)) ?? {
+            ...classRow,
+            name: normalizedClassName,
+        }
     );
 }

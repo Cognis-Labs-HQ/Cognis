@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.whiteboard">ホワイトボード</string>
+  <string name="module.study.classes.whiteboards">ホワイトボード</string>
+  <string name="module.study.classes.no_whiteboards">ホワイトボードはまだありません。</string>
+  <string name="module.study.classes.new_whiteboard">新しいホワイトボード</string>
+  <string name="module.study.classes.whiteboard_name_label">名前</string>
+  <string name="module.study.classes.whiteboard_created">ホワイトボードを作成しました。</string>
+  <string name="module.study.classes.whiteboard_create_failed">ホワイトボードの作成に失敗しました。</string>
+  <string name="module.study.classes.whiteboard_deleted">ホワイトボードを削除しました。</string>
+  <string name="module.study.classes.whiteboard_delete_failed">ホワイトボードの削除に失敗しました。</string>
+  <string name="module.study.classes.whiteboard_open_failed">ホワイトボードを開けませんでした。</string>
+  <string name="module.study.classes.whiteboard_not_configured">ホワイトボードサービスが設定されていません。</string>
+  <string name="module.study.classes.delete_whiteboard_title">ホワイトボードを削除</string>
+  <string name="module.study.classes.delete_whiteboard_confirm">ホワイトボード「{name}」を削除しますか？この操作は元に戻せません。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.title">Nextcloud Whiteboard を設定</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url">Whiteboard URL</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_description">Nextcloud Whiteboard デプロイの完全なベース URL を入力してください。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_placeholder">https://whiteboard.example.com</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret">署名シークレット</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_description">埋め込みトークン生成に使う署名シークレットを設定します。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_placeholder">super-secret-token</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry">トークン有効期限（秒）</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_description">生成したホワイトボードアクセストークンの有効時間を設定します。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_placeholder">3600</string>
+  <string name="module.nextcloud_whiteboard.admin.config.note">クラスルームのホワイトボードは、URL と署名シークレットの両方を設定するまで利用できません。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.load_failed">Nextcloud Whiteboard 設定の読み込みに失敗しました。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_success">Nextcloud Whiteboard 設定を保存しました。</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_failed">Nextcloud Whiteboard 設定の保存に失敗しました。</string>
+</strings>

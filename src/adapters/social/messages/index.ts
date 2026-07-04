@@ -104,6 +104,7 @@ function createMessagesPageRoutes(
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
+    ctx.registerAdapterStaticDir?.("social", "messages", ADAPTER_UI_ROOT);
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const profileStore = ctx.capabilities.get<SocialMessagesProfileStore>(
@@ -285,18 +286,64 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    ctx.capabilities.contribute(
+        "social:messages:resolveClassroomChatUrl",
+        async (input: {
+            classId: string;
+            title?: string | null;
+            teacherAccountId: string;
+            memberAccountIds: string[];
+        }): Promise<{
+            roomId: string;
+            url: string;
+            reused: boolean;
+        }> => {
+            const resolved = await messagesStore.resolveClassroomRoom({
+                classId: String(input.classId ?? "").trim(),
+                title:
+                    typeof input.title === "string" && input.title.trim().length
+                        ? input.title.trim()
+                        : null,
+                teacherAccountId: String(input.teacherAccountId ?? "").trim(),
+                memberAccountIds: Array.isArray(input.memberAccountIds)
+                    ? input.memberAccountIds.map((accountId) =>
+                          String(accountId ?? "").trim(),
+                      )
+                    : [],
+            });
+            return {
+                roomId: resolved.room.id,
+                url: `/messages/${encodeURIComponent(resolved.room.id)}`,
+                reused: !resolved.created,
+            };
+        },
+    );
+    ctx.capabilities.contribute(
+        "social:messages:archiveClassroomChat",
+        async (input: { classId: string }): Promise<void> => {
+            const classId = String(input?.classId ?? "").trim();
+            if (!classId) return;
+            await messagesStore.archiveClassroomRoomMembers(classId);
+        },
+    );
+
     ctx.capabilities.contribute("social:messages:uiResources", {
         languageBaseUrls: [
             "/static/adapters/social/messages/languages",
             "/static/gateways/social/languages",
         ],
         stylesheetUrls: [
+            "/static/adapters/social/messages/classroom-chat.css",
             "/static/adapters/social/messages/messages-chat-shared.css",
             "/static/adapters/social/messages/messages-style-variants.css",
         ],
         reactionHelpersModuleUrl:
             "/static/adapters/social/messages/reactions.js",
     });
+    ctx.capabilities.contribute(
+        "social:classroomChatScriptUrl",
+        "/static/adapters/social/messages/classroom-chat-embed.js",
+    );
 
     ctx.registerRoute(
         createMessagesRoutes({
@@ -434,11 +481,6 @@ export async function bootstrapSocialAdapter(
         "social",
     );
 
-    const uiDir = path.resolve(
-        path.dirname(fileURLToPath(import.meta.url)),
-        "ui",
-    );
-    ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
     ctx.registerSpaRoute?.({
         id: "social-messages-page",
         pattern: "^/messages(?:/[^/]+)?$",

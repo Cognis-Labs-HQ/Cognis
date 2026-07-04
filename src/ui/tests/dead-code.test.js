@@ -24,6 +24,7 @@ const USAGE_ROOTS = [
     join(ROOT, "src/ui/reuse"),
     join(ROOT, "src/ui/public"),
     join(ROOT, "src/gateways"),
+    join(ROOT, "src/adapters"),
 ];
 
 function extractDefinedCssClasses() {

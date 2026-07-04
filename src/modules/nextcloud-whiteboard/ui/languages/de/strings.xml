@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="module.study.classes.whiteboard">Whiteboard</string>
+  <string name="module.study.classes.whiteboards">Whiteboard</string>
+  <string name="module.study.classes.no_whiteboards">Noch keine Whiteboards.</string>
+  <string name="module.study.classes.new_whiteboard">Neues Whiteboard</string>
+  <string name="module.study.classes.whiteboard_name_label">Name</string>
+  <string name="module.study.classes.whiteboard_created">Whiteboard erstellt.</string>
+  <string name="module.study.classes.whiteboard_create_failed">Whiteboard konnte nicht erstellt werden.</string>
+  <string name="module.study.classes.whiteboard_deleted">Whiteboard gelöscht.</string>
+  <string name="module.study.classes.whiteboard_delete_failed">Whiteboard konnte nicht gelöscht werden.</string>
+  <string name="module.study.classes.whiteboard_open_failed">Whiteboard konnte nicht geöffnet werden.</string>
+  <string name="module.study.classes.whiteboard_not_configured">Der Whiteboard-Dienst ist nicht konfiguriert.</string>
+  <string name="module.study.classes.delete_whiteboard_title">Whiteboard löschen</string>
+  <string name="module.study.classes.delete_whiteboard_confirm">Whiteboard „{name}" löschen? Dies kann nicht rückgängig gemacht werden.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.title">Nextcloud Whiteboard Konfigurieren</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url">Whiteboard-URL</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_description">Gib die vollständige Basis-URL deiner Nextcloud-Whiteboard-Instanz ein.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.url_placeholder">https://whiteboard.example.com</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret">Signaturgeheimnis</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_description">Lege das Signaturgeheimnis fest, mit dem Einbettungs-Tokens erstellt werden.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.secret_placeholder">super-secret-token</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry">Token-Ablauf (Sekunden)</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_description">Bestimme, wie lange erzeugte Whiteboard-Zugriffstokens gültig bleiben.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.token_expiry_placeholder">3600</string>
+  <string name="module.nextcloud_whiteboard.admin.config.note">Klassenraum-Whiteboards bleiben nicht verfügbar, bis URL und Signaturgeheimnis gesetzt sind.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.load_failed">Die Nextcloud-Whiteboard-Konfiguration konnte nicht geladen werden.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_success">Die Nextcloud-Whiteboard-Konfiguration wurde gespeichert.</string>
+  <string name="module.nextcloud_whiteboard.admin.config.save_failed">Die Nextcloud-Whiteboard-Konfiguration konnte nicht gespeichert werden.</string>
+</strings>

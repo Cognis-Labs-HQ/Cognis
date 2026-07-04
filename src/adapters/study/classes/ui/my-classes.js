@@ -19,8 +19,12 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 
+const CLASSES_STRINGS_BASE_URL = "/static/adapters/study/classes/languages";
+
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: [CLASSES_STRINGS_BASE_URL],
+    });
     applyDocumentTitle(i18n, "module.study.classes.my_classes_page_title");
 
     let enrolledClasses = [];
@@ -192,6 +196,18 @@ export async function mount(root, { signal } = {}) {
                 }
             }
 
+            let syncingView = false;
+            async function syncView() {
+                if (syncingView) return;
+                syncingView = true;
+                try {
+                    await Promise.allSettled([loadEnrolled(), loadAvailable()]);
+                    refreshContent();
+                } finally {
+                    syncingView = false;
+                }
+            }
+
             section.addEventListener(
                 "click",
                 async (event) => {
@@ -281,8 +297,7 @@ export async function mount(root, { signal } = {}) {
                                     i18n.t("module.study.classes.join_sent"),
                                     { variant: "success" },
                                 );
-                                await loadAvailable();
-                                refreshContent();
+                                await syncView();
                             } else {
                                 showToast(
                                     i18n.t("module.study.classes.join_failed"),
@@ -299,6 +314,22 @@ export async function mount(root, { signal } = {}) {
                         }
                         return;
                     }
+                },
+                { signal },
+            );
+
+            window.addEventListener(
+                "focus",
+                () => {
+                    void syncView();
+                },
+                { signal },
+            );
+            document.addEventListener(
+                "visibilitychange",
+                () => {
+                    if (document.visibilityState !== "visible") return;
+                    void syncView();
                 },
                 { signal },
             );

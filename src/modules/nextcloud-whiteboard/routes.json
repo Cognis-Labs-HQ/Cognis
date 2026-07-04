@@ -1,0 +1,8 @@
+[
+    {
+        "path": "/api/v1/modules/nextcloud-whiteboard/config",
+        "access": {
+            "minRole": "admin"
+        }
+    }
+]

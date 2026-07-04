@@ -78,8 +78,13 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     const canSend =
                         !isArchived &&
                         !(room.kind === "dm" && members.length < 2);
+                    const classId =
+                        room.kind === "classroom"
+                            ? await messagesStore.getClassroomIdForRoom(room.id)
+                            : null;
                     return {
                         ...room,
+                        classId,
                         members: enrichedMembers,
                         lastMessage: pendingIncoming ? null : last,
                         unread: pendingIncoming ? 0 : unread,
@@ -226,7 +231,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     await messagesStore.addMember(
                         room.id,
                         primaryTarget.accountId,
-                        "member",
+                        "owner",
                     );
                     await messagesStore.generateAndStoreRoomKey(room.id);
                     const requesterProfile =
@@ -304,7 +309,11 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
         );
         await messagesStore.addMember(room.id, accountId, "owner");
         for (const target of targets) {
-            await messagesStore.addMember(room.id, target.accountId, "member");
+            await messagesStore.addMember(
+                room.id,
+                target.accountId,
+                isDm ? "owner" : "member",
+            );
         }
         await messagesStore.generateAndStoreRoomKey(room.id);
         const creatorProfile = await profileStore.getProfile(accountId);
