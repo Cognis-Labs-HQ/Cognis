@@ -3,6 +3,12 @@ CREATE TABLE IF NOT EXISTS modules (
   enabled TINYINT(1) NOT NULL DEFAULT 1
 );
 
+
+CREATE TABLE IF NOT EXISTS gateways (
+  gateway_id VARCHAR(255) PRIMARY KEY,
+  enabled TINYINT(1) NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS bootstrap_state (
   state_key VARCHAR(255) PRIMARY KEY,
   state_value VARCHAR(255) NOT NULL
