@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="module.nextcloudWhiteboard.page_title">Papan tulis Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.empty">Belum ada papan tulis yang tersedia.</string>
+  <string name="module.nextcloudWhiteboard.title">Judul papan tulis</string>
+  <string name="module.nextcloudWhiteboard.participants">Nama peserta</string>
+  <string name="module.nextcloudWhiteboard.spawn">Buka papan tulis</string>
+  <string name="module.nextcloudWhiteboard.admin_title">Pengaturan papan tulis Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.instance_url">URL Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.api_key">Kunci API</string>
+  <string name="module.nextcloudWhiteboard.admin_note">Tempelkan kunci API yang dibuat untuk instans Nextcloud Whiteboard yang dikonfigurasi. Kunci tersimpan tidak pernah ditampilkan setelah disimpan.</string>
+  <string name="module.nextcloudWhiteboard.load_failed">Tidak dapat memuat pengaturan Nextcloud Whiteboard.</string>
+  <string name="module.nextcloudWhiteboard.save_success">Pengaturan Nextcloud Whiteboard disimpan.</string>
+  <string name="module.nextcloudWhiteboard.save_failed">Tidak dapat menyimpan pengaturan Nextcloud Whiteboard.</string>
+  <string name="module.nextcloudWhiteboard.instance_url_description">URL dasar server Nextcloud yang menyediakan Whiteboard.</string>
+  <string name="module.nextcloudWhiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
+  <string name="module.nextcloudWhiteboard.api_key_description">Kunci API sisi server yang digunakan Cognis untuk membuat dan membuka papan tulis.</string>
+  <string name="module.nextcloudWhiteboard.api_key_placeholder">Tempel kunci API</string>
+</resources>

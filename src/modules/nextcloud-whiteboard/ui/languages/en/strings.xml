@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="module.nextcloudWhiteboard.page_title">Nextcloud Whiteboards</string>
+  <string name="module.nextcloudWhiteboard.empty">No whiteboards are available yet.</string>
+  <string name="module.nextcloudWhiteboard.title">Whiteboard Title</string>
+  <string name="module.nextcloudWhiteboard.participants">Participant Handles</string>
+  <string name="module.nextcloudWhiteboard.spawn">Open Whiteboard</string>
+  <string name="module.nextcloudWhiteboard.admin_title">Nextcloud Whiteboard Settings</string>
+  <string name="module.nextcloudWhiteboard.instance_url">Nextcloud URL</string>
+  <string name="module.nextcloudWhiteboard.api_key">API Key</string>
+  <string name="module.nextcloudWhiteboard.admin_note">Paste an API key generated for the configured Nextcloud Whiteboard instance. The saved key is never shown after saving.</string>
+  <string name="module.nextcloudWhiteboard.load_failed">Could not load Nextcloud Whiteboard settings.</string>
+  <string name="module.nextcloudWhiteboard.save_success">Nextcloud Whiteboard settings saved.</string>
+  <string name="module.nextcloudWhiteboard.save_failed">Could not save Nextcloud Whiteboard settings.</string>
+  <string name="module.nextcloudWhiteboard.instance_url_description">The base URL for the Nextcloud server that hosts Whiteboard.</string>
+  <string name="module.nextcloudWhiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
+  <string name="module.nextcloudWhiteboard.api_key_description">A server-side API key used by Cognis to create and launch whiteboards.</string>
+  <string name="module.nextcloudWhiteboard.api_key_placeholder">Paste API key</string>
+</resources>
