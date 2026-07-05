@@ -5,15 +5,19 @@
   <string name="module.nextcloudWhiteboard.title">Judul papan tulis</string>
   <string name="module.nextcloudWhiteboard.participants">Nama peserta</string>
   <string name="module.nextcloudWhiteboard.spawn">Buka papan tulis</string>
+  <string name="module.nextcloudWhiteboard.open">Buka</string>
   <string name="module.nextcloudWhiteboard.admin_title">Pengaturan papan tulis Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.server_url">URL server papan tulis</string>
   <string name="module.nextcloudWhiteboard.instance_url">URL Nextcloud</string>
   <string name="module.nextcloudWhiteboard.api_key">Kunci API</string>
-  <string name="module.nextcloudWhiteboard.admin_note">Tempelkan kunci API yang dibuat untuk instans Nextcloud Whiteboard yang dikonfigurasi. Kunci tersimpan tidak pernah ditampilkan setelah disimpan.</string>
+  <string name="module.nextcloudWhiteboard.admin_note">Konfigurasikan server kolaborasi Nextcloud Whiteboard. URL server mengarah ke server papan tulis mandiri (endpoint Socket.IO). Kunci API digunakan untuk menandatangani token sesi agar klien dapat terhubung langsung melalui WebSocket.</string>
   <string name="module.nextcloudWhiteboard.load_failed">Tidak dapat memuat pengaturan Nextcloud Whiteboard.</string>
   <string name="module.nextcloudWhiteboard.save_success">Pengaturan Nextcloud Whiteboard disimpan.</string>
   <string name="module.nextcloudWhiteboard.save_failed">Tidak dapat menyimpan pengaturan Nextcloud Whiteboard.</string>
-  <string name="module.nextcloudWhiteboard.instance_url_description">URL dasar server Nextcloud yang menyediakan Whiteboard.</string>
+  <string name="module.nextcloudWhiteboard.server_url_description">URL server kolaborasi Nextcloud Whiteboard (endpoint WebSocket).</string>
+  <string name="module.nextcloudWhiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
+  <string name="module.nextcloudWhiteboard.instance_url_description">URL dasar server Nextcloud (opsional, sebagai referensi).</string>
   <string name="module.nextcloudWhiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
-  <string name="module.nextcloudWhiteboard.api_key_description">Kunci API sisi server yang digunakan Cognis untuk membuat dan membuka papan tulis.</string>
+  <string name="module.nextcloudWhiteboard.api_key_description">Rahasia bersama untuk menandatangani token sesi JWT bagi server papan tulis.</string>
   <string name="module.nextcloudWhiteboard.api_key_placeholder">Tempel kunci API</string>
 </resources>

@@ -31,13 +31,21 @@ export async function mount(root) {
     form.className = "whiteboard-admin";
     const heading = document.createElement("h2");
     heading.textContent = text("module.nextcloudWhiteboard.admin_title");
+    const serverUrlLabel = document.createElement("label");
+    const serverUrlText = document.createElement("span");
+    serverUrlText.textContent = text("module.nextcloudWhiteboard.server_url");
+    const serverUrlInput = document.createElement("input");
+    serverUrlInput.name = "serverUrl";
+    serverUrlInput.type = "url";
+    serverUrlInput.required = true;
+    serverUrlInput.value = config.serverUrl ?? "";
+    serverUrlLabel.append(serverUrlText, serverUrlInput);
     const urlLabel = document.createElement("label");
     const urlText = document.createElement("span");
     urlText.textContent = text("module.nextcloudWhiteboard.instance_url");
     const urlInput = document.createElement("input");
     urlInput.name = "instanceUrl";
     urlInput.type = "url";
-    urlInput.required = true;
     urlInput.value = config.instanceUrl ?? "";
     urlLabel.append(urlText, urlInput);
     const keyLabel = document.createElement("label");
@@ -52,13 +60,14 @@ export async function mount(root) {
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = text("ui.reuse.save");
-    form.append(heading, urlLabel, keyLabel, submitButton);
+    form.append(heading, serverUrlLabel, urlLabel, keyLabel, submitButton);
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
         await request("/config", {
             method: "POST",
             body: JSON.stringify({
+                serverUrl: formData.get("serverUrl"),
                 instanceUrl: formData.get("instanceUrl"),
                 apiKey: formData.get("apiKey"),
             }),
@@ -94,6 +103,16 @@ export async function openModuleConfigPopup({
         successKey: "module.nextcloudWhiteboard.save_success",
         failedKey: "module.nextcloudWhiteboard.save_failed",
         fields: [
+            {
+                id: "nextcloud-whiteboard-server-url",
+                configKey: "serverUrl",
+                labelKey: "module.nextcloudWhiteboard.server_url",
+                descriptionKey:
+                    "module.nextcloudWhiteboard.server_url_description",
+                placeholderKey:
+                    "module.nextcloudWhiteboard.server_url_placeholder",
+                type: "url",
+            },
             {
                 id: "nextcloud-whiteboard-instance-url",
                 configKey: "instanceUrl",

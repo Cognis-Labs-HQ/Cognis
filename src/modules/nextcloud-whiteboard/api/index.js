@@ -56,15 +56,14 @@ async function resolveParticipantHandles(
     return usernames;
 }
 
-function buildCognisLaunchUrl(whiteboardId) {
-    return `/api/v1/modules/nextcloud-whiteboard/whiteboards/launch?id=${encodeURIComponent(
-        whiteboardId,
-    )}`;
+function buildCognisWhiteboardUrl(whiteboardId) {
+    return `/whiteboard?id=${encodeURIComponent(whiteboardId)}`;
 }
 
 function publicConfig(config) {
     return {
         instanceUrl: config.instanceUrl,
+        serverUrl: config.serverUrl,
         apiKeyConfigured: config.apiKeyConfigured,
         updatedAt: config.updatedAt,
     };
@@ -115,6 +114,16 @@ export function registerUi(ctx) {
         ],
         access: { minRole: "user" },
     });
+    ctx.registerSpaRoute({
+        id: "module-nextcloud-whiteboard-canvas",
+        pattern: "^/whiteboard$",
+        base: "/whiteboard",
+        scriptUrl: "/static/modules/nextcloud-whiteboard/whiteboard/index.js",
+        stylesheets: [
+            "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
+        ],
+        access: { minRole: "user" },
+    });
     ctx.registerAdminSection({
         id: "module-nextcloud-whiteboard",
         label: "Nextcloud Whiteboard",
@@ -160,9 +169,9 @@ export function registerApiRoutes(router, ctx) {
                 );
             }
             const config = await store.getConfig();
-            if (!config.instanceUrl || !config.apiKeyConfigured) {
+            if (!config.serverUrl || !config.apiKeyConfigured) {
                 throw new Error(
-                    "Nextcloud Whiteboard URL and API key must be configured.",
+                    "Nextcloud Whiteboard server URL and API key must be configured.",
                 );
             }
             const whiteboard = await store.createWhiteboard({
@@ -171,7 +180,7 @@ export function registerApiRoutes(router, ctx) {
                 participants: options.participants,
                 externalPath: options.externalPath,
             });
-            const launchUrl = buildCognisLaunchUrl(whiteboard.id);
+            const launchUrl = buildCognisWhiteboardUrl(whiteboard.id);
             log?.("info", "Nextcloud Whiteboard window spawned.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "spawn_whiteboard_window",
@@ -189,6 +198,21 @@ export function registerApiRoutes(router, ctx) {
                         ? [createdBy, ...(options.participants ?? [])]
                         : [createdBy],
                 },
+            };
+        },
+        async fetchBoardData(whiteboardId) {
+            await store.ensureSchema();
+            const whiteboard = await store.getWhiteboardById(
+                String(whiteboardId ?? ""),
+            );
+            if (!whiteboard) return null;
+            return {
+                id: whiteboard.id,
+                title: whiteboard.title,
+                embedUrl: buildCognisWhiteboardUrl(whiteboard.id),
+                createdBy: whiteboard.createdBy,
+                createdAt: whiteboard.createdAt,
+                updatedAt: whiteboard.updatedAt,
             };
         },
     };
@@ -235,22 +259,28 @@ export function registerApiRoutes(router, ctx) {
             if (!claims) return;
             const body = await readJson(req);
             const instanceUrl = normalizeHttpUrl(body.instanceUrl);
+            const serverUrl = normalizeHttpUrl(body.serverUrl);
             const apiKey = String(body.apiKey ?? "").trim();
-            if (!instanceUrl || !apiKey) {
+            if (!serverUrl || !apiKey) {
                 sendError(
                     res,
                     400,
                     "bad_request",
-                    "A valid Nextcloud URL and API key are required.",
+                    "A valid Whiteboard server URL and API key are required.",
                 );
                 return;
             }
-            const saved = await store.saveConfig({ instanceUrl, apiKey });
+            const saved = await store.saveConfig({
+                instanceUrl,
+                serverUrl,
+                apiKey,
+            });
             registerConfiguredOrigin(registerScriptOrigins, saved);
             log?.("info", "Nextcloud Whiteboard configuration updated.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "save_config",
                 hasInstanceUrl: Boolean(saved.instanceUrl),
+                hasServerUrl: Boolean(saved.serverUrl),
                 hasApiKey: saved.apiKeyConfigured,
                 updatedBy: claims.sub,
             });
@@ -275,6 +305,72 @@ export function registerApiRoutes(router, ctx) {
             if (!username) return;
             const data = await store.listAccessibleWhiteboards(username);
             sendJson(res, 200, { data });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.get(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/session",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const url = new URL(req.url, "http://localhost");
+            const whiteboardId = url.searchParams.get("id") ?? "";
+            const username = await resolveRequesterUsername(
+                profileStore,
+                claims.sub,
+            ).catch((error) => {
+                sendError(res, 409, "profile_required", error.message);
+                return null;
+            });
+            if (!username) return;
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const authorized = await store.canAccessWhiteboard(
+                whiteboard.id,
+                username,
+            );
+            if (!authorized) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "You are not listed as an allowed whiteboard participant.",
+                );
+                return;
+            }
+            const config = await store.getConfig();
+            if (!config.serverUrl || !config.apiKeyConfigured) {
+                sendError(
+                    res,
+                    409,
+                    "config_required",
+                    "Nextcloud Whiteboard must be configured before use.",
+                );
+                return;
+            }
+            const token = store.mintSessionToken(config, whiteboard, {
+                id: username,
+                name: username,
+            });
+            log?.("info", "Nextcloud Whiteboard session token issued.", {
+                component: "nextcloud-whiteboard-module",
+                operation: "issue_session_token",
+                whiteboardId: whiteboard.id,
+                username,
+            });
+            sendJson(res, 200, {
+                data: {
+                    roomId: whiteboard.id,
+                    title: whiteboard.title,
+                    serverUrl: config.serverUrl,
+                    token,
+                },
+            });
         },
         { access: { minRole: "user" } },
     );
@@ -313,18 +409,9 @@ export function registerApiRoutes(router, ctx) {
                 );
                 return;
             }
-            const config = await store.getConfig();
-            const externalLaunchUrl = store.buildLaunchUrl(config, whiteboard);
-            if (!externalLaunchUrl) {
-                sendError(
-                    res,
-                    409,
-                    "config_required",
-                    "Nextcloud Whiteboard must be configured before use.",
-                );
-                return;
-            }
-            res.writeHead(302, { location: externalLaunchUrl });
+            res.writeHead(302, {
+                location: buildCognisWhiteboardUrl(whiteboardId),
+            });
             res.end();
         },
         { access: { minRole: "user" } },
@@ -346,7 +433,7 @@ export function registerApiRoutes(router, ctx) {
             });
             if (!username) return;
             const config = await store.getConfig();
-            if (!config.instanceUrl || !config.apiKeyConfigured) {
+            if (!config.serverUrl || !config.apiKeyConfigured) {
                 sendError(
                     res,
                     409,
@@ -369,7 +456,7 @@ export function registerApiRoutes(router, ctx) {
             sendJson(res, 200, {
                 data: {
                     whiteboard,
-                    launchUrl: buildCognisLaunchUrl(whiteboard.id),
+                    launchUrl: buildCognisWhiteboardUrl(whiteboard.id),
                     windowFeatures:
                         "popup,width=1280,height=900,noopener,noreferrer",
                 },

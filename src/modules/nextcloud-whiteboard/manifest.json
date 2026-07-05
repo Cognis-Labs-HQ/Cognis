@@ -1,10 +1,15 @@
 {
     "id": "nextcloud-whiteboard",
     "name": "Nextcloud Whiteboard",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "class": "extension",
     "coreApiVersion": "v1",
-    "capabilities": ["whiteboard:collaboration", "whiteboard:access-control"],
+    "capabilities": [
+        "whiteboard:collaboration",
+        "whiteboard:access-control",
+        "whiteboard:getEmbedUrl",
+        "whiteboard:fetchBoardData"
+    ],
     "entrypoints": {
         "bootstrap": "./bootstrap.js",
         "api": "./api/index.js",

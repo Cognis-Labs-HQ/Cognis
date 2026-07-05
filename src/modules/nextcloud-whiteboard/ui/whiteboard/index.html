@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Whiteboard</title>
+        <link
+            rel="stylesheet"
+            href="/static/modules/nextcloud-whiteboard/styles/whiteboards.css"
+        />
+    </head>
+    <body class="whiteboard-window">
+        <div id="whiteboard-root">
+            <div
+                id="whiteboard-toolbar"
+                class="whiteboard-toolbar"
+                role="toolbar"
+                aria-label="Drawing tools"
+            >
+                <div class="whiteboard-toolbar-group">
+                    <button
+                        type="button"
+                        data-tool="pen"
+                        class="whiteboard-tool active"
+                        title="Pen"
+                    >
+                        ✏
+                    </button>
+                    <button
+                        type="button"
+                        data-tool="eraser"
+                        class="whiteboard-tool"
+                        title="Eraser"
+                    >
+                        ⌫
+                    </button>
+                </div>
+                <div class="whiteboard-toolbar-group">
+                    <input
+                        type="color"
+                        id="whiteboard-color"
+                        value="#1e1e2e"
+                        title="Stroke color"
+                    />
+                    <select id="whiteboard-stroke-width" title="Stroke width">
+                        <option value="2">Thin</option>
+                        <option value="4" selected>Medium</option>
+                        <option value="8">Thick</option>
+                    </select>
+                </div>
+                <div class="whiteboard-toolbar-group">
+                    <button
+                        type="button"
+                        id="whiteboard-clear"
+                        title="Clear board"
+                    >
+                        ✕ Clear
+                    </button>
+                </div>
+                <div class="whiteboard-toolbar-group whiteboard-status-group">
+                    <span
+                        id="whiteboard-connection-status"
+                        class="whiteboard-status"
+                        aria-live="polite"
+                    ></span>
+                    <span
+                        id="whiteboard-title"
+                        class="whiteboard-board-title"
+                    ></span>
+                </div>
+            </div>
+            <canvas
+                id="whiteboard-canvas"
+                tabindex="0"
+                aria-label="Whiteboard canvas"
+            ></canvas>
+        </div>
+        <script
+            type="module"
+            src="/static/modules/nextcloud-whiteboard/whiteboard/index.js"
+        ></script>
+    </body>
+</html>

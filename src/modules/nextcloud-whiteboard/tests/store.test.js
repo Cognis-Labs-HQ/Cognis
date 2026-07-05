@@ -53,12 +53,14 @@ test("nextcloud whiteboard store persists normalized configuration", async () =>
     await store.ensureSchema();
     const saved = await store.saveConfig({
         instanceUrl: "https://nextcloud.example.test",
-        apiKey: "secret-api-key",
+        serverUrl: "https://whiteboard.example.test:3002",
+        apiKey: "secret-api-key-minimum-16-chars",
     });
 
     assert.equal(saved.instanceUrl, "https://nextcloud.example.test");
+    assert.equal(saved.serverUrl, "https://whiteboard.example.test:3002");
     assert.equal(saved.apiKeyConfigured, true);
-    assert.equal(saved.apiKey, "secret-api-key");
+    assert.equal(saved.apiKey, "secret-api-key-minimum-16-chars");
 });
 
 test("nextcloud whiteboard store enforces allow-list access", async () => {

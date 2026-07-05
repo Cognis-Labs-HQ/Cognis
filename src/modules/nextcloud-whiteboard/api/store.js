@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { createHmac, randomBytes, randomUUID } from "node:crypto";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import {
     normalizeHandleKey,
@@ -34,6 +34,12 @@ export class NextcloudWhiteboardStore {
             columns: [
                 { name: "id", type: "text", primaryKey: true },
                 { name: "instance_url", type: "text", notNull: true },
+                {
+                    name: "server_url",
+                    type: "text",
+                    notNull: true,
+                    default: "",
+                },
                 { name: "api_key", type: "text", notNull: true },
                 {
                     name: "updated_at",
@@ -97,15 +103,22 @@ export class NextcloudWhiteboardStore {
         const row = result.rows?.[0];
         return {
             instanceUrl: row?.instance_url ? String(row.instance_url) : "",
+            serverUrl: row?.server_url ? String(row.server_url) : "",
             apiKeyConfigured: Boolean(row?.api_key),
             apiKey: row?.api_key ? String(row.api_key) : "",
             updatedAt: row?.updated_at ? String(row.updated_at) : null,
         };
     }
 
-    async saveConfig({ instanceUrl, apiKey }) {
+    async saveConfig({ instanceUrl, serverUrl, apiKey }) {
         const normalizedInstanceUrl = normalizeHttpUrl(instanceUrl);
+        const normalizedServerUrl = normalizeHttpUrl(serverUrl);
         const normalizedApiKey = String(apiKey ?? "").trim();
+        if (normalizedApiKey.length < 16) {
+            throw new Error(
+                "API key must be at least 16 characters for sufficient security.",
+            );
+        }
         const updatedAt = new Date().toISOString();
         await this.db.executeCommand({
             option: "INSERT",
@@ -113,12 +126,13 @@ export class NextcloudWhiteboardStore {
             values: {
                 id: "default",
                 instance_url: normalizedInstanceUrl,
+                server_url: normalizedServerUrl,
                 api_key: normalizedApiKey,
                 updated_at: updatedAt,
             },
             onConflict: {
                 columns: ["id"],
-                merge: ["instance_url", "api_key", "updated_at"],
+                merge: ["instance_url", "server_url", "api_key", "updated_at"],
             },
         });
         return this.getConfig();
@@ -212,13 +226,27 @@ export class NextcloudWhiteboardStore {
         return Boolean(result.rows?.[0]);
     }
 
-    buildLaunchUrl(config, board) {
-        const baseUrl = normalizeHttpUrl(config.instanceUrl);
-        if (!baseUrl || !board?.externalPath) return "";
-        const launchUrl = new URL(board.externalPath, `${baseUrl}/`);
-        launchUrl.searchParams.set("cognisWhiteboard", board.id);
-        launchUrl.searchParams.set("accessToken", board.accessToken);
-        return launchUrl.toString();
+    mintSessionToken(config, board, user) {
+        const header = Buffer.from(
+            JSON.stringify({ alg: "HS256", typ: "JWT" }),
+        ).toString("base64url");
+        const now = Math.floor(Date.now() / 1000);
+        const payload = Buffer.from(
+            JSON.stringify({
+                fileId: board.id,
+                user: {
+                    id: String(user.id),
+                    name: String(user.name || user.id),
+                },
+                isFileReadOnly: Boolean(user.readOnly),
+                iat: now,
+                exp: now + 3600,
+            }),
+        ).toString("base64url");
+        const signature = createHmac("sha256", config.apiKey)
+            .update(`${header}.${payload}`)
+            .digest("base64url");
+        return `${header}.${payload}.${signature}`;
     }
 
     mapBoard(row) {
