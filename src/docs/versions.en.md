@@ -35,10 +35,10 @@ Increment using [Semantic Versioning](https://semver.org/):
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.1` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.1` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.1` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.1` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.2` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.9` |
@@ -50,7 +50,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
-| Database (db)         | `src/gateways/db/`           | `1.2.1`  |
+| Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |

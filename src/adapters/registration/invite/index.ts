@@ -245,6 +245,7 @@ export function createAdapter(deps: {
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
     }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }> {
+        await ensureReady();
         if (!canSendInviteEmail()) throw new Error("smtp_unavailable");
         const inviteeEmail = normalizeEmail(input.inviteeEmail);
         if (!inviteeEmail) throw new Error("invitee_email_required");
@@ -318,6 +319,7 @@ export function createAdapter(deps: {
         inviterAccountId?: string;
         includeClosed?: boolean;
     }): Promise<RegistrationInviteRecord[]> {
+        await ensureReady();
         const now = Date.now();
         const whereConditions = filter?.inviterAccountId
             ? [
@@ -396,6 +398,7 @@ export function createAdapter(deps: {
         tokenId: string;
         revokedByAccountId: string;
     }): Promise<boolean> {
+        await ensureReady();
         const nowIso = new Date().toISOString();
         const result = await dbExecutor.executeCommand({
             option: "UPDATE",
