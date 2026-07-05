@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="module.nextcloudWhiteboard.page_title">Nextcloud ホワイトボード</string>
+  <string name="module.nextcloudWhiteboard.empty">利用できるホワイトボードはまだありません。</string>
+  <string name="module.nextcloudWhiteboard.title">ホワイトボードのタイトル</string>
+  <string name="module.nextcloudWhiteboard.participants">参加者ハンドル</string>
+  <string name="module.nextcloudWhiteboard.spawn">ホワイトボードを開く</string>
+  <string name="module.nextcloudWhiteboard.admin_title">Nextcloud ホワイトボード設定</string>
+  <string name="module.nextcloudWhiteboard.instance_url">Nextcloud URL</string>
+  <string name="module.nextcloudWhiteboard.api_key">API キー</string>
+  <string name="module.nextcloudWhiteboard.admin_note">設定済みの Nextcloud Whiteboard インスタンス用に生成した API キーを貼り付けてください。保存済みのキーは保存後に表示されません。</string>
+  <string name="module.nextcloudWhiteboard.load_failed">Nextcloud Whiteboard 設定を読み込めませんでした。</string>
+  <string name="module.nextcloudWhiteboard.save_success">Nextcloud Whiteboard 設定を保存しました。</string>
+  <string name="module.nextcloudWhiteboard.save_failed">Nextcloud Whiteboard 設定を保存できませんでした。</string>
+  <string name="module.nextcloudWhiteboard.instance_url_description">Whiteboard を提供する Nextcloud サーバーのベース URL です。</string>
+  <string name="module.nextcloudWhiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
+  <string name="module.nextcloudWhiteboard.api_key_description">Cognis がホワイトボードを作成して開くために使うサーバー側 API キーです。</string>
+  <string name="module.nextcloudWhiteboard.api_key_placeholder">API キーを貼り付け</string>
+</resources>
