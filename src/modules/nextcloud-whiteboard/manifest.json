@@ -1,0 +1,20 @@
+{
+    "id": "nextcloud-whiteboard",
+    "name": "Nextcloud Whiteboard",
+    "version": "1.0.0",
+    "class": "extension",
+    "coreApiVersion": "v1",
+    "capabilities": ["whiteboard:collaboration", "whiteboard:access-control"],
+    "entrypoints": {
+        "bootstrap": "./bootstrap.js",
+        "api": "./api/index.js",
+        "ui": "./ui/index.html"
+    },
+    "publisher": "Cognis Labs HQ",
+    "ui": {
+        "componentConfig": {
+            "scriptUrl": "/static/modules/nextcloud-whiteboard/admin-section.js"
+        }
+    },
+    "requires": ["social"]
+}

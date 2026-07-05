@@ -1,0 +1,38 @@
+.whiteboard-page,
+.whiteboard-admin {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.whiteboard-form,
+.whiteboard-admin {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.whiteboard-form label,
+.whiteboard-admin label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.whiteboard-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.whiteboard-card {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.whiteboard-empty {
+    color: var(--text-muted, #5d6677);
+}

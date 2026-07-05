@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="module.nextcloudWhiteboard.page_title">Papan tulis Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.empty">Belum ada papan tulis yang tersedia.</string>
+  <string name="module.nextcloudWhiteboard.title">Judul papan tulis</string>
+  <string name="module.nextcloudWhiteboard.participants">Nama peserta</string>
+  <string name="module.nextcloudWhiteboard.spawn">Buka papan tulis</string>
+  <string name="module.nextcloudWhiteboard.admin_title">Pengaturan papan tulis Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.instance_url">URL Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.api_key">Kunci API</string>
+</resources>
