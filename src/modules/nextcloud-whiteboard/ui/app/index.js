@@ -39,7 +39,12 @@ function renderBoardList(root, boards) {
         title.textContent = board.title;
         const metadata = document.createElement("p");
         metadata.textContent = `${board.role} · ${new Date(board.updatedAt).toLocaleString()}`;
-        item.append(title, metadata);
+        const openButton = document.createElement("button");
+        openButton.type = "button";
+        openButton.className = "whiteboard-card-open";
+        openButton.textContent = text("module.nextcloudWhiteboard.open");
+        openButton.addEventListener("click", () => openBoard(board));
+        item.append(title, metadata, openButton);
         list.append(item);
     }
 }
@@ -62,6 +67,14 @@ async function spawnBoard(root) {
     titleInput.value = "";
     participantsInput.value = "";
     renderBoardList(root, await request("/whiteboards"));
+}
+
+function openBoard(board) {
+    window.open(
+        `/whiteboard?id=${encodeURIComponent(board.id)}`,
+        "_blank",
+        "popup,width=1280,height=900,noopener,noreferrer",
+    );
 }
 
 export async function mount(root) {

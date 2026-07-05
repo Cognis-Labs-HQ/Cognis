@@ -5,15 +5,19 @@
   <string name="module.nextcloudWhiteboard.title">Whiteboard Title</string>
   <string name="module.nextcloudWhiteboard.participants">Participant Handles</string>
   <string name="module.nextcloudWhiteboard.spawn">Open Whiteboard</string>
+  <string name="module.nextcloudWhiteboard.open">Open</string>
   <string name="module.nextcloudWhiteboard.admin_title">Nextcloud Whiteboard Settings</string>
+  <string name="module.nextcloudWhiteboard.server_url">Whiteboard Server URL</string>
   <string name="module.nextcloudWhiteboard.instance_url">Nextcloud URL</string>
   <string name="module.nextcloudWhiteboard.api_key">API Key</string>
-  <string name="module.nextcloudWhiteboard.admin_note">Paste an API key generated for the configured Nextcloud Whiteboard instance. The saved key is never shown after saving.</string>
+  <string name="module.nextcloudWhiteboard.admin_note">Configure the Nextcloud Whiteboard collaboration server. The server URL points to the standalone whiteboard server (Socket.IO endpoint). The API key is used to sign session tokens so clients can connect directly via WebSocket.</string>
   <string name="module.nextcloudWhiteboard.load_failed">Could not load Nextcloud Whiteboard settings.</string>
   <string name="module.nextcloudWhiteboard.save_success">Nextcloud Whiteboard settings saved.</string>
   <string name="module.nextcloudWhiteboard.save_failed">Could not save Nextcloud Whiteboard settings.</string>
-  <string name="module.nextcloudWhiteboard.instance_url_description">The base URL for the Nextcloud server that hosts Whiteboard.</string>
+  <string name="module.nextcloudWhiteboard.server_url_description">URL of the Nextcloud Whiteboard collaboration server (WebSocket endpoint).</string>
+  <string name="module.nextcloudWhiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
+  <string name="module.nextcloudWhiteboard.instance_url_description">The base URL of the Nextcloud server (optional, for reference).</string>
   <string name="module.nextcloudWhiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
-  <string name="module.nextcloudWhiteboard.api_key_description">A server-side API key used by Cognis to create and launch whiteboards.</string>
+  <string name="module.nextcloudWhiteboard.api_key_description">The shared secret used to sign JWT session tokens for the whiteboard server.</string>
   <string name="module.nextcloudWhiteboard.api_key_placeholder">Paste API key</string>
 </resources>

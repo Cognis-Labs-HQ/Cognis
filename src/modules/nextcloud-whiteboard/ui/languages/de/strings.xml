@@ -5,15 +5,19 @@
   <string name="module.nextcloudWhiteboard.title">Whiteboard-Titel</string>
   <string name="module.nextcloudWhiteboard.participants">Teilnehmer-Kennungen</string>
   <string name="module.nextcloudWhiteboard.spawn">Whiteboard öffnen</string>
+  <string name="module.nextcloudWhiteboard.open">Öffnen</string>
   <string name="module.nextcloudWhiteboard.admin_title">Nextcloud-Whiteboard-Einstellungen</string>
+  <string name="module.nextcloudWhiteboard.server_url">Whiteboard-Server-URL</string>
   <string name="module.nextcloudWhiteboard.instance_url">Nextcloud-URL</string>
   <string name="module.nextcloudWhiteboard.api_key">API-Schlüssel</string>
-  <string name="module.nextcloudWhiteboard.admin_note">Fügen Sie einen API-Schlüssel ein, der für die konfigurierte Nextcloud-Whiteboard-Instanz erzeugt wurde. Der gespeicherte Schlüssel wird nach dem Speichern nie angezeigt.</string>
+  <string name="module.nextcloudWhiteboard.admin_note">Konfigurieren Sie den Nextcloud-Whiteboard-Kollaborationsserver. Die Server-URL verweist auf den eigenständigen Whiteboard-Server (Socket.IO-Endpunkt). Der API-Schlüssel wird zum Signieren von Sitzungstoken verwendet, damit Clients sich direkt per WebSocket verbinden können.</string>
   <string name="module.nextcloudWhiteboard.load_failed">Die Nextcloud-Whiteboard-Einstellungen konnten nicht geladen werden.</string>
   <string name="module.nextcloudWhiteboard.save_success">Die Nextcloud-Whiteboard-Einstellungen wurden gespeichert.</string>
   <string name="module.nextcloudWhiteboard.save_failed">Die Nextcloud-Whiteboard-Einstellungen konnten nicht gespeichert werden.</string>
-  <string name="module.nextcloudWhiteboard.instance_url_description">Die Basis-URL des Nextcloud-Servers, der Whiteboard bereitstellt.</string>
+  <string name="module.nextcloudWhiteboard.server_url_description">URL des Nextcloud-Whiteboard-Kollaborationsservers (WebSocket-Endpunkt).</string>
+  <string name="module.nextcloudWhiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
+  <string name="module.nextcloudWhiteboard.instance_url_description">Die Basis-URL des Nextcloud-Servers (optional, als Referenz).</string>
   <string name="module.nextcloudWhiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
-  <string name="module.nextcloudWhiteboard.api_key_description">Ein serverseitiger API-Schlüssel, mit dem Cognis Whiteboards erstellt und öffnet.</string>
+  <string name="module.nextcloudWhiteboard.api_key_description">Das gemeinsame Geheimnis zum Signieren von JWT-Sitzungstoken für den Whiteboard-Server.</string>
   <string name="module.nextcloudWhiteboard.api_key_placeholder">API-Schlüssel einfügen</string>
 </resources>
