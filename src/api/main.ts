@@ -276,6 +276,13 @@ if (flowCtx.flow.exists("bootstrap-platform")) {
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
 const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
+await dbExecutor.ensureTable({
+    name: "gateways",
+    columns: [
+        { name: "gateway_id", type: "text", primaryKey: true },
+        { name: "enabled", type: "boolean", notNull: true, default: "true" },
+    ],
+});
 const adminStateResult = await dbDialect.executeCommand({
     option: "SELECT",
     table: "bootstrap_state",
