@@ -84,26 +84,45 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    padding: 0.4rem 0.75rem;
-}
-
-.wb-toolbar[hidden] {
-    display: none;
+    padding: 0.5rem 0.75rem;
 }
 
 .wb-toolbar-group {
     align-items: center;
     display: flex;
-    gap: 0.35rem;
+    gap: 0.45rem;
 }
 
-.wb-tool {
+.wb-toolbar-group[hidden] {
+    display: none;
+}
+
+.wb-tool,
+#wb-color {
+    align-items: center;
     background: transparent;
     border: 1px solid var(--border, #d8dee9);
-    border-radius: 0.4rem;
+    border-radius: 0.65rem;
+    box-sizing: border-box;
+    color: var(--text, #1f2937);
     cursor: pointer;
-    font-size: 1rem;
-    padding: 0.25rem 0.5rem;
+    display: inline-flex;
+    font-size: 1.1rem;
+    height: 2.5rem;
+    justify-content: center;
+    min-width: 2.5rem;
+    padding: 0 0.75rem;
+}
+
+#wb-color {
+    inline-size: 2.5rem;
+    padding: 0.25rem;
+}
+
+#wb-stroke-width {
+    appearance: none;
+    min-width: 3.25rem;
+    text-align: center;
 }
 
 .wb-tool.active {
@@ -112,32 +131,37 @@
     color: #ffffff;
 }
 
-.wb-toolbar-status-group {
-    flex: 1;
-    justify-content: flex-end;
-}
-
-.wb-status {
-    font-size: 0.8rem;
-}
-
-.wb-status[data-variant="success"] {
-    color: var(--success, #2d9e5c);
-}
-
-.wb-status[data-variant="warning"] {
-    color: var(--warning, #c47900);
-}
-
-.wb-status[data-variant="error"] {
-    color: var(--error, #c0392b);
-}
-
 .wb-board-title {
+    flex: 1;
     font-weight: 600;
+    min-width: 10rem;
     overflow: hidden;
+    text-align: end;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.wb-history-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.wb-history-card {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 0.75rem;
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+.wb-history-card h3,
+.wb-history-card p {
+    margin: 0;
+}
+
+.wb-history-card p {
+    color: var(--text-muted, #5d6677);
+    font-size: 0.85rem;
 }
 
 .wb-canvas-stage {
@@ -176,89 +200,4 @@
     margin: 0;
     padding: 2rem;
     text-align: center;
-}
-
-.whiteboard-window {
-    background: var(--surface, #ffffff);
-    display: grid;
-    grid-template-rows: 1fr;
-    height: 100dvh;
-    margin: 0;
-    overflow: hidden;
-    padding: 0;
-    width: 100dvw;
-}
-
-#whiteboard-root {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100%;
-    overflow: hidden;
-}
-
-.whiteboard-toolbar {
-    align-items: center;
-    background: var(--surface, #ffffff);
-    border-bottom: 1px solid var(--border, #d8dee9);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.4rem 0.75rem;
-}
-
-.whiteboard-toolbar-group {
-    align-items: center;
-    display: flex;
-    gap: 0.35rem;
-}
-
-.whiteboard-tool {
-    background: transparent;
-    border: 1px solid var(--border, #d8dee9);
-    border-radius: 0.4rem;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 0.25rem 0.5rem;
-}
-
-.whiteboard-tool.active {
-    background: var(--accent, #5e81f4);
-    border-color: var(--accent, #5e81f4);
-    color: #ffffff;
-}
-
-.whiteboard-status-group {
-    flex: 1;
-    justify-content: flex-end;
-}
-
-.whiteboard-status {
-    font-size: 0.8rem;
-}
-
-.whiteboard-status[data-variant="success"] {
-    color: var(--success, #2d9e5c);
-}
-
-.whiteboard-status[data-variant="warning"] {
-    color: var(--warning, #c47900);
-}
-
-.whiteboard-status[data-variant="error"] {
-    color: var(--error, #c0392b);
-}
-
-.whiteboard-board-title {
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-#whiteboard-canvas {
-    cursor: crosshair;
-    display: block;
-    height: 100%;
-    touch-action: none;
-    width: 100%;
 }

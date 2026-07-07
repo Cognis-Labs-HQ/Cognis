@@ -202,7 +202,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const rect = canvasElement.parentElement?.getBoundingClientRect();
         if (!rect) return;
         const toolbarHeight =
-            document.getElementById("whiteboard-toolbar")?.offsetHeight ?? 0;
+            document.getElementById("wb-toolbar")?.offsetHeight ?? 0;
         canvasElement.width = rect.width;
         canvasElement.height = rect.height - toolbarHeight;
         scheduleRender();

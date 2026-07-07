@@ -170,7 +170,7 @@ test("page security headers include registered script origins", () => {
     );
     assert.match(
         contentSecurityPolicy,
-        /connect-src 'self' https:\/\/meetings\.example\.test/,
+        /connect-src 'self' https:\/\/meetings\.example\.test wss:\/\/meetings\.example\.test/,
     );
 });
 

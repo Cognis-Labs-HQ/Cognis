@@ -53,3 +53,14 @@ test("nextcloud whiteboard registers full SPA routing and boilerplate styles", (
         ]);
     }
 });
+
+test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+    );
+    assert.match(
+        source,
+        /componentStringBaseUrls:\s*\[\s*"\/static\/modules\/nextcloud-whiteboard\/languages"/,
+    );
+    assert.doesNotMatch(source, /wb-connection-status/);
+});
