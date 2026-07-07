@@ -25,7 +25,9 @@ test("dashboard includes a whiteboard validation element", () => {
 test("dashboard whiteboard validation element spawns via module API", () => {
     const source = readDashboardSource();
     assert.ok(
-        source.includes("/api/v1/modules/nextcloud-whiteboard/whiteboards/spawn"),
+        source.includes(
+            "/api/v1/modules/nextcloud-whiteboard/whiteboards/spawn",
+        ),
         "dashboard whiteboard validation element should call the whiteboard spawn API",
     );
 });
