@@ -32,14 +32,29 @@ function normalizePageResourceOrigin(
     }
 }
 
-function listPageScriptOrigins(): string[] {
+function listPageHttpOrigins(): string[] {
     return Array.from(pageScriptOriginsByOwner.values())
         .flatMap((origins) => Array.from(origins))
         .sort();
 }
 
+function listPageConnectOrigins(): string[] {
+    return listPageHttpOrigins().flatMap((origin) => {
+        const parsed = new URL(origin);
+        if (parsed.protocol === "https:")
+            return [origin, `wss://${parsed.host}`];
+        if (parsed.protocol === "http:") return [origin, `ws://${parsed.host}`];
+        return [origin];
+    });
+}
+
 function buildPageResourceDirective(name: string): string {
-    const allowedSources = ["'self'", ...listPageScriptOrigins()];
+    const allowedSources = [
+        "'self'",
+        ...(name === "connect-src"
+            ? listPageConnectOrigins()
+            : listPageHttpOrigins()),
+    ];
     return `${name} ${allowedSources.join(" ")}`;
 }
 
