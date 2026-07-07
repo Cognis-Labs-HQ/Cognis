@@ -617,4 +617,11 @@
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.label">今後のカレンダー予定</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">今後のカレンダー予定はありません。</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.label">ホワイトボード検証</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.description">ダッシュボードからNextcloudホワイトボードを起動して、すばやく検証できます。</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.spawn">検証用ホワイトボードを起動</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.title_prefix">検証用ホワイトボード</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.spawn_success">検証用ホワイトボードを開きました。</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.spawn_failed">検証用ホワイトボードを起動できませんでした。</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.popup_blocked">ポップアップがブロックされました。ポップアップを許可して再試行してください。</string>
 </resources>

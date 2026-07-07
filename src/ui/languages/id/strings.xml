@@ -617,4 +617,11 @@
   <string name="ui.app.dashboard.element.student_classes.go">Ke Kelas Saya</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.label">Acara Kalender Mendatang</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">Tidak ada acara kalender mendatang.</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.label">Validasi Whiteboard</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.description">Luncurkan whiteboard Nextcloud dari dashboard untuk pemeriksaan validasi cepat.</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.spawn">Buka Whiteboard Validasi</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.title_prefix">Whiteboard Validasi</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.spawn_success">Whiteboard validasi dibuka.</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.spawn_failed">Tidak dapat membuka whiteboard validasi.</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.popup_blocked">Popup diblokir. Aktifkan popup lalu coba lagi.</string>
 </resources>
