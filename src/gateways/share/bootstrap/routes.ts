@@ -151,16 +151,13 @@ export function createShareRoutes(input: {
                 sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
-            const flowResult = await input.flow.run(
-                "revoke-share-token",
-                {
-                    claims,
-                    shareId,
-                    ownerAccountId: existingToken.ownerAccountId,
-                    resourceType: existingToken.resourceType,
-                    resourceId: existingToken.resourceId,
-                },
-            );
+            const flowResult = await input.flow.run("revoke-share-token", {
+                claims,
+                shareId,
+                ownerAccountId: existingToken.ownerAccountId,
+                resourceType: existingToken.resourceType,
+                resourceId: existingToken.resourceId,
+            });
             const deleted = getFirstStageResult<{ revoked?: boolean }>(
                 flowResult.stageResults,
                 "delete-token",
@@ -183,12 +180,9 @@ export function createShareRoutes(input: {
         );
         if (req.method === "GET" && resolveMatch) {
             const token = decodeURIComponent(resolveMatch[1]);
-            const flowResult = await input.flow.run(
-                "resolve-share-token",
-                {
-                    token,
-                },
-            );
+            const flowResult = await input.flow.run("resolve-share-token", {
+                token,
+            });
             const resolved = getFirstStageResult<{
                 resolved?: boolean;
                 reason?: string;
