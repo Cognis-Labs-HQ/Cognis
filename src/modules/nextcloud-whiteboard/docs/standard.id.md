@@ -1,13 +1,31 @@
-# Papan tulis
+# Nextcloud Whiteboard module
 
-## Ringkasan
+The Nextcloud Whiteboard module adds collaborative drawing canvases to Cognis without embedding or scraping the Nextcloud web UI. Cognis renders its own page-composer based whiteboard surface, mints short-lived server-side session tokens, and connects the browser directly to the configured Nextcloud Whiteboard Socket.IO server.
 
-Modul Nextcloud Whiteboard memungkinkan pengguna Cognis membuka sesi papan tulis kolaboratif melalui instans Nextcloud Whiteboard yang dikonfigurasi.
+## Architecture
 
-## Administrasi
+- **Cognis API** stores configuration, creates whiteboard records, enforces the Cognis allow-list, and signs Socket.IO session JWTs with the administrator-provided API key.
+- **Cognis UI** renders the board list and drawing canvas as page-composer elements so the canvas can be embedded in future dashboards, classrooms, and meeting layouts.
+- **Nextcloud Whiteboard server** receives the signed token over Socket.IO and synchronizes Excalidraw-compatible element updates.
 
-Administrator mengatur URL dasar Nextcloud dan kunci API di bagian administrasi modul. Kunci API disimpan di server dan tidak pernah dikembalikan oleh API konfigurasi.
+The API key never leaves the Cognis server. Browsers receive only a short-lived JWT for the selected board.
 
-## Kontrol akses
+## Administrator setup
 
-Cognis menyimpan daftar izin untuk setiap papan tulis yang dibuat. Pengguna hanya dapat melihat dan membuka papan tulis jika menjadi pemilik atau peserta yang diundang.
+1. Enable the module and open **Nextcloud Whiteboard Settings** from administration.
+2. Enter the **Whiteboard Server URL** for the standalone Socket.IO service, for example `https://whiteboard.example.com:3002`.
+3. Optionally enter the base **Nextcloud URL** for operator reference.
+4. Enter the shared API key used by the whiteboard server. Cognis requires at least 16 characters.
+5. Save the settings. Cognis registers the configured server origin for script and websocket CSP access.
+
+## User workflow
+
+Users open **Whiteboards** from the navigation bar or a contributed dashboard element. They can create a board, list boards they can access, and open a board directly inside the page layout. The canvas supports pen, eraser, color, stroke width, clearing, connection status, and live remote updates.
+
+## Access control
+
+Every board has an owner and an explicit participant allow-list. Cognis checks the signed-in user's profile handle before returning board data or minting a session token. Hidden profiles are excluded from participant resolution unless the server flow explicitly includes them.
+
+## Integration capabilities
+
+The module contributes `nextcloud-whiteboard:api`, `nextcloud-whiteboard:spawnWhiteboardWindow`, `whiteboard:getEmbedUrl`, and `whiteboard:fetchBoardData`. Integrations should use these capabilities instead of hard-coding routes so future render targets can reuse the same access checks.

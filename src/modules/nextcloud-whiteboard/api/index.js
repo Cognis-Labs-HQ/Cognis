@@ -76,6 +76,7 @@ function registerConfiguredOrigin(registerScriptOrigins, config) {
     if (typeof registerScriptOrigins === "function") {
         registerScriptOrigins(PAGE_SCRIPT_ORIGIN_OWNER_ID, [
             config?.instanceUrl,
+            config?.serverUrl,
         ]);
     }
 }
@@ -117,14 +118,9 @@ export function registerUi(ctx) {
         ],
         access: { minRole: "user" },
     });
-    ctx.registerSpaRoute({
-        id: "module-nextcloud-whiteboard-canvas",
-        pattern: "^/whiteboard$",
-        base: "/whiteboard",
-        scriptUrl: "/static/modules/nextcloud-whiteboard/whiteboard/index.js",
-        stylesheets: [
-            "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
-        ],
+    ctx.registerPageExtension?.("dashboard", {
+        id: "nextcloud-whiteboard-dashboard-launcher",
+        scriptUrl: "/static/modules/nextcloud-whiteboard/dashboard-element.js",
         access: { minRole: "user" },
     });
     ctx.registerAdminSection({
@@ -237,7 +233,7 @@ export function registerApiRoutes(router, ctx) {
                 data: {
                     ready: true,
                     configComplete: Boolean(
-                        config.instanceUrl && config.apiKeyConfigured,
+                        config.serverUrl && config.apiKeyConfigured,
                     ),
                 },
             });
