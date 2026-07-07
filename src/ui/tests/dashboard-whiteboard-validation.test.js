@@ -57,7 +57,7 @@ test("dashboard whiteboard validation strings exist in all UI languages", () => 
     const requiredKeys = [
         "ui.app.dashboard.element.whiteboard_validation.label",
         "ui.app.dashboard.element.whiteboard_validation.description",
-        "ui.app.dashboard.element.whiteboard_validation.spawn",
+        "ui.app.dashboard.element.whiteboard_validation.open",
         "ui.app.dashboard.element.whiteboard_validation.title_prefix",
         "ui.app.dashboard.element.whiteboard_validation.spawn_success",
         "ui.app.dashboard.element.whiteboard_validation.spawn_failed",

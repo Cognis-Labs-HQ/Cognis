@@ -619,7 +619,7 @@
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">Keine bevorstehenden Kalenderereignisse.</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.label">Whiteboard-Validierung</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.description">Starten Sie ein Nextcloud-Whiteboard direkt im Dashboard für schnelle Validierungsprüfungen.</string>
-  <string name="ui.app.dashboard.element.whiteboard_validation.spawn">Validierungs-Whiteboard Starten</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.open">Validierungs-Whiteboard öffnen</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.title_prefix">Validierungs-Whiteboard</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.spawn_success">Validierungs-Whiteboard wurde geöffnet.</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.spawn_failed">Ein Validierungs-Whiteboard konnte nicht gestartet werden.</string>
