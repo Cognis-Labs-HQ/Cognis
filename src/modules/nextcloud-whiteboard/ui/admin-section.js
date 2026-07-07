@@ -3,37 +3,28 @@ import { openModuleSettingsPopup } from "/static/reuse/module-settings-popup.js"
 
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
 
-async function readJson(response) {
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok)
-        throw new Error(payload?.error?.message ?? "Request failed.");
-    return payload.data;
-}
-
-async function request(path, options = {}) {
-    return readJson(
-        await fetch(`${API_BASE}${path}`, {
-            credentials: "same-origin",
-            headers: { "content-type": "application/json" },
-            ...options,
-        }),
-    );
-}
-
 function text(key) {
     return window.CognisI18n?.t?.(key) ?? key;
 }
 
 export async function mount(root) {
-    const config = await request("/config");
+    const configResponse = await fetch(`${API_BASE}/config`, {
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+    });
+    const configPayload = await configResponse.json().catch(() => ({}));
+    if (!configResponse.ok) {
+        throw new Error(configPayload?.error?.message ?? "Request failed.");
+    }
+    const config = configPayload.data;
     root.innerHTML = "";
     const form = document.createElement("form");
     form.className = "whiteboard-admin";
     const heading = document.createElement("h2");
-    heading.textContent = text("module.nextcloudWhiteboard.admin_title");
+    heading.textContent = text("module.nextcloud_whiteboard.admin_title");
     const serverUrlLabel = document.createElement("label");
     const serverUrlText = document.createElement("span");
-    serverUrlText.textContent = text("module.nextcloudWhiteboard.server_url");
+    serverUrlText.textContent = text("module.nextcloud_whiteboard.server_url");
     const serverUrlInput = document.createElement("input");
     serverUrlInput.name = "serverUrl";
     serverUrlInput.type = "url";
@@ -42,7 +33,7 @@ export async function mount(root) {
     serverUrlLabel.append(serverUrlText, serverUrlInput);
     const urlLabel = document.createElement("label");
     const urlText = document.createElement("span");
-    urlText.textContent = text("module.nextcloudWhiteboard.instance_url");
+    urlText.textContent = text("module.nextcloud_whiteboard.instance_url");
     const urlInput = document.createElement("input");
     urlInput.name = "instanceUrl";
     urlInput.type = "url";
@@ -50,7 +41,7 @@ export async function mount(root) {
     urlLabel.append(urlText, urlInput);
     const keyLabel = document.createElement("label");
     const keyText = document.createElement("span");
-    keyText.textContent = text("module.nextcloudWhiteboard.api_key");
+    keyText.textContent = text("module.nextcloud_whiteboard.api_key");
     const keyInput = document.createElement("input");
     keyInput.name = "apiKey";
     keyInput.type = "password";
@@ -64,7 +55,9 @@ export async function mount(root) {
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
-        await request("/config", {
+        const saveResponse = await fetch(`${API_BASE}/config`, {
+            credentials: "same-origin",
+            headers: { "content-type": "application/json" },
             method: "POST",
             body: JSON.stringify({
                 serverUrl: formData.get("serverUrl"),
@@ -72,6 +65,10 @@ export async function mount(root) {
                 apiKey: formData.get("apiKey"),
             }),
         });
+        if (!saveResponse.ok) {
+            const savePayload = await saveResponse.json().catch(() => ({}));
+            throw new Error(savePayload?.error?.message ?? "Request failed.");
+        }
     });
     root.append(form);
 }
@@ -97,40 +94,40 @@ export async function openModuleConfigPopup({
         escapeHtml,
         loadUrl: "/api/v1/modules/nextcloud-whiteboard/config",
         saveUrl: "/api/v1/modules/nextcloud-whiteboard/config",
-        titleKey: "module.nextcloudWhiteboard.admin_title",
-        noteKey: "module.nextcloudWhiteboard.admin_note",
-        loadFailedKey: "module.nextcloudWhiteboard.load_failed",
-        successKey: "module.nextcloudWhiteboard.save_success",
-        failedKey: "module.nextcloudWhiteboard.save_failed",
+        titleKey: "module.nextcloud_whiteboard.admin_title",
+        noteKey: "module.nextcloud_whiteboard.admin_note",
+        loadFailedKey: "module.nextcloud_whiteboard.load_failed",
+        successKey: "module.nextcloud_whiteboard.save_success",
+        failedKey: "module.nextcloud_whiteboard.save_failed",
         fields: [
             {
                 id: "nextcloud-whiteboard-server-url",
                 configKey: "serverUrl",
-                labelKey: "module.nextcloudWhiteboard.server_url",
+                labelKey: "module.nextcloud_whiteboard.server_url",
                 descriptionKey:
-                    "module.nextcloudWhiteboard.server_url_description",
+                    "module.nextcloud_whiteboard.server_url_description",
                 placeholderKey:
-                    "module.nextcloudWhiteboard.server_url_placeholder",
+                    "module.nextcloud_whiteboard.server_url_placeholder",
                 type: "url",
             },
             {
                 id: "nextcloud-whiteboard-instance-url",
                 configKey: "instanceUrl",
-                labelKey: "module.nextcloudWhiteboard.instance_url",
+                labelKey: "module.nextcloud_whiteboard.instance_url",
                 descriptionKey:
-                    "module.nextcloudWhiteboard.instance_url_description",
+                    "module.nextcloud_whiteboard.instance_url_description",
                 placeholderKey:
-                    "module.nextcloudWhiteboard.instance_url_placeholder",
+                    "module.nextcloud_whiteboard.instance_url_placeholder",
                 type: "url",
             },
             {
                 id: "nextcloud-whiteboard-api-key",
                 configKey: "apiKey",
-                labelKey: "module.nextcloudWhiteboard.api_key",
+                labelKey: "module.nextcloud_whiteboard.api_key",
                 descriptionKey:
-                    "module.nextcloudWhiteboard.api_key_description",
+                    "module.nextcloud_whiteboard.api_key_description",
                 placeholderKey:
-                    "module.nextcloudWhiteboard.api_key_placeholder",
+                    "module.nextcloud_whiteboard.api_key_placeholder",
                 type: "text",
             },
         ],

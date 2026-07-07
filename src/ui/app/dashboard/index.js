@@ -4,12 +4,6 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
-import { showToast } from "../../reuse/toast.js";
-import {
-    resolveApiErrorMessage,
-    tryParseJsonResponse,
-} from "../../reuse/api-error-response.js";
-import { openPopupWindow } from "../../reuse/popup-window.js";
 import {
     buildAnalogueClockMarkup,
     buildDigitalClockMarkup,
@@ -95,84 +89,6 @@ async function loadUpcomingCalendarEvents() {
             .slice(0, 5);
     } catch {
         return [];
-    }
-}
-
-function buildValidationWhiteboardTitle(i18n, timestamp = new Date()) {
-    return `${i18n.t("ui.app.dashboard.element.whiteboard_validation.title_prefix")} ${formatDateTime(timestamp)}`;
-}
-
-/**
- * Spawn a validation whiteboard and display the result with toasts.
- *
- * Shows an error toast for API failures, a warning toast when the browser
- * blocks the popup, and a success toast after a whiteboard popup opens.
- *
- * @param {{ t: (key: string) => string }} i18n - Page i18n instance.
- * @returns {Promise<void>}
- */
-async function spawnValidationWhiteboard(i18n) {
-    try {
-        const response = await apiFetch(
-            "/api/v1/modules/nextcloud-whiteboard/whiteboards/spawn",
-            {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    title: buildValidationWhiteboardTitle(i18n),
-                    participants: [],
-                }),
-            },
-        );
-        const payload = await tryParseJsonResponse(response);
-        if (!response.ok) {
-            showToast(
-                resolveApiErrorMessage(
-                    payload,
-                    i18n.t(
-                        "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
-                    ),
-                ),
-                { variant: "error" },
-            );
-            return;
-        }
-        const launchUrl = payload?.data?.launchUrl;
-        if (typeof launchUrl !== "string") {
-            showToast(
-                i18n.t(
-                    "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
-                ),
-                { variant: "error" },
-            );
-            return;
-        }
-        const opened = openPopupWindow({
-            url: launchUrl,
-            windowFeatures: payload?.data?.windowFeatures || undefined,
-        });
-        if (!opened) {
-            showToast(
-                i18n.t(
-                    "ui.app.dashboard.element.whiteboard_validation.popup_blocked",
-                ),
-                { variant: "warning" },
-            );
-            return;
-        }
-        showToast(
-            i18n.t(
-                "ui.app.dashboard.element.whiteboard_validation.spawn_success",
-            ),
-            { variant: "success" },
-        );
-    } catch {
-        showToast(
-            i18n.t(
-                "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
-            ),
-            { variant: "error" },
-        );
     }
 }
 
@@ -296,25 +212,6 @@ export async function mount(root) {
               : `<p>${escapeHtml(i18n.t("ui.app.dashboard.element.calendar_upcoming.empty"))}</p>`
       }
     `,
-        },
-        {
-            id: "whiteboard-validation",
-            label: i18n.t(
-                "ui.app.dashboard.element.whiteboard_validation.label",
-            ),
-            gridSize: { default: [4, 2], min: [3, 2], max: [6, 3] },
-            render: () => `
-      <h3>${i18n.t("ui.app.dashboard.element.whiteboard_validation.label")}</h3>
-      <p>${i18n.t("ui.app.dashboard.element.whiteboard_validation.description")}</p>
-      <button type="button" id="dashboard-whiteboard-validation-spawn">${i18n.t("ui.app.dashboard.element.whiteboard_validation.open")}</button>
-    `,
-            onRender: () => {
-                document
-                    .querySelector("#dashboard-whiteboard-validation-spawn")
-                    ?.addEventListener("click", () => {
-                        void spawnValidationWhiteboard(i18n);
-                    });
-            },
         },
     ];
 

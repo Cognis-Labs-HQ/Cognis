@@ -1,26 +1,15 @@
-import { createHmac, randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
+import { signJwtHs256 } from "../../../api/reuse/jwt.js";
+import { createUrlSafeRandomToken } from "../../../api/reuse/random-token.js";
+import {
+    normalizeCollapsedText,
+    normalizeLeadingSlashPath,
+} from "../../../api/reuse/text-normalizers.js";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import {
     normalizeHandleKey,
     normalizeHandleKeys,
 } from "../../../gateways/social/bootstrap.js";
-
-function buildBoardToken() {
-    return randomBytes(18).toString("base64url");
-}
-
-function normalizeBoardTitle(value) {
-    const title = String(value ?? "")
-        .trim()
-        .replace(/\s+/g, " ");
-    return title || "Cognis Whiteboard";
-}
-
-function normalizeExternalPath(value) {
-    const candidate = String(value ?? "").trim();
-    if (!candidate) return "";
-    return candidate.startsWith("/") ? candidate : `/${candidate}`;
-}
 
 export class NextcloudWhiteboardStore {
     constructor({ db, log }) {
@@ -145,8 +134,8 @@ export class NextcloudWhiteboardStore {
             normalizedCreator,
             ...(Array.isArray(participants) ? participants : []),
         ]);
-        const accessToken = buildBoardToken();
-        const resolvedPath = normalizeExternalPath(
+        const accessToken = createUrlSafeRandomToken(18);
+        const resolvedPath = normalizeLeadingSlashPath(
             externalPath || `/apps/whiteboard/${id}.whiteboard`,
         );
         const now = new Date().toISOString();
@@ -156,7 +145,7 @@ export class NextcloudWhiteboardStore {
                 table: "nextcloud_whiteboards",
                 values: {
                     id,
-                    title: normalizeBoardTitle(title),
+                    title: normalizeCollapsedText(title, "Cognis Whiteboard"),
                     external_path: resolvedPath,
                     access_token: accessToken,
                     created_by: normalizedCreator,
@@ -227,12 +216,9 @@ export class NextcloudWhiteboardStore {
     }
 
     mintSessionToken(config, board, user) {
-        const header = Buffer.from(
-            JSON.stringify({ alg: "HS256", typ: "JWT" }),
-        ).toString("base64url");
         const now = Math.floor(Date.now() / 1000);
-        const payload = Buffer.from(
-            JSON.stringify({
+        return signJwtHs256(
+            {
                 fileId: board.id,
                 user: {
                     id: String(user.id),
@@ -241,12 +227,9 @@ export class NextcloudWhiteboardStore {
                 isFileReadOnly: Boolean(user.readOnly),
                 iat: now,
                 exp: now + 3600,
-            }),
-        ).toString("base64url");
-        const signature = createHmac("sha256", config.apiKey)
-            .update(`${header}.${payload}`)
-            .digest("base64url");
-        return `${header}.${payload}.${signature}`;
+            },
+            config.apiKey,
+        );
     }
 
     mapBoard(row) {
