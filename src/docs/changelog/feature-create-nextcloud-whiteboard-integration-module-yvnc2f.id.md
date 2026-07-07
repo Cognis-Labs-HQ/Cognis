@@ -1,8 +1,20 @@
-# Nextcloud Whiteboard: Canvas Native WSS
+# Whiteboard di Dashboard
 
-## Canvas papan tulis native terhubung langsung ke server kolaborasi Nextcloud Whiteboard via WebSocket
+## Canvas kini tertanam langsung di dalam tata letak dashboard
 
-Implementasi sebelumnya mengalihkan pengguna ke frontend milik Nextcloud. Papan tulis kini dibuka sebagai canvas native di jendela popup dan terhubung langsung ke server kolaborasi Nextcloud Whiteboard (Socket.IO / WSS) — tanpa iframe.
+Canvas papan tulis tidak lagi dibuka sebagai popup browser. Mengklik sebuah board dari daftar board memuat canvas gambar penuh secara inline di dalam dashboard, menjaga semua kolaborasi dalam satu tab.
+
+## Pemeriksaan awal memverifikasi keterjangkauan server sebelum canvas diluncurkan
+
+Sebelum canvas terhubung, pemeriksaan keterjangkauan server memastikan URL server papan tulis telah dikonfigurasi dan responsif. Pesan kesalahan yang jelas ditampilkan jika konfigurasi tidak ada atau server tidak dapat dijangkau.
+
+## Alat gambar lengkap tetap tersedia di dalam dashboard
+
+Canvas tertanam menyertakan toolbar lengkap — pena, penghapus, warna garis, lebar garis, dan hapus — sesuai dengan semua fitur yang sebelumnya tersedia di jendela popup.
+
+## Kolaborasi real-time via Socket.IO tidak berubah
+
+Koneksi Socket.IO dan sinkronisasi elemen tetap berjalan seperti sebelumnya; satu-satunya perubahan adalah canvas kini dipasang di dalam elemen grid page composer alih-alih jendela browser terpisah.
 
 ## Token sesi JWT diterbitkan di sisi server untuk koneksi klien yang aman
 
@@ -10,12 +22,8 @@ Saat pengguna membuka papan tulis, server Cognis menerbitkan JWT berumur pendek 
 
 ## URL server kolaborasi terpisah di pengaturan admin
 
-Admin kini mengonfigurasi **URL Server Papan Tulis** khusus yang mengarah ke endpoint server kolaborasi Nextcloud Whiteboard mandiri. Ini memisahkan URL instans Nextcloud dari alamat server Socket.IO dan mendukung konfigurasi port atau host apa pun.
-
-## Halaman daftar papan tulis menampilkan tombol Buka per board
-
-Setiap kartu board di halaman Whiteboards kini menampilkan tombol **Buka** yang meluncurkan canvas native di jendela popup.
+Admin mengonfigurasi **URL Server Papan Tulis** khusus yang mengarah ke endpoint server kolaborasi Nextcloud Whiteboard mandiri, memisahkan URL instans Nextcloud dari alamat server Socket.IO.
 
 ## Kemampuan baru: `whiteboard:getEmbedUrl` dan `whiteboard:fetchBoardData`
 
-Modul dan adapter lain kini dapat memperoleh URL embed atau metadata papan tulis melalui kemampuan publik ini, memungkinkan integrasi kelas dan rapat di masa mendatang.
+Modul dan adapter lain dapat memperoleh URL embed atau metadata papan tulis melalui kemampuan publik ini, memungkinkan integrasi kelas dan rapat di masa mendatang.

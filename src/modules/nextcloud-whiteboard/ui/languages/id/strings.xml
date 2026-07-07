@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="module.nextcloudWhiteboard.page_title">Papan tulis Nextcloud</string>
+  <string name="module.nextcloudWhiteboard.page_subtitle">Berkolaborasi di atas kanvas gambar bersama</string>
   <string name="module.nextcloudWhiteboard.empty">Belum ada papan tulis yang tersedia.</string>
   <string name="module.nextcloudWhiteboard.title">Judul papan tulis</string>
   <string name="module.nextcloudWhiteboard.participants">Nama peserta</string>
   <string name="module.nextcloudWhiteboard.spawn">Buka papan tulis</string>
   <string name="module.nextcloudWhiteboard.open">Buka</string>
+  <string name="module.nextcloudWhiteboard.canvas_window">Kanvas</string>
+  <string name="module.nextcloudWhiteboard.boards_window">Papan tulis</string>
+  <string name="module.nextcloudWhiteboard.canvas_placeholder">Pilih papan tulis dari daftar untuk mulai menggambar.</string>
+  <string name="module.nextcloudWhiteboard.canvas_label">Kanvas papan tulis</string>
+  <string name="module.nextcloudWhiteboard.toolbar_label">Alat menggambar</string>
+  <string name="module.nextcloudWhiteboard.tool_pen">Pena</string>
+  <string name="module.nextcloudWhiteboard.tool_eraser">Penghapus</string>
+  <string name="module.nextcloudWhiteboard.stroke_color">Warna garis</string>
+  <string name="module.nextcloudWhiteboard.stroke_width">Lebar garis</string>
+  <string name="module.nextcloudWhiteboard.stroke_thin">Tipis</string>
+  <string name="module.nextcloudWhiteboard.stroke_medium">Sedang</string>
+  <string name="module.nextcloudWhiteboard.stroke_thick">Tebal</string>
+  <string name="module.nextcloudWhiteboard.clear_board">Bersihkan</string>
+  <string name="module.nextcloudWhiteboard.connected">Terhubung</string>
+  <string name="module.nextcloudWhiteboard.disconnected">Terputus</string>
+  <string name="module.nextcloudWhiteboard.connect_error">Kesalahan koneksi</string>
+  <string name="module.nextcloudWhiteboard.connecting_ellipsis">Menghubungkan&#x2026;</string>
+  <string name="module.nextcloudWhiteboard.preflight_checking">Memeriksa konektivitas server&#x2026;</string>
+  <string name="module.nextcloudWhiteboard.preflight_config_required">Server papan tulis belum dikonfigurasi. Hubungi administrator untuk mengatur URL server dan kunci API.</string>
+  <string name="module.nextcloudWhiteboard.preflight_unreachable">Tidak dapat menjangkau server papan tulis. Periksa jaringan atau konfigurasi server Anda.</string>
+  <string name="module.nextcloudWhiteboard.preflight_failed">Pemeriksaan server papan tulis gagal. Silakan coba lagi.</string>
+  <string name="module.nextcloudWhiteboard.socket_load_failed">Tidak dapat memuat Socket.IO dari server papan tulis.</string>
+  <string name="module.nextcloudWhiteboard.load_boards_failed">Tidak dapat memuat papan tulis.</string>
+  <string name="module.nextcloudWhiteboard.connecting">Menghubungkan ke papan tulis&#x2026;</string>
   <string name="module.nextcloudWhiteboard.admin_title">Pengaturan papan tulis Nextcloud</string>
   <string name="module.nextcloudWhiteboard.server_url">URL server papan tulis</string>
   <string name="module.nextcloudWhiteboard.instance_url">URL Nextcloud</string>
@@ -21,3 +46,4 @@
   <string name="module.nextcloudWhiteboard.api_key_description">Rahasia bersama untuk menandatangani token sesi JWT bagi server papan tulis.</string>
   <string name="module.nextcloudWhiteboard.api_key_placeholder">Tempel kunci API</string>
 </resources>
+

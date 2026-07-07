@@ -3,7 +3,10 @@ import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
+import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import { NextcloudWhiteboardStore } from "./store.js";
+
+const LIVENESS_TIMEOUT_MS = 5000;
 
 const MODULE_ID = "nextcloud-whiteboard";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
@@ -236,6 +239,41 @@ export function registerApiRoutes(router, ctx) {
                     configComplete: Boolean(
                         config.instanceUrl && config.apiKeyConfigured,
                     ),
+                },
+            });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/preflight",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const config = await store.getConfig();
+            if (!config.serverUrl || !config.apiKeyConfigured) {
+                sendError(
+                    res,
+                    409,
+                    "config_required",
+                    "The whiteboard server URL and API key must be configured before use.",
+                );
+                return;
+            }
+            const liveness = await checkHttpLiveness(config.serverUrl, {
+                timeoutMs: LIVENESS_TIMEOUT_MS,
+            });
+            log?.("info", "Nextcloud Whiteboard preflight check completed.", {
+                component: "nextcloud-whiteboard-module",
+                operation: "preflight",
+                alive: liveness.alive,
+                serverUrl: config.serverUrl,
+            });
+            sendJson(res, 200, {
+                data: {
+                    alive: liveness.alive,
+                    serverUrl: config.serverUrl,
                 },
             });
         },
