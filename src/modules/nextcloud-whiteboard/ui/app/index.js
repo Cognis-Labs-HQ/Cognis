@@ -105,16 +105,22 @@ function teardownCanvas() {
     if (socketInstance) {
         try {
             socketInstance.disconnect();
-        } catch {
-            // fall through — socket may already be gone
+        } catch (error) {
+            console.warn(
+                "[nextcloud-whiteboard] socket disconnect failed:",
+                error,
+            );
         }
         socketInstance = null;
     }
     if (canvasInstance) {
         try {
             canvasInstance.destroy();
-        } catch {
-            // fall through — canvas element may have been removed from DOM
+        } catch (error) {
+            console.warn(
+                "[nextcloud-whiteboard] canvas destroy failed:",
+                error,
+            );
         }
         canvasInstance = null;
     }
@@ -310,8 +316,11 @@ async function handleSpawn(form) {
 
     try {
         await loadBoards();
-    } catch {
-        // non-fatal — board list may be stale
+    } catch (error) {
+        console.warn(
+            "[nextcloud-whiteboard] board list refresh failed:",
+            error,
+        );
     }
 
     composer.refresh(buildElements());
@@ -463,7 +472,11 @@ export async function mount(root, { signal } = {}) {
 
     try {
         await loadBoards();
-    } catch {
+    } catch (error) {
+        console.error(
+            "[nextcloud-whiteboard] initial board load failed:",
+            error,
+        );
         showToast(t("module.nextcloudWhiteboard.load_boards_failed"), {
             variant: "error",
         });
