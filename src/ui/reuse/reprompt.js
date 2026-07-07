@@ -77,6 +77,8 @@ export function createRepromptGuard({
             onOpen: (overlay) => {
                 inputEl = overlay.querySelector("#reprompt-password");
                 warningEl = overlay.querySelector("#reprompt-warning");
+                // No explicit cleanup needed: the form is a child of the ephemeral
+                // overlay element, which popup.js removes from the DOM on close.
                 overlay
                     .querySelector("#reprompt-form")
                     ?.addEventListener("submit", (event) => {
