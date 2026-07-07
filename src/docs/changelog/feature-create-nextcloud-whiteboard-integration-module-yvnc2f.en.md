@@ -1,8 +1,20 @@
-# Nextcloud Whiteboard: WSS Native Canvas
+# Whiteboard in Dashboard
 
-## Native whiteboard canvas connects directly to Nextcloud Whiteboard collaboration server via WebSocket
+## Canvas is now embedded directly in the dashboard layout
 
-The previous implementation redirected users to Nextcloud's own frontend. The whiteboard now opens as a native canvas in a popup window and connects directly to the Nextcloud Whiteboard collaboration server (Socket.IO / WSS) — no iframe required.
+The whiteboard canvas no longer opens as a browser popup. Clicking a board from the board list loads the full drawing canvas inline within the dashboard, keeping all collaboration in one tab.
+
+## Pre-flight check verifies server reachability before any canvas launch
+
+Before the canvas connects, a server-reachability check confirms that the whiteboard server URL is configured and responsive. A clear error message is shown if configuration is missing or the server is unreachable, preventing silent failure.
+
+## Full drawing tooling is preserved in-dashboard
+
+The embedded canvas includes the complete toolbar — pen, eraser, stroke colour, stroke width, and clear — matching every feature that was previously available in the popup window.
+
+## Real-time collaboration via Socket.IO is unchanged
+
+Socket.IO connection and element sync continue to operate as before; the only change is that the canvas is mounted inside the page composer grid element rather than a separate browser window.
 
 ## JWT session tokens are minted server-side for secure, credential-free client connections
 
@@ -10,12 +22,8 @@ When a user opens a whiteboard, the Cognis server mints a short-lived JWT (signe
 
 ## Separate collaboration server URL in admin settings
 
-Admins now configure a dedicated **Whiteboard Server URL** pointing to the standalone Nextcloud Whiteboard collaboration server endpoint. This decouples the Nextcloud instance URL from the Socket.IO server address and accommodates any port or host configuration.
-
-## Whiteboard list page shows an Open button per board
-
-Each board card on the Whiteboards page now displays an **Open** button that launches the native canvas in a popup window, making the interaction explicit and accessible.
+Admins configure a dedicated **Whiteboard Server URL** pointing to the standalone Nextcloud Whiteboard collaboration server endpoint. This decouples the Nextcloud instance URL from the Socket.IO server address and accommodates any port or host configuration.
 
 ## New capabilities: `whiteboard:getEmbedUrl` and `whiteboard:fetchBoardData`
 
-Other modules and adapters can now obtain a whiteboard's embed URL or metadata through these public capabilities, enabling future classroom and meeting integrations.
+Other modules and adapters can obtain a whiteboard's embed URL or metadata through these public capabilities, enabling future classroom and meeting integrations.

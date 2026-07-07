@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="module.nextcloudWhiteboard.page_title">Nextcloud ホワイトボード</string>
+  <string name="module.nextcloudWhiteboard.page_subtitle">共有の描画キャンバスでコラボレーション</string>
   <string name="module.nextcloudWhiteboard.empty">利用できるホワイトボードはまだありません。</string>
   <string name="module.nextcloudWhiteboard.title">ホワイトボードのタイトル</string>
   <string name="module.nextcloudWhiteboard.participants">参加者ハンドル</string>
   <string name="module.nextcloudWhiteboard.spawn">ホワイトボードを開く</string>
   <string name="module.nextcloudWhiteboard.open">開く</string>
+  <string name="module.nextcloudWhiteboard.canvas_window">キャンバス</string>
+  <string name="module.nextcloudWhiteboard.boards_window">ホワイトボード</string>
+  <string name="module.nextcloudWhiteboard.canvas_placeholder">一覧からホワイトボードを選択して描画を開始してください。</string>
+  <string name="module.nextcloudWhiteboard.canvas_label">ホワイトボードキャンバス</string>
+  <string name="module.nextcloudWhiteboard.toolbar_label">描画ツール</string>
+  <string name="module.nextcloudWhiteboard.tool_pen">ペン</string>
+  <string name="module.nextcloudWhiteboard.tool_eraser">消しゴム</string>
+  <string name="module.nextcloudWhiteboard.stroke_color">線の色</string>
+  <string name="module.nextcloudWhiteboard.stroke_width">線の太さ</string>
+  <string name="module.nextcloudWhiteboard.stroke_thin">細い</string>
+  <string name="module.nextcloudWhiteboard.stroke_medium">中</string>
+  <string name="module.nextcloudWhiteboard.stroke_thick">太い</string>
+  <string name="module.nextcloudWhiteboard.clear_board">消去</string>
+  <string name="module.nextcloudWhiteboard.connected">接続済み</string>
+  <string name="module.nextcloudWhiteboard.disconnected">切断</string>
+  <string name="module.nextcloudWhiteboard.connect_error">接続エラー</string>
+  <string name="module.nextcloudWhiteboard.connecting_ellipsis">接続中&#x2026;</string>
+  <string name="module.nextcloudWhiteboard.preflight_checking">サーバー接続を確認中&#x2026;</string>
+  <string name="module.nextcloudWhiteboard.preflight_config_required">ホワイトボードサーバーが設定されていません。管理者にサーバー URL と API キーの設定を依頼してください。</string>
+  <string name="module.nextcloudWhiteboard.preflight_unreachable">ホワイトボードサーバーに接続できません。ネットワークまたはサーバー設定を確認してください。</string>
+  <string name="module.nextcloudWhiteboard.preflight_failed">ホワイトボードサーバーの確認に失敗しました。もう一度お試しください。</string>
+  <string name="module.nextcloudWhiteboard.socket_load_failed">ホワイトボードサーバーから Socket.IO を読み込めませんでした。</string>
+  <string name="module.nextcloudWhiteboard.load_boards_failed">ホワイトボードを読み込めませんでした。</string>
+  <string name="module.nextcloudWhiteboard.connecting">ホワイトボードに接続中&#x2026;</string>
   <string name="module.nextcloudWhiteboard.admin_title">Nextcloud ホワイトボード設定</string>
   <string name="module.nextcloudWhiteboard.server_url">ホワイトボードサーバー URL</string>
   <string name="module.nextcloudWhiteboard.instance_url">Nextcloud URL</string>
@@ -21,3 +46,4 @@
   <string name="module.nextcloudWhiteboard.api_key_description">ホワイトボードサーバー用の JWT セッショントークンへの署名に使う共有シークレットです。</string>
   <string name="module.nextcloudWhiteboard.api_key_placeholder">API キーを貼り付け</string>
 </resources>
+

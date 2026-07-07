@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
   <string name="module.nextcloudWhiteboard.page_title">Nextcloud-Whiteboards</string>
+  <string name="module.nextcloudWhiteboard.page_subtitle">Gemeinsam auf geteilten Zeichenflächen arbeiten</string>
   <string name="module.nextcloudWhiteboard.empty">Es sind noch keine Whiteboards verfügbar.</string>
   <string name="module.nextcloudWhiteboard.title">Whiteboard-Titel</string>
   <string name="module.nextcloudWhiteboard.participants">Teilnehmer-Kennungen</string>
   <string name="module.nextcloudWhiteboard.spawn">Whiteboard öffnen</string>
   <string name="module.nextcloudWhiteboard.open">Öffnen</string>
+  <string name="module.nextcloudWhiteboard.canvas_window">Zeichenfläche</string>
+  <string name="module.nextcloudWhiteboard.boards_window">Whiteboards</string>
+  <string name="module.nextcloudWhiteboard.canvas_placeholder">Wählen Sie ein Whiteboard aus der Liste, um mit dem Zeichnen zu beginnen.</string>
+  <string name="module.nextcloudWhiteboard.canvas_label">Whiteboard-Zeichenfläche</string>
+  <string name="module.nextcloudWhiteboard.toolbar_label">Zeichenwerkzeuge</string>
+  <string name="module.nextcloudWhiteboard.tool_pen">Stift</string>
+  <string name="module.nextcloudWhiteboard.tool_eraser">Radierer</string>
+  <string name="module.nextcloudWhiteboard.stroke_color">Strichfarbe</string>
+  <string name="module.nextcloudWhiteboard.stroke_width">Strichbreite</string>
+  <string name="module.nextcloudWhiteboard.stroke_thin">Dünn</string>
+  <string name="module.nextcloudWhiteboard.stroke_medium">Mittel</string>
+  <string name="module.nextcloudWhiteboard.stroke_thick">Dick</string>
+  <string name="module.nextcloudWhiteboard.clear_board">Leeren</string>
+  <string name="module.nextcloudWhiteboard.connected">Verbunden</string>
+  <string name="module.nextcloudWhiteboard.disconnected">Getrennt</string>
+  <string name="module.nextcloudWhiteboard.connect_error">Verbindungsfehler</string>
+  <string name="module.nextcloudWhiteboard.connecting_ellipsis">Verbinden&#x2026;</string>
+  <string name="module.nextcloudWhiteboard.preflight_checking">Serverkonnektivität wird geprüft&#x2026;</string>
+  <string name="module.nextcloudWhiteboard.preflight_config_required">Der Whiteboard-Server ist nicht konfiguriert. Bitten Sie einen Administrator, die Server-URL und den API-Schlüssel einzurichten.</string>
+  <string name="module.nextcloudWhiteboard.preflight_unreachable">Der Whiteboard-Server ist nicht erreichbar. Überprüfen Sie Ihre Netzwerk- oder Serverkonfiguration.</string>
+  <string name="module.nextcloudWhiteboard.preflight_failed">Die Prüfung des Whiteboard-Servers ist fehlgeschlagen. Bitte versuchen Sie es erneut.</string>
+  <string name="module.nextcloudWhiteboard.socket_load_failed">Socket.IO konnte nicht vom Whiteboard-Server geladen werden.</string>
+  <string name="module.nextcloudWhiteboard.load_boards_failed">Whiteboards konnten nicht geladen werden.</string>
+  <string name="module.nextcloudWhiteboard.connecting">Verbindung mit Whiteboard wird hergestellt&#x2026;</string>
   <string name="module.nextcloudWhiteboard.admin_title">Nextcloud-Whiteboard-Einstellungen</string>
   <string name="module.nextcloudWhiteboard.server_url">Whiteboard-Server-URL</string>
   <string name="module.nextcloudWhiteboard.instance_url">Nextcloud-URL</string>
@@ -21,3 +46,4 @@
   <string name="module.nextcloudWhiteboard.api_key_description">Das gemeinsame Geheimnis zum Signieren von JWT-Sitzungstoken für den Whiteboard-Server.</string>
   <string name="module.nextcloudWhiteboard.api_key_placeholder">API-Schlüssel einfügen</string>
 </resources>
+
