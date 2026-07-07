@@ -53,5 +53,24 @@
   <string name="module.nextcloud_whiteboard.history_title">Riwayat papan tulis</string>
   <string name="module.nextcloud_whiteboard.close">Tutup</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Tidak dapat terhubung ke server papan tulis di {server_url}. Minta administrator memeriksa URL WebSocket dan konfigurasi CSP.</string>
+  <string name="module.nextcloud_whiteboard.created_success">Papan tulis dibuat.</string>
+  <string name="module.nextcloud_whiteboard.rename_success">Papan tulis diganti nama.</string>
+  <string name="module.nextcloud_whiteboard.rename_failed">Tidak dapat mengganti nama papan tulis.</string>
+  <string name="module.nextcloud_whiteboard.rename_hint">Klik dua kali untuk mengganti nama</string>
+  <string name="module.nextcloud_whiteboard.status_idle">Belum terhubung.</string>
+  <string name="module.nextcloud_whiteboard.status_syncing">Menyinkronkan perubahan…</string>
+  <string name="module.nextcloud_whiteboard.status_synced">Tersinkron.</string>
+  <string name="module.nextcloud_whiteboard.status_sync_failed">Perubahan tidak dapat disinkronkan.</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit">Batas unggah gambar (byte)</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_description">Ukuran maksimum gambar yang ditempel dalam byte. Gunakan 0 untuk memblokir gambar tempel.</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_placeholder">1048576</string>
+  <string name="module.nextcloud_whiteboard.image_too_large">Gambar lebih besar dari batas {limit} byte yang dikonfigurasi.</string>
+  <string name="module.nextcloud_whiteboard.tool_select">Pilih</string>
+  <string name="module.nextcloud_whiteboard.tool_rectangle">Persegi panjang</string>
+  <string name="module.nextcloud_whiteboard.tool_diamond">Belah ketupat</string>
+  <string name="module.nextcloud_whiteboard.tool_ellipse">Elips</string>
+  <string name="module.nextcloud_whiteboard.tool_arrow">Panah</string>
+  <string name="module.nextcloud_whiteboard.tool_line">Garis</string>
+  <string name="module.nextcloud_whiteboard.tool_text">Teks</string>
 </resources>
 

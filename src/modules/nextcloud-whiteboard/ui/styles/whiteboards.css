@@ -201,3 +201,67 @@
     padding: 2rem;
     text-align: center;
 }
+
+.wb-sync-status {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 999px;
+    display: inline-block;
+    height: 1rem;
+    width: 1rem;
+}
+
+.wb-sync-status[data-status="synced"] {
+    background: var(--success, #2d9e5c);
+}
+
+.wb-sync-status[data-status="syncing"] {
+    background: var(--warning, #c47900);
+}
+
+.wb-sync-status[data-status="error"] {
+    background: var(--error, #c0392b);
+}
+
+.wb-start-panel {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    display: grid;
+    gap: 1rem;
+    max-height: min(32rem, 80%);
+    max-width: min(42rem, 90%);
+    padding: 1rem;
+    width: 100%;
+}
+
+.wb-start-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.wb-overlay-board-list {
+    border-top: 1px solid var(--border, #d8dee9);
+    display: grid;
+    gap: 0.5rem;
+    max-height: 14rem;
+    overflow: auto;
+    padding-top: 0.75rem;
+}
+
+.wb-overlay-board {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    text-align: start;
+}
+
+.wb-board-title[contenteditable="true"] {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--accent, #5e81f4);
+    border-radius: 0.5rem;
+    padding: 0.2rem 0.4rem;
+}

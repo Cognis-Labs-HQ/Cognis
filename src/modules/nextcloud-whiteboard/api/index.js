@@ -71,6 +71,7 @@ function buildCognisWhiteboardUrl(whiteboardId) {
 function publicConfig(config) {
     return {
         serverUrl: config.serverUrl,
+        imageUploadMaxBytes: config.imageUploadMaxBytes,
         apiKeyConfigured: config.apiKeyConfigured,
         updatedAt: config.updatedAt,
     };
@@ -304,6 +305,9 @@ export function registerApiRoutes(router, ctx) {
             const body = await readJson(req);
             const serverUrl = normalizeHttpUrl(body.serverUrl);
             const apiKey = String(body.apiKey ?? "").trim();
+            const imageUploadMaxBytes = Number(
+                body.imageUploadMaxBytes ?? 1048576,
+            );
             if (!serverUrl || !apiKey) {
                 sendError(
                     res,
@@ -316,6 +320,7 @@ export function registerApiRoutes(router, ctx) {
             const saved = await store.saveConfig({
                 serverUrl,
                 apiKey,
+                imageUploadMaxBytes,
             });
             registerConfiguredOrigin(registerScriptOrigins, saved);
             log?.("info", "Nextcloud Whiteboard configuration updated.", {
@@ -323,6 +328,7 @@ export function registerApiRoutes(router, ctx) {
                 operation: "save_config",
                 hasServerUrl: Boolean(saved.serverUrl),
                 hasApiKey: saved.apiKeyConfigured,
+                imageUploadMaxBytes: saved.imageUploadMaxBytes,
                 updatedBy: claims.sub,
             });
             sendJson(res, 200, { data: publicConfig(saved) });
@@ -409,9 +415,48 @@ export function registerApiRoutes(router, ctx) {
                     roomId: whiteboard.id,
                     title: whiteboard.title,
                     serverUrl: config.serverUrl,
+                    imageUploadMaxBytes: config.imageUploadMaxBytes,
                     token,
                 },
             });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/rename",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const username = await resolveRequesterUsername(
+                profileStore,
+                claims.sub,
+            ).catch((error) => {
+                sendError(res, 409, "profile_required", error.message);
+                return null;
+            });
+            if (!username) return;
+            const whiteboardId = String(body.id ?? "");
+            const authorized = await store.canAccessWhiteboard(
+                whiteboardId,
+                username,
+            );
+            if (!authorized) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "You are not listed as an allowed whiteboard participant.",
+                );
+                return;
+            }
+            const renamed = await store.renameWhiteboard(
+                whiteboardId,
+                body.title,
+            );
+            sendJson(res, 200, { data: renamed });
         },
         { access: { minRole: "user" } },
     );

@@ -30,6 +30,12 @@ export class NextcloudWhiteboardStore {
                 },
                 { name: "api_key", type: "text", notNull: true },
                 {
+                    name: "image_upload_max_bytes",
+                    type: "integer",
+                    notNull: true,
+                    default: 1048576,
+                },
+                {
                     name: "updated_at",
                     type: "timestamp",
                     notNull: true,
@@ -93,13 +99,18 @@ export class NextcloudWhiteboardStore {
             serverUrl: row?.server_url ? String(row.server_url) : "",
             apiKeyConfigured: Boolean(row?.api_key),
             apiKey: row?.api_key ? String(row.api_key) : "",
+            imageUploadMaxBytes: Number(row?.image_upload_max_bytes ?? 1048576),
             updatedAt: row?.updated_at ? String(row.updated_at) : null,
         };
     }
 
-    async saveConfig({ serverUrl, apiKey }) {
+    async saveConfig({ serverUrl, apiKey, imageUploadMaxBytes }) {
         const normalizedServerUrl = normalizeHttpUrl(serverUrl);
         const normalizedApiKey = String(apiKey ?? "").trim();
+        const normalizedImageUploadMaxBytes = Math.max(
+            0,
+            Number(imageUploadMaxBytes ?? 1048576),
+        );
         if (normalizedApiKey.length < 16) {
             throw new Error(
                 "API key must be at least 16 characters for sufficient security.",
@@ -113,11 +124,17 @@ export class NextcloudWhiteboardStore {
                 id: "default",
                 server_url: normalizedServerUrl,
                 api_key: normalizedApiKey,
+                image_upload_max_bytes: normalizedImageUploadMaxBytes,
                 updated_at: updatedAt,
             },
             onConflict: {
                 columns: ["id"],
-                merge: ["server_url", "api_key", "updated_at"],
+                merge: [
+                    "server_url",
+                    "api_key",
+                    "image_upload_max_bytes",
+                    "updated_at",
+                ],
             },
         });
         return this.getConfig();
@@ -196,6 +213,21 @@ export class NextcloudWhiteboardStore {
         return boards.sort((left, right) =>
             right.updatedAt.localeCompare(left.updatedAt),
         );
+    }
+
+    async renameWhiteboard(id, title) {
+        const normalizedTitle = normalizeCollapsedText(
+            title,
+            "Cognis Whiteboard",
+        );
+        const updatedAt = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "nextcloud_whiteboards",
+            values: { title: normalizedTitle, updated_at: updatedAt },
+            where: [{ column: "id", value: String(id ?? "") }],
+        });
+        return this.getWhiteboardById(id);
     }
 
     async canAccessWhiteboard(id, username) {

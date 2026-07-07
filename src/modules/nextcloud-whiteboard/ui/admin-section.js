@@ -40,10 +40,28 @@ export async function mount(root) {
     keyInput.required = true;
     keyInput.autocomplete = "new-password";
     keyLabel.append(keyText, keyInput);
+    const uploadLimitLabel = document.createElement("label");
+    const uploadLimitText = document.createElement("span");
+    uploadLimitText.textContent = text(
+        "module.nextcloud_whiteboard.image_upload_limit",
+    );
+    const uploadLimitInput = document.createElement("input");
+    uploadLimitInput.name = "imageUploadMaxBytes";
+    uploadLimitInput.type = "number";
+    uploadLimitInput.min = "0";
+    uploadLimitInput.step = "1024";
+    uploadLimitInput.value = config.imageUploadMaxBytes ?? 1048576;
+    uploadLimitLabel.append(uploadLimitText, uploadLimitInput);
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = text("ui.reuse.save");
-    form.append(heading, serverUrlLabel, keyLabel, submitButton);
+    form.append(
+        heading,
+        serverUrlLabel,
+        keyLabel,
+        uploadLimitLabel,
+        submitButton,
+    );
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
@@ -54,6 +72,7 @@ export async function mount(root) {
             body: JSON.stringify({
                 serverUrl: formData.get("serverUrl"),
                 apiKey: formData.get("apiKey"),
+                imageUploadMaxBytes: formData.get("imageUploadMaxBytes"),
             }),
         });
         if (!saveResponse.ok) {
@@ -100,6 +119,16 @@ export async function openModuleConfigPopup({
                 placeholderKey:
                     "module.nextcloud_whiteboard.server_url_placeholder",
                 type: "url",
+            },
+            {
+                id: "nextcloud-whiteboard-image-upload-limit",
+                configKey: "imageUploadMaxBytes",
+                labelKey: "module.nextcloud_whiteboard.image_upload_limit",
+                descriptionKey:
+                    "module.nextcloud_whiteboard.image_upload_limit_description",
+                placeholderKey:
+                    "module.nextcloud_whiteboard.image_upload_limit_placeholder",
+                type: "number",
             },
             {
                 id: "nextcloud-whiteboard-api-key",
