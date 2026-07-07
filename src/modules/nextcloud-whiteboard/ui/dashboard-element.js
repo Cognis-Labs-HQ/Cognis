@@ -2,6 +2,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { showToast } from "/static/reuse/toast.js";
 import { apiFetch } from "/static/reuse/api-client.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
 
@@ -42,7 +43,7 @@ export async function createPageElement({ i18n }) {
                             ),
                         );
                         if (result?.launchUrl)
-                            window.location.href = result.launchUrl;
+                            await navigateTo(result.launchUrl);
                     } catch (error) {
                         showToast(error.message, { variant: "error" });
                     }

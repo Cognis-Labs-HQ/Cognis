@@ -38,7 +38,7 @@ function listPageScriptOrigins(): string[] {
         .sort();
 }
 
-function buildScriptDirective(name: string): string {
+function buildPageResourceDirective(name: string): string {
     const allowedSources = ["'self'", ...listPageScriptOrigins()];
     return `${name} ${allowedSources.join(" ")}`;
 }
@@ -260,9 +260,9 @@ export function setPageSecurityHeaders(res: ServerResponse): void {
             "img-src 'self' blob:",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            buildScriptDirective("script-src"),
-            buildScriptDirective("script-src-elem"),
-            "connect-src 'self'",
+            buildPageResourceDirective("script-src"),
+            buildPageResourceDirective("script-src-elem"),
+            buildPageResourceDirective("connect-src"),
             "frame-src 'self' https: http:",
             "worker-src 'self'",
             "manifest-src 'self'",

@@ -22,7 +22,6 @@ export class NextcloudWhiteboardStore {
             name: "nextcloud_whiteboard_config",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
-                { name: "instance_url", type: "text", notNull: true },
                 {
                     name: "server_url",
                     type: "text",
@@ -91,7 +90,6 @@ export class NextcloudWhiteboardStore {
         });
         const row = result.rows?.[0];
         return {
-            instanceUrl: row?.instance_url ? String(row.instance_url) : "",
             serverUrl: row?.server_url ? String(row.server_url) : "",
             apiKeyConfigured: Boolean(row?.api_key),
             apiKey: row?.api_key ? String(row.api_key) : "",
@@ -99,8 +97,7 @@ export class NextcloudWhiteboardStore {
         };
     }
 
-    async saveConfig({ instanceUrl, serverUrl, apiKey }) {
-        const normalizedInstanceUrl = normalizeHttpUrl(instanceUrl);
+    async saveConfig({ serverUrl, apiKey }) {
         const normalizedServerUrl = normalizeHttpUrl(serverUrl);
         const normalizedApiKey = String(apiKey ?? "").trim();
         if (normalizedApiKey.length < 16) {
@@ -114,14 +111,13 @@ export class NextcloudWhiteboardStore {
             table: "nextcloud_whiteboard_config",
             values: {
                 id: "default",
-                instance_url: normalizedInstanceUrl,
                 server_url: normalizedServerUrl,
                 api_key: normalizedApiKey,
                 updated_at: updatedAt,
             },
             onConflict: {
                 columns: ["id"],
-                merge: ["instance_url", "server_url", "api_key", "updated_at"],
+                merge: ["server_url", "api_key", "updated_at"],
             },
         });
         return this.getConfig();
