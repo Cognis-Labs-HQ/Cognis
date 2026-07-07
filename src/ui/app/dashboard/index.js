@@ -96,67 +96,83 @@ async function loadUpcomingCalendarEvents() {
     } catch {
         return [];
     }
+}
 
-    function buildValidationWhiteboardTitle(i18n) {
-        return `${i18n.t("ui.app.dashboard.element.whiteboard_validation.title_prefix")} ${new Date().toISOString()}`;
-    }
+function buildValidationWhiteboardTitle(i18n) {
+    return `${i18n.t("ui.app.dashboard.element.whiteboard_validation.title_prefix")} ${formatDateTime(new Date())}`;
+}
 
-    async function spawnValidationWhiteboard(i18n) {
-        try {
-            const response = await apiFetch(
-                "/api/v1/modules/nextcloud-whiteboard/whiteboards/spawn",
-                {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({
-                        title: buildValidationWhiteboardTitle(i18n),
-                        participants: [],
-                    }),
-                },
-            );
-            const payload = await tryParseJsonResponse(response);
-            if (!response.ok) {
-                showToast(
-                    resolveApiErrorMessage(
-                        payload,
-                        i18n.t(
-                            "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
-                        ),
-                    ),
-                    { variant: "error" },
-                );
-                return;
-            }
-            const launchUrl = payload?.data?.launchUrl;
-            if (
-                typeof launchUrl !== "string" ||
-                !openPopupWindow({
-                    url: launchUrl,
-                    windowFeatures: payload?.data?.windowFeatures,
-                })
-            ) {
-                showToast(
-                    i18n.t(
-                        "ui.app.dashboard.element.whiteboard_validation.popup_blocked",
-                    ),
-                    { variant: "warning" },
-                );
-                return;
-            }
+/**
+ * Spawn a validation whiteboard and display the result with toasts.
+ *
+ * Shows an error toast for API failures, a warning toast when the browser
+ * blocks the popup, and a success toast after a whiteboard popup opens.
+ *
+ * @param {{ t: (key: string) => string }} i18n - Page i18n instance.
+ * @returns {Promise<void>}
+ */
+async function spawnValidationWhiteboard(i18n) {
+    try {
+        const response = await apiFetch(
+            "/api/v1/modules/nextcloud-whiteboard/whiteboards/spawn",
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    title: buildValidationWhiteboardTitle(i18n),
+                    participants: [],
+                }),
+            },
+        );
+        const payload = await tryParseJsonResponse(response);
+        if (!response.ok) {
             showToast(
-                i18n.t(
-                    "ui.app.dashboard.element.whiteboard_validation.spawn_success",
+                resolveApiErrorMessage(
+                    payload,
+                    i18n.t(
+                        "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
+                    ),
                 ),
-                { variant: "success" },
+                { variant: "error" },
             );
-        } catch {
+            return;
+        }
+        const launchUrl = payload?.data?.launchUrl;
+        if (typeof launchUrl !== "string") {
             showToast(
                 i18n.t(
                     "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
                 ),
                 { variant: "error" },
             );
+            return;
         }
+        const opened = openPopupWindow({
+            url: launchUrl,
+            windowFeatures: payload?.data?.windowFeatures,
+        });
+        if (!opened) {
+            showToast(
+                i18n.t(
+                    "ui.app.dashboard.element.whiteboard_validation.popup_blocked",
+                ),
+                { variant: "warning" },
+            );
+            return;
+        }
+        showToast(
+            i18n.t(
+                "ui.app.dashboard.element.whiteboard_validation.spawn_success",
+            ),
+            { variant: "success" },
+        );
+    } catch {
+        showToast(
+            i18n.t(
+                "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
+            ),
+            { variant: "error" },
+        );
     }
 }
 
