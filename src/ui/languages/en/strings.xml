@@ -629,7 +629,7 @@
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">No upcoming calendar events.</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.label">Whiteboard Validation</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.description">Launch a Nextcloud whiteboard from your dashboard for quick validation checks.</string>
-  <string name="ui.app.dashboard.element.whiteboard_validation.spawn">Open Validation Whiteboard</string>
+  <string name="ui.app.dashboard.element.whiteboard_validation.open">Open Validation Whiteboard</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.title_prefix">Validation Whiteboard</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.spawn_success">Validation whiteboard opened.</string>
   <string name="ui.app.dashboard.element.whiteboard_validation.spawn_failed">Could not spawn a validation whiteboard.</string>

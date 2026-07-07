@@ -98,8 +98,8 @@ async function loadUpcomingCalendarEvents() {
     }
 }
 
-function buildValidationWhiteboardTitle(i18n) {
-    return `${i18n.t("ui.app.dashboard.element.whiteboard_validation.title_prefix")} ${formatDateTime(new Date())}`;
+function buildValidationWhiteboardTitle(i18n, timestamp = new Date()) {
+    return `${i18n.t("ui.app.dashboard.element.whiteboard_validation.title_prefix")} ${formatDateTime(timestamp)}`;
 }
 
 /**
@@ -149,7 +149,7 @@ async function spawnValidationWhiteboard(i18n) {
         }
         const opened = openPopupWindow({
             url: launchUrl,
-            windowFeatures: payload?.data?.windowFeatures,
+            windowFeatures: payload?.data?.windowFeatures || undefined,
         });
         if (!opened) {
             showToast(
@@ -306,7 +306,7 @@ export async function mount(root) {
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.whiteboard_validation.label")}</h3>
       <p>${i18n.t("ui.app.dashboard.element.whiteboard_validation.description")}</p>
-      <button type="button" id="dashboard-whiteboard-validation-spawn">${i18n.t("ui.app.dashboard.element.whiteboard_validation.spawn")}</button>
+      <button type="button" id="dashboard-whiteboard-validation-spawn">${i18n.t("ui.app.dashboard.element.whiteboard_validation.open")}</button>
     `,
             onRender: () => {
                 document

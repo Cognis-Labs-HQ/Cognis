@@ -11,10 +11,13 @@
  *   const payload = await tryParseJsonResponse(response);
  *   const message = resolveApiErrorMessage(payload, i18n.t('ui.reuse.save_failed'));
  *
- * @param {Response} response - Fetch response to parse as JSON.
- * @returns {Promise<object>} Parsed JSON object or an empty object when parsing fails.
+ * @param {{ json?: () => Promise<any> }} response - Fetch response-like object with a json() method.
+ * @returns {Promise<object>} Parsed JSON object or an empty object when parsing fails or the response is invalid/consumed.
  */
 export async function tryParseJsonResponse(response) {
+    if (!response || typeof response.json !== "function") {
+        return {};
+    }
     return response.json().catch(() => ({}));
 }
 
