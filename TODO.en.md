@@ -118,6 +118,18 @@
 
 **Reason ignored:** The export already follows the established `<DOMAIN>_FLOW_CATALOG` pattern used across the repository (for example `MEETINGS_FLOW_CATALOG` and `PROFILE_MEDIA_FLOW_CATALOG`). Renaming it would be a no-behavior churn with no correctness or consistency benefit, so the existing canonical name was kept.
 
+### store.ts purgeExpired — two where conditions on expires_at
+
+**Reviewer suggestion:** Combine the two separate `where` conditions (`expires_at != ""` and `expires_at < now`) into a single range check for better index use.
+
+**Reason ignored:** The two conditions are semantically distinct: the `!= ""` guard excludes never-expiring tokens (which store an empty string), while `< now` identifies elapsed expirations. They cannot be collapsed into a single range expression without changing the data-model contract. DB adapters are expected to optimize equality checks on a single column naturally; the cost of two conditions on the same column is negligible compared to a table scan on the composite filter.
+
+### bootstrap/routes.ts — serve /share without a token
+
+**Reviewer suggestion:** Return 404 for GET /share without a trailing token segment so the share page is only served with a valid URL shape.
+
+**Reason ignored:** The share page is a single-page application that resolves the token client-side from the URL path or query string. Serving the HTML shell at `/share` (without a token) is intentional — the client handles the no-token case by rendering an appropriate error state rather than crashing. Gating at the server would prevent valid deep-linked entry patterns and would duplicate validation that already exists in the client-side token resolution logic.
+
 ## Code Review — profile media ctx flows
 
 ### routes/index.ts fallback upload path — remove direct onProfileChanged invocation

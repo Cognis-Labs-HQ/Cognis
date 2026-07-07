@@ -7,7 +7,7 @@ import {
 import {
     normalizeHandleKey,
     normalizeHandleKeys,
-} from "../../../gateways/social/bootstrap.js";
+} from "../../../api/reuse/normalize-handle.js";
 import { normalizeMeetingPrefix } from "./meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;

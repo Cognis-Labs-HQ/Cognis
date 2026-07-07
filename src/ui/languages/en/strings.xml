@@ -1,5 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
+  <string name="ui.reuse.brand_name">Cognis</string>
+  <string name="ui.reuse.login">Sign In</string>
+  <string name="ui.reuse.register">Register</string>
   <string name="ui.reuse.dashboard">Dashboard</string>
   <string name="ui.reuse.messages">Messages</string>
   <string name="ui.reuse.study">Study</string>

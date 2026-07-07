@@ -1,4 +1,4 @@
-import { normalizeHandleKey } from "../../../../gateways/social/bootstrap.js";
+import { normalizeHandleKey } from "../../../../api/reuse/normalize-handle.js";
 
 export async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);

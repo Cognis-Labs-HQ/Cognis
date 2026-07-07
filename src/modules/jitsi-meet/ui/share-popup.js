@@ -3,6 +3,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 
+function stringOr(value, fallback) {
+    return String(value ?? fallback);
+}
+
 function renderShareRows(i18n, links) {
     if (!Array.isArray(links) || links.length === 0) {
         return `<p class="jitsi-share-empty">${escapeHtml(i18n.t("module.jitsi_meet.share.empty"))}</p>`;
@@ -14,12 +18,12 @@ function renderShareRows(i18n, links) {
                     (link) => `
                         <article class="jitsi-share-row">
                             <div class="jitsi-share-row-main">
-                                <p class="jitsi-share-row-label">${escapeHtml(String(link.label ?? i18n.t("module.jitsi_meet.share.untitled")))}</p>
-                                <p class="jitsi-share-row-url">${escapeHtml(String(link.shareUrl ?? ""))}</p>
+                                <p class="jitsi-share-row-label">${escapeHtml(stringOr(link.label, i18n.t("module.jitsi_meet.share.untitled")))}</p>
+                                <p class="jitsi-share-row-url">${escapeHtml(stringOr(link.shareUrl, ""))}</p>
                             </div>
                             <div class="jitsi-share-row-actions">
-                                <button type="button" class="btn-confirm btn-animated" data-share-copy="${escapeHtml(String(link.shareUrl ?? ""))}">${escapeHtml(i18n.t("module.jitsi_meet.share.copy_link"))}</button>
-                                <button type="button" class="btn-cancel btn-animated" data-share-delete="${escapeHtml(String(link.id ?? ""))}">${escapeHtml(i18n.t("module.jitsi_meet.share.revoke"))}</button>
+                                <button type="button" class="btn-confirm btn-animated" data-share-copy="${escapeHtml(stringOr(link.shareUrl, ""))}">${escapeHtml(i18n.t("module.jitsi_meet.share.copy_link"))}</button>
+                                <button type="button" class="btn-cancel btn-animated" data-share-delete="${escapeHtml(stringOr(link.id, ""))}">${escapeHtml(i18n.t("module.jitsi_meet.share.revoke"))}</button>
                             </div>
                         </article>
                     `,
@@ -38,7 +42,7 @@ function renderBody(i18n, state) {
                     <input id="jitsi-share-label" type="text" value="${escapeHtml(state.label)}" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.share.label_placeholder"))}" />
                 </label>
                 <label>
-                    <span>${escapeHtml(i18n.t("module.jitsi_meet.share.expiry"))} (${escapeHtml(i18n.t("module.jitsi_meet.share.expiry_units"))})</span>
+                    <span>${escapeHtml(i18n.t("module.jitsi_meet.share.expiry_label"))}</span>
                     <input id="jitsi-share-expiry" type="number" min="1" step="1" value="${escapeHtml(state.expiresInHours)}" placeholder="24" />
                 </label>
                 <button id="jitsi-share-create-btn" class="btn-confirm btn-animated" type="button" ${state.loading ? "disabled" : ""}>${escapeHtml(i18n.t("module.jitsi_meet.share.generate_link"))}</button>
@@ -103,10 +107,18 @@ export async function openSharePopup({ meetingId, i18n }) {
         await loadLinks();
         rerender(overlay);
         if (payload?.data?.shareUrl) {
-            await navigator.clipboard.writeText(String(payload.data.shareUrl));
-            showToast(i18n.t("module.jitsi_meet.share.copy_success"), {
-                variant: "success",
-            });
+            await navigator.clipboard
+                .writeText(String(payload.data.shareUrl))
+                .then(() => {
+                    showToast(i18n.t("module.jitsi_meet.share.copy_success"), {
+                        variant: "success",
+                    });
+                })
+                .catch(() => {
+                    showToast(i18n.t("module.jitsi_meet.share.copy_failed"), {
+                        variant: "error",
+                    });
+                });
         }
     }
 

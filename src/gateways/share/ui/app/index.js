@@ -25,13 +25,13 @@ function renderHeader(i18n) {
             <div class="share-branding">
                 <span class="share-branding-logo" aria-hidden="true">◈</span>
                 <div>
-                    <p class="share-branding-name">${escapeHtml(i18n.t("ui.shared.brand.name"))}</p>
+                    <p class="share-branding-name">${escapeHtml(i18n.t("ui.reuse.brand_name"))}</p>
                     <p class="share-branding-subtitle">${escapeHtml(i18n.t("share.subtitle"))}</p>
                 </div>
             </div>
             <div class="share-header-actions">
-                <a class="btn-cancel btn-animated" href="/login">${escapeHtml(i18n.t("ui.app.login.title"))}</a>
-                <a class="btn-confirm btn-animated" href="/register">${escapeHtml(i18n.t("ui.app.register.submit"))}</a>
+                <a class="btn-cancel btn-animated" href="/login">${escapeHtml(i18n.t("ui.reuse.login"))}</a>
+                <a class="btn-confirm btn-animated" href="/register">${escapeHtml(i18n.t("ui.reuse.register"))}</a>
             </div>
         </header>
     `;

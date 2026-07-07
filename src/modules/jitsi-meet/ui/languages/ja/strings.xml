@@ -89,7 +89,7 @@
   <string name="module.jitsi_meet.share.revoke">無効化</string>
   <string name="module.jitsi_meet.share.label">ラベル</string>
   <string name="module.jitsi_meet.share.label_placeholder">任意のラベル</string>
-  <string name="module.jitsi_meet.share.expiry">有効期限（時間）</string>
+  <string name="module.jitsi_meet.share.expiry_label">有効期限（時間）</string>
   <string name="module.jitsi_meet.share.empty">このミーティングにはまだ共有リンクがありません。</string>
   <string name="module.jitsi_meet.share.untitled">無題の共有リンク</string>
   <string name="module.jitsi_meet.share.copy_success">共有リンクをコピーしました。</string>

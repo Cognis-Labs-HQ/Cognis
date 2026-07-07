@@ -72,7 +72,13 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
         tokenHash,
         label: normalizeOptionalString(row.label),
         grantedCapabilities: normalizeCapabilities(
-            JSON.parse(String(row.granted_capabilities ?? "[]")),
+            (() => {
+                try {
+                    return JSON.parse(String(row.granted_capabilities ?? "[]"));
+                } catch {
+                    return [];
+                }
+            })(),
         ),
         expiresAt,
         createdAt,

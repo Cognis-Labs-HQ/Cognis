@@ -18,7 +18,7 @@ registerShareRenderer("meeting", ({ data, i18n }) => {
                 <p>${escapeHtml(i18n.t("module.jitsi_meet.share.scheduled_at"))}: ${escapeHtml(scheduledLabel)}</p>
             </div>
             <div class="share-meeting-actions">
-                ${joinUrl ? `<a class="btn-confirm btn-animated" href="${escapeHtml(joinUrl)}" target="_blank" rel="noreferrer">${escapeHtml(i18n.t("module.jitsi_meet.share.join"))}</a>` : ""}
+                ${joinUrl ? `<a class="btn-confirm btn-animated" href="${escapeHtml(joinUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(i18n.t("module.jitsi_meet.share.join"))}</a>` : ""}
             </div>
         </article>
     `;

@@ -8,7 +8,7 @@ import {
     normalizeHttpUrl,
     resolveExternalBaseUrl,
 } from "../../../api/reuse/url-parts.js";
-import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
+import { normalizeHandleKey } from "../../../api/reuse/normalize-handle.js";
 import { isModeratorRole, normalizeMeetingPrefix } from "./meeting-values.js";
 import {
     registerJitsiUiResourcesRoute,

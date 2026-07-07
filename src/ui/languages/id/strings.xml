@@ -1,5 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
+  <string name="ui.reuse.brand_name">Cognis</string>
+  <string name="ui.reuse.login">Masuk</string>
+  <string name="ui.reuse.register">Daftar</string>
   <string name="ui.reuse.dashboard">Dasbor</string>
   <string name="ui.reuse.messages">Pesan</string>
   <string name="ui.reuse.study">Belajar</string>
