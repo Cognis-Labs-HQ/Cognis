@@ -1,5 +1,8 @@
-import type { DbExecutor } from '../../db/reuse/db-executor.js';
-import { issueShareTokenValue, parseShareToken } from '../reuse/token-format.js';
+import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import {
+    issueShareTokenValue,
+    parseShareToken,
+} from "../reuse/token-format.js";
 
 export interface ShareTokenRecord {
     id: string;
@@ -16,7 +19,7 @@ export interface ShareTokenRecord {
 }
 
 function normalizeOptionalString(value: unknown): string | null {
-    if (typeof value !== 'string') {
+    if (typeof value !== "string") {
         return null;
     }
     const normalized = value.trim();
@@ -29,9 +32,7 @@ function normalizeCapabilities(value: unknown): string[] {
     }
     return Array.from(
         new Set(
-            value
-                .map((entry) => String(entry ?? '').trim())
-                .filter(Boolean),
+            value.map((entry) => String(entry ?? "").trim()).filter(Boolean),
         ),
     ).sort();
 }
@@ -41,15 +42,15 @@ function isExpired(expiresAt: string): boolean {
 }
 
 function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
-    const id = String(row.id ?? '').trim();
-    const ownerAccountId = String(row.owner_account_id ?? '').trim();
-    const resourceType = String(row.resource_type ?? '').trim();
-    const resourceId = String(row.resource_id ?? '').trim();
-    const tokenValue = String(row.token_value ?? '').trim();
-    const tokenHash = String(row.token_hash ?? '').trim();
-    const createdAt = String(row.created_at ?? '').trim();
-    const updatedAt = String(row.updated_at ?? '').trim();
-    const expiresAt = String(row.expires_at ?? '');
+    const id = String(row.id ?? "").trim();
+    const ownerAccountId = String(row.owner_account_id ?? "").trim();
+    const resourceType = String(row.resource_type ?? "").trim();
+    const resourceId = String(row.resource_id ?? "").trim();
+    const tokenValue = String(row.token_value ?? "").trim();
+    const tokenHash = String(row.token_hash ?? "").trim();
+    const createdAt = String(row.created_at ?? "").trim();
+    const updatedAt = String(row.updated_at ?? "").trim();
+    const expiresAt = String(row.expires_at ?? "");
     if (
         !id ||
         !ownerAccountId ||
@@ -71,7 +72,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
         tokenHash,
         label: normalizeOptionalString(row.label),
         grantedCapabilities: normalizeCapabilities(
-            JSON.parse(String(row.granted_capabilities ?? '[]')),
+            JSON.parse(String(row.granted_capabilities ?? "[]")),
         ),
         expiresAt,
         createdAt,
@@ -91,19 +92,19 @@ export class ShareTokenStore {
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
-            name: 'share_tokens',
+            name: "share_tokens",
             columns: [
-                { name: 'id', type: 'text', primaryKey: true },
-                { name: 'owner_account_id', type: 'text', notNull: true },
-                { name: 'resource_type', type: 'text', notNull: true },
-                { name: 'resource_id', type: 'text', notNull: true },
-                { name: 'token_value', type: 'text', notNull: true },
-                { name: 'token_hash', type: 'text', notNull: true },
-                { name: 'label', type: 'text' },
-                { name: 'granted_capabilities', type: 'text', notNull: true },
-                { name: 'expires_at', type: 'text', notNull: true },
-                { name: 'created_at', type: 'text', notNull: true },
-                { name: 'updated_at', type: 'text', notNull: true },
+                { name: "id", type: "text", primaryKey: true },
+                { name: "owner_account_id", type: "text", notNull: true },
+                { name: "resource_type", type: "text", notNull: true },
+                { name: "resource_id", type: "text", notNull: true },
+                { name: "token_value", type: "text", notNull: true },
+                { name: "token_hash", type: "text", notNull: true },
+                { name: "label", type: "text" },
+                { name: "granted_capabilities", type: "text", notNull: true },
+                { name: "expires_at", type: "text", notNull: true },
+                { name: "created_at", type: "text", notNull: true },
+                { name: "updated_at", type: "text", notNull: true },
             ],
         });
     }
@@ -120,22 +121,22 @@ export class ShareTokenStore {
         const createdAt = new Date().toISOString();
         const record: ShareTokenRecord = {
             id: token.tokenId,
-            ownerAccountId: String(input.ownerAccountId ?? '').trim(),
-            resourceType: String(input.resourceType ?? '').trim(),
-            resourceId: String(input.resourceId ?? '').trim(),
+            ownerAccountId: String(input.ownerAccountId ?? "").trim(),
+            resourceType: String(input.resourceType ?? "").trim(),
+            resourceId: String(input.resourceId ?? "").trim(),
             tokenValue: token.tokenValue,
             tokenHash: token.tokenHash,
             label: normalizeOptionalString(input.label),
             grantedCapabilities: normalizeCapabilities(
                 input.grantedCapabilities ?? [],
             ),
-            expiresAt: String(input.expiresAt ?? ''),
+            expiresAt: String(input.expiresAt ?? ""),
             createdAt,
             updatedAt: createdAt,
         };
         await this.db.executeCommand({
-            option: 'INSERT',
-            table: 'share_tokens',
+            option: "INSERT",
+            table: "share_tokens",
             values: {
                 id: record.id,
                 owner_account_id: record.ownerAccountId,
@@ -144,7 +145,9 @@ export class ShareTokenStore {
                 token_value: record.tokenValue,
                 token_hash: record.tokenHash,
                 label: record.label,
-                granted_capabilities: JSON.stringify(record.grantedCapabilities),
+                granted_capabilities: JSON.stringify(
+                    record.grantedCapabilities,
+                ),
                 expires_at: record.expiresAt,
                 created_at: record.createdAt,
                 updated_at: record.updatedAt,
@@ -158,28 +161,33 @@ export class ShareTokenStore {
         resourceType?: string;
         resourceId?: string;
     }): Promise<ShareTokenRecord[]> {
-        const where = [{ column: 'owner_account_id', value: filter.ownerAccountId }];
+        const where = [
+            { column: "owner_account_id", value: filter.ownerAccountId },
+        ];
         if (filter.resourceType) {
-            where.push({ column: 'resource_type', value: filter.resourceType });
+            where.push({ column: "resource_type", value: filter.resourceType });
         }
         if (filter.resourceId) {
-            where.push({ column: 'resource_id', value: filter.resourceId });
+            where.push({ column: "resource_id", value: filter.resourceId });
         }
         const result = await this.db.executeCommand({
-            option: 'SELECT',
-            table: 'share_tokens',
+            option: "SELECT",
+            table: "share_tokens",
             where,
-            orderBy: [{ column: 'created_at', direction: 'DESC' }],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
         });
         const records = (result.rows ?? [])
             .map((row) => {
                 try {
                     return parseRecord(row);
                 } catch (error) {
-                    this.log?.('error', 'Failed to parse share token record.', {
-                        component: 'share-gateway',
-                        operation: 'parse_share_token_record',
-                        error: error instanceof Error ? error.message : String(error),
+                    this.log?.("error", "Failed to parse share token record.", {
+                        component: "share-gateway",
+                        operation: "parse_share_token_record",
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
                     });
                     return null;
                 }
@@ -228,18 +236,18 @@ export class ShareTokenStore {
             return false;
         }
         await this.db.executeCommand({
-            option: 'DELETE',
-            table: 'share_tokens',
-            where: [{ column: 'id', value: record.id }],
+            option: "DELETE",
+            table: "share_tokens",
+            where: [{ column: "id", value: record.id }],
         });
         return true;
     }
 
     async getById(shareId: string): Promise<ShareTokenRecord | null> {
         const result = await this.db.executeCommand({
-            option: 'SELECT',
-            table: 'share_tokens',
-            where: [{ column: 'id', value: String(shareId ?? '').trim() }],
+            option: "SELECT",
+            table: "share_tokens",
+            where: [{ column: "id", value: String(shareId ?? "").trim() }],
             limit: 1,
         });
         const row = result.rows?.[0];
@@ -257,9 +265,9 @@ export class ShareTokenStore {
             }
             return record;
         } catch (error) {
-            this.log?.('error', 'Failed to parse share token record.', {
-                component: 'share-gateway',
-                operation: 'get_share_token_by_id',
+            this.log?.("error", "Failed to parse share token record.", {
+                component: "share-gateway",
+                operation: "get_share_token_by_id",
                 shareId,
                 error: error instanceof Error ? error.message : String(error),
             });

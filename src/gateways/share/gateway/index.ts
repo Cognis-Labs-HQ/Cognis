@@ -1,5 +1,5 @@
-import { resolveExternalBaseUrl } from '../../../api/reuse/url-parts.js';
-import { ShareTokenStore, type ShareTokenRecord } from './store.js';
+import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
+import { ShareTokenStore, type ShareTokenRecord } from "./store.js";
 
 export class CoreShareGateway {
     constructor(
@@ -14,7 +14,9 @@ export class CoreShareGateway {
     buildShareUrl(tokenValue: string): string {
         const encodedToken = encodeURIComponent(tokenValue);
         const sharePath = `/share/${encodedToken}`;
-        return this.externalBaseUrl ? `${this.externalBaseUrl}${sharePath}` : sharePath;
+        return this.externalBaseUrl
+            ? `${this.externalBaseUrl}${sharePath}`
+            : sharePath;
     }
 
     serializeRecord(record: ShareTokenRecord): Record<string, unknown> {

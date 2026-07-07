@@ -1,4 +1,4 @@
-import { JitsiMeetStore } from '../store.js';
+import { JitsiMeetStore } from "../store.js";
 
 const storeByExecutor = new WeakMap();
 

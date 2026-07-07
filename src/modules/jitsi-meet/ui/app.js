@@ -26,7 +26,7 @@ import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
-import { openSharePopup } from './share-popup.js';
+import { openSharePopup } from "./share-popup.js";
 
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 

@@ -1,95 +1,95 @@
-import { createFlowContract } from '../flow-contract.js';
+import { createFlowContract } from "../flow-contract.js";
 
 export const SHARE_FLOW_CATALOG = Object.freeze([
     createFlowContract({
-        id: 'mint-share-token',
-        owner: 'share',
+        id: "mint-share-token",
+        owner: "share",
         description:
-            'Creates a share token through staged resource validation, authorization, issuance, and event fan-out.',
+            "Creates a share token through staged resource validation, authorization, issuance, and event fan-out.",
         stages: [
             {
-                id: 'validate-resource',
+                id: "validate-resource",
                 description:
-                    'Resolve the target resource and validate that it can participate in the share flow.',
+                    "Resolve the target resource and validate that it can participate in the share flow.",
             },
             {
-                id: 'authorize-minter',
+                id: "authorize-minter",
                 description:
-                    'Confirm the caller may mint share tokens for the resolved resource and requested capabilities.',
+                    "Confirm the caller may mint share tokens for the resolved resource and requested capabilities.",
             },
             {
-                id: 'issue-token',
+                id: "issue-token",
                 description:
-                    'Persist the canonical share token record and return the generated public share URL.',
+                    "Persist the canonical share token record and return the generated public share URL.",
             },
             {
-                id: 'emit-event',
+                id: "emit-event",
                 description:
-                    'Emit share creation side effects such as audit logs, notifications, or telemetry.',
+                    "Emit share creation side effects such as audit logs, notifications, or telemetry.",
             },
         ],
     }),
     createFlowContract({
-        id: 'resolve-share-token',
-        owner: 'share',
+        id: "resolve-share-token",
+        owner: "share",
         description:
-            'Resolves a public share token into a curated, unauthenticated resource payload for share rendering.',
+            "Resolves a public share token into a curated, unauthenticated resource payload for share rendering.",
         stages: [
             {
-                id: 'validate-token',
+                id: "validate-token",
                 description:
-                    'Validate the share token format, expiry, and persisted gateway-owned token record.',
+                    "Validate the share token format, expiry, and persisted gateway-owned token record.",
             },
             {
-                id: 'resolve-resource',
+                id: "resolve-resource",
                 description:
-                    'Resolve the backing resource and owner-facing metadata declared by the owning component.',
+                    "Resolve the backing resource and owner-facing metadata declared by the owning component.",
             },
             {
-                id: 'check-access',
+                id: "check-access",
                 description:
-                    'Apply resource-specific access rules before exposing any unauthenticated share payload.',
+                    "Apply resource-specific access rules before exposing any unauthenticated share payload.",
             },
             {
-                id: 'build-payload',
+                id: "build-payload",
                 description:
-                    'Assemble the final public payload consumed by the share page renderer.',
+                    "Assemble the final public payload consumed by the share page renderer.",
             },
         ],
     }),
     createFlowContract({
-        id: 'revoke-share-token',
-        owner: 'share',
+        id: "revoke-share-token",
+        owner: "share",
         description:
-            'Revokes an existing share token through staged authorization and deletion.',
+            "Revokes an existing share token through staged authorization and deletion.",
         stages: [
             {
-                id: 'authorize-revocation',
+                id: "authorize-revocation",
                 description:
-                    'Confirm the caller may revoke the requested share token for the target resource.',
+                    "Confirm the caller may revoke the requested share token for the target resource.",
             },
             {
-                id: 'delete-token',
+                id: "delete-token",
                 description:
-                    'Delete or mark the token inactive in the owning share token registry.',
+                    "Delete or mark the token inactive in the owning share token registry.",
             },
         ],
     }),
     createFlowContract({
-        id: 'construct-share-page',
-        owner: 'share',
+        id: "construct-share-page",
+        owner: "share",
         description:
-            'Builds the share page shell and resource renderer metadata through staged composition.',
+            "Builds the share page shell and resource renderer metadata through staged composition.",
         stages: [
             {
-                id: 'resolve-shell',
+                id: "resolve-shell",
                 description:
-                    'Declare share-page shell framing, page context, and capability-driven display requirements.',
+                    "Declare share-page shell framing, page context, and capability-driven display requirements.",
             },
             {
-                id: 'resolve-resource-renderer',
+                id: "resolve-resource-renderer",
                 description:
-                    'Resolve the client renderer module and resource presentation metadata for the share payload.',
+                    "Resolve the client renderer module and resource presentation metadata for the share payload.",
             },
         ],
     }),

@@ -1,7 +1,7 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 export function hashShareSecret(secret: string): string {
-    return createHash('sha256').update(secret, 'utf8').digest('hex');
+    return createHash("sha256").update(secret, "utf8").digest("hex");
 }
 
 export function issueShareTokenValue(): {
@@ -11,7 +11,7 @@ export function issueShareTokenValue(): {
     tokenHash: string;
 } {
     const tokenId = randomUUID();
-    const secret = randomBytes(24).toString('base64url');
+    const secret = randomBytes(24).toString("base64url");
     return {
         tokenId,
         secret,
@@ -25,12 +25,12 @@ export function parseShareToken(rawToken: string): {
     secret: string;
     tokenHash: string;
 } | null {
-    const normalizedToken = String(rawToken ?? '').trim();
-    if (!normalizedToken.startsWith('shr_')) {
+    const normalizedToken = String(rawToken ?? "").trim();
+    if (!normalizedToken.startsWith("shr_")) {
         return null;
     }
     const tokenBody = normalizedToken.slice(4);
-    const dotIndex = tokenBody.indexOf('.');
+    const dotIndex = tokenBody.indexOf(".");
     if (dotIndex <= 0 || dotIndex === tokenBody.length - 1) {
         return null;
     }

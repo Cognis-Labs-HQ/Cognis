@@ -52,7 +52,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9`  |
-| Share                | `src/gateways/share/`        | `1.0.0`  |
+| Share                 | `src/gateways/share/`        | `1.0.0`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
