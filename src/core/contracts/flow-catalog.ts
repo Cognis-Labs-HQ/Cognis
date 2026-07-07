@@ -4,6 +4,7 @@ import {
     type CanonicalFlowContract,
 } from "./flow-contract.js";
 import { PROFILE_MEDIA_FLOW_CATALOG } from "./profile/media-flow-catalog.js";
+import { SHARE_FLOW_CATALOG } from "./share/flow-catalog.js";
 
 export const CTX_CAPABILITY = "system:ctx";
 export type {
@@ -575,6 +576,7 @@ export const CORE_FLOW_CATALOG = Object.freeze([
     ...UI_SURFACE_FLOW_CATALOG,
     ...MESSAGING_FLOW_CATALOG,
     ...PROFILE_MEDIA_FLOW_CATALOG,
+    ...SHARE_FLOW_CATALOG,
     ...MEETINGS_FLOW_CATALOG,
     ...GATEWAY_LIFECYCLE_FLOW_CATALOG,
     ...MODULE_LIFECYCLE_FLOW_CATALOG,

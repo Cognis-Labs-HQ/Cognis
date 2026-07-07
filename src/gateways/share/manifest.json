@@ -1,0 +1,10 @@
+{
+    "id": "share",
+    "name": "Share Gateway",
+    "version": "1.0.0",
+    "required": false,
+    "requires": ["auth", "db"],
+    "hasAdapters": false,
+    "description": "Gateway-owned public share token orchestration for Cognis resources.",
+    "publisher": "Cognis Labs HQ"
+}

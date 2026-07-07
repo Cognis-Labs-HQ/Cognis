@@ -3,6 +3,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 export function buildStageMarkup(i18n) {
     return `
     <div class="jitsi-meeting-stage card-elevated">
+      <header class="jitsi-stage-header">
+        <h3>${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
+        <button id="jitsi-share-meeting-btn" class="btn-confirm btn-animated" type="button">🔗 ${escapeHtml(i18n.t("module.jitsi_meet.share.button"))}</button>
+      </header>
       <div class="jitsi-stage-frame-wrap">
         <div id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" hidden></div>
         <div id="jitsi-overlay" class="jitsi-overlay">

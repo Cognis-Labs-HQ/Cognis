@@ -1,5 +1,4 @@
 import path from "node:path";
-import { JitsiMeetStore } from "./store.js";
 import { registerMeetingRoutes } from "./meetings-routes.js";
 import { registerAdminMeetingRoutes } from "./admin-meetings-routes.js";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
@@ -16,13 +15,15 @@ import {
     resolveMessagesUiResources,
     resolveSharedMessagesStylesheetUrls,
 } from "./ui-resources.js";
+import { registerMeetingShareRoutes } from './share-routes.js';
+import { resolveStore } from './reuse/store-runtime.js';
+import { resolveRequesterUsername } from './reuse/requester.js';
 
 const MODULE_ID = "jitsi-meet";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
 const MEETING_TITLE = "Cognis Classroom";
 const LIVELINESS_TIMEOUT_MS = 5000;
 
-const storeByExecutor = new WeakMap();
 
 function sendJson(res, status, payload) {
     res.writeHead(status, { "content-type": "application/json" });
@@ -65,36 +66,6 @@ function appendMeetingLinkToBody(body, meetingId) {
     const meetingLink = buildMeetingEmailLink(meetingId);
     if (!meetingLink) return body;
     return `${body}\n\nMeeting link: ${meetingLink}`;
-}
-
-async function resolveRequesterUsername(profileStore, accountId) {
-    const profile = await profileStore.getProfile(accountId);
-    const normalized = normalizeHandleKey(profile?.handle ?? "");
-    if (!normalized) {
-        throw new Error(
-            "A visible profile handle is required to use Meetings.",
-        );
-    }
-    return normalized;
-}
-
-async function resolveRequestedParticipants(
-    profileStore,
-    requestedHandles,
-    { includeHidden = false } = {},
-) {
-    const usernames = [];
-    for (const candidate of Array.isArray(requestedHandles)
-        ? requestedHandles
-        : []) {
-        const normalizedHandle = normalizeHandleKey(candidate);
-        if (!normalizedHandle) continue;
-        const profile = await profileStore.getProfileByHandle(normalizedHandle);
-        if (!profile?.handle) continue;
-        if (!includeHidden && profile.visibility === "hidden") continue;
-        usernames.push(normalizeHandleKey(profile.handle));
-    }
-    return usernames;
 }
 
 async function canAccessMeeting({
@@ -182,46 +153,6 @@ async function createMeetingPayload({
             !state.authCompletedAt &&
             !store.canCurrentUserInitiateAuth(state, requesterUsername),
     });
-}
-
-function resolveStore(dbExecutor, log) {
-    const existingStore = storeByExecutor.get(dbExecutor);
-    if (existingStore) {
-        return existingStore;
-    }
-    const nextStore = new JitsiMeetStore({
-        db: dbExecutor,
-        log,
-    });
-    storeByExecutor.set(dbExecutor, nextStore);
-    return nextStore;
-}
-
-function registerConfiguredJitsiOrigin(registerScriptOrigins, config) {
-    if (typeof registerScriptOrigins !== "function") {
-        return;
-    }
-    registerScriptOrigins(PAGE_SCRIPT_ORIGIN_OWNER_ID, [config?.instanceUrl]);
-}
-
-async function registerStoredJitsiOrigin({
-    store,
-    registerScriptOrigins,
-    log,
-}) {
-    try {
-        await store.ensureSchema();
-        registerConfiguredJitsiOrigin(
-            registerScriptOrigins,
-            await store.getConfig(),
-        );
-    } catch (error) {
-        log?.("error", "Failed to register stored Jitsi CSP origin.", {
-            component: "jitsi-meet-module",
-            operation: "register_stored_jitsi_origin",
-            error: error instanceof Error ? error.message : String(error),
-        });
-    }
 }
 
 export function registerUi(ctx) {
@@ -359,6 +290,13 @@ export function registerApiRoutes(router, ctx) {
         router,
         sendJson,
         messagesUiResources,
+    });
+
+    registerMeetingShareRoutes({
+        router,
+        ctx,
+        requireAuth,
+        profileStore,
     });
 
     async function dispatchMeetingNotifications(

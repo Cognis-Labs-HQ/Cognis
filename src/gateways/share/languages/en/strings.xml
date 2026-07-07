@@ -1,0 +1,8 @@
+<resources>
+  <string name="share.page_title">Shared Content</string>
+  <string name="share.subtitle">Open shared Cognis content without signing in.</string>
+  <string name="share.loading">Loading shared content…</string>
+  <string name="share.error.invalid_token">This share link is invalid or has expired.</string>
+  <string name="share.error.expired">This shared item is no longer available.</string>
+  <string name="share.error.renderer_missing">This shared item cannot be displayed right now.</string>
+</resources>

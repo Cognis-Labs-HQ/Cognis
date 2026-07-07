@@ -82,4 +82,23 @@
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">Keine geplanten Meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Erstellt von</string>
   <string name="module.jitsi_meet.admin.meetings.created_at">Erstellt</string>
+  <string name="module.jitsi_meet.share.button">Teilen</string>
+  <string name="module.jitsi_meet.share.popup_title">Meeting teilen</string>
+  <string name="module.jitsi_meet.share.generate_link">Link erzeugen</string>
+  <string name="module.jitsi_meet.share.copy_link">Link kopieren</string>
+  <string name="module.jitsi_meet.share.revoke">Widerrufen</string>
+  <string name="module.jitsi_meet.share.label">Bezeichnung</string>
+  <string name="module.jitsi_meet.share.label_placeholder">Optionale Bezeichnung</string>
+  <string name="module.jitsi_meet.share.expiry">Läuft ab in Stunden</string>
+  <string name="module.jitsi_meet.share.empty">Für dieses Meeting wurden noch keine Freigabelinks erstellt.</string>
+  <string name="module.jitsi_meet.share.untitled">Unbenannter Freigabelink</string>
+  <string name="module.jitsi_meet.share.copy_success">Freigabelink kopiert.</string>
+  <string name="module.jitsi_meet.share.copy_failed">Der Freigabelink konnte nicht kopiert werden.</string>
+  <string name="module.jitsi_meet.share.create_failed">Der Freigabelink konnte nicht erstellt werden.</string>
+  <string name="module.jitsi_meet.share.delete_failed">Der Freigabelink konnte nicht widerrufen werden.</string>
+  <string name="module.jitsi_meet.share.no_meeting">Starten oder betreten Sie zuerst ein Meeting, bevor Sie es teilen.</string>
+  <string name="module.jitsi_meet.share.host">Gastgeber</string>
+  <string name="module.jitsi_meet.share.scheduled_at">Geplant für</string>
+  <string name="module.jitsi_meet.share.unscheduled">Jetzt verfügbar</string>
+  <string name="module.jitsi_meet.share.join">Meeting beitreten</string>
 </resources>

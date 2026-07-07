@@ -52,6 +52,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.4.9`  |
+| Share                | `src/gateways/share/`        | `1.0.0`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -65,7 +66,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.1.3` |
+| Core Package | `src/core/` | `0.2.0` |
 
 ## API
 
@@ -78,6 +79,6 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component       | Path                              | Version |
 | --------------- | --------------------------------- | ------- |
 | Analytics       | `src/modules/analytics/`          | `2.0.1` |
-| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.0.8` |
+| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.1.0` |
 | Cognis Japanese | `src/modules/study/languages/ja/` | `1.2.4` |
 | Cognis English  | `src/modules/study/languages/en/` | `1.2.2` |
