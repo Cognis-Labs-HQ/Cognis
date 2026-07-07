@@ -116,6 +116,15 @@ body[data-theme="light"] .page-loading-overlay__message {
     }
 }
 
+body:has(.popup-overlay) .page-loading-overlay {
+    display: none;
+}
+
+body:has(.popup-overlay):not([data-page-ready="true"])::before,
+body:has(.popup-overlay):not([data-page-ready="true"])::after {
+    content: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
     body:not([data-page-ready="true"])::after {
         animation: none;

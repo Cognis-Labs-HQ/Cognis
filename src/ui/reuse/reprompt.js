@@ -53,12 +53,14 @@ export function createRepromptGuard({
         const result = await openPopupImpl({
             title,
             body: () => `
-        <p>${escapeHtml(message)}</p>
-        <label class="stack">
-          <span>${escapeHtml(i18n.t("ui.reuse.enter_password_prompt"))}</span>
-          <input id="reprompt-password" type="password" autocomplete="current-password" />
-        </label>
-        <p id="reprompt-warning" class="reprompt-warning" role="alert" aria-live="polite" hidden></p>
+        <form id="reprompt-form">
+          <p>${escapeHtml(message)}</p>
+          <label class="stack">
+            <span>${escapeHtml(i18n.t("ui.reuse.enter_password_prompt"))}</span>
+            <input id="reprompt-password" type="password" autocomplete="current-password" />
+          </label>
+          <p id="reprompt-warning" class="reprompt-warning" role="alert" aria-live="polite" hidden></p>
+        </form>
       `,
             actions: [
                 {
@@ -75,6 +77,11 @@ export function createRepromptGuard({
             onOpen: (overlay) => {
                 inputEl = overlay.querySelector("#reprompt-password");
                 warningEl = overlay.querySelector("#reprompt-warning");
+                overlay
+                    .querySelector("#reprompt-form")
+                    ?.addEventListener("submit", (event) => {
+                        event.preventDefault();
+                    });
             },
             onAction: async (actionId) => {
                 if (actionId !== "confirm") return true;
