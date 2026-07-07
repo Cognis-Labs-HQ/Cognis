@@ -170,6 +170,11 @@ export class ShareTokenStore {
         if (filter.resourceId) {
             where.push({ column: "resource_id", value: filter.resourceId });
         }
+        await this.purgeExpired({
+            ownerAccountId: filter.ownerAccountId,
+            resourceType: filter.resourceType,
+            resourceId: filter.resourceId,
+        });
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "share_tokens",
@@ -193,18 +198,36 @@ export class ShareTokenStore {
                 }
             })
             .filter((record): record is ShareTokenRecord => Boolean(record));
-        const activeRecords: ShareTokenRecord[] = [];
-        for (const record of records) {
-            if (isExpired(record.expiresAt)) {
-                await this.deleteById({
-                    shareId: record.id,
-                    ownerAccountId: record.ownerAccountId,
-                });
-                continue;
-            }
-            activeRecords.push(record);
+        return records.filter((record) => !isExpired(record.expiresAt));
+    }
+
+    async purgeExpired(filter?: {
+        ownerAccountId?: string;
+        resourceType?: string;
+        resourceId?: string;
+    }): Promise<void> {
+        const nowIso = new Date().toISOString();
+        const where = [
+            { column: "expires_at", operator: "!=", value: "" as const },
+            { column: "expires_at", operator: "<", value: nowIso },
+        ];
+        if (filter?.ownerAccountId) {
+            where.push({
+                column: "owner_account_id",
+                value: filter.ownerAccountId,
+            });
         }
-        return activeRecords;
+        if (filter?.resourceType) {
+            where.push({ column: "resource_type", value: filter.resourceType });
+        }
+        if (filter?.resourceId) {
+            where.push({ column: "resource_id", value: filter.resourceId });
+        }
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "share_tokens",
+            where,
+        });
     }
 
     async deleteById(input: {

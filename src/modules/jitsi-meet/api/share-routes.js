@@ -12,9 +12,16 @@ function sendError(res, status, code, message) {
 }
 
 function resolveExpiry(hoursValue) {
+    if (
+        hoursValue === null ||
+        hoursValue === undefined ||
+        String(hoursValue).trim() === ""
+    ) {
+        return "";
+    }
     const parsed = Number(hoursValue);
     if (!Number.isFinite(parsed) || parsed <= 0) {
-        return "";
+        return null;
     }
     return new Date(Date.now() + parsed * 60 * 60 * 1000).toISOString();
 }
@@ -156,6 +163,16 @@ export function registerMeetingShareRoutes({
                 res,
             });
             if (!meeting) return;
+            const expiresAt = resolveExpiry(body.expiresInHours);
+            if (expiresAt === null) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "expiresInHours must be a positive number.",
+                );
+                return;
+            }
             const flowResult = await systemCtx.flow.run("mint-share-token", {
                 claims,
                 ownerAccountId: claims.sub,
@@ -163,7 +180,7 @@ export function registerMeetingShareRoutes({
                 resourceId: meeting.id,
                 label: typeof body.label === "string" ? body.label : "",
                 grantedCapabilities: ["meeting:join"],
-                expiresAt: resolveExpiry(body.expiresInHours),
+                expiresAt,
             });
             const issued = flowResult.stageResults["issue-token"]?.[0];
             if (!issued?.minted) {

@@ -110,6 +110,14 @@
 
 **Reason ignored:** The repository was already in an inconsistent state: `src/adapters/auth/ldap/package.json` and the version documents were at `0.1.3`, while `src/adapters/auth/ldap/manifest.json` still lagged at `0.1.1`. This change fixes the inconsistency by bringing the manifest up to the new synchronized version `0.1.4`, but it cannot reconstruct undocumented historical manifest edits inside the same PR.
 
+## Code Review — share gateway implementation
+
+### core/contracts/share/flow-catalog.ts export naming
+
+**Reviewer suggestion:** Revisit the `SHARE_FLOW_CATALOG` export name to ensure it matches the repository's canonical flow-catalog naming conventions.
+
+**Reason ignored:** The export already follows the established `<DOMAIN>_FLOW_CATALOG` pattern used across the repository (for example `MEETINGS_FLOW_CATALOG` and `PROFILE_MEDIA_FLOW_CATALOG`). Renaming it would be a no-behavior churn with no correctness or consistency benefit, so the existing canonical name was kept.
+
 ## Code Review — profile media ctx flows
 
 ### routes/index.ts fallback upload path — remove direct onProfileChanged invocation

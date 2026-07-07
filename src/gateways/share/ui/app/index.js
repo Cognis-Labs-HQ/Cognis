@@ -7,7 +7,6 @@ import {
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { createI18n as createRendererI18n } from "/static/reuse/i18n.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
 function resolveTokenFromLocation() {

@@ -854,6 +854,27 @@ export async function mount(root, { signal } = {}) {
         void updateNativeChat();
     }
 
+    function bindShareButton() {
+        const shareButton = root.querySelector("#jitsi-share-btn");
+        if (!(shareButton instanceof HTMLButtonElement)) {
+            return;
+        }
+        const bindSignal = signal ?? new AbortController().signal;
+        shareButton.addEventListener(
+            "click",
+            async () => {
+                if (!state.meeting?.id) {
+                    return;
+                }
+                await openSharePopup({
+                    meetingId: state.meeting.id,
+                    i18n,
+                });
+            },
+            { signal: bindSignal },
+        );
+    }
+
     const elements = [
         {
             id: "jitsi-participants",
@@ -918,7 +939,7 @@ export async function mount(root, { signal } = {}) {
         persistLayoutPreferences: true,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
-            bindShareButton();
+            bindShareButton(...args);
         },
     });
 

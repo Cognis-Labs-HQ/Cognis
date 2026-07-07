@@ -3,6 +3,7 @@ import {
     SHARE_FLOW_CATALOG,
     CTX_CAPABILITY,
     registerCanonicalFlow,
+    type Ctx,
 } from "@cognis/core";
 import type { CoreShareGateway } from "../gateway/index.js";
 
