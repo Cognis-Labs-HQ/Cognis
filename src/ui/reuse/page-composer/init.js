@@ -382,6 +382,7 @@ export function createPageComposer(
         state: composerState,
         UNIT,
         i18n,
+        escapeHtml,
         getGridSize,
         renderGridComposer: () => renderer.renderGridComposer(),
         saveLayout,
