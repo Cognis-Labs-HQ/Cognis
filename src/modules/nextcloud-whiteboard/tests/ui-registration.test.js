@@ -1,0 +1,55 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { registerUi } from "../api/index.js";
+
+function captureUiRegistration() {
+    const spaRoutes = [];
+    const staticDirs = [];
+    const pageExtensions = [];
+    const navbarPlugins = [];
+    const adminSections = [];
+    registerUi({
+        moduleRoot: "/tmp/nextcloud-whiteboard",
+        registerStaticDir(prefix, dir) {
+            staticDirs.push({ prefix, dir });
+        },
+        registerNavbarPlugin(plugin) {
+            navbarPlugins.push(plugin);
+        },
+        registerSpaRoute(route) {
+            spaRoutes.push(route);
+        },
+        registerPageExtension(pageId, element) {
+            pageExtensions.push({ pageId, element });
+        },
+        registerAdminSection(section) {
+            adminSections.push(section);
+        },
+    });
+    return {
+        spaRoutes,
+        staticDirs,
+        pageExtensions,
+        navbarPlugins,
+        adminSections,
+    };
+}
+
+test("nextcloud whiteboard registers full SPA routing and boilerplate styles", () => {
+    const { spaRoutes } = captureUiRegistration();
+    const routesByBase = new Map(spaRoutes.map((route) => [route.base, route]));
+
+    for (const base of ["/whiteboards", "/whiteboard"]) {
+        const route = routesByBase.get(base);
+        assert.ok(route, `${base} should be registered as a SPA route`);
+        assert.equal(
+            route.scriptUrl,
+            "/static/modules/nextcloud-whiteboard/app/index.js",
+        );
+        assert.deepEqual(route.stylesheets, [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
+        ]);
+    }
+});

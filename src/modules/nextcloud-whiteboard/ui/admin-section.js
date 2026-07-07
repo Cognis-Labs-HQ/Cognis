@@ -31,14 +31,6 @@ export async function mount(root) {
     serverUrlInput.required = true;
     serverUrlInput.value = config.serverUrl ?? "";
     serverUrlLabel.append(serverUrlText, serverUrlInput);
-    const urlLabel = document.createElement("label");
-    const urlText = document.createElement("span");
-    urlText.textContent = text("module.nextcloud_whiteboard.instance_url");
-    const urlInput = document.createElement("input");
-    urlInput.name = "instanceUrl";
-    urlInput.type = "url";
-    urlInput.value = config.instanceUrl ?? "";
-    urlLabel.append(urlText, urlInput);
     const keyLabel = document.createElement("label");
     const keyText = document.createElement("span");
     keyText.textContent = text("module.nextcloud_whiteboard.api_key");
@@ -51,7 +43,7 @@ export async function mount(root) {
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = text("ui.reuse.save");
-    form.append(heading, serverUrlLabel, urlLabel, keyLabel, submitButton);
+    form.append(heading, serverUrlLabel, keyLabel, submitButton);
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
@@ -61,7 +53,6 @@ export async function mount(root) {
             method: "POST",
             body: JSON.stringify({
                 serverUrl: formData.get("serverUrl"),
-                instanceUrl: formData.get("instanceUrl"),
                 apiKey: formData.get("apiKey"),
             }),
         });
@@ -108,16 +99,6 @@ export async function openModuleConfigPopup({
                     "module.nextcloud_whiteboard.server_url_description",
                 placeholderKey:
                     "module.nextcloud_whiteboard.server_url_placeholder",
-                type: "url",
-            },
-            {
-                id: "nextcloud-whiteboard-instance-url",
-                configKey: "instanceUrl",
-                labelKey: "module.nextcloud_whiteboard.instance_url",
-                descriptionKey:
-                    "module.nextcloud_whiteboard.instance_url_description",
-                placeholderKey:
-                    "module.nextcloud_whiteboard.instance_url_placeholder",
                 type: "url",
             },
             {

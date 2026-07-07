@@ -9,7 +9,12 @@ import { NextcloudWhiteboardStore } from "./store.js";
 const LIVENESS_TIMEOUT_MS = 5000;
 
 const MODULE_ID = "nextcloud-whiteboard";
-const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
+const PAGE_RESOURCE_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
+const WHITEBOARD_STYLESHEETS = [
+    "/static/styles/page-builder.css",
+    "/static/styles/reuse/page-sections.css",
+    "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
+];
 const storeByExecutor = new WeakMap();
 
 function sendJson(res, status, payload) {
@@ -65,7 +70,6 @@ function buildCognisWhiteboardUrl(whiteboardId) {
 
 function publicConfig(config) {
     return {
-        instanceUrl: config.instanceUrl,
         serverUrl: config.serverUrl,
         apiKeyConfigured: config.apiKeyConfigured,
         updatedAt: config.updatedAt,
@@ -74,8 +78,7 @@ function publicConfig(config) {
 
 function registerConfiguredOrigin(registerScriptOrigins, config) {
     if (typeof registerScriptOrigins === "function") {
-        registerScriptOrigins(PAGE_SCRIPT_ORIGIN_OWNER_ID, [
-            config?.instanceUrl,
+        registerScriptOrigins(PAGE_RESOURCE_ORIGIN_OWNER_ID, [
             config?.serverUrl,
         ]);
     }
@@ -113,9 +116,16 @@ export function registerUi(ctx) {
         pattern: "^/whiteboards$",
         base: "/whiteboards",
         scriptUrl: "/static/modules/nextcloud-whiteboard/app/index.js",
-        stylesheets: [
-            "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
-        ],
+        stylesheets: WHITEBOARD_STYLESHEETS,
+        access: { minRole: "user" },
+    });
+
+    ctx.registerSpaRoute({
+        id: "module-nextcloud-whiteboard-canvas",
+        pattern: "^/whiteboard$",
+        base: "/whiteboard",
+        scriptUrl: "/static/modules/nextcloud-whiteboard/app/index.js",
+        stylesheets: WHITEBOARD_STYLESHEETS,
         access: { minRole: "user" },
     });
     ctx.registerPageExtension?.("dashboard", {
@@ -292,7 +302,6 @@ export function registerApiRoutes(router, ctx) {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return;
             const body = await readJson(req);
-            const instanceUrl = normalizeHttpUrl(body.instanceUrl);
             const serverUrl = normalizeHttpUrl(body.serverUrl);
             const apiKey = String(body.apiKey ?? "").trim();
             if (!serverUrl || !apiKey) {
@@ -305,7 +314,6 @@ export function registerApiRoutes(router, ctx) {
                 return;
             }
             const saved = await store.saveConfig({
-                instanceUrl,
                 serverUrl,
                 apiKey,
             });
@@ -313,7 +321,6 @@ export function registerApiRoutes(router, ctx) {
             log?.("info", "Nextcloud Whiteboard configuration updated.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "save_config",
-                hasInstanceUrl: Boolean(saved.instanceUrl),
                 hasServerUrl: Boolean(saved.serverUrl),
                 hasApiKey: saved.apiKeyConfigured,
                 updatedBy: claims.sub,

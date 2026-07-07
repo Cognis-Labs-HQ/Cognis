@@ -33,16 +33,13 @@
   <string name="module.nextcloud_whiteboard.connecting">Menghubungkan ke papan tulis&#x2026;</string>
   <string name="module.nextcloud_whiteboard.admin_title">Pengaturan papan tulis Nextcloud</string>
   <string name="module.nextcloud_whiteboard.server_url">URL server papan tulis</string>
-  <string name="module.nextcloud_whiteboard.instance_url">URL Nextcloud</string>
   <string name="module.nextcloud_whiteboard.api_key">Kunci API</string>
-  <string name="module.nextcloud_whiteboard.admin_note">Konfigurasikan server kolaborasi Nextcloud Whiteboard. URL server mengarah ke server papan tulis mandiri (endpoint Socket.IO). Kunci API digunakan untuk menandatangani token sesi agar klien dapat terhubung langsung melalui WebSocket.</string>
+  <string name="module.nextcloud_whiteboard.admin_note">Konfigurasikan server kolaborasi Nextcloud Whiteboard. Kunci API digunakan untuk menandatangani token sesi agar klien dapat terhubung langsung melalui WebSocket.</string>
   <string name="module.nextcloud_whiteboard.load_failed">Tidak dapat memuat pengaturan Nextcloud Whiteboard.</string>
   <string name="module.nextcloud_whiteboard.save_success">Pengaturan Nextcloud Whiteboard disimpan.</string>
   <string name="module.nextcloud_whiteboard.save_failed">Tidak dapat menyimpan pengaturan Nextcloud Whiteboard.</string>
   <string name="module.nextcloud_whiteboard.server_url_description">URL server kolaborasi Nextcloud Whiteboard (endpoint WebSocket).</string>
   <string name="module.nextcloud_whiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
-  <string name="module.nextcloud_whiteboard.instance_url_description">URL dasar server Nextcloud (opsional, sebagai referensi).</string>
-  <string name="module.nextcloud_whiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
   <string name="module.nextcloud_whiteboard.api_key_description">Rahasia bersama untuk menandatangani token sesi JWT bagi server papan tulis.</string>
   <string name="module.nextcloud_whiteboard.api_key_placeholder">Tempel kunci API</string>
   <string name="module.nextcloud_whiteboard.dashboard_label">Papan tulis Nextcloud</string>

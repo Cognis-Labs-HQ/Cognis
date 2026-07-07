@@ -33,7 +33,6 @@
   <string name="module.nextcloud_whiteboard.connecting">ホワイトボードに接続中&#x2026;</string>
   <string name="module.nextcloud_whiteboard.admin_title">Nextcloud ホワイトボード設定</string>
   <string name="module.nextcloud_whiteboard.server_url">ホワイトボードサーバー URL</string>
-  <string name="module.nextcloud_whiteboard.instance_url">Nextcloud URL</string>
   <string name="module.nextcloud_whiteboard.api_key">API キー</string>
   <string name="module.nextcloud_whiteboard.admin_note">Nextcloud Whiteboard コラボレーションサーバーを設定します。サーバー URL はスタンドアロンのホワイトボードサーバー（Socket.IO エンドポイント）を指します。API キーはクライアントが WebSocket で直接接続できるよう、セッショントークンへの署名に使用されます。</string>
   <string name="module.nextcloud_whiteboard.load_failed">Nextcloud Whiteboard 設定を読み込めませんでした。</string>
@@ -41,8 +40,6 @@
   <string name="module.nextcloud_whiteboard.save_failed">Nextcloud Whiteboard 設定を保存できませんでした。</string>
   <string name="module.nextcloud_whiteboard.server_url_description">Nextcloud Whiteboard コラボレーションサーバーの URL（WebSocket エンドポイント）です。</string>
   <string name="module.nextcloud_whiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
-  <string name="module.nextcloud_whiteboard.instance_url_description">Nextcloud サーバーのベース URL です（任意、参照用）。</string>
-  <string name="module.nextcloud_whiteboard.instance_url_placeholder">https://nextcloud.example.com</string>
   <string name="module.nextcloud_whiteboard.api_key_description">ホワイトボードサーバー用の JWT セッショントークンへの署名に使う共有シークレットです。</string>
   <string name="module.nextcloud_whiteboard.api_key_placeholder">API キーを貼り付け</string>
   <string name="module.nextcloud_whiteboard.dashboard_label">Nextcloud ホワイトボード</string>
