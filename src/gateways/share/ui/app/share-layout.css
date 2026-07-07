@@ -104,6 +104,15 @@
     text-align: center;
 }
 
+.share-spinner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    animation: share-spin 0.9s linear infinite;
+}
+
 .share-meeting-card {
     display: grid;
     gap: 1rem;
@@ -128,4 +137,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+}
+
+@keyframes share-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }

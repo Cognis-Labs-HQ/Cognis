@@ -38,7 +38,7 @@ function renderBody(i18n, state) {
                     <input id="jitsi-share-label" type="text" value="${escapeHtml(state.label)}" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.share.label_placeholder"))}" />
                 </label>
                 <label>
-                    <span>${escapeHtml(i18n.t("module.jitsi_meet.share.expiry"))}</span>
+                    <span>${escapeHtml(i18n.t("module.jitsi_meet.share.expiry"))} (${escapeHtml(i18n.t("module.jitsi_meet.share.expiry_units"))})</span>
                     <input id="jitsi-share-expiry" type="number" min="1" step="1" value="${escapeHtml(state.expiresInHours)}" placeholder="24" />
                 </label>
                 <button id="jitsi-share-create-btn" class="btn-confirm btn-animated" type="button" ${state.loading ? "disabled" : ""}>${escapeHtml(i18n.t("module.jitsi_meet.share.generate_link"))}</button>

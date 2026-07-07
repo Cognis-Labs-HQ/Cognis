@@ -90,6 +90,7 @@
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Optional Label</string>
   <string name="module.jitsi_meet.share.expiry">Expires In Hours</string>
+  <string name="module.jitsi_meet.share.expiry_units">Hours</string>
   <string name="module.jitsi_meet.share.empty">No share links have been created for this meeting yet.</string>
   <string name="module.jitsi_meet.share.untitled">Untitled Share Link</string>
   <string name="module.jitsi_meet.share.copy_success">Share link copied.</string>

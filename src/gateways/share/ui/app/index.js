@@ -65,7 +65,7 @@ function buildShareElement(state) {
                         ${renderHeader(state.i18n)}
                         <section class="share-window-body">
                             <div class="share-loading-state">
-                                <span class="jitsi-spinner" aria-hidden="true"></span>
+                                <span class="share-spinner" aria-hidden="true"></span>
                                 <p>${escapeHtml(state.i18n.t("share.loading"))}</p>
                             </div>
                         </section>
