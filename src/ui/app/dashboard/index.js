@@ -6,6 +6,11 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 import { showToast } from "../../reuse/toast.js";
 import {
+    resolveApiErrorMessage,
+    tryParseJsonResponse,
+} from "../../reuse/api-error-response.js";
+import { openPopupWindow } from "../../reuse/popup-window.js";
+import {
     buildAnalogueClockMarkup,
     buildDigitalClockMarkup,
     createDateTimeFormatters,
@@ -92,29 +97,8 @@ async function loadUpcomingCalendarEvents() {
         return [];
     }
 
-    async function parseJsonResponse(response) {
-        return response.json().catch(() => ({}));
-    }
-
-    function resolveApiErrorMessage(payload, fallbackMessage) {
-        const errorMessage = payload?.error?.message;
-        if (typeof errorMessage === "string" && errorMessage.trim()) {
-            return errorMessage.trim();
-        }
-        return fallbackMessage;
-    }
-
     function buildValidationWhiteboardTitle(i18n) {
         return `${i18n.t("ui.app.dashboard.element.whiteboard_validation.title_prefix")} ${new Date().toISOString()}`;
-    }
-
-    function openWhiteboardWindow({ launchUrl, windowFeatures }) {
-        const openedWindow = window.open(
-            launchUrl,
-            "_blank",
-            windowFeatures ?? "popup,width=1280,height=900,noopener,noreferrer",
-        );
-        return Boolean(openedWindow);
     }
 
     async function spawnValidationWhiteboard(i18n) {
@@ -130,7 +114,7 @@ async function loadUpcomingCalendarEvents() {
                     }),
                 },
             );
-            const payload = await parseJsonResponse(response);
+            const payload = await tryParseJsonResponse(response);
             if (!response.ok) {
                 showToast(
                     resolveApiErrorMessage(
@@ -146,8 +130,8 @@ async function loadUpcomingCalendarEvents() {
             const launchUrl = payload?.data?.launchUrl;
             if (
                 typeof launchUrl !== "string" ||
-                !openWhiteboardWindow({
-                    launchUrl,
+                !openPopupWindow({
+                    url: launchUrl,
                     windowFeatures: payload?.data?.windowFeatures,
                 })
             ) {
@@ -167,7 +151,9 @@ async function loadUpcomingCalendarEvents() {
             );
         } catch {
             showToast(
-                i18n.t("ui.app.dashboard.element.whiteboard_validation.spawn_failed"),
+                i18n.t(
+                    "ui.app.dashboard.element.whiteboard_validation.spawn_failed",
+                ),
                 { variant: "error" },
             );
         }
