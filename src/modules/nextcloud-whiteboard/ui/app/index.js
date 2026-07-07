@@ -21,6 +21,9 @@ let socketInstance = null;
 let savedElements = [];
 let preflightStatus = "idle";
 let lastConnectionToast = "";
+let imageUploadMaxBytes = 1048576;
+let syncStatus = "idle";
+let syncStatusMessage = "";
 
 function t(key) {
     return i18n?.t(key) ?? key;
@@ -29,6 +32,20 @@ function t(key) {
 function reportClientError(error, fallbackKey) {
     console.error("[nextcloud-whiteboard] client error:", error);
     showToast(error?.message || t(fallbackKey), { variant: "error" });
+}
+
+function updateSyncStatusBox() {
+    const statusBox = document.getElementById("wb-sync-status");
+    if (!statusBox) return;
+    statusBox.dataset.status = syncStatus;
+    statusBox.title =
+        syncStatusMessage || t("module.nextcloud_whiteboard.status_idle");
+}
+
+function setSyncStatus(status, messageKey) {
+    syncStatus = status;
+    syncStatusMessage = t(messageKey);
+    updateSyncStatusBox();
 }
 
 function buildConnectionErrorMessage(error, serverUrl) {
@@ -59,6 +76,13 @@ async function apiFetchJson(path, options = {}) {
 
 async function loadBoards() {
     boards = await apiFetchJson("/whiteboards");
+}
+
+async function renameBoard(boardId, title) {
+    return apiFetchJson("/whiteboards/rename", {
+        method: "POST",
+        body: JSON.stringify({ id: boardId, title }),
+    });
 }
 
 async function spawnBoard({ title, participants = [] } = {}) {
@@ -144,11 +168,31 @@ function connectSocket(io, session, canvas) {
     });
 
     const emitChanges = debounce((elements) => {
-        if (!socket.connected) return;
+        if (!socket.connected) {
+            setSyncStatus(
+                "error",
+                "module.nextcloud_whiteboard.status_sync_failed",
+            );
+            return;
+        }
+        setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
         socket.emit("elements:changed", { elements, roomId });
+        setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
     }, EMIT_DEBOUNCE_MS);
 
-    canvas.onChange(emitChanges);
+    canvas.onChange((elements, meta) => {
+        if (meta?.type === "image_rejected") {
+            showToast(
+                t("module.nextcloud_whiteboard.image_too_large").replace(
+                    "{limit}",
+                    String(meta.limit),
+                ),
+                { variant: "error" },
+            );
+            return;
+        }
+        emitChanges(elements);
+    });
 
     socket.on("connect", () => {
         lastConnectionToast = "";
@@ -157,6 +201,9 @@ function connectSocket(io, session, canvas) {
 
     socket.on("connect_error", (error) => {
         const message = buildConnectionErrorMessage(error, serverUrl);
+        syncStatus = "error";
+        syncStatusMessage = message;
+        updateSyncStatusBox();
         if (message !== lastConnectionToast) {
             lastConnectionToast = message;
             showToast(message, { variant: "error" });
@@ -185,6 +232,9 @@ async function createAndOpenBoard() {
         return;
     }
     savedElements = [];
+    showToast(t("module.nextcloud_whiteboard.created_success"), {
+        variant: "success",
+    });
     await openBoard(spawnResult.whiteboard);
 }
 
@@ -208,6 +258,9 @@ function bindCanvasToolbar(canvas) {
     document
         .getElementById("wb-history")
         ?.addEventListener("click", () => void openHistoryPopup());
+    document
+        .getElementById("wb-board-title")
+        ?.addEventListener("dblclick", () => void renameActiveBoard());
 
     const colorInput = document.getElementById("wb-color");
     colorInput?.addEventListener("input", () => {
@@ -258,6 +311,35 @@ async function openHistoryPopup() {
             },
         ],
     });
+}
+
+async function renameActiveBoard() {
+    if (!activeBoard) return;
+    const titleEl = document.getElementById("wb-board-title");
+    if (!titleEl) return;
+    titleEl.contentEditable = "true";
+    titleEl.focus();
+    const finish = async () => {
+        titleEl.contentEditable = "false";
+        const nextTitle = titleEl.textContent?.trim() || activeBoard.title;
+        try {
+            const renamed = await renameBoard(activeBoard.id, nextTitle);
+            activeBoard = renamed;
+            if (activeSession) activeSession.title = renamed.title;
+            titleEl.textContent = renamed.title;
+            showToast(t("module.nextcloud_whiteboard.rename_success"), {
+                variant: "success",
+            });
+        } catch (error) {
+            reportClientError(
+                error,
+                "module.nextcloud_whiteboard.rename_failed",
+            );
+            titleEl.textContent = activeBoard.title;
+        }
+        titleEl.removeEventListener("blur", finish);
+    };
+    titleEl.addEventListener("blur", finish, { once: true });
 }
 
 async function runPreflightCheck() {
@@ -316,6 +398,9 @@ async function openBoard(board) {
     }
 
     activeSession = session;
+    imageUploadMaxBytes = Number(
+        session.imageUploadMaxBytes ?? imageUploadMaxBytes,
+    );
 
     const titleEl = document.getElementById("wb-board-title");
     if (titleEl) titleEl.textContent = session.title ?? "";
@@ -333,6 +418,7 @@ async function openBoard(board) {
     if (!canvasElement) return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
+    canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
     }
@@ -342,6 +428,7 @@ async function openBoard(board) {
 
     socketInstance = connectSocket(io, session, canvasInstance);
     bindCanvasToolbar(canvasInstance);
+    setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
 
     setOverlayVisible(false);
 }
@@ -352,6 +439,12 @@ function renderCanvasElement() {
     const overlayMessage = hasActiveBoard
         ? t("module.nextcloud_whiteboard.connecting_ellipsis")
         : t("module.nextcloud_whiteboard.canvas_placeholder");
+    const boardList = boards
+        .map(
+            (board) =>
+                `<button type="button" class="wb-overlay-board" data-board-id="${escapeHtml(board.id)}">${escapeHtml(board.title)}</button>`,
+        )
+        .join("");
 
     return `
         <div class="wb-canvas-wrap">
@@ -366,7 +459,14 @@ function renderCanvasElement() {
                     <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">☰</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <button type="button" data-tool="select" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">↖</button>
                     <button type="button" data-tool="pen" class="wb-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
+                    <button type="button" data-tool="rectangle" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
+                    <button type="button" data-tool="diamond" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
+                    <button type="button" data-tool="ellipse" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
+                    <button type="button" data-tool="arrow" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}">→</button>
+                    <button type="button" data-tool="line" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}">−</button>
+                    <button type="button" data-tool="text" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">A</button>
                     <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
@@ -380,7 +480,8 @@ function renderCanvasElement() {
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
                     <button type="button" id="wb-clear" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</button>
                 </div>
-                <span id="wb-board-title" class="wb-board-title">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
+                <span id="wb-board-title" class="wb-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
+                <span id="wb-sync-status" class="wb-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
             </div>
             <div class="wb-canvas-stage">
                 <canvas
@@ -394,18 +495,36 @@ function renderCanvasElement() {
                     ${overlayHidden ? "hidden" : ""}
                     aria-live="polite"
                 >
-                    <p class="wb-overlay-message">${escapeHtml(overlayMessage)}</p>
+                    <div class="wb-start-panel">
+                        <p class="wb-overlay-message">${escapeHtml(overlayMessage)}</p>
+                        ${hasActiveBoard ? "" : `<div class="wb-start-actions"><button type="button" id="wb-start-new">${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}</button><button type="button" id="wb-start-history">${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}</button></div><div class="wb-overlay-board-list">${boardList || `<p>${escapeHtml(t("module.nextcloud_whiteboard.empty"))}</p>`}</div>`}
+                    </div>
                 </div>
             </div>
         </div>`;
 }
 
 function onCanvasRender() {
+    document
+        .getElementById("wb-start-new")
+        ?.addEventListener("click", () => void createAndOpenBoard());
+    document
+        .getElementById("wb-start-history")
+        ?.addEventListener("click", () => void openHistoryPopup());
+    document.querySelectorAll(".wb-overlay-board").forEach((button) => {
+        button.addEventListener("click", () => {
+            const board = boards.find(
+                (item) => item.id === button.dataset.boardId,
+            );
+            if (board) void openBoard(board);
+        });
+    });
     const canvasElement = document.getElementById("wb-canvas");
     if (!canvasElement || canvasInstance || !activeBoard) return;
     if (preflightStatus !== "passed") return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
+    canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
     }
@@ -437,6 +556,13 @@ export async function mount(root, { signal } = {}) {
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
 
+    await loadBoards().catch((error) =>
+        reportClientError(
+            error,
+            "module.nextcloud_whiteboard.load_boards_failed",
+        ),
+    );
+
     const initialBoardId = new URLSearchParams(window.location.search).get(
         "id",
     );
@@ -462,7 +588,7 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 
     if (activeBoard) {
-        await openBoard(activeBoard);
+        void openBoard(activeBoard);
     }
 }
 

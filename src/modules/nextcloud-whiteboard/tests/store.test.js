@@ -21,6 +21,11 @@ function createMemoryDb() {
                 );
                 return { rows: selected.map((row) => ({ ...row })) };
             }
+            if (command.option === "UPDATE") {
+                const selected = applyWhere(rows, command.where);
+                for (const row of selected) Object.assign(row, command.values);
+                return { rows: [] };
+            }
             if (command.option === "INSERT") {
                 const values = { ...command.values };
                 const conflictColumns = command.onConflict?.columns ?? [];
@@ -54,11 +59,13 @@ test("nextcloud whiteboard store persists normalized configuration", async () =>
     const saved = await store.saveConfig({
         serverUrl: "https://whiteboard.example.test:3002",
         apiKey: "secret-api-key-minimum-16-chars",
+        imageUploadMaxBytes: 2097152,
     });
 
     assert.equal(saved.serverUrl, "https://whiteboard.example.test:3002");
     assert.equal(saved.apiKeyConfigured, true);
     assert.equal(saved.apiKey, "secret-api-key-minimum-16-chars");
+    assert.equal(saved.imageUploadMaxBytes, 2097152);
 });
 
 test("nextcloud whiteboard store enforces allow-list access", async () => {
@@ -73,4 +80,18 @@ test("nextcloud whiteboard store enforces allow-list access", async () => {
     assert.equal(await store.canAccessWhiteboard(board.id, "teacher"), true);
     assert.equal(await store.canAccessWhiteboard(board.id, "student"), true);
     assert.equal(await store.canAccessWhiteboard(board.id, "outsider"), false);
+});
+
+test("nextcloud whiteboard store renames boards", async () => {
+    const store = new NextcloudWhiteboardStore({ db: createMemoryDb() });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "teacher",
+        participants: [],
+    });
+
+    const renamed = await store.renameWhiteboard(board.id, "Updated planning");
+
+    assert.equal(renamed.title, "Updated planning");
 });

@@ -53,5 +53,24 @@
   <string name="module.nextcloud_whiteboard.history_title">ホワイトボード履歴</string>
   <string name="module.nextcloud_whiteboard.close">閉じる</string>
   <string name="module.nextcloud_whiteboard.connection_failed">{server_url} のホワイトボードサーバーに接続できません。WebSocket URL と CSP 設定を管理者に確認してください。</string>
+  <string name="module.nextcloud_whiteboard.created_success">ホワイトボードを作成しました。</string>
+  <string name="module.nextcloud_whiteboard.rename_success">ホワイトボード名を変更しました。</string>
+  <string name="module.nextcloud_whiteboard.rename_failed">ホワイトボード名を変更できませんでした。</string>
+  <string name="module.nextcloud_whiteboard.rename_hint">ダブルクリックで名前を変更</string>
+  <string name="module.nextcloud_whiteboard.status_idle">まだ接続されていません。</string>
+  <string name="module.nextcloud_whiteboard.status_syncing">変更を同期中…</string>
+  <string name="module.nextcloud_whiteboard.status_synced">同期済み。</string>
+  <string name="module.nextcloud_whiteboard.status_sync_failed">変更を同期できませんでした。</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit">画像アップロード上限（バイト）</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_description">貼り付け画像の最大サイズ（バイト）。0 は貼り付け画像をブロックします。</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_placeholder">1048576</string>
+  <string name="module.nextcloud_whiteboard.image_too_large">画像が設定された {limit} バイトの上限を超えています。</string>
+  <string name="module.nextcloud_whiteboard.tool_select">選択</string>
+  <string name="module.nextcloud_whiteboard.tool_rectangle">長方形</string>
+  <string name="module.nextcloud_whiteboard.tool_diamond">ひし形</string>
+  <string name="module.nextcloud_whiteboard.tool_ellipse">楕円</string>
+  <string name="module.nextcloud_whiteboard.tool_arrow">矢印</string>
+  <string name="module.nextcloud_whiteboard.tool_line">線</string>
+  <string name="module.nextcloud_whiteboard.tool_text">テキスト</string>
 </resources>
 

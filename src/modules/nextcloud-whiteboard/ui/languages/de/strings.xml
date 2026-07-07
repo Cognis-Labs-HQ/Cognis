@@ -53,5 +53,24 @@
   <string name="module.nextcloud_whiteboard.history_title">Whiteboard-Verlauf</string>
   <string name="module.nextcloud_whiteboard.close">Schließen</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Keine Verbindung zum Whiteboard-Server unter {server_url}. Bitten Sie einen Administrator, die WebSocket-URL und CSP-Konfiguration zu prüfen.</string>
+  <string name="module.nextcloud_whiteboard.created_success">Whiteboard erstellt.</string>
+  <string name="module.nextcloud_whiteboard.rename_success">Whiteboard umbenannt.</string>
+  <string name="module.nextcloud_whiteboard.rename_failed">Whiteboard konnte nicht umbenannt werden.</string>
+  <string name="module.nextcloud_whiteboard.rename_hint">Zum Umbenennen doppelklicken</string>
+  <string name="module.nextcloud_whiteboard.status_idle">Noch nicht verbunden.</string>
+  <string name="module.nextcloud_whiteboard.status_syncing">Änderungen werden synchronisiert…</string>
+  <string name="module.nextcloud_whiteboard.status_synced">Synchronisiert.</string>
+  <string name="module.nextcloud_whiteboard.status_sync_failed">Änderungen konnten nicht synchronisiert werden.</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit">Bild-Upload-Limit (Bytes)</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_description">Maximale Größe eingefügter Bilder in Bytes. 0 blockiert eingefügte Bilder.</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_placeholder">1048576</string>
+  <string name="module.nextcloud_whiteboard.image_too_large">Das Bild überschreitet das konfigurierte Limit von {limit} Bytes.</string>
+  <string name="module.nextcloud_whiteboard.tool_select">Auswählen</string>
+  <string name="module.nextcloud_whiteboard.tool_rectangle">Rechteck</string>
+  <string name="module.nextcloud_whiteboard.tool_diamond">Raute</string>
+  <string name="module.nextcloud_whiteboard.tool_ellipse">Ellipse</string>
+  <string name="module.nextcloud_whiteboard.tool_arrow">Pfeil</string>
+  <string name="module.nextcloud_whiteboard.tool_line">Linie</string>
+  <string name="module.nextcloud_whiteboard.tool_text">Text</string>
 </resources>
 

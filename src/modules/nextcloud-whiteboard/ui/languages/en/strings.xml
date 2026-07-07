@@ -53,5 +53,24 @@
   <string name="module.nextcloud_whiteboard.history_title">Whiteboard history</string>
   <string name="module.nextcloud_whiteboard.close">Close</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Could not connect to the whiteboard server at {server_url}. Ask an administrator to confirm the WebSocket URL and CSP configuration.</string>
+  <string name="module.nextcloud_whiteboard.created_success">Whiteboard created.</string>
+  <string name="module.nextcloud_whiteboard.rename_success">Whiteboard renamed.</string>
+  <string name="module.nextcloud_whiteboard.rename_failed">Could not rename whiteboard.</string>
+  <string name="module.nextcloud_whiteboard.rename_hint">Double-click to rename</string>
+  <string name="module.nextcloud_whiteboard.status_idle">Not connected yet.</string>
+  <string name="module.nextcloud_whiteboard.status_syncing">Syncing changes…</string>
+  <string name="module.nextcloud_whiteboard.status_synced">Synced.</string>
+  <string name="module.nextcloud_whiteboard.status_sync_failed">Changes could not be synced.</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit">Image upload limit (bytes)</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_description">Maximum pasted image size in bytes. Use 0 to block pasted images.</string>
+  <string name="module.nextcloud_whiteboard.image_upload_limit_placeholder">1048576</string>
+  <string name="module.nextcloud_whiteboard.image_too_large">Image is larger than the configured {limit} byte limit.</string>
+  <string name="module.nextcloud_whiteboard.tool_select">Select</string>
+  <string name="module.nextcloud_whiteboard.tool_rectangle">Rectangle</string>
+  <string name="module.nextcloud_whiteboard.tool_diamond">Diamond</string>
+  <string name="module.nextcloud_whiteboard.tool_ellipse">Ellipse</string>
+  <string name="module.nextcloud_whiteboard.tool_arrow">Arrow</string>
+  <string name="module.nextcloud_whiteboard.tool_line">Line</string>
+  <string name="module.nextcloud_whiteboard.tool_text">Text</string>
 </resources>
 
