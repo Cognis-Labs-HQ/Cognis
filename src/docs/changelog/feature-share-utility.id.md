@@ -8,6 +8,6 @@ Cognis sekarang memiliki gateway Share khusus yang menangani pembuatan, daftar, 
 
 Modul Jitsi Meet sekarang menambahkan hook flow share untuk sumber daya meeting, menyediakan route pengelolaan share meeting, dan menampilkan tombol share di area meeting. Pemilik meeting dapat membuat tautan share yang kedaluwarsa, menyalinnya dari popup, lalu mencabutnya nanti.
 
-## Perbaikan: halaman Meetings kini memuat dengan benar
+## Popup Tautan Berbagi Generik
 
-Modul popup share sekarang dimuat secara lazy ketika pengguna membuka dialog share, bukan saat halaman Meetings pertama kali dimuat. Ini mencegah kegagalan pengambilan share-popup dari menggagalkan seluruh modul halaman Meetings.
+Popup tautan berbagi telah diekstrak dari modul Jitsi Meet menjadi utilitas generik `openShareLinksPopup` di `src/ui/reuse/share-links-popup.js`. Utilitas ini menerima fungsi callback API dan string label sebagai parameter sehingga dapat digunakan kembali oleh fitur apa pun. Impor kini menggunakan jalur absolut, sehingga memperbaiki kegagalan pengambilan impor dinamis di halaman Meetings.

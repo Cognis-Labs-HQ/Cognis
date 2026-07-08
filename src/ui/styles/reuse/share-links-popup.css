@@ -1,0 +1,49 @@
+.share-links-popup {
+    display: grid;
+    gap: 1rem;
+}
+
+.share-links-create-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-links-create-form label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.share-links-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-links-row {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 0.875rem;
+    background: rgba(15, 23, 42, 0.48);
+}
+
+.share-links-row-main,
+.share-links-row-actions {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.share-links-row-label,
+.share-links-row-url {
+    margin: 0;
+}
+
+.share-links-row-url {
+    word-break: break-all;
+    color: rgba(226, 232, 240, 0.82);
+}
+
+.share-links-empty {
+    margin: 0;
+    color: rgba(226, 232, 240, 0.82);
+}

@@ -8,6 +8,6 @@ Cognis now includes a dedicated Share gateway that owns public share-token minti
 
 The Jitsi Meet module now contributes share flow hooks for meeting resources, exposes meeting-share management routes, and renders a share button in the meeting stage. Meeting owners can generate expiring share links, copy them from a popup, and revoke them later.
 
-## Meetings page load fix
+## Generic Share Links Popup
 
-The share popup module is now loaded lazily when the user opens the share dialog instead of being eagerly imported at page load time. This prevents a failed share-popup fetch from aborting the entire meetings page module.
+The share links popup has been extracted from the Jitsi Meet module into a generic `openShareLinksPopup` utility in `src/ui/reuse/share-links-popup.js`. It accepts API callback functions and label strings as parameters, making it reusable by any feature that needs to manage share links. The import now uses an absolute path, fixing a dynamic import fetch failure on the Meetings page.

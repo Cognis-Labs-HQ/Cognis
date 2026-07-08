@@ -26,6 +26,7 @@ import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
+import { buildShareCallbacks } from "./share-adapter.js";
 
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 
@@ -865,10 +866,40 @@ export async function mount(root, { signal } = {}) {
                 if (!state.meeting?.id) {
                     return;
                 }
-                const { openSharePopup } = await import("./share-popup.js");
-                await openSharePopup({
-                    meetingId: state.meeting.id,
-                    i18n,
+                const { openShareLinksPopup } =
+                    await import("/static/reuse/share-links-popup.js");
+                await openShareLinksPopup({
+                    title: i18n.t("module.jitsi_meet.share.popup_title"),
+                    labels: {
+                        empty: i18n.t("module.jitsi_meet.share.empty"),
+                        untitled: i18n.t("module.jitsi_meet.share.untitled"),
+                        copyLink: i18n.t("module.jitsi_meet.share.copy_link"),
+                        revoke: i18n.t("module.jitsi_meet.share.revoke"),
+                        label: i18n.t("module.jitsi_meet.share.label"),
+                        labelPlaceholder: i18n.t(
+                            "module.jitsi_meet.share.label_placeholder",
+                        ),
+                        expiryLabel: i18n.t(
+                            "module.jitsi_meet.share.expiry_label",
+                        ),
+                        generateLink: i18n.t(
+                            "module.jitsi_meet.share.generate_link",
+                        ),
+                        done: i18n.t("ui.reuse.done"),
+                        createFailed: i18n.t(
+                            "module.jitsi_meet.share.create_failed",
+                        ),
+                        copySuccess: i18n.t(
+                            "module.jitsi_meet.share.copy_success",
+                        ),
+                        copyFailed: i18n.t(
+                            "module.jitsi_meet.share.copy_failed",
+                        ),
+                        deleteFailed: i18n.t(
+                            "module.jitsi_meet.share.delete_failed",
+                        ),
+                    },
+                    ...buildShareCallbacks(state.meeting.id),
                 });
             },
             { signal: bindSignal },
