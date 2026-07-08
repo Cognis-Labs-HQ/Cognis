@@ -62,13 +62,13 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 
+const STYLESHEET_HREF = "/static/styles/reuse/share-links-popup.css";
+
 let stylesheetReady = null;
 
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
-    const existing = document.querySelector(
-        'link[href="/static/styles/reuse/share-links-popup.css"]',
-    );
+    const existing = document.querySelector(`link[href="${STYLESHEET_HREF}"]`);
     if (existing) {
         stylesheetReady = existing.sheet
             ? Promise.resolve()
@@ -79,7 +79,7 @@ function ensureStylesheet() {
     }
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/static/styles/reuse/share-links-popup.css";
+    link.href = STYLESHEET_HREF;
     stylesheetReady = new Promise((resolve) => {
         link.addEventListener("load", resolve, { once: true });
     });

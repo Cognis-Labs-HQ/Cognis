@@ -151,3 +151,35 @@
 **Reviewer suggestion:** Move the popup body template markup out of `popup-manager-response.js` into a separate HTML template file instead of embedding it in JavaScript.
 
 **Reason ignored:** The existing calendar popup manager codebase already renders popup bodies as template strings in JavaScript (including neighboring calendar popups in this same area), so this suggestion conflicts with current repository patterns and would require a broader architectural migration rather than a focused behavior fix. This change intentionally stayed scoped to restoring the response-target flow and shared-calendar exemption.
+
+## Code Review — feature-share-utility: share popup moved to reuse
+
+### share-routes.js resolveExpiry — document return value semantics
+
+**Reviewer suggestion:** Add a JSDoc comment to `resolveExpiry` explaining that it returns `null` for invalid input, an empty string for no expiry, and an ISO string for a valid expiry timestamp.
+
+**Reason ignored:** `src/modules/jitsi-meet/api/share-routes.js` was not touched in this PR (the PR only moves UI code). Adding a JSDoc to an untouched file would be an out-of-scope change. Should be addressed in a future jitsi-meet API documentation pass.
+
+### share/gateway/store.ts — two where conditions on expires_at
+
+**Reviewer suggestion:** Combine the two separate `where` conditions on `expires_at` into a single range check.
+
+**Reason ignored:** This is the same issue already documented above under "Code Review — share gateway implementation → store.ts purgeExpired". The comment and reasoning already apply and a duplicate TODO entry is not added.
+
+### share/bootstrap/routes.ts — serve /share without a token
+
+**Reviewer suggestion:** Return 404 for GET /share without a token segment.
+
+**Reason ignored:** Same issue already documented above under "Code Review — share gateway implementation → bootstrap/routes.ts". Duplicate entry not added.
+
+### share-hooks.js firstStageResult — extract shared helper
+
+**Reviewer suggestion:** Move the `firstStageResult` helper to a shared utility in `src/api/reuse/`.
+
+**Reason ignored:** `src/modules/jitsi-meet/api/share-hooks.js` was not touched in this PR. Promoting a helper to a shared location belongs in a dedicated refactor task once multiple files consume the same pattern, as outlined in the existing TODO for `getFirstStageResult` in profile-media-flow-hooks.ts.
+
+### share/ui/app/index.js — validate token format client-side
+
+**Reviewer suggestion:** Add a format check (e.g. `shr_` prefix) before passing the token to the API.
+
+**Reason ignored:** `src/gateways/share/ui/app/index.js` was not touched in this PR. Client-side token validation is a share gateway concern and belongs in a separate share-gateway hardening task.
