@@ -26,7 +26,6 @@ import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
-import { buildShareCallbacks } from "./share-adapter.js";
 
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 
@@ -866,8 +865,11 @@ export async function mount(root, { signal } = {}) {
                 if (!state.meeting?.id) {
                     return;
                 }
-                const { openShareLinksPopup } =
-                    await import("/static/reuse/share-links-popup.js");
+                const [{ openShareLinksPopup }, { buildShareCallbacks }] =
+                    await Promise.all([
+                        import("/static/reuse/share-links-popup.js"),
+                        import("./share-adapter.js"),
+                    ]);
                 await openShareLinksPopup({
                     title: i18n.t("module.jitsi_meet.share.popup_title"),
                     labels: {

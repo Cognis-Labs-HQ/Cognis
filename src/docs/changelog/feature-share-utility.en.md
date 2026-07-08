@@ -11,3 +11,12 @@ The Jitsi Meet module now contributes share flow hooks for meeting resources, ex
 ## Generic Share Links Popup
 
 The share links popup has been extracted from the Jitsi Meet module into a generic `openShareLinksPopup` utility in `src/ui/reuse/share-links-popup.js`. It accepts API callback functions and label strings as parameters, making it reusable by any feature that needs to manage share links. The import now uses an absolute path, fixing a dynamic import fetch failure on the Meetings page.
+
+## Fix Meetings Page Load Failure Caused by 401 on share-adapter.js
+
+The static top-level import of `share-adapter.js` in the Meetings `app.js` was triggering
+a 401 response at module parse time, before the user session could satisfy any auth check.
+This aborted the import and prevented the entire `/meetings` SPA route from loading.
+`share-adapter.js` is now fetched as a lazy dynamic import co-located with
+`share-links-popup.js` inside the share button click handler, so it is never requested
+until the user is in an authenticated session and deliberately opens the share popup.
