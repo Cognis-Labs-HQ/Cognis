@@ -55,7 +55,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             } | null>
         >("share:getTokenById");
         const getMeetingById = ctx.getCapability<
-            (meetingId: string) => Promise<{ chatRoomId?: string | null } | null>
+            (
+                meetingId: string,
+            ) => Promise<{ chatRoomId?: string | null } | null>
         >("jitsi-meet:getMeetingById");
 
         const room = await messagesStore.getRoom(roomId);
@@ -137,16 +139,16 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const pendingIncomingRoomRequest = isAllowedShareGuest
             ? null
             : hasBypass
-            ? null
-            : await messagesStore.getPendingIncomingRoomMessageRequest(
-                  roomId,
-                  accountId,
-              );
+              ? null
+              : await messagesStore.getPendingIncomingRoomMessageRequest(
+                    roomId,
+                    accountId,
+                );
         const pendingRoomRequest = isAllowedShareGuest
             ? null
             : pendingIncomingRoomRequest
-            ? pendingIncomingRoomRequest
-            : await messagesStore.getPendingRoomMessageRequest(roomId);
+              ? pendingIncomingRoomRequest
+              : await messagesStore.getPendingRoomMessageRequest(roomId);
         const incomingPendingRoomRequest =
             pendingIncomingRoomRequest ||
             (pendingRoomRequest?.toAccountId === accountId
@@ -154,7 +156,11 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 : null);
         const pendingRequestSummary = isAllowedShareGuest
             ? null
-            : await summarizeRoomRequest(pendingRoomRequest, profileStore, accountId);
+            : await summarizeRoomRequest(
+                  pendingRoomRequest,
+                  profileStore,
+                  accountId,
+              );
 
         if (!sub && req.method === "GET") {
             const members = await messagesStore.listMembers(roomId);

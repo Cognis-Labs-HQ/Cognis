@@ -1,4 +1,4 @@
-# Perbaikan Pemuatan Modul Statis
+# Perbaikan Muat Statis
 
 ## Aset statis melewati rute catch-all
 

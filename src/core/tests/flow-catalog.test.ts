@@ -68,7 +68,13 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
         getCanonicalFlowContract("resolve-share-token")?.stages.map(
             (stage) => stage.id,
         ),
-        ["validate-token", "resolve-resource", "check-access", "build-payload"],
+        [
+            "validate-token",
+            "resolve-resource",
+            "check-access",
+            "issue-guest-token",
+            "build-payload",
+        ],
     );
     assert.deepEqual(
         getCanonicalFlowContract("revoke-share-token")?.stages.map(

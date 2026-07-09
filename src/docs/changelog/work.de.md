@@ -1,4 +1,4 @@
-# Korrektur für statisches Modulladen
+# Fix statisches Laden
 
 ## Statische Assets umgehen Catch-all-Routen
 

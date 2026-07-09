@@ -180,7 +180,10 @@ function restoreFocusableTarget(overlay, target) {
         target.selectionStart !== null &&
         target.selectionEnd !== null
     ) {
-        nextTarget.setSelectionRange(target.selectionStart, target.selectionEnd);
+        nextTarget.setSelectionRange(
+            target.selectionStart,
+            target.selectionEnd,
+        );
     }
 }
 

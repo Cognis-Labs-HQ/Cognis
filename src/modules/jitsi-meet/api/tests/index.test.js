@@ -48,17 +48,21 @@ test("jitsi participant lookup lets admins include hidden profiles", () => {
 });
 
 test("jitsi meeting creation resolves hidden participants only for admins", () => {
-    const source = readFileSync(
+    const apiSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    const accessSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/reuse/meeting-access.js"),
         "utf8",
     );
 
     assert.match(
-        source,
+        accessSource,
         /if \(!includeHidden && profile\.visibility === "hidden"\) continue/,
     );
     assert.match(
-        source,
+        apiSource,
         /\{ includeHidden: hasMinRole\(claims\.role, "admin"\) \}/,
     );
 });
