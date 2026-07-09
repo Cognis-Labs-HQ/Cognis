@@ -20,3 +20,16 @@ This aborted the import and prevented the entire `/meetings` SPA route from load
 `share-adapter.js` is now fetched as a lazy dynamic import co-located with
 `share-links-popup.js` inside the share button click handler, so it is never requested
 until the user is in an authenticated session and deliberately opens the share popup.
+
+## Remove Orphaned Jitsi Meet Files
+
+The legacy `ui/app/index.js` and `ui/pages/meetings.html` files in the Jitsi Meet module were
+orphaned by a prior refactor and never served to browsers. `index.js` contained a broken
+import (`/static/reuse/page-composer.js` instead of `/static/reuse/page-composer/index.js`),
+which would cause a load failure if the file were ever reached. Both files have been removed.
+
+## Fix Calendar Invitation Test Date
+
+The shared calendar event auto-invite test used a hardcoded event date (2026-06-16) that had
+fallen in the past, causing `listInvitedPendingEvents` to filter it out and the assertion to fail.
+The event date has been updated to 2030-06-16.

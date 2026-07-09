@@ -21,3 +21,16 @@ Hal ini membatalkan impor dan mencegah seluruh rute SPA `/meetings` dimuat.
 `share-links-popup.js` di dalam handler klik tombol share, sehingga file tersebut tidak pernah
 diminta sampai pengguna berada dalam sesi yang terautentikasi dan dengan sengaja membuka
 popup share.
+
+## Hapus File Jitsi Meet yang Usang
+
+File-file `ui/app/index.js` dan `ui/pages/meetings.html` pada modul Jitsi Meet menjadi kode mati
+akibat refaktor sebelumnya dan tidak pernah dikirimkan ke browser. `index.js` mengandung impor
+yang rusak (`/static/reuse/page-composer.js` alih-alih `/static/reuse/page-composer/index.js`),
+yang akan menyebabkan kegagalan muat jika file tersebut pernah diakses. Kedua file telah dihapus.
+
+## Perbaiki Tanggal Uji Undangan Kalender
+
+Uji auto-undang untuk acara kalender bersama menggunakan tanggal acara yang dikodekan keras
+(2026-06-16) yang sudah berlalu, sehingga `listInvitedPendingEvents` memfilternya dan
+pernyataan gagal. Tanggal acara telah diperbarui menjadi 2030-06-16.
