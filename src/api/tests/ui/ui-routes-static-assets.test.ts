@@ -109,6 +109,41 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
+test("GET /static/reuse/share-links-popup.js serves reusable share popup module", async () => {
+    const route = createUiRoutes(undefined, new UIRegistry());
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/reuse/share-links-popup.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+    assert.match(recorder.body, /openShareLinksPopup/);
+});
+
+test("GET /static/styles/reuse/share-links-popup.css serves reusable share popup styles", async () => {
+    const route = createUiRoutes(undefined, new UIRegistry());
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/styles/reuse/share-links-popup.css"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-type"], "text/css; charset=utf-8");
+    assert.match(recorder.body, /share-links-popup/);
+});
+
 test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js serves module assets", async () => {
     const uiRegistry = new UIRegistry();
     const hiraganaUiDir = path.resolve(
