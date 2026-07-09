@@ -213,6 +213,9 @@ export class ShareTokenStore {
         resourceId?: string;
     }): Promise<void> {
         const nowIso = new Date().toISOString();
+        // We persist "never expires" tokens with an empty expires_at value, so
+        // expiry deletion must first exclude empty rows before applying the
+        // timestamp comparison.
         const where = [
             { column: "expires_at", operator: "!=", value: "" as const },
             { column: "expires_at", operator: "<", value: nowIso },

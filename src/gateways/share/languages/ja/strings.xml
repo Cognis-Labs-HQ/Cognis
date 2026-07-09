@@ -3,6 +3,9 @@
   <string name="share.subtitle">共有コンテンツ</string>
   <string name="share.loading">共有コンテンツを読み込んでいます…</string>
   <string name="share.error.invalid_token">この共有リンクは無効か、期限切れです。</string>
+  <string name="share.error.missing_token">共有トークンが指定されていません。</string>
+  <string name="share.error.not_found">この共有リンクは無効か、期限切れです。</string>
+  <string name="share.error.malformed_response">この共有項目から無効な応答が返されました。</string>
   <string name="share.error.expired">この共有項目は現在利用できません。</string>
   <string name="share.error.renderer_missing">この共有項目は現在表示できません。</string>
 </resources>

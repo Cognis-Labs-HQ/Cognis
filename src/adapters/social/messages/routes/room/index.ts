@@ -2,6 +2,10 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../../api/reuse/read-json.js";
 import {
+    hasShareCapability,
+    resolveShareGuestId,
+} from "../../../../../api/reuse/share-guest.js";
+import {
     canMessage,
     enrichMembersWithProfiles,
     hasAdminBypass,
@@ -9,20 +13,6 @@ import {
     summarizeRoomRequest,
     type MessagesRoutesDeps,
 } from "../shared.js";
-
-function resolveShareGuestId(subject: string): string {
-    if (!subject.startsWith("share:")) return "";
-    return subject.slice("share:".length).trim();
-}
-
-function hasShareCapability(
-    grantedCapabilities: unknown,
-    requiredCapability: string,
-): boolean {
-    if (!requiredCapability) return true;
-    if (!Array.isArray(grantedCapabilities)) return false;
-    return grantedCapabilities.includes(requiredCapability);
-}
 
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;
@@ -46,7 +36,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const sub = roomMatch[2];
         const subArg = roomMatch[3];
         const subArg2 = roomMatch[4];
-        const shareGuestId = resolveShareGuestId(accountId);
+        const shareGuestId = resolveShareGuestId({ sub: accountId });
         const getShareTokenById = ctx.getCapability<
             (shareId: string) => Promise<{
                 resourceType: string;
@@ -229,10 +219,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         if (sub === "key" && !subArg && req.method === "GET") {
             if (
                 isAllowedShareGuest &&
-                !hasShareCapability(
-                    shareGuestToken?.grantedCapabilities,
-                    "chat:read",
-                )
+                !hasShareCapability(shareGuestToken, "chat:read")
             ) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -282,10 +269,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             if (req.method === "GET") {
                 if (
                     isAllowedShareGuest &&
-                    !hasShareCapability(
-                        shareGuestToken?.grantedCapabilities,
-                        "chat:read",
-                    )
+                    !hasShareCapability(shareGuestToken, "chat:read")
                 ) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(

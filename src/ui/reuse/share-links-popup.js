@@ -132,6 +132,19 @@ function renderBody(labels, state) {
     `;
 }
 
+/**
+ * Captures the currently focused element inside the popup body so focus can be
+ * restored after a body rerender replaces the input/button DOM tree.
+ *
+ * @param {HTMLElement} overlay
+ * @returns {{
+ *   id: string,
+ *   shareCopy: string | null,
+ *   shareDelete: string | null,
+ *   selectionStart: number | null,
+ *   selectionEnd: number | null,
+ * } | null}
+ */
 function captureFocusableTarget(overlay) {
     const activeElement = document.activeElement;
     if (!(activeElement instanceof HTMLElement)) return null;
@@ -163,14 +176,20 @@ function restoreFocusableTarget(overlay, target) {
         nextTarget = overlay.querySelector(`#${CSS.escape(target.id)}`);
     }
     if (!nextTarget && target.shareCopy) {
-        nextTarget = overlay.querySelector(
-            `[data-share-copy="${CSS.escape(target.shareCopy)}"]`,
-        );
+        nextTarget =
+            Array.from(overlay.querySelectorAll("[data-share-copy]")).find(
+                (candidate) =>
+                    candidate.getAttribute("data-share-copy") ===
+                    target.shareCopy,
+            ) ?? null;
     }
     if (!nextTarget && target.shareDelete) {
-        nextTarget = overlay.querySelector(
-            `[data-share-delete="${CSS.escape(target.shareDelete)}"]`,
-        );
+        nextTarget =
+            Array.from(overlay.querySelectorAll("[data-share-delete]")).find(
+                (candidate) =>
+                    candidate.getAttribute("data-share-delete") ===
+                    target.shareDelete,
+            ) ?? null;
     }
     if (!(nextTarget instanceof HTMLElement)) return;
     nextTarget.focus();

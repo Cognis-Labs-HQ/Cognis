@@ -1,9 +1,6 @@
 import { resolveStore } from "./reuse/store-runtime.js";
 import { resolveRequesterUsername } from "./reuse/requester.js";
-
-function firstStageResult(stageResults, stageId) {
-    return stageResults?.[stageId]?.[0] ?? null;
-}
+import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
 
 export function registerShareFlowHooks(ctx) {
     if (
@@ -59,7 +56,7 @@ export function registerShareFlowHooks(ctx) {
         "authorize-minter",
         { id: "jitsi-meet:authorize-meeting-share-minter" },
         async (stageCtx) => {
-            const resourceResult = firstStageResult(
+            const resourceResult = getFirstStageResult(
                 stageCtx.stageResults,
                 "validate-resource",
             );
@@ -81,7 +78,7 @@ export function registerShareFlowHooks(ctx) {
         "resolve-resource",
         { id: "jitsi-meet:resolve-meeting-share-resource" },
         async (stageCtx) => {
-            const tokenResult = firstStageResult(
+            const tokenResult = getFirstStageResult(
                 stageCtx.stageResults,
                 "validate-token",
             );
@@ -140,7 +137,7 @@ export function registerShareFlowHooks(ctx) {
         "check-access",
         { id: "jitsi-meet:check-meeting-share-access" },
         async (stageCtx) => {
-            const resourceResult = firstStageResult(
+            const resourceResult = getFirstStageResult(
                 stageCtx.stageResults,
                 "resolve-resource",
             );

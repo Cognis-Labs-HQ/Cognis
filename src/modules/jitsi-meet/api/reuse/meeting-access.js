@@ -1,19 +1,9 @@
 import { normalizeHandleKey } from "../../../../api/reuse/normalize-handle.js";
+import {
+    hasShareCapability,
+    resolveShareGuestId,
+} from "../../../../api/reuse/share-guest.js";
 import { resolveRequesterUsername } from "./requester.js";
-
-export function resolveShareGuestId(claims) {
-    const subject = String(claims?.sub ?? "").trim();
-    if (!subject.startsWith("share:")) return "";
-    return subject.slice("share:".length).trim();
-}
-
-export function hasShareCapability(tokenRecord, requiredCapability) {
-    if (!requiredCapability) return true;
-    const grantedCapabilities = Array.isArray(tokenRecord?.grantedCapabilities)
-        ? tokenRecord.grantedCapabilities
-        : [];
-    return grantedCapabilities.includes(requiredCapability);
-}
 
 export async function resolveShareGuestMeetingAccess({
     claims,

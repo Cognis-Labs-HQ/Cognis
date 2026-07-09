@@ -153,7 +153,7 @@ export async function mount(root, { signal } = {}) {
     const token = resolveTokenFromLocation();
     if (!token) {
         state.loading = false;
-        state.errorKey = "share.error.invalid_token";
+        state.errorKey = "share.error.missing_token";
         composer.refresh([buildShareElement(state)]);
         return;
     }
@@ -165,7 +165,7 @@ export async function mount(root, { signal } = {}) {
         state.loading = false;
         state.errorKey =
             response.status === 404
-                ? "share.error.invalid_token"
+                ? "share.error.not_found"
                 : "share.error.expired";
         composer.refresh([buildShareElement(state)]);
         return;
@@ -174,7 +174,7 @@ export async function mount(root, { signal } = {}) {
     const shareData = body?.data ?? null;
     if (!shareData?.resourceType) {
         state.loading = false;
-        state.errorKey = "share.error.invalid_token";
+        state.errorKey = "share.error.malformed_response";
         composer.refresh([buildShareElement(state)]);
         return;
     }

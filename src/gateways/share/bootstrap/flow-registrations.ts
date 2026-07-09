@@ -5,15 +5,10 @@ import {
     registerCanonicalFlow,
     type Ctx,
 } from "@cognis/core";
+import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 
-function firstStageResult<T>(
-    stageResults: Record<string, unknown[]>,
-    stageId: string,
-): T | null {
-    const results = stageResults[stageId] as T[] | undefined;
-    return results?.[0] ?? null;
-}
+const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
 
 export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
@@ -52,16 +47,22 @@ export async function registerShareBootstrapHooks(input: {
         "issue-token",
         { id: "share-gateway:issue-token" },
         async (stageCtx) => {
-            const resourceResult = firstStageResult<{
+            const resourceResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-resource",
+            ) as {
                 valid?: boolean;
                 resourceType?: string;
                 resourceId?: string;
                 ownerAccountId?: string;
-            }>(stageCtx.stageResults, "validate-resource");
-            const authorizeResult = firstStageResult<{
+            } | null;
+            const authorizeResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "authorize-minter",
+            ) as {
                 authorized?: boolean;
                 ownerAccountId?: string;
-            }>(stageCtx.stageResults, "authorize-minter");
+            } | null;
             if (!resourceResult?.valid || !authorizeResult?.authorized) {
                 return { minted: false, reason: "share_mint_rejected" };
             }
@@ -95,10 +96,13 @@ export async function registerShareBootstrapHooks(input: {
         "emit-event",
         { id: "share-gateway:emit-event" },
         (stageCtx) => {
-            const issued = firstStageResult<{
+            const issued = getFirstStageResult(
+                stageCtx.stageResults,
+                "issue-token",
+            ) as {
                 minted?: boolean;
                 shareRecord?: unknown;
-            }>(stageCtx.stageResults, "issue-token");
+            } | null;
             return {
                 emitted: Boolean(issued?.minted),
                 shareRecord: issued?.shareRecord ?? null,
@@ -130,19 +134,28 @@ export async function registerShareBootstrapHooks(input: {
         "issue-guest-token",
         { id: "share-gateway:issue-guest-token" },
         (stageCtx) => {
-            const tokenResult = firstStageResult<{
+            const tokenResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-token",
+            ) as {
                 valid?: boolean;
                 tokenRecord?: {
                     id?: string;
                     expiresAt?: string;
                 };
-            }>(stageCtx.stageResults, "validate-token");
-            const resourceResult = firstStageResult<{
+            } | null;
+            const resourceResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "resolve-resource",
+            ) as {
                 resolved?: boolean;
-            }>(stageCtx.stageResults, "resolve-resource");
-            const accessResult = firstStageResult<{
+            } | null;
+            const accessResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "check-access",
+            ) as {
                 allowed?: boolean;
-            }>(stageCtx.stageResults, "check-access");
+            } | null;
             if (!tokenResult?.valid || !resourceResult?.resolved) {
                 return { issued: false, reason: "resource_unavailable" };
             }
@@ -153,16 +166,18 @@ export async function registerShareBootstrapHooks(input: {
                 return { issued: false, reason: "auth_issue_unavailable" };
             }
             const now = Date.now();
-            const maxTtlSeconds = 4 * 60 * 60;
             const expiresAt = String(tokenResult.tokenRecord.expiresAt ?? "");
             const expiresAtMs = expiresAt ? Date.parse(expiresAt) : Number.NaN;
             const ttlSeconds = Number.isFinite(expiresAtMs)
                 ? Math.floor((expiresAtMs - now) / 1000)
-                : maxTtlSeconds;
+                : MAX_GUEST_TOKEN_TTL_SECONDS;
             if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
                 return { issued: false, reason: "expired" };
             }
-            const boundedTtlSeconds = Math.min(maxTtlSeconds, ttlSeconds);
+            const boundedTtlSeconds = Math.min(
+                MAX_GUEST_TOKEN_TTL_SECONDS,
+                ttlSeconds,
+            );
             const guestAccessToken = issueAccessToken(
                 `share:${tokenResult.tokenRecord.id}`,
                 "user",
@@ -182,20 +197,29 @@ export async function registerShareBootstrapHooks(input: {
         "build-payload",
         { id: "share-gateway:build-payload" },
         async (stageCtx) => {
-            const tokenResult = firstStageResult<{
+            const tokenResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-token",
+            ) as {
                 valid?: boolean;
                 tokenRecord?: Record<string, unknown>;
-            }>(stageCtx.stageResults, "validate-token");
-            const resourceResult = firstStageResult<{
+            } | null;
+            const resourceResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "resolve-resource",
+            ) as {
                 resolved?: boolean;
                 resourceType?: string;
                 resourceId?: string;
                 payload?: Record<string, unknown>;
-            }>(stageCtx.stageResults, "resolve-resource");
-            const accessResult = firstStageResult<{
+            } | null;
+            const accessResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "check-access",
+            ) as {
                 allowed?: boolean;
                 reason?: string;
-            }>(stageCtx.stageResults, "check-access");
+            } | null;
             if (!tokenResult?.valid || !resourceResult?.resolved) {
                 return { resolved: false, reason: "resource_unavailable" };
             }
@@ -244,13 +268,16 @@ export async function registerShareBootstrapHooks(input: {
         "delete-token",
         { id: "share-gateway:delete-token" },
         async (stageCtx) => {
-            const authorizeResult = firstStageResult<{
+            const authorizeResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "authorize-revocation",
+            ) as {
                 authorized?: boolean;
                 shareId?: string;
                 ownerAccountId?: string;
                 resourceType?: string;
                 resourceId?: string;
-            }>(stageCtx.stageResults, "authorize-revocation");
+            } | null;
             if (!authorizeResult?.authorized || !authorizeResult.shareId) {
                 return { revoked: false, reason: "share_revoke_rejected" };
             }

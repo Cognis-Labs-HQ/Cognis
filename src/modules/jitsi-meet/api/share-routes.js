@@ -11,6 +11,17 @@ function sendError(res, status, code, message) {
     sendJson(res, status, { error: { code, message } });
 }
 
+/**
+ * Resolves optional expiry-hours input into the flow payload format.
+ *
+ * Returns:
+ * - an ISO timestamp string when the input is a valid positive number
+ * - an empty string when expiry is intentionally omitted
+ * - null when the input is present but invalid
+ *
+ * @param {unknown} hoursValue
+ * @returns {string | null}
+ */
 function resolveExpiry(hoursValue) {
     if (
         hoursValue === null ||

@@ -3,6 +3,9 @@
   <string name="share.subtitle">Geteilte Inhalte</string>
   <string name="share.loading">Geteilte Inhalte werden geladen…</string>
   <string name="share.error.invalid_token">Dieser Freigabelink ist ungültig oder abgelaufen.</string>
+  <string name="share.error.missing_token">Es wurde kein Freigabetoken angegeben.</string>
+  <string name="share.error.not_found">Dieser Freigabelink ist ungültig oder abgelaufen.</string>
+  <string name="share.error.malformed_response">Dieses geteilte Element lieferte eine ungültige Antwort.</string>
   <string name="share.error.expired">Dieses geteilte Element ist nicht mehr verfügbar.</string>
   <string name="share.error.renderer_missing">Dieses geteilte Element kann derzeit nicht angezeigt werden.</string>
 </resources>

@@ -1,5 +1,13 @@
 # Ignored Automated Feedback
 
+## Code Review — Flow-Oriented Guest Share Sessions
+
+### calendar-routes regex suggestion for calendar ID
+
+**Reviewer suggestion:** Replace the `/^\/api\/v1\/calendar\/calendars\/([^/]+)\/share/` pattern with a stricter `[a-zA-Z0-9_-]+` segment matcher.
+
+**Reason ignored:** The current `([^/]+)` segment already enforces a non-empty calendar ID while preserving existing ID compatibility beyond alphanumeric/underscore/hyphen tokens. Narrowing to `[a-zA-Z0-9_-]+` would be a behavior change for valid existing IDs and is unrelated to the share-guest session work in this PR.
+
 ## Code Review — Restore multi-link calendar sharing
 
 ### share-link button wording — prefer singular labels
