@@ -76,3 +76,44 @@ test("buildServer returns gateway_disabled for disabled gateway prefixes", async
         await close(server);
     }
 });
+
+test("buildServer serves static UI assets before registered catch-all routes", async () => {
+    const routeRegistry = new RouteRegistry();
+    routeRegistry.register(async (_req, res, url) => {
+        if (url.pathname.startsWith("/static/")) {
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: { code: "unauthorized", message: "Login required" },
+                }),
+            );
+            return true;
+        }
+        return false;
+    }, "test");
+
+    const server = buildServer({
+        moduleRuntimeGateway: {
+            listManifests: async () => [],
+        } as unknown as ModuleRuntimeGateway,
+        routeRegistry,
+        routeContext: createDefaultRouteContext(),
+    });
+
+    try {
+        const port = await listen(server);
+        const response = await fetch(
+            `http://127.0.0.1:${port}/static/reuse/share-links-popup.js`,
+        );
+        const body = await response.text();
+
+        assert.equal(response.status, 200);
+        assert.equal(
+            response.headers.get("content-type"),
+            "text/javascript; charset=utf-8",
+        );
+        assert.match(body, /openShareLinksPopup/);
+    } finally {
+        await close(server);
+    }
+});

@@ -95,6 +95,14 @@ export function resolveInitialModuleEnabledState(
     return manifest.enabledByDefault === true;
 }
 
+function isUiStaticAssetRequest(pathname: string): boolean {
+    return (
+        pathname.startsWith("/static/") ||
+        pathname.startsWith("/assets/") ||
+        pathname === "/manifest.webmanifest"
+    );
+}
+
 export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
     const routeContext = deps.routeContext;
@@ -285,6 +293,18 @@ export function buildServer(deps: ApiDependencies) {
                 const handledByGateways = await gatewayRoutes(req, res, url);
                 if (handledByGateways) {
                     log("info", "Request handled by gateway routes.", {
+                        method: req.method ?? "GET",
+                        path: url.pathname,
+                        durationMs: Date.now() - startedAt,
+                    });
+                    return;
+                }
+            }
+
+            if (isUiStaticAssetRequest(url.pathname)) {
+                const handledByUiStatic = await uiRoutes(req, res, url);
+                if (handledByUiStatic) {
+                    log("info", "Static request handled by UI routes.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
