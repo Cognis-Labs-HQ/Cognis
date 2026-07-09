@@ -190,6 +190,7 @@ export function createShareRoutes(input: {
                 resourceId?: string;
                 payload?: Record<string, unknown>;
                 grantedCapabilities?: string[];
+                guestAccessToken?: string;
                 page?: Record<string, unknown>;
             }>(flowResult.stageResults, "build-payload");
             if (!resolved?.resolved) {
@@ -210,6 +211,10 @@ export function createShareRoutes(input: {
                     resourceId: resolved.resourceId,
                     payload: resolved.payload ?? {},
                     grantedCapabilities: resolved.grantedCapabilities ?? [],
+                    guestAccessToken:
+                        typeof resolved.guestAccessToken === "string"
+                            ? resolved.guestAccessToken
+                            : "",
                     page: resolved.page ?? {},
                 },
             });

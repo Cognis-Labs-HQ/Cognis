@@ -45,3 +45,7 @@ Wenn das Share-Links-Popup geöffnet wird, erhält das Label-Eingabefeld nun
 automatisch den Fokus. Zuvor wurde fälschlicherweise der Schließen-Button (der
 erste Button im Popup-DOM) fokussiert, was direkte Tastatureingaben im Label-Feld
 verhinderte.
+
+## Flow-orientierte Gast-Share-Sitzungen hinzugefügt
+
+Die Share-Auflösung erstellt jetzt begrenzte Gast-Access-Tokens und liefert sie an die Share-Seite zurück, die das Token temporär in die aktive API-Sitzung einsetzt und beim Verlassen wiederherstellt. Der Jitsi-Meet-Share-Flow mountet die echte Meetings-UI über `share-mount.js` statt über statische Karten, und es wurden Share-Gast-Prüfungen für Meeting-Join/Config/Teilnehmer sowie nur-lesenden Zugriff auf Social-Raum-Schlüssel und Nachrichten ergänzt.

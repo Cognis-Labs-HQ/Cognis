@@ -132,6 +132,58 @@ function renderBody(labels, state) {
     `;
 }
 
+function captureFocusableTarget(overlay) {
+    const activeElement = document.activeElement;
+    if (!(activeElement instanceof HTMLElement)) return null;
+    if (!overlay.contains(activeElement)) return null;
+    const id = String(activeElement.id ?? "").trim();
+    const shareCopy = activeElement.getAttribute("data-share-copy");
+    const shareDelete = activeElement.getAttribute("data-share-delete");
+    const selectionTarget =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement
+            ? {
+                  selectionStart: activeElement.selectionStart,
+                  selectionEnd: activeElement.selectionEnd,
+              }
+            : null;
+    return {
+        id,
+        shareCopy,
+        shareDelete,
+        selectionStart: selectionTarget?.selectionStart ?? null,
+        selectionEnd: selectionTarget?.selectionEnd ?? null,
+    };
+}
+
+function restoreFocusableTarget(overlay, target) {
+    if (!target) return;
+    let nextTarget = null;
+    if (target.id) {
+        nextTarget = overlay.querySelector(`#${CSS.escape(target.id)}`);
+    }
+    if (!nextTarget && target.shareCopy) {
+        nextTarget = overlay.querySelector(
+            `[data-share-copy="${CSS.escape(target.shareCopy)}"]`,
+        );
+    }
+    if (!nextTarget && target.shareDelete) {
+        nextTarget = overlay.querySelector(
+            `[data-share-delete="${CSS.escape(target.shareDelete)}"]`,
+        );
+    }
+    if (!(nextTarget instanceof HTMLElement)) return;
+    nextTarget.focus();
+    if (
+        (nextTarget instanceof HTMLInputElement ||
+            nextTarget instanceof HTMLTextAreaElement) &&
+        target.selectionStart !== null &&
+        target.selectionEnd !== null
+    ) {
+        nextTarget.setSelectionRange(target.selectionStart, target.selectionEnd);
+    }
+}
+
 export async function openShareLinksPopup({
     title,
     labels,
@@ -155,10 +207,12 @@ export async function openShareLinksPopup({
     }
 
     function rerender(overlay) {
+        const focusTarget = captureFocusableTarget(overlay);
         const body = overlay.querySelector(".popup-body");
         if (!(body instanceof HTMLElement)) return;
         body.innerHTML = renderBody(labels, state);
         attachHandlers(overlay);
+        restoreFocusableTarget(overlay, focusTarget);
     }
 
     async function handleCreate(overlay) {

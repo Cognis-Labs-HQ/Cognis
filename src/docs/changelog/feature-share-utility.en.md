@@ -46,3 +46,7 @@ to only match calendar-specific share API routes under `/api/v1/calendar/calenda
 When the share-links popup opens, the label input field now receives focus automatically.
 Previously, the close button (the first button in the popup DOM) was incorrectly focused,
 preventing direct keyboard input into the label field.
+
+## Add Flow-Oriented Guest Share Sessions
+
+Share resolution now issues scoped guest access tokens and returns them to the share page, which temporarily swaps the token into the active API session and restores the prior token on unload. The Jitsi Meet share flow now mounts the real meetings UI via `share-mount.js` instead of a static card renderer, and share-guest route guards were added for meeting join/config/participants and read-only social room key/message access.

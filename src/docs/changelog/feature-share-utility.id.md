@@ -43,3 +43,7 @@ Saat popup tautan share dibuka, kolom input label kini secara otomatis menerima
 fokus. Sebelumnya, tombol tutup (tombol pertama dalam DOM popup) secara keliru
 difokuskan, sehingga mencegah pengetikan langsung menggunakan keyboard pada kolom
 label.
+
+## Tambah Sesi Share Tamu Berbasis Flow
+
+Resolusi share sekarang menerbitkan token akses tamu terbatas dan mengembalikannya ke halaman share, yang menukar token itu sementara ke sesi API aktif lalu memulihkan token sebelumnya saat keluar halaman. Flow share Jitsi Meet kini me-mount UI Meetings asli lewat `share-mount.js` alih-alih renderer kartu statis, dan validasi tamu share ditambahkan untuk route join/config/peserta meeting serta akses baca-saja kunci dan pesan room social.

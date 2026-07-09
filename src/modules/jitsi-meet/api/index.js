@@ -94,6 +94,47 @@ function appendMeetingLinkToBody(body, meetingId) {
     return `${body}\n\nMeeting link: ${meetingLink}`;
 }
 
+function resolveShareGuestId(claims) {
+    const subject = String(claims?.sub ?? "").trim();
+    if (!subject.startsWith("share:")) return "";
+    return subject.slice("share:".length).trim();
+}
+
+function hasShareCapability(tokenRecord, requiredCapability) {
+    if (!requiredCapability) return true;
+    const grantedCapabilities = Array.isArray(tokenRecord?.grantedCapabilities)
+        ? tokenRecord.grantedCapabilities
+        : [];
+    return grantedCapabilities.includes(requiredCapability);
+}
+
+async function resolveShareGuestMeetingAccess({
+    claims,
+    meetingId,
+    getShareTokenById,
+    requiredCapability = "",
+}) {
+    const shareGuestId = resolveShareGuestId(claims);
+    if (!shareGuestId) {
+        return { isGuest: false, allowed: false, tokenRecord: null };
+    }
+    if (typeof getShareTokenById !== "function") {
+        return { isGuest: true, allowed: false, tokenRecord: null };
+    }
+    const tokenRecord = await getShareTokenById(shareGuestId).catch(() => null);
+    if (!tokenRecord) {
+        return { isGuest: true, allowed: false, tokenRecord: null };
+    }
+    const matchesMeeting =
+        tokenRecord.resourceType === "meeting" &&
+        tokenRecord.resourceId === meetingId;
+    if (!matchesMeeting) {
+        return { isGuest: true, allowed: false, tokenRecord: null };
+    }
+    const allowed = hasShareCapability(tokenRecord, requiredCapability);
+    return { isGuest: true, allowed, tokenRecord: allowed ? tokenRecord : null };
+}
+
 async function resolveRequestedParticipants(
     profileStore,
     requestedHandles,
@@ -248,6 +289,7 @@ export function registerApiRoutes(router, ctx) {
     const accountStore = ctx.getCapability("auth:accountStore");
     const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
     const listCalendarEvents = ctx.getCapability("calendar:listEvents");
+    const getShareTokenById = ctx.getCapability("share:getTokenById");
 
     if (typeof registerNotificationCategory === "function") {
         registerNotificationCategory("meetings", "Meetings");
@@ -328,6 +370,10 @@ export function registerApiRoutes(router, ctx) {
         "auth:registerPageScriptOrigins",
     );
     const store = resolveStore(dbExecutor, log);
+    ctx.capabilities?.contribute?.(
+        "jitsi-meet:getMeetingById",
+        store.getMeetingById.bind(store),
+    );
     void registerStoredJitsiOrigin({ store, registerScriptOrigins, log });
 
     registerJitsiUiResourcesRoute({
@@ -449,12 +495,14 @@ export function registerApiRoutes(router, ctx) {
 
     router.get(
         "/api/v1/modules/jitsi-meet/config",
-        async (_req, res) => {
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
             await store.ensureSchema();
             const config = await store.getConfig();
             sendJson(res, 200, { data: config });
         },
-        { access: { minRole: "admin" }, allowWhenDisabled: true },
+        { access: { minRole: "user" }, allowWhenDisabled: true },
     );
 
     router.get(
@@ -462,8 +510,34 @@ export function registerApiRoutes(router, ctx) {
         async (req, res) => {
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
-            const url = new URL(req.url, "http://localhost");
-            const rawQuery = (url.searchParams.get("q") ?? "").trim();
+            const requestUrl = new URL(req.url, "http://localhost");
+            const meetingId = String(
+                requestUrl.searchParams.get("meetingId") ?? "",
+            ).trim();
+            const shareGuestAccess = await resolveShareGuestMeetingAccess({
+                claims,
+                meetingId,
+                getShareTokenById,
+                requiredCapability: "participants:read",
+            });
+            if (shareGuestAccess.isGuest) {
+                if (!meetingId) {
+                    sendJson(res, 200, { data: [] });
+                    return;
+                }
+                if (!shareGuestAccess.allowed) {
+                    sendError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Share guest access is not allowed for participants.",
+                    );
+                    return;
+                }
+                sendJson(res, 200, { data: [] });
+                return;
+            }
+            const rawQuery = (requestUrl.searchParams.get("q") ?? "").trim();
             // Strip leading '@' and normalise case. The profile-store
             // searchProfiles() contract owns LIKE wildcard escaping for the
             // underlying DB dialect.
@@ -638,6 +712,60 @@ export function registerApiRoutes(router, ctx) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
             const body = await readJson(req);
+            const meetingId = String(body.meetingId ?? "").trim();
+            const shareGuestAccess = await resolveShareGuestMeetingAccess({
+                claims,
+                meetingId,
+                getShareTokenById,
+                requiredCapability: "meeting:join",
+            });
+            if (shareGuestAccess.isGuest) {
+                if (!meetingId) {
+                    sendError(
+                        res,
+                        400,
+                        "bad_request",
+                        "meetingId is required.",
+                    );
+                    return;
+                }
+                if (!shareGuestAccess.allowed) {
+                    sendError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Share guest access is not allowed for this meeting.",
+                    );
+                    return;
+                }
+                const meeting = await store.getMeetingById(meetingId);
+                if (!meeting) {
+                    sendError(res, 404, "not_found", "Meeting not found.");
+                    return;
+                }
+                const [participants, state] = await Promise.all([
+                    store.listParticipants(meeting.id),
+                    store.getMeetingState(meeting.id),
+                ]);
+                const payload = await createMeetingPayload({
+                    store,
+                    meeting,
+                    state,
+                    participants,
+                    requesterUsername: meeting.createdBy,
+                    chatUrl: meeting.chatRoomId
+                        ? `/messages/${encodeURIComponent(meeting.chatRoomId)}`
+                        : null,
+                    requiresReclaim: false,
+                });
+                sendJson(res, 200, {
+                    data: {
+                        ...payload,
+                        readOnly: true,
+                    },
+                });
+                return;
+            }
 
             const resolved = await resolveMeetingPayloadOrReject({
                 body,
@@ -760,6 +888,11 @@ export function registerApiRoutes(router, ctx) {
         sendError,
         checkHttpLiveness,
         LIVELINESS_TIMEOUT_MS,
+        resolveShareGuestMeetingAccess: (input) =>
+            resolveShareGuestMeetingAccess({
+                ...input,
+                getShareTokenById,
+            }),
     });
 
     router.post(
@@ -853,6 +986,30 @@ export function registerApiRoutes(router, ctx) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
             const body = await readJson(req);
+            const shareGuestAccess = await resolveShareGuestMeetingAccess({
+                claims,
+                meetingId: String(body.meetingId ?? "").trim(),
+                getShareTokenById,
+                requiredCapability: "meeting:join",
+            });
+            if (shareGuestAccess.isGuest) {
+                if (!shareGuestAccess.allowed) {
+                    sendError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Share guest access is not allowed for this meeting.",
+                    );
+                    return;
+                }
+                sendJson(res, 200, {
+                    data: {
+                        ok: true,
+                        meetingClosed: false,
+                    },
+                });
+                return;
+            }
 
             const resolved = await resolveMeetingPayloadOrReject({
                 body,

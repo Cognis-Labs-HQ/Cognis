@@ -47,10 +47,18 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
  * up timers and event listeners when users navigate away.
  *
  * @param {HTMLElement} root - Page mount root (usually #app).
- * @param {{ signal?: AbortSignal }} [options] - Router-provided lifecycle options.
+ * @param {{
+ *   signal?: AbortSignal,
+ *   requestedMeetingId?: string,
+ *   embedded?: boolean,
+ *   shareEnabled?: boolean,
+ * }} [options] - Router-provided lifecycle options.
  * @returns {Promise<void>}
  */
-export async function mount(root, { signal } = {}) {
+export async function mount(
+    root,
+    { signal, requestedMeetingId = "", embedded = false, shareEnabled = true } = {},
+) {
     const messageUiResources = await loadMessageUiResources();
     for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
         ensureStylesheetLoaded(stylesheetUrl);
@@ -101,7 +109,8 @@ export async function mount(root, { signal } = {}) {
         preflightNeedsConfig: false,
         sessionId: ensureSessionId(),
         requestedMeetingId: normalizeMeetingId(
-            new URL(window.location.href).searchParams.get("meetingId"),
+            requestedMeetingId ||
+                new URL(window.location.href).searchParams.get("meetingId"),
         ),
         activeMeetings: [],
         activeMeetingsRefreshTimer: null,
@@ -854,6 +863,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     function bindShareButton() {
+        if (!shareEnabled) return;
         const shareButton = root.querySelector("#jitsi-share-meeting-btn");
         if (!(shareButton instanceof HTMLButtonElement)) {
             return;
@@ -961,15 +971,22 @@ export async function mount(root, { signal } = {}) {
     }));
 
     const composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: !embedded,
         elements,
-        preferenceKey: "meetings-layout-v3",
+        preferenceKey: embedded
+            ? "meetings-share-layout-v1"
+            : "meetings-layout-v3",
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
-        persistLayoutPreferences: true,
+        showTopbar: !embedded,
+        showNavbar: !embedded,
+        showFooter: !embedded,
+        showThemeToggle: !embedded,
+        frameless: embedded,
+        persistLayoutPreferences: !embedded,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
             bindShareButton(...args);
@@ -977,8 +994,14 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
-    await loadActiveMeetings({ resolveRequested: true });
-    startActiveMeetingsPolling();
+    if (embedded) {
+        if (state.requestedMeetingId) {
+            await joinMeetingById(state.requestedMeetingId);
+        }
+    } else {
+        await loadActiveMeetings({ resolveRequested: true });
+        startActiveMeetingsPolling();
+    }
     await runPreflightCheck();
 }
 

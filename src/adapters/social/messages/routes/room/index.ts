@@ -10,6 +10,20 @@ import {
     type MessagesRoutesDeps,
 } from "../shared.js";
 
+function resolveShareGuestId(subject: string): string {
+    if (!subject.startsWith("share:")) return "";
+    return subject.slice("share:".length).trim();
+}
+
+function hasShareCapability(
+    grantedCapabilities: unknown,
+    requiredCapability: string,
+): boolean {
+    if (!requiredCapability) return true;
+    if (!Array.isArray(grantedCapabilities)) return false;
+    return grantedCapabilities.includes(requiredCapability);
+}
+
 export function createRoomHandler(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, flow } = deps;
     const ctx = resolveRouteContext(deps.routeContext);
@@ -32,6 +46,17 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const sub = roomMatch[2];
         const subArg = roomMatch[3];
         const subArg2 = roomMatch[4];
+        const shareGuestId = resolveShareGuestId(accountId);
+        const getShareTokenById = ctx.getCapability<
+            (shareId: string) => Promise<{
+                resourceType: string;
+                resourceId: string;
+                grantedCapabilities?: string[];
+            } | null>
+        >("share:getTokenById");
+        const getMeetingById = ctx.getCapability<
+            (meetingId: string) => Promise<{ chatRoomId?: string | null } | null>
+        >("jitsi-meet:getMeetingById");
 
         const room = await messagesStore.getRoom(roomId);
         if (!room) {
@@ -44,7 +69,27 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
         const member = await messagesStore.getMember(roomId, accountId);
-        if (!member) {
+        const isShareGuest = Boolean(shareGuestId);
+        let shareGuestToken = null;
+        if (isShareGuest && typeof getShareTokenById === "function") {
+            shareGuestToken = await getShareTokenById(shareGuestId).catch(
+                () => null,
+            );
+        }
+        const isAllowedShareGuest =
+            isShareGuest &&
+            shareGuestToken?.resourceType === "meeting" &&
+            room.kind === "group";
+        const shareMeeting = isAllowedShareGuest
+            ? await getMeetingById?.(shareGuestToken.resourceId).catch(
+                  () => null,
+              )
+            : null;
+        const shareGuestChatRoomMatch =
+            isAllowedShareGuest &&
+            typeof shareMeeting?.chatRoomId === "string" &&
+            shareMeeting.chatRoomId === roomId;
+        if (!member && !isAllowedShareGuest) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -56,13 +101,50 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             );
             return true;
         }
-        const pendingIncomingRoomRequest = hasBypass
+        if (isAllowedShareGuest && !shareGuestChatRoomMatch) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message: "Share guest access is invalid for this room.",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (
+            isAllowedShareGuest &&
+            !(
+                (sub === "key" && !subArg && req.method === "GET") ||
+                (sub === "messages" &&
+                    !subArg &&
+                    (req.method === "GET" || req.method === "POST"))
+            )
+        ) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Share guest access is limited to room key and message reads.",
+                    },
+                }),
+            );
+            return true;
+        }
+        const pendingIncomingRoomRequest = isAllowedShareGuest
+            ? null
+            : hasBypass
             ? null
             : await messagesStore.getPendingIncomingRoomMessageRequest(
                   roomId,
                   accountId,
               );
-        const pendingRoomRequest = pendingIncomingRoomRequest
+        const pendingRoomRequest = isAllowedShareGuest
+            ? null
+            : pendingIncomingRoomRequest
             ? pendingIncomingRoomRequest
             : await messagesStore.getPendingRoomMessageRequest(roomId);
         const incomingPendingRoomRequest =
@@ -70,11 +152,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             (pendingRoomRequest?.toAccountId === accountId
                 ? pendingRoomRequest
                 : null);
-        const pendingRequestSummary = await summarizeRoomRequest(
-            pendingRoomRequest,
-            profileStore,
-            accountId,
-        );
+        const pendingRequestSummary = isAllowedShareGuest
+            ? null
+            : await summarizeRoomRequest(pendingRoomRequest, profileStore, accountId);
 
         if (!sub && req.method === "GET") {
             const members = await messagesStore.listMembers(roomId);
@@ -141,6 +221,25 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (sub === "key" && !subArg && req.method === "GET") {
+            if (
+                isAllowedShareGuest &&
+                !hasShareCapability(
+                    shareGuestToken?.grantedCapabilities,
+                    "chat:read",
+                )
+            ) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Share guest access cannot read this room key.",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (incomingPendingRoomRequest) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -175,6 +274,25 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
 
         if (sub === "messages" && !subArg) {
             if (req.method === "GET") {
+                if (
+                    isAllowedShareGuest &&
+                    !hasShareCapability(
+                        shareGuestToken?.grantedCapabilities,
+                        "chat:read",
+                    )
+                ) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Share guest access cannot read room messages.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 if (incomingPendingRoomRequest) {
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(
@@ -317,6 +435,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 return true;
             }
             if (req.method === "POST") {
+                if (isAllowedShareGuest) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Share guest access cannot post room messages.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 if (incomingPendingRoomRequest) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(

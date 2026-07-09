@@ -15,6 +15,7 @@ export function registerMeetingRoutes({
     sendError,
     checkHttpLiveness,
     LIVELINESS_TIMEOUT_MS,
+    resolveShareGuestMeetingAccess,
 }) {
     const parseDateTime = (value) => {
         const parsed = new Date(String(value ?? ""));
@@ -334,6 +335,53 @@ export function registerMeetingRoutes({
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
             const body = await readJson(req);
+            const shareGuestAccess =
+                typeof resolveShareGuestMeetingAccess === "function"
+                    ? await resolveShareGuestMeetingAccess({
+                          claims,
+                          meetingId: String(body.meetingId ?? "").trim(),
+                          requiredCapability: "meeting:join",
+                      })
+                    : { isGuest: false };
+            if (shareGuestAccess.isGuest) {
+                if (!shareGuestAccess.allowed) {
+                    sendError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Share guest access is not allowed for this meeting.",
+                    );
+                    return;
+                }
+                const meetingId = String(body.meetingId ?? "").trim();
+                const meeting = await store.getMeetingById(meetingId);
+                if (!meeting) {
+                    sendError(res, 404, "not_found", "Meeting not found.");
+                    return;
+                }
+                const [participants, state] = await Promise.all([
+                    store.listParticipants(meeting.id),
+                    store.getMeetingState(meeting.id),
+                ]);
+                const payload = await createMeetingPayload({
+                    store,
+                    meeting,
+                    state,
+                    participants,
+                    requesterUsername: meeting.createdBy,
+                    chatUrl: meeting.chatRoomId
+                        ? `/messages/${encodeURIComponent(meeting.chatRoomId)}`
+                        : null,
+                    requiresReclaim: false,
+                });
+                sendJson(res, 200, {
+                    data: {
+                        ...payload,
+                        readOnly: true,
+                    },
+                });
+                return;
+            }
 
             const resolved = await resolveMeetingPayloadOrReject({
                 body,
@@ -591,6 +639,45 @@ export function registerMeetingRoutes({
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
             const body = await readJson(req);
+            const shareGuestAccess =
+                typeof resolveShareGuestMeetingAccess === "function"
+                    ? await resolveShareGuestMeetingAccess({
+                          claims,
+                          meetingId: String(body.meetingId ?? "").trim(),
+                          requiredCapability: "meeting:join",
+                      })
+                    : { isGuest: false };
+            if (shareGuestAccess.isGuest) {
+                if (!shareGuestAccess.allowed) {
+                    sendError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Share guest access is not allowed for this meeting.",
+                    );
+                    return;
+                }
+                const meetingId = String(body.meetingId ?? "").trim();
+                const meeting = await store.getMeetingById(meetingId);
+                if (!meeting) {
+                    sendError(res, 404, "not_found", "Meeting not found.");
+                    return;
+                }
+                const [state, presence] = await Promise.all([
+                    store.getMeetingState(meeting.id),
+                    store.listPresence(meeting.id),
+                ]);
+                sendJson(res, 200, {
+                    data: {
+                        state,
+                        activeParticipants: store
+                            .filterCurrentPresenceEntries(presence)
+                            .map((entry) => entry.username),
+                        sessionActive: true,
+                    },
+                });
+                return;
+            }
 
             const resolved = await resolveMeetingPayloadOrReject({
                 body,

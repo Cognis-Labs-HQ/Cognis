@@ -19,6 +19,17 @@ export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
     gateway: CoreShareGateway;
 }): Promise<void> {
+    const issueAccessToken = input.ctx.capabilities.get<
+        (
+            subject: string,
+            role: "user" | "teacher" | "moderator" | "admin" | "owner",
+            ttlSeconds: number | null,
+            options?: {
+                providerId?: string;
+                purpose?: "session" | "password-reset" | "share";
+            },
+        ) => string
+    >("auth:issueAccessToken");
     const systemCtx = input.ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     if (systemCtx) {
         for (const flow of SHARE_FLOW_CATALOG) {
@@ -116,6 +127,58 @@ export async function registerShareBootstrapHooks(input: {
 
     input.ctx.flow.extend(
         "resolve-share-token",
+        "issue-guest-token",
+        { id: "share-gateway:issue-guest-token" },
+        (stageCtx) => {
+            const tokenResult = firstStageResult<{
+                valid?: boolean;
+                tokenRecord?: {
+                    id?: string;
+                    expiresAt?: string;
+                };
+            }>(stageCtx.stageResults, "validate-token");
+            const resourceResult = firstStageResult<{
+                resolved?: boolean;
+            }>(stageCtx.stageResults, "resolve-resource");
+            const accessResult = firstStageResult<{
+                allowed?: boolean;
+            }>(stageCtx.stageResults, "check-access");
+            if (!tokenResult?.valid || !resourceResult?.resolved) {
+                return { issued: false, reason: "resource_unavailable" };
+            }
+            if (accessResult && accessResult.allowed === false) {
+                return { issued: false, reason: "forbidden" };
+            }
+            if (!issueAccessToken || !tokenResult.tokenRecord?.id) {
+                return { issued: false, reason: "auth_issue_unavailable" };
+            }
+            const now = Date.now();
+            const maxTtlSeconds = 4 * 60 * 60;
+            const expiresAt = String(tokenResult.tokenRecord.expiresAt ?? "");
+            const expiresAtMs = expiresAt ? Date.parse(expiresAt) : Number.NaN;
+            const ttlSeconds = Number.isFinite(expiresAtMs)
+                ? Math.floor((expiresAtMs - now) / 1000)
+                : maxTtlSeconds;
+            if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
+                return { issued: false, reason: "expired" };
+            }
+            const boundedTtlSeconds = Math.min(maxTtlSeconds, ttlSeconds);
+            const guestAccessToken = issueAccessToken(
+                `share:${tokenResult.tokenRecord.id}`,
+                "user",
+                boundedTtlSeconds,
+                {
+                    providerId: "share",
+                    purpose: "share",
+                },
+            );
+            stageCtx.data.guestAccessToken = guestAccessToken;
+            return { issued: true };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "resolve-share-token",
         "build-payload",
         { id: "share-gateway:build-payload" },
         async (stageCtx) => {
@@ -160,6 +223,10 @@ export async function registerShareBootstrapHooks(input: {
                 resourceType: resourceResult.resourceType,
                 resourceId: resourceResult.resourceId,
                 payload: resourceResult.payload ?? {},
+                guestAccessToken:
+                    typeof stageCtx.data.guestAccessToken === "string"
+                        ? stageCtx.data.guestAccessToken
+                        : "",
                 grantedCapabilities:
                     (tokenResult.tokenRecord?.grantedCapabilities as
                         | string[]

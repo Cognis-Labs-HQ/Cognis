@@ -1,6 +1,6 @@
 <resources>
   <string name="share.page_title">Konten Bersama</string>
-  <string name="share.subtitle">Buka konten Cognis yang dibagikan tanpa masuk.</string>
+  <string name="share.subtitle">Konten Bersama</string>
   <string name="share.loading">Sedang memuat konten bersama…</string>
   <string name="share.error.invalid_token">Tautan bagikan ini tidak valid atau sudah kedaluwarsa.</string>
   <string name="share.error.expired">Item bersama ini sudah tidak tersedia.</string>

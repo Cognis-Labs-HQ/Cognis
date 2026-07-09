@@ -115,6 +115,8 @@ export function registerShareFlowHooks(ctx) {
                 resourceType: "meeting",
                 resourceId: meeting.id,
                 payload: {
+                    meetingId: meeting.id,
+                    chatRoomId: meeting.chatRoomId,
                     title: meeting.meetingName,
                     scheduledAt: meeting.createdAt,
                     duration: null,
@@ -166,8 +168,7 @@ export function registerShareFlowHooks(ctx) {
                     return null;
                 }
                 return {
-                    rendererScriptUrl:
-                        "/static/modules/jitsi-meet/share-renderer.js",
+                    mountScriptUrl: "/static/modules/jitsi-meet/share-mount.js",
                     stringsBaseUrl: ["/static/modules/jitsi-meet/languages"],
                 };
             },

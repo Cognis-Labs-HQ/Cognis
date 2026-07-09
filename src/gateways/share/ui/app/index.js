@@ -9,6 +9,10 @@ import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
+const ACCESS_TOKEN_KEY = "cognis_access_token";
+const PREVIOUS_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
+const GUEST_TOKEN_ACTIVE_KEY = "cognis_share_guest_token_active";
+
 function resolveTokenFromLocation() {
     const pathnameMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
     if (pathnameMatch) {
@@ -90,6 +94,33 @@ function buildShareElement(state) {
     };
 }
 
+function activateGuestTokenSession(guestAccessToken) {
+    const normalizedToken = String(guestAccessToken ?? "").trim();
+    if (!normalizedToken) {
+        return () => undefined;
+    }
+    const previousAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (previousAccessToken) {
+        sessionStorage.setItem(PREVIOUS_ACCESS_TOKEN_KEY, previousAccessToken);
+    } else {
+        sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
+    }
+    sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
+    localStorage.setItem(ACCESS_TOKEN_KEY, normalizedToken);
+    return () => {
+        const active = sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1";
+        if (!active) return;
+        const restoredToken = sessionStorage.getItem(PREVIOUS_ACCESS_TOKEN_KEY);
+        if (restoredToken) {
+            localStorage.setItem(ACCESS_TOKEN_KEY, restoredToken);
+        } else {
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+        }
+        sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
+        sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
+    };
+}
+
 export async function mount(root, { signal } = {}) {
     const state = {
         loading: true,
@@ -154,6 +185,40 @@ export async function mount(root, { signal } = {}) {
             shareData.page.stringsBaseUrl,
         );
     }
+    const deactivateGuestSession = activateGuestTokenSession(
+        shareData.guestAccessToken,
+    );
+    window.addEventListener("beforeunload", deactivateGuestSession, { signal });
+    signal?.addEventListener("abort", deactivateGuestSession, { once: true });
+
+    if (shareData.page?.mountScriptUrl) {
+        const mountModule = await import(String(shareData.page.mountScriptUrl));
+        const mountSharedPage =
+            typeof mountModule?.mount === "function" ? mountModule.mount : null;
+        if (!mountSharedPage) {
+            state.loading = false;
+            state.errorKey = "share.error.renderer_missing";
+            composer.refresh([buildShareElement(state)]);
+            return;
+        }
+        state.loading = false;
+        state.errorKey = "";
+        state.renderedContent = '<div id="share-resource-mount-root"></div>';
+        composer.refresh([buildShareElement(state)]);
+        const mountRoot = root.querySelector("#share-resource-mount-root");
+        if (!(mountRoot instanceof HTMLElement)) {
+            state.errorKey = "share.error.renderer_missing";
+            composer.refresh([buildShareElement(state)]);
+            return;
+        }
+        await mountSharedPage(mountRoot, {
+            shareData,
+            i18n: state.i18n,
+            signal,
+        });
+        return;
+    }
+
     if (shareData.page?.rendererScriptUrl) {
         await import(String(shareData.page.rendererScriptUrl));
     }

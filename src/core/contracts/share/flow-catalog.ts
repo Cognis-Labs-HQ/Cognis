@@ -51,6 +51,11 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                     "Apply resource-specific access rules before exposing any unauthenticated share payload.",
             },
             {
+                id: "issue-guest-token",
+                description:
+                    "Issue a scoped guest access token for share-allowed API reads in the resolved resource context.",
+            },
+            {
                 id: "build-payload",
                 description:
                     "Assemble the final public payload consumed by the share page renderer.",

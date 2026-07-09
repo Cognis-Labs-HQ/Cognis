@@ -179,7 +179,11 @@ export function registerMeetingShareRoutes({
                 resourceType: "meeting",
                 resourceId: meeting.id,
                 label: typeof body.label === "string" ? body.label : "",
-                grantedCapabilities: ["meeting:join"],
+                grantedCapabilities: [
+                    "meeting:join",
+                    "participants:read",
+                    "chat:read",
+                ],
                 expiresAt,
             });
             const issued = flowResult.stageResults["issue-token"]?.[0];
