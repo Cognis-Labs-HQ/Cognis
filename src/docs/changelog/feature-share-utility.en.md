@@ -33,3 +33,16 @@ which would cause a load failure if the file were ever reached. Both files have 
 The shared calendar event auto-invite test used a hardcoded event date (2026-06-16) that had
 fallen in the past, causing `listInvitedPendingEvents` to filter it out and the assertion to fail.
 The event date has been updated to 2030-06-16.
+
+## Fix Public Share Links Blocked by Auth Check
+
+The calendar gateway route handler used an overly broad `pathname.includes("/share")` check
+that accidentally intercepted public share link URLs (`/share/shr_...`) and returned an
+unauthorized error before the share gateway could serve the page. The check is now narrowed
+to only match calendar-specific share API routes under `/api/v1/calendar/calendars/:id/share`.
+
+## Fix Share Popup Label Input Focus
+
+When the share-links popup opens, the label input field now receives focus automatically.
+Previously, the close button (the first button in the popup DOM) was incorrectly focused,
+preventing direct keyboard input into the label field.

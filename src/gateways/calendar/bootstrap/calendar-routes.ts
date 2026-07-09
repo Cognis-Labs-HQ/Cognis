@@ -346,7 +346,9 @@ export function createCalendarCoreRoutes({
             return true;
         }
 
-        if (url.pathname.includes("/share")) {
+        if (
+            url.pathname.match(/^\/api\/v1\/calendar\/calendars\/[^/]+\/share/)
+        ) {
             const shareClaims = ctx.requireAuth(req, res, "user");
             if (!shareClaims) return true;
             const handledShareRoute = await handleCalendarShareRoutes({

@@ -29,8 +29,17 @@ akibat refaktor sebelumnya dan tidak pernah dikirimkan ke browser. `index.js` me
 yang rusak (`/static/reuse/page-composer.js` alih-alih `/static/reuse/page-composer/index.js`),
 yang akan menyebabkan kegagalan muat jika file tersebut pernah diakses. Kedua file telah dihapus.
 
-## Perbaiki Tanggal Uji Undangan Kalender
+## Perbaiki Tautan Share Publik yang Diblokir oleh Pemeriksaan Autentikasi
 
-Uji auto-undang untuk acara kalender bersama menggunakan tanggal acara yang dikodekan keras
-(2026-06-16) yang sudah berlalu, sehingga `listInvitedPendingEvents` memfilternya dan
-pernyataan gagal. Tanggal acara telah diperbarui menjadi 2030-06-16.
+Handler rute gateway kalender menggunakan pemeriksaan `pathname.includes("/share")`
+yang terlalu luas, yang secara tidak sengaja menangkap URL tautan share publik
+(`/share/shr_...`) dan mengembalikan kesalahan unauthorized sebelum gateway share
+dapat menyajikan halaman tersebut. Pemeriksaan kini dipersempit hanya untuk rute
+API share kalender di bawah `/api/v1/calendar/calendars/:id/share`.
+
+## Perbaiki Fokus Input Label Popup Share
+
+Saat popup tautan share dibuka, kolom input label kini secara otomatis menerima
+fokus. Sebelumnya, tombol tutup (tombol pertama dalam DOM popup) secara keliru
+difokuskan, sehingga mencegah pengetikan langsung menggunakan keyboard pada kolom
+label.

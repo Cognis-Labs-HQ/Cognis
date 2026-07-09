@@ -30,9 +30,18 @@ enthielt einen fehlerhaften Import (`/static/reuse/page-composer.js` statt
 `/static/reuse/page-composer/index.js`), der bei einem eventuellen Aufruf einen Ladefehler
 verursacht hätte. Beide Dateien wurden entfernt.
 
-## Testdatum der Kalender-Einladung korrigiert
+## Öffentliche Freigabelinks durch Auth-Check blockiert – behoben
 
-Der Auto-Einladungstest für gemeinsame Kalenderereignisse verwendete ein hartkodiertes
-Ereignisdatum (2026-06-16), das bereits in der Vergangenheit lag. Dadurch filterte
-`listInvitedPendingEvents` das Ereignis heraus und die Assertion schlug fehl.
-Das Ereignisdatum wurde auf 2030-06-16 aktualisiert.
+Der Kalender-Gateway-Route-Handler verwendete eine zu weit gefasste Prüfung
+`pathname.includes("/share")`, die versehentlich öffentliche Freigabe-Link-URLs
+(`/share/shr_...`) abfing und einen Unauthorized-Fehler zurückgab, bevor das
+Share-Gateway die Seite ausliefern konnte. Die Prüfung ist nun auf
+kalenderspezifische Share-API-Routen unter `/api/v1/calendar/calendars/:id/share`
+beschränkt.
+
+## Fokus des Eingabefelds für Labels im Share-Popup korrigiert
+
+Wenn das Share-Links-Popup geöffnet wird, erhält das Label-Eingabefeld nun
+automatisch den Fokus. Zuvor wurde fälschlicherweise der Schließen-Button (der
+erste Button im Popup-DOM) fokussiert, was direkte Tastatureingaben im Label-Feld
+verhinderte.
