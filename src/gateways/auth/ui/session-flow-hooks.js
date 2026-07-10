@@ -49,9 +49,15 @@ uiCtx.extendFlow(
     "validate-stored-token",
     { id: "auth-gateway:validate-stored-token" },
     async () => {
+        const token = localStorage.getItem("cognis_access_token");
         const account = localStorage.getItem("cognis_account");
-        if (!localStorage.getItem("cognis_access_token") || !account) {
-            clearStoredSession();
+        if (!token || !account) {
+            if (!token) {
+                // No token at all — full clear to ensure no partial stale state.
+                clearStoredSession();
+            }
+            // Token present without account = guest/share token; let
+            // apply-alternate-auth handle it without wiping the token.
             return { valid: false, reason: "session_expired" };
         }
         try {

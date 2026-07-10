@@ -68,8 +68,6 @@ uiCtx.extendFlow(
         const shareToken = resolveShareTokenFromLocation();
         if (!shareToken) return null;
 
-        const guestController = activateGuestToken;
-
         let response;
         try {
             response = await fetch(

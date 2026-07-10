@@ -7,6 +7,7 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
 function renderHeader(i18n) {
@@ -143,10 +144,29 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
-    if (shareContext.page?.mountScriptUrl) {
-        const mountModule = await import(
-            String(shareContext.page.mountScriptUrl)
+    const stylesheetUrls = Array.isArray(shareContext.page?.stylesheetUrls)
+        ? shareContext.page.stylesheetUrls
+        : [];
+    if (stylesheetUrls.length) {
+        await Promise.all(
+            stylesheetUrls.map((url) => ensurePageStylesheet(String(url))),
         );
+    }
+
+    if (shareContext.page?.mountScriptUrl) {
+        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+        globalThis.__spaRouter = true;
+        let mountModule;
+        try {
+            mountModule = await import(
+                String(shareContext.page.mountScriptUrl)
+            );
+        } finally {
+            globalThis.__spaRouterCount--;
+            if (globalThis.__spaRouterCount === 0) {
+                globalThis.__spaRouter = false;
+            }
+        }
         const mountSharedPage =
             typeof mountModule?.mount === "function" ? mountModule.mount : null;
         if (!mountSharedPage) {
@@ -174,7 +194,16 @@ export async function mount(root, { signal } = {}) {
     }
 
     if (shareContext.page?.rendererScriptUrl) {
-        await import(String(shareContext.page.rendererScriptUrl));
+        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+        globalThis.__spaRouter = true;
+        try {
+            await import(String(shareContext.page.rendererScriptUrl));
+        } finally {
+            globalThis.__spaRouterCount--;
+            if (globalThis.__spaRouterCount === 0) {
+                globalThis.__spaRouter = false;
+            }
+        }
     }
     const renderer = getShareRenderer(shareContext.resourceType);
     if (!renderer) {

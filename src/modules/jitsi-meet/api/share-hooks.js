@@ -1,6 +1,10 @@
 import { resolveStore } from "./reuse/store-runtime.js";
 import { resolveRequesterUsername } from "./reuse/requester.js";
 import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
+import {
+    resolveMessagesUiResources,
+    resolveSharedMessagesStylesheetUrls,
+} from "./ui-resources.js";
 
 export function registerShareFlowHooks(ctx) {
     if (
@@ -167,6 +171,13 @@ export function registerShareFlowHooks(ctx) {
                 return {
                     mountScriptUrl: "/static/modules/jitsi-meet/app.js",
                     stringsBaseUrl: ["/static/modules/jitsi-meet/languages"],
+                    stylesheetUrls: [
+                        "/static/styles/reuse/page-sections.css",
+                        ...resolveSharedMessagesStylesheetUrls(
+                            resolveMessagesUiResources(ctx),
+                        ),
+                        "/static/modules/jitsi-meet/jitsi-meet.css",
+                    ],
                 };
             },
         );

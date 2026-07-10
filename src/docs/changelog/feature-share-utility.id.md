@@ -53,3 +53,13 @@ Singleton `uiCtx` browser flow engine kini mengelola semua kepentingan lintas ko
 ## Perbaiki Loop Pengalihan Login
 
 Hook autentikasi `load-page` kini melewati pemeriksaan auth pada halaman publik (`/login` dan `/register`), mencegah loop pengalihan tak terbatas yang terjadi karena mengimpor `createPageComposer` pada halaman tersebut secara transitif mendaftarkan hook auth, yang kemudian langsung mengalihkan pengunjung yang belum terautentikasi kembali ke `/login`.
+
+## Perbaiki Error Halaman Meeting via Share Link
+
+Beberapa bug yang saling terkait menyebabkan error dan halaman kosong saat bergabung ke meeting (atau memuat konten yang dibagikan) melalui share link.
+
+- **Token tamu sekarang lolos autentikasi server**: `getAuthClaims` kini juga menerima token dengan `purpose: "share"` sehingga JWT tamu dapat mengautentikasi panggilan API Jitsi Meet.
+- **Mencegah double-mount saat import dinamis**: Halaman share sekarang menyetel flag `__spaRouter` sebelum import dinamis untuk mencegah eksekusi `load-page` kedua yang tidak perlu.
+- **Pertahankan token tamu saat pemeriksaan auth berulang**: `validate-stored-token` kini hanya membersihkan sesi jika tidak ada token sama sekali; token tanpa akun (skenario tamu) dibiarkan agar ditangani oleh `apply-alternate-auth`.
+- **Hapus assignment `guestController` yang tidak digunakan**: Baris kode mati telah dihapus dari share session-flow-hooks.
+- **Gaya halaman untuk konten yang dibagikan**: Jitsi share hook sekarang menyertakan `stylesheetUrls`; halaman share memuat CSS yang diperlukan sebelum memasang resource.

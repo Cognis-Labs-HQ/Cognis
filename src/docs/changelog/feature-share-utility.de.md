@@ -53,3 +53,13 @@ Ein Singleton-`uiCtx`-Browser-Flow-Engine steuert jetzt alle seitenübergreifend
 ## Login-Umleitungsschleife behoben
 
 Der `load-page`-Authentifizierungshook überspringt die Auth-Prüfung nun auf öffentlichen Seiten (`/login` und `/register`). Dadurch wird eine endlose Umleitungsschleife verhindert, die entstand, weil der Import von `createPageComposer` auf diesen Seiten transitiv den Auth-Hook registrierte, der nicht authentifizierte Besucher sofort wieder zu `/login` umleitete.
+
+## Fehler auf geteilten Meeting-Seiten behoben
+
+Mehrere zusammenhängende Fehler verursachten Abstürze und leere Seiten beim Beitreten eines Meetings (oder beim Laden von geteilten Inhalten) über einen Share-Link.
+
+- **Gast-Tokens bestehen jetzt Server-Auth**: Die Auth-Prüfung lehnte Share-Purpose-Tokens ab, weil `getAuthClaims` nur `purpose: "session"`-Tokens akzeptierte. Jetzt werden auch `purpose: "share"`-Tokens akzeptiert.
+- **Doppeltes Mount bei dynamischem Import verhindern**: Das Share-Modul setzt jetzt `__spaRouter` vor dem dynamischen Import, um einen zweiten `load-page`-Durchlauf zu unterdrücken.
+- **Gast-Token bei wiederholten Auth-Prüfungen erhalten**: `validate-stored-token` löscht die Session jetzt nur noch, wenn kein Token vorhanden ist – nicht wenn ein Token ohne Account vorliegt.
+- **Totes `guestController`-Assignment entfernt**: Der veraltete Codeausdruck wurde aus den Share-Session-Flow-Hooks entfernt.
+- **Seitenstile für geteilte Inhalte**: Der Jitsi-Share-Hook enthält jetzt `stylesheetUrls`; die Share-Seite lädt diese CSS-Dateien vor dem Mounten der Ressource.

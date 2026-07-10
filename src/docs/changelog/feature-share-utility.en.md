@@ -54,3 +54,17 @@ A singleton `uiCtx` browser flow engine now powers all cross-cutting browser con
 ## Fix Login Redirect Loop
 
 The `load-page` authentication hook now skips auth enforcement on public pages (`/login` and `/register`), preventing an infinite redirect loop that occurred because importing `createPageComposer` on those pages transitively registered the auth hook, which then immediately redirected unauthenticated visitors back to `/login`.
+
+## Fix Share-Linked Meeting Page Errors
+
+Several interrelated bugs caused errors and a blank page when joining a meeting (or loading any shared content) via a share link.
+
+- **Guest tokens now pass server auth**: The auth guard was rejecting share-purpose tokens because `getAuthClaims` only accepted `purpose: "session"` tokens. It now also accepts `purpose: "share"` tokens, allowing guest JWTs to authenticate API calls to Jitsi Meet endpoints.
+
+- **Prevent double-mount on dynamic import**: The share page imports the resource's mount script dynamically. The module's own top-level `mountWhenDirect` call was firing a second full `load-page` flow because `globalThis.__spaRouter` was not set on the share page. The share page now uses the same `__spaRouterCount`/`__spaRouter` guard as the SPA router to suppress this spurious execution.
+
+- **Preserve guest token across repeated auth checks**: `validate-stored-token` was calling `clearStoredSession()` whenever no `cognis_account` was found — which wiped the guest access token set by the share hook. Now it only clears when no token at all is present; a token without an account (the guest scenario) is left intact for `apply-alternate-auth` to handle.
+
+- **Remove dead `guestController` assignment**: The share session-flow-hooks had a stale line that assigned the `activateGuestToken` function to `guestController` without ever calling it; that dead assignment has been removed.
+
+- **Page styles for shared content**: The Jitsi share hook now includes `stylesheetUrls` in the page descriptor. The share page loads these stylesheets (via `ensurePageStylesheet`) before mounting the shared resource, so the Jitsi meeting UI receives its required CSS.
