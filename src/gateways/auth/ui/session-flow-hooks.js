@@ -15,6 +15,7 @@
  *   prior stage results. This is the canonical result callers read.
  */
 
+import "/static/reuse/flow-registry.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 

@@ -1,13 +1,16 @@
 /**
  * Client-side flow catalog for the Cognis browser shell.
  *
- * Registers the three cross-cutting browser flows on the `uiCtx` singleton
- * and imports the default stage-hook implementations that own each flow's
- * core behaviour. Importing this module is the only wiring required: each
+ * Wires together flow contract registration and the default stage-hook
+ * implementations. Importing this module is the only wiring required: each
  * gateway that contributes hooks (auth, share, …) is loaded here so that all
  * hooks are registered before the first flow runs.
  *
- * Flows declared here:
+ * Flow contracts are declared in `flow-registry.js` and are imported from
+ * there by each hook file independently, so hooks can be loaded safely on
+ * their own without relying on this catalog being loaded first.
+ *
+ * Flows wired here:
  *
  * `authenticate-session` (owner: auth-gateway)
  *   Validates the stored browser session and produces a normalised session
@@ -32,22 +35,5 @@
  * ```
  */
 
-import { uiCtx } from "./ui-ctx.js";
-
-uiCtx.registerFlow("authenticate-session", [
-    "validate-stored-token",
-    "apply-alternate-auth",
-    "enforce-setup-requirements",
-    "resolve-session",
-]);
-
-uiCtx.registerFlow("navigate-to", [
-    "resolve-route",
-    "authenticate",
-    "prepare-assets",
-    "mount-page",
-]);
-
-uiCtx.registerFlow("load-page", ["authenticate", "mount-page"]);
-
+import "./flow-registry.js";
 import "/static/gateways/auth/session-flow-hooks.js";
