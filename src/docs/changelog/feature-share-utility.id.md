@@ -46,4 +46,6 @@ label.
 
 ## Tambah Sesi Share Tamu Berbasis Flow
 
-Resolusi share sekarang menerbitkan token akses tamu terbatas dan mengembalikannya ke halaman share, yang menukar token itu sementara ke sesi API aktif lalu memulihkan token sebelumnya saat keluar halaman. Flow share Jitsi Meet kini me-mount UI Meetings asli lewat `share-mount.js` alih-alih renderer kartu statis, dan validasi tamu share ditambahkan untuk route join/config/peserta meeting serta akses baca-saja kunci dan pesan room social.
+## Arsitektur Flow Sisi Klien
+
+Singleton `uiCtx` browser flow engine kini mengelola semua kepentingan lintas komponen di browser. Auth, pemuatan halaman, dan navigasi SPA dinyatakan sebagai flow bernama dan bertahap yang dapat diperluas oleh gateway atau modul mana pun tanpa harus memiliki flow tersebut. Validasi sesi berada di auth gateway, penukaran token tamu berada di share gateway, dan `page-entry.js` mendelegasikan ke flow `load-page` sehingga halaman individual tidak perlu memanggil helper auth secara langsung. Wrapper `share-mount.js` Jitsi Meet dihapus; halaman share langsung memuat `app.js` dan menemukan konteks share melalui sistem flow.

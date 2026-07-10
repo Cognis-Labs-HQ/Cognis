@@ -353,14 +353,17 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
-    const authResult = await uiCtx.runFlow('authenticate-session', {});
-    const session = (authResult?.stageResults?.['resolve-session'] ?? [])[0] ?? null;
+    const authResult = await uiCtx.runFlow("authenticate-session", {});
+    const session =
+        (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
     if (session?.requiresRedirect && session.redirectTo) {
         const enforcedPath = session.redirectTo;
-        if (
-            window.location.pathname + window.location.hash !== enforcedPath
-        ) {
-            history.replaceState({ routerPage: enforcedPath }, '', enforcedPath);
+        if (window.location.pathname + window.location.hash !== enforcedPath) {
+            history.replaceState(
+                { routerPage: enforcedPath },
+                "",
+                enforcedPath,
+            );
         }
         return loadRoute(enforcedPath);
     }

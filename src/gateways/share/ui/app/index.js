@@ -1,4 +1,3 @@
-import { apiFetch } from "/static/reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
@@ -7,21 +6,8 @@ import {
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { getShareRenderer } from "./renderer-registry.js";
-
-const ACCESS_TOKEN_KEY = "cognis_access_token";
-const PREVIOUS_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
-const GUEST_TOKEN_ACTIVE_KEY = "cognis_share_guest_token_active";
-
-function resolveTokenFromLocation() {
-    const pathnameMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
-    if (pathnameMatch) {
-        return decodeURIComponent(pathnameMatch[1]);
-    }
-    return String(
-        new URL(window.location.href).searchParams.get("token") ?? "",
-    ).trim();
-}
 
 function renderHeader(i18n) {
     return `
@@ -94,33 +80,6 @@ function buildShareElement(state) {
     };
 }
 
-function activateGuestTokenSession(guestAccessToken) {
-    const normalizedToken = String(guestAccessToken ?? "").trim();
-    if (!normalizedToken) {
-        return () => undefined;
-    }
-    const previousAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    if (previousAccessToken) {
-        sessionStorage.setItem(PREVIOUS_ACCESS_TOKEN_KEY, previousAccessToken);
-    } else {
-        sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
-    }
-    sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
-    localStorage.setItem(ACCESS_TOKEN_KEY, normalizedToken);
-    return () => {
-        const active = sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1";
-        if (!active) return;
-        const restoredToken = sessionStorage.getItem(PREVIOUS_ACCESS_TOKEN_KEY);
-        if (restoredToken) {
-            localStorage.setItem(ACCESS_TOKEN_KEY, restoredToken);
-        } else {
-            localStorage.removeItem(ACCESS_TOKEN_KEY);
-        }
-        sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
-        sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
-    };
-}
-
 export async function mount(root, { signal } = {}) {
     const state = {
         loading: true,
@@ -150,49 +109,44 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
-    const token = resolveTokenFromLocation();
-    if (!token) {
-        state.loading = false;
-        state.errorKey = "share.error.missing_token";
-        composer.refresh([buildShareElement(state)]);
-        return;
-    }
 
-    const response = await apiFetch(
-        `/api/v1/share/resolve/${encodeURIComponent(token)}`,
-    );
-    if (!response.ok) {
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
+    const session =
+        (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
+    const shareContext = session?.shareContext ?? null;
+
+    if (!shareContext?.resourceType) {
         state.loading = false;
         state.errorKey =
-            response.status === 404
-                ? "share.error.not_found"
-                : "share.error.expired";
-        composer.refresh([buildShareElement(state)]);
-        return;
-    }
-    const body = await response.json().catch(() => ({ data: null }));
-    const shareData = body?.data ?? null;
-    if (!shareData?.resourceType) {
-        state.loading = false;
-        state.errorKey = "share.error.malformed_response";
+            shareContext === null
+                ? "share.error.missing_token"
+                : "share.error.malformed_response";
         composer.refresh([buildShareElement(state)]);
         return;
     }
 
-    if (shareData.page?.stringsBaseUrl) {
+    if (!session?.authenticated) {
+        const reason =
+            shareContext === null
+                ? "share.error.missing_token"
+                : "share.error.expired";
+        state.loading = false;
+        state.errorKey = reason;
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
+
+    if (shareContext.page?.stringsBaseUrl) {
         state.i18n = await extendI18n(
             state.i18n,
-            shareData.page.stringsBaseUrl,
+            shareContext.page.stringsBaseUrl,
         );
     }
-    const deactivateGuestSession = activateGuestTokenSession(
-        shareData.guestAccessToken,
-    );
-    window.addEventListener("beforeunload", deactivateGuestSession, { signal });
-    signal?.addEventListener("abort", deactivateGuestSession, { once: true });
 
-    if (shareData.page?.mountScriptUrl) {
-        const mountModule = await import(String(shareData.page.mountScriptUrl));
+    if (shareContext.page?.mountScriptUrl) {
+        const mountModule = await import(
+            String(shareContext.page.mountScriptUrl)
+        );
         const mountSharedPage =
             typeof mountModule?.mount === "function" ? mountModule.mount : null;
         if (!mountSharedPage) {
@@ -212,17 +166,17 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         await mountSharedPage(mountRoot, {
-            shareData,
+            shareContext,
             i18n: state.i18n,
             signal,
         });
         return;
     }
 
-    if (shareData.page?.rendererScriptUrl) {
-        await import(String(shareData.page.rendererScriptUrl));
+    if (shareContext.page?.rendererScriptUrl) {
+        await import(String(shareContext.page.rendererScriptUrl));
     }
-    const renderer = getShareRenderer(shareData.resourceType);
+    const renderer = getShareRenderer(shareContext.resourceType);
     if (!renderer) {
         state.loading = false;
         state.errorKey = "share.error.renderer_missing";
@@ -231,10 +185,8 @@ export async function mount(root, { signal } = {}) {
     }
 
     const renderedContent = renderer({
-        data: shareData.payload ?? {},
-        grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
-            ? shareData.grantedCapabilities
-            : [],
+        data: shareContext.payload ?? {},
+        grantedCapabilities: shareContext.grantedCapabilities,
         i18n: state.i18n,
         signal,
     });

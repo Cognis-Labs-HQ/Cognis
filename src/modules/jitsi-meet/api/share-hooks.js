@@ -165,7 +165,7 @@ export function registerShareFlowHooks(ctx) {
                     return null;
                 }
                 return {
-                    mountScriptUrl: "/static/modules/jitsi-meet/share-mount.js",
+                    mountScriptUrl: "/static/modules/jitsi-meet/app.js",
                     stringsBaseUrl: ["/static/modules/jitsi-meet/languages"],
                 };
             },

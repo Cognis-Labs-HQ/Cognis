@@ -25,33 +25,33 @@
  *   const ok = await ensureFullAccountSession();
  */
 
-import '/static/reuse/page-flow-catalog.js';
-import { uiCtx } from '/static/reuse/ui-ctx.js';
+import "/static/reuse/page-flow-catalog.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 let lastShareContext = null;
 
 function getSessionResult(flowResult) {
-    return (flowResult?.stageResults?.['resolve-session'] ?? [])[0] ?? null;
+    return (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
 }
 
 export async function redirectToDashboardIfAuthenticated() {
-    const flowResult = await uiCtx.runFlow('authenticate-session', {});
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
     const session = getSessionResult(flowResult);
     if (session?.authenticated) {
-        window.location.replace('/dashboard');
+        window.location.replace("/dashboard");
         return true;
     }
     return false;
 }
 
 export async function checkIsAuthenticated() {
-    const flowResult = await uiCtx.runFlow('authenticate-session', {});
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
     const session = getSessionResult(flowResult);
     return session?.authenticated === true;
 }
 
 export async function ensureFullAccountSession() {
-    const flowResult = await uiCtx.runFlow('authenticate-session', {});
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
     const session = getSessionResult(flowResult);
     lastShareContext = session?.shareContext ?? null;
     if (session?.requiresRedirect && session.redirectTo) {
@@ -66,11 +66,11 @@ export function getShareContext() {
 }
 
 export function clearStoredAuthSession() {
-    localStorage.removeItem('cognis_access_token');
-    localStorage.removeItem('cognis_account');
-    localStorage.removeItem('cognis_display_name');
-    localStorage.removeItem('cognis_role');
-    localStorage.removeItem('cognis_is_founder');
-    localStorage.removeItem('cognis_user_validation_mode');
-    document.cookie = 'cognis_access_token=; Path=/; Max-Age=0';
+    localStorage.removeItem("cognis_access_token");
+    localStorage.removeItem("cognis_account");
+    localStorage.removeItem("cognis_display_name");
+    localStorage.removeItem("cognis_role");
+    localStorage.removeItem("cognis_is_founder");
+    localStorage.removeItem("cognis_user_validation_mode");
+    document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
 }

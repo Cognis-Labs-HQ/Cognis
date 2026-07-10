@@ -32,25 +32,22 @@
  * ```
  */
 
-import { uiCtx } from './ui-ctx.js';
+import { uiCtx } from "./ui-ctx.js";
 
-uiCtx.registerFlow('authenticate-session', [
-    'validate-stored-token',
-    'apply-alternate-auth',
-    'enforce-setup-requirements',
-    'resolve-session',
+uiCtx.registerFlow("authenticate-session", [
+    "validate-stored-token",
+    "apply-alternate-auth",
+    "enforce-setup-requirements",
+    "resolve-session",
 ]);
 
-uiCtx.registerFlow('navigate-to', [
-    'resolve-route',
-    'authenticate',
-    'prepare-assets',
-    'mount-page',
+uiCtx.registerFlow("navigate-to", [
+    "resolve-route",
+    "authenticate",
+    "prepare-assets",
+    "mount-page",
 ]);
 
-uiCtx.registerFlow('load-page', [
-    'authenticate',
-    'mount-page',
-]);
+uiCtx.registerFlow("load-page", ["authenticate", "mount-page"]);
 
-import '/static/gateways/auth/ui/session-flow-hooks.js';
+import "/static/gateways/auth/ui/session-flow-hooks.js";

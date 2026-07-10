@@ -20,6 +20,7 @@ import {
     installRuntimeErrorHandlers,
     openRuntimeErrorPopup,
 } from "./runtime-error-popup.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;
@@ -288,6 +289,9 @@ function endPageLoading(token) {
 
 /**
  * Runs a page mount on direct URL loads while skipping SPA-router navigations.
+ * Runs the `load-page` flow, which enforces session authentication before
+ * mounting, so individual page modules do not need to call auth helpers
+ * themselves.
  *
  * @param {(root: Element | null) => Promise<unknown>} mount - Page mount
  *   function for the current entry module.
@@ -303,7 +307,12 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     const finishPageLoading = beginPageLoading();
     let mountError = null;
     try {
-        await mount(document.querySelector(rootSelector));
+        const root = document.querySelector(rootSelector);
+        if (uiCtx.flowExists("load-page")) {
+            await uiCtx.runFlow("load-page", { mount, root });
+        } else {
+            await mount(root);
+        }
     } catch (error) {
         console.error("[page-entry] Direct mount failed.", {
             operation: "mountWhenDirect",

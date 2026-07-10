@@ -47,6 +47,6 @@ When the share-links popup opens, the label input field now receives focus autom
 Previously, the close button (the first button in the popup DOM) was incorrectly focused,
 preventing direct keyboard input into the label field.
 
-## Add Flow-Oriented Guest Share Sessions
+## Client-Side Flow Architecture
 
-Share resolution now issues scoped guest access tokens and returns them to the share page, which temporarily swaps the token into the active API session and restores the prior token on unload. The Jitsi Meet share flow now mounts the real meetings UI via `share-mount.js` instead of a static card renderer, and share-guest route guards were added for meeting join/config/participants and read-only social room key/message access.
+A singleton `uiCtx` browser flow engine now powers all cross-cutting browser concerns. Auth, page loading, and SPA navigation are expressed as named, staged flows that any gateway or module can extend without owning. Session validation lives in the auth gateway, guest token swapping lives in the share gateway, and `page-entry.js` delegates to the `load-page` flow so individual pages no longer need to call auth helpers directly. The Jitsi Meet `share-mount.js` wrapper is deleted; the share page loads `app.js` directly and discovers share context through the flow system.

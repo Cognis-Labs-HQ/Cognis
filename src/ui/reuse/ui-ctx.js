@@ -39,20 +39,28 @@ function createFlowEngine() {
 
     function registerFlow(id, stages) {
         const normalizedId = String(id ?? "").trim();
-        if (!normalizedId) throw new Error("Flow id must be a non-empty string.");
+        if (!normalizedId)
+            throw new Error("Flow id must be a non-empty string.");
         if (!Array.isArray(stages) || stages.length === 0) {
-            throw new Error(`Flow "${normalizedId}" must declare at least one stage.`);
+            throw new Error(
+                `Flow "${normalizedId}" must declare at least one stage.`,
+            );
         }
         const normalizedStages = stages.map((stageId) => {
             const normalized = String(stageId ?? "").trim();
-            if (!normalized) throw new Error(`Flow "${normalizedId}" has an invalid stage id.`);
+            if (!normalized)
+                throw new Error(
+                    `Flow "${normalizedId}" has an invalid stage id.`,
+                );
             return normalized;
         });
         const duplicate = normalizedStages.find(
             (stageId, index) => normalizedStages.indexOf(stageId) !== index,
         );
         if (duplicate) {
-            throw new Error(`Flow "${normalizedId}" has duplicate stage "${duplicate}".`);
+            throw new Error(
+                `Flow "${normalizedId}" has duplicate stage "${duplicate}".`,
+            );
         }
         if (flows.has(normalizedId)) {
             throw new Error(`Flow "${normalizedId}" is already registered.`);
@@ -66,11 +74,15 @@ function createFlowEngine() {
 
     function extendFlow(flowId, stageId, hookMeta, handler) {
         const flow = flows.get(flowId);
-        if (!flow) return false;
+        if (!flow) throw new Error(`Flow "${flowId}" is not registered.`);
         const hookId = String(hookMeta?.id ?? "").trim();
         if (!hookId) return false;
         const stageHooks = flow.stageHooks.get(stageId);
-        if (!stageHooks) return false;
+        if (!stageHooks) {
+            throw new Error(
+                `"${stageId}" is not a registered stage in flow "${flowId}".`,
+            );
+        }
         if (stageHooks.has(hookId)) return false;
         stageHooks.set(hookId, {
             id: hookId,

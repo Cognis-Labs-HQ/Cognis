@@ -46,6 +46,6 @@ automatisch den Fokus. Zuvor wurde fälschlicherweise der Schließen-Button (der
 erste Button im Popup-DOM) fokussiert, was direkte Tastatureingaben im Label-Feld
 verhinderte.
 
-## Flow-orientierte Gast-Share-Sitzungen hinzugefügt
+## Client-seitige Flow-Architektur
 
-Die Share-Auflösung erstellt jetzt begrenzte Gast-Access-Tokens und liefert sie an die Share-Seite zurück, die das Token temporär in die aktive API-Sitzung einsetzt und beim Verlassen wiederherstellt. Der Jitsi-Meet-Share-Flow mountet die echte Meetings-UI über `share-mount.js` statt über statische Karten, und es wurden Share-Gast-Prüfungen für Meeting-Join/Config/Teilnehmer sowie nur-lesenden Zugriff auf Social-Raum-Schlüssel und Nachrichten ergänzt.
+Ein Singleton-`uiCtx`-Browser-Flow-Engine steuert jetzt alle seitenübergreifenden Browser-Belange. Auth, Seitenladen und SPA-Navigation sind als benannte, gestufte Flows ausgedrückt, die jedes Gateway oder Modul erweitern kann, ohne es zu besitzen. Die Sitzungsvalidierung liegt im Auth-Gateway, der Gast-Token-Tausch im Share-Gateway, und `page-entry.js` delegiert an den `load-page`-Flow, sodass einzelne Seiten keine Auth-Helfer mehr direkt aufrufen müssen. Der Jitsi-Meet-Wrapper `share-mount.js` wird gelöscht; die Share-Seite lädt `app.js` direkt und erkennt den Share-Kontext über das Flow-System.

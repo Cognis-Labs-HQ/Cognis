@@ -45,4 +45,6 @@ Share リンクポップアップが開かれると、ラベル入力フィー�
 
 ## フロー指向のゲスト共有セッションを追加
 
-Share 解決時にスコープ付きゲストアクセストークンを発行し、Share ページへ返すようになりました。Share ページはこのトークンを一時的に API セッションへ差し替え、ページ離脱時に元のトークンへ復元します。Jitsi Meet の共有フローは静的カードレンダラーではなく `share-mount.js` で実際の Meetings UI をマウントし、meeting join/config/participants と social ルーム key/messages の読み取り専用アクセスに Share ゲスト検証を追加しました。
+## クライアントサイド Flow アーキテクチャ
+
+シングルトンの `uiCtx` ブラウザ Flow エンジンが、ブラウザ全体にまたがる横断的な関心事を統括するようになりました。認証、ページ読み込み、SPA ナビゲーションはすべて名前付きステージ型 Flow として表現され、どの Gateway やモジュールも Flow を所有することなく拡張できます。セッション検証は認証 Gateway が担い、ゲストトークンの交換は Share Gateway が担い、`page-entry.js` は `load-page` Flow に委譲します。これにより各ページが認証ヘルパーを直接呼び出す必要がなくなりました。Jitsi Meet の `share-mount.js` ラッパーは削除され、Share ページは `app.js` を直接ロードして Flow システムを通じて Share コンテキストを取得します。

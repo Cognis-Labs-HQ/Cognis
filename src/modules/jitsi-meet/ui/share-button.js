@@ -1,11 +1,4 @@
-export function bindShareButton({
-    root,
-    signal,
-    state,
-    i18n,
-    shareEnabled = true,
-}) {
-    if (!shareEnabled) return;
+export function bindShareButton({ root, signal, state, i18n }) {
     const shareButton = root.querySelector("#jitsi-share-meeting-btn");
     if (!(shareButton instanceof HTMLButtonElement)) {
         return;

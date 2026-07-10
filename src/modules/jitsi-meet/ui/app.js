@@ -6,6 +6,10 @@ import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { handleProfileAvatarError } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
+import {
+    getShareContext,
+    ensureFullAccountSession,
+} from "/static/reuse/auth-session.js";
 import { ensureSessionId } from "./session.js";
 import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
 import {
@@ -46,19 +50,21 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
  * embed updates). The optional AbortSignal is used by the SPA router to clean
  * up timers and event listeners when users navigate away.
  *
+ * When the page is loaded inside a share context (detected via getShareContext()),
+ * the shell chrome (topbar, navbar, footer) is hidden and the share button is
+ * suppressed — no explicit `embedded` or `shareEnabled` flags are needed.
+ *
  * @param {HTMLElement} root - Page mount root (usually #app).
- * @param {{ signal?: AbortSignal, requestedMeetingId?: string, embedded?: boolean, shareEnabled?: boolean }} [options] - Router lifecycle options.
+ * @param {{ signal?: AbortSignal, requestedMeetingId?: string }} [options] - Router lifecycle options.
  * @returns {Promise<void>}
  */
-export async function mount(
-    root,
-    {
-        signal,
-        requestedMeetingId = "",
-        embedded = false,
-        shareEnabled = true,
-    } = {},
-) {
+export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
+    await ensureFullAccountSession();
+    const shareContext = getShareContext();
+    const inShareView = shareContext !== null;
+    const resolvedMeetingId =
+        requestedMeetingId ||
+        (inShareView ? String(shareContext?.resourceId ?? "") : "");
     const messageUiResources = await loadMessageUiResources();
     for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
         ensureStylesheetLoaded(stylesheetUrl);
@@ -109,7 +115,7 @@ export async function mount(
         preflightNeedsConfig: false,
         sessionId: ensureSessionId(),
         requestedMeetingId: normalizeMeetingId(
-            requestedMeetingId ||
+            resolvedMeetingId ||
                 new URL(window.location.href).searchParams.get("meetingId"),
         ),
         activeMeetings: [],
@@ -914,7 +920,7 @@ export async function mount(
     }));
 
     const composer = createPageComposer(root, {
-        allowCustomization: !embedded,
+        allowCustomization: !inShareView,
         elements,
         preferenceKey: "meetings-layout-v3",
         i18n,
@@ -922,20 +928,22 @@ export async function mount(
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
-        showTopbar: !embedded,
-        showNavbar: !embedded,
-        showFooter: !embedded,
-        showThemeToggle: !embedded,
-        frameless: embedded,
-        persistLayoutPreferences: !embedded,
+        showTopbar: !inShareView,
+        showNavbar: !inShareView,
+        showFooter: !inShareView,
+        showThemeToggle: !inShareView,
+        frameless: inShareView,
+        persistLayoutPreferences: !inShareView,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
-            bindShareButton({ root, signal, state, i18n, shareEnabled });
+            if (!inShareView) {
+                bindShareButton({ root, signal, state, i18n });
+            }
         },
     });
 
     await composer.init();
-    if (embedded && state.requestedMeetingId) {
+    if (inShareView && state.requestedMeetingId) {
         await joinMeetingById(state.requestedMeetingId);
     } else {
         await loadActiveMeetings({ resolveRequested: true });

@@ -15,8 +15,8 @@
  *   prior stage results. This is the canonical result callers read.
  */
 
-import { uiCtx } from '/static/reuse/ui-ctx.js';
-import { apiFetch } from '/static/reuse/api-client.js';
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
 let authSetupCacheExpiresAt = 0;
@@ -27,104 +27,124 @@ function getFirstResult(stageResults, stageId) {
 }
 
 function clearStoredSession() {
-    localStorage.removeItem('cognis_access_token');
-    localStorage.removeItem('cognis_account');
-    localStorage.removeItem('cognis_display_name');
-    localStorage.removeItem('cognis_role');
-    localStorage.removeItem('cognis_is_founder');
-    localStorage.removeItem('cognis_user_validation_mode');
-    document.cookie = 'cognis_access_token=; Path=/; Max-Age=0';
+    localStorage.removeItem("cognis_access_token");
+    localStorage.removeItem("cognis_account");
+    localStorage.removeItem("cognis_display_name");
+    localStorage.removeItem("cognis_role");
+    localStorage.removeItem("cognis_is_founder");
+    localStorage.removeItem("cognis_user_validation_mode");
+    document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
 }
 
 uiCtx.extendFlow(
-    'authenticate-session',
-    'validate-stored-token',
-    { id: 'auth-gateway:validate-stored-token' },
+    "authenticate-session",
+    "validate-stored-token",
+    { id: "auth-gateway:validate-stored-token" },
     async () => {
-        const account = localStorage.getItem('cognis_account');
-        if (!localStorage.getItem('cognis_access_token') || !account) {
+        const account = localStorage.getItem("cognis_account");
+        if (!localStorage.getItem("cognis_access_token") || !account) {
             clearStoredSession();
-            return { valid: false, reason: 'session_expired' };
+            return { valid: false, reason: "session_expired" };
         }
         try {
             const response = await apiFetch(
-                '/api/v1/users/' + encodeURIComponent(account) + '/info',
+                "/api/v1/users/" + encodeURIComponent(account) + "/info",
             );
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
                 if (payload?.data?.enabled === false) {
                     clearStoredSession();
-                    return { valid: false, reason: 'account_disabled' };
+                    return { valid: false, reason: "account_disabled" };
                 }
                 return {
                     valid: true,
                     reason: null,
                     accountId: account,
-                    role: localStorage.getItem('cognis_role') ?? 'user',
+                    role: localStorage.getItem("cognis_role") ?? "user",
                 };
             }
             if (response.status === 404) {
                 clearStoredSession();
-                return { valid: false, reason: 'account_deleted' };
+                return { valid: false, reason: "account_deleted" };
             }
             if (response.status === 401 || response.status === 403) {
                 clearStoredSession();
-                return { valid: false, reason: 'session_expired' };
+                return { valid: false, reason: "session_expired" };
             }
         } catch {
             return { valid: false, reason: null };
         }
         clearStoredSession();
-        return { valid: false, reason: 'session_expired' };
+        return { valid: false, reason: "session_expired" };
     },
 );
 
 uiCtx.extendFlow(
-    'authenticate-session',
-    'enforce-setup-requirements',
-    { id: 'auth-gateway:enforce-setup-requirements' },
+    "authenticate-session",
+    "enforce-setup-requirements",
+    { id: "auth-gateway:enforce-setup-requirements" },
     async (stageCtx) => {
-        const tokenResult = getFirstResult(stageCtx.stageResults, 'validate-stored-token');
-        const alternateResult = getFirstResult(stageCtx.stageResults, 'apply-alternate-auth');
+        const tokenResult = getFirstResult(
+            stageCtx.stageResults,
+            "validate-stored-token",
+        );
+        const alternateResult = getFirstResult(
+            stageCtx.stageResults,
+            "apply-alternate-auth",
+        );
         if (!tokenResult?.valid && !alternateResult?.authenticated) {
             return { requiresSetup: false, redirectTo: null };
         }
-        const normalizedHash = String(window.location.hash ?? '').toLowerCase();
+        const normalizedHash = String(window.location.hash ?? "").toLowerCase();
         const isSecurityRoute =
-            window.location.pathname === '/settings' && normalizedHash === '#security';
+            window.location.pathname === "/settings" &&
+            normalizedHash === "#security";
         if (Date.now() < authSetupCacheExpiresAt) {
-            if (!authSetupRequiredCached) return { requiresSetup: false, redirectTo: null };
-            if (isSecurityRoute) return { requiresSetup: true, redirectTo: null };
-            return { requiresSetup: true, redirectTo: '/settings#security' };
+            if (!authSetupRequiredCached)
+                return { requiresSetup: false, redirectTo: null };
+            if (isSecurityRoute)
+                return { requiresSetup: true, redirectTo: null };
+            return { requiresSetup: true, redirectTo: "/settings#security" };
         }
-        if (!localStorage.getItem('cognis_access_token')) {
+        if (!localStorage.getItem("cognis_access_token")) {
             authSetupRequiredCached = false;
             authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
             return { requiresSetup: false, redirectTo: null };
         }
         try {
-            const response = await apiFetch('/api/v1/auth/setup-status');
+            const response = await apiFetch("/api/v1/auth/setup-status");
             authSetupRequiredCached = response.ok
-                ? ((await response.json().catch(() => null))?.data?.requiresSetup === true)
+                ? (await response.json().catch(() => null))?.data
+                      ?.requiresSetup === true
                 : false;
         } catch {
             authSetupRequiredCached = false;
         }
         authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
-        if (!authSetupRequiredCached) return { requiresSetup: false, redirectTo: null };
+        if (!authSetupRequiredCached)
+            return { requiresSetup: false, redirectTo: null };
         if (isSecurityRoute) return { requiresSetup: true, redirectTo: null };
-        return { requiresSetup: true, redirectTo: '/settings#security' };
+        return { requiresSetup: true, redirectTo: "/settings#security" };
     },
 );
 
 uiCtx.extendFlow(
-    'authenticate-session',
-    'resolve-session',
-    { id: 'auth-gateway:resolve-session' },
+    "authenticate-session",
+    "resolve-session",
+    { id: "auth-gateway:resolve-session" },
     (stageCtx) => {
-        const tokenResult = getFirstResult(stageCtx.stageResults, 'validate-stored-token');
-        const alternateResult = getFirstResult(stageCtx.stageResults, 'apply-alternate-auth');
-        const setupResult = getFirstResult(stageCtx.stageResults, 'enforce-setup-requirements');
+        const tokenResult = getFirstResult(
+            stageCtx.stageResults,
+            "validate-stored-token",
+        );
+        const alternateResult = getFirstResult(
+            stageCtx.stageResults,
+            "apply-alternate-auth",
+        );
+        const setupResult = getFirstResult(
+            stageCtx.stageResults,
+            "enforce-setup-requirements",
+        );
 
         if (setupResult?.requiresSetup && setupResult.redirectTo) {
             return {
@@ -138,12 +158,13 @@ uiCtx.extendFlow(
         }
 
         const authenticated =
-            tokenResult?.valid === true || alternateResult?.authenticated === true;
+            tokenResult?.valid === true ||
+            alternateResult?.authenticated === true;
         if (!authenticated) {
             const reason = tokenResult?.reason ?? null;
             const redirectTo = reason
-                ? '/login?reason=' + encodeURIComponent(reason)
-                : '/login';
+                ? "/login?reason=" + encodeURIComponent(reason)
+                : "/login";
             return {
                 authenticated: false,
                 accountId: null,
@@ -156,8 +177,9 @@ uiCtx.extendFlow(
 
         return {
             authenticated: true,
-            accountId: tokenResult?.accountId ?? alternateResult?.accountId ?? null,
-            role: tokenResult?.role ?? alternateResult?.role ?? 'user',
+            accountId:
+                tokenResult?.accountId ?? alternateResult?.accountId ?? null,
+            role: tokenResult?.role ?? alternateResult?.role ?? "user",
             requiresRedirect: false,
             redirectTo: null,
             shareContext: alternateResult?.shareContext ?? null,
@@ -169,3 +191,37 @@ export function invalidateAuthSetupCache() {
     authSetupCacheExpiresAt = 0;
     authSetupRequiredCached = false;
 }
+
+uiCtx.extendFlow(
+    "load-page",
+    "authenticate",
+    { id: "auth-gateway:load-page-authenticate" },
+    async (stageCtx) => {
+        const mountFn = stageCtx.input?.mount;
+        const flowResult = await uiCtx.runFlow("authenticate-session", {});
+        const session =
+            (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
+        if (session?.requiresRedirect && session.redirectTo) {
+            window.location.replace(session.redirectTo);
+            stageCtx.data.redirected = true;
+            return { authenticated: false, redirected: true };
+        }
+        stageCtx.data.mountFn = mountFn;
+        stageCtx.data.session = session;
+        return { authenticated: session?.authenticated === true };
+    },
+);
+
+uiCtx.extendFlow(
+    "load-page",
+    "mount-page",
+    { id: "auth-gateway:load-page-mount" },
+    async (stageCtx) => {
+        if (stageCtx.data.redirected) return { mounted: false };
+        const mountFn = stageCtx.data.mountFn ?? stageCtx.input?.mount;
+        if (typeof mountFn !== "function") return { mounted: false };
+        const root = stageCtx.input?.root ?? null;
+        await mountFn(root);
+        return { mounted: true };
+    },
+);
