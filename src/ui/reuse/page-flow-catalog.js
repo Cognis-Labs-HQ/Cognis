@@ -50,4 +50,4 @@ uiCtx.registerFlow("navigate-to", [
 
 uiCtx.registerFlow("load-page", ["authenticate", "mount-page"]);
 
-import "/static/gateways/auth/ui/session-flow-hooks.js";
+import "/static/gateways/auth/session-flow-hooks.js";
