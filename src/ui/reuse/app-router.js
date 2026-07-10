@@ -5,6 +5,11 @@
  * to load new page content in place via each page's mount() function — no
  * full browser reload required.
  *
+ * Auth enforcement during navigation is handled by the `authenticate-session`
+ * flow (registered in `page-flow-catalog.js`). The router runs that flow in
+ * `loadRoute()` and redirects when the flow result requires it, with no
+ * inline auth logic or session-state variables in this file.
+ *
  * Public exports:
  *   initRouter(root)    — wire up click interception and popstate handling.
  *                         Call once after the dashboard shell is rendered.
@@ -43,6 +48,8 @@ import {
     installRuntimeErrorHandlers,
     openRuntimeErrorPopup,
 } from "./runtime-error-popup.js";
+import "./page-flow-catalog.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -74,57 +81,12 @@ const ROUTE_STYLE_BUNDLES = {
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
-const AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS = 5_000;
 let _studyChildComponentsPromise = null;
 let _studyChildComponentsCache = null;
 let _studyChildComponentsCacheExpiresAt = 0;
-let _authSetupRequirementExpiresAt = 0;
-let _authSetupRequired = false;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
-}
-
-function normalizeHash(path) {
-    const hashIndex = String(path).indexOf("#");
-    if (hashIndex < 0) return "";
-    return String(path).slice(hashIndex).toLowerCase();
-}
-
-async function readAuthSetupRequirement() {
-    if (Date.now() < _authSetupRequirementExpiresAt) {
-        return _authSetupRequired;
-    }
-    const token = localStorage.getItem("cognis_access_token");
-    if (!token) {
-        _authSetupRequired = false;
-        _authSetupRequirementExpiresAt =
-            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
-        return false;
-    }
-    try {
-        const response = await apiFetch("/api/v1/auth/setup-status");
-        if (!response.ok) {
-            _authSetupRequired = false;
-            _authSetupRequirementExpiresAt =
-                Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
-            return false;
-        }
-        const payload = await response.json().catch(() => null);
-        _authSetupRequired = payload?.data?.requiresSetup === true;
-        _authSetupRequirementExpiresAt =
-            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
-        return _authSetupRequired;
-    } catch (setupCheckError) {
-        console.warn(
-            "[router] Failed to read auth setup requirement.",
-            setupCheckError,
-        );
-        _authSetupRequired = false;
-        _authSetupRequirementExpiresAt =
-            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
-        return false;
-    }
 }
 
 function isPotentialStudyChildPath(path) {
@@ -391,24 +353,18 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
-    const requiresTfaSetup = await readAuthSetupRequirement();
-    const isSecuritySettingsRoute =
-        normalizePath(path) === "/settings" &&
-        normalizeHash(path) === "#security";
-    if (requiresTfaSetup && !isSecuritySettingsRoute) {
-        const enforcedPath = "/settings#security";
+    const authResult = await uiCtx.runFlow('authenticate-session', {});
+    const session = (authResult?.stageResults?.['resolve-session'] ?? [])[0] ?? null;
+    if (session?.requiresRedirect && session.redirectTo) {
+        const enforcedPath = session.redirectTo;
         if (
-            `${window.location.pathname}${window.location.hash}` !==
-            enforcedPath
+            window.location.pathname + window.location.hash !== enforcedPath
         ) {
-            history.replaceState(
-                { routerPage: enforcedPath },
-                "",
-                enforcedPath,
-            );
+            history.replaceState({ routerPage: enforcedPath }, '', enforcedPath);
         }
         return loadRoute(enforcedPath);
     }
+
     const finishPageLoading = beginPageLoading();
     try {
         if (_mountController) {
