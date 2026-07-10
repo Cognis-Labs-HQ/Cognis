@@ -50,3 +50,7 @@ preventing direct keyboard input into the label field.
 ## Client-Side Flow Architecture
 
 A singleton `uiCtx` browser flow engine now powers all cross-cutting browser concerns. Auth, page loading, and SPA navigation are expressed as named, staged flows that any gateway or module can extend without owning. Session validation lives in the auth gateway, guest token swapping lives in the share gateway, and `page-entry.js` delegates to the `load-page` flow so individual pages no longer need to call auth helpers directly. The Jitsi Meet `share-mount.js` wrapper is deleted; the share page loads `app.js` directly and discovers share context through the flow system.
+
+## Fix Login Redirect Loop
+
+The `load-page` authentication hook now skips auth enforcement on public pages (`/login` and `/register`), preventing an infinite redirect loop that occurred because importing `createPageComposer` on those pages transitively registered the auth hook, which then immediately redirected unauthenticated visitors back to `/login`.

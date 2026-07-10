@@ -49,3 +49,7 @@ label.
 ## Arsitektur Flow Sisi Klien
 
 Singleton `uiCtx` browser flow engine kini mengelola semua kepentingan lintas komponen di browser. Auth, pemuatan halaman, dan navigasi SPA dinyatakan sebagai flow bernama dan bertahap yang dapat diperluas oleh gateway atau modul mana pun tanpa harus memiliki flow tersebut. Validasi sesi berada di auth gateway, penukaran token tamu berada di share gateway, dan `page-entry.js` mendelegasikan ke flow `load-page` sehingga halaman individual tidak perlu memanggil helper auth secara langsung. Wrapper `share-mount.js` Jitsi Meet dihapus; halaman share langsung memuat `app.js` dan menemukan konteks share melalui sistem flow.
+
+## Perbaiki Loop Pengalihan Login
+
+Hook autentikasi `load-page` kini melewati pemeriksaan auth pada halaman publik (`/login` dan `/register`), mencegah loop pengalihan tak terbatas yang terjadi karena mengimpor `createPageComposer` pada halaman tersebut secara transitif mendaftarkan hook auth, yang kemudian langsung mengalihkan pengunjung yang belum terautentikasi kembali ke `/login`.

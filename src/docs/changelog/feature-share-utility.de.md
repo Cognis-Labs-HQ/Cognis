@@ -49,3 +49,7 @@ verhinderte.
 ## Client-seitige Flow-Architektur
 
 Ein Singleton-`uiCtx`-Browser-Flow-Engine steuert jetzt alle seitenübergreifenden Browser-Belange. Auth, Seitenladen und SPA-Navigation sind als benannte, gestufte Flows ausgedrückt, die jedes Gateway oder Modul erweitern kann, ohne es zu besitzen. Die Sitzungsvalidierung liegt im Auth-Gateway, der Gast-Token-Tausch im Share-Gateway, und `page-entry.js` delegiert an den `load-page`-Flow, sodass einzelne Seiten keine Auth-Helfer mehr direkt aufrufen müssen. Der Jitsi-Meet-Wrapper `share-mount.js` wird gelöscht; die Share-Seite lädt `app.js` direkt und erkennt den Share-Kontext über das Flow-System.
+
+## Login-Umleitungsschleife behoben
+
+Der `load-page`-Authentifizierungshook überspringt die Auth-Prüfung nun auf öffentlichen Seiten (`/login` und `/register`). Dadurch wird eine endlose Umleitungsschleife verhindert, die entstand, weil der Import von `createPageComposer` auf diesen Seiten transitiv den Auth-Hook registrierte, der nicht authentifizierte Besucher sofort wieder zu `/login` umleitete.

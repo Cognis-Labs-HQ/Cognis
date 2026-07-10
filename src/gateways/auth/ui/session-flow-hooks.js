@@ -1,7 +1,8 @@
 /**
- * Auth-gateway default hooks for the `authenticate-session` client-side flow.
+ * Auth-gateway default hooks for the `authenticate-session` and `load-page`
+ * client-side flows.
  *
- * Registers three stage hooks on the shared `uiCtx` singleton:
+ * Registers stage hooks on the shared `uiCtx` singleton:
  *
  * `validate-stored-token` — reads the JWT and account from localStorage,
  *   calls `/api/v1/users/:account/info` via apiFetch, and clears stale auth
@@ -13,6 +14,12 @@
  *
  * `resolve-session` — assembles the final normalised session descriptor from
  *   prior stage results. This is the canonical result callers read.
+ *
+ * `load-page` → `authenticate` — runs `authenticate-session` and redirects
+ *   to `/login` (or `/settings#security` for TFA setup) when the session is
+ *   invalid. Pages whose pathname is in `PUBLIC_AUTH_PATHNAMES` (i.e. `/login`
+ *   and `/register`) are skipped entirely so they can load without a session
+ *   and without triggering a redirect loop.
  */
 
 import "/static/reuse/flow-registry.js";
@@ -193,12 +200,19 @@ export function invalidateAuthSetupCache() {
     authSetupRequiredCached = false;
 }
 
+const PUBLIC_AUTH_PATHNAMES = new Set(["/login", "/register"]);
+
 uiCtx.extendFlow(
     "load-page",
     "authenticate",
     { id: "auth-gateway:load-page-authenticate" },
     async (stageCtx) => {
         const mountFn = stageCtx.input?.mount;
+        if (PUBLIC_AUTH_PATHNAMES.has(window.location.pathname)) {
+            stageCtx.data.mountFn = mountFn;
+            stageCtx.data.session = null;
+            return { authenticated: false };
+        }
         const flowResult = await uiCtx.runFlow("authenticate-session", {});
         const session =
             (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
