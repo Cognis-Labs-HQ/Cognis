@@ -168,6 +168,7 @@ uiCtx.extendFlow(
                 requiresRedirect: true,
                 redirectTo: setupResult.redirectTo,
                 shareContext: null,
+                isGuestSession: false,
             };
         }
 
@@ -186,6 +187,7 @@ uiCtx.extendFlow(
                 requiresRedirect: true,
                 redirectTo,
                 shareContext: alternateResult?.shareContext ?? null,
+                isGuestSession: alternateResult?.isGuestSession === true,
             };
         }
 
@@ -197,6 +199,7 @@ uiCtx.extendFlow(
             requiresRedirect: false,
             redirectTo: null,
             shareContext: alternateResult?.shareContext ?? null,
+            isGuestSession: alternateResult?.isGuestSession === true,
         };
     },
 );

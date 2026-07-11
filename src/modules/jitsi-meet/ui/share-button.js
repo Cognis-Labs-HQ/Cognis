@@ -1,12 +1,43 @@
-export function bindShareButton({ root, signal, state, i18n }) {
-    const shareButton = root.querySelector("#jitsi-share-meeting-btn");
-    if (!(shareButton instanceof HTMLButtonElement)) {
+/**
+ * Wires the Jitsi Meet "share meeting" button.
+ *
+ * The button element itself is created by the Share gateway's client
+ * capability (`mountShareButton`), not by this module, so the Share gateway
+ * remains the sole authority over share buttons: if the Share gateway is
+ * disabled its static asset is never served, the dynamic import below fails,
+ * and no share button (and therefore no share flow) is ever created for
+ * this meeting.
+ */
+
+export async function bindShareButton({ root, signal, state, i18n }) {
+    const shareButtonSlot = root.querySelector("#jitsi-share-button-slot");
+    if (!(shareButtonSlot instanceof HTMLElement)) {
         return;
     }
-    const bindSignal = signal ?? new AbortController().signal;
-    shareButton.addEventListener(
-        "click",
-        async () => {
+    if (shareButtonSlot.querySelector("#jitsi-share-meeting-btn")) {
+        // Already mounted from a prior composer render pass.
+        return;
+    }
+
+    let shareButtonModule;
+    try {
+        shareButtonModule =
+            await import("/static/gateways/share/ui/reuse/share-button.js");
+    } catch {
+        // Share gateway unavailable — no share button is created.
+        return;
+    }
+
+    if (typeof shareButtonModule?.mountShareButton !== "function") {
+        return;
+    }
+
+    shareButtonModule.mountShareButton({
+        container: shareButtonSlot,
+        label: i18n.t("module.jitsi_meet.share.button"),
+        id: "jitsi-share-meeting-btn",
+        signal,
+        onClick: async () => {
             if (!state.meeting?.id) {
                 return;
             }
@@ -43,6 +74,5 @@ export function bindShareButton({ root, signal, state, i18n }) {
                 ...buildShareCallbacks(state.meeting.id),
             });
         },
-        { signal: bindSignal },
-    );
+    });
 }

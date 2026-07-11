@@ -48,6 +48,10 @@ import {
     installRuntimeErrorHandlers,
     openRuntimeErrorPopup,
 } from "./runtime-error-popup.js";
+import {
+    isGuestAllowedPath,
+    openGuestBlockedPopup,
+} from "./guest-blocked-popup.js";
 import "./page-flow-catalog.js";
 import { uiCtx } from "./ui-ctx.js";
 
@@ -356,6 +360,12 @@ async function loadRoute(path) {
     const authResult = await uiCtx.runFlow("authenticate-session", {});
     const session =
         (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
+
+    if (session?.isGuestSession === true && !isGuestAllowedPath(path)) {
+        await openGuestBlockedPopup({ currentRoutePath: path });
+        return false;
+    }
+
     if (session?.requiresRedirect && session.redirectTo) {
         const enforcedPath = session.redirectTo;
         if (window.location.pathname + window.location.hash !== enforcedPath) {

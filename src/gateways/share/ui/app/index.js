@@ -8,23 +8,15 @@ import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
-function renderHeader(i18n) {
+function renderGuestActions(i18n) {
     return `
-        <header class="share-window-header">
-            <div class="share-branding">
-                <span class="share-branding-logo" aria-hidden="true">◈</span>
-                <div>
-                    <p class="share-branding-name">${escapeHtml(i18n.t("ui.reuse.brand_name"))}</p>
-                    <p class="share-branding-subtitle">${escapeHtml(i18n.t("share.subtitle"))}</p>
-                </div>
-            </div>
-            <div class="share-header-actions">
-                <a class="btn-cancel btn-animated" href="/login">${escapeHtml(i18n.t("ui.reuse.login"))}</a>
-                <a class="btn-confirm btn-animated" href="/register">${escapeHtml(i18n.t("ui.reuse.register"))}</a>
-            </div>
-        </header>
+        <div class="share-guest-actions">
+            <a class="btn-cancel btn-animated" href="/login">${escapeHtml(i18n.t("ui.reuse.login"))}</a>
+            <a class="btn-confirm btn-animated" href="/register">${escapeHtml(i18n.t("ui.reuse.register"))}</a>
+        </div>
     `;
 }
 
@@ -47,13 +39,13 @@ function buildShareElement(state) {
         gridSize: {
             default: [12, 6],
             min: [8, 5],
-            max: ["full", "fill"],
+            max: ["full", "full"],
         },
         render: () => {
             if (state.loading) {
                 return `
                     <div class="share-window card-elevated">
-                        ${renderHeader(state.i18n)}
+                        ${renderGuestActions(state.i18n)}
                         <section class="share-window-body">
                             <div class="share-loading-state">
                                 <span class="share-spinner" aria-hidden="true"></span>
@@ -66,14 +58,14 @@ function buildShareElement(state) {
             if (state.errorKey) {
                 return `
                     <div class="share-window card-elevated">
-                        ${renderHeader(state.i18n)}
+                        ${renderGuestActions(state.i18n)}
                         ${renderFallbackBody(state.i18n, state.errorKey)}
                     </div>
                 `;
             }
             return `
                 <div class="share-window card-elevated">
-                    ${renderHeader(state.i18n)}
+                    ${renderGuestActions(state.i18n)}
                     <section class="share-window-body">${state.renderedContent}</section>
                 </div>
             `;
@@ -100,16 +92,18 @@ export async function mount(root, { signal } = {}) {
             title: state.i18n.t("share.page_title"),
             subtitle: state.i18n.t("share.subtitle"),
         },
-        showTopbar: false,
+        showTopbar: true,
         showNavbar: false,
-        showFooter: false,
+        showFooter: true,
         showThemeToggle: true,
-        frameless: true,
+        frameless: false,
         persistLayoutPreferences: false,
         elements: [buildShareElement(state)],
     });
 
     await composer.init();
+
+    installGuestNavigationGuard({ root, signal });
 
     const flowResult = await uiCtx.runFlow("authenticate-session", {});
     const session =

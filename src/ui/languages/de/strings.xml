@@ -87,6 +87,12 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">Unbehandelte Promise-Ablehnung</string>
   <string name="ui.reuse.runtime_error_context_route_mount">Routen-Mount Fehlgeschlagen</string>
   <string name="ui.reuse.runtime_error_context_route_load">Routenladen Fehlgeschlagen</string>
+  <string name="ui.reuse.guest_blocked_title">Zugriff Eingeschränkt</string>
+  <string name="ui.reuse.guest_blocked_message">Gäste können diese Seite nicht einsehen.</string>
+  <string name="ui.reuse.share_approval_title">Anfrage für Freigabelink</string>
+  <string name="ui.reuse.share_approval_message">%requester% hat beantragt, einen Freigabelink für "%resource%" zu erstellen.</string>
+  <string name="ui.reuse.share_approval_approve">Genehmigen</string>
+  <string name="ui.reuse.share_approval_decline">Ablehnen</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">Benutzer</string>

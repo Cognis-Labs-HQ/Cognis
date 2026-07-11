@@ -21,6 +21,7 @@ import { resolveRequesterUsername } from "./reuse/requester.js";
 import {
     canAccessMeeting,
     createMeetingPayload,
+    filterUsernamesForGuestVisibility,
     resolveMeetingPayloadOrReject,
     resolveRequestedParticipants,
     resolveShareGuestMeetingAccess,
@@ -747,6 +748,8 @@ export function registerApiRoutes(router, ctx) {
         createMeetingPayload,
         resolveRequesterUsername,
         canAccessMeeting,
+        filterUsernamesForGuestVisibility: (usernames) =>
+            filterUsernamesForGuestVisibility(profileStore, usernames),
         requireAuth,
         readJson,
         sendJson,

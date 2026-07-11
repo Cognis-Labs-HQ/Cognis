@@ -55,6 +55,34 @@ export async function resolveRequestedParticipants(
     return usernames;
 }
 
+/**
+ * Filters a list of usernames down to only those whose profile visibility
+ * preference permits anonymous/guest viewers. Share guests have no account
+ * and can never be a "friend", so only `community`-visibility profiles are
+ * shown to them; `hidden`, `private`, and `friends` profiles are omitted.
+ *
+ * @param {import("../../../../adapters/social/profile/store-contract.js").ProfileStore} profileStore
+ * @param {string[]} usernames
+ * @returns {Promise<string[]>}
+ */
+export async function filterUsernamesForGuestVisibility(
+    profileStore,
+    usernames,
+) {
+    const visibleUsernames = [];
+    for (const candidate of Array.isArray(usernames) ? usernames : []) {
+        const normalizedHandle = normalizeHandleKey(candidate);
+        if (!normalizedHandle) continue;
+        const profile = await profileStore
+            .getProfileByHandle(normalizedHandle)
+            .catch(() => null);
+        if (profile?.visibility === "community") {
+            visibleUsernames.push(normalizedHandle);
+        }
+    }
+    return visibleUsernames;
+}
+
 export async function canAccessMeeting({
     store,
     meeting,

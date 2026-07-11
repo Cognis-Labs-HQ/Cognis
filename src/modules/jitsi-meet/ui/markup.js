@@ -5,7 +5,7 @@ export function buildStageMarkup(i18n) {
     <div class="jitsi-meeting-stage card-elevated">
       <header class="jitsi-stage-header">
         <h3>${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
-        <button id="jitsi-share-meeting-btn" class="btn-confirm btn-animated" type="button">🔗 ${escapeHtml(i18n.t("module.jitsi_meet.share.button"))}</button>
+        <div id="jitsi-share-button-slot" class="jitsi-share-button-slot"></div>
       </header>
       <div class="jitsi-stage-frame-wrap">
         <div id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" hidden></div>

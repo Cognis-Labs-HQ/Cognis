@@ -87,6 +87,12 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">未処理の Promise 拒否</string>
   <string name="ui.reuse.runtime_error_context_route_mount">ルートマウント失敗</string>
   <string name="ui.reuse.runtime_error_context_route_load">ルート読み込み失敗</string>
+  <string name="ui.reuse.guest_blocked_title">アクセス制限</string>
+  <string name="ui.reuse.guest_blocked_message">ゲストはこのページを表示できません。</string>
+  <string name="ui.reuse.share_approval_title">共有リンクのリクエスト</string>
+  <string name="ui.reuse.share_approval_message">%requester%さんが「%resource%」の共有リンク作成をリクエストしました。</string>
+  <string name="ui.reuse.share_approval_approve">承認</string>
+  <string name="ui.reuse.share_approval_decline">拒否</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">ユーザー</string>

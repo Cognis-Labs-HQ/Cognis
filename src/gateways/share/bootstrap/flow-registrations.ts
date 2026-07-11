@@ -298,11 +298,11 @@ export async function registerShareBootstrapHooks(input: {
         () => ({
             pageContextKey: "share.page_title",
             pageSubtitleKey: "share.subtitle",
-            showTopbar: false,
+            showTopbar: true,
             showNavbar: false,
-            showFooter: false,
+            showFooter: true,
             showThemeToggle: true,
-            frameless: true,
+            frameless: false,
             stringsBaseUrl: ["/static/gateways/share/languages"],
         }),
     );

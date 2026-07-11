@@ -9,6 +9,7 @@ export function registerMeetingRoutes({
     createMeetingPayload,
     resolveRequesterUsername,
     canAccessMeeting,
+    filterUsernamesForGuestVisibility,
     requireAuth,
     readJson,
     sendJson,
@@ -359,10 +360,16 @@ export function registerMeetingRoutes({
                     sendError(res, 404, "not_found", "Meeting not found.");
                     return;
                 }
-                const [participants, state] = await Promise.all([
+                const [rawParticipants, state] = await Promise.all([
                     store.listParticipants(meeting.id),
                     store.getMeetingState(meeting.id),
                 ]);
+                const participants =
+                    typeof filterUsernamesForGuestVisibility === "function"
+                        ? await filterUsernamesForGuestVisibility(
+                              rawParticipants,
+                          )
+                        : rawParticipants;
                 const payload = await createMeetingPayload({
                     store,
                     meeting,
@@ -670,9 +677,17 @@ export function registerMeetingRoutes({
                 sendJson(res, 200, {
                     data: {
                         state,
-                        activeParticipants: store
-                            .filterCurrentPresenceEntries(presence)
-                            .map((entry) => entry.username),
+                        activeParticipants: await (async () => {
+                            const activeUsernames = store
+                                .filterCurrentPresenceEntries(presence)
+                                .map((entry) => entry.username);
+                            return typeof filterUsernamesForGuestVisibility ===
+                                "function"
+                                ? filterUsernamesForGuestVisibility(
+                                      activeUsernames,
+                                  )
+                                : activeUsernames;
+                        })(),
                         sessionActive: true,
                     },
                 });

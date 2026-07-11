@@ -57,6 +57,13 @@
  *              before the original popup is dismissed. Strings are resolved
  *              internally from the user's active locale.
  *
+ *   timeoutMs        — Optional. When set, the popup automatically dismisses
+ *              itself with `timeoutActionId` after this many milliseconds if
+ *              the user has not already responded. The timer is cleared as
+ *              soon as any dismissal path runs.
+ *   timeoutActionId  — Action id to resolve with when `timeoutMs` elapses.
+ *              Defaults to `null` (same as a cancel-path dismissal).
+ *
  * @param {{
  *   title: string,
  *   body: string | (() => string),
@@ -66,6 +73,8 @@
  *   onOpen?: (overlay: HTMLElement) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
+ *   timeoutMs?: number,
+ *   timeoutActionId?: string | null,
  * }} options
  * @returns {Promise<string|null>}
  */
@@ -287,6 +296,8 @@ export async function openPopup({
     onOpen,
     onAction,
     closeProtection = false,
+    timeoutMs = 0,
+    timeoutActionId = null,
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -307,6 +318,7 @@ export async function openPopup({
         }
 
         let dismissed = false;
+        let timeoutHandle = null;
         async function dismiss(actionId) {
             closeProtectionTracker?.sync();
             const hasUnsavedChanges =
@@ -335,6 +347,10 @@ export async function openPopup({
             }
             if (dismissed) return;
             dismissed = true;
+            if (timeoutHandle !== null) {
+                clearTimeout(timeoutHandle);
+                timeoutHandle = null;
+            }
             document.removeEventListener("keydown", onKeyDown);
             closeProtectionTracker?.destroy();
             closeProtectionTracker = null;
@@ -445,6 +461,13 @@ export async function openPopup({
             closeProtectionTracker = createFormDirtyTracker(overlay, {
                 quiet: true,
             });
+        }
+        if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
+            timeoutHandle = setTimeout(() => {
+                dismiss(timeoutActionId).catch((error) =>
+                    console.error("[popup] timeout dismiss failed:", error),
+                );
+            }, timeoutMs);
         }
 
         requestAnimationFrame(() => {

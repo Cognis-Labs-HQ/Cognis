@@ -87,6 +87,12 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">Unhandled Promise Rejection</string>
   <string name="ui.reuse.runtime_error_context_route_mount">Route Mount Failed</string>
   <string name="ui.reuse.runtime_error_context_route_load">Route Load Failed</string>
+  <string name="ui.reuse.guest_blocked_title">Access Restricted</string>
+  <string name="ui.reuse.guest_blocked_message">Guests cannot view this page.</string>
+  <string name="ui.reuse.share_approval_title">Share Link Request</string>
+  <string name="ui.reuse.share_approval_message">%requester% has requested to create a share link for "%resource%".</string>
+  <string name="ui.reuse.share_approval_approve">Approve</string>
+  <string name="ui.reuse.share_approval_decline">Decline</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">User</string>
