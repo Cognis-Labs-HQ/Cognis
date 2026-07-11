@@ -932,12 +932,17 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         showNavbar: !inShareView,
         showFooter: !inShareView,
         showThemeToggle: !inShareView,
-        frameless: inShareView,
         persistLayoutPreferences: !inShareView,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
             if (!inShareView) {
-                bindShareButton({ root, signal, state, i18n });
+                bindShareButton({
+                    root,
+                    signal,
+                    state,
+                    i18n,
+                    deferAloneParticipantPrompt,
+                });
             }
         },
     });

@@ -3,7 +3,10 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { FlowApi } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
-import { resolveShareGuestSessionId } from "../../../api/reuse/share-guest.js";
+import {
+    resolveShareGuestId,
+    resolveShareGuestSessionId,
+} from "../../../api/reuse/share-guest.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -181,8 +184,19 @@ export function createShareRoutes(input: {
         );
         if (req.method === "GET" && resolveMatch) {
             const token = decodeURIComponent(resolveMatch[1]);
+            const requesterClaims = routeContext.getAuthClaims(req);
+            // Share guests resolving another share link (e.g. following a
+            // link while already viewing a shared resource) are not "real"
+            // requesters for direct-access purposes — only pass through
+            // claims that belong to a genuine account session.
+            const directAccessClaims =
+                requesterClaims &&
+                !resolveShareGuestId({ sub: requesterClaims.sub })
+                    ? requesterClaims
+                    : null;
             const flowResult = await input.flow.run("resolve-share-token", {
                 token,
+                requesterClaims: directAccessClaims,
             });
             const resolved = getFirstStageResult<{
                 resolved?: boolean;
@@ -190,6 +204,7 @@ export function createShareRoutes(input: {
                 resourceType?: string;
                 resourceId?: string;
                 payload?: Record<string, unknown>;
+                directAccess?: boolean;
                 grantedCapabilities?: string[];
                 guestAccessToken?: string;
                 page?: Record<string, unknown>;
@@ -211,6 +226,7 @@ export function createShareRoutes(input: {
                     resourceType: resolved.resourceType,
                     resourceId: resolved.resourceId,
                     payload: resolved.payload ?? {},
+                    directAccess: resolved.directAccess === true,
                     grantedCapabilities: resolved.grantedCapabilities ?? [],
                     guestAccessToken:
                         typeof resolved.guestAccessToken === "string"

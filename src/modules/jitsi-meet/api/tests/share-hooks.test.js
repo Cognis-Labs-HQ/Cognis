@@ -130,3 +130,81 @@ test("jitsi share hooks validate owned meetings and resolve public payloads", as
     );
     assert.equal(resolveResult.stageResults["check-access"][0].allowed, true);
 });
+
+test("jitsi share hooks flag direct access for the meeting owner and participants", async () => {
+    const ctx = createCtx();
+    for (const flow of SHARE_FLOW_CATALOG) {
+        registerCanonicalFlow(ctx, flow);
+    }
+    const capabilities = new Map([
+        ["db:executor", new MeetingExecutor()],
+        [
+            "social:profileStore",
+            {
+                async getProfile(accountId) {
+                    return { handle: accountId };
+                },
+                async getProfileByHandle(handle) {
+                    return { handle, displayName: handle };
+                },
+            },
+        ],
+        ["logging:log", () => undefined],
+    ]);
+
+    registerShareFlowHooks({
+        flow: ctx.flow,
+        getCapability(capabilityId) {
+            return capabilities.get(capabilityId);
+        },
+    });
+
+    ctx.flow.extend(
+        "resolve-share-token",
+        "validate-token",
+        { id: "test:share-token" },
+        () => ({
+            valid: true,
+            tokenRecord: {
+                resourceType: "meeting",
+                resourceId: "meeting-1",
+                grantedCapabilities: ["meeting:join"],
+            },
+        }),
+    );
+
+    const ownerResult = await ctx.flow.run("resolve-share-token", {
+        token: "shr_test.secret",
+        requesterClaims: { sub: "alice" },
+    });
+    assert.equal(
+        ownerResult.stageResults["check-access"][0].directAccess,
+        true,
+    );
+
+    const participantResult = await ctx.flow.run("resolve-share-token", {
+        token: "shr_test.secret",
+        requesterClaims: { sub: "bob" },
+    });
+    assert.equal(
+        participantResult.stageResults["check-access"][0].directAccess,
+        true,
+    );
+
+    const unrelatedResult = await ctx.flow.run("resolve-share-token", {
+        token: "shr_test.secret",
+        requesterClaims: { sub: "carol" },
+    });
+    assert.notEqual(
+        unrelatedResult.stageResults["check-access"][0].directAccess,
+        true,
+    );
+
+    const anonymousResult = await ctx.flow.run("resolve-share-token", {
+        token: "shr_test.secret",
+    });
+    assert.notEqual(
+        anonymousResult.stageResults["check-access"][0].directAccess,
+        true,
+    );
+});

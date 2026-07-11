@@ -4,11 +4,13 @@ import { createMessagesRoutes } from "../routes/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../../api/reuse/route-context.js";
 
-function makeReq(method: string, token: string) {
+function makeReq(method: string, token: string, body?: string) {
     return {
         method,
         headers: { authorization: "Bearer " + token },
-        [Symbol.asyncIterator]: async function* () {},
+        [Symbol.asyncIterator]: async function* () {
+            if (body) yield Buffer.from(body);
+        },
     } as any;
 }
 
@@ -54,6 +56,9 @@ function makeRoutes({
         },
         async getPendingRoomMessageRequest() {
             return null;
+        },
+        async listMembers() {
+            return [];
         },
     };
     const capabilities: Record<string, (...args: any[]) => any> = {
@@ -148,6 +153,63 @@ test("share guest for an unrelated room is rejected as not a member", async () =
     const res = makeRes();
     const url = new URL(
         "http://localhost/api/v1/social/messages/rooms/room-2/key",
+    );
+
+    const handled = await routes(req, res, url);
+
+    assert.equal(handled, true);
+    assert.equal(res.statusCode, 403);
+});
+
+test("share guest with chat:write capability can post room messages", async () => {
+    const routes = makeRoutes({
+        shareToken: {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            grantedCapabilities: ["meeting:join", "chat:read", "chat:write"],
+        },
+        meeting: { chatRoomId: "room-1" },
+        room: { id: "room-1", kind: "group" },
+    });
+
+    const req = makeReq(
+        "POST",
+        issueGuestToken(),
+        JSON.stringify({ ciphertext: "cafe", iv: "beef" }),
+    );
+    const res = makeRes();
+    const url = new URL(
+        "http://localhost/api/v1/social/messages/rooms/room-1/messages",
+    );
+
+    const handled = await routes(req, res, url);
+
+    assert.equal(handled, true);
+    // No send-message flow is wired in this test harness, so a guest who is
+    // actually allowed to post reaches the "flow unavailable" branch (503)
+    // rather than being rejected outright with 403.
+    assert.equal(res.statusCode, 503);
+});
+
+test("share guest without chat:write capability is forbidden from posting room messages", async () => {
+    const routes = makeRoutes({
+        shareToken: {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            grantedCapabilities: ["meeting:join", "chat:read"],
+        },
+        meeting: { chatRoomId: "room-1" },
+        room: { id: "room-1", kind: "group" },
+    });
+
+    const req = makeReq(
+        "POST",
+        issueGuestToken(),
+        JSON.stringify({ ciphertext: "cafe", iv: "beef" }),
+    );
+    const res = makeRes();
+    const url = new URL(
+        "http://localhost/api/v1/social/messages/rooms/room-1/messages",
     );
 
     const handled = await routes(req, res, url);

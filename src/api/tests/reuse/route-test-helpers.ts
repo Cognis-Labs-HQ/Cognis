@@ -6,6 +6,11 @@ type AuthClaims = { sub: string; role: string };
 
 export function createAuthContext(claimsByToken: Map<string, AuthClaims>) {
     return {
+        getAuthClaims(req: { headers?: Record<string, string> }) {
+            const auth = req.headers?.authorization ?? "";
+            const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+            return claimsByToken.get(token) ?? null;
+        },
         requireAuth(
             req: { headers?: Record<string, string> },
             res: Pick<ServerResponse, "writeHead" | "end">,

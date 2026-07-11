@@ -475,7 +475,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 return true;
             }
             if (req.method === "POST") {
-                if (isAllowedShareGuest) {
+                if (
+                    isAllowedShareGuest &&
+                    !hasShareCapability(shareGuestToken, "chat:write")
+                ) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({

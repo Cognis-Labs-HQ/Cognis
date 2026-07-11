@@ -9,7 +9,13 @@
  * this meeting.
  */
 
-export async function bindShareButton({ root, signal, state, i18n }) {
+export async function bindShareButton({
+    root,
+    signal,
+    state,
+    i18n,
+    deferAloneParticipantPrompt,
+}) {
     const shareButtonSlot = root.querySelector("#jitsi-share-button-slot");
     if (!(shareButtonSlot instanceof HTMLElement)) {
         return;
@@ -46,33 +52,50 @@ export async function bindShareButton({ root, signal, state, i18n }) {
                     import("/static/reuse/share-links-popup.js"),
                     import("./share-adapter.js"),
                 ]);
-            await openShareLinksPopup({
-                title: i18n.t("module.jitsi_meet.share.popup_title"),
-                labels: {
-                    empty: i18n.t("module.jitsi_meet.share.empty"),
-                    untitled: i18n.t("module.jitsi_meet.share.untitled"),
-                    copyLink: i18n.t("module.jitsi_meet.share.copy_link"),
-                    revoke: i18n.t("module.jitsi_meet.share.revoke"),
-                    label: i18n.t("module.jitsi_meet.share.label"),
-                    labelPlaceholder: i18n.t(
-                        "module.jitsi_meet.share.label_placeholder",
-                    ),
-                    expiryLabel: i18n.t("module.jitsi_meet.share.expiry_label"),
-                    generateLink: i18n.t(
-                        "module.jitsi_meet.share.generate_link",
-                    ),
-                    done: i18n.t("ui.reuse.done"),
-                    createFailed: i18n.t(
-                        "module.jitsi_meet.share.create_failed",
-                    ),
-                    copySuccess: i18n.t("module.jitsi_meet.share.copy_success"),
-                    copyFailed: i18n.t("module.jitsi_meet.share.copy_failed"),
-                    deleteFailed: i18n.t(
-                        "module.jitsi_meet.share.delete_failed",
-                    ),
-                },
-                ...buildShareCallbacks(state.meeting.id),
-            });
+            // Opening the share popup pauses the local user's attention on
+            // the meeting for an unpredictable amount of time. Defer the
+            // "alone in meeting" overlay for the duration so it doesn't fire
+            // spuriously while other participants are simply not yet
+            // reflected in the next state poll, then defer it again once the
+            // popup closes to cover the time it takes to resume interacting.
+            deferAloneParticipantPrompt?.();
+            try {
+                await openShareLinksPopup({
+                    title: i18n.t("module.jitsi_meet.share.popup_title"),
+                    labels: {
+                        empty: i18n.t("module.jitsi_meet.share.empty"),
+                        untitled: i18n.t("module.jitsi_meet.share.untitled"),
+                        copyLink: i18n.t("module.jitsi_meet.share.copy_link"),
+                        revoke: i18n.t("module.jitsi_meet.share.revoke"),
+                        label: i18n.t("module.jitsi_meet.share.label"),
+                        labelPlaceholder: i18n.t(
+                            "module.jitsi_meet.share.label_placeholder",
+                        ),
+                        expiryLabel: i18n.t(
+                            "module.jitsi_meet.share.expiry_label",
+                        ),
+                        generateLink: i18n.t(
+                            "module.jitsi_meet.share.generate_link",
+                        ),
+                        done: i18n.t("ui.reuse.done"),
+                        createFailed: i18n.t(
+                            "module.jitsi_meet.share.create_failed",
+                        ),
+                        copySuccess: i18n.t(
+                            "module.jitsi_meet.share.copy_success",
+                        ),
+                        copyFailed: i18n.t(
+                            "module.jitsi_meet.share.copy_failed",
+                        ),
+                        deleteFailed: i18n.t(
+                            "module.jitsi_meet.share.delete_failed",
+                        ),
+                    },
+                    ...buildShareCallbacks(state.meeting.id),
+                });
+            } finally {
+                deferAloneParticipantPrompt?.();
+            }
         },
     });
 }

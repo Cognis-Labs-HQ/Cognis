@@ -6,6 +6,52 @@ import {
     resolveSharedMessagesStylesheetUrls,
 } from "./ui-resources.js";
 
+/**
+ * Determines whether an already-authenticated requester (identified by
+ * their real account claims, not a share-guest token) already has direct
+ * access to the meeting through their own account — either as the meeting
+ * owner or as an invited participant. Used so that logged-in users who
+ * follow a share link render the meeting through their own session instead
+ * of being downgraded to a guest.
+ *
+ * @param {object} ctx
+ * @param {{ sub?: string }} requesterClaims
+ * @param {string} meetingId
+ * @returns {Promise<boolean>}
+ */
+async function requesterHasDirectMeetingAccess(
+    ctx,
+    requesterClaims,
+    meetingId,
+) {
+    const dbExecutor = ctx.getCapability("db:executor");
+    const profileStore = ctx.getCapability("social:profileStore");
+    const log = ctx.getCapability("logging:log");
+    if (!dbExecutor || !profileStore || !meetingId) {
+        return false;
+    }
+    const store = resolveStore(dbExecutor, log);
+    await store.ensureSchema();
+    const requesterUsername = await resolveRequesterUsername(
+        profileStore,
+        String(requesterClaims?.sub ?? ""),
+    ).catch(() => "");
+    if (!requesterUsername) {
+        return false;
+    }
+    const meeting = await store.getMeetingById(meetingId);
+    if (!meeting) {
+        return false;
+    }
+    if (requesterUsername === meeting.createdBy) {
+        return true;
+    }
+    const participants = await store
+        .listParticipants(meeting.id)
+        .catch(() => []);
+    return participants.includes(requesterUsername);
+}
+
 export function registerShareFlowHooks(ctx) {
     if (
         !ctx.flow.exists("mint-share-token") ||
@@ -209,6 +255,17 @@ export function registerShareFlowHooks(ctx) {
             }
             if (resourceResult.payload?.endedAt) {
                 return { allowed: false, reason: "expired" };
+            }
+            const requesterClaims = stageCtx.input?.requesterClaims;
+            if (requesterClaims?.sub) {
+                const hasDirectAccess = await requesterHasDirectMeetingAccess(
+                    ctx,
+                    requesterClaims,
+                    resourceResult.resourceId,
+                );
+                if (hasDirectAccess) {
+                    return { allowed: true, directAccess: true };
+                }
             }
             return { allowed: true };
         },

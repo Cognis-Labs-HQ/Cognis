@@ -275,12 +275,23 @@ export async function registerShareBootstrapHooks(input: {
                 "check-access",
             ) as {
                 allowed?: boolean;
+                directAccess?: boolean;
             } | null;
             if (!tokenResult?.valid || !resourceResult?.resolved) {
                 return { issued: false, reason: "resource_unavailable" };
             }
             if (accessResult && accessResult.allowed === false) {
                 return { issued: false, reason: "forbidden" };
+            }
+            if (accessResult?.directAccess === true) {
+                // The requester already has direct access to the resource
+                // through their own account (e.g. they are the meeting
+                // owner or an invited participant). Minting a guest token
+                // for them would discard their real identity when the
+                // client activates it, so no guest token is issued here —
+                // the share link falls back to being a one-time bypass
+                // only for visitors without direct access.
+                return { issued: false, reason: "direct_access" };
             }
             if (!issueAccessToken || !tokenResult.tokenRecord?.id) {
                 return { issued: false, reason: "auth_issue_unavailable" };
@@ -343,6 +354,7 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 allowed?: boolean;
                 reason?: string;
+                directAccess?: boolean;
             } | null;
             if (!tokenResult?.valid || !resourceResult?.resolved) {
                 return { resolved: false, reason: "resource_unavailable" };
@@ -371,6 +383,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceType: resourceResult.resourceType,
                 resourceId: resourceResult.resourceId,
                 payload: resourceResult.payload ?? {},
+                directAccess: accessResult?.directAccess === true,
                 guestAccessToken:
                     typeof stageCtx.data.guestAccessToken === "string"
                         ? stageCtx.data.guestAccessToken

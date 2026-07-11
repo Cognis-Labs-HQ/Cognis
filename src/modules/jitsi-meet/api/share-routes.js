@@ -194,6 +194,7 @@ export function registerMeetingShareRoutes({
                     "meeting:join",
                     "participants:read",
                     "chat:read",
+                    "chat:write",
                 ],
                 expiresAt,
             });

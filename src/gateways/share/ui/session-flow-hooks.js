@@ -3,13 +3,22 @@
  * `authenticate-session` client-side flow.
  *
  * When the current URL matches `/share/:token`, this hook resolves the
- * share token via the API, swaps localStorage to the guest access token
- * for the duration of the page session, and returns an `authenticated`
- * result carrying a `shareContext` descriptor that the share page reads
- * to configure its renderer — without the share page ever touching
- * localStorage directly.
+ * share token via the API and configures the share page's renderer via a
+ * `shareContext` descriptor:
  *
- * Token lifecycle:
+ * - If the visitor already has a valid full-account session AND the server
+ *   reports they have direct access to the resource through that account
+ *   (e.g. they are the meeting owner or an invited participant), their
+ *   session is left untouched — no token swap happens, so the resource
+ *   renders normally under their own identity and every subsequent request
+ *   continues to authenticate as themselves.
+ * - Otherwise (anonymous visitor, or a logged-in user without direct
+ *   access), localStorage is swapped to the guest access token for the
+ *   duration of the page session, using the share token as a one-time means
+ *   of accessing the resource — without the share page ever touching
+ *   localStorage directly.
+ *
+ * Token lifecycle (guest path only):
  * - The prior access token is stashed in sessionStorage before the swap.
  * - A `beforeunload` listener (removed via AbortSignal) restores the prior
  *   token when the user leaves the share page.
@@ -94,10 +103,24 @@ uiCtx.extendFlow(
             return null;
         }
 
+        // If the visitor already has a valid full-account session, send
+        // their existing token along so the server can check whether they
+        // already have direct access to the shared resource through their
+        // own account (e.g. they are the meeting owner or an invited
+        // participant). Read this *before* any guest-token swap below.
+        const priorSessionResult =
+            (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
+        const ownAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const headers =
+            priorSessionResult?.valid && ownAccessToken
+                ? { authorization: "Bearer " + ownAccessToken }
+                : undefined;
+
         let response;
         try {
             response = await fetch(
                 "/api/v1/share/resolve/" + encodeURIComponent(shareToken),
+                headers ? { headers } : undefined,
             );
         } catch {
             return { authenticated: false, reason: "share_resolve_failed" };
@@ -119,6 +142,32 @@ uiCtx.extendFlow(
             return { authenticated: false, reason: "share_malformed" };
         }
 
+        const shareContext = {
+            resourceType: shareData.resourceType,
+            resourceId: shareData.resourceId ?? null,
+            payload: shareData.payload ?? {},
+            grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
+                ? shareData.grantedCapabilities
+                : [],
+            page: shareData.page ?? {},
+            guestAccessToken: shareData.guestAccessToken ?? null,
+        };
+
+        if (priorSessionResult?.valid && shareData.directAccess === true) {
+            // The logged-in visitor already has direct access to the
+            // resource through their own account — render it using their
+            // real session instead of downgrading them to a guest. No
+            // token swap happens, so every subsequent request continues to
+            // authenticate as the real account.
+            return {
+                authenticated: true,
+                accountId: priorSessionResult.accountId,
+                role: priorSessionResult.role,
+                isGuestSession: false,
+                shareContext,
+            };
+        }
+
         const abortController = activateGuestToken(shareData.guestAccessToken);
         if (abortController && stageCtx.data) {
             stageCtx.data.shareAbortController = abortController;
@@ -133,18 +182,7 @@ uiCtx.extendFlow(
             accountId: null,
             role: "user",
             isGuestSession: true,
-            shareContext: {
-                resourceType: shareData.resourceType,
-                resourceId: shareData.resourceId ?? null,
-                payload: shareData.payload ?? {},
-                grantedCapabilities: Array.isArray(
-                    shareData.grantedCapabilities,
-                )
-                    ? shareData.grantedCapabilities
-                    : [],
-                page: shareData.page ?? {},
-                guestAccessToken: shareData.guestAccessToken ?? null,
-            },
+            shareContext,
         };
     },
 );
