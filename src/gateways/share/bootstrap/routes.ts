@@ -3,6 +3,7 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { FlowApi } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
+import { resolveShareGuestSessionId } from "../../../api/reuse/share-guest.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -216,6 +217,37 @@ export function createShareRoutes(input: {
                             ? resolved.guestAccessToken
                             : "",
                     page: resolved.page ?? {},
+                },
+            });
+            return true;
+        }
+
+        if (
+            req.method === "GET" &&
+            url.pathname === "/api/v1/share/guest-profile"
+        ) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const guestSessionId = resolveShareGuestSessionId(claims);
+            if (!guestSessionId) {
+                sendError(
+                    res,
+                    404,
+                    "not_found",
+                    "No guest profile is associated with this session.",
+                );
+                return true;
+            }
+            const guestProfile =
+                await input.gateway.getGuestProfile(guestSessionId);
+            if (!guestProfile) {
+                sendError(res, 404, "not_found", "Guest profile not found.");
+                return true;
+            }
+            sendJson(res, 200, {
+                data: {
+                    displayName: guestProfile.displayName,
+                    avatarKey: guestProfile.avatarKey,
                 },
             });
             return true;

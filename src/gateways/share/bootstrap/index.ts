@@ -8,6 +8,7 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import { ShareTokenStore } from "../gateway/store.js";
+import { GuestProfileStore } from "../gateway/guest-profile-store.js";
 import { CoreShareGateway } from "../gateway/index.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
 import { createShareRoutes } from "./routes.js";
@@ -16,6 +17,8 @@ const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
 );
+
+const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
@@ -26,7 +29,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
     const store = new ShareTokenStore(dbExecutor, ctx.log);
-    const gateway = new CoreShareGateway(store);
+    const guestProfileStore = new GuestProfileStore(dbExecutor);
+    const gateway = new CoreShareGateway(store, guestProfileStore);
     await gateway.ensureSchema();
 
     ctx.capabilities.contribute(
@@ -49,6 +53,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "share:getTokenById",
         gateway.getTokenById.bind(gateway),
     );
+    ctx.capabilities.contribute(
+        "share:getGuestProfile",
+        gateway.getGuestProfile.bind(gateway),
+    );
 
     await registerShareBootstrapHooks({ ctx, gateway });
 
@@ -70,9 +78,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.1.0",
+        version: "1.2.0",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: false,
     });
+
+    const cleanupTimer = setInterval(() => {
+        void gateway.purgeExpiredGuestProfiles().catch((error) => {
+            ctx.log?.("error", "Failed to purge expired guest profiles.", {
+                component: "share-gateway",
+                operation: "purge_expired_guest_profiles",
+                error: error instanceof Error ? error.message : String(error),
+            });
+        });
+    }, GUEST_PROFILE_CLEANUP_INTERVAL_MS);
+    cleanupTimer.unref?.();
 }

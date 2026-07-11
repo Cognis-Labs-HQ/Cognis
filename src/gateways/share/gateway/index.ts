@@ -1,14 +1,20 @@
 import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
 import { ShareTokenStore, type ShareTokenRecord } from "./store.js";
+import {
+    GuestProfileStore,
+    type GuestProfileRecord,
+} from "./guest-profile-store.js";
 
 export class CoreShareGateway {
     constructor(
         private readonly store: ShareTokenStore,
+        private readonly guestProfileStore: GuestProfileStore,
         private readonly externalBaseUrl: string = resolveExternalBaseUrl(),
     ) {}
 
     async ensureSchema(): Promise<void> {
         await this.store.ensureSchema();
+        await this.guestProfileStore.ensureSchema();
     }
 
     buildShareUrl(tokenValue: string): string {
@@ -70,5 +76,21 @@ export class CoreShareGateway {
 
     async resolveToken(tokenValue: string): Promise<ShareTokenRecord | null> {
         return this.store.resolve(tokenValue);
+    }
+
+    async createGuestProfile(input: {
+        shareId: string;
+        displayName: string;
+        ttlSeconds: number;
+    }): Promise<GuestProfileRecord> {
+        return this.guestProfileStore.create(input);
+    }
+
+    async getGuestProfile(guestId: string): Promise<GuestProfileRecord | null> {
+        return this.guestProfileStore.getById(guestId);
+    }
+
+    async purgeExpiredGuestProfiles(): Promise<void> {
+        await this.guestProfileStore.purgeExpired();
     }
 }

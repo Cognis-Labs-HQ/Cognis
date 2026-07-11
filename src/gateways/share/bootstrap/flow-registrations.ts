@@ -133,7 +133,7 @@ export async function registerShareBootstrapHooks(input: {
         "resolve-share-token",
         "issue-guest-token",
         { id: "share-gateway:issue-guest-token" },
-        (stageCtx) => {
+        async (stageCtx) => {
             const tokenResult = getFirstStageResult(
                 stageCtx.stageResults,
                 "validate-token",
@@ -178,8 +178,13 @@ export async function registerShareBootstrapHooks(input: {
                 MAX_GUEST_TOKEN_TTL_SECONDS,
                 ttlSeconds,
             );
+            const guestProfile = await input.gateway.createGuestProfile({
+                shareId: tokenResult.tokenRecord.id,
+                displayName: "Guest",
+                ttlSeconds: boundedTtlSeconds,
+            });
             const guestAccessToken = issueAccessToken(
-                `share:${tokenResult.tokenRecord.id}`,
+                `share:${tokenResult.tokenRecord.id}:${guestProfile.guestId}`,
                 "user",
                 boundedTtlSeconds,
                 {

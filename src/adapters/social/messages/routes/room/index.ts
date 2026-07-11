@@ -4,6 +4,7 @@ import { readJson } from "../../../../../api/reuse/read-json.js";
 import {
     hasShareCapability,
     resolveShareGuestId,
+    resolveShareGuestSessionId,
 } from "../../../../../api/reuse/share-guest.js";
 import {
     canMessage,
@@ -49,6 +50,12 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 meetingId: string,
             ) => Promise<{ chatRoomId?: string | null } | null>
         >("jitsi-meet:getMeetingById");
+        const getGuestProfile = ctx.getCapability<
+            (guestId: string) => Promise<{
+                displayName: string;
+                avatarKey: string | null;
+            } | null>
+        >("share:getGuestProfile");
 
         const room = await messagesStore.getRoom(roomId);
         if (!room) {
@@ -319,6 +326,49 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                         ),
                     ),
                 );
+                // Share guests are not room members, so their sender profile
+                // (a temporary guest display name/avatar) is not resolved by
+                // the loop above. Enrich message senders that are share
+                // guests separately, sourcing identity from the Share
+                // gateway's temporary guest profile.
+                if (getGuestProfile) {
+                    const guestSenderIds = new Set(
+                        messages
+                            .map((message) => message.senderId)
+                            .filter(
+                                (senderId) =>
+                                    !profilesByAccountId.has(senderId) &&
+                                    resolveShareGuestSessionId({
+                                        sub: senderId,
+                                    }),
+                            ),
+                    );
+                    await Promise.all(
+                        Array.from(guestSenderIds).map(async (senderId) => {
+                            const guestSessionId = resolveShareGuestSessionId({
+                                sub: senderId,
+                            });
+                            const guestProfile = await getGuestProfile(
+                                guestSessionId,
+                            ).catch(() => null);
+                            if (!guestProfile) return;
+                            profilesByAccountId.set(senderId, {
+                                accountId: senderId,
+                                handle: "",
+                                displayName: guestProfile.displayName,
+                                role: "user",
+                                bio: null,
+                                location: null,
+                                website: null,
+                                avatarKey: guestProfile.avatarKey,
+                                bannerKey: null,
+                                visibility: "community",
+                                createdAt: "",
+                                updatedAt: "",
+                            });
+                        }),
+                    );
+                }
                 const reactionsByMessage = new Map<
                     string,
                     Map<
