@@ -191,3 +191,15 @@
 **Reviewer suggestion:** Add a format check (e.g. `shr_` prefix) before passing the token to the API.
 
 **Reason ignored:** `src/gateways/share/ui/app/index.js` was not touched in this PR. Client-side token validation is a share gateway concern and belongs in a separate share-gateway hardening task.
+
+### guest-profile-store.ts — randomInt upper bound for the default guest name
+
+**Reviewer suggestion:** `randomInt(100000, 1000000)` was flagged as possibly only producing a max value of 999999 instead of 1000000, implying the range might not be a full 6-digit range.
+
+**Reason ignored:** This is the intended, correct behavior, not a bug. Node's `crypto.randomInt(min, max)` returns an integer `>= min` and `< max`, so `randomInt(100000, 1000000)` always yields a value in `[100000, 999999]` — exactly the full range of 6-digit numbers. No change was made.
+
+### routes/room/index.ts — guest sender filter on `resolveShareGuestSessionId`
+
+**Reviewer suggestion:** The truthy check on `resolveShareGuestSessionId({ sub: senderId })` in the guest message-sender enrichment filter was flagged as potentially excluding guest senders that have no session ID.
+
+**Reason ignored:** This code in `src/adapters/social/messages/routes/room/index.ts` predates this PR and was not modified here. The truthy check is intentional: a share-guest subject with no session-ID segment has no `guestId` to look up a temporary profile for, so it is correctly excluded from guest-profile enrichment. Reverting this would not fix a real bug and is out of scope for this PR's guest-experience fixes.
