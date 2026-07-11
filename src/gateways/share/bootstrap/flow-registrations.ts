@@ -300,7 +300,6 @@ export async function registerShareBootstrapHooks(input: {
             );
             const guestProfile = await input.gateway.createGuestProfile({
                 shareId: tokenResult.tokenRecord.id,
-                displayName: "Guest",
                 ttlSeconds: boundedTtlSeconds,
             });
             const guestAccessToken = issueAccessToken(

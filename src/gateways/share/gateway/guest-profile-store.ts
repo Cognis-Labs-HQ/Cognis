@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 
 export interface GuestProfileRecord {
@@ -12,6 +12,15 @@ export interface GuestProfileRecord {
 
 function isExpired(expiresAt: string): boolean {
     return Boolean(expiresAt) && new Date(expiresAt).getTime() <= Date.now();
+}
+
+/**
+ * Generates a distinguishing default guest display name (e.g. "Guest
+ * #123456") so concurrent guests viewing the same share link are shown as
+ * distinct participants instead of all appearing as an identical "Guest".
+ */
+function generateDefaultGuestDisplayName(): string {
+    return `Guest #${randomInt(100000, 1000000)}`;
 }
 
 function parseRecord(row: Record<string, unknown>): GuestProfileRecord | null {
@@ -61,7 +70,7 @@ export class GuestProfileStore {
 
     async create(input: {
         shareId: string;
-        displayName: string;
+        displayName?: string;
         ttlSeconds: number;
     }): Promise<GuestProfileRecord> {
         const guestId = randomUUID();
@@ -72,7 +81,9 @@ export class GuestProfileStore {
         const record: GuestProfileRecord = {
             guestId,
             shareId: String(input.shareId ?? "").trim(),
-            displayName: String(input.displayName ?? "Guest").trim() || "Guest",
+            displayName:
+                String(input.displayName ?? "").trim() ||
+                generateDefaultGuestDisplayName(),
             avatarKey: null,
             createdAt,
             expiresAt,

@@ -12,11 +12,10 @@
     box-shadow: 0 24px 80px rgba(15, 23, 42, 0.36);
 }
 
-.share-guest-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0.75rem;
+.share-app-mount {
+    display: block;
+    width: 100%;
+    min-height: 100%;
 }
 
 .share-window-body {

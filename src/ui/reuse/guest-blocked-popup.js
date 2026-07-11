@@ -3,10 +3,10 @@
  *
  * When a share guest attempts to reach any dashboard route other than the
  * active share link (or the public login/register pages), this popup is
- * shown and, on dismissal, navigates the guest back to the page they came
- * from — mirroring the back-navigation technique already used by
- * `runtime-error-popup.js` — so the guest is returned to the share link
- * instead of being left on a blocked page.
+ * shown with Sign In / Register actions (styled with the standard themed
+ * button classes) so the guest can leave the share session to create a
+ * real account, or Dismiss to stay and return to the share link — mirroring
+ * the back-navigation technique already used by `runtime-error-popup.js`.
  *
  * Public exports:
  *   ALLOWED_GUEST_ROUTE_BASES — route bases a share guest may load directly.
@@ -62,11 +62,13 @@ export async function openGuestBlockedPopup({
                     "ui.reuse.guest_blocked_message":
                         "Guests cannot view this page.",
                     "ui.reuse.dismiss": "Dismiss",
+                    "ui.reuse.login": "Sign In",
+                    "ui.reuse.register": "Register",
                 };
                 return fallbackLabels[key] ?? key;
             },
         }));
-        await openPopup({
+        const actionId = await openPopup({
             title: i18n.t("ui.reuse.guest_blocked_title"),
             variant: "warning",
             body: () =>
@@ -75,10 +77,28 @@ export async function openGuestBlockedPopup({
                 {
                     id: "close",
                     label: i18n.t("ui.reuse.dismiss"),
+                    variant: "neutral",
+                },
+                {
+                    id: "login",
+                    label: i18n.t("ui.reuse.login"),
+                    variant: "cancel",
+                },
+                {
+                    id: "register",
+                    label: i18n.t("ui.reuse.register"),
                     variant: "confirm",
                 },
             ],
         });
+        if (actionId === "login") {
+            window.location.href = "/login";
+            return;
+        }
+        if (actionId === "register") {
+            window.location.href = "/register";
+            return;
+        }
         if (allowBackNavigation) {
             navigateBackFrom(currentRoutePath);
         }

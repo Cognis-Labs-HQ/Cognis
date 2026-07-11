@@ -86,7 +86,7 @@ export class CoreShareGateway {
 
     async createGuestProfile(input: {
         shareId: string;
-        displayName: string;
+        displayName?: string;
         ttlSeconds: number;
     }): Promise<GuestProfileRecord> {
         return this.guestProfileStore.create(input);

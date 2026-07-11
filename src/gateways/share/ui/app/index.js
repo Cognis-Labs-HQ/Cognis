@@ -11,15 +11,6 @@ import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
-function renderGuestActions(i18n) {
-    return `
-        <div class="share-guest-actions">
-            <a class="btn-cancel btn-animated" href="/login">${escapeHtml(i18n.t("ui.reuse.login"))}</a>
-            <a class="btn-confirm btn-animated" href="/register">${escapeHtml(i18n.t("ui.reuse.register"))}</a>
-        </div>
-    `;
-}
-
 function renderFallbackBody(i18n, messageKey) {
     return `
         <section class="share-window-body">
@@ -42,10 +33,17 @@ function buildShareElement(state) {
             max: ["full", "full"],
         },
         render: () => {
+            if (state.isMountedApp && !state.errorKey) {
+                // A mounted app (e.g. the real Jitsi Meet meetings page)
+                // owns its own full-page composer, so it is mounted
+                // directly with no extra wrapping card around it — this
+                // lets it render exactly like the real page instead of
+                // being squeezed into a nested share-window box.
+                return '<div id="share-resource-mount-root" class="share-app-mount"></div>';
+            }
             if (state.loading) {
                 return `
                     <div class="share-window card-elevated">
-                        ${renderGuestActions(state.i18n)}
                         <section class="share-window-body">
                             <div class="share-loading-state">
                                 <span class="share-spinner" aria-hidden="true"></span>
@@ -58,14 +56,12 @@ function buildShareElement(state) {
             if (state.errorKey) {
                 return `
                     <div class="share-window card-elevated">
-                        ${renderGuestActions(state.i18n)}
                         ${renderFallbackBody(state.i18n, state.errorKey)}
                     </div>
                 `;
             }
             return `
                 <div class="share-window card-elevated">
-                    ${renderGuestActions(state.i18n)}
                     <section class="share-window-body">${state.renderedContent}</section>
                 </div>
             `;
@@ -78,6 +74,7 @@ export async function mount(root, { signal } = {}) {
         loading: true,
         errorKey: "",
         renderedContent: "",
+        isMountedApp: false,
         i18n: await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         }),
@@ -96,7 +93,7 @@ export async function mount(root, { signal } = {}) {
         showNavbar: false,
         showFooter: true,
         showThemeToggle: true,
-        frameless: false,
+        frameless: true,
         persistLayoutPreferences: false,
         elements: [buildShareElement(state)],
     });
@@ -171,7 +168,8 @@ export async function mount(root, { signal } = {}) {
         }
         state.loading = false;
         state.errorKey = "";
-        state.renderedContent = '<div id="share-resource-mount-root"></div>';
+        state.isMountedApp = true;
+        state.renderedContent = "";
         composer.refresh([buildShareElement(state)]);
         const mountRoot = root.querySelector("#share-resource-mount-root");
         if (!(mountRoot instanceof HTMLElement)) {
