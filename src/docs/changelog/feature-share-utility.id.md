@@ -63,3 +63,27 @@ Beberapa bug yang saling terkait menyebabkan error dan halaman kosong saat berga
 - **Pertahankan token tamu saat pemeriksaan auth berulang**: `validate-stored-token` kini hanya membersihkan sesi jika tidak ada token sama sekali; token tanpa akun (skenario tamu) dibiarkan agar ditangani oleh `apply-alternate-auth`.
 - **Hapus assignment `guestController` yang tidak digunakan**: Baris kode mati telah dihapus dari share session-flow-hooks.
 - **Gaya halaman untuk konten yang dibagikan**: Jitsi share hook sekarang menyertakan `stylesheetUrls`; halaman share memuat CSS yang diperlukan sebelum memasang resource.
+
+## Tombol Share Otomatis Tersembunyi untuk Tamu
+
+Setiap komponen yang menampilkan tombol share sekarang menanyakan ke Share gateway apakah sesi saat ini adalah sesi tamu, dan menyembunyikan tombol tersebut sepenuhnya untuk tamu alih-alih hanya menonaktifkan penangan kliknya. Pembuatan tombol share kini sepenuhnya menjadi tanggung jawab modul klien milik Share gateway sendiri, sehingga menonaktifkan gateway berarti tombol share tidak akan pernah dibuat.
+
+## Jendela Share Kini Menggunakan Tata Letak Halaman Lengkap Pengguna Masuk
+
+Membuka share link kini menampilkan topbar standar, footer, dan grid konten penuh yang digunakan oleh halaman pengguna masuk, alih-alih bingkai bermerek yang disederhanakan. Aksi login/registrasi tetap tersedia bagi tamu dari topbar.
+
+## Tamu Mendapatkan Profil Sementara per Sesi
+
+Setiap sesi tamu kini mendapatkan profil tampilan sementara (nama/avatar), yang dibersihkan secara otomatis setelah kedaluwarsa. Jitsi Meet menggunakan profil sementara ini saat memberi tahu Jitsi Meet tentang identitas tamu dan saat tamu mengirim pesan di chatroom.
+
+## Tamu Dicegah Bernavigasi Keluar dari Share Link
+
+Jika seorang tamu mencoba menavigasi ke halaman lain, sebuah popup menjelaskan bahwa tamu tidak dapat melihat halaman tersebut dan mengembalikannya ke share link.
+
+## Tamu Hanya Melihat Peserta yang Mengizinkannya
+
+Meeting yang dibagikan kini menyembunyikan peserta yang preferensi visibilitasnya tidak mengizinkan penonton anonim/tamu, baik dalam payload share awal maupun dalam status meeting langsung.
+
+## Membuat Share Link Kini Memerlukan Persetujuan dari Peserta Lain
+
+Ketika share link diminta untuk entitas dengan pengguna lain yang terkait (misalnya rapat), pengguna tersebut akan diminta melalui popup dengan opsi setuju/tolak. Jika ada yang menolak, share link tidak akan dibuat. Popup akan otomatis menyetujui setelah 60 detik jika tidak ada yang merespons.

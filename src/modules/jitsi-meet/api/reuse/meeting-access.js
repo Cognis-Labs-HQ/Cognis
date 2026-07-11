@@ -61,7 +61,7 @@ export async function resolveRequestedParticipants(
  * and can never be a "friend", so only `community`-visibility profiles are
  * shown to them; `hidden`, `private`, and `friends` profiles are omitted.
  *
- * @param {import("../../../../adapters/social/profile/store-contract.js").ProfileStore} profileStore
+ * @param {{ getProfileByHandle: (handle: string) => Promise<{ visibility?: string } | null> }} profileStore
  * @param {string[]} usernames
  * @returns {Promise<string[]>}
  */

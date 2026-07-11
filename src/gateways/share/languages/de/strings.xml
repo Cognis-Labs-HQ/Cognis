@@ -8,4 +8,8 @@
   <string name="share.error.malformed_response">Dieses geteilte Element lieferte eine ungültige Antwort.</string>
   <string name="share.error.expired">Dieses geteilte Element ist nicht mehr verfügbar.</string>
   <string name="share.error.renderer_missing">Dieses geteilte Element kann derzeit nicht angezeigt werden.</string>
+  <string name="share.approval.title">Anfrage für Freigabelink</string>
+  <string name="share.approval.message">%requester% hat beantragt, einen Freigabelink für "%resource%" zu erstellen.</string>
+  <string name="share.approval.approve">Genehmigen</string>
+  <string name="share.approval.decline">Ablehnen</string>
 </resources>

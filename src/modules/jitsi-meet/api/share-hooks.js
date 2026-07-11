@@ -14,6 +14,62 @@ export function registerShareFlowHooks(ctx) {
         return;
     }
 
+    if (ctx.flow.exists("resolve-share-approval-targets")) {
+        ctx.flow.extend(
+            "resolve-share-approval-targets",
+            "resolve-targets",
+            { id: "jitsi-meet:resolve-meeting-share-approval-targets" },
+            async (stageCtx) => {
+                const input = stageCtx.input ?? {};
+                if (String(input.resourceType ?? "") !== "meeting") {
+                    return null;
+                }
+                const dbExecutor = ctx.getCapability("db:executor");
+                const profileStore = ctx.getCapability("social:profileStore");
+                const log = ctx.getCapability("logging:log");
+                if (!dbExecutor || !profileStore) {
+                    return { targetAccountIds: [] };
+                }
+                const store = resolveStore(dbExecutor, log);
+                await store.ensureSchema();
+                const meeting = await store.getMeetingById(
+                    String(input.resourceId ?? ""),
+                );
+                if (!meeting) {
+                    return { targetAccountIds: [] };
+                }
+                const usernames = await store.listParticipants(meeting.id);
+                const requesterAccountId = String(
+                    input.requesterAccountId ?? "",
+                );
+                const profiles = await Promise.all(
+                    usernames.map((username) =>
+                        profileStore
+                            .getProfileByHandle(username)
+                            .catch(() => null),
+                    ),
+                );
+                const targetAccountIds = profiles
+                    .map((profile) => profile?.accountId ?? "")
+                    .filter(
+                        (accountId) =>
+                            Boolean(accountId) &&
+                            accountId !== requesterAccountId,
+                    );
+                const requesterProfile = await profileStore
+                    .getProfile(requesterAccountId)
+                    .catch(() => null);
+                return {
+                    targetAccountIds,
+                    requesterDisplayName:
+                        requesterProfile?.displayName ??
+                        requesterProfile?.handle ??
+                        requesterAccountId,
+                };
+            },
+        );
+    }
+
     ctx.flow.extend(
         "mint-share-token",
         "validate-resource",

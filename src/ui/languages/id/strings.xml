@@ -89,10 +89,6 @@
   <string name="ui.reuse.runtime_error_context_route_load">Pemuatan Rute Gagal</string>
   <string name="ui.reuse.guest_blocked_title">Akses Dibatasi</string>
   <string name="ui.reuse.guest_blocked_message">Tamu tidak dapat melihat halaman ini.</string>
-  <string name="ui.reuse.share_approval_title">Permintaan Tautan Berbagi</string>
-  <string name="ui.reuse.share_approval_message">%requester% telah meminta untuk membuat tautan berbagi untuk "%resource%".</string>
-  <string name="ui.reuse.share_approval_approve">Setujui</string>
-  <string name="ui.reuse.share_approval_decline">Tolak</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">Pengguna</string>

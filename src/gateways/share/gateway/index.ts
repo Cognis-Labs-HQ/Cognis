@@ -4,17 +4,23 @@ import {
     GuestProfileStore,
     type GuestProfileRecord,
 } from "./guest-profile-store.js";
+import {
+    ShareApprovalRequestStore,
+    type ShareApprovalRequestRecord,
+} from "./approval-request-store.js";
 
 export class CoreShareGateway {
     constructor(
         private readonly store: ShareTokenStore,
         private readonly guestProfileStore: GuestProfileStore,
+        private readonly approvalRequestStore: ShareApprovalRequestStore,
         private readonly externalBaseUrl: string = resolveExternalBaseUrl(),
     ) {}
 
     async ensureSchema(): Promise<void> {
         await this.store.ensureSchema();
         await this.guestProfileStore.ensureSchema();
+        await this.approvalRequestStore.ensureSchema();
     }
 
     buildShareUrl(tokenValue: string): string {
@@ -92,5 +98,44 @@ export class CoreShareGateway {
 
     async purgeExpiredGuestProfiles(): Promise<void> {
         await this.guestProfileStore.purgeExpired();
+    }
+
+    async createApprovalRequestBatch(input: {
+        resourceType: string;
+        resourceId: string;
+        requesterAccountId: string;
+        requesterDisplayName: string;
+        targetAccountIds: string[];
+        ttlSeconds: number;
+    }): Promise<{ mintRequestId: string }> {
+        const result = await this.approvalRequestStore.createBatch(input);
+        return { mintRequestId: result.mintRequestId };
+    }
+
+    async resolveApprovalStatus(mintRequestId: string): Promise<{
+        allResponded: boolean;
+        anyDeclined: boolean;
+    }> {
+        return this.approvalRequestStore.resolveExpiredAndSummarize(
+            mintRequestId,
+        );
+    }
+
+    async listPendingApprovalsForAccount(
+        accountId: string,
+    ): Promise<ShareApprovalRequestRecord[]> {
+        return this.approvalRequestStore.listPendingForTarget(accountId);
+    }
+
+    async respondToApprovalRequest(input: {
+        approvalId: string;
+        targetAccountId: string;
+        decision: "approved" | "declined";
+    }): Promise<boolean> {
+        return this.approvalRequestStore.respond(input);
+    }
+
+    async purgeExpiredApprovalRequests(): Promise<void> {
+        await this.approvalRequestStore.purgeExpired();
     }
 }

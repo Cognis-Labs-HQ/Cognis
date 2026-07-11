@@ -62,7 +62,13 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
         getCanonicalFlowContract("mint-share-token")?.stages.map(
             (stage) => stage.id,
         ),
-        ["validate-resource", "authorize-minter", "issue-token", "emit-event"],
+        [
+            "validate-resource",
+            "authorize-minter",
+            "request-approval",
+            "issue-token",
+            "emit-event",
+        ],
     );
     assert.deepEqual(
         getCanonicalFlowContract("resolve-share-token")?.stages.map(

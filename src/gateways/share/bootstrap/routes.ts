@@ -253,6 +253,64 @@ export function createShareRoutes(input: {
             return true;
         }
 
+        if (
+            req.method === "GET" &&
+            url.pathname === "/api/v1/share/approvals/pending"
+        ) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const pending = await input.gateway.listPendingApprovalsForAccount(
+                claims.sub,
+            );
+            sendJson(res, 200, {
+                data: pending.map((request) => ({
+                    id: request.id,
+                    resourceType: request.resourceType,
+                    resourceId: request.resourceId,
+                    requesterDisplayName: request.requesterDisplayName,
+                    createdAt: request.createdAt,
+                    expiresAt: request.expiresAt,
+                })),
+            });
+            return true;
+        }
+
+        const approvalRespondMatch = url.pathname.match(
+            /^\/api\/v1\/share\/approvals\/([^/]+)\/respond$/,
+        );
+        if (req.method === "POST" && approvalRespondMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const approvalId = decodeURIComponent(approvalRespondMatch[1]);
+            const body = (await readJson(req)) as { decision?: unknown };
+            const decision = String(body.decision ?? "").trim();
+            if (decision !== "approved" && decision !== "declined") {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "decision must be 'approved' or 'declined'.",
+                );
+                return true;
+            }
+            const applied = await input.gateway.respondToApprovalRequest({
+                approvalId,
+                targetAccountId: claims.sub,
+                decision,
+            });
+            if (!applied) {
+                sendError(
+                    res,
+                    404,
+                    "not_found",
+                    "Approval request not found, already resolved, or expired.",
+                );
+                return true;
+            }
+            sendJson(res, 200, { data: { ok: true } });
+            return true;
+        }
+
         return false;
     };
 }

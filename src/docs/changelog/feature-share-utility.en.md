@@ -68,3 +68,27 @@ Several interrelated bugs caused errors and a blank page when joining a meeting 
 - **Remove dead `guestController` assignment**: The share session-flow-hooks had a stale line that assigned the `activateGuestToken` function to `guestController` without ever calling it; that dead assignment has been removed.
 
 - **Page styles for shared content**: The Jitsi share hook now includes `stylesheetUrls` in the page descriptor. The share page loads these stylesheets (via `ensurePageStylesheet`) before mounting the shared resource, so the Jitsi meeting UI receives its required CSS.
+
+## Share Buttons Hide Automatically for Guests
+
+Any component that renders a share button now asks the Share gateway whether the current session is a share guest, and hides the button entirely for guests instead of just disabling its click handler. Share button creation is now owned exclusively by the Share gateway's own client module, so disabling the gateway means no share button is ever created.
+
+## Share Windows Use the Full Logged-In Page Layout
+
+Opening a share link now renders the standard topbar, footer, and full-size content grid used by logged-in pages, instead of a stripped-down branded frame. Login/register actions remain available to guests from the topbar.
+
+## Guests Get a Temporary Per-Session Profile
+
+Each guest session now gets a temporary display profile (name/avatar), automatically cleaned up after expiry. Jitsi Meet uses this temporary profile when informing Jitsi Meet of the guest's identity and when the guest sends a chatroom message.
+
+## Guests Are Blocked from Navigating Away from the Share Link
+
+If a guest tries to navigate to any other page, a popup explains that guests cannot view that page and returns them to the share link.
+
+## Guests Only See Participants Who Allow It
+
+Shared meetings now hide participants whose visibility preference excludes anonymous/guest viewers, both in the initial share payload and in live meeting state.
+
+## Creating a Share Link Now Requires Approval from Other Participants
+
+When a share link is requested for an entity with other users attached to it (e.g. a meeting), those users are prompted with an approve/decline popup. If anyone declines, the share link is not created. Popups auto-approve after 60 seconds if nobody responds.

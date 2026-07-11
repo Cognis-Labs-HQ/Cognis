@@ -8,4 +8,8 @@
   <string name="share.error.malformed_response">この共有項目から無効な応答が返されました。</string>
   <string name="share.error.expired">この共有項目は現在利用できません。</string>
   <string name="share.error.renderer_missing">この共有項目は現在表示できません。</string>
+  <string name="share.approval.title">共有リンクのリクエスト</string>
+  <string name="share.approval.message">%requester%さんが「%resource%」の共有リンク作成をリクエストしました。</string>
+  <string name="share.approval.approve">承認</string>
+  <string name="share.approval.decline">拒否</string>
 </resources>

@@ -42,6 +42,108 @@ export async function registerShareBootstrapHooks(input: {
         }),
     );
 
+    const APPROVAL_TIMEOUT_SECONDS = 60;
+    const APPROVAL_POLL_INTERVAL_MS = 1_000;
+
+    input.ctx.flow.extend(
+        "mint-share-token",
+        "request-approval",
+        { id: "share-gateway:request-approval" },
+        async (stageCtx) => {
+            const resourceResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-resource",
+            ) as {
+                valid?: boolean;
+                resourceType?: string;
+                resourceId?: string;
+                ownerAccountId?: string;
+            } | null;
+            const authorizeResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "authorize-minter",
+            ) as {
+                authorized?: boolean;
+                ownerAccountId?: string;
+            } | null;
+            if (!resourceResult?.valid || !authorizeResult?.authorized) {
+                return { approved: false, reason: "share_mint_rejected" };
+            }
+            const requesterAccountId =
+                authorizeResult.ownerAccountId ??
+                resourceResult.ownerAccountId ??
+                "";
+            if (!stageCtx.ctx.flow.exists("resolve-share-approval-targets")) {
+                return { approved: true, requiresApproval: false };
+            }
+            const targetsResult = await stageCtx.ctx.flow.run(
+                "resolve-share-approval-targets",
+                {
+                    resourceType: resourceResult.resourceType,
+                    resourceId: resourceResult.resourceId,
+                    requesterAccountId,
+                },
+            );
+            const resolvedTargets = (targetsResult.stageResults[
+                "resolve-targets"
+            ] ?? [])[0] as {
+                targetAccountIds?: string[];
+                requesterDisplayName?: string;
+            } | null;
+            const targetAccountIds = Array.from(
+                new Set(
+                    (resolvedTargets?.targetAccountIds ?? [])
+                        .map((accountId) => String(accountId ?? "").trim())
+                        .filter(
+                            (accountId) =>
+                                Boolean(accountId) &&
+                                accountId !== requesterAccountId,
+                        ),
+                ),
+            );
+            if (targetAccountIds.length === 0) {
+                return { approved: true, requiresApproval: false };
+            }
+            const { mintRequestId } =
+                await input.gateway.createApprovalRequestBatch({
+                    resourceType: resourceResult.resourceType ?? "",
+                    resourceId: resourceResult.resourceId ?? "",
+                    requesterAccountId,
+                    requesterDisplayName: String(
+                        resolvedTargets?.requesterDisplayName ??
+                            requesterAccountId,
+                    ),
+                    targetAccountIds,
+                    ttlSeconds: APPROVAL_TIMEOUT_SECONDS,
+                });
+            const deadline = Date.now() + APPROVAL_TIMEOUT_SECONDS * 1000;
+            let summary =
+                await input.gateway.resolveApprovalStatus(mintRequestId);
+            while (!summary.allResponded && Date.now() < deadline) {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, APPROVAL_POLL_INTERVAL_MS),
+                );
+                summary =
+                    await input.gateway.resolveApprovalStatus(mintRequestId);
+            }
+            if (!summary.allResponded) {
+                // Timeout reached; resolveApprovalStatus auto-approves any
+                // still-pending rows on its next call, so query once more to
+                // pick up the fallback-approved state.
+                summary =
+                    await input.gateway.resolveApprovalStatus(mintRequestId);
+            }
+            if (summary.anyDeclined) {
+                return {
+                    approved: false,
+                    requiresApproval: true,
+                    reason: "share_approval_declined",
+                };
+            }
+            return { approved: true, requiresApproval: true };
+        },
+    );
+
     input.ctx.flow.extend(
         "mint-share-token",
         "issue-token",
@@ -63,8 +165,26 @@ export async function registerShareBootstrapHooks(input: {
                 authorized?: boolean;
                 ownerAccountId?: string;
             } | null;
-            if (!resourceResult?.valid || !authorizeResult?.authorized) {
-                return { minted: false, reason: "share_mint_rejected" };
+            const approvalResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "request-approval",
+            ) as {
+                approved?: boolean;
+                reason?: string;
+            } | null;
+            if (
+                !resourceResult?.valid ||
+                !authorizeResult?.authorized ||
+                approvalResult?.approved === false
+            ) {
+                return {
+                    minted: false,
+                    reason:
+                        approvalResult?.approved === false
+                            ? (approvalResult.reason ??
+                              "share_approval_declined")
+                            : "share_mint_rejected",
+                };
             }
             const inputPayload = (stageCtx.input ?? {}) as {
                 label?: string;

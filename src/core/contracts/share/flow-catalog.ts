@@ -18,6 +18,11 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                     "Confirm the caller may mint share tokens for the resolved resource and requested capabilities.",
             },
             {
+                id: "request-approval",
+                description:
+                    "Prompt other users attached to the resource for approval before a share link is minted, auto-approving after a 60-second timeout.",
+            },
+            {
                 id: "issue-token",
                 description:
                     "Persist the canonical share token record and return the generated public share URL.",
@@ -95,6 +100,19 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                 id: "resolve-resource-renderer",
                 description:
                     "Resolve the client renderer module and resource presentation metadata for the share payload.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "resolve-share-approval-targets",
+        owner: "share",
+        description:
+            "Resolves the other users attached to a resource who must approve creation of a new share link for it.",
+        stages: [
+            {
+                id: "resolve-targets",
+                description:
+                    "Declare the account IDs (excluding the requester) that must approve or decline this share link.",
             },
         ],
     }),

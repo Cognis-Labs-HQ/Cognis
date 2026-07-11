@@ -9,6 +9,7 @@ import {
 } from "../../../api/reuse/route-context.js";
 import { ShareTokenStore } from "../gateway/store.js";
 import { GuestProfileStore } from "../gateway/guest-profile-store.js";
+import { ShareApprovalRequestStore } from "../gateway/approval-request-store.js";
 import { CoreShareGateway } from "../gateway/index.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
 import { createShareRoutes } from "./routes.js";
@@ -30,7 +31,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const store = new ShareTokenStore(dbExecutor, ctx.log);
     const guestProfileStore = new GuestProfileStore(dbExecutor);
-    const gateway = new CoreShareGateway(store, guestProfileStore);
+    const approvalRequestStore = new ShareApprovalRequestStore(dbExecutor);
+    const gateway = new CoreShareGateway(
+        store,
+        guestProfileStore,
+        approvalRequestStore,
+    );
     await gateway.ensureSchema();
 
     ctx.capabilities.contribute(
@@ -57,6 +63,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "share:getGuestProfile",
         gateway.getGuestProfile.bind(gateway),
     );
+    ctx.capabilities.contribute(
+        "share:listPendingApprovalsForAccount",
+        gateway.listPendingApprovalsForAccount.bind(gateway),
+    );
 
     await registerShareBootstrapHooks({ ctx, gateway });
 
@@ -73,6 +83,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "share");
     uiHooks.registerStaticDir("share", GATEWAY_ROOT);
+    uiHooks.registerNavbarPlugin(
+        "/static/gateways/share/ui/approval-poller.js",
+    );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");
     ctx.gatewayRegistry.register({
@@ -91,6 +104,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 operation: "purge_expired_guest_profiles",
                 error: error instanceof Error ? error.message : String(error),
             });
+        });
+        void gateway.purgeExpiredApprovalRequests().catch((error) => {
+            ctx.log?.(
+                "error",
+                "Failed to purge expired share approval requests.",
+                {
+                    component: "share-gateway",
+                    operation: "purge_expired_approval_requests",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
         });
     }, GUEST_PROFILE_CLEANUP_INTERVAL_MS);
     cleanupTimer.unref?.();

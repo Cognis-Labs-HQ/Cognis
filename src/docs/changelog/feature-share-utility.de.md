@@ -63,3 +63,27 @@ Mehrere zusammenhängende Fehler verursachten Abstürze und leere Seiten beim Be
 - **Gast-Token bei wiederholten Auth-Prüfungen erhalten**: `validate-stored-token` löscht die Session jetzt nur noch, wenn kein Token vorhanden ist – nicht wenn ein Token ohne Account vorliegt.
 - **Totes `guestController`-Assignment entfernt**: Der veraltete Codeausdruck wurde aus den Share-Session-Flow-Hooks entfernt.
 - **Seitenstile für geteilte Inhalte**: Der Jitsi-Share-Hook enthält jetzt `stylesheetUrls`; die Share-Seite lädt diese CSS-Dateien vor dem Mounten der Ressource.
+
+## Share-Buttons Verstecken Sich Automatisch für Gäste
+
+Jede Komponente, die einen Share-Button rendert, fragt nun das Share-Gateway, ob die aktuelle Sitzung eine Gast-Sitzung ist, und blendet den Button für Gäste vollständig aus, statt nur den Klick-Handler zu deaktivieren. Die Erstellung von Share-Buttons liegt jetzt ausschließlich beim eigenen Client-Modul des Share-Gateways, sodass das Deaktivieren des Gateways bedeutet, dass niemals ein Share-Button erstellt wird.
+
+## Share-Fenster Nutzen Jetzt Das Vollständige Layout Angemeldeter Seiten
+
+Das Öffnen eines Share-Links zeigt jetzt die Standard-Topbar, den Footer und das vollständige Inhaltsraster angemeldeter Seiten an, statt eines reduzierten, gebrandeten Rahmens. Anmelde-/Registrierungsaktionen bleiben für Gäste über die Topbar verfügbar.
+
+## Gäste Erhalten Ein Temporäres Profil Pro Sitzung
+
+Jede Gast-Sitzung erhält nun ein temporäres Anzeigeprofil (Name/Avatar), das nach Ablauf automatisch bereinigt wird. Jitsi Meet verwendet dieses temporäre Profil, wenn es Jitsi Meet über die Identität des Gastes informiert und wenn der Gast eine Chatroom-Nachricht sendet.
+
+## Gäste Werden Am Verlassen Des Share-Links Gehindert
+
+Versucht ein Gast, zu einer anderen Seite zu navigieren, erklärt ein Popup, dass Gäste diese Seite nicht ansehen können, und bringt ihn zurück zum Share-Link.
+
+## Gäste Sehen Nur Teilnehmer, Die Dies Erlauben
+
+Geteilte Meetings verbergen jetzt Teilnehmer, deren Sichtbarkeitseinstellung anonyme/Gast-Betrachter ausschließt, sowohl in der ursprünglichen Share-Payload als auch im Live-Meeting-Status.
+
+## Das Erstellen Eines Share-Links Erfordert Jetzt Die Zustimmung Anderer Teilnehmer
+
+Wird ein Share-Link für eine Entität mit weiteren zugehörigen Nutzern angefordert (z. B. ein Meeting), erhalten diese Nutzer ein Popup mit Zustimmen-/Ablehnen-Option. Lehnt jemand ab, wird der Share-Link nicht erstellt. Popups stimmen nach 60 Sekunden automatisch zu, wenn niemand reagiert.
