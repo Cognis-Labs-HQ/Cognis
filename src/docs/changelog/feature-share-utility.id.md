@@ -95,3 +95,7 @@ Popup tautan share sekarang merender formulir pembuatan dan daftar tautan sebaga
 ## Tautan Share Menawarkan Aksi Cepat Email
 
 Catatan share sekarang dapat memuat aksi cepat yang diselesaikan oleh gateway dari sender notifikasi yang aktif. Adapter SMTP menambahkan kemampuan quick-share berbasis `mailto:`, dan Share gateway otomatis menambahkan aksi email untuk setiap sender SMTP aktif ke setiap catatan share yang dikirim ke klien.
+
+## Perbaikan Error Profil Tak Tertangani yang Merusak Panggilan API Meeting
+
+Beberapa rute Jitsi Meet (`meetings/active`, dan setiap rute yang dibangun di atas `resolveMeetingPayloadOrReject`, termasuk `get`, `preflight`, `probe`, `join`, `reclaim`, `presence`, rute `auth-*`, `state`, dan `chat-room-summary`) memanggil `resolveRequesterUsername` tanpa menangani error yang dilemparkannya ketika pemanggil tidak memiliki handle profil yang terlihat. Exception yang tak tertangani ini ditangkap oleh error handler umum server dan muncul sebagai `400 Bad Request` yang tidak informatif pada setiap permintaan, alih-alih respons `409 profile_required` yang sudah digunakan oleh `meetings/create`. Titik pemanggilan ini sekarang menangani error secara konsisten dan mengembalikan `409 profile_required`.

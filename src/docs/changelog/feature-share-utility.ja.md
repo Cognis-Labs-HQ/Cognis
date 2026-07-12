@@ -94,3 +94,7 @@ Share リンクポップアップが開かれると、ラベル入力フィー�
 ## 共有リンクにメールのクイックアクションを追加
 
 共有レコードには、アクティブな通知送信者から解決されたクイック共有アクションを含められるようになりました。SMTP アダプターは `mailto:` ベースのクイック共有機能を提供し、Share ゲートウェイはアクティブな SMTP 送信者がある場合に各共有レコードへ自動でメールアクションを追加します。
+
+## ミーティング API 呼び出しを壊していた未処理のプロフィールエラーを修正
+
+複数の Jitsi Meet ルート(`meetings/active`、および `get`、`preflight`、`probe`、`join`、`reclaim`、`presence`、`auth-*` 系ルート、`state`、`chat-room-summary` など `resolveMeetingPayloadOrReject` を利用するすべてのルート)は、呼び出し元に表示可能なプロフィールハンドルがない場合に `resolveRequesterUsername` がスローするエラーを処理せずに呼び出していました。この未処理の例外はサーバーの汎用エラーハンドラーに捕捉され、`meetings/create` で既に使われている `409 profile_required` の代わりに、あらゆるリクエストで役に立たない `400 Bad Request` として表面化していました。これらの呼び出し箇所は現在一貫してエラーを処理し、`409 profile_required` を返すようになりました。

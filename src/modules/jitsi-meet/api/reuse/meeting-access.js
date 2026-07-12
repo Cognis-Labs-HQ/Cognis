@@ -114,7 +114,11 @@ export async function resolveMeetingPayloadOrReject({
     const requesterUsername = await resolveRequesterUsername(
         profileStore,
         claims.sub,
-    );
+    ).catch((error) => {
+        sendError(res, 409, "profile_required", error.message);
+        return null;
+    });
+    if (!requesterUsername) return null;
     const meetingId = String(body.meetingId ?? "").trim();
     if (!meetingId) {
         sendError(res, 400, "bad_request", "meetingId is required.");

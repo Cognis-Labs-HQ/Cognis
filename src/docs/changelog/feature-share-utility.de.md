@@ -95,3 +95,7 @@ Das Share-Links-Popup rendert das Erstellungsformular und die Linkliste jetzt al
 ## Share-Links Erhalten E-Mail-Schnellaktionen
 
 Share-Datensätze können jetzt gatewayseitig aufgelöste Schnellaktionen enthalten, die von aktiven Benachrichtigungssendern stammen. Der SMTP-Adapter stellt eine `mailto:`-Schnellfreigabe-Fähigkeit bereit, und das Share-Gateway ergänzt bei aktiven SMTP-Sendern automatisch eine E-Mail-Aktion in jedem an Clients ausgelieferten Share-Datensatz.
+
+## Behebung nicht abgefangener Profilfehler bei Meeting-API-Aufrufen
+
+Mehrere Jitsi-Meet-Routen (`meetings/active` sowie jede Route, die auf `resolveMeetingPayloadOrReject` aufbaut, darunter `get`, `preflight`, `probe`, `join`, `reclaim`, `presence`, die `auth-*`-Routen, `state` und `chat-room-summary`) riefen `resolveRequesterUsername` auf, ohne den Fehler zu behandeln, den die Funktion wirft, wenn der Aufrufer kein sichtbares Profil-Handle besitzt. Die nicht abgefangene Ausnahme wurde vom generischen Fehler-Handler des Servers abgefangen und als wenig hilfreicher `400 Bad Request` bei jeder Anfrage ausgegeben, anstatt der `409 profile_required`-Antwort, die `meetings/create` bereits verwendet. Diese Aufrufstellen behandeln den Fehler jetzt einheitlich und liefern `409 profile_required`.

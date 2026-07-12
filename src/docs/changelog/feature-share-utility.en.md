@@ -100,3 +100,7 @@ The share-links popup now renders its create form and link list as separate DOM 
 ## Share Links Offer Email Quick Actions
 
 Share records can now include gateway-resolved quick-share actions sourced from active notification senders. The SMTP adapter contributes a `mailto:` quick-share capability, and the Share gateway automatically adds an email action for active SMTP senders to each share record returned to clients.
+
+## Fix Uncaught Profile Errors Breaking Meeting API Calls
+
+Several Jitsi Meet routes (`meetings/active`, and every route built on `resolveMeetingPayloadOrReject`, including `get`, `preflight`, `probe`, `join`, `reclaim`, `presence`, the `auth-*` routes, `state`, and `chat-room-summary`) called `resolveRequesterUsername` without handling the error it throws when the caller has no visible profile handle. The uncaught exception was caught by the server's generic error handler and surfaced as an unhelpful `400 Bad Request` on every request, instead of the `409 profile_required` response already used by `meetings/create`. These call sites now handle the error consistently and return `409 profile_required`.

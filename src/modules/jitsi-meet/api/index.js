@@ -781,7 +781,11 @@ export function registerApiRoutes(router, ctx) {
             const requesterUsername = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
-            );
+            ).catch((error) => {
+                sendError(res, 409, "profile_required", error.message);
+                return null;
+            });
+            if (!requesterUsername) return;
             const meeting = await store.getMeetingByChatRoomId(chatRoomId);
             if (!meeting) {
                 sendError(res, 404, "not_found", "Meeting not found.");

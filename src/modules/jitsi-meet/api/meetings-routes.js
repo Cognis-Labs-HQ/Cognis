@@ -251,7 +251,11 @@ export function registerMeetingRoutes({
             const requesterUsername = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
-            );
+            ).catch((error) => {
+                sendError(res, 409, "profile_required", error.message);
+                return null;
+            });
+            if (!requesterUsername) return;
             const activeMeetings = await store.listActiveMeetings();
             const visibleMeetings = [];
             for (const activeMeeting of activeMeetings) {

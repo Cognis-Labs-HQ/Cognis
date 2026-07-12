@@ -1,0 +1,121 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { resolveMeetingPayloadOrReject } from "../reuse/meeting-access.js";
+import { registerMeetingRoutes } from "../meetings-routes.js";
+import { JitsiMeetStore } from "../store.js";
+
+function createProfileStoreWithoutHandle() {
+    return {
+        async getProfile() {
+            return null;
+        },
+        async getProfileByHandle() {
+            return null;
+        },
+    };
+}
+
+function createInMemoryJitsiDb() {
+    const rows = { jitsi_meetings: [], jitsi_meeting_state: [] };
+    return {
+        async ensureTable() {},
+        async transaction(callback) {
+            return callback(this);
+        },
+        async executeCommand(command) {
+            if (command.option === "SELECT") {
+                const table = rows[command.table] ?? [];
+                if (!command.where) return { rows: table };
+                return {
+                    rows: table.filter((row) =>
+                        command.where.every(
+                            (whereEntry) =>
+                                row[whereEntry.column] === whereEntry.value,
+                        ),
+                    ),
+                };
+            }
+            return { rows: [] };
+        },
+    };
+}
+
+test("resolveMeetingPayloadOrReject reports profile_required instead of throwing when the caller has no visible profile handle", async () => {
+    const sendErrorCalls = [];
+    const sendError = (res, status, code, message) => {
+        sendErrorCalls.push({ status, code, message });
+    };
+
+    const result = await resolveMeetingPayloadOrReject({
+        body: { meetingId: "meeting-1" },
+        profileStore: createProfileStoreWithoutHandle(),
+        store: new JitsiMeetStore({ db: createInMemoryJitsiDb() }),
+        claims: { sub: "account-without-profile" },
+        sendError,
+        res: {},
+        listClassroomParticipantHandles: async () => [],
+    });
+
+    assert.equal(result, null);
+    assert.deepEqual(sendErrorCalls, [
+        {
+            status: 409,
+            code: "profile_required",
+            message: "A visible profile handle is required to use Meetings.",
+        },
+    ]);
+});
+
+test("jitsi meetings active endpoint reports profile_required instead of throwing when the caller has no visible profile handle", async () => {
+    class RouterStub {
+        routes = [];
+        get(routePath, handler) {
+            this.routes.push({ method: "GET", path: routePath, handler });
+        }
+        post(routePath, handler) {
+            this.routes.push({ method: "POST", path: routePath, handler });
+        }
+    }
+    const router = new RouterStub();
+    const sendErrorCalls = [];
+    const sendError = (res, status, code, message) => {
+        sendErrorCalls.push({ status, code, message });
+    };
+
+    registerMeetingRoutes({
+        router,
+        store: new JitsiMeetStore({ db: createInMemoryJitsiDb() }),
+        profileStore: createProfileStoreWithoutHandle(),
+        listCalendarsByOwner: async () => [],
+        listCalendarEvents: async () => [],
+        listClassroomParticipantHandles: async () => [],
+        resolveMeetingPayloadOrReject,
+        createMeetingPayload: async () => ({}),
+        resolveRequesterUsername: (await import("../reuse/requester.js"))
+            .resolveRequesterUsername,
+        canAccessMeeting: async () => true,
+        filterUsernamesForGuestVisibility: async (usernames) => usernames,
+        requireAuth: () => ({ sub: "account-without-profile", role: "user" }),
+        readJson: async () => ({}),
+        sendJson: () => {},
+        sendError,
+        checkHttpLiveness: async () => true,
+        LIVELINESS_TIMEOUT_MS: 5000,
+        resolveShareGuestMeetingAccess: async () => ({ isGuest: false }),
+    });
+
+    const activeRoute = router.routes.find(
+        (routeEntry) =>
+            routeEntry.method === "GET" &&
+            routeEntry.path === "/api/v1/modules/jitsi-meet/meetings/active",
+    );
+
+    await assert.doesNotReject(() => activeRoute.handler({}, {}));
+    assert.deepEqual(sendErrorCalls, [
+        {
+            status: 409,
+            code: "profile_required",
+            message: "A visible profile handle is required to use Meetings.",
+        },
+    ]);
+});
