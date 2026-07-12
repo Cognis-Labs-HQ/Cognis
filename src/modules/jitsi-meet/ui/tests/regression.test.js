@@ -368,6 +368,42 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
 });
 
+test("meeting presence waits for a confirmed join before allowing tracking", () => {
+    const embedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-embed.js"),
+        "utf8",
+    );
+    const preflightSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-preflight.js"),
+        "utf8",
+    );
+    assert.match(
+        embedSource,
+        /addEventListener\("videoConferenceJoined", \(event\) => \{[\s\S]*if \(state\.jitsiApi !== apiInstance\) return;[\s\S]*void callbacks\.keepPresenceAlive\(true\);/,
+    );
+    assert.doesNotMatch(
+        embedSource,
+        /frame\.hidden = false;[\s\S]*await callbacks\.keepPresenceAlive\(true\);/,
+    );
+    assert.match(
+        embedSource,
+        /if \(state\.meeting\.waitingForAuthentication\) \{[\s\S]*return \{ trackingAllowed: false \};/,
+    );
+    assert.match(
+        embedSource,
+        /if \(\s*state\.meeting\.state\?\.authRequired[\s\S]*return \{ trackingAllowed: false \};/,
+    );
+    assert.match(
+        embedSource,
+        /await openMeetingEmbed\(\);\n\s*return \{ trackingAllowed: true \};/,
+    );
+    assert.match(preflightSource, /function shouldTrackMeetingPresence\(\)/);
+    assert.match(
+        preflightSource,
+        /function ensureMeetingTracking\(\) \{\n\s*if \(!shouldTrackMeetingPresence\(\)\) return;/,
+    );
+});
+
 test("meetings overlay strings include alone participant prompt actions", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),

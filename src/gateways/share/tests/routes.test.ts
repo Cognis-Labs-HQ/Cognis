@@ -73,6 +73,24 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const dbExecutor = new MemoryExecutor();
     const adminToken = issueAccessToken("alice", "admin", 60);
     capabilities.contribute("db:executor", dbExecutor as never);
+    capabilities.contribute("notify:gateway", {
+        listSenders() {
+            return [
+                {
+                    senderId: "smtp",
+                    name: "SMTP Email",
+                    active: true,
+                },
+            ];
+        },
+    } as never);
+    capabilities.contribute(
+        "notify:quickShare:smtp",
+        ((input: { shareUrl: string; label?: string | null }) =>
+            `mailto:?body=${encodeURIComponent(
+                `${String(input.label ?? "")}\n${input.shareUrl}`,
+            )}`) as never,
+    );
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(
@@ -174,6 +192,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(createResponse.statusCode, 200);
     assert.equal(createResponse.body.data.resourceType, "meeting");
+    assert.equal(createResponse.body.data.quickShareActions.length, 1);
+    assert.equal(createResponse.body.data.quickShareActions[0].id, "smtp");
+    assert.match(
+        createResponse.body.data.quickShareActions[0].href,
+        /^mailto:/,
+    );
 
     const listResponse = await dispatchJson(
         "GET",
@@ -182,6 +206,8 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(listResponse.statusCode, 200);
     assert.equal(listResponse.body.data.length, 1);
+    assert.equal(listResponse.body.data[0].quickShareActions.length, 1);
+    assert.equal(listResponse.body.data[0].quickShareActions[0].id, "smtp");
 
     const resolveResponse = new ResponseRecorder();
     await dispatchRoute(

@@ -87,3 +87,11 @@ Geteilte Meetings verbergen jetzt Teilnehmer, deren Sichtbarkeitseinstellung ano
 ## Das Erstellen Eines Share-Links Erfordert Jetzt Die Zustimmung Anderer Teilnehmer
 
 Wird ein Share-Link für eine Entität mit weiteren zugehörigen Nutzern angefordert (z. B. ein Meeting), erhalten diese Nutzer ein Popup mit Zustimmen-/Ablehnen-Option. Lehnt jemand ab, wird der Share-Link nicht erstellt. Popups stimmen nach 60 Sekunden automatisch zu, wenn niemand reagiert.
+
+## Share-Popup Aktualisiert Sich Ohne Fokusverlust
+
+Das Share-Links-Popup rendert das Erstellungsformular und die Linkliste jetzt als getrennte DOM-Bereiche. Die Eingabefelder für Bezeichnung und Ablaufzeit bleiben während Aktualisierungen nach Erstellen-/Widerrufen-Aktionen sowie beim Hintergrund-Polling alle 10 Sekunden erhalten, sodass Nutzer weiter tippen können, ohne die Cursorposition zu verlieren. Bestehende Links zeigen die Share-URL außerdem direkt als Kopier-Schaltfläche neben dem Titel an, wodurch das Popup kompakter wird.
+
+## Share-Links Erhalten E-Mail-Schnellaktionen
+
+Share-Datensätze können jetzt gatewayseitig aufgelöste Schnellaktionen enthalten, die von aktiven Benachrichtigungssendern stammen. Der SMTP-Adapter stellt eine `mailto:`-Schnellfreigabe-Fähigkeit bereit, und das Share-Gateway ergänzt bei aktiven SMTP-Sendern automatisch eine E-Mail-Aktion in jedem an Clients ausgelieferten Share-Datensatz.

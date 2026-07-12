@@ -87,3 +87,11 @@ Meeting yang dibagikan kini menyembunyikan peserta yang preferensi visibilitasny
 ## Membuat Share Link Kini Memerlukan Persetujuan dari Peserta Lain
 
 Ketika share link diminta untuk entitas dengan pengguna lain yang terkait (misalnya rapat), pengguna tersebut akan diminta melalui popup dengan opsi setuju/tolak. Jika ada yang menolak, share link tidak akan dibuat. Popup akan otomatis menyetujui setelah 60 detik jika tidak ada yang merespons.
+
+## Popup Share Memperbarui Daftar Tanpa Merebut Fokus
+
+Popup tautan share sekarang merender formulir pembuatan dan daftar tautan sebagai area DOM yang terpisah. Input label dan masa berlaku tetap terpasang saat daftar diperbarui setelah aksi buat/cabut dan selama polling latar belakang setiap 10 detik, sehingga pengguna dapat terus mengetik tanpa kehilangan posisi kursor. Tautan yang sudah ada juga kini menampilkan URL share itu sendiri sebagai tombol salin di samping judul agar popup lebih ringkas.
+
+## Tautan Share Menawarkan Aksi Cepat Email
+
+Catatan share sekarang dapat memuat aksi cepat yang diselesaikan oleh gateway dari sender notifikasi yang aktif. Adapter SMTP menambahkan kemampuan quick-share berbasis `mailto:`, dan Share gateway otomatis menambahkan aksi email untuk setiap sender SMTP aktif ke setiap catatan share yang dikirim ke klien.

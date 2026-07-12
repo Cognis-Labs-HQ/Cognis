@@ -3,9 +3,17 @@
     gap: 1rem;
 }
 
+.share-links-form-container {
+    display: contents;
+}
+
 .share-links-create-form {
     display: grid;
     gap: 0.75rem;
+}
+
+.share-links-list-container {
+    display: contents;
 }
 
 .share-links-create-form label {
@@ -33,14 +41,44 @@
     gap: 0.5rem;
 }
 
-.share-links-row-label,
-.share-links-row-url {
-    margin: 0;
+.share-links-row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
-.share-links-row-url {
-    word-break: break-all;
-    color: rgba(226, 232, 240, 0.82);
+.share-links-row-label {
+    margin: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.share-links-row-copy {
+    flex: 1 1 18rem;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: rgba(96, 165, 250, 0.95);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.share-links-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.share-links-row-quick-action {
+    text-decoration: none;
 }
 
 .share-links-empty {

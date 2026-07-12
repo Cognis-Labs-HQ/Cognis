@@ -8,6 +8,7 @@ import {
     ShareApprovalRequestStore,
     type ShareApprovalRequestRecord,
 } from "./approval-request-store.js";
+import { resolveQuickShareActions } from "./quick-share-actions.js";
 
 export class CoreShareGateway {
     constructor(
@@ -15,6 +16,9 @@ export class CoreShareGateway {
         private readonly guestProfileStore: GuestProfileStore,
         private readonly approvalRequestStore: ShareApprovalRequestStore,
         private readonly externalBaseUrl: string = resolveExternalBaseUrl(),
+        private readonly getCapability: <T>(
+            name: string,
+        ) => T | undefined = () => undefined,
     ) {}
 
     async ensureSchema(): Promise<void> {
@@ -31,7 +35,10 @@ export class CoreShareGateway {
             : sharePath;
     }
 
-    serializeRecord(record: ShareTokenRecord): Record<string, unknown> {
+    async serializeRecord(
+        record: ShareTokenRecord,
+    ): Promise<Record<string, unknown>> {
+        const shareUrl = this.buildShareUrl(record.tokenValue);
         return {
             id: record.id,
             ownerAccountId: record.ownerAccountId,
@@ -42,7 +49,14 @@ export class CoreShareGateway {
             expiresAt: record.expiresAt,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
-            shareUrl: this.buildShareUrl(record.tokenValue),
+            shareUrl,
+            quickShareActions: await resolveQuickShareActions(
+                this.getCapability,
+                {
+                    shareUrl,
+                    label: record.label,
+                },
+            ),
         };
     }
 
@@ -50,12 +64,13 @@ export class CoreShareGateway {
         ownerAccountId: string;
         resourceType: string;
         resourceId: string;
+        metadata?: Record<string, string> | null;
         label?: string | null;
         grantedCapabilities?: string[];
         expiresAt?: string;
     }): Promise<Record<string, unknown>> {
         const record = await this.store.issue(input);
-        return this.serializeRecord(record);
+        return await this.serializeRecord(record);
     }
 
     async listTokens(filter: {
@@ -64,7 +79,19 @@ export class CoreShareGateway {
         resourceId?: string;
     }): Promise<Record<string, unknown>[]> {
         const records = await this.store.listByOwner(filter);
-        return records.map((record) => this.serializeRecord(record));
+        return await Promise.all(
+            records.map((record) => this.serializeRecord(record)),
+        );
+    }
+
+    async listByResource(filter: {
+        resourceType: string;
+        resourceId: string;
+    }): Promise<Record<string, unknown>[]> {
+        const records = await this.store.listByResource(filter);
+        return await Promise.all(
+            records.map((record) => this.serializeRecord(record)),
+        );
     }
 
     async deleteToken(input: {

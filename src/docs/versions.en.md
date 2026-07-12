@@ -26,7 +26,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.1` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.2` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
@@ -52,7 +52,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.1.0`  |
+| Share                 | `src/gateways/share/`        | `1.2.2`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -79,6 +79,6 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component       | Path                              | Version |
 | --------------- | --------------------------------- | ------- |
 | Analytics       | `src/modules/analytics/`          | `2.0.1` |
-| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.2.0` |
+| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.2.1` |
 | Cognis Japanese | `src/modules/study/languages/ja/` | `1.2.4` |
 | Cognis English  | `src/modules/study/languages/en/` | `1.2.2` |

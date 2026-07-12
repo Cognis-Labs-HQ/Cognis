@@ -135,11 +135,13 @@ export function createEmbedHandlers({
             });
         };
         apiInstance.addEventListener("videoConferenceJoined", (event) => {
+            if (state.jitsiApi !== apiInstance) return;
             state.jitsiParticipantId = callbacks.getParticipantId(event);
             state.jitsiModerator =
                 callbacks.currentUserIsJitsiModerator(apiInstance);
             applyParticipantProfile();
             applyPrivilegedMeetingSettings();
+            void callbacks.keepPresenceAlive(true);
         });
         apiInstance.addEventListener("participantRoleChanged", (event) => {
             const participantId = callbacks.getParticipantId(event);
@@ -175,7 +177,6 @@ export function createEmbedHandlers({
             showReclaim: false,
             visible: false,
         });
-        await callbacks.keepPresenceAlive(true);
     }
 
     async function joinMeeting() {
@@ -219,7 +220,7 @@ export function createEmbedHandlers({
                 message: i18n.t("module.jitsi_meet.overlay.auth_waiting_other"),
                 visible: true,
             });
-            return { trackingAllowed: true };
+            return { trackingAllowed: false };
         }
 
         if (
@@ -233,7 +234,7 @@ export function createEmbedHandlers({
                 showAuth: Boolean(state.meeting.canAuthenticate),
                 visible: true,
             });
-            return { trackingAllowed: true };
+            return { trackingAllowed: false };
         }
 
         await openMeetingEmbed();

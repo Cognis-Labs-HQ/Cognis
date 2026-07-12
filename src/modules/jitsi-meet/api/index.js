@@ -1,4 +1,5 @@
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { registerMeetingRoutes } from "./meetings-routes.js";
 import { registerAdminMeetingRoutes } from "./admin-meetings-routes.js";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
@@ -668,6 +669,7 @@ export function registerApiRoutes(router, ctx) {
             let meetingStarted = false;
             if (!state.firstJoinedBy || state.endedAt) {
                 state = await store.updateMeetingState(resolved.meeting.id, {
+                    instanceId: randomUUID(),
                     firstJoinedBy: resolved.requesterUsername,
                     firstJoinedAt: new Date().toISOString(),
                     authRequired: false,

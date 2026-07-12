@@ -36,6 +36,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         store,
         guestProfileStore,
         approvalRequestStore,
+        undefined,
+        ctx.capabilities.get.bind(ctx.capabilities),
     );
     await gateway.ensureSchema();
 
@@ -46,6 +48,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "share:listTokens",
         gateway.listTokens.bind(gateway),
+    );
+    ctx.capabilities.contribute(
+        "share:listByResource",
+        gateway.listByResource.bind(gateway),
     );
     ctx.capabilities.contribute(
         "share:deleteToken",
@@ -91,7 +97,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.2.0",
+        version: "1.2.2",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: false,

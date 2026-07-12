@@ -92,3 +92,11 @@ Shared meetings now hide participants whose visibility preference excludes anony
 ## Creating a Share Link Now Requires Approval from Other Participants
 
 When a share link is requested for an entity with other users attached to it (e.g. a meeting), those users are prompted with an approve/decline popup. If anyone declines, the share link is not created. Popups auto-approve after 60 seconds if nobody responds.
+
+## Share Popup Refreshes Without Stealing Focus
+
+The share-links popup now renders its create form and link list as separate DOM regions. The label and expiry inputs stay mounted while the list refreshes after create/delete actions and on a 10-second background poll, so users can keep typing without losing the caret position. Existing links also now expose the share URL itself as the copy button beside the title, reducing vertical clutter in the popup.
+
+## Share Links Offer Email Quick Actions
+
+Share records can now include gateway-resolved quick-share actions sourced from active notification senders. The SMTP adapter contributes a `mailto:` quick-share capability, and the Share gateway automatically adds an email action for active SMTP senders to each share record returned to clients.

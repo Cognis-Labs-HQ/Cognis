@@ -53,12 +53,19 @@ async function requireOwnedMeeting({
         profileStore,
         claims.sub,
     ).catch(() => "");
-    if (!requesterUsername || requesterUsername !== meeting.createdBy) {
+    const participantUsernames = requesterUsername
+        ? await store.listParticipants(meeting.id)
+        : [];
+    const hasMeetingAccess =
+        requesterUsername &&
+        (requesterUsername === meeting.createdBy ||
+            participantUsernames.includes(requesterUsername));
+    if (!hasMeetingAccess) {
         sendError(
             res,
             403,
             "forbidden",
-            "Only the meeting owner may share this meeting.",
+            "Only current meeting participants may share this meeting.",
         );
         return null;
     }
@@ -74,12 +81,12 @@ export function registerMeetingShareRoutes({
     const dbExecutor = ctx.getCapability("db:executor");
     const log = ctx.getCapability("logging:log");
     const systemCtx = ctx.getCapability("system:ctx");
-    const listTokens = ctx.getCapability("share:listTokens");
+    const listSharesByResource = ctx.getCapability("share:listByResource");
     if (
         !dbExecutor ||
         !profileStore ||
         !systemCtx ||
-        typeof listTokens !== "function"
+        typeof listSharesByResource !== "function"
     ) {
         router.get(
             "/api/v1/modules/jitsi-meet/share",
@@ -144,8 +151,7 @@ export function registerMeetingShareRoutes({
                 res,
             });
             if (!meeting) return;
-            const data = await listTokens({
-                ownerAccountId: claims.sub,
+            const data = await listSharesByResource({
                 resourceType: "meeting",
                 resourceId: meeting.id,
             });

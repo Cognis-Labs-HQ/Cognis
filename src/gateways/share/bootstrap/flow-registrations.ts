@@ -58,6 +58,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceType?: string;
                 resourceId?: string;
                 ownerAccountId?: string;
+                meetingInstanceId?: string;
             } | null;
             const authorizeResult = getFirstStageResult(
                 stageCtx.stageResults,
@@ -65,6 +66,7 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 authorized?: boolean;
                 ownerAccountId?: string;
+                meetingInstanceId?: string;
             } | null;
             if (!resourceResult?.valid || !authorizeResult?.authorized) {
                 return { approved: false, reason: "share_mint_rejected" };
@@ -157,6 +159,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceType?: string;
                 resourceId?: string;
                 ownerAccountId?: string;
+                meetingInstanceId?: string;
             } | null;
             const authorizeResult = getFirstStageResult(
                 stageCtx.stageResults,
@@ -164,6 +167,7 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 authorized?: boolean;
                 ownerAccountId?: string;
+                meetingInstanceId?: string;
             } | null;
             const approvalResult = getFirstStageResult(
                 stageCtx.stageResults,
@@ -198,6 +202,15 @@ export async function registerShareBootstrapHooks(input: {
                     "",
                 resourceType: resourceResult.resourceType ?? "",
                 resourceId: resourceResult.resourceId ?? "",
+                metadata: authorizeResult.meetingInstanceId
+                    ? {
+                          meetingInstanceId: authorizeResult.meetingInstanceId,
+                      }
+                    : resourceResult.meetingInstanceId
+                      ? {
+                            meetingInstanceId: resourceResult.meetingInstanceId,
+                        }
+                      : null,
                 label: inputPayload.label,
                 grantedCapabilities: Array.isArray(
                     inputPayload.grantedCapabilities,

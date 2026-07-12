@@ -52,6 +52,29 @@ async function requesterHasDirectMeetingAccess(
     return participants.includes(requesterUsername);
 }
 
+async function resolveMeetingRequesterAccess({
+    store,
+    profileStore,
+    requesterAccountId,
+    meeting,
+}) {
+    const requesterUsername = await resolveRequesterUsername(
+        profileStore,
+        requesterAccountId,
+    ).catch(() => "");
+    if (!requesterUsername) {
+        return { isParticipant: false };
+    }
+    const participantUsernames = await store
+        .listParticipants(meeting.id)
+        .catch(() => []);
+    return {
+        isParticipant:
+            requesterUsername === meeting.createdBy ||
+            participantUsernames.includes(requesterUsername),
+    };
+}
+
 export function registerShareFlowHooks(ctx) {
     if (
         !ctx.flow.exists("mint-share-token") ||
@@ -85,11 +108,20 @@ export function registerShareFlowHooks(ctx) {
                     return { targetAccountIds: [] };
                 }
                 const usernames = await store.listParticipants(meeting.id);
+                const presenceEntries = await store.listPresence(meeting.id);
+                const activeUsernames = new Set(
+                    store
+                        .filterCurrentPresenceEntries(presenceEntries)
+                        .map((entry) => entry.username),
+                );
+                const presentParticipants = usernames.filter((username) =>
+                    activeUsernames.has(username),
+                );
                 const requesterAccountId = String(
                     input.requesterAccountId ?? "",
                 );
                 const profiles = await Promise.all(
-                    usernames.map((username) =>
+                    presentParticipants.map((username) =>
                         profileStore
                             .getProfileByHandle(username)
                             .catch(() => null),
@@ -139,13 +171,18 @@ export function registerShareFlowHooks(ctx) {
             if (!meeting) {
                 return { valid: false, reason: "resource_not_found" };
             }
-            const requesterUsername = await resolveRequesterUsername(
+            const requesterAccess = await resolveMeetingRequesterAccess({
+                store,
                 profileStore,
-                String(input.claims?.sub ?? input.ownerAccountId ?? ""),
-            ).catch(() => "");
-            if (!requesterUsername || requesterUsername !== meeting.createdBy) {
+                requesterAccountId: String(
+                    input.claims?.sub ?? input.ownerAccountId ?? "",
+                ),
+                meeting,
+            });
+            if (!requesterAccess.isParticipant) {
                 return { valid: false, reason: "forbidden" };
             }
+            const state = await store.getMeetingState(meeting.id);
             return {
                 valid: true,
                 resourceType: "meeting",
@@ -153,6 +190,7 @@ export function registerShareFlowHooks(ctx) {
                 ownerAccountId: String(
                     input.claims?.sub ?? input.ownerAccountId ?? "",
                 ),
+                meetingInstanceId: state.instanceId,
             };
         },
     );
@@ -175,6 +213,7 @@ export function registerShareFlowHooks(ctx) {
             return {
                 authorized: true,
                 ownerAccountId: resourceResult.ownerAccountId,
+                meetingInstanceId: resourceResult.meetingInstanceId,
             };
         },
     );
@@ -233,6 +272,7 @@ export function registerShareFlowHooks(ctx) {
                             ? meeting.meetingUrl
                             : null,
                     endedAt: state.endedAt,
+                    instanceId: state.instanceId,
                 },
             };
         },
@@ -252,6 +292,22 @@ export function registerShareFlowHooks(ctx) {
                     allowed: false,
                     reason: resourceResult?.reason ?? "resource_not_found",
                 };
+            }
+            const tokenResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-token",
+            );
+            const tokenMeetingInstanceId = String(
+                tokenResult?.tokenRecord?.metadata?.meetingInstanceId ?? "",
+            ).trim();
+            const currentMeetingInstanceId = String(
+                resourceResult.payload?.instanceId ?? "",
+            ).trim();
+            if (
+                !tokenMeetingInstanceId ||
+                tokenMeetingInstanceId !== currentMeetingInstanceId
+            ) {
+                return { allowed: false, reason: "expired" };
             }
             if (resourceResult.payload?.endedAt) {
                 return { allowed: false, reason: "expired" };
@@ -326,22 +382,20 @@ export function registerShareFlowHooks(ctx) {
                 if (!meeting) {
                     return { authorized: false, reason: "resource_not_found" };
                 }
-                const requesterUsername = await resolveRequesterUsername(
+                const requesterAccess = await resolveMeetingRequesterAccess({
+                    store,
                     profileStore,
-                    String(input.claims?.sub ?? input.ownerAccountId ?? ""),
-                ).catch(() => "");
-                if (
-                    !requesterUsername ||
-                    requesterUsername !== meeting.createdBy
-                ) {
+                    requesterAccountId: String(
+                        input.claims?.sub ?? input.ownerAccountId ?? "",
+                    ),
+                    meeting,
+                });
+                if (!requesterAccess.isParticipant) {
                     return { authorized: false, reason: "forbidden" };
                 }
                 return {
                     authorized: true,
                     shareId: String(input.shareId ?? ""),
-                    ownerAccountId: String(
-                        input.claims?.sub ?? input.ownerAccountId ?? "",
-                    ),
                     resourceType: "meeting",
                     resourceId: meeting.id,
                 };

@@ -130,6 +130,7 @@ export class JitsiMeetStore {
             name: "jitsi_meeting_state",
             columns: [
                 { name: "meeting_id", type: "text", primaryKey: true },
+                { name: "instance_id", type: "text" },
                 { name: "first_joined_by", type: "text" },
                 { name: "first_joined_at", type: "timestamp" },
                 {
@@ -383,6 +384,7 @@ export class JitsiMeetStore {
                 table: "jitsi_meeting_state",
                 values: {
                     meeting_id: meetingId,
+                    instance_id: randomUUID(),
                     auth_required: 0,
                     updated_at: createdAt,
                 },
@@ -411,6 +413,7 @@ export class JitsiMeetStore {
         if (!row) {
             return {
                 meetingId,
+                instanceId: randomUUID(),
                 firstJoinedBy: null,
                 firstJoinedAt: null,
                 authRequired: false,
@@ -422,8 +425,25 @@ export class JitsiMeetStore {
                 endedAt: null,
             };
         }
+        const instanceId = row.instance_id
+            ? String(row.instance_id)
+            : randomUUID();
+        if (!row.instance_id) {
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "jitsi_meeting_state",
+                set: {
+                    instance_id: instanceId,
+                    updated_at: row.updated_at
+                        ? String(row.updated_at)
+                        : new Date().toISOString(),
+                },
+                where: [{ column: "meeting_id", value: meetingId }],
+            });
+        }
         return {
             meetingId,
+            instanceId,
             firstJoinedBy: row.first_joined_by
                 ? String(row.first_joined_by)
                 : null,
@@ -457,6 +477,7 @@ export class JitsiMeetStore {
             table: "jitsi_meeting_state",
             values: {
                 meeting_id: meetingId,
+                instance_id: merged.instanceId,
                 first_joined_by: merged.firstJoinedBy,
                 first_joined_at: merged.firstJoinedAt,
                 auth_required: merged.authRequired ? 1 : 0,
