@@ -301,6 +301,9 @@ For every change:
 - Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.
 - Keep HTML and JS/TS in separate files; do not embed page markup as feature-sized string templates in JS/TS modules.
 - Keep files at or below 1000 lines. If a file grows beyond that limit, convert it into a subdirectory with `index` as the entry point and split logic into focused sibling files.
+- Before writing any new feature, estimate the minimal-footprint implementation first: identify the smallest set of files and lines that satisfy the requirement using existing gateways, adapters, capabilities, and `reuse/` utilities. Only add new abstractions, files, or scaffolding when the existing surface genuinely cannot express the behavior.
+- A feature request phrased in a single sentence (e.g. "add a share button") must not translate into thousands of added lines. If a change is trending toward that scale, stop and re-derive the plan around composing existing primitives (flows, capabilities, composer/router contracts, existing UI components) instead of building parallel infrastructure.
+- Prefer extending an existing flow, gateway route, or UI composer contribution over introducing a new one, whenever the existing contract already covers the use case.
 
 ### Variable naming
 

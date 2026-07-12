@@ -14,6 +14,12 @@ const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
 const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
 
+function toIsoTimestamp(value) {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    return String(value);
+}
+
 function buildRoomSlug(prefix) {
     const readablePrefix =
         normalizeMeetingPrefix(prefix) || DEFAULT_MEETING_SLUG_PREFIX;
@@ -184,7 +190,7 @@ export class JitsiMeetStore {
             meetingPrefix: row?.meeting_prefix
                 ? String(row.meeting_prefix)
                 : "",
-            updatedAt: row?.updated_at ? String(row.updated_at) : null,
+            updatedAt: toIsoTimestamp(row?.updated_at),
         };
     }
 
@@ -260,8 +266,8 @@ export class JitsiMeetStore {
             chatRoomId: row.chat_room_id ? String(row.chat_room_id) : null,
             classroomId: row.classroom_id ? String(row.classroom_id) : null,
             createdBy: row.created_by ? String(row.created_by) : "",
-            createdAt: row.created_at ? String(row.created_at) : null,
-            updatedAt: row.updated_at ? String(row.updated_at) : null,
+            createdAt: toIsoTimestamp(row.created_at),
+            updatedAt: toIsoTimestamp(row.updated_at),
         };
     }
 
@@ -435,7 +441,7 @@ export class JitsiMeetStore {
                 set: {
                     instance_id: instanceId,
                     updated_at: row.updated_at
-                        ? String(row.updated_at)
+                        ? toIsoTimestamp(row.updated_at)
                         : new Date().toISOString(),
                 },
                 where: [{ column: "meeting_id", value: meetingId }],
@@ -447,22 +453,16 @@ export class JitsiMeetStore {
             firstJoinedBy: row.first_joined_by
                 ? String(row.first_joined_by)
                 : null,
-            firstJoinedAt: row.first_joined_at
-                ? String(row.first_joined_at)
-                : null,
+            firstJoinedAt: toIsoTimestamp(row.first_joined_at),
             authRequired: Number(row.auth_required ?? 0) === 1,
             authStartedBy: row.auth_started_by
                 ? String(row.auth_started_by)
                 : null,
-            authStartedAt: row.auth_started_at
-                ? String(row.auth_started_at)
-                : null,
-            authCompletedAt: row.auth_completed_at
-                ? String(row.auth_completed_at)
-                : null,
-            updatedAt: row.updated_at ? String(row.updated_at) : null,
+            authStartedAt: toIsoTimestamp(row.auth_started_at),
+            authCompletedAt: toIsoTimestamp(row.auth_completed_at),
+            updatedAt: toIsoTimestamp(row.updated_at),
             endedBy: row.ended_by ? String(row.ended_by) : null,
-            endedAt: row.ended_at ? String(row.ended_at) : null,
+            endedAt: toIsoTimestamp(row.ended_at),
         };
     }
 
@@ -561,7 +561,7 @@ export class JitsiMeetStore {
             username: String(row.username),
             sessionId: String(row.session_id),
             active: Number(row.active ?? 0) === 1,
-            lastSeenAt: String(row.last_seen_at),
+            lastSeenAt: toIsoTimestamp(row.last_seen_at),
         }));
     }
 
@@ -609,8 +609,8 @@ export class JitsiMeetStore {
                         ? String(row.classroom_id)
                         : null,
                     createdBy: String(row.created_by),
-                    createdAt: String(row.created_at),
-                    updatedAt: String(row.updated_at),
+                    createdAt: toIsoTimestamp(row.created_at),
+                    updatedAt: toIsoTimestamp(row.updated_at),
                 };
                 const [presence, participants, state] = await Promise.all([
                     this.listPresence(meeting.id),
@@ -713,7 +713,7 @@ export class JitsiMeetStore {
                     meetingUrl: String(row.meeting_url),
                     meetingName: String(row.meeting_name ?? "Cognis Classroom"),
                     createdBy: String(row.created_by),
-                    createdAt: String(row.created_at),
+                    createdAt: toIsoTimestamp(row.created_at),
                 };
                 const [presence, participants, state] = await Promise.all([
                     this.listPresence(meeting.id),
