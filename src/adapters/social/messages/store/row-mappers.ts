@@ -10,17 +10,18 @@ import type {
     RoomRow,
     TypingRow,
 } from "./types.js";
+import { readTimestampValue } from "../../../../gateways/db/reuse/db-table.js";
 
 function readString(value: unknown, fallback = ""): string {
     if (value instanceof Date) {
-        return Number.isNaN(value.getTime()) ? fallback : value.toISOString();
+        return readTimestampValue(value) ?? fallback;
     }
     return value == null ? fallback : String(value);
 }
 
 function readNullableString(value: unknown): string | null {
     if (value instanceof Date) {
-        return Number.isNaN(value.getTime()) ? null : value.toISOString();
+        return readTimestampValue(value);
     }
     return value == null ? null : String(value);
 }
