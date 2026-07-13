@@ -128,3 +128,22 @@ Each share link in the popup now displays an "Active" or "Expired" status badge 
 ## Fixed Light-Mode Contrast in the Share Links Popup
 
 Share link rows used a hardcoded dark background and text colors that ignored the active theme, making them render with an overly dark background even in light mode. The popup now uses the shared theme variables so it adapts correctly to both light and dark mode.
+
+## Fix Expired Share Pages Hanging on an Infinite Loading Wheel
+
+Visiting an expired or invalid share link caused the page to spin forever instead of showing the expired-link screen. `renderDashboardLayout` always assumed a failed session check meant a redirect was imminent and hung intentionally to avoid a content flash, but share pages call the same session check and, on a failed share resolution, deliberately get no redirect so they can render their own fallback. A new `requireAccountSession` composer option (defaulting to the previous behavior everywhere) lets the share page opt out of the hang so its own expired/deleted screen can render.
+
+## Fix Missing Boilerplate CSS on Shared Meeting Pages
+
+Meeting pages mounted inside a share link were rendering squeezed into a small default-sized card instead of the full page layout. The share page's mounted-app grid size used `max: ["full", "full"]`, which is not a recognized token in the page composer (only the scalar `max: "full"` flips full-width layout) and silently fell back to the small default card. The share element's grid size is now `max: "full"` for mounted apps, and the Jitsi Meet page's own inner composer now also receives `frameless: true` when rendering inside a share view, matching its outer share-page composer instead of keeping its normal card-styled padding.
+
+## Fix Guest Meeting Chat Access
+
+Guests joining a meeting via a share link were being blocked from the meeting chat. Two root causes were fixed:
+
+- **Meetings created without other participants never got a chat room.** Meetings are commonly created solo and shared out afterwards, but chat room creation required at least two real accounts. The chat-room resolution capability now accepts an `allowSingleMember` option, and meeting creation uses it so solo-hosted meetings still get a chat room guests can access.
+- **Share links minted before a meeting's first instance always failed as "expired".** The share access check required the link's recorded meeting-instance id to exactly match the meeting's current instance id, but a link shared ahead of time has no instance id yet. The check now only rejects a link when both the link and the meeting have a concrete, differing instance id (i.e. the meeting was restarted since the link was created).
+
+## Share Link Copy Icon Uses Shared Clipboard Helper
+
+The clipboard-copy helper previously duplicated inside the runtime error popup has been promoted to a generic `copyTextToClipboard` utility in `src/ui/reuse/clipboard.js`, and the share links popup's copy-link icon and auto-copy-on-create action now both use it instead of calling `navigator.clipboard.writeText` directly, so a missing/blocked Clipboard API degrades to a toast error instead of a silent failure.

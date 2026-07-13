@@ -89,6 +89,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { copyTextToClipboard } from "/static/reuse/clipboard.js";
 
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
@@ -378,16 +379,12 @@ export async function openShareLinksPopup({
                 }
 
                 if (shareUrl) {
-                    navigator.clipboard
-                        .writeText(String(shareUrl))
-                        .then(() => {
-                            showToast(labels.copySuccess, {
-                                variant: "success",
-                            });
-                        })
-                        .catch(() => {
-                            showToast(labels.copyFailed, { variant: "error" });
-                        });
+                    copyTextToClipboard(String(shareUrl)).then((copied) => {
+                        showToast(
+                            copied ? labels.copySuccess : labels.copyFailed,
+                            { variant: copied ? "success" : "error" },
+                        );
+                    });
                 }
             });
 
@@ -405,16 +402,12 @@ export async function openShareLinksPopup({
                     if (!shareUrl) {
                         return;
                     }
-                    navigator.clipboard
-                        .writeText(shareUrl)
-                        .then(() => {
-                            showToast(labels.copySuccess, {
-                                variant: "success",
-                            });
-                        })
-                        .catch(() => {
-                            showToast(labels.copyFailed, { variant: "error" });
-                        });
+                    copyTextToClipboard(shareUrl).then((copied) => {
+                        showToast(
+                            copied ? labels.copySuccess : labels.copyFailed,
+                            { variant: copied ? "success" : "error" },
+                        );
+                    });
                     return;
                 }
 

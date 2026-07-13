@@ -123,3 +123,22 @@ Setiap tautan berbagi di popup kini menampilkan lencana status "Aktif" atau "Ked
 ## Perbaikan Kontras Mode Terang pada Popup Tautan Berbagi
 
 Baris tautan berbagi menggunakan warna latar belakang gelap dan warna teks yang dikodekan secara tetap sehingga mengabaikan tema aktif, membuatnya tampil dengan latar belakang terlalu gelap bahkan dalam mode terang. Popup sekarang menggunakan variabel tema bersama sehingga menyesuaikan dengan benar pada mode terang maupun gelap.
+
+## Perbaikan Roda Muat Tanpa Henti pada Halaman Berbagi yang Kedaluwarsa
+
+Mengunjungi tautan berbagi yang kedaluwarsa atau tidak valid menyebabkan halaman berputar tanpa henti alih-alih menampilkan layar tautan kedaluwarsa. `renderDashboardLayout` selalu berasumsi bahwa pemeriksaan sesi yang gagal berarti pengalihan akan segera terjadi, sehingga sengaja berhenti untuk menghindari kedipan konten. Halaman berbagi memanggil pemeriksaan sesi yang sama, tetapi saat resolusi berbagi gagal, halaman tersebut sengaja tidak menerima pengalihan agar dapat menampilkan tampilan cadangannya sendiri. Opsi composer baru `requireAccountSession` (defaultnya sesuai perilaku sebelumnya di tempat lain) memungkinkan halaman berbagi keluar dari penghentian ini agar layar kedaluwarsa/dihapusnya sendiri dapat ditampilkan.
+
+## Perbaikan CSS Dasar yang Hilang pada Halaman Meeting yang Dibagikan
+
+Halaman meeting yang dimuat di dalam tautan berbagi tertekan menjadi kartu berukuran kecil default alih-alih tata letak halaman penuh. Ukuran grid aplikasi yang dimuat pada halaman berbagi menggunakan `max: ["full", "full"]`, yang bukan token yang dikenali di page composer (hanya nilai skalar `max: "full"` yang mengaktifkan tata letak lebar penuh) dan secara diam-diam kembali ke kartu kecil default. Ukuran grid elemen berbagi kini menjadi `max: "full"` untuk aplikasi yang dimuat, dan composer internal halaman Jitsi Meet sendiri kini juga menerima `frameless: true` saat dirender di dalam tampilan berbagi, agar sesuai dengan composer halaman berbagi luarnya alih-alih mempertahankan padding bergaya kartu normalnya.
+
+## Perbaikan Akses Chat Meeting untuk Tamu
+
+Tamu yang bergabung ke meeting melalui tautan berbagi diblokir dari chat meeting. Dua penyebab utama telah diperbaiki:
+
+- **Meeting yang dibuat tanpa peserta lain tidak pernah mendapatkan ruang chat.** Meeting sering dibuat sendirian dan dibagikan setelahnya, tetapi pembuatan ruang chat memerlukan setidaknya dua akun nyata. Kapabilitas resolusi ruang chat kini menerima opsi `allowSingleMember`, dan pembuatan meeting menggunakannya sehingga meeting yang dihosting sendirian tetap mendapatkan ruang chat yang dapat diakses tamu.
+- **Tautan berbagi yang dibuat sebelum instance pertama meeting selalu gagal sebagai "kedaluwarsa".** Pemeriksaan akses berbagi mengharuskan id instance meeting yang tercatat pada tautan sama persis dengan id instance meeting saat ini, tetapi tautan yang dibagikan lebih awal belum memiliki id instance. Pemeriksaan kini hanya menolak tautan saat tautan dan meeting sama-sama memiliki id instance konkret yang berbeda (yaitu meeting telah dimulai ulang sejak tautan dibuat).
+
+## Ikon Salin Tautan Menggunakan Fungsi Bantuan Papan Klip Bersama
+
+Fungsi bantuan salin papan klip yang sebelumnya diduplikasi di dalam popup kesalahan runtime kini dipromosikan menjadi utilitas generik `copyTextToClipboard` di `src/ui/reuse/clipboard.js`. Ikon salin tautan pada popup tautan berbagi serta tindakan salin otomatis saat pembuatan tautan kini keduanya menggunakan fungsi ini alih-alih memanggil `navigator.clipboard.writeText` secara langsung, sehingga API papan klip yang hilang/diblokir menghasilkan notifikasi kesalahan alih-alih gagal secara diam-diam.

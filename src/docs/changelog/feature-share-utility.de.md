@@ -123,3 +123,22 @@ Jeder Share-Link im Popup zeigt jetzt ein Statusabzeichen „Aktiv“ oder „Ab
 ## Kontrastproblem im Hellmodus des Share-Links-Popups behoben
 
 Die Zeilen der Share-Links verwendeten einen fest codierten dunklen Hintergrund und Textfarben, die das aktive Theme ignorierten, wodurch sie selbst im Hellmodus mit einem zu dunklen Hintergrund dargestellt wurden. Das Popup verwendet jetzt die gemeinsamen Theme-Variablen, sodass es sich korrekt an Hell- und Dunkelmodus anpasst.
+
+## Endlos-Ladeanimation bei abgelaufenen Share-Seiten behoben
+
+Der Aufruf eines abgelaufenen oder ungültigen Share-Links führte dazu, dass die Seite endlos lud, statt den Bildschirm für abgelaufene Links anzuzeigen. `renderDashboardLayout` ging immer davon aus, dass eine fehlgeschlagene Sitzungsprüfung eine bevorstehende Weiterleitung bedeutet, und hielt absichtlich an, um ein kurzes Aufblitzen von Inhalten zu vermeiden. Share-Seiten rufen dieselbe Sitzungsprüfung auf, erhalten bei einer fehlgeschlagenen Share-Auflösung jedoch bewusst keine Weiterleitung, damit sie ihren eigenen Fallback-Bildschirm anzeigen können. Eine neue Composer-Option `requireAccountSession` (die Standardeinstellung entspricht dem bisherigen Verhalten überall sonst) erlaubt der Share-Seite, dieses Anhalten zu umgehen, damit ihr eigener Bildschirm für abgelaufene/gelöschte Links angezeigt werden kann.
+
+## Fehlendes Standard-CSS auf geteilten Meeting-Seiten behoben
+
+Meeting-Seiten, die über einen Share-Link eingebunden wurden, wurden in eine kleine Standardkarte gequetscht statt im vollen Seitenlayout dargestellt. Die Rastergröße der eingebetteten App auf der Share-Seite verwendete `max: ["full", "full"]`, was im Page-Composer kein erkanntes Token ist (nur der skalare Wert `max: "full"` aktiviert das Vollbreiten-Layout) und stillschweigend auf die kleine Standardkarte zurückfiel. Die Rastergröße des Share-Elements ist für eingebettete Apps jetzt `max: "full"`, und der eigene innere Composer der Jitsi-Meet-Seite erhält jetzt ebenfalls `frameless: true`, wenn er innerhalb einer Share-Ansicht gerendert wird, sodass er zum äußeren Composer der Share-Seite passt, statt sein normales, kartenartiges Padding beizubehalten.
+
+## Zugriff von Gästen auf den Meeting-Chat behoben
+
+Gäste, die über einen Share-Link an einem Meeting teilnahmen, wurden vom Meeting-Chat blockiert. Zwei Ursachen wurden behoben:
+
+- **Meetings ohne weitere Teilnehmer erhielten nie einen Chatraum.** Meetings werden häufig zunächst allein erstellt und erst danach geteilt, aber die Erstellung eines Chatraums erforderte mindestens zwei echte Konten. Die Chatraum-Auflösungsfähigkeit akzeptiert jetzt eine Option `allowSingleMember`, und die Meeting-Erstellung nutzt sie, sodass allein gehostete Meetings weiterhin einen Chatraum erhalten, auf den Gäste zugreifen können.
+- **Share-Links, die vor der ersten Instanz eines Meetings erstellt wurden, schlugen immer als „abgelaufen“ fehl.** Die Zugriffsprüfung für Share-Links verlangte, dass die im Link gespeicherte Meeting-Instanz-ID exakt mit der aktuellen Instanz-ID des Meetings übereinstimmt, aber ein im Voraus geteilter Link hat noch keine Instanz-ID. Die Prüfung lehnt einen Link jetzt nur ab, wenn sowohl der Link als auch das Meeting eine konkrete, abweichende Instanz-ID besitzen (d. h. das Meeting wurde seit der Erstellung des Links neu gestartet).
+
+## Copy-Link-Symbol verwendet gemeinsame Zwischenablage-Hilfsfunktion
+
+Die Zwischenablage-Kopierfunktion, die zuvor im Runtime-Error-Popup dupliziert war, wurde zu einem generischen Dienstprogramm `copyTextToClipboard` in `src/ui/reuse/clipboard.js` erhoben. Das Copy-Link-Symbol im Share-Links-Popup sowie die automatische Kopierfunktion beim Erstellen eines Links verwenden diese Funktion jetzt statt `navigator.clipboard.writeText` direkt aufzurufen, sodass eine fehlende oder blockierte Zwischenablage-API zu einer Fehlermeldung statt zu einem stillen Fehlschlag führt.
