@@ -110,7 +110,7 @@ export async function mount(root, { signal } = {}) {
         showNavbar: false,
         showFooter: true,
         showThemeToggle: true,
-        frameless: true,
+        frameless: false,
         persistLayoutPreferences: false,
         // This page is visited by anonymous guests and runs its own
         // authenticate-session flow below, so it must not block on a full
