@@ -1,16 +1,21 @@
 /**
- * Generic share-links popup for listing, creating, and revoking share links.
+ * Share-gateway-owned popup for listing, creating, and revoking share links.
  *
  * Renders a modal dialog that displays a list of existing share links and a
  * form for generating new ones. All API calls are supplied by the caller via
- * async callback functions so this module stays provider-agnostic.
+ * async callback functions so this module stays provider-agnostic. It lives
+ * under the Share gateway's own `ui/reuse` directory (not a generic
+ * `src/ui/reuse` helper) so that disabling the Share gateway means this
+ * static asset is never served, the dynamic import fails, and no share popup
+ * or link-creation logic is ever created in the first place.
  *
  * Public exports:
  *   openShareLinksPopup(options) — opens the popup and returns a Promise that
  *     resolves when the user dismisses it.
  *
  * Usage:
- *   import { openShareLinksPopup } from '/static/reuse/share-links-popup.js';
+ *   import { openShareLinksPopup } from
+ *     '/static/gateways/share/ui/reuse/share-links-popup.js';
  *
  *   await openShareLinksPopup({
  *     title: 'Share Meeting',
