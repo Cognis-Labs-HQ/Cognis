@@ -371,7 +371,6 @@ export function registerMeetingRoutes({
                 const participants =
                     typeof filterUsernamesForGuestVisibility === "function"
                         ? await filterUsernamesForGuestVisibility(
-                              profileStore,
                               rawParticipants,
                           )
                         : rawParticipants;
@@ -689,7 +688,6 @@ export function registerMeetingRoutes({
                             return typeof filterUsernamesForGuestVisibility ===
                                 "function"
                                 ? filterUsernamesForGuestVisibility(
-                                      profileStore,
                                       activeUsernames,
                                   )
                                 : activeUsernames;
