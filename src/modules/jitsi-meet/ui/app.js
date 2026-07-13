@@ -140,6 +140,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         resetParticipantSelection,
         selectedUsernames,
         setPreflightStatus,
+        syncShareButtonAvailability,
         updateOverlay,
     } = createMountUtilities({ root, state });
 
@@ -159,6 +160,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         resetParticipantSelection,
         selectedUsernames,
         setPreflightStatus,
+        syncShareButtonAvailability,
         updateOverlay,
     };
     const chatHandlers = createChatHandlers({
