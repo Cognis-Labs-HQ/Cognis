@@ -72,6 +72,10 @@ export async function bindShareButton({
                         untitled: i18n.t("module.jitsi_meet.share.untitled"),
                         copyLink: i18n.t("module.jitsi_meet.share.copy_link"),
                         revoke: i18n.t("module.jitsi_meet.share.revoke"),
+                        shareOptions: i18n.t(
+                            "module.jitsi_meet.share.share_options_label",
+                        ),
+                        mail: i18n.t("ui.reuse.mail"),
                         label: i18n.t("module.jitsi_meet.share.label"),
                         labelPlaceholder: i18n.t(
                             "module.jitsi_meet.share.label_placeholder",

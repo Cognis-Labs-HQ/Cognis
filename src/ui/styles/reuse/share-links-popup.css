@@ -27,12 +27,20 @@
 }
 
 .share-links-row {
+    position: relative;
     display: grid;
     gap: 0.75rem;
     padding: 0.875rem;
+    padding-right: 2.5rem;
     border: 1px solid rgba(148, 163, 184, 0.2);
     border-radius: 0.875rem;
     background: rgba(15, 23, 42, 0.48);
+}
+
+.share-links-row-close {
+    position: absolute;
+    top: 0.625rem;
+    right: 0.625rem;
 }
 
 .share-links-row-main,
@@ -73,6 +81,16 @@
     line-height: 1;
 }
 
+.share-links-row-share {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.share-links-row-share-label {
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.82);
+}
+
 .share-links-row-actions {
     display: flex;
     flex-wrap: wrap;
@@ -81,6 +99,12 @@
 
 .share-links-row-quick-action {
     text-decoration: none;
+}
+
+.share-links-row-mail-icon {
+    width: 1rem;
+    height: 1rem;
+    display: block;
 }
 
 .share-links-empty {

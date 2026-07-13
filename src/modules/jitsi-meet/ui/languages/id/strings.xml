@@ -87,6 +87,7 @@
   <string name="module.jitsi_meet.share.generate_link">Buat Tautan</string>
   <string name="module.jitsi_meet.share.copy_link">Salin Tautan</string>
   <string name="module.jitsi_meet.share.revoke">Cabut</string>
+  <string name="module.jitsi_meet.share.share_options_label">Bagikan:</string>
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
   <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa Dalam (Jam)</string>

@@ -34,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">Discard and Leave</string>
   <string name="ui.reuse.stay">Stay</string>
   <string name="ui.reuse.close_form_warning">You have unsaved changes. Closing this form will discard them.</string>
+  <string name="ui.reuse.mail">Mail</string>
 
   <string name="ui.reuse.enable">Enable</string>
   <string name="ui.reuse.disable">Disable</string>

@@ -19,6 +19,8 @@
  *       untitled: 'Untitled',
  *       copyLink: 'Copy Link',
  *       revoke: 'Revoke',
+ *       shareOptions: 'Share:',
+ *       mail: 'Mail',
  *       label: 'Label',
  *       labelPlaceholder: 'Enter a label…',
  *       expiryLabel: 'Expires in (hours)',
@@ -41,6 +43,8 @@
  *     untitled: string,
  *     copyLink: string,
  *     revoke: string,
+ *     shareOptions: string,
+ *     mail: string,
  *     label: string,
  *     labelPlaceholder: string,
  *     expiryLabel: string,
@@ -72,6 +76,7 @@ import { showToast } from "/static/reuse/toast.js";
 
 const STYLESHEET_HREF = "/static/styles/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
+const MAIL_ICON_HREF = "/static/assets/reuse/mail.svg";
 
 let stylesheetReady = null;
 
@@ -96,7 +101,7 @@ function ensureStylesheet() {
     return stylesheetReady;
 }
 
-function renderQuickShareActions(link) {
+function renderQuickShareActions(link, labels) {
     const quickShareActions = Array.isArray(link?.quickShareActions)
         ? link.quickShareActions
         : [];
@@ -111,17 +116,17 @@ function renderQuickShareActions(link) {
             if (id === "smtp") {
                 return `
           <a
-            class="btn-confirm"
+            class="btn-neutral btn-animated"
             href="${escapeHtml(href)}"
             data-share-quick-action="${escapeHtml(id)}"
-            aria-label="${escapeHtml(label)}"
-            title="${escapeHtml(label)}"
-          >✉</a>
+            aria-label="${escapeHtml(labels.mail)}"
+            title="${escapeHtml(labels.mail)}"
+          ><img src="${MAIL_ICON_HREF}" alt="" class="share-links-row-mail-icon" /></a>
         `;
             }
             return `
         <a
-          class="btn-confirm btn-animated share-links-row-quick-action"
+          class="btn-neutral btn-animated share-links-row-quick-action"
           href="${escapeHtml(href)}"
           data-share-quick-action="${escapeHtml(id)}"
         >${escapeHtml(label)}</a>
@@ -144,6 +149,13 @@ function renderRows(labels, links) {
                   String(link?.label ?? "").trim() || labels.untitled;
               return `
             <article class="share-links-row">
+              <button
+                type="button"
+                class="popup-close-btn btn-cancel btn-animated share-links-row-close"
+                data-share-delete="${escapeHtml(shareId)}"
+                aria-label="${escapeHtml(labels.revoke)}"
+                title="${escapeHtml(labels.revoke)}"
+              >&#x2715;</button>
               <div class="share-links-row-main">
                 <div class="share-links-row-header">
                   <p class="share-links-row-label">${escapeHtml(shareLabel)}</p>
@@ -156,13 +168,11 @@ function renderRows(labels, links) {
                   >🔗</a>
                 </div>
               </div>
-              <div class="share-links-row-actions">
-                ${renderQuickShareActions(link)}
-                <button
-                  type="button"
-                  class="btn-cancel btn-animated"
-                  data-share-delete="${escapeHtml(shareId)}"
-                >${escapeHtml(labels.revoke)}</button>
+              <div class="share-links-row-share">
+                <span class="share-links-row-share-label">${escapeHtml(labels.shareOptions)}</span>
+                <div class="share-links-row-actions">
+                  ${renderQuickShareActions(link, labels)}
+                </div>
               </div>
             </article>
           `;

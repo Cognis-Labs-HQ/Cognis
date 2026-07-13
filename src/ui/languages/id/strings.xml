@@ -34,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">Buang dan Lanjutkan</string>
   <string name="ui.reuse.stay">Tetap di Sini</string>
   <string name="ui.reuse.close_form_warning">Anda memiliki perubahan yang belum disimpan. Menutup formulir ini akan membuang perubahan tersebut.</string>
+  <string name="ui.reuse.mail">Surel</string>
 
   <string name="ui.reuse.enable">Aktifkan</string>
   <string name="ui.reuse.disable">Nonaktifkan</string>

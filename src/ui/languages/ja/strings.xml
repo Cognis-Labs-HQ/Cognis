@@ -34,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">破棄して移動</string>
   <string name="ui.reuse.stay">このページに留まる</string>
   <string name="ui.reuse.close_form_warning">未保存の変更があります。このフォームを閉じると、変更が失われます。</string>
+  <string name="ui.reuse.mail">メール</string>
 
   <string name="ui.reuse.enable">有効化</string>
   <string name="ui.reuse.disable">無効化</string>

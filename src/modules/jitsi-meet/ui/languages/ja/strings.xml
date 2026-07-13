@@ -87,6 +87,7 @@
   <string name="module.jitsi_meet.share.generate_link">リンクを作成</string>
   <string name="module.jitsi_meet.share.copy_link">リンクをコピー</string>
   <string name="module.jitsi_meet.share.revoke">無効化</string>
+  <string name="module.jitsi_meet.share.share_options_label">共有：</string>
   <string name="module.jitsi_meet.share.label">ラベル</string>
   <string name="module.jitsi_meet.share.label_placeholder">任意のラベル</string>
   <string name="module.jitsi_meet.share.expiry_label">有効期限（時間）</string>
