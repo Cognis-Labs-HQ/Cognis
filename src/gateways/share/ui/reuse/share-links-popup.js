@@ -79,7 +79,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 
-const STYLESHEET_HREF = "/static/styles/reuse/share-links-popup.css";
+const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 const MAIL_ICON_HREF = "/static/assets/reuse/mail.svg";
 

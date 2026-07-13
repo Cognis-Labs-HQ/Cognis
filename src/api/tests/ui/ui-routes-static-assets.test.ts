@@ -109,14 +109,19 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
-test("GET /static/reuse/share-links-popup.js serves reusable share popup module", async () => {
-    const route = createUiRoutes(undefined, new UIRegistry());
+test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gateway-owned popup module", async () => {
+    const uiRegistry = new UIRegistry();
+    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
+    uiRegistry.registerStaticDir("share", shareUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/reuse/share-links-popup.js"),
+        new URL(
+            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.js",
+        ),
     );
 
     assert.ok(handled);
@@ -128,14 +133,19 @@ test("GET /static/reuse/share-links-popup.js serves reusable share popup module"
     assert.match(recorder.body, /openShareLinksPopup/);
 });
 
-test("GET /static/styles/reuse/share-links-popup.css serves reusable share popup styles", async () => {
-    const route = createUiRoutes(undefined, new UIRegistry());
+test("GET /static/gateways/share/ui/reuse/share-links-popup.css serves share-gateway-owned popup styles", async () => {
+    const uiRegistry = new UIRegistry();
+    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
+    uiRegistry.registerStaticDir("share", shareUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/styles/reuse/share-links-popup.css"),
+        new URL(
+            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.css",
+        ),
     );
 
     assert.ok(handled);

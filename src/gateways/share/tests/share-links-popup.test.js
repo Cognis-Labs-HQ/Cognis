@@ -4,11 +4,11 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 test("share links popup keeps form and list rendering separate", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/share-links-popup.js"),
+        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
         "utf8",
     );
 
@@ -26,11 +26,11 @@ test("share links popup keeps form and list rendering separate", () => {
 
 test("share links popup renders existing links as an icon-only hyperlink", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/share-links-popup.js"),
+        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
         "utf8",
     );
     const cssSource = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/share-links-popup.css"),
+        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.css"),
         "utf8",
     );
 

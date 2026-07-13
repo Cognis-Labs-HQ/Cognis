@@ -103,7 +103,7 @@ test("buildServer serves static UI assets before registered catch-all routes", a
     try {
         const port = await listen(server);
         const response = await fetch(
-            `http://127.0.0.1:${port}/static/reuse/share-links-popup.js`,
+            `http://127.0.0.1:${port}/static/reuse/escape-html.js`,
         );
         const body = await response.text();
 
@@ -112,7 +112,7 @@ test("buildServer serves static UI assets before registered catch-all routes", a
             response.headers.get("content-type"),
             "text/javascript; charset=utf-8",
         );
-        assert.match(body, /openShareLinksPopup/);
+        assert.match(body, /export function escapeHtml/);
     } finally {
         await close(server);
     }
