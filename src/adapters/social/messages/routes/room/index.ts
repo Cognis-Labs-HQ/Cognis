@@ -78,7 +78,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const isAllowedShareGuest =
             isShareGuest &&
             shareGuestToken?.resourceType === "meeting" &&
-            room.kind === "group";
+            (room.kind === "group" || room.kind === "classroom");
         const shareMeeting = isAllowedShareGuest
             ? await getMeetingById?.(shareGuestToken.resourceId).catch(
                   () => null,

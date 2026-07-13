@@ -945,12 +945,10 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         showFooter: !inShareView,
         showThemeToggle: !inShareView,
         persistLayoutPreferences: !inShareView,
-        // When mounted inside a share page, this composer is nested inside
-        // the share page's own frameless composer. Without `frameless` here
-        // too, the inner `.app-shell`/`.workspace` keep their normal
-        // card-styled max-width/padding classes instead of the full-bleed
-        // layout the real meetings page renders with.
-        frameless: inShareView,
+        // Share-mounted meetings should keep the same page-composer
+        // workspace/card styling as the signed-in Meetings page. The outer
+        // share shell is frameless, but the mounted app itself must not be.
+        frameless: false,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
             if (!inShareView) {

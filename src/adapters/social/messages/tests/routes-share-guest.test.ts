@@ -115,6 +115,35 @@ test("share guest with chat:read capability can read the room key", async () => 
     assert.equal(payload.data.key, "deadbeefcafe");
 });
 
+test("share guest with chat:read capability can read a classroom room key", async () => {
+    const routes = makeRoutes({
+        shareToken: {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            grantedCapabilities: [
+                "meeting:join",
+                "participants:read",
+                "chat:read",
+            ],
+        },
+        meeting: { chatRoomId: "room-1" },
+        room: { id: "room-1", kind: "classroom" },
+    });
+
+    const req = makeReq("GET", issueGuestToken());
+    const res = makeRes();
+    const url = new URL(
+        "http://localhost/api/v1/social/messages/rooms/room-1/key",
+    );
+
+    const handled = await routes(req, res, url);
+
+    assert.equal(handled, true);
+    assert.equal(res.statusCode, 200);
+    const payload = JSON.parse(res.body);
+    assert.equal(payload.data.key, "deadbeefcafe");
+});
+
 test("share guest without chat:read capability is forbidden from the room key", async () => {
     const routes = makeRoutes({
         shareToken: {
