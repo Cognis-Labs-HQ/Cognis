@@ -22,6 +22,17 @@ function renderFallbackBody(i18n, messageKey) {
     `;
 }
 
+/**
+ * Builds the composer element for the share page.
+ *
+ * Grid sizing differs by state: a mounted full-page app (e.g. the real
+ * Jitsi Meet meetings page) must occupy the entire content grid so it
+ * renders with all of its own boilerplate layout classes intact, which
+ * requires the scalar `max: "full"` token (an array like `["full","full"]`
+ * is not recognized by the composer and silently falls back to the small
+ * default card size). The loading/expired/deleted fallback state is just a
+ * small message card, so it keeps a fixed numeric max instead.
+ */
 function buildShareElement(state) {
     return {
         id: "share-page",
@@ -29,25 +40,11 @@ function buildShareElement(state) {
         pinned: true,
         gridSize: state.isMountedApp
             ? {
-                  // Mounted full-page apps (e.g. the real Jitsi Meet
-                  // meetings page) must occupy the entire content grid so
-                  // the page renders with all of its own boilerplate
-                  // layout classes intact instead of being squeezed into a
-                  // small default-sized card. `max: "full"` (not an array)
-                  // is what actually flips the composer's `fullWidth` flag
-                  // — an array of `["full", "full"]` is not a recognized
-                  // token and silently falls back to the small default
-                  // card size.
                   default: [12, 10],
                   min: [8, 6],
                   max: "full",
               }
             : {
-                  // The loading/expired/deleted fallback card is a small
-                  // message, not a full page — a fixed numeric max (rather
-                  // than the "full" full-width token) keeps it resizable
-                  // within reasonable bounds instead of growing to fill the
-                  // entire grid.
                   default: [12, 6],
                   min: [8, 5],
                   max: [12, 10],
