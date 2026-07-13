@@ -203,3 +203,9 @@
 **Reviewer suggestion:** The truthy check on `resolveShareGuestSessionId({ sub: senderId })` in the guest message-sender enrichment filter was flagged as potentially excluding guest senders that have no session ID.
 
 **Reason ignored:** This code in `src/adapters/social/messages/routes/room/index.ts` predates this PR and was not modified here. The truthy check is intentional: a share-guest subject with no session-ID segment has no `guestId` to look up a temporary profile for, so it is correctly excluded from guest-profile enrichment. Reverting this would not fix a real bug and is out of scope for this PR's guest-experience fixes.
+
+## Architecture Guardrail — jitsi-meet api/index.js exceeds 1000 lines
+
+**Guardrail:** `src/tooling/tests/architecture-compliance.test.js` requires files to stay at or below 1000 lines, splitting into a subdirectory with an `index` entry point otherwise.
+
+**Reason deferred:** `src/modules/jitsi-meet/api/index.js` was already at 1003 lines (over the guardrail) before this PR's changes; this PR's edits (guest presence tracking fix, presence-window dedup) only add a net few lines to an already-violating file. Splitting `registerApiRoutes` — a single large function whose route handlers close over shared local variables (`store`, `config`, `profileStore`, etc.) — into a subdirectory of sibling files is a significant architectural refactor with real regression risk across many meeting/chat/share routes. This is unrelated to the guest/share/CSS bug fixes requested in this PR and is deferred to a dedicated refactor task.

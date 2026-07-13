@@ -371,7 +371,9 @@ export function createPreflightHandlers({
         const staleApi = state.jitsiApi;
         state.jitsiApi = null;
         state.jitsiParticipantId = "";
+        state.jitsiConferenceJoined = false;
         state.jitsiModerator = false;
+        utils.syncShareButtonAvailability();
         try {
             staleApi?.dispose?.();
         } catch (error) {

@@ -123,6 +123,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         dragUsername: null,
         jitsiApi: null,
         jitsiParticipantId: "",
+        jitsiConferenceJoined: false,
         jitsiModerator: false,
         jitsiThemeMode: resolveThemeMode(),
         alonePromptMeetingId: "",

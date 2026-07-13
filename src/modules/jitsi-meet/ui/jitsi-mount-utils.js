@@ -45,6 +45,18 @@ export function createMountUtilities({ root, state }) {
         );
     }
 
+    /**
+     * Keeps the share-meeting button disabled until the local participant's
+     * Jitsi conference session has actually confirmed as joined
+     * (`videoConferenceJoined`), not merely once the embed has been created.
+     */
+    function syncShareButtonAvailability() {
+        const shareButton = root.querySelector("#jitsi-share-meeting-btn");
+        if (shareButton instanceof HTMLButtonElement) {
+            shareButton.disabled = !state.jitsiConferenceJoined;
+        }
+    }
+
     function updatePreflightIndicator() {
         const loadingEl = root.querySelector("#jitsi-loading");
         const indicatorEl = root.querySelector("#jitsi-loading-indicator");
@@ -164,6 +176,7 @@ export function createMountUtilities({ root, state }) {
         resetParticipantSelection,
         selectedUsernames,
         setPreflightStatus,
+        syncShareButtonAvailability,
         updateOverlay,
     };
 }

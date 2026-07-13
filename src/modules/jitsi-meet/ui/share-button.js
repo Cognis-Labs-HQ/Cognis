@@ -20,8 +20,13 @@ export async function bindShareButton({
     if (!(shareButtonSlot instanceof HTMLElement)) {
         return;
     }
-    if (shareButtonSlot.querySelector("#jitsi-share-meeting-btn")) {
-        // Already mounted from a prior composer render pass.
+    const existingButton = shareButtonSlot.querySelector(
+        "#jitsi-share-meeting-btn",
+    );
+    if (existingButton instanceof HTMLButtonElement) {
+        // Already mounted from a prior composer render pass — just refresh
+        // its disabled state in case the meeting activity status changed.
+        existingButton.disabled = !state.jitsiConferenceJoined;
         return;
     }
 
@@ -38,13 +43,13 @@ export async function bindShareButton({
         return;
     }
 
-    shareButtonModule.mountShareButton({
+    const shareButton = shareButtonModule.mountShareButton({
         container: shareButtonSlot,
         label: i18n.t("module.jitsi_meet.share.button"),
         id: "jitsi-share-meeting-btn",
         signal,
         onClick: async () => {
-            if (!state.meeting?.id) {
+            if (!state.meeting?.id || !state.jitsiConferenceJoined) {
                 return;
             }
             const [{ openShareLinksPopup }, { buildShareCallbacks }] =
@@ -98,4 +103,7 @@ export async function bindShareButton({
             }
         },
     });
+    if (shareButton instanceof HTMLButtonElement) {
+        shareButton.disabled = !state.jitsiConferenceJoined;
+    }
 }

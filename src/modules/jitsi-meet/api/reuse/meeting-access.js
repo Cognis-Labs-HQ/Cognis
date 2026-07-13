@@ -5,6 +5,22 @@ import {
 } from "../../../../api/reuse/share-guest.js";
 import { resolveRequesterUsername } from "./requester.js";
 
+/**
+ * Derives the synthetic presence username used to track a share guest's
+ * attendance in `jitsi_meeting_presence`. Share guests have no account, so
+ * without a stable identifier they never appear in `activeParticipants`,
+ * which makes the meeting host's "alone in meeting" check fire even while a
+ * guest is actively present. Prefixing with "guest:" keeps this identifier
+ * out of any real username namespace.
+ *
+ * @param {{ sub?: string } | undefined} claims
+ * @returns {string}
+ */
+export function resolveShareGuestPresenceUsername(claims) {
+    const shareGuestId = resolveShareGuestId(claims);
+    return shareGuestId ? `guest:${shareGuestId}` : "";
+}
+
 export async function resolveShareGuestMeetingAccess({
     claims,
     meetingId,

@@ -426,7 +426,7 @@ test("meeting share routes let participants manage shares and reject outsiders",
 
 test("meeting share approval targets only include currently present participants", async () => {
     const currentTimestamp = new Date().toISOString();
-    const staleTimestamp = new Date(Date.now() - 60_000).toISOString();
+    const staleTimestamp = new Date(Date.now() - 130_000).toISOString();
     const { ctx } = createFlowHarness(
         new MeetingExecutor({
             participantUsernames: ["alice", "bob", "carol"],

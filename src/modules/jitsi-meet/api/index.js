@@ -26,6 +26,7 @@ import {
     resolveMeetingPayloadOrReject,
     resolveRequestedParticipants,
     resolveShareGuestMeetingAccess,
+    resolveShareGuestPresenceUsername,
 } from "./reuse/meeting-access.js";
 
 const MODULE_ID = "jitsi-meet";
@@ -813,14 +814,8 @@ export function registerApiRoutes(router, ctx) {
             ]);
             const activeUsernames = Array.from(
                 new Set(
-                    presence
-                        .filter((entry) => {
-                            if (!entry.active) return false;
-                            const seenAt = Date.parse(entry.lastSeenAt);
-                            return Number.isFinite(seenAt)
-                                ? seenAt >= Date.now() - 45_000
-                                : false;
-                        })
+                    store
+                        .filterCurrentPresenceEntries(presence)
                         .map((entry) => entry.username),
                 ),
             ).sort();
@@ -875,6 +870,18 @@ export function registerApiRoutes(router, ctx) {
                         "Share guest access is not allowed for this meeting.",
                     );
                     return;
+                }
+                const guestMeetingId = String(body.meetingId ?? "").trim();
+                const guestSessionId = String(body.sessionId ?? "").trim();
+                const guestPresenceUsername =
+                    resolveShareGuestPresenceUsername(claims);
+                if (guestMeetingId && guestSessionId && guestPresenceUsername) {
+                    await store.upsertPresence(
+                        guestMeetingId,
+                        guestPresenceUsername,
+                        guestSessionId,
+                        body.active !== false,
+                    );
                 }
                 sendJson(res, 200, {
                     data: {

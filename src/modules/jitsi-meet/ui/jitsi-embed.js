@@ -67,8 +67,10 @@ export function createEmbedHandlers({
         });
         state.jitsiApi = apiInstance;
         state.jitsiParticipantId = "";
+        state.jitsiConferenceJoined = false;
         state.jitsiModerator = false;
         state.jitsiThemeMode = themeMode;
+        utils.syncShareButtonAvailability();
         const applyPrivilegedMeetingSettings = () => {
             if (state.jitsiApi !== apiInstance) return;
             if (!callbacks.currentUserIsJitsiModerator(apiInstance)) return;
@@ -137,10 +139,12 @@ export function createEmbedHandlers({
         apiInstance.addEventListener("videoConferenceJoined", (event) => {
             if (state.jitsiApi !== apiInstance) return;
             state.jitsiParticipantId = callbacks.getParticipantId(event);
+            state.jitsiConferenceJoined = true;
             state.jitsiModerator =
                 callbacks.currentUserIsJitsiModerator(apiInstance);
             applyParticipantProfile();
             applyPrivilegedMeetingSettings();
+            utils.syncShareButtonAvailability();
             void callbacks.keepPresenceAlive(true);
         });
         apiInstance.addEventListener("participantRoleChanged", (event) => {

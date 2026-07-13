@@ -108,6 +108,17 @@ function renderQuickShareActions(link) {
             if (!href || !label) {
                 return "";
             }
+            if (id === "smtp") {
+                return `
+          <a
+            class="btn-confirm"
+            href="${escapeHtml(href)}"
+            data-share-quick-action="${escapeHtml(id)}"
+            aria-label="${escapeHtml(label)}"
+            title="${escapeHtml(label)}"
+          >✉</a>
+        `;
+            }
             return `
         <a
           class="btn-confirm btn-animated share-links-row-quick-action"
@@ -136,13 +147,13 @@ function renderRows(labels, links) {
               <div class="share-links-row-main">
                 <div class="share-links-row-header">
                   <p class="share-links-row-label">${escapeHtml(shareLabel)}</p>
-                  <button
-                    type="button"
+                  <a
                     class="share-links-row-copy"
+                    href="${escapeHtml(shareUrl)}"
                     data-share-copy="${escapeHtml(shareUrl)}"
                     title="${escapeHtml(shareUrl)}"
                     aria-label="${escapeHtml(labels.copyLink)}: ${escapeHtml(shareUrl)}"
-                  >${escapeHtml(shareUrl)}</button>
+                  >🔗</a>
                 </div>
               </div>
               <div class="share-links-row-actions">
@@ -337,6 +348,7 @@ export async function openShareLinksPopup({
 
                 const copyButton = event.target.closest("[data-share-copy]");
                 if (copyButton instanceof HTMLElement) {
+                    event.preventDefault();
                     const shareUrl = String(
                         copyButton.getAttribute("data-share-copy") ?? "",
                     );

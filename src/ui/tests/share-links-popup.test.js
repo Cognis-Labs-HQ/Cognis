@@ -24,7 +24,7 @@ test("share links popup keeps form and list rendering separate", () => {
     assert.doesNotMatch(source, /restoreFocusableTarget/);
 });
 
-test("share links popup renders the copy control inline with the share label", () => {
+test("share links popup renders existing links as an icon-only hyperlink", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/share-links-popup.js"),
         "utf8",
@@ -36,8 +36,12 @@ test("share links popup renders the copy control inline with the share label", (
 
     assert.match(source, /class="share-links-row-header"/);
     assert.match(source, /class="share-links-row-copy"/);
+    assert.match(
+        source,
+        /<a\s+class="share-links-row-copy"[\s\S]*href="\$\{escapeHtml\(shareUrl\)\}"/,
+    );
     assert.doesNotMatch(source, /share-links-row-url/);
     assert.match(cssSource, /\.share-links-row-header \{/);
     assert.match(cssSource, /\.share-links-row-copy \{/);
-    assert.match(cssSource, /text-overflow: ellipsis;/);
+    assert.match(cssSource, /\.share-links-row-copy \{[\s\S]*flex: none;/);
 });

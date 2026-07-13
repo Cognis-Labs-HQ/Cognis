@@ -12,7 +12,12 @@ import { normalizeMeetingPrefix } from "./meeting-values.js";
 import { readTimestampValue } from "../../../gateways/db/reuse/db-table.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
-const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
+// Background/unfocused browser tabs are throttled by the browser and can
+// delay heartbeat pings (see HEARTBEAT_INTERVAL_MS client-side) well beyond
+// their nominal interval. This window must stay wide enough that a
+// participant who simply isn't focused on the tab is never treated as
+// "gone" for the purposes of the alone-in-meeting prompt.
+const ACTIVE_PRESENCE_WINDOW_MS = 120 * 1000;
 const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
 
 function buildRoomSlug(prefix) {
