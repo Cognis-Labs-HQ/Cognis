@@ -142,3 +142,11 @@ Gäste, die über einen Share-Link an einem Meeting teilnahmen, wurden vom Meeti
 ## Copy-Link-Symbol verwendet gemeinsame Zwischenablage-Hilfsfunktion
 
 Die Zwischenablage-Kopierfunktion, die zuvor im Runtime-Error-Popup dupliziert war, wurde zu einem generischen Dienstprogramm `copyTextToClipboard` in `src/ui/reuse/clipboard.js` erhoben. Das Copy-Link-Symbol im Share-Links-Popup sowie die automatische Kopierfunktion beim Erstellen eines Links verwenden diese Funktion jetzt statt `navigator.clipboard.writeText` direkt aufzurufen, sodass eine fehlende oder blockierte Zwischenablage-API zu einer Fehlermeldung statt zu einem stillen Fehlschlag führt.
+
+## Gastansicht zeigt kein Teilnehmersuche-Panel mehr
+
+Das Teilnehmersuche-/Aktive-Meetings-Panel der Jitsi-Meet-Seite wurde bisher immer in das Seitenlayout aufgenommen, auch für Gäste, die über einen Share-Link beitreten und kein Konto haben und es nicht nutzen können. Das Panel wird jetzt in der Share-/Gastansicht vollständig weggelassen, statt nur unsichtbar gerendert zu werden.
+
+## Share-Link-Liste zeigt jetzt den Ablauf nach einem Meeting-Neustart korrekt an
+
+Das Share-Links-Popup zeigte Links aus einer früheren Meeting-Instanz weiterhin als „Aktiv" an, obwohl Gäste, die sie verwendeten, von der Zugriffsprüfung bereits als abgelaufen abgewiesen wurden, da der Listen-Endpunkt nur die Ablaufzeit jedes Tokens betrachtete und die gespeicherte Meeting-Instanz-ID nie mit der aktuellen Instanz des Meetings verglich. Das Share-Gateway stellt jetzt die gespeicherten Metadaten jedes Tokens bereit, und die Meeting-Share-Liste kennzeichnet jeden Link, dessen gespeicherte Instanz-ID nicht mehr mit der aktuellen Instanz des Meetings übereinstimmt, als „Abgelaufen", sodass Hosts und Teilnehmer den korrekten Status sehen statt eines lebendig wirkenden toten Links.

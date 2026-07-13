@@ -142,3 +142,11 @@ Tamu yang bergabung ke meeting melalui tautan berbagi diblokir dari chat meeting
 ## Ikon Salin Tautan Menggunakan Fungsi Bantuan Papan Klip Bersama
 
 Fungsi bantuan salin papan klip yang sebelumnya diduplikasi di dalam popup kesalahan runtime kini dipromosikan menjadi utilitas generik `copyTextToClipboard` di `src/ui/reuse/clipboard.js`. Ikon salin tautan pada popup tautan berbagi serta tindakan salin otomatis saat pembuatan tautan kini keduanya menggunakan fungsi ini alih-alih memanggil `navigator.clipboard.writeText` secara langsung, sehingga API papan klip yang hilang/diblokir menghasilkan notifikasi kesalahan alih-alih gagal secara diam-diam.
+
+## Tampilan Tamu Tidak Lagi Menampilkan Panel Pencarian Peserta
+
+Panel pencarian peserta / rapat aktif pada halaman Jitsi Meet sebelumnya selalu disertakan dalam tata letak halaman, bahkan untuk tamu yang bergabung melalui tautan berbagi, yang tidak memiliki akun dan tidak dapat menggunakannya. Panel tersebut kini sepenuhnya dihilangkan saat halaman dirender dalam tampilan berbagi/tamu, bukan hanya disembunyikan di balik rendering yang dijaga.
+
+## Daftar Tautan Berbagi Kini Mencerminkan Kedaluwarsa Setelah Rapat Dimulai Ulang
+
+Popup tautan berbagi menampilkan tautan dari instans rapat sebelumnya sebagai "Aktif" meskipun tamu yang menggunakannya sudah ditolak sebagai kedaluwarsa oleh pemeriksaan akses, karena titik akhir daftar hanya melihat waktu kedaluwarsa setiap token dan tidak pernah membandingkan ID instans rapat yang tersimpan dengan instans rapat saat ini. Gateway berbagi kini menampilkan metadata tersimpan setiap token, dan daftar berbagi rapat kini menandai tautan mana pun yang ID instansnya tidak lagi cocok dengan instans rapat saat ini sebagai "Kedaluwarsa", sehingga host dan peserta melihat status yang akurat alih-alih tautan mati yang tampak aktif.

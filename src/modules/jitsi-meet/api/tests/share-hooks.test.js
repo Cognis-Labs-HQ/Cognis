@@ -424,6 +424,50 @@ test("meeting share routes let participants manage shares and reject outsiders",
     }
 });
 
+test("meeting share list marks links from a prior meeting instance as expired", async () => {
+    const handlers = createRouterHarness({
+        executor: new MeetingExecutor({
+            participantUsernames: ["alice", "bob"],
+            meetingStateRow: { instance_id: "instance-current" },
+        }),
+        listByResource: async () => [
+            {
+                id: "share-stale",
+                status: "active",
+                metadata: { meetingInstanceId: "instance-old" },
+            },
+            {
+                id: "share-current",
+                status: "active",
+                metadata: { meetingInstanceId: "instance-current" },
+            },
+            {
+                id: "share-no-instance",
+                status: "active",
+                metadata: null,
+            },
+        ],
+        runFlow: async () => ({ stageResults: {} }),
+    });
+
+    const listResponse = await invokeRoute(
+        handlers.get("GET /api/v1/modules/jitsi-meet/share"),
+        {
+            method: "GET",
+            url: "/api/v1/modules/jitsi-meet/share?meetingId=meeting-1",
+            claims: { sub: "bob-account" },
+        },
+    );
+
+    assert.equal(listResponse.statusCode, 200);
+    const byId = Object.fromEntries(
+        listResponse.body.data.map((share) => [share.id, share.status]),
+    );
+    assert.equal(byId["share-stale"], "expired");
+    assert.equal(byId["share-current"], "active");
+    assert.equal(byId["share-no-instance"], "active");
+});
+
 test("meeting share approval targets only include currently present participants", async () => {
     const currentTimestamp = new Date().toISOString();
     const staleTimestamp = new Date(Date.now() - 130_000).toISOString();

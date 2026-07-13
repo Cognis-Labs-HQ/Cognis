@@ -871,17 +871,26 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     }
 
     const elements = [
-        {
-            id: "jitsi-participants",
-            label: i18n.t("module.jitsi_meet.participants.heading"),
-            pinned: true,
-            gridSize: {
-                default: [12, 2],
-                min: [8, 2],
-                max: "full",
-            },
-            render: () => buildParticipantsMarkup(i18n),
-        },
+        // Share-link guests have no account and cannot search for or start
+        // meetings with other participants, so the participant-management
+        // panel (participant search, active-meeting list) is guest-facing
+        // clutter that doesn't apply to them — it is omitted entirely below
+        // rather than rendered empty.
+        ...(inShareView
+            ? []
+            : [
+                  {
+                      id: "jitsi-participants",
+                      label: i18n.t("module.jitsi_meet.participants.heading"),
+                      pinned: true,
+                      gridSize: {
+                          default: [12, 2],
+                          min: [8, 2],
+                          max: "full",
+                      },
+                      render: () => buildParticipantsMarkup(i18n),
+                  },
+              ]),
         {
             id: "jitsi-stage",
             label: i18n.t("module.jitsi_meet.overlay.title"),

@@ -151,9 +151,33 @@ export function registerMeetingShareRoutes({
                 res,
             });
             if (!meeting) return;
-            const data = await listSharesByResource({
+            const shares = await listSharesByResource({
                 resourceType: "meeting",
                 resourceId: meeting.id,
+            });
+            const state = await store.getMeetingState(meeting.id);
+            const currentMeetingInstanceId = String(
+                state.instanceId ?? "",
+            ).trim();
+            // A share link is minted with the meeting's current instance id
+            // in its metadata (see jitsi-meet:issue-token). Once the meeting
+            // is ended and restarted, that instance id no longer matches the
+            // meeting's current one, and guests attempting to use the link
+            // are rejected as "expired" (see jitsi-meet:check-meeting-share-access
+            // in share-hooks.js). Reflect that same rule here so the list
+            // shown to participants doesn't keep reporting stale links as
+            // still active.
+            const data = shares.map((share) => {
+                const tokenMeetingInstanceId = String(
+                    share?.metadata?.meetingInstanceId ?? "",
+                ).trim();
+                const isStaleInstance =
+                    tokenMeetingInstanceId &&
+                    currentMeetingInstanceId &&
+                    tokenMeetingInstanceId !== currentMeetingInstanceId;
+                return isStaleInstance
+                    ? { ...share, status: "expired" }
+                    : share;
             });
             sendJson(res, 200, { data });
         },

@@ -49,6 +49,7 @@ export class CoreShareGateway {
             resourceType: record.resourceType,
             resourceId: record.resourceId,
             label: record.label,
+            metadata: record.metadata,
             grantedCapabilities: record.grantedCapabilities,
             expiresAt: record.expiresAt,
             status: this.isTokenExpired(record) ? "expired" : "active",

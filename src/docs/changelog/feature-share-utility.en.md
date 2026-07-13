@@ -147,3 +147,11 @@ Guests joining a meeting via a share link were being blocked from the meeting ch
 ## Share Link Copy Icon Uses Shared Clipboard Helper
 
 The clipboard-copy helper previously duplicated inside the runtime error popup has been promoted to a generic `copyTextToClipboard` utility in `src/ui/reuse/clipboard.js`, and the share links popup's copy-link icon and auto-copy-on-create action now both use it instead of calling `navigator.clipboard.writeText` directly, so a missing/blocked Clipboard API degrades to a toast error instead of a silent failure.
+
+## Guest View No Longer Shows the Participant Search Panel
+
+The Jitsi Meet page's participant search / active-meetings panel was always included in the page layout, even for guests joining through a share link, who have no account and cannot use it. The panel is now omitted entirely when the page is rendered in share/guest view, instead of just being hidden behind guarded rendering.
+
+## Share Links List Now Reflects a Restarted Meeting's Expiry
+
+The share links popup listed links from a prior meeting instance as "Active" even though guests using them were already rejected as expired by the access check, because the list endpoint only looked at each token's expiry time and never compared its recorded meeting-instance id against the meeting's current one. The share gateway now exposes each token's stored metadata, and the meeting share list remaps any link whose recorded instance id no longer matches the meeting's current instance to "Expired", so hosts and participants see accurate status instead of a live-looking dead link.
