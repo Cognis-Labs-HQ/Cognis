@@ -496,6 +496,7 @@ export function initRouter(root) {
     }
 
     document.addEventListener("click", async (event) => {
+        if (event.defaultPrevented) return;
         const link = event.target.closest("a[href]");
         if (!link) return;
         const href = link.getAttribute("href");

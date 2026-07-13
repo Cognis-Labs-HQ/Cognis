@@ -62,7 +62,11 @@
  *              the user has not already responded. The timer is cleared as
  *              soon as any dismissal path runs.
  *   timeoutActionId  — Action id to resolve with when `timeoutMs` elapses.
- *              Defaults to `null` (same as a cancel-path dismissal).
+ *              Defaults to `null` (same as a cancel-path dismissal). If an
+ *              action button with this id is rendered, its label is
+ *              suffixed with a live "(Ns)" countdown that ticks down every
+ *              second until the timeout fires, so the user can see the
+ *              action will happen automatically.
  *
  * @param {{
  *   title: string,
@@ -319,6 +323,7 @@ export async function openPopup({
 
         let dismissed = false;
         let timeoutHandle = null;
+        let countdownInterval = null;
         async function dismiss(actionId) {
             closeProtectionTracker?.sync();
             const hasUnsavedChanges =
@@ -350,6 +355,10 @@ export async function openPopup({
             if (timeoutHandle !== null) {
                 clearTimeout(timeoutHandle);
                 timeoutHandle = null;
+            }
+            if (countdownInterval !== null) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
             }
             document.removeEventListener("keydown", onKeyDown);
             closeProtectionTracker?.destroy();
@@ -468,6 +477,27 @@ export async function openPopup({
                     console.error("[popup] timeout dismiss failed:", error),
                 );
             }, timeoutMs);
+
+            const timeoutButton = timeoutActionId
+                ? overlay.querySelector(
+                      `[data-popup-action="${CSS.escape(timeoutActionId)}"]`,
+                  )
+                : null;
+            if (timeoutButton instanceof HTMLButtonElement) {
+                const originalLabel = timeoutButton.textContent ?? "";
+                const startedAt = Date.now();
+                const updateCountdown = () => {
+                    const remainingSeconds = Math.max(
+                        0,
+                        Math.ceil(
+                            (timeoutMs - (Date.now() - startedAt)) / 1000,
+                        ),
+                    );
+                    timeoutButton.textContent = `${originalLabel} (${remainingSeconds})`;
+                };
+                updateCountdown();
+                countdownInterval = setInterval(updateCountdown, 1000);
+            }
         }
 
         requestAnimationFrame(() => {

@@ -341,6 +341,7 @@ export function registerShareFlowHooks(ctx) {
                     mountScriptUrl: "/static/modules/jitsi-meet/app.js",
                     stringsBaseUrl: ["/static/modules/jitsi-meet/languages"],
                     stylesheetUrls: [
+                        "/static/styles/page-builder.css",
                         "/static/styles/reuse/page-sections.css",
                         ...resolveSharedMessagesStylesheetUrls(
                             resolveMessagesUiResources(ctx),
