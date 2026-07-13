@@ -79,3 +79,37 @@
         transform: rotate(360deg);
     }
 }
+
+/*
+ * The public share shell is frameless so mounted resources can fill the page,
+ * but that frameless class lives above the mounted app in the DOM. Without
+ * these resets, the shell's broad descendant selectors strip the Meetings
+ * page's own composer cards, grid gaps, and content-panel padding.
+ */
+.app-page--frameless .share-app-mount .composer-view-grid {
+    gap: 8px;
+}
+
+.app-page--frameless .share-app-mount .widget-card {
+    padding: 12px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.app-page--frameless .share-app-mount .content-grid .widget-card {
+    overflow: auto;
+    background: var(--widget-card-tint);
+    border: 1px solid var(--border);
+}
+
+.app-page--frameless .share-app-mount .content-section {
+    padding: 0;
+}
+
+.app-page--frameless .share-app-mount .content-panel > .content-section,
+.app-page--frameless .share-app-mount .content-panel > :first-child,
+.app-page--frameless .share-app-mount .content-panel > :last-child {
+    padding: 28px;
+}

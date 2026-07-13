@@ -107,7 +107,7 @@ export async function mount(root, { signal } = {}) {
             subtitle: state.i18n.t("share.subtitle"),
         },
         showTopbar: true,
-        showNavbar: true,
+        showNavbar: false,
         showFooter: true,
         showThemeToggle: true,
         frameless: true,
