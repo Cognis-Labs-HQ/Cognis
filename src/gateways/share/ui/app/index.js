@@ -43,9 +43,14 @@ function buildShareElement(state) {
                   max: "full",
               }
             : {
+                  // The loading/expired/deleted fallback card is a small
+                  // message, not a full page — a fixed numeric max (rather
+                  // than the "full" full-width token) keeps it resizable
+                  // within reasonable bounds instead of growing to fill the
+                  // entire grid.
                   default: [12, 6],
                   min: [8, 5],
-                  max: ["full", "full"],
+                  max: [12, 10],
               },
         render: () => {
             if (state.isMountedApp && !state.errorKey) {
