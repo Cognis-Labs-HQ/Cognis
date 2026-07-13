@@ -88,6 +88,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             isAllowedShareGuest &&
             typeof shareMeeting?.chatRoomId === "string" &&
             shareMeeting.chatRoomId === roomId;
+        const hasMeetingChatAccess = (capability: "chat:read" | "chat:write") =>
+            hasShareCapability(shareGuestToken, capability) ||
+            hasShareCapability(shareGuestToken, "meeting:join");
         if (!member && !isAllowedShareGuest) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
@@ -224,10 +227,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (sub === "key" && !subArg && req.method === "GET") {
-            if (
-                isAllowedShareGuest &&
-                !hasShareCapability(shareGuestToken, "chat:read")
-            ) {
+            if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -274,10 +274,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
 
         if (sub === "messages" && !subArg) {
             if (req.method === "GET") {
-                if (
-                    isAllowedShareGuest &&
-                    !hasShareCapability(shareGuestToken, "chat:read")
-                ) {
+                if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -481,7 +478,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             if (req.method === "POST") {
                 if (
                     isAllowedShareGuest &&
-                    !hasShareCapability(shareGuestToken, "chat:write")
+                    !hasMeetingChatAccess("chat:write")
                 ) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
@@ -511,7 +508,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 const activeMembers = await messagesStore.listMembers(roomId);
                 const dmIsArchivedForSender =
                     room.kind === "dm" &&
-                    (member.archived || activeMembers.length < 2);
+                    ((member?.archived ?? false) || activeMembers.length < 2);
                 if (dmIsArchivedForSender) {
                     res.writeHead(409, { "content-type": "application/json" });
                     res.end(

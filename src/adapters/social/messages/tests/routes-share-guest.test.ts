@@ -144,12 +144,37 @@ test("share guest with chat:read capability can read a classroom room key", asyn
     assert.equal(payload.data.key, "deadbeefcafe");
 });
 
-test("share guest without chat:read capability is forbidden from the room key", async () => {
+test("share guest with meeting:join capability can read the meeting room key", async () => {
     const routes = makeRoutes({
         shareToken: {
             resourceType: "meeting",
             resourceId: "meeting-1",
             grantedCapabilities: ["meeting:join"],
+        },
+        meeting: { chatRoomId: "room-1" },
+        room: { id: "room-1", kind: "group" },
+    });
+
+    const req = makeReq("GET", issueGuestToken());
+    const res = makeRes();
+    const url = new URL(
+        "http://localhost/api/v1/social/messages/rooms/room-1/key",
+    );
+
+    const handled = await routes(req, res, url);
+
+    assert.equal(handled, true);
+    assert.equal(res.statusCode, 200);
+    const payload = JSON.parse(res.body);
+    assert.equal(payload.data.key, "deadbeefcafe");
+});
+
+test("share guest without meeting chat access is forbidden from the room key", async () => {
+    const routes = makeRoutes({
+        shareToken: {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            grantedCapabilities: ["participants:read"],
         },
         meeting: { chatRoomId: "room-1" },
         room: { id: "room-1", kind: "group" },
@@ -220,7 +245,7 @@ test("share guest with chat:write capability can post room messages", async () =
     assert.equal(res.statusCode, 503);
 });
 
-test("share guest without chat:write capability is forbidden from posting room messages", async () => {
+test("share guest with meeting:join capability can post room messages", async () => {
     const routes = makeRoutes({
         shareToken: {
             resourceType: "meeting",
@@ -244,5 +269,8 @@ test("share guest without chat:write capability is forbidden from posting room m
     const handled = await routes(req, res, url);
 
     assert.equal(handled, true);
-    assert.equal(res.statusCode, 403);
+    // No send-message flow is wired in this test harness, so a guest who is
+    // actually allowed to post reaches the "flow unavailable" branch (503)
+    // rather than being rejected outright with 403.
+    assert.equal(res.statusCode, 503);
 });
