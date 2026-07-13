@@ -204,6 +204,7 @@ export async function bootstrapSocialAdapter(
             usernames: string[];
             title?: string | null;
             createdByAccountId?: string;
+            allowSingleMember?: boolean;
         }): Promise<{
             roomId: string;
             url: string;
@@ -232,9 +233,15 @@ export async function bootstrapSocialAdapter(
                     accountIds.push(profile.accountId);
                 }
             }
-            if (accountIds.length < 2) {
+            // Callers that expect non-member guests to join the room later
+            // (e.g. share-link guests joining a solo-hosted meeting) can opt
+            // into creating a room with just the single known account.
+            const minAccounts = input.allowSingleMember ? 1 : 2;
+            if (accountIds.length < minAccounts) {
                 throw new Error(
-                    "At least two valid participants are required for group chat resolution.",
+                    minAccounts === 1
+                        ? "At least one valid participant is required for group chat resolution."
+                        : "At least two valid participants are required for group chat resolution.",
                 );
             }
 

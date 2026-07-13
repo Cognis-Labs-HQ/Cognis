@@ -78,6 +78,11 @@ export function registerMeetingLifecycleRoutes({
                     usernames: normalizedInput.participantUsernames,
                     title: meetingChatTitle,
                     createdByAccountId: claims.sub,
+                    // Meetings are commonly created solo and shared out via a
+                    // guest link afterwards, so a chat room must exist even
+                    // with only the creator as a real member — otherwise
+                    // share-link guests can never be granted chat access.
+                    allowSingleMember: true,
                 }).catch(() => null);
             }
 

@@ -303,8 +303,16 @@ export function registerShareFlowHooks(ctx) {
             const currentMeetingInstanceId = String(
                 resourceResult.payload?.instanceId ?? "",
             ).trim();
+            // Only reject as "expired" when both the token and the current
+            // meeting have a concrete instance id that disagree — this means
+            // the meeting was ended and restarted since the link was minted.
+            // A share link minted before the meeting's first instance ever
+            // started (a very common "share ahead of time" case) has an
+            // empty tokenMeetingInstanceId and must not be rejected outright;
+            // it should resolve normally once the meeting starts.
             if (
-                !tokenMeetingInstanceId ||
+                tokenMeetingInstanceId &&
+                currentMeetingInstanceId &&
                 tokenMeetingInstanceId !== currentMeetingInstanceId
             ) {
                 return { allowed: false, reason: "expired" };

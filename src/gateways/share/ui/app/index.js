@@ -27,11 +27,26 @@ function buildShareElement(state) {
         id: "share-page",
         label: state.i18n.t("share.page_title"),
         pinned: true,
-        gridSize: {
-            default: [12, 6],
-            min: [8, 5],
-            max: ["full", "full"],
-        },
+        gridSize: state.isMountedApp
+            ? {
+                  // Mounted full-page apps (e.g. the real Jitsi Meet
+                  // meetings page) must occupy the entire content grid so
+                  // the page renders with all of its own boilerplate
+                  // layout classes intact instead of being squeezed into a
+                  // small default-sized card. `max: "full"` (not an array)
+                  // is what actually flips the composer's `fullWidth` flag
+                  // — an array of `["full", "full"]` is not a recognized
+                  // token and silently falls back to the small default
+                  // card size.
+                  default: [12, 10],
+                  min: [8, 6],
+                  max: "full",
+              }
+            : {
+                  default: [12, 6],
+                  min: [8, 5],
+                  max: ["full", "full"],
+              },
         render: () => {
             if (state.isMountedApp && !state.errorKey) {
                 // A mounted app (e.g. the real Jitsi Meet meetings page)
@@ -95,6 +110,12 @@ export async function mount(root, { signal } = {}) {
         showThemeToggle: true,
         frameless: true,
         persistLayoutPreferences: false,
+        // This page is visited by anonymous guests and runs its own
+        // authenticate-session flow below, so it must not block on a full
+        // account session — an expired/invalid share token legitimately
+        // resolves to an unauthenticated session with no redirect pending,
+        // which this page renders its own fallback screen for instead.
+        requireAccountSession: false,
         elements: [buildShareElement(state)],
     });
 

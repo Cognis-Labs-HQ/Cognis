@@ -497,3 +497,35 @@ test("meeting share tokens expire when the meeting instance changes", async () =
     assert.equal(result.stageResults["check-access"][0].allowed, false);
     assert.equal(result.stageResults["check-access"][0].reason, "expired");
 });
+
+test("meeting share tokens minted before a meeting's first instance still resolve", async () => {
+    const { ctx } = createFlowHarness(
+        new MeetingExecutor({
+            meetingStateRow: {
+                instance_id: "instance-current",
+            },
+        }),
+    );
+
+    ctx.flow.extend(
+        "resolve-share-token",
+        "validate-token",
+        { id: "test:share-token" },
+        () => ({
+            valid: true,
+            tokenRecord: {
+                resourceType: "meeting",
+                resourceId: "meeting-1",
+                grantedCapabilities: ["meeting:join"],
+                // Minted before the meeting ever started, so no instance id
+                // was known yet.
+                metadata: { meetingInstanceId: "" },
+            },
+        }),
+    );
+
+    const result = await ctx.flow.run("resolve-share-token", {
+        token: "shr_test.secret",
+    });
+    assert.equal(result.stageResults["check-access"][0].allowed, true);
+});
