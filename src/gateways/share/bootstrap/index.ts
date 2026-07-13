@@ -104,6 +104,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     const cleanupTimer = setInterval(() => {
+        void gateway.purgeExpiredShareTokens().catch((error) => {
+            ctx.log?.("error", "Failed to purge expired share tokens.", {
+                component: "share-gateway",
+                operation: "purge_expired_share_tokens",
+                error: error instanceof Error ? error.message : String(error),
+            });
+        });
         void gateway.purgeExpiredGuestProfiles().catch((error) => {
             ctx.log?.("error", "Failed to purge expired guest profiles.", {
                 component: "share-gateway",

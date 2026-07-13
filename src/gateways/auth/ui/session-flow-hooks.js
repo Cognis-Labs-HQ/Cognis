@@ -13,7 +13,11 @@
  *   Returns `{ requiresSetup, redirectTo }`.
  *
  * `resolve-session` — assembles the final normalised session descriptor from
- *   prior stage results. This is the canonical result callers read.
+ *   prior stage results. This is the canonical result callers read. When a
+ *   share token was attempted (`shareAttempted: true`) but failed to
+ *   resolve, `requiresRedirect` stays false so the share page can render its
+ *   own "share expired/deleted" fallback instead of being redirected to
+ *   `/login`.
  *
  * `load-page` → `authenticate` — runs `authenticate-session` and redirects
  *   to `/login` (or `/settings#security` for TFA setup) when the session is
@@ -176,6 +180,23 @@ uiCtx.extendFlow(
             tokenResult?.valid === true ||
             alternateResult?.authenticated === true;
         if (!authenticated) {
+            if (alternateResult) {
+                // A share token was present on this page (e.g. /share/:token)
+                // but failed to resolve (expired, revoked, or invalid). The
+                // share page owns rendering its own "share expired/deleted"
+                // fallback screen for guests, so it must not be bounced to
+                // /login here the way a normal expired session would be.
+                return {
+                    authenticated: false,
+                    accountId: null,
+                    role: null,
+                    requiresRedirect: false,
+                    redirectTo: null,
+                    shareContext: null,
+                    isGuestSession: false,
+                    shareAttempted: true,
+                };
+            }
             const reason = tokenResult?.reason ?? null;
             const redirectTo = reason
                 ? "/login?reason=" + encodeURIComponent(reason)
@@ -186,8 +207,9 @@ uiCtx.extendFlow(
                 role: null,
                 requiresRedirect: true,
                 redirectTo,
-                shareContext: alternateResult?.shareContext ?? null,
-                isGuestSession: alternateResult?.isGuestSession === true,
+                shareContext: null,
+                isGuestSession: false,
+                shareAttempted: false,
             };
         }
 
@@ -200,6 +222,7 @@ uiCtx.extendFlow(
             redirectTo: null,
             shareContext: alternateResult?.shareContext ?? null,
             isGuestSession: alternateResult?.isGuestSession === true,
+            shareAttempted: alternateResult !== null,
         };
     },
 );

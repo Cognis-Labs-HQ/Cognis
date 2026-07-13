@@ -107,6 +107,16 @@ export async function mount(root, { signal } = {}) {
         (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
     const shareContext = session?.shareContext ?? null;
 
+    if (session?.shareAttempted && !session?.authenticated) {
+        // A share token was present in the URL but failed to resolve
+        // (expired, revoked, or invalid). Render the fallback screen
+        // directly instead of the generic missing/malformed messages below.
+        state.loading = false;
+        state.errorKey = "share.error.expired";
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
+
     if (!shareContext?.resourceType) {
         state.loading = false;
         state.errorKey =
@@ -118,12 +128,8 @@ export async function mount(root, { signal } = {}) {
     }
 
     if (!session?.authenticated) {
-        const reason =
-            shareContext === null
-                ? "share.error.missing_token"
-                : "share.error.expired";
         state.loading = false;
-        state.errorKey = reason;
+        state.errorKey = "share.error.expired";
         composer.refresh([buildShareElement(state)]);
         return;
     }

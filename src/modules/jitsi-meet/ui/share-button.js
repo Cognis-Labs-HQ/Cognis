@@ -83,6 +83,18 @@ export async function bindShareButton({
                         expiryLabel: i18n.t(
                             "module.jitsi_meet.share.expiry_label",
                         ),
+                        statusActive: i18n.t(
+                            "module.jitsi_meet.share.status_active",
+                        ),
+                        statusExpired: i18n.t(
+                            "module.jitsi_meet.share.status_expired",
+                        ),
+                        expiresAtLabel: i18n.t(
+                            "module.jitsi_meet.share.expires_at_label",
+                        ),
+                        expiredAtLabel: i18n.t(
+                            "module.jitsi_meet.share.expired_at_label",
+                        ),
                         generateLink: i18n.t(
                             "module.jitsi_meet.share.generate_link",
                         ),

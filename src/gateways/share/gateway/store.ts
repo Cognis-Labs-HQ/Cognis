@@ -52,9 +52,15 @@ function normalizeMetadata(value: unknown): Record<string, string> | null {
     return entries.length > 0 ? Object.fromEntries(entries) : null;
 }
 
-function isExpired(expiresAt: string): boolean {
+export function isExpired(expiresAt: string): boolean {
     return Boolean(expiresAt) && new Date(expiresAt).getTime() <= Date.now();
 }
+
+// Expired share tokens are kept around for this long after expiry so their
+// owner can still see them listed with an "Expired" status and the time
+// they expired, instead of the record vanishing the instant it lapses.
+// purgeExpired() only removes tokens older than this retention window.
+const EXPIRED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
 function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     const id = String(row.id ?? "").trim();
@@ -236,7 +242,7 @@ export class ShareTokenStore {
                 }
             })
             .filter((record): record is ShareTokenRecord => Boolean(record));
-        return records.filter((record) => !isExpired(record.expiresAt));
+        return records;
     }
 
     async listByResource(filter: {
@@ -270,7 +276,7 @@ export class ShareTokenStore {
                 }
             })
             .filter((record): record is ShareTokenRecord => Boolean(record));
-        return records.filter((record) => !isExpired(record.expiresAt));
+        return records;
     }
 
     async purgeExpired(filter?: {
@@ -278,13 +284,16 @@ export class ShareTokenStore {
         resourceType?: string;
         resourceId?: string;
     }): Promise<void> {
-        const nowIso = new Date().toISOString();
+        const retentionCutoffIso = new Date(
+            Date.now() - EXPIRED_TOKEN_RETENTION_MS,
+        ).toISOString();
         // We persist "never expires" tokens with an empty expires_at value, so
         // expiry deletion must first exclude empty rows before applying the
-        // timestamp comparison.
+        // timestamp comparison. Tokens that expired within the retention
+        // window are kept so their owner can still see them as "Expired".
         const where = [
             { column: "expires_at", operator: "!=", value: "" as const },
-            { column: "expires_at", operator: "<", value: nowIso },
+            { column: "expires_at", operator: "<", value: retentionCutoffIso },
         ];
         if (filter?.ownerAccountId) {
             where.push({
@@ -353,15 +362,10 @@ export class ShareTokenStore {
             return null;
         }
         try {
-            const record = parseRecord(row);
-            if (!record) {
-                return null;
-            }
-            if (isExpired(record.expiresAt)) {
-                await this.deleteById({ shareId: record.id });
-                return null;
-            }
-            return record;
+            // Expired tokens are intentionally not deleted here so their
+            // owner can still see them listed with an "Expired" status
+            // until purgeExpired() removes them after the retention window.
+            return parseRecord(row);
         } catch (error) {
             this.log?.("error", "Failed to parse share token record.", {
                 component: "share-gateway",
@@ -383,6 +387,9 @@ export class ShareTokenStore {
             return null;
         }
         if (record.tokenHash !== parsedToken.tokenHash) {
+            return null;
+        }
+        if (isExpired(record.expiresAt)) {
             return null;
         }
         return record;

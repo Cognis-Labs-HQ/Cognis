@@ -99,3 +99,27 @@ Catatan share sekarang dapat memuat aksi cepat yang diselesaikan oleh gateway da
 ## Perbaikan Error Profil Tak Tertangani yang Merusak Panggilan API Meeting
 
 Beberapa rute Jitsi Meet (`meetings/active`, dan setiap rute yang dibangun di atas `resolveMeetingPayloadOrReject`, termasuk `get`, `preflight`, `probe`, `join`, `reclaim`, `presence`, rute `auth-*`, `state`, dan `chat-room-summary`) memanggil `resolveRequesterUsername` tanpa menangani error yang dilemparkannya ketika pemanggil tidak memiliki handle profil yang terlihat. Exception yang tak tertangani ini ditangkap oleh error handler umum server dan muncul sebagai `400 Bad Request` yang tidak informatif pada setiap permintaan, alih-alih respons `409 profile_required` yang sudah digunakan oleh `meetings/create`. Titik pemanggilan ini sekarang menangani error secara konsisten dan mengembalikan `409 profile_required`.
+
+## Tautan Berbagi Membuka Klien Surel di Tab Baru
+
+Aksi berbagi cepat email sekarang membuka tautan `mailto:` dengan `target="_blank"`, sehingga menulis pesan tidak lagi menggantikan tab saat ini dengan navigasi kosong.
+
+## Perbaikan Ikon Email yang Hilang di Popup Berbagi
+
+Aset ikon surat sekarang berada di direktori `ui/reuse` milik Share gateway sendiri (mandiri bersama bagian lain gateway) alih-alih di jalur aset publik generik, dan dirender sebagai ikon mask bertema yang selalu menyesuaikan warna tombol sekitarnya, bukan `<img>` yang `currentColor` internalnya tidak pernah mewarisi tema halaman.
+
+## Tamu Melihat Layar Berbagi Kedaluwarsa/Dihapus, Bukan Pengalihan ke Login
+
+Mengakses tautan berbagi yang kedaluwarsa, dicabut, atau tidak dapat diselesaikan lainnya tidak lagi memaksa pengalihan tamu ke `/login`. Alur `authenticate-session` sekarang mengenali kegagalan resolusi token berbagi dan membiarkan halaman berbagi merender layar fallback kedaluwarsa/dihapusnya sendiri.
+
+## Label Tautan Berbagi Dikosongkan Setelah Dibuat
+
+Kolom label kustom di popup tautan berbagi sekarang dikosongkan segera setelah tautan berhasil dibuat, sehingga membuat tautan berikutnya dimulai dengan label kosong, bukan menggunakan kembali label sebelumnya.
+
+## Tautan Berbagi Kini Menampilkan Status Aktif/Kedaluwarsa dan Waktu Kedaluwarsa
+
+Setiap tautan berbagi di popup kini menampilkan lencana status "Aktif" atau "Kedaluwarsa" beserta tanggal dan waktu lokal (zona waktu pengguna) tautan tersebut akan atau telah kedaluwarsa. Token berbagi yang kedaluwarsa kini disimpan untuk masa tenggang singkat alih-alih langsung dihapus saat kedaluwarsa, sehingga pemilik tetap dapat melihatnya berstatus "Kedaluwarsa" sebelum pembersihan otomatis menghapusnya.
+
+## Perbaikan Kontras Mode Terang pada Popup Tautan Berbagi
+
+Baris tautan berbagi menggunakan warna latar belakang gelap dan warna teks yang dikodekan secara tetap sehingga mengabaikan tema aktif, membuatnya tampil dengan latar belakang terlalu gelap bahkan dalam mode terang. Popup sekarang menggunakan variabel tema bersama sehingga menyesuaikan dengan benar pada mode terang maupun gelap.

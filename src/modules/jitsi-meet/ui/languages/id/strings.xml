@@ -91,6 +91,10 @@
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
   <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa Dalam (Jam)</string>
+  <string name="module.jitsi_meet.share.status_active">Aktif</string>
+  <string name="module.jitsi_meet.share.status_expired">Kedaluwarsa</string>
+  <string name="module.jitsi_meet.share.expires_at_label">Kedaluwarsa Pada</string>
+  <string name="module.jitsi_meet.share.expired_at_label">Kedaluwarsa Pada</string>
   <string name="module.jitsi_meet.share.empty">Belum ada tautan bagikan untuk rapat ini.</string>
   <string name="module.jitsi_meet.share.untitled">Tautan Bagikan Tanpa Judul</string>
   <string name="module.jitsi_meet.share.copy_success">Tautan bagikan disalin.</string>

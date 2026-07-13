@@ -91,6 +91,10 @@
   <string name="module.jitsi_meet.share.label">Bezeichnung</string>
   <string name="module.jitsi_meet.share.label_placeholder">Optionale Bezeichnung</string>
   <string name="module.jitsi_meet.share.expiry_label">Läuft ab in (Stunden)</string>
+  <string name="module.jitsi_meet.share.status_active">Aktiv</string>
+  <string name="module.jitsi_meet.share.status_expired">Abgelaufen</string>
+  <string name="module.jitsi_meet.share.expires_at_label">Läuft ab</string>
+  <string name="module.jitsi_meet.share.expired_at_label">Abgelaufen</string>
   <string name="module.jitsi_meet.share.empty">Für dieses Meeting wurden noch keine Freigabelinks erstellt.</string>
   <string name="module.jitsi_meet.share.untitled">Unbenannter Freigabelink</string>
   <string name="module.jitsi_meet.share.copy_success">Freigabelink kopiert.</string>

@@ -1,5 +1,5 @@
 import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
-import { ShareTokenStore, type ShareTokenRecord } from "./store.js";
+import { ShareTokenStore, isExpired, type ShareTokenRecord } from "./store.js";
 import {
     GuestProfileStore,
     type GuestProfileRecord,
@@ -35,6 +35,10 @@ export class CoreShareGateway {
             : sharePath;
     }
 
+    isTokenExpired(record: Pick<ShareTokenRecord, "expiresAt">): boolean {
+        return isExpired(record.expiresAt);
+    }
+
     async serializeRecord(
         record: ShareTokenRecord,
     ): Promise<Record<string, unknown>> {
@@ -47,6 +51,7 @@ export class CoreShareGateway {
             label: record.label,
             grantedCapabilities: record.grantedCapabilities,
             expiresAt: record.expiresAt,
+            status: this.isTokenExpired(record) ? "expired" : "active",
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
             shareUrl,
@@ -121,6 +126,10 @@ export class CoreShareGateway {
 
     async getGuestProfile(guestId: string): Promise<GuestProfileRecord | null> {
         return this.guestProfileStore.getById(guestId);
+    }
+
+    async purgeExpiredShareTokens(): Promise<void> {
+        await this.store.purgeExpired();
     }
 
     async purgeExpiredGuestProfiles(): Promise<void> {

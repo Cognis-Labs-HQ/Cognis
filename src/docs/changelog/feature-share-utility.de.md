@@ -99,3 +99,27 @@ Share-Datensätze können jetzt gatewayseitig aufgelöste Schnellaktionen enthal
 ## Behebung nicht abgefangener Profilfehler bei Meeting-API-Aufrufen
 
 Mehrere Jitsi-Meet-Routen (`meetings/active` sowie jede Route, die auf `resolveMeetingPayloadOrReject` aufbaut, darunter `get`, `preflight`, `probe`, `join`, `reclaim`, `presence`, die `auth-*`-Routen, `state` und `chat-room-summary`) riefen `resolveRequesterUsername` auf, ohne den Fehler zu behandeln, den die Funktion wirft, wenn der Aufrufer kein sichtbares Profil-Handle besitzt. Die nicht abgefangene Ausnahme wurde vom generischen Fehler-Handler des Servers abgefangen und als wenig hilfreicher `400 Bad Request` bei jeder Anfrage ausgegeben, anstatt der `409 profile_required`-Antwort, die `meetings/create` bereits verwendet. Diese Aufrufstellen behandeln den Fehler jetzt einheitlich und liefern `409 profile_required`.
+
+## Share-Links öffnen das Mailprogramm in einem neuen Tab
+
+Die E-Mail-Schnellaktion öffnet `mailto:`-Links jetzt mit `target="_blank"`, sodass das Verfassen einer Nachricht den aktuellen Tab nicht mehr durch eine leere Navigation ersetzt.
+
+## Fehlendes E-Mail-Symbol im Share-Popup behoben
+
+Die Mail-Icon-Datei liegt jetzt im eigenen `ui/reuse`-Verzeichnis des Share-Gateways (in sich geschlossen mit dem Rest des Gateways) statt an einem generischen öffentlichen Asset-Pfad und wird als themenfähiges Masken-Icon gerendert, das immer zur Button-Farbe passt, statt als `<img>`, dessen internes `currentColor` nie das Seitendesign übernahm.
+
+## Gäste sehen jetzt einen Bildschirm "Share abgelaufen/gelöscht" statt einer Login-Weiterleitung
+
+Der Aufruf eines abgelaufenen, widerrufenen oder anderweitig nicht auflösbaren Share-Links leitet Gäste nicht mehr zwangsweise zu `/login` weiter. Der `authenticate-session`-Flow erkennt jetzt eine fehlgeschlagene Share-Token-Auflösung und lässt die Share-Seite ihren eigenen Fallback-Bildschirm für abgelaufene/gelöschte Links rendern.
+
+## Share-Link-Bezeichnung wird nach dem Erstellen geleert
+
+Das Feld für die benutzerdefinierte Bezeichnung im Share-Links-Popup wird jetzt sofort nach erfolgreichem Erstellen eines Links geleert, sodass das Erstellen eines weiteren Links mit einer leeren Bezeichnung beginnt, statt die vorherige zu übernehmen.
+
+## Share-Links zeigen jetzt Status Aktiv/Abgelaufen und Ablaufzeit
+
+Jeder Share-Link im Popup zeigt jetzt ein Statusabzeichen „Aktiv“ oder „Abgelaufen“ sowie das lokale Datum und die Uhrzeit (in der Zeitzone des Benutzers), zu dem der Link abläuft oder abgelaufen ist. Abgelaufene Share-Tokens werden jetzt für eine kurze Karenzzeit aufbewahrt, statt sofort beim Ablauf gelöscht zu werden, sodass Eigentümer sie weiterhin als „Abgelaufen“ sehen können, bevor die automatische Bereinigung sie entfernt.
+
+## Kontrastproblem im Hellmodus des Share-Links-Popups behoben
+
+Die Zeilen der Share-Links verwendeten einen fest codierten dunklen Hintergrund und Textfarben, die das aktive Theme ignorierten, wodurch sie selbst im Hellmodus mit einem zu dunklen Hintergrund dargestellt wurden. Das Popup verwendet jetzt die gemeinsamen Theme-Variablen, sodass es sich korrekt an Hell- und Dunkelmodus anpasst.

@@ -123,7 +123,7 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.equal(await store.resolve(issued.tokenValue), null);
 });
 
-test("listByResource returns only matching non-expired share tokens", async () => {
+test("listByResource returns matching share tokens including recently expired ones", async () => {
     const executor = new MemoryExecutor();
     const store = new ShareTokenStore(executor as never);
     await store.issue({
@@ -150,12 +150,42 @@ test("listByResource returns only matching non-expired share tokens", async () =
         resourceId: "meeting-1",
     });
 
-    assert.equal(listed.length, 1);
-    assert.equal(listed[0].resourceId, "meeting-1");
+    // A recently-expired token is retained (within the retention window) so
+    // its owner can still see it listed with an "Expired" status.
+    assert.equal(listed.length, 2);
+    assert.equal(
+        listed.every((record) => record.resourceId === "meeting-1"),
+        true,
+    );
     assert.equal(
         Array.from(executor.rows.values()).filter(
             (row) => row.resource_id === "meeting-1",
         ).length,
-        1,
+        2,
+    );
+});
+
+test("purgeExpired removes only tokens past the retention window", async () => {
+    const executor = new MemoryExecutor();
+    const store = new ShareTokenStore(executor as never);
+    await store.issue({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-1",
+        expiresAt: new Date(Date.now() - 60_000).toISOString(),
+    });
+    await store.issue({
+        ownerAccountId: "bob",
+        resourceType: "meeting",
+        resourceId: "meeting-1",
+        expiresAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+    await store.purgeExpired();
+
+    assert.equal(executor.rows.size, 1);
+    assert.equal(
+        Array.from(executor.rows.values())[0].owner_account_id,
+        "alice",
     );
 });

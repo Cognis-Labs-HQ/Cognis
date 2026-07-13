@@ -104,3 +104,27 @@ Share records can now include gateway-resolved quick-share actions sourced from 
 ## Fix Uncaught Profile Errors Breaking Meeting API Calls
 
 Several Jitsi Meet routes (`meetings/active`, and every route built on `resolveMeetingPayloadOrReject`, including `get`, `preflight`, `probe`, `join`, `reclaim`, `presence`, the `auth-*` routes, `state`, and `chat-room-summary`) called `resolveRequesterUsername` without handling the error it throws when the caller has no visible profile handle. The uncaught exception was caught by the server's generic error handler and surfaced as an unhelpful `400 Bad Request` on every request, instead of the `409 profile_required` response already used by `meetings/create`. These call sites now handle the error consistently and return `409 profile_required`.
+
+## Share Links Open Mail Client in a New Tab
+
+The email quick-share action now opens `mailto:` links with `target="_blank"`, so composing a message no longer replaces the current tab with a blank navigation.
+
+## Fixed Missing Email Icon in Share Popup
+
+The mail icon asset now lives inside the Share gateway's own `ui/reuse` directory (self-contained with the rest of the gateway) instead of a generic public assets path, and is rendered as a themed mask icon that always matches the surrounding button color instead of an `<img>` whose internal `currentColor` never inherited the page theme.
+
+## Guests See a Share Expired/Deleted Screen Instead of a Login Redirect
+
+Visiting an expired, revoked, or otherwise unresolvable share link no longer force-redirects guests to `/login`. The `authenticate-session` flow now recognizes a failed share-token resolution and lets the share page render its own expired/deleted fallback screen.
+
+## Share Link Label Clears After Creation
+
+The custom label field in the share links popup is now cleared immediately after a link is successfully created, so creating another link starts from a blank label instead of reusing the previous one.
+
+## Share Links Now Show Active/Expired Status and Expiry Time
+
+Each share link in the popup now displays an "Active" or "Expired" status badge along with the local (user-timezone) date and time it expires or expired. Expired share tokens are now retained for a short grace period instead of being purged the instant they lapse, so owners can still see them listed as "Expired" before automatic cleanup removes them.
+
+## Fixed Light-Mode Contrast in the Share Links Popup
+
+Share link rows used a hardcoded dark background and text colors that ignored the active theme, making them render with an overly dark background even in light mode. The popup now uses the shared theme variables so it adapts correctly to both light and dark mode.

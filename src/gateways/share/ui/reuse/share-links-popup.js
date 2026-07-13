@@ -35,8 +35,12 @@
  *       copySuccess: 'Link copied!',
  *       copyFailed: 'Failed to copy link.',
  *       deleteFailed: 'Failed to revoke link.',
+ *       statusActive: 'Active',
+ *       statusExpired: 'Expired',
+ *       expiresAtLabel: 'Expires',
+ *       expiredAtLabel: 'Expired',
  *     },
- *     fetchLinks: async () => [{ id, label, shareUrl, quickShareActions: [] }],
+ *     fetchLinks: async () => [{ id, label, shareUrl, status, expiresAt, quickShareActions: [] }],
  *     createLink: async ({ label, expiresInHours }) => ({ shareUrl }),
  *     deleteLink: async ({ shareId }) => {},
  *   });
@@ -59,11 +63,17 @@
  *     copySuccess: string,
  *     copyFailed: string,
  *     deleteFailed: string,
+ *     statusActive: string,
+ *     statusExpired: string,
+ *     expiresAtLabel: string,
+ *     expiredAtLabel: string,
  *   },
  *   fetchLinks: () => Promise<Array<{
  *     id: string,
  *     label: string,
  *     shareUrl: string,
+ *     status?: 'active' | 'expired',
+ *     expiresAt?: string,
  *     quickShareActions?: Array<{ id: string, label: string, href: string }>,
  *   }>>,
  *   createLink: (opts: { label: string, expiresInHours: string }) => Promise<{
@@ -78,10 +88,10 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { formatDateTime } from "/static/reuse/timestamp.js";
 
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
-const MAIL_ICON_HREF = "/static/assets/reuse/mail.svg";
 
 let stylesheetReady = null;
 
@@ -123,10 +133,12 @@ function renderQuickShareActions(link, labels) {
           <a
             class="btn-neutral btn-animated"
             href="${escapeHtml(href)}"
+            target="_blank"
+            rel="noopener noreferrer"
             data-share-quick-action="${escapeHtml(id)}"
             aria-label="${escapeHtml(labels.mail)}"
             title="${escapeHtml(labels.mail)}"
-          ><img src="${MAIL_ICON_HREF}" alt="" class="share-links-row-mail-icon" /></a>
+          ><span class="share-links-row-mail-icon" aria-hidden="true"></span></a>
         `;
             }
             return `
@@ -138,6 +150,24 @@ function renderQuickShareActions(link, labels) {
       `;
         })
         .join("");
+}
+
+function renderShareStatus(link, labels) {
+    const expiresAt = String(link?.expiresAt ?? "").trim();
+    const isExpired = link?.status === "expired";
+    const statusLabel = isExpired ? labels.statusExpired : labels.statusActive;
+    const statusClass = isExpired
+        ? "share-links-row-status-expired"
+        : "share-links-row-status-active";
+    const timeLabel = expiresAt
+        ? `${isExpired ? labels.expiredAtLabel : labels.expiresAtLabel}: ${formatDateTime(expiresAt)}`
+        : "";
+    return `
+    <div class="share-links-row-status-line">
+      <span class="share-links-row-status ${statusClass}">${escapeHtml(statusLabel)}</span>
+      ${timeLabel ? `<span class="share-links-row-expiry">${escapeHtml(timeLabel)}</span>` : ""}
+    </div>
+  `;
 }
 
 function renderRows(labels, links) {
@@ -172,6 +202,7 @@ function renderRows(labels, links) {
                     aria-label="${escapeHtml(labels.copyLink)}: ${escapeHtml(shareUrl)}"
                   >🔗</a>
                 </div>
+                ${renderShareStatus(link, labels)}
               </div>
               <div class="share-links-row-share">
                 <span class="share-links-row-share-label">${escapeHtml(labels.shareOptions)}</span>
@@ -337,6 +368,10 @@ export async function openShareLinksPopup({
 
                 state.isCreating = false;
                 syncCreateButton(createButton);
+                // Clear the custom label after a successful create so the
+                // next link starts from a blank label instead of reusing it.
+                state.label = "";
+                labelInput.value = "";
                 await refreshLinks();
                 if (popupOpen) {
                     renderLinksList(listContainer);
