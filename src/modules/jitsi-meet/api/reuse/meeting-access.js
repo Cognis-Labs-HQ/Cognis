@@ -14,7 +14,8 @@ import { resolveRequesterUsername } from "./requester.js";
  * out of any real username namespace.
  *
  * @param {{ sub?: string } | undefined} claims
- * @returns {string}
+ * @returns {string} The `guest:<id>` presence username, or `""` when the
+ *   claims do not resolve to a share guest.
  */
 export function resolveShareGuestPresenceUsername(claims) {
     const shareGuestId = resolveShareGuestId(claims);

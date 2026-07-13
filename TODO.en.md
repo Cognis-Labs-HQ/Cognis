@@ -209,3 +209,29 @@
 **Guardrail:** `src/tooling/tests/architecture-compliance.test.js` requires files to stay at or below 1000 lines, splitting into a subdirectory with an `index` entry point otherwise.
 
 **Reason deferred:** `src/modules/jitsi-meet/api/index.js` was already at 1003 lines (over the guardrail) before this PR's changes; this PR's edits (guest presence tracking fix, presence-window dedup) only add a net few lines to an already-violating file. Splitting `registerApiRoutes` — a single large function whose route handlers close over shared local variables (`store`, `config`, `profileStore`, etc.) — into a subdirectory of sibling files is a significant architectural refactor with real regression risk across many meeting/chat/share routes. This is unrelated to the guest/share/CSS bug fixes requested in this PR and is deferred to a dedicated refactor task.
+
+## Code Review — Jitsi Meet Bug Fixes Session
+
+### session-flow-hooks.js — beforeunload listener without AbortSignal
+
+**Reviewer suggestion:** Register the `beforeunload` listener with `{ signal: abortController.signal }` using the `AbortController` created by `activateGuestToken`.
+
+**Reason ignored:** `src/gateways/share/ui/session-flow-hooks.js` was not touched in this PR. The `AbortController` returned by `activateGuestToken` is stored as `stageCtx.data.shareAbortController` for a separate purpose (aborting the guest auth stage), not for listener cleanup; wiring it into the `beforeunload` listener would change its lifecycle semantics and needs its own dedicated review, out of scope for the meeting/chat/share bug fixes in this PR.
+
+### share-button.js — GUEST_SESSION_ACTIVE_STORAGE_KEY "shadowed" constant
+
+**Reviewer suggestion:** Remove the local `GUEST_SESSION_ACTIVE_STORAGE_KEY` declaration since it is "shadowed" by the export.
+
+**Reason ignored:** False positive — `export { GUEST_SESSION_ACTIVE_STORAGE_KEY }` at line 83 re-exports the single local `const` declared at line 47; it is not a separate/duplicate declaration. No change made.
+
+### room/index.ts — invert share-guest allowed-operation condition
+
+**Reviewer suggestion:** Refactor the negated nested condition gating share-guest access to `key`/`messages` routes into a positive `isAllowedShareGuestOperation` helper.
+
+**Reason ignored:** `src/adapters/social/messages/routes/room/index.ts` was not touched in this PR (verified the existing logic already correctly permits guest GET `/key` and GET/POST `/messages` for their own meeting's chat room, which is unrelated to the chat-key 403 fixed in this PR — that 403 was caused by the UI requesting private per-user DM keys, not this route's guest gate). Readability refactor deferred as out of scope.
+
+### guard.ts — verifyAccessToken called twice
+
+**Reviewer suggestion:** Avoid calling `verifyAccessToken` twice with the same token when the first call returns null.
+
+**Reason ignored:** `src/gateways/auth/guard.ts` was not touched in this PR. This is a minor performance nit in unrelated auth-guard code; addressing it requires understanding all call sites of `verifyAccessToken`'s purpose parameter, which is out of scope for this PR's meeting/chat/share bug fixes.
