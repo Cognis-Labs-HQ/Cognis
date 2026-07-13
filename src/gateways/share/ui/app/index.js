@@ -197,16 +197,8 @@ export async function mount(root, { signal } = {}) {
         }
         state.loading = false;
         state.errorKey = "";
-        state.isMountedApp = true;
-        state.renderedContent = "";
-        composer.refresh([buildShareElement(state)]);
-        const mountRoot = root.querySelector("#share-resource-mount-root");
-        if (!(mountRoot instanceof HTMLElement)) {
-            state.errorKey = "share.error.renderer_missing";
-            composer.refresh([buildShareElement(state)]);
-            return;
-        }
-        await mountSharedPage(mountRoot, {
+        root.replaceChildren();
+        await mountSharedPage(root, {
             shareContext,
             i18n: state.i18n,
             signal,

@@ -940,14 +940,11 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
-        showTopbar: !inShareView,
+        showTopbar: true,
         showNavbar: !inShareView,
-        showFooter: !inShareView,
-        showThemeToggle: !inShareView,
+        showFooter: true,
+        showThemeToggle: true,
         persistLayoutPreferences: !inShareView,
-        // Share-mounted meetings should keep the same page-composer
-        // workspace/card styling as the signed-in Meetings page. The outer
-        // share shell is frameless, but the mounted app itself must not be.
         frameless: false,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
