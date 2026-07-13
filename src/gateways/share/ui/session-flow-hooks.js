@@ -174,7 +174,9 @@ uiCtx.extendFlow(
         }
 
         if (typeof window !== "undefined") {
-            window.addEventListener("beforeunload", restoreGuestToken);
+            window.addEventListener("beforeunload", restoreGuestToken, {
+                signal: abortController?.signal,
+            });
         }
 
         return {

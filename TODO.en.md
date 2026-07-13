@@ -208,15 +208,13 @@
 
 **Guardrail:** `src/tooling/tests/architecture-compliance.test.js` requires files to stay at or below 1000 lines, splitting into a subdirectory with an `index` entry point otherwise.
 
-**Reason deferred:** `src/modules/jitsi-meet/api/index.js` was already at 1003 lines (over the guardrail) before this PR's changes; this PR's edits (guest presence tracking fix, presence-window dedup) only add a net few lines to an already-violating file. Splitting `registerApiRoutes` — a single large function whose route handlers close over shared local variables (`store`, `config`, `profileStore`, etc.) — into a subdirectory of sibling files is a significant architectural refactor with real regression risk across many meeting/chat/share routes. This is unrelated to the guest/share/CSS bug fixes requested in this PR and is deferred to a dedicated refactor task.
+**Resolved:** `src/modules/jitsi-meet/api/index.js` (previously 1010 lines) has been split into `config-routes.js`, `participant-routes.js`, and `meeting-lifecycle-routes.js` sibling files in the Share Gateway UX bugfix PR, bringing `index.js` down to 414 lines. All previously-deferred concerns about this guardrail no longer apply.
 
 ## Code Review — Jitsi Meet Bug Fixes Session
 
 ### session-flow-hooks.js — beforeunload listener without AbortSignal
 
-**Reviewer suggestion:** Register the `beforeunload` listener with `{ signal: abortController.signal }` using the `AbortController` created by `activateGuestToken`.
-
-**Reason ignored:** `src/gateways/share/ui/session-flow-hooks.js` was not touched in this PR. The `AbortController` returned by `activateGuestToken` is stored as `stageCtx.data.shareAbortController` for a separate purpose (aborting the guest auth stage), not for listener cleanup; wiring it into the `beforeunload` listener would change its lifecycle semantics and needs its own dedicated review, out of scope for the meeting/chat/share bug fixes in this PR.
+**Resolved:** In the Share Gateway UX bugfix PR, the `beforeunload` listener in `src/gateways/share/ui/session-flow-hooks.js` is now registered with `{ signal: abortController?.signal }`, using the `AbortController` returned by `activateGuestToken`, so it is automatically removed alongside the guest auth stage's abort lifecycle.
 
 ### share-button.js — GUEST_SESSION_ACTIVE_STORAGE_KEY "shadowed" constant
 
@@ -235,3 +233,21 @@
 **Reviewer suggestion:** Avoid calling `verifyAccessToken` twice with the same token when the first call returns null.
 
 **Reason ignored:** `src/gateways/auth/guard.ts` was not touched in this PR. This is a minor performance nit in unrelated auth-guard code; addressing it requires understanding all call sites of `verifyAccessToken`'s purpose parameter, which is out of scope for this PR's meeting/chat/share bug fixes.
+
+## Code Review — Share Gateway UX Bugfix Session
+
+### room/index.ts — resolveShareGuestSessionId called twice per guest sender
+
+**Resolved:** In `src/adapters/social/messages/routes/room/index.ts`, the guest sender enrichment loop now resolves `resolveShareGuestSessionId` once per unique sender ID into a `guestSessionIdsBySender` map, reusing the result in both the filtering and the profile-lookup steps instead of calling it twice.
+
+### server.ts — static-asset pathname check on every request
+
+**Reviewer suggestion:** The `isUiStaticAssetRequest` check runs on every request before the catch-all routes; consider having the route registry distinguish static vs dynamic routes at registration time to avoid the extra pathname check per request.
+
+**Reason ignored:** This is a minor, explicitly-caveated ("correct for the fix, but consider...") performance observation on `src/api/server.ts`, a file not touched by this PR's share/mailto/expiry/theme fixes. `isUiStaticAssetRequest` is a cheap prefix/extension check with negligible per-request cost; restructuring route registration to separate static/dynamic routes is a broader architectural change to the routing dispatch order that is unrelated to this PR's scope and risks regressing unrelated route matching. Deferred to a dedicated routing-performance task.
+
+### session-flow-hooks.js — redundant `typeof window !== "undefined"` guard
+
+**Reviewer suggestion:** Remove the `typeof window !== "undefined"` check since this UI module only ever runs in the browser.
+
+**Reason ignored:** This guard predates this PR (present since the share session-flow-hooks file was first introduced) and was not added by this PR's `beforeunload`/AbortSignal fix — only the `addEventListener` call inside it was modified. It is a harmless defensive check consistent with other guards in the same file; removing it is a pure style nitpick unrelated to this PR's share/mailto/expiry/theme bug fixes.

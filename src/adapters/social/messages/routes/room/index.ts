@@ -332,41 +332,45 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 // guests separately, sourcing identity from the Share
                 // gateway's temporary guest profile.
                 if (getGuestProfile) {
-                    const guestSenderIds = new Set(
+                    const uniqueSenderIds = new Set(
                         messages
                             .map((message) => message.senderId)
                             .filter(
                                 (senderId) =>
-                                    !profilesByAccountId.has(senderId) &&
-                                    resolveShareGuestSessionId({
-                                        sub: senderId,
-                                    }),
+                                    !profilesByAccountId.has(senderId),
                             ),
                     );
+                    const guestSessionIdsBySender = new Map(
+                        Array.from(uniqueSenderIds)
+                            .map((senderId) => [
+                                senderId,
+                                resolveShareGuestSessionId({ sub: senderId }),
+                            ])
+                            .filter(([, guestSessionId]) => guestSessionId),
+                    );
                     await Promise.all(
-                        Array.from(guestSenderIds).map(async (senderId) => {
-                            const guestSessionId = resolveShareGuestSessionId({
-                                sub: senderId,
-                            });
-                            const guestProfile = await getGuestProfile(
-                                guestSessionId,
-                            ).catch(() => null);
-                            if (!guestProfile) return;
-                            profilesByAccountId.set(senderId, {
-                                accountId: senderId,
-                                handle: "",
-                                displayName: guestProfile.displayName,
-                                role: "user",
-                                bio: null,
-                                location: null,
-                                website: null,
-                                avatarKey: guestProfile.avatarKey,
-                                bannerKey: null,
-                                visibility: "community",
-                                createdAt: "",
-                                updatedAt: "",
-                            });
-                        }),
+                        Array.from(guestSessionIdsBySender.entries()).map(
+                            async ([senderId, guestSessionId]) => {
+                                const guestProfile = await getGuestProfile(
+                                    guestSessionId,
+                                ).catch(() => null);
+                                if (!guestProfile) return;
+                                profilesByAccountId.set(senderId, {
+                                    accountId: senderId,
+                                    handle: "",
+                                    displayName: guestProfile.displayName,
+                                    role: "user",
+                                    bio: null,
+                                    location: null,
+                                    website: null,
+                                    avatarKey: guestProfile.avatarKey,
+                                    bannerKey: null,
+                                    visibility: "community",
+                                    createdAt: "",
+                                    updatedAt: "",
+                                });
+                            },
+                        ),
                     );
                 }
                 const reactionsByMessage = new Map<

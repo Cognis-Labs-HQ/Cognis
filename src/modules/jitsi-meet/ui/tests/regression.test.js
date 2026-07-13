@@ -15,6 +15,15 @@ function readJitsiUiBundle() {
         .join("\n");
 }
 
+function readJitsiApiBundle() {
+    const apiDir = resolve(ROOT, "src/modules/jitsi-meet/api");
+    return readdirSync(apiDir)
+        .filter((entry) => entry.endsWith(".js"))
+        .sort()
+        .map((entry) => readFileSync(join(apiDir, entry), "utf8"))
+        .join("\n");
+}
+
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
@@ -56,10 +65,7 @@ test("jitsi participant avatars reuse social avatar hydration and hide staged av
 });
 
 test("jitsi meeting group chats include the meeting date in their title", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
-        "utf8",
-    );
+    const source = readJitsiApiBundle();
     assert.match(source, /function buildMeetingChatTitle[\s\S]*slice\(0, 10\)/);
     assert.match(source, /title:\s*meetingChatTitle/);
 });
@@ -283,10 +289,7 @@ test("meetings session state polling handles closed meetings and distinct leave 
 });
 
 test("jitsi API resets ended meetings and reports meetingClosed from presence updates", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
-        "utf8",
-    );
+    const source = readJitsiApiBundle();
     assert.match(
         source,
         /!resolved\.state\.endedAt && conflictingSessions\.length > 0/,
@@ -474,10 +477,7 @@ test("meetings speech bubbles use the same contrast-oriented color tokens as Mes
 });
 
 test("jitsi API dispatches meeting lifecycle and participant notifications", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
-        "utf8",
-    );
+    const source = readJitsiApiBundle();
     const uiResourcesSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
         "utf8",
