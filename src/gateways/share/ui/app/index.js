@@ -110,7 +110,7 @@ export async function mount(root, { signal } = {}) {
         showNavbar: false,
         showFooter: true,
         showThemeToggle: true,
-        frameless: true,
+        frameless: false,
         persistLayoutPreferences: false,
         // This page is visited by anonymous guests and runs its own
         // authenticate-session flow below, so it must not block on a full
@@ -197,16 +197,8 @@ export async function mount(root, { signal } = {}) {
         }
         state.loading = false;
         state.errorKey = "";
-        state.isMountedApp = true;
-        state.renderedContent = "";
-        composer.refresh([buildShareElement(state)]);
-        const mountRoot = root.querySelector("#share-resource-mount-root");
-        if (!(mountRoot instanceof HTMLElement)) {
-            state.errorKey = "share.error.renderer_missing";
-            composer.refresh([buildShareElement(state)]);
-            return;
-        }
-        await mountSharedPage(mountRoot, {
+        root.replaceChildren();
+        await mountSharedPage(root, {
             shareContext,
             i18n: state.i18n,
             signal,

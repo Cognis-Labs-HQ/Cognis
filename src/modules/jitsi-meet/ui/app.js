@@ -940,17 +940,12 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
-        showTopbar: !inShareView,
+        showTopbar: true,
         showNavbar: !inShareView,
-        showFooter: !inShareView,
-        showThemeToggle: !inShareView,
+        showFooter: true,
+        showThemeToggle: true,
         persistLayoutPreferences: !inShareView,
-        // When mounted inside a share page, this composer is nested inside
-        // the share page's own frameless composer. Without `frameless` here
-        // too, the inner `.app-shell`/`.workspace` keep their normal
-        // card-styled max-width/padding classes instead of the full-bleed
-        // layout the real meetings page renders with.
-        frameless: inShareView,
+        frameless: false,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
             if (!inShareView) {

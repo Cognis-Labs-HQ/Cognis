@@ -39,7 +39,7 @@ export async function handleCalendarShareRoutes(input: {
     claims: { sub: string };
     gateway: CoreCalendarGateway;
     shareRegistry: CalendarShareRegistry;
-    externalHost: string;
+    buildAbsoluteUrl: (relativePath: string) => string;
     resolveShareableUsers:
         | ((params: { ownerAccountId: string; query: string }) => Promise<
               Array<{
@@ -85,7 +85,7 @@ export async function handleCalendarShareRoutes(input: {
             data: shareLinks.map((shareLink) =>
                 buildCalendarShareData({
                     shareLink,
-                    externalHost: input.externalHost,
+                    buildAbsoluteUrl: input.buildAbsoluteUrl,
                 }),
             ),
         });
@@ -118,7 +118,7 @@ export async function handleCalendarShareRoutes(input: {
             data: shareLinks.map((shareLink) =>
                 buildCalendarShareData({
                     shareLink,
-                    externalHost: input.externalHost,
+                    buildAbsoluteUrl: input.buildAbsoluteUrl,
                 }),
             ),
         });
@@ -165,7 +165,7 @@ export async function handleCalendarShareRoutes(input: {
             data: shareLinks.map((shareLink) =>
                 buildCalendarShareData({
                     shareLink,
-                    externalHost: input.externalHost,
+                    buildAbsoluteUrl: input.buildAbsoluteUrl,
                 }),
             ),
         });

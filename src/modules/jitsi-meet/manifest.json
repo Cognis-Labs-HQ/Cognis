@@ -20,7 +20,12 @@
         "shareable": true,
         "mountScriptUrl": "/static/modules/jitsi-meet/share-mount.js",
         "stringsBaseUrl": "/static/modules/jitsi-meet/languages",
-        "guestApiScopes": ["meeting:join", "participants:read", "chat:read"]
+        "guestApiScopes": [
+            "meeting:join",
+            "participants:read",
+            "chat:read",
+            "chat:write"
+        ]
     },
     "requires": ["social"]
 }

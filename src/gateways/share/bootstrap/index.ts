@@ -70,6 +70,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.getGuestProfile.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:buildAbsoluteUrl",
+        gateway.buildAbsoluteUrl.bind(gateway),
+    );
+    ctx.capabilities.contribute(
         "share:listPendingApprovalsForAccount",
         gateway.listPendingApprovalsForAccount.bind(gateway),
     );

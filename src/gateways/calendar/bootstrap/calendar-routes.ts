@@ -69,6 +69,16 @@ export function createCalendarCoreRoutes({
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : "");
+    const shareBuildAbsoluteUrl = ctx.getCapability?.<
+        (relativePath: string) => string
+    >("share:buildAbsoluteUrl");
+    const buildShareAbsoluteUrl =
+        typeof shareBuildAbsoluteUrl === "function"
+            ? shareBuildAbsoluteUrl
+            : (relativePath: string) =>
+                  externalHost
+                      ? `${externalHost}${relativePath}`
+                      : relativePath;
     const {
         clearScheduledReminderTimersForEvent,
         scheduleReminderNotificationsForEvent,
@@ -358,7 +368,7 @@ export function createCalendarCoreRoutes({
                 claims: { sub: shareClaims.sub },
                 gateway,
                 shareRegistry,
-                externalHost,
+                buildAbsoluteUrl: buildShareAbsoluteUrl,
                 resolveShareableUsers,
                 dispatchNotification,
                 log,

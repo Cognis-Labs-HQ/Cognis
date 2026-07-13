@@ -27,12 +27,19 @@ export class CoreShareGateway {
         await this.approvalRequestStore.ensureSchema();
     }
 
+    buildAbsoluteUrl(pathOrUrl: string): string {
+        const normalizedPath = String(pathOrUrl ?? "").trim();
+        if (!normalizedPath || /^[a-z][a-z0-9+.-]*:/i.test(normalizedPath)) {
+            return normalizedPath;
+        }
+        return this.externalBaseUrl
+            ? `${this.externalBaseUrl}${normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`}`
+            : normalizedPath;
+    }
+
     buildShareUrl(tokenValue: string): string {
         const encodedToken = encodeURIComponent(tokenValue);
-        const sharePath = `/share/${encodedToken}`;
-        return this.externalBaseUrl
-            ? `${this.externalBaseUrl}${sharePath}`
-            : sharePath;
+        return this.buildAbsoluteUrl(`/share/${encodedToken}`);
     }
 
     isTokenExpired(record: Pick<ShareTokenRecord, "expiresAt">): boolean {
