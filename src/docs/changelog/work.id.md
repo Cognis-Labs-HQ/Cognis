@@ -1,5 +1,5 @@
 # Kontrol kanvas papan tulis
 
-## Kontrol penyuntingan papan tulis ditingkatkan
+## Pemilihan dan penyuntingan papan tulis ditingkatkan
 
-Papan tulis kini mendukung warna gores otomatis sesuai tema, penggantian nama board yang lebih aman, ukuran judul yang lebih tepat, kotak teks yang lebih besar dan dapat diedit, penyuntingan teks dari alat teks atau pilih, aksi toolbar sekali jalan, perilaku pilih setelah membuat objek, dan penghapus dengan kotak seret.
+Papan tulis kini menginisialisasi pemilih warna dari tema aktif, memperbaiki permintaan penggantian nama yang lebih aman, mendukung multi-pilih dengan kotak seret dan Shift-klik, memindahkan objek terpilih bersama-sama, menjaga konten yang diubah ukurannya tetap di dalam batas pilihan, menghapus hanya objek yang sepenuhnya tertutup, dan memperbaiki kursor mode pilih.

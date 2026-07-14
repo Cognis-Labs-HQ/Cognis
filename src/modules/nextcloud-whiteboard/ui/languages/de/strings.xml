@@ -72,10 +72,6 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">Pfeil</string>
   <string name="module.nextcloud_whiteboard.tool_line">Linie</string>
   <string name="module.nextcloud_whiteboard.tool_text">Text</string>
-  <string name="module.nextcloud_whiteboard.stroke_auto">Auto</string>
-  <string name="module.nextcloud_whiteboard.stroke_black">Schwarz</string>
-  <string name="module.nextcloud_whiteboard.stroke_white">Weiß</string>
-  <string name="module.nextcloud_whiteboard.stroke_custom">Benutzerdefiniert</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Dadurch werden alle Elemente auf dem aktuellen Whiteboard dauerhaft gelöscht. Fortfahren?</string>
 </resources>
 

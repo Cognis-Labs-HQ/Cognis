@@ -1,5 +1,5 @@
 # Whiteboard canvas controls
 
-## Improved whiteboard editing controls
+## Improved whiteboard selection and editing
 
-The whiteboard now supports automatic theme-aware stroke colour, safer board renaming, better title sizing, larger editable text boxes, text editing from the text or select tool, single-fire toolbar actions, select-after-create behavior, and drag-box erasing.
+The whiteboard now initializes the colour picker from the active theme, fixes safer rename requests, supports multi-selection with drag boxes and shift-click, moves selected objects together, keeps resized content within selection bounds, uses covered-only erasing, and improves select-mode cursors.

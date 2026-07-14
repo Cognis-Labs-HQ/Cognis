@@ -1,5 +1,5 @@
 # Whiteboard-Zeichensteuerung
 
-## Verbesserte Whiteboard-Bearbeitung
+## Verbesserte Whiteboard-Auswahl und Bearbeitung
 
-Das Whiteboard unterstützt jetzt automatische, themenabhängige Linienfarben, sichereres Umbenennen von Boards, passendere Titelbreiten, größere bearbeitbare Textfelder, Textbearbeitung über Text- oder Auswahlwerkzeug, nur einmal ausgelöste Toolbar-Aktionen, automatisches Auswählen nach dem Erstellen und Radieren per Ziehrahmen.
+Das Whiteboard initialisiert die Farbauswahl jetzt aus dem aktiven Theme, korrigiert sicherere Umbenennungsanfragen, unterstützt Mehrfachauswahl per Ziehrahmen und Umschalt-Klick, bewegt ausgewählte Objekte gemeinsam, hält skalierte Inhalte innerhalb der Auswahlgrenzen, radiert nur vollständig abgedeckte Objekte und verbessert die Cursor im Auswahlmodus.

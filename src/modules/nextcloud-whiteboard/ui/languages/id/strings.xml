@@ -72,10 +72,6 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">Panah</string>
   <string name="module.nextcloud_whiteboard.tool_line">Garis</string>
   <string name="module.nextcloud_whiteboard.tool_text">Teks</string>
-  <string name="module.nextcloud_whiteboard.stroke_auto">Otomatis</string>
-  <string name="module.nextcloud_whiteboard.stroke_black">Hitam</string>
-  <string name="module.nextcloud_whiteboard.stroke_white">Putih</string>
-  <string name="module.nextcloud_whiteboard.stroke_custom">Kustom</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Ini akan menghapus permanen semua item di papan tulis saat ini. Lanjutkan?</string>
 </resources>
 

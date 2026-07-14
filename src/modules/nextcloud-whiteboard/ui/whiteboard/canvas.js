@@ -10,14 +10,6 @@ function randomNonce() {
     return Math.floor(Math.random() * SESSION_VERSION_NONCE_MAX);
 }
 
-function resolveStrokeColor(context, element) {
-    const color = element.strokeColor ?? "auto";
-    if (color !== "auto") return color;
-    const canvas = context.canvas;
-    const style = getComputedStyle(canvas);
-    return style.getPropertyValue("--wb-auto-stroke").trim() || "#111827";
-}
-
 function bumpElementVersion(element, patch = {}) {
     return {
         ...element,
@@ -140,7 +132,7 @@ function renderFreedraw(context, element) {
     const rawPoints = element.points ?? [];
     if (rawPoints.length < 2) return;
     context.save();
-    context.strokeStyle = resolveStrokeColor(context, element);
+    context.strokeStyle = element.strokeColor ?? "#000000";
     context.lineWidth = element.strokeWidth ?? 2;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -159,7 +151,7 @@ function renderFreedraw(context, element) {
 
 function renderRectangle(context, element) {
     context.save();
-    context.strokeStyle = resolveStrokeColor(context, element);
+    context.strokeStyle = element.strokeColor ?? "#000000";
     context.lineWidth = element.strokeWidth ?? 2;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     if (element.backgroundColor && element.backgroundColor !== "transparent") {
@@ -172,7 +164,7 @@ function renderRectangle(context, element) {
 
 function renderDiamond(context, element) {
     context.save();
-    context.strokeStyle = resolveStrokeColor(context, element);
+    context.strokeStyle = element.strokeColor ?? "#000000";
     context.lineWidth = element.strokeWidth ?? 2;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     context.beginPath();
@@ -187,7 +179,7 @@ function renderDiamond(context, element) {
 
 function renderEllipse(context, element) {
     context.save();
-    context.strokeStyle = resolveStrokeColor(context, element);
+    context.strokeStyle = element.strokeColor ?? "#000000";
     context.lineWidth = element.strokeWidth ?? 2;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     context.beginPath();
@@ -211,7 +203,7 @@ function renderEllipse(context, element) {
 function renderText(context, element) {
     if (!element.text) return;
     context.save();
-    context.fillStyle = resolveStrokeColor(context, element);
+    context.fillStyle = element.strokeColor ?? "#000000";
     context.font = `${element.fontSize ?? 16}px ${element.fontFamily ?? "sans-serif"}`;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     context.fillText(
@@ -258,25 +250,18 @@ function getElementBounds(element) {
 }
 
 function boxesIntersect(a, b) {
-    return (
-        a.x <= b.x + b.width &&
-        a.x + a.width >= b.x &&
-        a.y <= b.y + b.height &&
-        a.y + a.height >= b.y
-    );
+    return a.x <= b.x + b.width && a.x + a.width >= b.x && a.y <= b.y + b.height && a.y + a.height >= b.y;
+}
+
+function boxContains(container, item) {
+    return item.x >= container.x && item.y >= container.y && item.x + item.width <= container.x + container.width && item.y + item.height <= container.y + container.height;
 }
 
 function buildDragBox(startPoint, endPoint) {
     const [startX, startY] = startPoint;
     const [endX, endY] = endPoint;
-    return {
-        x: Math.min(startX, endX),
-        y: Math.min(startY, endY),
-        width: Math.abs(endX - startX),
-        height: Math.abs(endY - startY),
-    };
+    return { x: Math.min(startX, endX), y: Math.min(startY, endY), width: Math.abs(endX - startX), height: Math.abs(endY - startY) };
 }
-
 function drawAnchor(context, x, y) {
     context.save();
     context.fillStyle = "#ffffff";
@@ -315,7 +300,7 @@ function renderLine(context, element) {
     const rawPoints = element.points ?? [];
     if (rawPoints.length < 2) return;
     context.save();
-    context.strokeStyle = resolveStrokeColor(context, element);
+    context.strokeStyle = element.strokeColor ?? "#000000";
     context.lineWidth = element.strokeWidth ?? 2;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -387,15 +372,19 @@ export function createWhiteboardCanvas(canvasElement) {
     let elements = [];
     let currentPoints = [];
     let isDrawing = false;
-    let strokeColor = "auto";
+    let strokeColor = "#111827";
     let strokeWidth = 4;
     let activeTool = "pen";
     let imageUploadMaxBytes = 1048576;
     let selectedElementId = null;
+    let selectedElementIds = new Set();
     let eraserSelectionIds = new Set();
     let activeAnchorIndex = null;
     let dragStartPoint = null;
+    let dragSelectBox = null;
+    let selectDragMode = null;
     let originalElement = null;
+    let originalSelection = new Map();
     let changeCallback = null;
     let selectionCallback = null;
     let toolCallback = null;
@@ -416,7 +405,7 @@ export function createWhiteboardCanvas(canvasElement) {
         context.fillRect(0, 0, canvasElement.width, canvasElement.height);
         for (const element of elements) {
             renderElement(context, element);
-            if (element.id === selectedElementId || eraserSelectionIds.has(element.id)) {
+            if (selectedElementIds.has(element.id) || eraserSelectionIds.has(element.id)) {
                 const bounds = getElementBounds(element);
                 context.save();
                 context.setLineDash([6, 4]);
@@ -434,6 +423,18 @@ export function createWhiteboardCanvas(canvasElement) {
                     }
                 }
             }
+        }
+        if (dragSelectBox) {
+            context.save();
+            context.setLineDash([4, 4]);
+            context.strokeStyle = "#2563eb";
+            context.strokeRect(
+                dragSelectBox.x,
+                dragSelectBox.y,
+                dragSelectBox.width,
+                dragSelectBox.height,
+            );
+            context.restore();
         }
         if (isDrawing && currentPoints.length >= 2 && activeTool === "pen") {
             const previewElement = buildFreedrawElement(
@@ -497,7 +498,13 @@ export function createWhiteboardCanvas(canvasElement) {
         return elements.find((element) => element.id === selectedElementId) ?? null;
     }
 
+    function syncPrimarySelection() {
+        if (selectedElementId && selectedElementIds.has(selectedElementId)) return;
+        selectedElementId = selectedElementIds.values().next().value ?? null;
+    }
+
     function notifySelection() {
+        syncPrimarySelection();
         const element = selectedElement();
         selectionCallback?.(element ? { ...element, strokeWidthApplicable: isStrokeWidthApplicable(element) } : null);
     }
@@ -520,12 +527,31 @@ export function createWhiteboardCanvas(canvasElement) {
         changeCallback?.([...elements]);
     }
 
+    function scaleElementToBounds(element, nextBounds) {
+        const originalBounds = getElementBounds(element);
+        const scaleX = nextBounds.width / Math.max(1, originalBounds.width);
+        const scaleY = nextBounds.height / Math.max(1, originalBounds.height);
+        const patch = {
+            x: nextBounds.x,
+            y: nextBounds.y,
+            width: Math.max(1, nextBounds.width),
+            height: Math.max(1, nextBounds.height),
+        };
+        if (Array.isArray(element.points)) {
+            patch.points = element.points.map(([px, py]) => [
+                (element.x + px - originalBounds.x) * scaleX,
+                (element.y + py - originalBounds.y) * scaleY,
+            ]);
+        }
+        return bumpElementVersion(element, patch);
+    }
+
     function updateEraserSelection(endPoint) {
         if (!dragStartPoint) return;
         const box = buildDragBox(dragStartPoint, endPoint);
         eraserSelectionIds = new Set(
             elements
-                .filter((element) => boxesIntersect(box, getElementBounds(element)))
+                .filter((element) => boxContains(box, getElementBounds(element)))
                 .map((element) => element.id),
         );
         scheduleRender();
@@ -534,19 +560,36 @@ export function createWhiteboardCanvas(canvasElement) {
     function setActiveTool(tool) {
         activeTool = tool;
         eraserSelectionIds = new Set();
+        canvasElement.style.cursor = tool === "select" ? "grab" : tool === "eraser" ? "cell" : "crosshair";
         toolCallback?.(tool);
         scheduleRender();
     }
 
-    function selectElementById(elementId) {
-        selectedElementId = elementId;
+    function selectOnlyElement(elementId) {
+        selectedElementIds = elementId ? new Set([elementId]) : new Set();
+        selectedElementId = elementId ?? null;
+        notifySelection();
+        scheduleRender();
+    }
+
+    function toggleElementSelection(elementId) {
+        if (!elementId) return;
+        selectedElementIds = new Set(selectedElementIds);
+        if (selectedElementIds.has(elementId)) {
+            selectedElementIds.delete(elementId);
+        } else {
+            selectedElementIds.add(elementId);
+        }
+        if (!selectedElementIds.has(selectedElementId)) {
+            selectedElementId = elementId;
+        }
         notifySelection();
         scheduleRender();
     }
 
     function commitCreatedElement(element) {
         commitElements([...elements, element]);
-        selectElementById(element.id);
+        selectOnlyElement(element.id);
         setActiveTool("select");
     }
 
@@ -562,7 +605,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     : item,
             ),
         );
-        selectElementById(element.id);
+        selectOnlyElement(element.id);
     }
 
     function openTextEditor(element) {
@@ -590,7 +633,7 @@ export function createWhiteboardCanvas(canvasElement) {
         editor.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
                 editor.remove();
-                selectElementById(element.id);
+                selectOnlyElement(element.id);
             } else if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 finish();
@@ -609,8 +652,36 @@ export function createWhiteboardCanvas(canvasElement) {
             const selected = selectedElement();
             activeAnchorIndex = findAnchorAt(selected, x, y);
             const target = activeAnchorIndex >= 0 ? selected : findElementAt(x, y);
-            selectedElementId = target?.id ?? null;
-            originalElement = target ? { ...target, points: target.points?.map((point) => [...point]) } : null;
+            if (event.shiftKey && target) {
+                toggleElementSelection(target.id);
+                isDrawing = false;
+                return;
+            }
+            if (activeAnchorIndex >= 0 && selected) {
+                selectDragMode = "resize";
+                originalElement = {
+                    ...selected,
+                    points: selected.points?.map((point) => [...point]),
+                };
+            } else if (target) {
+                if (!selectedElementIds.has(target.id)) selectOnlyElement(target.id);
+                selectDragMode = "move";
+                originalSelection = new Map(
+                    elements
+                        .filter((element) => selectedElementIds.has(element.id))
+                        .map((element) => [
+                            element.id,
+                            {
+                                ...element,
+                                points: element.points?.map((point) => [...point]),
+                            },
+                        ]),
+                );
+            } else {
+                selectOnlyElement(null);
+                selectDragMode = "box";
+                dragSelectBox = buildDragBox(dragStartPoint, [x, y]);
+            }
             notifySelection();
             scheduleRender();
             return;
@@ -623,8 +694,7 @@ export function createWhiteboardCanvas(canvasElement) {
         if (activeTool === "text") {
             const existingText = findElementAt(x, y);
             if (existingText?.type === "text") {
-                selectedElementId = existingText.id;
-                notifySelection();
+                selectOnlyElement(existingText.id);
                 openTextEditor(existingText);
                 isDrawing = false;
                 setActiveTool("select");
@@ -641,19 +711,50 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function onPointerMove(event) {
-        if (!isDrawing) return;
         const [x, y] = getCanvasPoint(event);
-        if (
-            activeTool === "select" &&
-            selectedElementId &&
-            originalElement &&
-            dragStartPoint
-        ) {
+        if (!isDrawing) {
+            if (activeTool === "select") {
+                const anchorIndex = findAnchorAt(selectedElement(), x, y);
+                canvasElement.style.cursor = anchorIndex >= 0 ? "pointer" : "grab";
+            }
+            return;
+        }
+        if (activeTool === "select" && dragStartPoint) {
             const dx = x - dragStartPoint[0];
             const dy = y - dragStartPoint[1];
-            elements = elements.map((element) => {
-                if (element.id !== selectedElementId) return element;
-                if (activeAnchorIndex >= 0) {
+            if (selectDragMode === "box") {
+                dragSelectBox = buildDragBox(dragStartPoint, [x, y]);
+                selectedElementIds = new Set(
+                    elements
+                        .filter((element) =>
+                            boxContains(dragSelectBox, getElementBounds(element)),
+                        )
+                        .map((element) => element.id),
+                );
+                notifySelection();
+                scheduleRender();
+                return;
+            }
+            if (selectDragMode === "move" && originalSelection.size > 0) {
+                elements = elements.map((element) => {
+                    const original = originalSelection.get(element.id);
+                    if (!original) return element;
+                    return bumpElementVersion(element, {
+                        x: original.x + dx,
+                        y: original.y + dy,
+                    });
+                });
+                scheduleRender();
+                return;
+            }
+            if (
+                selectDragMode === "resize" &&
+                selectedElementId &&
+                originalElement &&
+                activeAnchorIndex >= 0
+            ) {
+                elements = elements.map((element) => {
+                    if (element.id !== selectedElementId) return element;
                     if (element.type === "line" || element.type === "arrow") {
                         const points = (originalElement.points ?? []).map((point) => [...point]);
                         points[activeAnchorIndex] = [
@@ -668,35 +769,40 @@ export function createWhiteboardCanvas(canvasElement) {
                         const minY = Math.min(...absolutePoints.map(([, py]) => py));
                         const maxX = Math.max(...absolutePoints.map(([px]) => px));
                         const maxY = Math.max(...absolutePoints.map(([, py]) => py));
-                        return {
-                            ...element,
+                        return bumpElementVersion(element, {
                             x: minX,
                             y: minY,
                             width: Math.max(1, maxX - minX),
                             height: Math.max(1, maxY - minY),
                             points: absolutePoints.map(([px, py]) => [px - minX, py - minY]),
-                            version: (originalElement.version ?? 1) + 1,
-                            versionNonce: randomNonce(),
-                        };
+                        });
                     }
                     const leftAnchors = new Set([0, 3]);
                     const topAnchors = new Set([0, 1]);
-                    const nextX = leftAnchors.has(activeAnchorIndex) ? originalElement.x + dx : originalElement.x;
-                    const nextY = topAnchors.has(activeAnchorIndex) ? originalElement.y + dy : originalElement.y;
-                    const nextRight = leftAnchors.has(activeAnchorIndex) ? originalElement.x + originalElement.width : originalElement.x + originalElement.width + dx;
-                    const nextBottom = topAnchors.has(activeAnchorIndex) ? originalElement.y + originalElement.height : originalElement.y + originalElement.height + dy;
-                    return { ...element, x: Math.min(nextX, nextRight), y: Math.min(nextY, nextBottom), width: Math.max(1, Math.abs(nextRight - nextX)), height: Math.max(1, Math.abs(nextBottom - nextY)), version: (originalElement.version ?? 1) + 1, versionNonce: randomNonce() };
-                }
-                return {
-                    ...element,
-                    x: originalElement.x + dx,
-                    y: originalElement.y + dy,
-                    version: (originalElement.version ?? 1) + 1,
-                    versionNonce: randomNonce(),
-                };
-            });
-            scheduleRender();
-            return;
+                    const right = originalElement.x + originalElement.width;
+                    const bottom = originalElement.y + originalElement.height;
+                    const nextX = leftAnchors.has(activeAnchorIndex)
+                        ? originalElement.x + dx
+                        : originalElement.x;
+                    const nextY = topAnchors.has(activeAnchorIndex)
+                        ? originalElement.y + dy
+                        : originalElement.y;
+                    const nextRight = leftAnchors.has(activeAnchorIndex)
+                        ? right
+                        : right + dx;
+                    const nextBottom = topAnchors.has(activeAnchorIndex)
+                        ? bottom
+                        : bottom + dy;
+                    return scaleElementToBounds(element, {
+                        x: Math.min(nextX, nextRight),
+                        y: Math.min(nextY, nextBottom),
+                        width: Math.max(1, Math.abs(nextRight - nextX)),
+                        height: Math.max(1, Math.abs(nextBottom - nextY)),
+                    });
+                });
+                scheduleRender();
+                return;
+            }
         }
         if (activeTool === "eraser") {
             currentPoints.push([x, y]);
@@ -710,13 +816,14 @@ export function createWhiteboardCanvas(canvasElement) {
     function onPointerUp() {
         if (!isDrawing) return;
         isDrawing = false;
-        if (activeTool === "select" && selectedElementId) {
-            changeCallback?.([...elements]);
+        if (activeTool === "select") {
+            if (selectDragMode) changeCallback?.([...elements]);
         } else if (activeTool === "eraser") {
             if (eraserSelectionIds.size > 0) {
                 commitElements(
                     elements.filter((element) => !eraserSelectionIds.has(element.id)),
                 );
+                selectedElementIds = new Set();
                 selectedElementId = null;
                 notifySelection();
             }
@@ -747,8 +854,11 @@ export function createWhiteboardCanvas(canvasElement) {
         currentPoints = [];
         dragStartPoint = null;
         originalElement = null;
+        originalSelection = new Map();
         activeAnchorIndex = null;
         eraserSelectionIds = new Set();
+        dragSelectBox = null;
+        selectDragMode = null;
         scheduleRender();
     }
 
@@ -756,8 +866,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const [x, y] = getCanvasPoint(event);
         const element = findElementAt(x, y);
         if (activeTool === "select" && element?.type === "text") {
-            selectedElementId = element.id;
-            notifySelection();
+            selectOnlyElement(element.id);
             openTextEditor(element);
         }
     }
@@ -847,6 +956,10 @@ export function createWhiteboardCanvas(canvasElement) {
                 }
             }
             elements = [...localById.values()];
+            const currentIds = new Set(elements.map((element) => element.id));
+            selectedElementIds = new Set(
+                [...selectedElementIds].filter((id) => currentIds.has(id)),
+            );
             if (selectedElementId && !selectedElement()) selectedElementId = null;
             notifySelection();
             scheduleRender();
@@ -855,6 +968,7 @@ export function createWhiteboardCanvas(canvasElement) {
             elements = [];
             currentPoints = [];
             eraserSelectionIds = new Set();
+            selectedElementIds = new Set();
             scheduleRender();
             selectedElementId = null;
             notifySelection();
