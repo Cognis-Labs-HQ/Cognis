@@ -109,6 +109,51 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
+test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gateway-owned popup module", async () => {
+    const uiRegistry = new UIRegistry();
+    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
+    uiRegistry.registerStaticDir("share", shareUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL(
+            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.js",
+        ),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+    assert.match(recorder.body, /openShareLinksPopup/);
+});
+
+test("GET /static/gateways/share/ui/reuse/share-links-popup.css serves share-gateway-owned popup styles", async () => {
+    const uiRegistry = new UIRegistry();
+    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
+    uiRegistry.registerStaticDir("share", shareUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL(
+            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.css",
+        ),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-type"], "text/css; charset=utf-8");
+    assert.match(recorder.body, /share-links-popup/);
+});
+
 test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js serves module assets", async () => {
     const uiRegistry = new UIRegistry();
     const hiraganaUiDir = path.resolve(

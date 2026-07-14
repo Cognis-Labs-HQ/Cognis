@@ -10,7 +10,7 @@
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.1.0`    |
+| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.2`    |
 | 内部通知                   | `src/adapters/notify/internal/`     | `0.5.2`    |
 | ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
 | ローカル認証               | `src/adapters/auth/local/`          | `0.2.5`    |
@@ -31,6 +31,7 @@
 | -------------------------- | ---------------------------- | ---------- |
 | データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
+| Share                      | `src/gateways/share/`        | `1.2.2`    |
 | 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
@@ -49,6 +50,6 @@
 | コンポーネント | パス                              | バージョン |
 | -------------- | --------------------------------- | ---------- |
 | 分析           | `src/modules/analytics/`          | `2.0.1`    |
-| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.0.0`    |
+| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.2.2`    |
 | Cognis 日本語  | `src/modules/study/languages/ja/` | `1.2.4`    |
 | Cognis 英語    | `src/modules/study/languages/en/` | `1.2.2`    |

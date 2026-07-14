@@ -119,6 +119,8 @@ export function resolveMeetingChatRoomId(meeting) {
 }
 
 export async function fetchCurrentProfile() {
+    const guestProfile = await fetchShareGuestProfile();
+    if (guestProfile) return guestProfile;
     const response = await apiFetch("/api/v1/social/profile");
     if (!response.ok) return null;
     const payload = await response.json().catch(() => ({ data: null }));
@@ -142,6 +144,49 @@ export async function fetchCurrentProfile() {
         displayName: displayName || handle || "Cognis User",
         email,
         avatarKey: avatarKey ?? null,
+        avatarUrl,
+    };
+}
+
+/**
+ * Sources the current user's display identity from the Share gateway's
+ * temporary guest profile when the current session is viewing as a share
+ * guest. Returns null for real (non-guest) sessions or if the Share gateway
+ * is unavailable, so callers fall back to the normal profile lookup.
+ */
+async function fetchShareGuestProfile() {
+    let shareButtonModule;
+    try {
+        shareButtonModule =
+            await import("/static/gateways/share/ui/reuse/share-button.js");
+    } catch {
+        return null;
+    }
+    if (typeof shareButtonModule?.isViewingAsGuest !== "function") {
+        return null;
+    }
+    if (!shareButtonModule.isViewingAsGuest()) {
+        return null;
+    }
+    const response = await apiFetch("/api/v1/share/guest-profile");
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => ({ data: null }));
+    const profile = payload?.data;
+    if (!profile) return null;
+    const displayName = String(profile.displayName ?? "Guest").trim();
+    const avatarKey =
+        typeof profile.avatarKey === "string" ? profile.avatarKey.trim() : "";
+    const avatarUrl = avatarKey
+        ? `${window.location.origin}/api/v1/files/${avatarKey
+              .split("/")
+              .map((part) => encodeURIComponent(part))
+              .join("/")}`
+        : "";
+    return {
+        handle: "",
+        displayName: displayName || "Guest",
+        email: "",
+        avatarKey: avatarKey || null,
         avatarUrl,
     };
 }

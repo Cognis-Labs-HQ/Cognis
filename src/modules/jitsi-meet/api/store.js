@@ -7,11 +7,17 @@ import {
 import {
     normalizeHandleKey,
     normalizeHandleKeys,
-} from "../../../gateways/social/bootstrap.js";
+} from "../../../api/reuse/normalize-handle.js";
 import { normalizeMeetingPrefix } from "./meeting-values.js";
+import { readDbTimestampValue } from "../../../gateways/db/reuse/timestamp.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
-const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
+// Background/unfocused browser tabs are throttled by the browser and can
+// delay heartbeat pings (see HEARTBEAT_INTERVAL_MS client-side) well beyond
+// their nominal interval. This window must stay wide enough that a
+// participant who simply isn't focused on the tab is never treated as
+// "gone" for the purposes of the alone-in-meeting prompt.
+const ACTIVE_PRESENCE_WINDOW_MS = 120 * 1000;
 const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
 
 function buildRoomSlug(prefix) {
@@ -130,6 +136,7 @@ export class JitsiMeetStore {
             name: "jitsi_meeting_state",
             columns: [
                 { name: "meeting_id", type: "text", primaryKey: true },
+                { name: "instance_id", type: "text" },
                 { name: "first_joined_by", type: "text" },
                 { name: "first_joined_at", type: "timestamp" },
                 {
@@ -183,7 +190,7 @@ export class JitsiMeetStore {
             meetingPrefix: row?.meeting_prefix
                 ? String(row.meeting_prefix)
                 : "",
-            updatedAt: row?.updated_at ? String(row.updated_at) : null,
+            updatedAt: readDbTimestampValue(row?.updated_at),
         };
     }
 
@@ -259,8 +266,8 @@ export class JitsiMeetStore {
             chatRoomId: row.chat_room_id ? String(row.chat_room_id) : null,
             classroomId: row.classroom_id ? String(row.classroom_id) : null,
             createdBy: row.created_by ? String(row.created_by) : "",
-            createdAt: row.created_at ? String(row.created_at) : null,
-            updatedAt: row.updated_at ? String(row.updated_at) : null,
+            createdAt: readDbTimestampValue(row.created_at),
+            updatedAt: readDbTimestampValue(row.updated_at),
         };
     }
 
@@ -383,6 +390,7 @@ export class JitsiMeetStore {
                 table: "jitsi_meeting_state",
                 values: {
                     meeting_id: meetingId,
+                    instance_id: randomUUID(),
                     auth_required: 0,
                     updated_at: createdAt,
                 },
@@ -411,6 +419,7 @@ export class JitsiMeetStore {
         if (!row) {
             return {
                 meetingId,
+                instanceId: randomUUID(),
                 firstJoinedBy: null,
                 firstJoinedAt: null,
                 authRequired: false,
@@ -422,27 +431,38 @@ export class JitsiMeetStore {
                 endedAt: null,
             };
         }
+        const instanceId = row.instance_id
+            ? String(row.instance_id)
+            : randomUUID();
+        if (!row.instance_id) {
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "jitsi_meeting_state",
+                set: {
+                    instance_id: instanceId,
+                    updated_at: row.updated_at
+                        ? readDbTimestampValue(row.updated_at)
+                        : new Date().toISOString(),
+                },
+                where: [{ column: "meeting_id", value: meetingId }],
+            });
+        }
         return {
             meetingId,
+            instanceId,
             firstJoinedBy: row.first_joined_by
                 ? String(row.first_joined_by)
                 : null,
-            firstJoinedAt: row.first_joined_at
-                ? String(row.first_joined_at)
-                : null,
+            firstJoinedAt: readDbTimestampValue(row.first_joined_at),
             authRequired: Number(row.auth_required ?? 0) === 1,
             authStartedBy: row.auth_started_by
                 ? String(row.auth_started_by)
                 : null,
-            authStartedAt: row.auth_started_at
-                ? String(row.auth_started_at)
-                : null,
-            authCompletedAt: row.auth_completed_at
-                ? String(row.auth_completed_at)
-                : null,
-            updatedAt: row.updated_at ? String(row.updated_at) : null,
+            authStartedAt: readDbTimestampValue(row.auth_started_at),
+            authCompletedAt: readDbTimestampValue(row.auth_completed_at),
+            updatedAt: readDbTimestampValue(row.updated_at),
             endedBy: row.ended_by ? String(row.ended_by) : null,
-            endedAt: row.ended_at ? String(row.ended_at) : null,
+            endedAt: readDbTimestampValue(row.ended_at),
         };
     }
 
@@ -457,6 +477,7 @@ export class JitsiMeetStore {
             table: "jitsi_meeting_state",
             values: {
                 meeting_id: meetingId,
+                instance_id: merged.instanceId,
                 first_joined_by: merged.firstJoinedBy,
                 first_joined_at: merged.firstJoinedAt,
                 auth_required: merged.authRequired ? 1 : 0,
@@ -540,7 +561,7 @@ export class JitsiMeetStore {
             username: String(row.username),
             sessionId: String(row.session_id),
             active: Number(row.active ?? 0) === 1,
-            lastSeenAt: String(row.last_seen_at),
+            lastSeenAt: readDbTimestampValue(row.last_seen_at),
         }));
     }
 
@@ -588,8 +609,8 @@ export class JitsiMeetStore {
                         ? String(row.classroom_id)
                         : null,
                     createdBy: String(row.created_by),
-                    createdAt: String(row.created_at),
-                    updatedAt: String(row.updated_at),
+                    createdAt: readDbTimestampValue(row.created_at),
+                    updatedAt: readDbTimestampValue(row.updated_at),
                 };
                 const [presence, participants, state] = await Promise.all([
                     this.listPresence(meeting.id),
@@ -692,7 +713,7 @@ export class JitsiMeetStore {
                     meetingUrl: String(row.meeting_url),
                     meetingName: String(row.meeting_name ?? "Cognis Classroom"),
                     createdBy: String(row.created_by),
-                    createdAt: String(row.created_at),
+                    createdAt: readDbTimestampValue(row.created_at),
                 };
                 const [presence, participants, state] = await Promise.all([
                     this.listPresence(meeting.id),

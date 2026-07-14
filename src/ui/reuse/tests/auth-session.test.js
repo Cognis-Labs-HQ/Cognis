@@ -1,324 +1,167 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
-import {
-    clearStoredAuthSession,
-    ensureFullAccountSession,
-    redirectToDashboardIfAuthenticated,
-} from "../auth-session.js";
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-function createLocalStorageMock(entries = {}) {
-    const store = new Map(Object.entries(entries));
-    return {
-        getItem(key) {
-            return store.has(key) ? store.get(key) : null;
-        },
-        setItem(key, value) {
-            store.set(key, String(value));
-        },
-        removeItem(key) {
-            store.delete(key);
-        },
-        has(key) {
-            return store.has(key);
-        },
-    };
-}
-
-function installBrowserMocks({
-    entries = {},
-    fetchImplementation = async () => ({ ok: false, status: 401 }),
+/**
+ * Load auth-session.js in a controlled vm context, replacing its external
+ * imports with mocks so we can inject a controlled `uiCtx.runFlow` and
+ * verify that each exported helper correctly delegates to the flow and acts
+ * on its result.
+ */
+function loadAuthSessionForTests({
+    runFlowImpl = async () => ({}),
     pathname = "/dashboard",
     hash = "",
 } = {}) {
-    const localStorage = createLocalStorageMock(entries);
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/auth-session.js"),
+        "utf8",
+    );
+    const testableSource = source
+        .replace(/^import .*;\n/gm, "")
+        .replace(/\bexport\s+/g, "");
+
     const redirects = [];
     const cookieWrites = [];
-
-    globalThis.localStorage = localStorage;
-    globalThis.fetch = fetchImplementation;
-    globalThis.window = {
-        location: {
-            pathname,
-            hash,
-            replace(url) {
-                redirects.push(url);
+    const store = new Map();
+    const context = vm.createContext({
+        uiCtx: {
+            runFlow: runFlowImpl,
+            flowExists: () => true,
+        },
+        window: {
+            location: {
+                pathname,
+                hash,
+                replace(url) {
+                    redirects.push(url);
+                },
             },
         },
-    };
-    globalThis.document = {};
-    Object.defineProperty(globalThis.document, "cookie", {
-        configurable: true,
-        get() {
-            return "";
+        localStorage: {
+            getItem: (key) => store.get(key) ?? null,
+            setItem: (key, value) => store.set(key, String(value)),
+            removeItem: (key) => store.delete(key),
+            has: (key) => store.has(key),
         },
-        set(value) {
-            cookieWrites.push(value);
-        },
+        document: Object.defineProperty({}, "cookie", {
+            configurable: true,
+            get() {
+                return "";
+            },
+            set(value) {
+                cookieWrites.push(value);
+            },
+        }),
+        console,
+        __testExports: {},
     });
-
-    return { localStorage, redirects, cookieWrites };
+    vm.runInContext(
+        testableSource +
+            "\nglobalThis.__testExports = { redirectToDashboardIfAuthenticated, checkIsAuthenticated, ensureFullAccountSession, getShareContext, clearStoredAuthSession };\n",
+        context,
+    );
+    return { exports: context.__testExports, redirects, cookieWrites };
 }
 
-test("redirectToDashboardIfAuthenticated requires a stored account matching the token", async () => {
-    let requestedUrl = "";
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-1",
-            cognis_account: "alice",
-        },
-        fetchImplementation: async (url, options) => {
-            requestedUrl = String(url);
-            assert.equal(options.headers.authorization, "Bearer token-1");
-            return {
-                ok: true,
-                status: 200,
-                async json() {
-                    return { data: { username: "alice", enabled: true } };
-                },
-            };
-        },
+function flowResult(session) {
+    return { stageResults: { "resolve-session": [session] } };
+}
+
+test("redirectToDashboardIfAuthenticated redirects to /dashboard when authenticated", async () => {
+    const { exports, redirects } = loadAuthSessionForTests({
+        runFlowImpl: async () => flowResult({ authenticated: true }),
     });
-
-    const redirected = await redirectToDashboardIfAuthenticated();
-
-    assert.equal(redirected, true);
-    assert.equal(requestedUrl, "/api/v1/users/alice/info");
-    assert.deepEqual(mocks.redirects, ["/dashboard"]);
+    const result = await exports.redirectToDashboardIfAuthenticated();
+    assert.equal(result, true);
+    assert.deepEqual(redirects, ["/dashboard"]);
 });
 
-test("redirectToDashboardIfAuthenticated clears stale sessions without an account", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-1",
-            cognis_display_name: "Orphaned",
-        },
+test("redirectToDashboardIfAuthenticated returns false when not authenticated", async () => {
+    const { exports, redirects } = loadAuthSessionForTests({
+        runFlowImpl: async () => flowResult({ authenticated: false }),
     });
+    const result = await exports.redirectToDashboardIfAuthenticated();
+    assert.equal(result, false);
+    assert.deepEqual(redirects, []);
+});
 
-    const redirected = await redirectToDashboardIfAuthenticated();
+test("checkIsAuthenticated returns true when flow resolves as authenticated", async () => {
+    const { exports } = loadAuthSessionForTests({
+        runFlowImpl: async () => flowResult({ authenticated: true }),
+    });
+    const result = await exports.checkIsAuthenticated();
+    assert.equal(result, true);
+});
 
-    assert.equal(redirected, false);
-    assert.equal(mocks.localStorage.has("cognis_access_token"), false);
-    assert.equal(mocks.localStorage.has("cognis_display_name"), false);
-    assert.ok(
-        mocks.cookieWrites.includes("cognis_access_token=; Path=/; Max-Age=0"),
-    );
+test("checkIsAuthenticated returns false when flow resolves as unauthenticated", async () => {
+    const { exports } = loadAuthSessionForTests({
+        runFlowImpl: async () => flowResult({ authenticated: false }),
+    });
+    const result = await exports.checkIsAuthenticated();
+    assert.equal(result, false);
+});
+
+test("ensureFullAccountSession returns true when authenticated with no redirect", async () => {
+    const { exports, redirects } = loadAuthSessionForTests({
+        runFlowImpl: async () =>
+            flowResult({
+                authenticated: true,
+                requiresRedirect: false,
+                redirectTo: null,
+                shareContext: null,
+            }),
+    });
+    const result = await exports.ensureFullAccountSession();
+    assert.equal(result, true);
+    assert.deepEqual(redirects, []);
+});
+
+test("ensureFullAccountSession issues redirect and returns false when requiresRedirect", async () => {
+    const { exports, redirects } = loadAuthSessionForTests({
+        runFlowImpl: async () =>
+            flowResult({
+                authenticated: false,
+                requiresRedirect: true,
+                redirectTo: "/login?reason=session_expired",
+            }),
+    });
+    const result = await exports.ensureFullAccountSession();
+    assert.equal(result, false);
+    assert.deepEqual(redirects, ["/login?reason=session_expired"]);
+});
+
+test("ensureFullAccountSession stores shareContext for later getShareContext() access", async () => {
+    const shareContext = {
+        resourceType: "meeting",
+        resourceId: "mtg-1",
+        grantedCapabilities: [],
+    };
+    const { exports } = loadAuthSessionForTests({
+        runFlowImpl: async () =>
+            flowResult({
+                authenticated: true,
+                requiresRedirect: false,
+                redirectTo: null,
+                shareContext,
+            }),
+    });
+    await exports.ensureFullAccountSession();
+    assert.deepEqual(exports.getShareContext(), shareContext);
+});
+
+test("getShareContext returns null when ensureFullAccountSession has not run", () => {
+    const { exports } = loadAuthSessionForTests();
+    assert.equal(exports.getShareContext(), null);
 });
 
 test("clearStoredAuthSession clears the access-token cookie", () => {
-    const mocks = installBrowserMocks();
-
-    clearStoredAuthSession();
-
-    assert.deepEqual(mocks.cookieWrites, [
-        "cognis_access_token=; Path=/; Max-Age=0",
-    ]);
-});
-
-test("ensureFullAccountSession returns true when authenticated and TFA setup not required", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-abc",
-            cognis_account: "bob",
-        },
-        fetchImplementation: async (url) => {
-            if (String(url).includes("/info")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { username: "bob", enabled: true } };
-                    },
-                };
-            }
-            if (String(url).includes("/auth/setup-status")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { requiresSetup: false } };
-                    },
-                };
-            }
-            return { ok: false, status: 500 };
-        },
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, true);
-    assert.deepEqual(mocks.redirects, []);
-});
-
-test("ensureFullAccountSession redirects to /settings#security when TFA setup is required", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-abc",
-            cognis_account: "bob",
-        },
-        fetchImplementation: async (url) => {
-            if (String(url).includes("/info")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { username: "bob", enabled: true } };
-                    },
-                };
-            }
-            if (String(url).includes("/auth/setup-status")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { requiresSetup: true } };
-                    },
-                };
-            }
-            return { ok: false, status: 500 };
-        },
-        pathname: "/dashboard",
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, false);
-    assert.deepEqual(mocks.redirects, ["/settings#security"]);
-});
-
-test("ensureFullAccountSession redirects to /settings#security when on another settings tab with TFA required", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-abc",
-            cognis_account: "bob",
-        },
-        fetchImplementation: async (url) => {
-            if (String(url).includes("/info")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { username: "bob", enabled: true } };
-                    },
-                };
-            }
-            if (String(url).includes("/auth/setup-status")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { requiresSetup: true } };
-                    },
-                };
-            }
-            return { ok: false, status: 500 };
-        },
-        pathname: "/settings",
-        hash: "#appearance",
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, false);
-    assert.deepEqual(mocks.redirects, ["/settings#security"]);
-});
-
-test("ensureFullAccountSession does not redirect when already on /settings#security with TFA required", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-abc",
-            cognis_account: "bob",
-        },
-        fetchImplementation: async (url) => {
-            if (String(url).includes("/info")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { username: "bob", enabled: true } };
-                    },
-                };
-            }
-            if (String(url).includes("/auth/setup-status")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { requiresSetup: true } };
-                    },
-                };
-            }
-            return { ok: false, status: 500 };
-        },
-        pathname: "/settings",
-        hash: "#security",
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, true);
-    assert.deepEqual(mocks.redirects, []);
-});
-
-test("ensureFullAccountSession redirects to /login when not authenticated", async () => {
-    const mocks = installBrowserMocks({
-        entries: {},
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, false);
-    assert.deepEqual(mocks.redirects, ["/login?reason=session_expired"]);
-});
-
-test("ensureFullAccountSession redirects to /login with account_disabled reason", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-abc",
-            cognis_account: "carol",
-        },
-        fetchImplementation: async (url) => {
-            if (String(url).includes("/info")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { username: "carol", enabled: false } };
-                    },
-                };
-            }
-            return { ok: false, status: 500 };
-        },
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, false);
-    assert.deepEqual(mocks.redirects, ["/login?reason=account_disabled"]);
-});
-
-test("ensureFullAccountSession proceeds when TFA status check fails with a network error", async () => {
-    const mocks = installBrowserMocks({
-        entries: {
-            cognis_access_token: "token-abc",
-            cognis_account: "bob",
-        },
-        fetchImplementation: async (url) => {
-            if (String(url).includes("/info")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    async json() {
-                        return { data: { username: "bob", enabled: true } };
-                    },
-                };
-            }
-            throw new Error("network error");
-        },
-    });
-
-    const result = await ensureFullAccountSession();
-
-    assert.equal(result, true);
-    assert.deepEqual(mocks.redirects, []);
+    const { exports, cookieWrites } = loadAuthSessionForTests();
+    exports.clearStoredAuthSession();
+    assert.ok(cookieWrites.includes("cognis_access_token=; Path=/; Max-Age=0"));
 });

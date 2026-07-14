@@ -32,6 +32,37 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const sub = roomMatch[2];
         const subArg = roomMatch[3];
         const subArg2 = roomMatch[4];
+        const resolveShareGuestId = ctx.getCapability<
+            (claims: { sub?: string }) => string
+        >("share:resolveGuestId");
+        const resolveShareGuestSessionId = ctx.getCapability<
+            (claims: { sub?: string }) => string
+        >("share:resolveGuestSessionId");
+        const hasShareCapability = ctx.getCapability<
+            (
+                tokenRecord: { grantedCapabilities?: string[] } | null | undefined,
+                requiredCapability: string,
+            ) => boolean
+        >("share:hasCapability");
+        const shareGuestId = resolveShareGuestId?.({ sub: accountId }) ?? "";
+        const getShareTokenById = ctx.getCapability<
+            (shareId: string) => Promise<{
+                resourceType: string;
+                resourceId: string;
+                grantedCapabilities?: string[];
+            } | null>
+        >("share:getTokenById");
+        const getMeetingById = ctx.getCapability<
+            (
+                meetingId: string,
+            ) => Promise<{ chatRoomId?: string | null } | null>
+        >("jitsi-meet:getMeetingById");
+        const getGuestProfile = ctx.getCapability<
+            (guestId: string) => Promise<{
+                displayName: string;
+                avatarKey: string | null;
+            } | null>
+        >("share:getGuestProfile");
 
         const room = await messagesStore.getRoom(roomId);
         if (!room) {
@@ -44,7 +75,30 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
         const member = await messagesStore.getMember(roomId, accountId);
-        if (!member) {
+        const isShareGuest = Boolean(shareGuestId);
+        let shareGuestToken = null;
+        if (isShareGuest && typeof getShareTokenById === "function") {
+            shareGuestToken = await getShareTokenById(shareGuestId).catch(
+                () => null,
+            );
+        }
+        const isAllowedShareGuest =
+            isShareGuest &&
+            shareGuestToken?.resourceType === "meeting" &&
+            (room.kind === "group" || room.kind === "classroom");
+        const shareMeeting = isAllowedShareGuest
+            ? await getMeetingById?.(shareGuestToken.resourceId).catch(
+                  () => null,
+              )
+            : null;
+        const shareGuestChatRoomMatch =
+            isAllowedShareGuest &&
+            typeof shareMeeting?.chatRoomId === "string" &&
+            shareMeeting.chatRoomId === roomId;
+        const hasMeetingChatAccess = (capability: "chat:read" | "chat:write") =>
+            hasShareCapability?.(shareGuestToken, capability) === true ||
+            hasShareCapability?.(shareGuestToken, "meeting:join") === true;
+        if (!member && !isAllowedShareGuest) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -56,25 +110,64 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             );
             return true;
         }
-        const pendingIncomingRoomRequest = hasBypass
+        if (isAllowedShareGuest && !shareGuestChatRoomMatch) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message: "Share guest access is invalid for this room.",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (
+            isAllowedShareGuest &&
+            !(
+                (sub === "key" && !subArg && req.method === "GET") ||
+                (sub === "messages" &&
+                    !subArg &&
+                    (req.method === "GET" || req.method === "POST"))
+            )
+        ) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Share guest access is limited to room key and message reads.",
+                    },
+                }),
+            );
+            return true;
+        }
+        const pendingIncomingRoomRequest = isAllowedShareGuest
             ? null
-            : await messagesStore.getPendingIncomingRoomMessageRequest(
-                  roomId,
-                  accountId,
-              );
-        const pendingRoomRequest = pendingIncomingRoomRequest
-            ? pendingIncomingRoomRequest
-            : await messagesStore.getPendingRoomMessageRequest(roomId);
+            : hasBypass
+              ? null
+              : await messagesStore.getPendingIncomingRoomMessageRequest(
+                    roomId,
+                    accountId,
+                );
+        const pendingRoomRequest = isAllowedShareGuest
+            ? null
+            : pendingIncomingRoomRequest
+              ? pendingIncomingRoomRequest
+              : await messagesStore.getPendingRoomMessageRequest(roomId);
         const incomingPendingRoomRequest =
             pendingIncomingRoomRequest ||
             (pendingRoomRequest?.toAccountId === accountId
                 ? pendingRoomRequest
                 : null);
-        const pendingRequestSummary = await summarizeRoomRequest(
-            pendingRoomRequest,
-            profileStore,
-            accountId,
-        );
+        const pendingRequestSummary = isAllowedShareGuest
+            ? null
+            : await summarizeRoomRequest(
+                  pendingRoomRequest,
+                  profileStore,
+                  accountId,
+              );
 
         if (!sub && req.method === "GET") {
             const members = await messagesStore.listMembers(roomId);
@@ -141,6 +234,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (sub === "key" && !subArg && req.method === "GET") {
+            if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Share guest access cannot read this room key.",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (incomingPendingRoomRequest) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -175,6 +281,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
 
         if (sub === "messages" && !subArg) {
             if (req.method === "GET") {
+                if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Share guest access cannot read room messages.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 if (incomingPendingRoomRequest) {
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(
@@ -211,6 +330,53 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                         ),
                     ),
                 );
+                // Share guests are not room members, so their sender profile
+                // (a temporary guest display name/avatar) is not resolved by
+                // the loop above. Enrich message senders that are share
+                // guests separately, sourcing identity from the Share
+                // gateway's temporary guest profile.
+                if (getGuestProfile) {
+                    const uniqueSenderIds = new Set(
+                        messages
+                            .map((message) => message.senderId)
+                            .filter(
+                                (senderId) =>
+                                    !profilesByAccountId.has(senderId),
+                            ),
+                    );
+                    const guestSessionIdsBySender = new Map(
+                        Array.from(uniqueSenderIds)
+                            .map((senderId) => [
+                                senderId,
+                                resolveShareGuestSessionId({ sub: senderId }),
+                            ])
+                            .filter(([, guestSessionId]) => guestSessionId),
+                    );
+                    await Promise.all(
+                        Array.from(guestSessionIdsBySender.entries()).map(
+                            async ([senderId, guestSessionId]) => {
+                                const guestProfile = await getGuestProfile(
+                                    guestSessionId,
+                                ).catch(() => null);
+                                if (!guestProfile) return;
+                                profilesByAccountId.set(senderId, {
+                                    accountId: senderId,
+                                    handle: "",
+                                    displayName: guestProfile.displayName,
+                                    role: "user",
+                                    bio: null,
+                                    location: null,
+                                    website: null,
+                                    avatarKey: guestProfile.avatarKey,
+                                    bannerKey: null,
+                                    visibility: "community",
+                                    createdAt: "",
+                                    updatedAt: "",
+                                });
+                            },
+                        ),
+                    );
+                }
                 const reactionsByMessage = new Map<
                     string,
                     Map<
@@ -317,6 +483,22 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 return true;
             }
             if (req.method === "POST") {
+                if (
+                    isAllowedShareGuest &&
+                    !hasMeetingChatAccess("chat:write")
+                ) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Share guest access cannot post room messages.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 if (incomingPendingRoomRequest) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
@@ -333,7 +515,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 const activeMembers = await messagesStore.listMembers(roomId);
                 const dmIsArchivedForSender =
                     room.kind === "dm" &&
-                    (member.archived || activeMembers.length < 2);
+                    ((member?.archived ?? false) || activeMembers.length < 2);
                 if (dmIsArchivedForSender) {
                     res.writeHead(409, { "content-type": "application/json" });
                     res.end(
