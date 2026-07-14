@@ -429,7 +429,29 @@ export function registerApiRoutes(router, ctx) {
             await store.ensureSchema();
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
-            const body = await readJson(req);
+            let body;
+            try {
+                body = await readJson(req);
+            } catch {
+                sendError(
+                    res,
+                    400,
+                    "invalid_json",
+                    "Rename request body must be valid JSON.",
+                );
+                return;
+            }
+            const whiteboardId = String(body.id ?? "").trim();
+            const title = String(body.title ?? "").trim();
+            if (!whiteboardId || !title) {
+                sendError(
+                    res,
+                    422,
+                    "invalid_rename",
+                    "Whiteboard id and title are required.",
+                );
+                return;
+            }
             const username = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
@@ -438,7 +460,6 @@ export function registerApiRoutes(router, ctx) {
                 return null;
             });
             if (!username) return;
-            const whiteboardId = String(body.id ?? "");
             const authorized = await store.canAccessWhiteboard(
                 whiteboardId,
                 username,
@@ -452,10 +473,11 @@ export function registerApiRoutes(router, ctx) {
                 );
                 return;
             }
-            const renamed = await store.renameWhiteboard(
-                whiteboardId,
-                body.title,
-            );
+            const renamed = await store.renameWhiteboard(whiteboardId, title);
+            if (!renamed) {
+                sendError(res, 404, "not_found", "Whiteboard was not found.");
+                return;
+            }
             sendJson(res, 200, { data: renamed });
         },
         { access: { minRole: "user" } },

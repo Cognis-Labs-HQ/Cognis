@@ -267,7 +267,11 @@
 }
 
 .wb-canvas-stage {
-    --wb-canvas-bg: color-mix(in srgb, var(--surface, #ffffff) 92%, var(--text, #1f2937) 8%);
+    --wb-canvas-bg: color-mix(
+        in srgb,
+        var(--surface, #ffffff) 92%,
+        var(--text, #1f2937) 8%
+    );
     background: var(--wb-canvas-bg);
 }
 
@@ -292,8 +296,8 @@
 
 .wb-canvas-stage {
     --wb-canvas-bg: var(--surface, #ffffff);
+    --wb-auto-stroke: var(--text, #111827);
 }
-
 
 .wb-board-title {
     flex: 0 1 auto;

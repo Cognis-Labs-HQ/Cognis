@@ -311,12 +311,12 @@ function bindCanvasToolbar(canvas) {
         ?.addEventListener("dblclick", () => void renameActiveBoard());
 
     const colorInput = document.getElementById("wb-color");
-    const autoStrokeColor = getComputedStyle(document.body)
-        .getPropertyValue("--text")
-        .trim() || "#111827";
+    const themeStrokeColor = () =>
+        getComputedStyle(document.body).getPropertyValue("--text").trim() ||
+        "#111827";
     if (colorInput) {
-        colorInput.value = autoStrokeColor;
-        canvas.setStrokeColor(autoStrokeColor);
+        colorInput.value = themeStrokeColor();
+        canvas.setStrokeColor("auto");
     }
     colorInput?.addEventListener("input", () => {
         canvas.setStrokeColor(colorInput.value);
@@ -330,26 +330,39 @@ function bindCanvasToolbar(canvas) {
     canvas.onSelectionChange?.((element) => {
         selectedElement = element;
         if (colorInput && element?.strokeColor) {
-            colorInput.value = element.strokeColor;
+            colorInput.value =
+                element.strokeColor === "auto"
+                    ? themeStrokeColor()
+                    : element.strokeColor;
         }
         updateStyleControls();
     });
     updateStyleControls();
 
-    document.getElementById("wb-clear")?.addEventListener("click", async (event) => {
-        event.preventDefault();
-        const result = await openPopup({
-            title: t("module.nextcloud_whiteboard.clear_board"),
-            body: `<p>${escapeHtml(t("module.nextcloud_whiteboard.clear_confirm"))}</p>`,
-            actions: [
-                { id: "cancel", label: t("module.nextcloud_whiteboard.close"), variant: "cancel" },
-                { id: "clear", label: t("module.nextcloud_whiteboard.clear_board"), variant: "danger" },
-            ],
+    document
+        .getElementById("wb-clear")
+        ?.addEventListener("click", async (event) => {
+            event.preventDefault();
+            const result = await openPopup({
+                title: t("module.nextcloud_whiteboard.clear_board"),
+                body: `<p>${escapeHtml(t("module.nextcloud_whiteboard.clear_confirm"))}</p>`,
+                actions: [
+                    {
+                        id: "cancel",
+                        label: t("module.nextcloud_whiteboard.close"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "clear",
+                        label: t("module.nextcloud_whiteboard.clear_board"),
+                        variant: "danger",
+                    },
+                ],
+            });
+            if (result !== "clear") return;
+            canvas.clearAll();
+            savedElements = [];
         });
-        if (result !== "clear") return;
-        canvas.clearAll();
-        savedElements = [];
-    });
 }
 
 async function openHistoryPopup() {
@@ -412,10 +425,18 @@ async function renameActiveBoard() {
             return;
         }
         try {
-            const renamed = await renameBoard(activeBoard.id, nextTitle);
-            activeBoard = renamed;
-            if (activeSession) activeSession.title = renamed.title;
-            titleEl.textContent = renamed.title;
+            const boardId =
+                activeBoard.id ||
+                activeSession?.roomId ||
+                new URLSearchParams(window.location.search).get("id");
+            const renamed = await renameBoard(boardId, nextTitle);
+            activeBoard = {
+                ...activeBoard,
+                ...renamed,
+                id: renamed.id || boardId,
+            };
+            if (activeSession) activeSession.title = activeBoard.title;
+            titleEl.textContent = activeBoard.title;
             showToast(t("module.nextcloud_whiteboard.rename_success"), {
                 variant: "success",
             });
