@@ -22,10 +22,12 @@ Hal ini membatalkan impor dan mencegah seluruh rute SPA `/meetings` dimuat.
 diminta sampai pengguna berada dalam sesi yang terautentikasi dan dengan sengaja membuka
 popup share.
 
-## Pulihkan File Halaman Jitsi Meet Legacy
+## Hapus File Jitsi Meet yang Usang
 
-File-file `ui/app/index.js` dan `ui/pages/meetings.html` pada modul Jitsi Meet tetap disimpan
-untuk kompatibilitas, dengan impor page-composer diperbaiki ke entry point berbasis folder saat ini.
+File-file `ui/app/index.js` dan `ui/pages/meetings.html` pada modul Jitsi Meet menjadi kode mati
+akibat refaktor sebelumnya dan tidak pernah dikirimkan ke browser. `index.js` mengandung impor
+yang rusak (`/static/reuse/page-composer.js` alih-alih `/static/reuse/page-composer/index.js`),
+yang akan menyebabkan kegagalan muat jika file tersebut pernah diakses. Kedua file telah dihapus.
 
 ## Perbaiki Tautan Share Publik yang Diblokir oleh Pemeriksaan Autentikasi
 

@@ -22,11 +22,13 @@ mit `share-links-popup.js` innerhalb des Share-Button-Click-Handlers geladen, so
 erst angefordert wird, wenn sich der Nutzer in einer authentifizierten Sitzung befindet und
 bewusst das Share-Popup öffnet.
 
-## Legacy-Jitsi-Meet-Seitendateien wiederhergestellt
+## Verwaiste Jitsi-Meet-Dateien entfernt
 
-Die veralteten Dateien `ui/app/index.js` und `ui/pages/meetings.html` im Jitsi-Meet-Modul bleiben
-aus Kompatibilitätsgründen erhalten; der Page-Composer-Import wurde auf den aktuellen
-ordnerbasierten Einstiegspunkt korrigiert.
+Die veralteten Dateien `ui/app/index.js` und `ui/pages/meetings.html` im Jitsi-Meet-Modul wurden
+durch ein früheres Refactoring zu totem Code und werden im Browser nie ausgeliefert. `index.js`
+enthielt einen fehlerhaften Import (`/static/reuse/page-composer.js` statt
+`/static/reuse/page-composer/index.js`), der bei einem eventuellen Aufruf einen Ladefehler
+verursacht hätte. Beide Dateien wurden entfernt.
 
 ## Öffentliche Freigabelinks durch Auth-Check blockiert – behoben
 
