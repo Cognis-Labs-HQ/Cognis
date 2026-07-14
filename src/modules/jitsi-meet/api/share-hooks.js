@@ -1,6 +1,9 @@
 import { resolveStore } from "./reuse/store-runtime.js";
 import { resolveRequesterUsername } from "./reuse/requester.js";
-import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
+import {
+    getFirstMatchingStageResult,
+    getFirstStageResult,
+} from "../../../api/reuse/flow-helpers.js";
 import {
     resolveMessagesUiResources,
     resolveSharedMessagesStylesheetUrls,
@@ -200,9 +203,12 @@ export function registerShareFlowHooks(ctx) {
         "authorize-minter",
         { id: "jitsi-meet:authorize-meeting-share-minter" },
         async (stageCtx) => {
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "validate-resource",
+                (result) =>
+                    result?.valid === true &&
+                    result?.resourceType === "meeting",
             );
             if (!resourceResult?.valid) {
                 return {
@@ -283,9 +289,12 @@ export function registerShareFlowHooks(ctx) {
         "check-access",
         { id: "jitsi-meet:check-meeting-share-access" },
         async (stageCtx) => {
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "resolve-resource",
+                (result) =>
+                    result?.resolved === true &&
+                    result?.resourceType === "meeting",
             );
             if (!resourceResult?.resolved) {
                 return {

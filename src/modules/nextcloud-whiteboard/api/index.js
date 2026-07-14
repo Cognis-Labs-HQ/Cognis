@@ -1,7 +1,10 @@
 import path from "node:path";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
-import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
+import {
+    getFirstMatchingStageResult,
+    getFirstStageResult,
+} from "../../../api/reuse/flow-helpers.js";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
@@ -180,9 +183,12 @@ function registerWhiteboardShareFlowHooks(ctx, store, profileStore) {
         "authorize-minter",
         { id: "nextcloud-whiteboard:authorize-share-minter" },
         (stageCtx) => {
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "validate-resource",
+                (result) =>
+                    result?.valid === true &&
+                    result?.resourceType === "whiteboard",
             );
             return resourceResult?.valid
                 ? {
@@ -229,9 +235,12 @@ function registerWhiteboardShareFlowHooks(ctx, store, profileStore) {
         "check-access",
         { id: "nextcloud-whiteboard:check-share-access" },
         (stageCtx) => {
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "resolve-resource",
+                (result) =>
+                    result?.resolved === true &&
+                    result?.resourceType === "whiteboard",
             );
             return resourceResult?.resolved
                 ? { allowed: true }

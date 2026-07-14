@@ -5,7 +5,10 @@ import {
     registerCanonicalFlow,
     type Ctx,
 } from "@cognis/core";
-import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
+import {
+    getFirstMatchingStageResult,
+    getFirstStageResult,
+} from "../../../api/reuse/flow-helpers.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
@@ -50,9 +53,10 @@ export async function registerShareBootstrapHooks(input: {
         "request-approval",
         { id: "share-gateway:request-approval" },
         async (stageCtx) => {
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "validate-resource",
+                (result) => Boolean((result as { valid?: boolean })?.valid),
             ) as {
                 valid?: boolean;
                 resourceType?: string;
@@ -60,9 +64,11 @@ export async function registerShareBootstrapHooks(input: {
                 ownerAccountId?: string;
                 meetingInstanceId?: string;
             } | null;
-            const authorizeResult = getFirstStageResult(
+            const authorizeResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "authorize-minter",
+                (result) =>
+                    Boolean((result as { authorized?: boolean })?.authorized),
             ) as {
                 authorized?: boolean;
                 ownerAccountId?: string;
@@ -151,9 +157,10 @@ export async function registerShareBootstrapHooks(input: {
         "issue-token",
         { id: "share-gateway:issue-token" },
         async (stageCtx) => {
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "validate-resource",
+                (result) => Boolean((result as { valid?: boolean })?.valid),
             ) as {
                 valid?: boolean;
                 resourceType?: string;
@@ -161,9 +168,11 @@ export async function registerShareBootstrapHooks(input: {
                 ownerAccountId?: string;
                 meetingInstanceId?: string;
             } | null;
-            const authorizeResult = getFirstStageResult(
+            const authorizeResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "authorize-minter",
+                (result) =>
+                    Boolean((result as { authorized?: boolean })?.authorized),
             ) as {
                 authorized?: boolean;
                 ownerAccountId?: string;
@@ -277,19 +286,33 @@ export async function registerShareBootstrapHooks(input: {
                     expiresAt?: string;
                 };
             } | null;
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "resolve-resource",
+                (result) =>
+                    Boolean((result as { resolved?: boolean })?.resolved),
             ) as {
                 resolved?: boolean;
             } | null;
-            const accessResult = getFirstStageResult(
-                stageCtx.stageResults,
-                "check-access",
-            ) as {
-                allowed?: boolean;
-                directAccess?: boolean;
-            } | null;
+            const accessResult =
+                (getFirstMatchingStageResult(
+                    stageCtx.stageResults,
+                    "check-access",
+                    (result) =>
+                        (result as { allowed?: boolean })?.allowed === true,
+                ) as {
+                    allowed?: boolean;
+                    directAccess?: boolean;
+                } | null) ??
+                (getFirstMatchingStageResult(
+                    stageCtx.stageResults,
+                    "check-access",
+                    (result) =>
+                        (result as { allowed?: boolean })?.allowed === false,
+                ) as {
+                    allowed?: boolean;
+                    directAccess?: boolean;
+                } | null);
             if (!tokenResult?.valid || !resourceResult?.resolved) {
                 return { issued: false, reason: "resource_unavailable" };
             }
@@ -352,23 +375,38 @@ export async function registerShareBootstrapHooks(input: {
                 valid?: boolean;
                 tokenRecord?: Record<string, unknown>;
             } | null;
-            const resourceResult = getFirstStageResult(
+            const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "resolve-resource",
+                (result) =>
+                    Boolean((result as { resolved?: boolean })?.resolved),
             ) as {
                 resolved?: boolean;
                 resourceType?: string;
                 resourceId?: string;
                 payload?: Record<string, unknown>;
             } | null;
-            const accessResult = getFirstStageResult(
-                stageCtx.stageResults,
-                "check-access",
-            ) as {
-                allowed?: boolean;
-                reason?: string;
-                directAccess?: boolean;
-            } | null;
+            const accessResult =
+                (getFirstMatchingStageResult(
+                    stageCtx.stageResults,
+                    "check-access",
+                    (result) =>
+                        (result as { allowed?: boolean })?.allowed === true,
+                ) as {
+                    allowed?: boolean;
+                    reason?: string;
+                    directAccess?: boolean;
+                } | null) ??
+                (getFirstMatchingStageResult(
+                    stageCtx.stageResults,
+                    "check-access",
+                    (result) =>
+                        (result as { allowed?: boolean })?.allowed === false,
+                ) as {
+                    allowed?: boolean;
+                    reason?: string;
+                    directAccess?: boolean;
+                } | null);
             if (!tokenResult?.valid || !resourceResult?.resolved) {
                 return { resolved: false, reason: "resource_unavailable" };
             }
