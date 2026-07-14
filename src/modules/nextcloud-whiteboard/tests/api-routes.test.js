@@ -181,8 +181,13 @@ test("nextcloud whiteboard registers share hooks on system ctx flow", () => {
                     "revoke-share-token",
                 ].includes(name);
             },
-            extend(flowName, stageName, options) {
-                extensions.push({ flowName, stageName, id: options.id });
+            extend(flowName, stageName, options, handler) {
+                extensions.push({
+                    flowName,
+                    stageName,
+                    id: options.id,
+                    handler,
+                });
             },
         },
     };
@@ -218,6 +223,28 @@ test("nextcloud whiteboard registers share hooks on system ctx flow", () => {
                 item.id === "nextcloud-whiteboard:authorize-share-revocation",
         ),
     );
+
+    const authorizeHook = extensions.find(
+        (item) => item.id === "nextcloud-whiteboard:authorize-share-minter",
+    );
+    assert.ok(authorizeHook?.handler);
+    const authorization = authorizeHook.handler({
+        stageResults: {
+            "validate-resource": [
+                { valid: false, reason: "unsupported_resource_type" },
+                {
+                    valid: true,
+                    resourceType: "whiteboard",
+                    resourceId: "board-1",
+                    ownerAccountId: "alice",
+                },
+            ],
+        },
+    });
+    assert.deepEqual(authorization, {
+        authorized: true,
+        ownerAccountId: "alice",
+    });
 });
 
 test("nextcloud whiteboard elements persist through session reload", async () => {

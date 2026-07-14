@@ -1,9 +1,9 @@
-# Whiteboard Share Fix
+# Share Flow Fix
 
-## Share links create again
+## Fixed whiteboard share links
 
-Whiteboard share creation now refreshes its share-flow hooks before minting and accepts the Share gateway issue-token result, preventing false 403 responses.
+Whiteboard share-link creation now ignores unsupported results from other share-enabled modules and selects the matching authorized whiteboard result, preventing false 403 errors when multiple modules extend the same Share flow.
 
-## Share route coverage
+## Kept meeting shares isolated
 
-A route test now verifies that whiteboard share creation returns the minted share record from the Share gateway flow.
+Meeting share hooks and the Share gateway now select successful matching stage results instead of assuming the first hook result belongs to the requested resource, so whiteboard and meeting sharing can coexist safely.

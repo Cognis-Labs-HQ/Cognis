@@ -1,9 +1,9 @@
-# Whiteboard-Freigabe-Fix
+# Freigabe-Flow-Fix
 
-## Share-Links funktionieren
+## Whiteboard-Freigaben repariert
 
-Die Whiteboard-Freigabe aktualisiert ihre Share-Flow-Hooks jetzt vor dem Erstellen und akzeptiert das issue-token-Ergebnis des Share-Gateways, wodurch falsche 403-Antworten verhindert werden.
+Die Erstellung von Whiteboard-Freigabelinks ignoriert jetzt nicht passende Ergebnisse anderer freigabefähiger Module und verwendet das passende autorisierte Whiteboard-Ergebnis, damit keine falschen 403-Fehler mehr entstehen.
 
-## Routentest für Freigabe
+## Meeting-Freigaben getrennt
 
-Ein Routentest prüft jetzt, dass die Whiteboard-Freigabe den vom Share-Gateway-Flow erstellten Share-Datensatz zurückgibt.
+Meeting-Freigabe-Hooks und das Share-Gateway wählen nun erfolgreiche passende Stufenergebnisse aus, statt anzunehmen, dass das erste Hook-Ergebnis zur angefragten Ressource gehört. Dadurch können Whiteboard- und Meeting-Freigaben sicher nebeneinander laufen.
