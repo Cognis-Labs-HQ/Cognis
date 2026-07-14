@@ -1,9 +1,9 @@
-# Perbaikan Berbagi Whiteboard
+# Persistensi Whiteboard
 
-## Adapter berbagi dimuat
+## Konten tetap ada setelah refresh
 
-Tombol berbagi whiteboard kini mengimpor adapternya dari root modul statis sehingga popup dapat terbuka tanpa 404.
+Snapshot elemen whiteboard kini disimpan melalui API Cognis dan dikembalikan bersama setiap sesi sehingga pengguna valid dan tamu berbagi memuat konten papan yang sama untuk URL yang sama.
 
-## Cakupan regresi
+## Berbagi dan overflow
 
-Pengujian sumber UI kini memastikan impor adapter berbagi memakai path statis yang disajikan, bukan subdirektori app yang tidak ada.
+Hook berbagi whiteboard didaftarkan pada konteks flow sistem agar pembuatan link dapat diotorisasi dengan benar, dan ukuran overflow canvas menghitung ulang batas setelah reklamasi koordinat.
