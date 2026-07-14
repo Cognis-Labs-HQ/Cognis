@@ -1,5 +1,5 @@
 # Whiteboard canvas controls
 
-## Improved whiteboard drawing controls
+## Improved whiteboard editing controls
 
-The whiteboard canvas now has better light and dark mode contrast, clearer select/history/text/new controls, arrow heads, selection anchors, resize handles, selected-item colour and thickness updates, and a confirmation step before clearing a board.
+The whiteboard now supports automatic theme-aware stroke colour, safer board renaming, better title sizing, larger editable text boxes, text editing from the text or select tool, single-fire toolbar actions, select-after-create behavior, and drag-box erasing.

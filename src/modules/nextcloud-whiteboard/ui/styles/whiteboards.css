@@ -289,3 +289,40 @@
 .wb-tool.btn-cancel {
     text-decoration: none;
 }
+
+.wb-canvas-stage {
+    --wb-canvas-bg: var(--surface, #ffffff);
+    --wb-auto-stroke: var(--text, #111827);
+}
+
+.wb-color-mode {
+    min-width: 5.5rem;
+}
+
+.wb-board-title {
+    flex: 0 1 auto;
+    margin-inline-start: auto;
+    max-width: 45%;
+    min-width: 0;
+    width: max-content;
+}
+
+.wb-board-title[contenteditable="true"] {
+    display: inline-block;
+    min-width: 8rem;
+    text-align: end;
+}
+
+.wb-text-editor {
+    background: var(--surface, #ffffff);
+    border: 2px solid var(--accent, #5e81f4);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.25rem var(--shadow, rgb(15 23 42 / 20%));
+    color: var(--text, #111827);
+    font: inherit;
+    line-height: 1.25;
+    padding: 0.35rem 0.5rem;
+    position: absolute;
+    resize: both;
+    z-index: 3;
+}

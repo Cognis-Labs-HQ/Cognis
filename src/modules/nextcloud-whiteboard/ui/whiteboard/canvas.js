@@ -10,7 +10,24 @@ function randomNonce() {
     return Math.floor(Math.random() * SESSION_VERSION_NONCE_MAX);
 }
 
-function buildFreedrawElement(points, strokeColor, strokeWidth) {
+function resolveStrokeColor(context, element) {
+    const color = element.strokeColor ?? "auto";
+    if (color !== "auto") return color;
+    const canvas = context.canvas;
+    const style = getComputedStyle(canvas);
+    return style.getPropertyValue("--wb-auto-stroke").trim() || "#111827";
+}
+
+function bumpElementVersion(element, patch = {}) {
+    return {
+        ...element,
+        ...patch,
+        version: (element.version ?? 1) + 1,
+        versionNonce: randomNonce(),
+    };
+}
+
+function buildFreedrawElement(points, strokeColor = "auto", strokeWidth) {
     if (!points.length) return null;
     let minX = Infinity,
         minY = Infinity,
@@ -95,12 +112,12 @@ function buildTextElement(point, text, strokeColor) {
     return buildShapeElement(
         "text",
         point,
-        [point[0] + 140, point[1] + 32],
+        [point[0] + 240, point[1] + 72],
         strokeColor,
         1,
         {
             text,
-            fontSize: 20,
+            fontSize: 28,
             fontFamily: "sans-serif",
         },
     );
@@ -123,7 +140,7 @@ function renderFreedraw(context, element) {
     const rawPoints = element.points ?? [];
     if (rawPoints.length < 2) return;
     context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
+    context.strokeStyle = resolveStrokeColor(context, element);
     context.lineWidth = element.strokeWidth ?? 2;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -142,7 +159,7 @@ function renderFreedraw(context, element) {
 
 function renderRectangle(context, element) {
     context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
+    context.strokeStyle = resolveStrokeColor(context, element);
     context.lineWidth = element.strokeWidth ?? 2;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     if (element.backgroundColor && element.backgroundColor !== "transparent") {
@@ -155,7 +172,7 @@ function renderRectangle(context, element) {
 
 function renderDiamond(context, element) {
     context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
+    context.strokeStyle = resolveStrokeColor(context, element);
     context.lineWidth = element.strokeWidth ?? 2;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     context.beginPath();
@@ -170,7 +187,7 @@ function renderDiamond(context, element) {
 
 function renderEllipse(context, element) {
     context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
+    context.strokeStyle = resolveStrokeColor(context, element);
     context.lineWidth = element.strokeWidth ?? 2;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     context.beginPath();
@@ -194,7 +211,7 @@ function renderEllipse(context, element) {
 function renderText(context, element) {
     if (!element.text) return;
     context.save();
-    context.fillStyle = element.strokeColor ?? "#000000";
+    context.fillStyle = resolveStrokeColor(context, element);
     context.font = `${element.fontSize ?? 16}px ${element.fontFamily ?? "sans-serif"}`;
     context.globalAlpha = (element.opacity ?? 100) / 100;
     context.fillText(
@@ -218,6 +235,46 @@ function renderImage(context, element) {
         );
     };
     image.src = element.dataUrl;
+}
+
+function getElementBounds(element) {
+    if (element.type === "line" || element.type === "arrow") {
+        const points = element.points ?? [[0, 0], [element.width ?? 1, element.height ?? 1]];
+        const xs = points.map(([px]) => element.x + px);
+        const ys = points.map(([, py]) => element.y + py);
+        return {
+            x: Math.min(...xs),
+            y: Math.min(...ys),
+            width: Math.max(1, Math.max(...xs) - Math.min(...xs)),
+            height: Math.max(1, Math.max(...ys) - Math.min(...ys)),
+        };
+    }
+    return {
+        x: element.x,
+        y: element.y,
+        width: element.width ?? 1,
+        height: element.height ?? 1,
+    };
+}
+
+function boxesIntersect(a, b) {
+    return (
+        a.x <= b.x + b.width &&
+        a.x + a.width >= b.x &&
+        a.y <= b.y + b.height &&
+        a.y + a.height >= b.y
+    );
+}
+
+function buildDragBox(startPoint, endPoint) {
+    const [startX, startY] = startPoint;
+    const [endX, endY] = endPoint;
+    return {
+        x: Math.min(startX, endX),
+        y: Math.min(startY, endY),
+        width: Math.abs(endX - startX),
+        height: Math.abs(endY - startY),
+    };
 }
 
 function drawAnchor(context, x, y) {
@@ -258,7 +315,7 @@ function renderLine(context, element) {
     const rawPoints = element.points ?? [];
     if (rawPoints.length < 2) return;
     context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
+    context.strokeStyle = resolveStrokeColor(context, element);
     context.lineWidth = element.strokeWidth ?? 2;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -330,16 +387,18 @@ export function createWhiteboardCanvas(canvasElement) {
     let elements = [];
     let currentPoints = [];
     let isDrawing = false;
-    let strokeColor = "#1e1e2e";
+    let strokeColor = "auto";
     let strokeWidth = 4;
     let activeTool = "pen";
     let imageUploadMaxBytes = 1048576;
     let selectedElementId = null;
+    let eraserSelectionIds = new Set();
     let activeAnchorIndex = null;
     let dragStartPoint = null;
     let originalElement = null;
     let changeCallback = null;
     let selectionCallback = null;
+    let toolCallback = null;
     let pendingRender = false;
 
     function scheduleRender() {
@@ -357,19 +416,22 @@ export function createWhiteboardCanvas(canvasElement) {
         context.fillRect(0, 0, canvasElement.width, canvasElement.height);
         for (const element of elements) {
             renderElement(context, element);
-            if (element.id === selectedElementId) {
+            if (element.id === selectedElementId || eraserSelectionIds.has(element.id)) {
+                const bounds = getElementBounds(element);
                 context.save();
                 context.setLineDash([6, 4]);
-                context.strokeStyle = "#2d9e5c";
+                context.strokeStyle = eraserSelectionIds.has(element.id) ? "#c0392b" : "#2d9e5c";
                 context.strokeRect(
-                    element.x - 4,
-                    element.y - 4,
-                    (element.width ?? 1) + 8,
-                    (element.height ?? 1) + 8,
+                    bounds.x - 4,
+                    bounds.y - 4,
+                    bounds.width + 8,
+                    bounds.height + 8,
                 );
                 context.restore();
-                for (const [anchorX, anchorY] of getElementAnchorPoints(element)) {
-                    drawAnchor(context, anchorX, anchorY);
+                if (element.id === selectedElementId) {
+                    for (const [anchorX, anchorY] of getElementAnchorPoints(element)) {
+                        drawAnchor(context, anchorX, anchorY);
+                    }
                 }
             }
         }
@@ -380,6 +442,18 @@ export function createWhiteboardCanvas(canvasElement) {
                 strokeWidth,
             );
             if (previewElement) renderFreedraw(context, previewElement);
+        } else if (
+            isDrawing &&
+            dragStartPoint &&
+            currentPoints.length >= 1 &&
+            activeTool === "eraser"
+        ) {
+            const box = buildDragBox(dragStartPoint, currentPoints.at(-1));
+            context.save();
+            context.setLineDash([4, 4]);
+            context.strokeStyle = "#c0392b";
+            context.strokeRect(box.x, box.y, box.width, box.height);
+            context.restore();
         } else if (
             isDrawing &&
             dragStartPoint &&
@@ -433,10 +507,10 @@ export function createWhiteboardCanvas(canvasElement) {
             .reverse()
             .find(
                 (element) =>
-                    x >= element.x &&
-                    x <= element.x + (element.width ?? 1) &&
-                    y >= element.y &&
-                    y <= element.y + (element.height ?? 1),
+                    x >= getElementBounds(element).x &&
+                    x <= getElementBounds(element).x + getElementBounds(element).width &&
+                    y >= getElementBounds(element).y &&
+                    y <= getElementBounds(element).y + getElementBounds(element).height,
             );
     }
 
@@ -446,23 +520,82 @@ export function createWhiteboardCanvas(canvasElement) {
         changeCallback?.([...elements]);
     }
 
-    function eraseAt(x, y, radius = 16) {
-        const before = elements.length;
-        elements = elements.filter((element) => {
-            if (element.type === "freedraw") {
-                return !element.points.some(
-                    ([px, py]) =>
-                        Math.hypot(element.x + px - x, element.y + py - y) <
-                        radius,
-                );
+    function updateEraserSelection(endPoint) {
+        if (!dragStartPoint) return;
+        const box = buildDragBox(dragStartPoint, endPoint);
+        eraserSelectionIds = new Set(
+            elements
+                .filter((element) => boxesIntersect(box, getElementBounds(element)))
+                .map((element) => element.id),
+        );
+        scheduleRender();
+    }
+
+    function setActiveTool(tool) {
+        activeTool = tool;
+        eraserSelectionIds = new Set();
+        toolCallback?.(tool);
+        scheduleRender();
+    }
+
+    function selectElementById(elementId) {
+        selectedElementId = elementId;
+        notifySelection();
+        scheduleRender();
+    }
+
+    function commitCreatedElement(element) {
+        commitElements([...elements, element]);
+        selectElementById(element.id);
+        setActiveTool("select");
+    }
+
+    function updateTextElement(element, text) {
+        const nextText = text.trim() || "Text";
+        const fontSize = element.fontSize ?? 28;
+        const width = Math.max(160, nextText.length * fontSize * 0.62);
+        const height = Math.max(56, fontSize * 1.8);
+        commitElements(
+            elements.map((item) =>
+                item.id === element.id
+                    ? bumpElementVersion(item, { text: nextText, width, height })
+                    : item,
+            ),
+        );
+        selectElementById(element.id);
+    }
+
+    function openTextEditor(element) {
+        const parent = canvasElement.parentElement;
+        if (!parent) return;
+        parent.querySelector(".wb-text-editor")?.remove();
+        const editor = document.createElement("textarea");
+        editor.className = "wb-text-editor";
+        editor.value = element.text ?? "Text";
+        editor.style.left = `${element.x}px`;
+        editor.style.top = `${element.y}px`;
+        editor.style.width = `${Math.max(180, element.width ?? 180)}px`;
+        editor.style.height = `${Math.max(64, element.height ?? 64)}px`;
+        editor.style.fontSize = `${element.fontSize ?? 28}px`;
+        parent.appendChild(editor);
+        editor.focus();
+        editor.select();
+        const finish = () => {
+            if (!editor.isConnected) return;
+            const value = editor.value;
+            editor.remove();
+            updateTextElement(element, value);
+        };
+        editor.addEventListener("blur", finish, { once: true });
+        editor.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                editor.remove();
+                selectElementById(element.id);
+            } else if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                finish();
             }
-            const centerX = element.x + (element.width ?? 0) / 2;
-            const centerY = element.y + (element.height ?? 0) / 2;
-            return Math.hypot(centerX - x, centerY - y) >= radius;
         });
-        if (elements.length !== before) {
-            commitElements(elements);
-        }
     }
 
     function onPointerDown(event) {
@@ -483,14 +616,23 @@ export function createWhiteboardCanvas(canvasElement) {
             return;
         }
         if (activeTool === "eraser") {
-            eraseAt(x, y);
+            currentPoints = [[x, y]];
+            updateEraserSelection([x, y]);
             return;
         }
         if (activeTool === "text") {
-            commitElements([
-                ...elements,
-                buildTextElement([x, y], "Text", strokeColor),
-            ]);
+            const existingText = findElementAt(x, y);
+            if (existingText?.type === "text") {
+                selectedElementId = existingText.id;
+                notifySelection();
+                openTextEditor(existingText);
+                isDrawing = false;
+                setActiveTool("select");
+                return;
+            }
+            const element = buildTextElement([x, y], "Text", strokeColor);
+            commitCreatedElement(element);
+            openTextEditor(element);
             isDrawing = false;
             return;
         }
@@ -557,7 +699,8 @@ export function createWhiteboardCanvas(canvasElement) {
             return;
         }
         if (activeTool === "eraser") {
-            eraseAt(x, y);
+            currentPoints.push([x, y]);
+            updateEraserSelection([x, y]);
             return;
         }
         currentPoints.push([x, y]);
@@ -569,13 +712,21 @@ export function createWhiteboardCanvas(canvasElement) {
         isDrawing = false;
         if (activeTool === "select" && selectedElementId) {
             changeCallback?.([...elements]);
+        } else if (activeTool === "eraser") {
+            if (eraserSelectionIds.size > 0) {
+                commitElements(
+                    elements.filter((element) => !eraserSelectionIds.has(element.id)),
+                );
+                selectedElementId = null;
+                notifySelection();
+            }
         } else if (activeTool === "pen" && currentPoints.length >= 2) {
             const element = buildFreedrawElement(
                 currentPoints,
                 strokeColor,
                 strokeWidth,
             );
-            if (element) commitElements([...elements, element]);
+            if (element) commitCreatedElement(element);
         } else if (
             ["rectangle", "diamond", "ellipse", "line", "arrow"].includes(
                 activeTool,
@@ -583,8 +734,7 @@ export function createWhiteboardCanvas(canvasElement) {
             dragStartPoint &&
             currentPoints.length >= 1
         ) {
-            commitElements([
-                ...elements,
+            commitCreatedElement(
                 buildShapeElement(
                     activeTool,
                     dragStartPoint,
@@ -592,13 +742,24 @@ export function createWhiteboardCanvas(canvasElement) {
                     strokeColor,
                     strokeWidth,
                 ),
-            ]);
+            );
         }
         currentPoints = [];
         dragStartPoint = null;
         originalElement = null;
         activeAnchorIndex = null;
+        eraserSelectionIds = new Set();
         scheduleRender();
+    }
+
+    function onDoubleClick(event) {
+        const [x, y] = getCanvasPoint(event);
+        const element = findElementAt(x, y);
+        if (activeTool === "select" && element?.type === "text") {
+            selectedElementId = element.id;
+            notifySelection();
+            openTextEditor(element);
+        }
     }
 
     function onPaste(event) {
@@ -630,6 +791,7 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointerup", onPointerUp);
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
+    canvasElement.addEventListener("dblclick", onDoubleClick);
 
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvasElement.parentElement ?? document.body);
@@ -637,19 +799,19 @@ export function createWhiteboardCanvas(canvasElement) {
 
     return {
         setTool(tool) {
-            activeTool = tool;
+            setActiveTool(tool);
         },
         setStrokeColor(color) {
             strokeColor = color;
             if (selectedElementId) {
-                commitElements(elements.map((element) => element.id === selectedElementId ? { ...element, strokeColor: color, version: (element.version ?? 1) + 1, versionNonce: randomNonce() } : element));
+                commitElements(elements.map((element) => element.id === selectedElementId ? bumpElementVersion(element, { strokeColor: color }) : element));
                 notifySelection();
             }
         },
         setStrokeWidth(width) {
             strokeWidth = Number(width);
             if (selectedElementId && isStrokeWidthApplicable(selectedElement())) {
-                commitElements(elements.map((element) => element.id === selectedElementId ? { ...element, strokeWidth, version: (element.version ?? 1) + 1, versionNonce: randomNonce() } : element));
+                commitElements(elements.map((element) => element.id === selectedElementId ? bumpElementVersion(element, { strokeWidth }) : element));
                 notifySelection();
             }
         },
@@ -692,6 +854,7 @@ export function createWhiteboardCanvas(canvasElement) {
         clearAll() {
             elements = [];
             currentPoints = [];
+            eraserSelectionIds = new Set();
             scheduleRender();
             selectedElementId = null;
             notifySelection();
@@ -700,6 +863,10 @@ export function createWhiteboardCanvas(canvasElement) {
         onSelectionChange(callback) {
             selectionCallback = callback;
             notifySelection();
+        },
+        onToolChange(callback) {
+            toolCallback = callback;
+            toolCallback?.(activeTool);
         },
         onChange(callback) {
             changeCallback = callback;
@@ -711,6 +878,8 @@ export function createWhiteboardCanvas(canvasElement) {
             canvasElement.removeEventListener("pointerup", onPointerUp);
             canvasElement.removeEventListener("pointercancel", onPointerUp);
             canvasElement.removeEventListener("paste", onPaste);
+            canvasElement.removeEventListener("dblclick", onDoubleClick);
+            canvasElement.parentElement?.querySelector(".wb-text-editor")?.remove();
         },
     };
 }

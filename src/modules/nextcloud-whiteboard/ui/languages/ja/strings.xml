@@ -72,6 +72,10 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">矢印</string>
   <string name="module.nextcloud_whiteboard.tool_line">線</string>
   <string name="module.nextcloud_whiteboard.tool_text">テキスト</string>
+  <string name="module.nextcloud_whiteboard.stroke_auto">自動</string>
+  <string name="module.nextcloud_whiteboard.stroke_black">黒</string>
+  <string name="module.nextcloud_whiteboard.stroke_white">白</string>
+  <string name="module.nextcloud_whiteboard.stroke_custom">カスタム</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">現在のホワイトボード上のすべての項目を完全に削除します。続行しますか？</string>
 </resources>
 
