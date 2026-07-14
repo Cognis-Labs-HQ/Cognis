@@ -39,6 +39,7 @@ import { openPopup } from "./popup.js";
 import { shouldSuppressConnectionRecoveryPopup } from "./api-client.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
+import { copyTextToClipboard } from "./clipboard.js";
 import {
     getCurrentRoutePath,
     normalizeSameOriginRoutePath,
@@ -240,17 +241,6 @@ function buildCrashDetailText(
         `${i18n.t("ui.reuse.runtime_error_popup_stack")}\n${errorStack}`,
         `${i18n.t("ui.reuse.runtime_error_popup_console")}\n${consoleEntriesText}`,
     ].join("\n\n");
-}
-
-async function copyTextToClipboard(value) {
-    if (typeof navigator === "undefined") return false;
-    if (typeof navigator.clipboard?.writeText !== "function") return false;
-    try {
-        await navigator.clipboard.writeText(value);
-        return true;
-    } catch {
-        return false;
-    }
 }
 
 export async function openRuntimeErrorPopup({

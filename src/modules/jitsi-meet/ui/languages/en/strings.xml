@@ -82,4 +82,24 @@
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">No scheduled meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Created By</string>
   <string name="module.jitsi_meet.admin.meetings.created_at">Created</string>
+  <string name="module.jitsi_meet.share.button">Share</string>
+  <string name="module.jitsi_meet.share.popup_title">Share Meeting</string>
+  <string name="module.jitsi_meet.share.generate_link">Generate Link</string>
+  <string name="module.jitsi_meet.share.copy_link">Copy Link</string>
+  <string name="module.jitsi_meet.share.revoke">Revoke</string>
+  <string name="module.jitsi_meet.share.share_options_label">Share:</string>
+  <string name="module.jitsi_meet.share.label">Label</string>
+  <string name="module.jitsi_meet.share.label_placeholder">Optional Label</string>
+  <string name="module.jitsi_meet.share.expiry_label">Expires In (Hours)</string>
+  <string name="module.jitsi_meet.share.status_active">Active</string>
+  <string name="module.jitsi_meet.share.status_expired">Expired</string>
+  <string name="module.jitsi_meet.share.expires_at_label">Expires</string>
+  <string name="module.jitsi_meet.share.expired_at_label">Expired</string>
+  <string name="module.jitsi_meet.share.empty">No share links have been created for this meeting yet.</string>
+  <string name="module.jitsi_meet.share.untitled">Untitled Share Link</string>
+  <string name="module.jitsi_meet.share.copy_success">Share link copied.</string>
+  <string name="module.jitsi_meet.share.copy_failed">Could not copy the share link.</string>
+  <string name="module.jitsi_meet.share.create_failed">Could not create the share link.</string>
+  <string name="module.jitsi_meet.share.delete_failed">Could not revoke the share link.</string>
+  <string name="module.jitsi_meet.share.no_meeting">Start or join a meeting before sharing it.</string>
 </resources>

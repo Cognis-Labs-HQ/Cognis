@@ -59,6 +59,42 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
         ["validate-upload", "persist-media", "emit-events"],
     );
     assert.deepEqual(
+        getCanonicalFlowContract("mint-share-token")?.stages.map(
+            (stage) => stage.id,
+        ),
+        [
+            "validate-resource",
+            "authorize-minter",
+            "request-approval",
+            "issue-token",
+            "emit-event",
+        ],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("resolve-share-token")?.stages.map(
+            (stage) => stage.id,
+        ),
+        [
+            "validate-token",
+            "resolve-resource",
+            "check-access",
+            "issue-guest-token",
+            "build-payload",
+        ],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("revoke-share-token")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["authorize-revocation", "delete-token"],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("construct-share-page")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["resolve-shell", "resolve-resource-renderer"],
+    );
+    assert.deepEqual(
         getCanonicalFlowContract("remove-profile-media")?.stages.map(
             (stage) => stage.id,
         ),

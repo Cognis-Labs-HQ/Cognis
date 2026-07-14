@@ -1,5 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
+  <string name="ui.reuse.brand_name">Cognis</string>
+  <string name="ui.reuse.login">Sign In</string>
+  <string name="ui.reuse.register">Register</string>
   <string name="ui.reuse.dashboard">Dashboard</string>
   <string name="ui.reuse.messages">Messages</string>
   <string name="ui.reuse.study">Study</string>
@@ -31,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">Discard and Leave</string>
   <string name="ui.reuse.stay">Stay</string>
   <string name="ui.reuse.close_form_warning">You have unsaved changes. Closing this form will discard them.</string>
+  <string name="ui.reuse.mail">Mail</string>
 
   <string name="ui.reuse.enable">Enable</string>
   <string name="ui.reuse.disable">Disable</string>
@@ -66,6 +70,10 @@
   <string name="ui.reuse.save_failed">Save Failed</string>
   <string name="ui.reuse.more_information">More information</string>
   <string name="ui.reuse.system">System</string>
+  <string name="ui.reuse.host">Host</string>
+  <string name="ui.reuse.scheduled_at">Scheduled At</string>
+  <string name="ui.reuse.available_now">Available Now</string>
+  <string name="ui.reuse.join">Join</string>
   <string name="ui.reuse.authentication">Authentication</string>
   <string name="ui.reuse.adapters">Adapters</string>
   <string name="ui.reuse.configure">Configure</string>
@@ -84,6 +92,8 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">Unhandled Promise Rejection</string>
   <string name="ui.reuse.runtime_error_context_route_mount">Route Mount Failed</string>
   <string name="ui.reuse.runtime_error_context_route_load">Route Load Failed</string>
+  <string name="ui.reuse.guest_blocked_title">Access Restricted</string>
+  <string name="ui.reuse.guest_blocked_message">Guests cannot view this page.</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">User</string>

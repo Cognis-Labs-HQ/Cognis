@@ -1,111 +1,43 @@
-const AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS = 5_000;
-let authSetupRequirementExpiresAt = 0;
-let authSetupRequired = false;
-
-function invalidateAuthSetupRequirementCache() {
-    authSetupRequirementExpiresAt = 0;
-    authSetupRequired = false;
-}
-
-async function enforceAuthSetupIfRequired() {
-    const token = localStorage.getItem("cognis_access_token");
-    if (!token) return false;
-    if (Date.now() >= authSetupRequirementExpiresAt) {
-        try {
-            const response = await fetch("/api/v1/auth/setup-status", {
-                headers: { authorization: `Bearer ${token}` },
-            });
-            if (response.ok) {
-                const payload = await response.json().catch(() => null);
-                authSetupRequired = payload?.data?.requiresSetup === true;
-            } else {
-                authSetupRequired = false;
-            }
-        } catch {
-            authSetupRequired = false;
-        }
-        authSetupRequirementExpiresAt =
-            Date.now() + AUTH_SETUP_REQUIREMENT_CACHE_TTL_MS;
-    }
-    if (!authSetupRequired) {
-        return false;
-    }
-    const normalizedHash =
-        typeof window.location.hash === "string"
-            ? window.location.hash.toLowerCase()
-            : "";
-    const isSecuritySettingsRoute =
-        window.location.pathname === "/settings" &&
-        normalizedHash === "#security";
-    if (isSecuritySettingsRoute) {
-        return false;
-    }
-    window.location.replace("/settings#security");
-    return true;
-}
-
 /**
- * Auth-session helpers for public auth pages.
+ * Auth-session helpers for the Cognis browser shell.
+ *
+ * All session-validation logic lives in the `authenticate-session` flow
+ * registered by `src/gateways/auth/ui/session-flow-hooks.js`. These helpers
+ * are thin callers that run the flow and act on its result so that pages and
+ * the SPA router share a single, extension-friendly auth path.
  *
  * Public exports:
- * - redirectToDashboardIfAuthenticated() — validates the stored API token and
- *   redirects to `/dashboard` only when still valid; clears stale auth storage
- *   when invalid.
- * - checkIsAuthenticated() — validates the stored API token and returns true
- *   when still valid, without performing any redirect.
- * - ensureFullAccountSession() — redirects dashboard-shell pages to login unless
- *   local storage contains a token/account pair that resolves to an enabled user.
- *   Also redirects to /settings#security when TFA setup is required before
- *   proceeding.
+ * - redirectToDashboardIfAuthenticated() — validates the session and redirects
+ *   to `/dashboard` when valid. Returns true when the redirect was issued.
+ * - checkIsAuthenticated() — validates the session without redirecting.
+ *   Returns true when authenticated.
+ * - ensureFullAccountSession() — enforces a full authenticated session with
+ *   setup-requirement checks. Redirects to login or /settings#security when
+ *   enforcement is needed. Returns true only when the caller may proceed.
+ * - getShareContext() — returns the current share context from the last
+ *   session result, or null outside a share page.
+ * - clearStoredAuthSession() — removes all locally stored auth tokens and
+ *   profile data.
  *
  * Usage:
- *   const redirected = await redirectToDashboardIfAuthenticated();
- *   if (redirected) await new Promise(() => {});
- *
- * @returns {Promise<boolean>}
+ *   import '/static/reuse/page-flow-catalog.js';
+ *   import { ensureFullAccountSession } from '/static/reuse/auth-session.js';
+ *   const ok = await ensureFullAccountSession();
  */
-async function validateStoredAccountSession() {
-    const token = localStorage.getItem("cognis_access_token");
-    const account = localStorage.getItem("cognis_account");
-    if (!token || !account) {
-        clearStoredAuthSession();
-        return { authenticated: false, reason: "session_expired" };
-    }
 
-    try {
-        const response = await fetch(
-            `/api/v1/users/${encodeURIComponent(account)}/info`,
-            {
-                headers: { authorization: `Bearer ${token}` },
-            },
-        );
-        if (response.ok) {
-            const payload = await response.json().catch(() => null);
-            if (payload?.data?.enabled === false) {
-                clearStoredAuthSession();
-                return { authenticated: false, reason: "account_disabled" };
-            }
-            return { authenticated: true, reason: null };
-        }
-        if (response.status === 404) {
-            clearStoredAuthSession();
-            return { authenticated: false, reason: "account_deleted" };
-        }
-        if (response.status === 401 || response.status === 403) {
-            clearStoredAuthSession();
-            return { authenticated: false, reason: "session_expired" };
-        }
-    } catch {
-        // Network/temporary failures should not force logout on auth pages.
-        return { authenticated: false, reason: null };
-    }
+import "/static/reuse/page-flow-catalog.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-    return { authenticated: false, reason: "session_expired" };
+let lastShareContext = null;
+
+function getSessionResult(flowResult) {
+    return (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
 }
 
 export async function redirectToDashboardIfAuthenticated() {
-    const session = await validateStoredAccountSession();
-    if (session.authenticated) {
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
+    const session = getSessionResult(flowResult);
+    if (session?.authenticated) {
         window.location.replace("/dashboard");
         return true;
     }
@@ -113,22 +45,24 @@ export async function redirectToDashboardIfAuthenticated() {
 }
 
 export async function checkIsAuthenticated() {
-    const session = await validateStoredAccountSession();
-    return session.authenticated;
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
+    const session = getSessionResult(flowResult);
+    return session?.authenticated === true;
 }
 
 export async function ensureFullAccountSession() {
-    const session = await validateStoredAccountSession();
-    if (session.authenticated) {
-        invalidateAuthSetupRequirementCache();
-        const redirectedForTfa = await enforceAuthSetupIfRequired();
-        return !redirectedForTfa;
+    const flowResult = await uiCtx.runFlow("authenticate-session", {});
+    const session = getSessionResult(flowResult);
+    lastShareContext = session?.shareContext ?? null;
+    if (session?.requiresRedirect && session.redirectTo) {
+        window.location.replace(session.redirectTo);
+        return false;
     }
-    const reason = session.reason
-        ? `?reason=${encodeURIComponent(session.reason)}`
-        : "";
-    window.location.replace(`/login${reason}`);
-    return false;
+    return session?.authenticated === true;
+}
+
+export function getShareContext() {
+    return lastShareContext;
 }
 
 export function clearStoredAuthSession() {

@@ -1,23 +1,33 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 const ROOT = process.cwd();
 
+function readJitsiApiBundle() {
+    const apiDir = resolve(ROOT, "src/modules/jitsi-meet/api");
+    return readdirSync(apiDir)
+        .filter((entry) => entry.endsWith(".js"))
+        .sort()
+        .map((entry) => readFileSync(join(apiDir, entry), "utf8"))
+        .join("\n");
+}
+
 test("jitsi API registers configured CSP origins through auth capability", () => {
-    const source = readFileSync(
+    const indexSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
         "utf8",
     );
+    const bundleSource = readJitsiApiBundle();
 
-    const sharedGatewayImport = source
+    const sharedGatewayImport = indexSource
         .split("\n")
         .find((line) => line.includes("../../../gateways/shared.js"));
 
-    assert.match(source, /auth:registerPageScriptOrigins/);
+    assert.match(indexSource, /auth:registerPageScriptOrigins/);
     assert.match(
-        source,
+        bundleSource,
         /registerConfiguredJitsiOrigin\(registerScriptOrigins, saved\)/,
     );
     assert.equal(
@@ -37,10 +47,7 @@ test("jitsi API logs stored CSP origin registration failures", () => {
 });
 
 test("jitsi participant lookup lets admins include hidden profiles", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
-        "utf8",
-    );
+    const source = readJitsiApiBundle();
 
     assert.match(source, /includeHidden = hasMinRole\(claims\.role, "admin"\)/);
     assert.match(source, /searchProfiles\(query, 50, \{\s*includeHidden,/);
@@ -48,17 +55,18 @@ test("jitsi participant lookup lets admins include hidden profiles", () => {
 });
 
 test("jitsi meeting creation resolves hidden participants only for admins", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+    const apiSource = readJitsiApiBundle();
+    const accessSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/reuse/meeting-access.js"),
         "utf8",
     );
 
     assert.match(
-        source,
+        accessSource,
         /if \(!includeHidden && profile\.visibility === "hidden"\) continue/,
     );
     assert.match(
-        source,
+        apiSource,
         /\{ includeHidden: hasMinRole\(claims\.role, "admin"\) \}/,
     );
 });

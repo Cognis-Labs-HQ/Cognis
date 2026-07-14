@@ -160,6 +160,46 @@ test("jitsi store meeting creation falls back to a readable default slug", async
     );
 });
 
+test("jitsi store meeting state backfill writes an ISO timestamp when the driver returns Date objects", async () => {
+    const updateCommands = [];
+    const mockDb = {
+        async ensureTable() {},
+        async transaction(callback) {
+            return callback(this);
+        },
+        async executeCommand(command) {
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_meeting_state"
+            ) {
+                return {
+                    rows: [
+                        {
+                            meeting_id: "meeting-1",
+                            instance_id: null,
+                            updated_at: new Date("2026-07-12T10:49:45.000Z"),
+                        },
+                    ],
+                };
+            }
+            if (
+                command.option === "UPDATE" &&
+                command.table === "jitsi_meeting_state"
+            ) {
+                updateCommands.push(command);
+            }
+            return { rows: [] };
+        },
+    };
+    const store = new JitsiMeetStore({ db: mockDb });
+
+    await store.getMeetingState("meeting-1");
+
+    assert.equal(updateCommands.length, 1);
+    const isoTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+    assert.match(updateCommands[0].set.updated_at, isoTimestampPattern);
+});
+
 test("jitsi store config change invalidates existing meeting rows", async () => {
     const commands = [];
     const mockDb = {

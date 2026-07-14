@@ -265,20 +265,24 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
 });
 
-test("router enforces TFA setup route when required", () => {
-    const src = readFileSync(
+test("router delegates auth enforcement to the authenticate-session flow", () => {
+    const routerSrc = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        src,
-        /readAuthSetupRequirement/,
-        "app-router.js must check TFA setup status before route loads",
+        routerSrc,
+        /authenticate-session/,
+        "app-router.js must run the authenticate-session flow to enforce auth before route loads",
+    );
+    const hooksSrc = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
+        "utf8",
     );
     assert.match(
-        src,
+        hooksSrc,
         /\/settings#security/,
-        "app-router.js must redirect required TFA users to /settings#security",
+        "auth session-flow-hooks.js must redirect users who require TFA setup to /settings#security",
     );
 });
 

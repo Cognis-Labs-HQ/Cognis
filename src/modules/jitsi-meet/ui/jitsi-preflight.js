@@ -259,7 +259,17 @@ export function createPreflightHandlers({
         return payload?.data ?? null;
     }
 
+    function shouldTrackMeetingPresence() {
+        if (!state.meeting?.id) return false;
+        if (state.meeting.waitingForAuthentication) return false;
+        return (
+            state.meeting.state?.authCompletedAt ||
+            state.meeting.state?.authRequired !== true
+        );
+    }
+
     function ensureMeetingTracking() {
+        if (!shouldTrackMeetingPresence()) return;
         if (state.heartbeatTimer === null) {
             state.heartbeatTimer = setInterval(() => {
                 void keepPresenceAlive(true);
@@ -361,7 +371,9 @@ export function createPreflightHandlers({
         const staleApi = state.jitsiApi;
         state.jitsiApi = null;
         state.jitsiParticipantId = "";
+        state.jitsiConferenceJoined = false;
         state.jitsiModerator = false;
+        utils.syncShareButtonAvailability();
         try {
             staleApi?.dispose?.();
         } catch (error) {

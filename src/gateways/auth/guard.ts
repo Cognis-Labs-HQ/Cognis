@@ -152,7 +152,9 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     const raw = req.headers.authorization;
     if (!raw?.startsWith("Bearer ")) return null;
     const token = raw.slice("Bearer ".length);
-    const access = verifyAccessToken(token);
+    const access =
+        verifyAccessToken(token) ??
+        verifyAccessToken(token, { purpose: "share" });
     if (!access) return null;
     const requestPath = String(req.url ?? "").split("?")[0] || "/";
     if (

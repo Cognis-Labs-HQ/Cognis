@@ -33,6 +33,7 @@
  *   persistLayoutPreferences?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
+ *   requireAccountSession?: boolean,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -77,6 +78,7 @@ export function createPageComposer(
         persistLayoutPreferences = true,
         pageOverrides = {},
         onBeforeSubPageSwitch,
+        requireAccountSession = showTopbar || showNavbar,
     },
 ) {
     function escapeHtml(value) {
@@ -640,6 +642,7 @@ export function createPageComposer(
             showNavbar,
             showThemeToggle,
             showFooter,
+            requireAccountSession,
         });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {

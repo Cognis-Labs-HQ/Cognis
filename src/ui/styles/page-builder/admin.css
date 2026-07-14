@@ -403,6 +403,18 @@ body[data-theme="light"] .slider::before {
     color: var(--color-danger-outline-text, var(--color-danger-text));
 }
 
+.btn-neutral {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-neutral:hover:not(:disabled) {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
 .btn-animated {
     transition:
         background 0.18s ease,

@@ -483,9 +483,16 @@ export async function renderDashboardLayout(root, slots = {}) {
         showThemeToggle = true,
         showFooter = true,
         usePreferenceApi = showTopbar || showNavbar,
+        // Pages that manage their own auth/session flow (e.g. the Share
+        // gateway's anonymous-guest landing page) can render the topbar
+        // chrome without a full account session. For those pages,
+        // `ensureFullAccountSession()` legitimately resolves to `false` with
+        // no redirect in flight (e.g. an expired/invalid share token), so
+        // this must not fall into the "redirect is coming" hang below.
+        requireAccountSession = showTopbar || showNavbar,
     } = slots;
 
-    if ((showTopbar || showNavbar) && !(await ensureFullAccountSession())) {
+    if (requireAccountSession && !(await ensureFullAccountSession())) {
         await new Promise(() => {});
     }
 
