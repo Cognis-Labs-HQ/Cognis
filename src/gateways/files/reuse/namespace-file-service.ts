@@ -58,7 +58,9 @@ export class NamespaceFileService {
         access: FileAccessContext,
     ): NamespaceDefinition {
         const definition = this.registry.require(namespaceId);
-        if (!this.registry.componentAllowed(definition, access.callerComponent)) {
+        if (
+            !this.registry.componentAllowed(definition, access.callerComponent)
+        ) {
             throw new AccessDeniedError(
                 `Component "${access.callerComponent}" is not permitted to access namespace "${namespaceId}".`,
             );

@@ -22,7 +22,12 @@ function writeJson(
     res.end(JSON.stringify(body));
 }
 
-function writeError(res: ServerResponse, status: number, code: string, message: string): void {
+function writeError(
+    res: ServerResponse,
+    status: number,
+    code: string,
+    message: string,
+): void {
     writeJson(res, status, { error: { code, message } });
 }
 
@@ -103,15 +108,20 @@ export function createFileRoutes(
             if (req.method === "PUT") {
                 const body = await readRawBody(req);
                 const contentType =
-                    (req.headers["content-type"] ?? "")
-                        .split(";")[0]
-                        .trim() || undefined;
+                    (req.headers["content-type"] ?? "").split(";")[0].trim() ||
+                    undefined;
                 const publicRead =
                     url.searchParams.get("publicRead") === "true";
-                const stored = await service.put(namespaceId, access, key, body, {
-                    contentType,
-                    publicRead,
-                });
+                const stored = await service.put(
+                    namespaceId,
+                    access,
+                    key,
+                    body,
+                    {
+                        contentType,
+                        publicRead,
+                    },
+                );
                 writeJson(res, 201, {
                     data: {
                         key: stored.key,
@@ -272,7 +282,9 @@ export function createQuotaAdminRoutes(
                     quotaBytes,
                 );
             }
-            writeJson(res, 200, { data: { username, namespaceId, quotaBytes } });
+            writeJson(res, 200, {
+                data: { username, namespaceId, quotaBytes },
+            });
             return true;
         }
 

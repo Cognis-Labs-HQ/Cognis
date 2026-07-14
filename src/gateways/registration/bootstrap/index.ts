@@ -41,6 +41,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             displayName?: string,
         ) => Promise<void>
     >("profile:createProfile");
+    const provisionQuota = ctx.capabilities.get<
+        (username: string) => Promise<void>
+    >("files:quota:provisionUser");
+    const createProfileAndQuota = createProfile
+        ? async (
+              accountId: string,
+              handle: string,
+              role?: string,
+              displayName?: string,
+          ): Promise<void> => {
+              await createProfile(accountId, handle, role, displayName);
+              await provisionQuota?.(accountId);
+          }
+        : undefined;
     const isEmailRegistered = ctx.capabilities.get<
         (email: string) => Promise<boolean>
     >("notify:isEmailRegistered");
@@ -66,7 +80,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             (async () => {
                 throw new Error("smtp_unavailable");
             }),
-        createProfile,
+        createProfile: createProfileAndQuota,
         isEmailRegistered: isEmailRegistered ?? (async () => false),
         upsertVerifiedPrimaryEmail:
             upsertVerifiedPrimaryEmail ??

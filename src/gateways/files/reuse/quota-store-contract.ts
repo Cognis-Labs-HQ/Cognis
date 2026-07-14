@@ -22,10 +22,7 @@ export interface FileQuotaStore {
         quotaBytes: number,
     ): Promise<void>;
     listNamespaceDefaults(): Promise<NamespaceQuotaDefaults[]>;
-    setNamespaceDefault(
-        namespaceId: string,
-        quotaBytes: number,
-    ): Promise<void>;
+    setNamespaceDefault(namespaceId: string, quotaBytes: number): Promise<void>;
     getGlobalDefault(): Promise<number>;
     setGlobalDefault(quotaBytes: number): Promise<void>;
 

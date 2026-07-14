@@ -174,6 +174,9 @@ export async function registerAuthBootstrapHook(
                 role,
                 displayName,
             );
+            await capabilities.get<(username: string) => Promise<void>>(
+                "files:quota:provisionUser",
+            )?.(session.accountId);
 
             const securitySettings = await context
                 .readSecuritySettings()

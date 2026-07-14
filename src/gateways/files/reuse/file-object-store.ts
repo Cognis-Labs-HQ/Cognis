@@ -9,7 +9,12 @@ const TABLE_DEF: StructuredDbTableDef = {
         { name: "object_key", type: "text", notNull: true },
         { name: "owner_id", type: "text", notNull: true },
         { name: "group_ids", type: "text" },
-        { name: "public_read", type: "boolean", notNull: true, default: "false" },
+        {
+            name: "public_read",
+            type: "boolean",
+            notNull: true,
+            default: "false",
+        },
         { name: "size_bytes", type: "bigint", notNull: true },
         {
             name: "created_at",

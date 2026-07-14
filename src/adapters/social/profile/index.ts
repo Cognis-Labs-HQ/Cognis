@@ -211,12 +211,14 @@ export async function bootstrapSocialAdapter(
             acl: { visibility: string };
         }) => void
     >("files:registerNamespace");
-    const filesStore = ctx.capabilities.get<
-        Parameters<typeof createProfileFileClient>[0]
-    >("files:store");
-    const filesDelete = ctx.capabilities.get<
-        Parameters<typeof createProfileFileClient>[1]
-    >("files:delete");
+    const filesStore =
+        ctx.capabilities.get<Parameters<typeof createProfileFileClient>[0]>(
+            "files:store",
+        );
+    const filesDelete =
+        ctx.capabilities.get<Parameters<typeof createProfileFileClient>[1]>(
+            "files:delete",
+        );
 
     let fileGateway: ProfileFileClient | undefined;
     if (registerNamespace && filesStore && filesDelete) {
