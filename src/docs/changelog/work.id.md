@@ -1,9 +1,9 @@
-# Sinkronisasi Whiteboard
+# Perbaikan Berbagi Whiteboard
 
-## Penyimpanan elemen tetap sinkron
+## Tautan berbagi dibuat lagi
 
-Penyimpanan snapshot whiteboard kini memakai field update database terstruktur saat memperbarui timestamp papan, sehingga API tidak lagi mengembalikan 400 setelah edit canvas.
+Pembuatan tautan berbagi whiteboard kini menyegarkan hook flow berbagi sebelum membuat token dan menerima hasil issue-token dari Share gateway, sehingga respons 403 palsu dicegah.
 
-## Pengujian rute meniru update nyata
+## Cakupan rute berbagi
 
-Pengujian rute whiteboard kini menjalankan payload update terstruktur agar regresi persistensi berikutnya cocok dengan perilaku database produksi.
+Pengujian rute kini memastikan pembuatan berbagi whiteboard mengembalikan catatan berbagi yang dibuat oleh flow Share gateway.

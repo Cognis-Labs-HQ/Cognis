@@ -1,9 +1,9 @@
-# Whiteboard Sync Fix
+# Whiteboard Share Fix
 
-## Element saves stay synced
+## Share links create again
 
-Whiteboard snapshot saves now use the structured database update field when refreshing board timestamps, preventing the API from returning 400 after a canvas edit.
+Whiteboard share creation now refreshes its share-flow hooks before minting and accepts the Share gateway issue-token result, preventing false 403 responses.
 
-## Route tests mirror real updates
+## Share route coverage
 
-The whiteboard route tests now exercise structured update payloads so future persistence regressions match production database behavior.
+A route test now verifies that whiteboard share creation returns the minted share record from the Share gateway flow.

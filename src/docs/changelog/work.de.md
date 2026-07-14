@@ -1,9 +1,9 @@
-# Whiteboard-Sync-Fix
+# Whiteboard-Freigabe-Fix
 
-## Element-Speicherung bleibt synchron
+## Share-Links funktionieren
 
-Whiteboard-Snapshot-Speicherungen verwenden jetzt das strukturierte Datenbank-Update-Feld beim Aktualisieren von Board-Zeitstempeln und verhindern 400-Antworten nach Canvas-Änderungen.
+Die Whiteboard-Freigabe aktualisiert ihre Share-Flow-Hooks jetzt vor dem Erstellen und akzeptiert das issue-token-Ergebnis des Share-Gateways, wodurch falsche 403-Antworten verhindert werden.
 
-## Routentests spiegeln Updates
+## Routentest für Freigabe
 
-Die Whiteboard-Routentests nutzen jetzt strukturierte Update-Payloads, damit künftige Persistenzregressionen dem Produktionsdatenbankverhalten entsprechen.
+Ein Routentest prüft jetzt, dass die Whiteboard-Freigabe den vom Share-Gateway-Flow erstellten Share-Datensatz zurückgibt.

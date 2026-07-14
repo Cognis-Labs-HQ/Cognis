@@ -400,7 +400,9 @@ export function registerApiRoutes(router, ctx) {
     }
 
     const store = resolveStore(dbExecutor, log);
-    registerWhiteboardShareFlowHooks(systemCtx ?? ctx, store, profileStore);
+    const ensureShareFlowHooks = () =>
+        registerWhiteboardShareFlowHooks(systemCtx ?? ctx, store, profileStore);
+    ensureShareFlowHooks();
     void registerStoredOrigin({ store, registerScriptOrigins, log });
 
     const moduleApi = {
@@ -794,6 +796,7 @@ export function registerApiRoutes(router, ctx) {
         async (req, res) => {
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
+            ensureShareFlowHooks();
             if (!systemCtx?.flow?.exists?.("mint-share-token")) {
                 sendError(
                     res,
@@ -823,11 +826,10 @@ export function registerApiRoutes(router, ctx) {
                 expiresAt,
                 grantedCapabilities: ["whiteboard:read", "whiteboard:write"],
             });
-            const issued = getFirstStageResult(
-                result.stageResults,
-                "emit-event",
-            );
-            if (!issued?.emitted) {
+            const issued =
+                getFirstStageResult(result.stageResults, "issue-token") ??
+                getFirstStageResult(result.stageResults, "emit-event");
+            if (!issued?.minted && !issued?.emitted) {
                 sendError(
                     res,
                     403,
@@ -846,6 +848,7 @@ export function registerApiRoutes(router, ctx) {
         async (req, res) => {
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
+            ensureShareFlowHooks();
             if (!systemCtx?.flow?.exists?.("revoke-share-token")) {
                 sendError(
                     res,
