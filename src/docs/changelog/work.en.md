@@ -1,9 +1,9 @@
-# Whiteboard Persistence
+# Whiteboard Save Fixes
 
-## Board contents survive refresh
+## Snapshot saves fixed
 
-Whiteboard element snapshots are now saved through the Cognis API and returned with each session so valid users and share guests load the same board contents for the same URL.
+Whiteboard element snapshots now use the structured database conflict format so repeated saves update the existing snapshot instead of failing with duplicate keys.
 
-## Sharing and overflow fixes
+## Share creation stabilized
 
-Whiteboard share hooks are registered on the system flow context so link creation can authorize correctly, and canvas overflow sizing now recomputes bounds after coordinate reclamation so the canvas can shrink again.
+The sharing flow registration remains on the system context while persistence tests cover repeated session restores and snapshot saves.

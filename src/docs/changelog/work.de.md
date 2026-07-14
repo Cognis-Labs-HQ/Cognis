@@ -1,9 +1,9 @@
-# Whiteboard-Persistenz
+# Whiteboard-Speicherfixes
 
-## Inhalte bleiben nach Refresh
+## Snapshot-Speichern repariert
 
-Whiteboard-Element-Snapshots werden jetzt über die Cognis-API gespeichert und mit jeder Sitzung zurückgegeben, damit berechtigte Benutzer und Share-Gäste für dieselbe URL dieselben Inhalte laden.
+Whiteboard-Element-Snapshots verwenden jetzt das strukturierte Datenbank-Konfliktformat, sodass wiederholte Speicherungen den bestehenden Snapshot aktualisieren statt mit doppelten Schlüsseln zu scheitern.
 
-## Freigabe und Overflow
+## Freigabe stabilisiert
 
-Whiteboard-Share-Hooks werden im System-Flow-Kontext registriert, sodass Linkerstellung korrekt autorisiert wird, und die Canvas-Overflow-Größe berechnet Bounds nach Koordinatenrückgewinnung neu.
+Die Share-Flow-Registrierung bleibt im Systemkontext, während Persistenztests wiederholte Sitzungswiederherstellungen und Snapshot-Speicherungen abdecken.

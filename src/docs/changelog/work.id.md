@@ -1,9 +1,9 @@
-# Persistensi Whiteboard
+# Perbaikan Simpan Whiteboard
 
-## Konten tetap ada setelah refresh
+## Penyimpanan snapshot diperbaiki
 
-Snapshot elemen whiteboard kini disimpan melalui API Cognis dan dikembalikan bersama setiap sesi sehingga pengguna valid dan tamu berbagi memuat konten papan yang sama untuk URL yang sama.
+Snapshot elemen whiteboard kini memakai format konflik database terstruktur sehingga penyimpanan berulang memperbarui snapshot yang ada, bukan gagal karena kunci duplikat.
 
-## Berbagi dan overflow
+## Pembuatan tautan stabil
 
-Hook berbagi whiteboard didaftarkan pada konteks flow sistem agar pembuatan link dapat diotorisasi dengan benar, dan ukuran overflow canvas menghitung ulang batas setelah reklamasi koordinat.
+Registrasi flow berbagi tetap berada pada konteks sistem, sementara pengujian persistensi mencakup pemulihan sesi dan penyimpanan snapshot berulang.

@@ -145,14 +145,15 @@ export class NextcloudWhiteboardStore {
                 image_upload_max_bytes: normalizedImageUploadMaxBytes,
                 updated_at: updatedAt,
             },
-            onConflict: {
-                columns: ["id"],
-                merge: [
-                    "server_url",
-                    "api_key",
-                    "image_upload_max_bytes",
-                    "updated_at",
-                ],
+            conflict: {
+                action: "update",
+                target: ["id"],
+                update: {
+                    server_url: normalizedServerUrl,
+                    api_key: normalizedApiKey,
+                    image_upload_max_bytes: normalizedImageUploadMaxBytes,
+                    updated_at: updatedAt,
+                },
             },
         });
         return this.getConfig();
@@ -195,9 +196,16 @@ export class NextcloudWhiteboardStore {
                             username === normalizedCreator ? "owner" : "editor",
                         granted_at: now,
                     },
-                    onConflict: {
-                        columns: ["whiteboard_id", "username"],
-                        merge: ["role", "granted_at"],
+                    conflict: {
+                        action: "update",
+                        target: ["whiteboard_id", "username"],
+                        update: {
+                            role:
+                                username === normalizedCreator
+                                    ? "owner"
+                                    : "editor",
+                            granted_at: now,
+                        },
                     },
                 });
             }
@@ -289,9 +297,13 @@ export class NextcloudWhiteboardStore {
                 elements_json: JSON.stringify(safeElements),
                 updated_at: updatedAt,
             },
-            onConflict: {
-                columns: ["whiteboard_id"],
-                merge: ["elements_json", "updated_at"],
+            conflict: {
+                action: "update",
+                target: ["whiteboard_id"],
+                update: {
+                    elements_json: JSON.stringify(safeElements),
+                    updated_at: updatedAt,
+                },
             },
         });
         await this.db.executeCommand({
