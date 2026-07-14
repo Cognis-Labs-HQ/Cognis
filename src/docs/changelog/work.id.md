@@ -1,9 +1,9 @@
-# Perbaikan Whiteboard
+# Pembaruan Whiteboard
 
-## Warna gores otomatis langsung mengikuti tema
+## Refresh halaman langsung selesai dimuat
 
-Objek whiteboard yang dibuat dengan warna gores otomatis kini menentukan warnanya saat dirender, sehingga langsung beralih antara warna tema terang dan gelap saat tema aplikasi berubah dan latar kanvas ikut digambar ulang.
+Halaman whiteboard kini memakai pembantu direct-mount bersama, sehingga refresh URL whiteboard menghapus status pemuatan seperti navigasi SPA.
 
-## Permintaan penggantian nama whiteboard divalidasi dengan aman
+## Pratinjau gambar dirender benar
 
-Alur penggantian nama kini mempertahankan ID whiteboard yang andal, memangkas judul yang dikirim, dan mengembalikan galat validasi yang jelas untuk permintaan yang tidak valid alih-alih galat bad request umum.
+Pratinjau pena kini memakai renderer elemen yang diekstrak, mencegah galat runtime setelah pembantu render elemen whiteboard dipindahkan ke modul sendiri.

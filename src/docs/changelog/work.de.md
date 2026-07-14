@@ -1,9 +1,9 @@
-# Whiteboard-Korrekturen
+# Whiteboard-Aktualisierung
 
-## Automatische Linienfarben aktualisieren sich sofort
+## Direkte Seitenaktualisierungen laden fertig
 
-Whiteboard-Objekte mit automatischer Linienfarbe lösen ihre Farbe jetzt beim Zeichnen auf, sodass sie beim Wechsel zwischen hellem und dunklem Design sofort die passende Farbe verwenden und der Canvas-Hintergrund gleichzeitig neu gezeichnet wird.
+Die Whiteboard-Seite verwendet jetzt die gemeinsame Direct-Mount-Hilfe, sodass beim Aktualisieren einer Whiteboard-URL der Ladezustand genauso beendet wird wie bei der SPA-Navigation.
 
-## Whiteboard-Umbenennungen werden sicher validiert
+## Zeichenvorschauen werden korrekt gerendert
 
-Der Umbenennen-Ablauf behält nun eine zuverlässige Board-ID bei, kürzt den eingegebenen Titel und liefert klare Validierungsfehler für fehlerhafte Anfragen statt allgemeiner Bad-Request-Fehler.
+Stiftvorschauen verwenden nun den ausgelagerten Element-Renderer und verhindern Laufzeitfehler, nachdem die Whiteboard-Renderhilfen in ein eigenes Modul verschoben wurden.

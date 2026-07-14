@@ -1,5 +1,6 @@
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { apiFetch } from "/static/reuse/api-client.js";
@@ -712,7 +713,4 @@ export async function mount(root, { signal } = {}) {
     }
 }
 
-if (!globalThis.__spaRouter) {
-    const root = document.querySelector("#app");
-    if (root) await mount(root);
-}
+await mountWhenDirect(mount);
