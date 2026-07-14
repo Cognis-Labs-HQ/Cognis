@@ -4,12 +4,14 @@
 
 Der lokale Datei-Adapter speichert hochgeladene Dateien auf dem lokalen Dateisystem des Servers. Er ist der einzige Dateispeicheradapter in der aktuellen Plattform, und sein Manifest enthält `"locked": true`, was bedeutet, dass er nicht über die UI deaktiviert oder ersetzt werden kann. Jede zukünftige Cloud-Speicher-Implementierung (S3, GCS, Azure Blob) wäre ein Drop-in-Ersatz für diesen Adapter.
 
+Der Adapter ist namensraum-basiert: Jede Operation nimmt zuerst eine `namespaceId` entgegen, und die physische Speicherung ist bei `{storageRoot}/{namespaceId}/...` verwurzelt, sodass Dateien verschiedener Namensräume niemals auf der Festplatte kollidieren.
+
 ## Verantwortlichkeiten
 
-- Die `FileStorageGateway`-Schnittstelle implementieren: `put`, `store`, `get`, `delete` und `list`.
+- Die namensraum-basierte `FileStorageGateway`-Schnittstelle implementieren: `put`, `store`, `get`, `delete` und `list`, jeweils zuerst mit Namensraum.
 - Einen stabilen Dateiextension aus dem MIME-Typ jeder hochgeladenen Datei ableiten.
 - UUID-basierte Dateinamen für Dateien generieren, die über `store()` gespeichert werden.
-- Gespeicherte Dateien im Bereich `{userId}/{uuid}.{ext}` ablegen.
+- Gespeicherte Dateien im Bereich `{namespaceId}/{actorId}/{uuid}.{ext}` ablegen.
 
 ## Architektur
 
