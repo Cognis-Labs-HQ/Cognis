@@ -57,6 +57,17 @@
  *              before the original popup is dismissed. Strings are resolved
  *              internally from the user's active locale.
  *
+ *   timeoutMs        — Optional. When set, the popup automatically dismisses
+ *              itself with `timeoutActionId` after this many milliseconds if
+ *              the user has not already responded. The timer is cleared as
+ *              soon as any dismissal path runs.
+ *   timeoutActionId  — Action id to resolve with when `timeoutMs` elapses.
+ *              Defaults to `null` (same as a cancel-path dismissal). If an
+ *              action button with this id is rendered, its label is
+ *              suffixed with a live "(Ns)" countdown that ticks down every
+ *              second until the timeout fires, so the user can see the
+ *              action will happen automatically.
+ *
  * @param {{
  *   title: string,
  *   body: string | (() => string),
@@ -66,6 +77,8 @@
  *   onOpen?: (overlay: HTMLElement) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
+ *   timeoutMs?: number,
+ *   timeoutActionId?: string | null,
  * }} options
  * @returns {Promise<string|null>}
  */
@@ -287,6 +300,8 @@ export async function openPopup({
     onOpen,
     onAction,
     closeProtection = false,
+    timeoutMs = 0,
+    timeoutActionId = null,
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -307,6 +322,8 @@ export async function openPopup({
         }
 
         let dismissed = false;
+        let timeoutHandle = null;
+        let countdownInterval = null;
         async function dismiss(actionId) {
             closeProtectionTracker?.sync();
             const hasUnsavedChanges =
@@ -335,6 +352,14 @@ export async function openPopup({
             }
             if (dismissed) return;
             dismissed = true;
+            if (timeoutHandle !== null) {
+                clearTimeout(timeoutHandle);
+                timeoutHandle = null;
+            }
+            if (countdownInterval !== null) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
             document.removeEventListener("keydown", onKeyDown);
             closeProtectionTracker?.destroy();
             closeProtectionTracker = null;
@@ -446,12 +471,42 @@ export async function openPopup({
                 quiet: true,
             });
         }
+        if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
+            timeoutHandle = setTimeout(() => {
+                dismiss(timeoutActionId).catch((error) =>
+                    console.error("[popup] timeout dismiss failed:", error),
+                );
+            }, timeoutMs);
+
+            const timeoutButton = timeoutActionId
+                ? overlay.querySelector(
+                      `[data-popup-action="${CSS.escape(timeoutActionId)}"]`,
+                  )
+                : null;
+            if (timeoutButton instanceof HTMLButtonElement) {
+                const originalLabel = timeoutButton.textContent ?? "";
+                const startedAt = Date.now();
+                const updateCountdown = () => {
+                    const remainingSeconds = Math.max(
+                        0,
+                        Math.ceil(
+                            (timeoutMs - (Date.now() - startedAt)) / 1000,
+                        ),
+                    );
+                    timeoutButton.textContent = `${originalLabel} (${remainingSeconds})`;
+                };
+                updateCountdown();
+                countdownInterval = setInterval(updateCountdown, 1000);
+            }
+        }
 
         requestAnimationFrame(() => {
             overlay.classList.add("popup-overlay--visible");
         });
 
-        const firstFocusable = overlay.querySelector("button");
+        const firstFocusable = overlay.querySelector(
+            "input, textarea, select, button:not(.popup-close-btn)",
+        );
         firstFocusable?.focus();
     });
 }

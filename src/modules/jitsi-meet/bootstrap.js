@@ -1,4 +1,5 @@
 import { registerApiRoutes, registerUi } from "./api/index.js";
+import { registerShareFlowHooks } from "./api/share-hooks.js";
 import { MEETINGS_FLOW_CATALOG, registerCanonicalFlow } from "@cognis/core";
 
 export function bootstrapModule(ctx) {
@@ -50,4 +51,6 @@ export function bootstrapModule(ctx) {
             return { valid: true, providerId };
         },
     );
+
+    registerShareFlowHooks(ctx);
 }

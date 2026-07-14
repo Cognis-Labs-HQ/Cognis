@@ -1,0 +1,21 @@
+# Share Gateway
+
+## Ikhtisar
+
+Gateway Share memiliki token bagikan publik untuk sumber daya Cognis. Gateway ini membuat, menampilkan, mencabut, dan menyelesaikan tautan bagikan melalui flow `ctx` kanonis sehingga gateway dan modul pemilik sumber daya dapat ikut tanpa mengimpor internal share.
+
+## Halaman Share
+
+Sumber daya bersama dibuka di `/share/:token`. Halaman ini memakai page composer standar dengan shell minimal, header bermerek Cognis, dan renderer yang dipilih oleh komponen pemilik.
+
+## Sesi Tamu
+
+Saat token share di-resolve, gateway Share sekarang menerbitkan token akses tamu berumur pendek (`purpose: share`) yang terikat ke record share tersebut (`sub: share:<shareId>`). Halaman share menukar token ini sementara ke `localStorage` agar panggilan API dari halaman bersama yang dipasang berjalan sebagai sesi tamu anonim, lalu memulihkan token sebelumnya saat halaman ditutup.
+
+## Kontrak Manifest Share
+
+Komponen yang dapat dibagikan mendeklarasikan blok `share` di manifest dengan `shareable`, `mountScriptUrl`, `stringsBaseUrl`, dan `guestApiScopes`. Halaman share memprioritaskan `mountScriptUrl` agar sumber daya bersama dapat memuat komponen halaman asli, bukan kartu statis.
+
+## Batas Keamanan
+
+Token tamu dibatasi ke satu record share, kedaluwarsa cepat (maksimal empat jam dan tidak pernah lebih lama dari token share), serta hanya membuka rute yang secara eksplisit memvalidasi cakupan share dan kapabilitasnya. Rute yang mengubah data tetap memakai pemeriksaan user/session yang ada dan menolak tamu share.

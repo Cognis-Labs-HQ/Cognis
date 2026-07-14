@@ -163,6 +163,13 @@ export function createChatHandlers({
         const localHandle = normalizeUsername(
             state.currentProfile?.handle ?? "",
         );
+        // Share guests have no account and are only ever authorized to read
+        // and write the meeting's own group chat room — never the private,
+        // per-user DM rooms these avatars would open. Omit the switcher
+        // entirely for guests so it's never shown, let alone clicked, which
+        // previously caused a 403 when guests tried to fetch a private
+        // room's encryption key.
+        if (!localHandle) return [];
         return Array.from(
             new Set(
                 state.lastMeetingParticipants

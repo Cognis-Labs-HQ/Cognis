@@ -1,5 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
+  <string name="ui.reuse.brand_name">Cognis</string>
+  <string name="ui.reuse.login">Anmelden</string>
+  <string name="ui.reuse.register">Registrieren</string>
   <string name="ui.reuse.dashboard">Dashboard</string>
   <string name="ui.reuse.messages">Nachrichten</string>
   <string name="ui.reuse.study">Lernen</string>
@@ -31,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">Verwerfen und fortfahren</string>
   <string name="ui.reuse.stay">Bleiben</string>
   <string name="ui.reuse.close_form_warning">Sie haben ungespeicherte Änderungen. Beim Schließen dieses Formulars gehen die Änderungen verloren.</string>
+  <string name="ui.reuse.mail">E-Mail</string>
 
   <string name="ui.reuse.enable">Aktivieren</string>
   <string name="ui.reuse.disable">Deaktivieren</string>
@@ -66,6 +70,10 @@
   <string name="ui.reuse.save_failed">Speichern fehlgeschlagen</string>
   <string name="ui.reuse.more_information">Weitere Informationen</string>
   <string name="ui.reuse.system">System</string>
+  <string name="ui.reuse.host">Gastgeber</string>
+  <string name="ui.reuse.scheduled_at">Geplant für</string>
+  <string name="ui.reuse.available_now">Jetzt verfügbar</string>
+  <string name="ui.reuse.join">Beitreten</string>
   <string name="ui.reuse.authentication">Authentifizierung</string>
   <string name="ui.reuse.adapters">Adapter</string>
   <string name="ui.reuse.configure">Konfigurieren</string>
@@ -84,6 +92,8 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">Unbehandelte Promise-Ablehnung</string>
   <string name="ui.reuse.runtime_error_context_route_mount">Routen-Mount Fehlgeschlagen</string>
   <string name="ui.reuse.runtime_error_context_route_load">Routenladen Fehlgeschlagen</string>
+  <string name="ui.reuse.guest_blocked_title">Zugriff Eingeschränkt</string>
+  <string name="ui.reuse.guest_blocked_message">Gäste können diese Seite nicht einsehen.</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">Benutzer</string>

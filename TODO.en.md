@@ -1,5 +1,13 @@
 # Ignored Automated Feedback
 
+## Code Review — Flow-Oriented Guest Share Sessions
+
+### calendar-routes regex suggestion for calendar ID
+
+**Reviewer suggestion:** Replace the `/^\/api\/v1\/calendar\/calendars\/([^/]+)\/share/` pattern with a stricter `[a-zA-Z0-9_-]+` segment matcher.
+
+**Reason ignored:** The current `([^/]+)` segment already enforces a non-empty calendar ID while preserving existing ID compatibility beyond alphanumeric/underscore/hyphen tokens. Narrowing to `[a-zA-Z0-9_-]+` would be a behavior change for valid existing IDs and is unrelated to the share-guest session work in this PR.
+
 ## Code Review — Restore multi-link calendar sharing
 
 ### share-link button wording — prefer singular labels
@@ -110,6 +118,26 @@
 
 **Reason ignored:** The repository was already in an inconsistent state: `src/adapters/auth/ldap/package.json` and the version documents were at `0.1.3`, while `src/adapters/auth/ldap/manifest.json` still lagged at `0.1.1`. This change fixes the inconsistency by bringing the manifest up to the new synchronized version `0.1.4`, but it cannot reconstruct undocumented historical manifest edits inside the same PR.
 
+## Code Review — share gateway implementation
+
+### core/contracts/share/flow-catalog.ts export naming
+
+**Reviewer suggestion:** Revisit the `SHARE_FLOW_CATALOG` export name to ensure it matches the repository's canonical flow-catalog naming conventions.
+
+**Reason ignored:** The export already follows the established `<DOMAIN>_FLOW_CATALOG` pattern used across the repository (for example `MEETINGS_FLOW_CATALOG` and `PROFILE_MEDIA_FLOW_CATALOG`). Renaming it would be a no-behavior churn with no correctness or consistency benefit, so the existing canonical name was kept.
+
+### store.ts purgeExpired — two where conditions on expires_at
+
+**Reviewer suggestion:** Combine the two separate `where` conditions (`expires_at != ""` and `expires_at < now`) into a single range check for better index use.
+
+**Reason ignored:** The two conditions are semantically distinct: the `!= ""` guard excludes never-expiring tokens (which store an empty string), while `< now` identifies elapsed expirations. They cannot be collapsed into a single range expression without changing the data-model contract. DB adapters are expected to optimize equality checks on a single column naturally; the cost of two conditions on the same column is negligible compared to a table scan on the composite filter.
+
+### bootstrap/routes.ts — serve /share without a token
+
+**Reviewer suggestion:** Return 404 for GET /share without a trailing token segment so the share page is only served with a valid URL shape.
+
+**Reason ignored:** The share page is a single-page application that resolves the token client-side from the URL path or query string. Serving the HTML shell at `/share` (without a token) is intentional — the client handles the no-token case by rendering an appropriate error state rather than crashing. Gating at the server would prevent valid deep-linked entry patterns and would duplicate validation that already exists in the client-side token resolution logic.
+
 ## Code Review — profile media ctx flows
 
 ### routes/index.ts fallback upload path — remove direct onProfileChanged invocation
@@ -131,3 +159,95 @@
 **Reviewer suggestion:** Move the popup body template markup out of `popup-manager-response.js` into a separate HTML template file instead of embedding it in JavaScript.
 
 **Reason ignored:** The existing calendar popup manager codebase already renders popup bodies as template strings in JavaScript (including neighboring calendar popups in this same area), so this suggestion conflicts with current repository patterns and would require a broader architectural migration rather than a focused behavior fix. This change intentionally stayed scoped to restoring the response-target flow and shared-calendar exemption.
+
+## Code Review — feature-share-utility: share popup moved to reuse
+
+### share-routes.js resolveExpiry — document return value semantics
+
+**Reviewer suggestion:** Add a JSDoc comment to `resolveExpiry` explaining that it returns `null` for invalid input, an empty string for no expiry, and an ISO string for a valid expiry timestamp.
+
+**Reason ignored:** `src/modules/jitsi-meet/api/share-routes.js` was not touched in this PR (the PR only moves UI code). Adding a JSDoc to an untouched file would be an out-of-scope change. Should be addressed in a future jitsi-meet API documentation pass.
+
+### share/gateway/store.ts — two where conditions on expires_at
+
+**Reviewer suggestion:** Combine the two separate `where` conditions on `expires_at` into a single range check.
+
+**Reason ignored:** This is the same issue already documented above under "Code Review — share gateway implementation → store.ts purgeExpired". The comment and reasoning already apply and a duplicate TODO entry is not added.
+
+### share/bootstrap/routes.ts — serve /share without a token
+
+**Reviewer suggestion:** Return 404 for GET /share without a token segment.
+
+**Reason ignored:** Same issue already documented above under "Code Review — share gateway implementation → bootstrap/routes.ts". Duplicate entry not added.
+
+### share-hooks.js firstStageResult — extract shared helper
+
+**Reviewer suggestion:** Move the `firstStageResult` helper to a shared utility in `src/api/reuse/`.
+
+**Reason ignored:** `src/modules/jitsi-meet/api/share-hooks.js` was not touched in this PR. Promoting a helper to a shared location belongs in a dedicated refactor task once multiple files consume the same pattern, as outlined in the existing TODO for `getFirstStageResult` in profile-media-flow-hooks.ts.
+
+### share/ui/app/index.js — validate token format client-side
+
+**Reviewer suggestion:** Add a format check (e.g. `shr_` prefix) before passing the token to the API.
+
+**Reason ignored:** `src/gateways/share/ui/app/index.js` was not touched in this PR. Client-side token validation is a share gateway concern and belongs in a separate share-gateway hardening task.
+
+### guest-profile-store.ts — randomInt upper bound for the default guest name
+
+**Reviewer suggestion:** `randomInt(100000, 1000000)` was flagged as possibly only producing a max value of 999999 instead of 1000000, implying the range might not be a full 6-digit range.
+
+**Reason ignored:** This is the intended, correct behavior, not a bug. Node's `crypto.randomInt(min, max)` returns an integer `>= min` and `< max`, so `randomInt(100000, 1000000)` always yields a value in `[100000, 999999]` — exactly the full range of 6-digit numbers. No change was made.
+
+### routes/room/index.ts — guest sender filter on `resolveShareGuestSessionId`
+
+**Reviewer suggestion:** The truthy check on `resolveShareGuestSessionId({ sub: senderId })` in the guest message-sender enrichment filter was flagged as potentially excluding guest senders that have no session ID.
+
+**Reason ignored:** This code in `src/adapters/social/messages/routes/room/index.ts` predates this PR and was not modified here. The truthy check is intentional: a share-guest subject with no session-ID segment has no `guestId` to look up a temporary profile for, so it is correctly excluded from guest-profile enrichment. Reverting this would not fix a real bug and is out of scope for this PR's guest-experience fixes.
+
+## Architecture Guardrail — jitsi-meet api/index.js exceeds 1000 lines
+
+**Guardrail:** `src/tooling/tests/architecture-compliance.test.js` requires files to stay at or below 1000 lines, splitting into a subdirectory with an `index` entry point otherwise.
+
+**Resolved:** `src/modules/jitsi-meet/api/index.js` (previously 1010 lines) has been split into `config-routes.js`, `participant-routes.js`, and `meeting-lifecycle-routes.js` sibling files in the Share Gateway UX bugfix PR, bringing `index.js` down to 414 lines. All previously-deferred concerns about this guardrail no longer apply.
+
+## Code Review — Jitsi Meet Bug Fixes Session
+
+### session-flow-hooks.js — beforeunload listener without AbortSignal
+
+**Resolved:** In the Share Gateway UX bugfix PR, the `beforeunload` listener in `src/gateways/share/ui/session-flow-hooks.js` is now registered with `{ signal: abortController?.signal }`, using the `AbortController` returned by `activateGuestToken`, so it is automatically removed alongside the guest auth stage's abort lifecycle.
+
+### share-button.js — GUEST_SESSION_ACTIVE_STORAGE_KEY "shadowed" constant
+
+**Reviewer suggestion:** Remove the local `GUEST_SESSION_ACTIVE_STORAGE_KEY` declaration since it is "shadowed" by the export.
+
+**Reason ignored:** False positive — `export { GUEST_SESSION_ACTIVE_STORAGE_KEY }` at line 83 re-exports the single local `const` declared at line 47; it is not a separate/duplicate declaration. No change made.
+
+### room/index.ts — invert share-guest allowed-operation condition
+
+**Reviewer suggestion:** Refactor the negated nested condition gating share-guest access to `key`/`messages` routes into a positive `isAllowedShareGuestOperation` helper.
+
+**Reason ignored:** `src/adapters/social/messages/routes/room/index.ts` was not touched in this PR (verified the existing logic already correctly permits guest GET `/key` and GET/POST `/messages` for their own meeting's chat room, which is unrelated to the chat-key 403 fixed in this PR — that 403 was caused by the UI requesting private per-user DM keys, not this route's guest gate). Readability refactor deferred as out of scope.
+
+### guard.ts — verifyAccessToken called twice
+
+**Reviewer suggestion:** Avoid calling `verifyAccessToken` twice with the same token when the first call returns null.
+
+**Reason ignored:** `src/gateways/auth/guard.ts` was not touched in this PR. This is a minor performance nit in unrelated auth-guard code; addressing it requires understanding all call sites of `verifyAccessToken`'s purpose parameter, which is out of scope for this PR's meeting/chat/share bug fixes.
+
+## Code Review — Share Gateway UX Bugfix Session
+
+### room/index.ts — resolveShareGuestSessionId called twice per guest sender
+
+**Resolved:** In `src/adapters/social/messages/routes/room/index.ts`, the guest sender enrichment loop now resolves `resolveShareGuestSessionId` once per unique sender ID into a `guestSessionIdsBySender` map, reusing the result in both the filtering and the profile-lookup steps instead of calling it twice.
+
+### server.ts — static-asset pathname check on every request
+
+**Reviewer suggestion:** The `isUiStaticAssetRequest` check runs on every request before the catch-all routes; consider having the route registry distinguish static vs dynamic routes at registration time to avoid the extra pathname check per request.
+
+**Reason ignored:** This is a minor, explicitly-caveated ("correct for the fix, but consider...") performance observation on `src/api/server.ts`, a file not touched by this PR's share/mailto/expiry/theme fixes. `isUiStaticAssetRequest` is a cheap prefix/extension check with negligible per-request cost; restructuring route registration to separate static/dynamic routes is a broader architectural change to the routing dispatch order that is unrelated to this PR's scope and risks regressing unrelated route matching. Deferred to a dedicated routing-performance task.
+
+### session-flow-hooks.js — redundant `typeof window !== "undefined"` guard
+
+**Reviewer suggestion:** Remove the `typeof window !== "undefined"` check since this UI module only ever runs in the browser.
+
+**Reason ignored:** This guard predates this PR (present since the share session-flow-hooks file was first introduced) and was not added by this PR's `beforeunload`/AbortSignal fix — only the `addEventListener` call inside it was modified. It is a harmless defensive check consistent with other guards in the same file; removing it is a pure style nitpick unrelated to this PR's share/mailto/expiry/theme bug fixes.

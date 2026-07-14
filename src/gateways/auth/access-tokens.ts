@@ -18,7 +18,7 @@ interface AccessTokenRecord {
     expiresAt: number | null;
     issuedAt?: number;
     setupPending?: boolean;
-    purpose?: "session" | "password-reset";
+    purpose?: "session" | "password-reset" | "share";
 }
 
 const tokenStore = new Map<string, AccessTokenRecord>();
@@ -129,7 +129,8 @@ function loadTokenStore(now = Date.now()) {
                 if (
                     purpose !== undefined &&
                     purpose !== "session" &&
-                    purpose !== "password-reset"
+                    purpose !== "password-reset" &&
+                    purpose !== "share"
                 ) {
                     continue;
                 }
@@ -216,7 +217,7 @@ export function lookupAccessToken(token: string): {
     providerId: string;
     revoked: boolean;
     setupPending: boolean;
-    purpose: "session" | "password-reset";
+    purpose: "session" | "password-reset" | "share";
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
@@ -238,7 +239,7 @@ export function verifyAccessToken(token: string): {
 } | null;
 export function verifyAccessToken(
     token: string,
-    options: { purpose: "session" | "password-reset" },
+    options: { purpose: "session" | "password-reset" | "share" },
 ): {
     sub: string;
     role: AccessRole;
@@ -247,7 +248,7 @@ export function verifyAccessToken(
 } | null;
 export function verifyAccessToken(
     token: string,
-    options?: { purpose: "session" | "password-reset" },
+    options?: { purpose: "session" | "password-reset" | "share" },
 ): {
     sub: string;
     role: AccessRole;
@@ -274,7 +275,7 @@ export function consumeAccessToken(token: string): {
 } | null;
 export function consumeAccessToken(
     token: string,
-    options: { purpose: "session" | "password-reset" },
+    options: { purpose: "session" | "password-reset" | "share" },
 ): {
     sub: string;
     role: AccessRole;
@@ -283,7 +284,7 @@ export function consumeAccessToken(
 } | null;
 export function consumeAccessToken(
     token: string,
-    options?: { purpose: "session" | "password-reset" },
+    options?: { purpose: "session" | "password-reset" | "share" },
 ): {
     sub: string;
     role: AccessRole;
@@ -374,7 +375,7 @@ export function issueAccessToken(
         issuedAt?: number;
         providerId?: string;
         setupPending?: boolean;
-        purpose?: "session" | "password-reset";
+        purpose?: "session" | "password-reset" | "share";
     },
 ): string {
     pruneExpiredTokens();

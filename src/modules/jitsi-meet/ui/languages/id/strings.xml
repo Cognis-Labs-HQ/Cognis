@@ -82,4 +82,24 @@
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">Tidak ada rapat terjadwal.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Dibuat Oleh</string>
   <string name="module.jitsi_meet.admin.meetings.created_at">Dibuat</string>
+  <string name="module.jitsi_meet.share.button">Bagikan</string>
+  <string name="module.jitsi_meet.share.popup_title">Bagikan Rapat</string>
+  <string name="module.jitsi_meet.share.generate_link">Buat Tautan</string>
+  <string name="module.jitsi_meet.share.copy_link">Salin Tautan</string>
+  <string name="module.jitsi_meet.share.revoke">Cabut</string>
+  <string name="module.jitsi_meet.share.share_options_label">Bagikan:</string>
+  <string name="module.jitsi_meet.share.label">Label</string>
+  <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
+  <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa Dalam (Jam)</string>
+  <string name="module.jitsi_meet.share.status_active">Aktif</string>
+  <string name="module.jitsi_meet.share.status_expired">Kedaluwarsa</string>
+  <string name="module.jitsi_meet.share.expires_at_label">Kedaluwarsa Pada</string>
+  <string name="module.jitsi_meet.share.expired_at_label">Kedaluwarsa Pada</string>
+  <string name="module.jitsi_meet.share.empty">Belum ada tautan bagikan untuk rapat ini.</string>
+  <string name="module.jitsi_meet.share.untitled">Tautan Bagikan Tanpa Judul</string>
+  <string name="module.jitsi_meet.share.copy_success">Tautan bagikan disalin.</string>
+  <string name="module.jitsi_meet.share.copy_failed">Tautan bagikan tidak dapat disalin.</string>
+  <string name="module.jitsi_meet.share.create_failed">Tautan bagikan tidak dapat dibuat.</string>
+  <string name="module.jitsi_meet.share.delete_failed">Tautan bagikan tidak dapat dicabut.</string>
+  <string name="module.jitsi_meet.share.no_meeting">Mulai atau gabung ke rapat sebelum membagikannya.</string>
 </resources>

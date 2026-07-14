@@ -1,5 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
+  <string name="ui.reuse.brand_name">Cognis</string>
+  <string name="ui.reuse.login">Masuk</string>
+  <string name="ui.reuse.register">Daftar</string>
   <string name="ui.reuse.dashboard">Dasbor</string>
   <string name="ui.reuse.messages">Pesan</string>
   <string name="ui.reuse.study">Belajar</string>
@@ -31,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">Buang dan Lanjutkan</string>
   <string name="ui.reuse.stay">Tetap di Sini</string>
   <string name="ui.reuse.close_form_warning">Anda memiliki perubahan yang belum disimpan. Menutup formulir ini akan membuang perubahan tersebut.</string>
+  <string name="ui.reuse.mail">Surel</string>
 
   <string name="ui.reuse.enable">Aktifkan</string>
   <string name="ui.reuse.disable">Nonaktifkan</string>
@@ -66,6 +70,10 @@
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
   <string name="ui.reuse.system">Sistem</string>
+  <string name="ui.reuse.host">Host</string>
+  <string name="ui.reuse.scheduled_at">Dijadwalkan Pada</string>
+  <string name="ui.reuse.available_now">Tersedia Sekarang</string>
+  <string name="ui.reuse.join">Gabung</string>
   <string name="ui.reuse.authentication">Autentikasi</string>
   <string name="ui.reuse.adapters">Adaptor</string>
   <string name="ui.reuse.configure">Konfigurasikan</string>
@@ -84,6 +92,8 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">Penolakan Promise Tak Tertangani</string>
   <string name="ui.reuse.runtime_error_context_route_mount">Pemasangan Rute Gagal</string>
   <string name="ui.reuse.runtime_error_context_route_load">Pemuatan Rute Gagal</string>
+  <string name="ui.reuse.guest_blocked_title">Akses Dibatasi</string>
+  <string name="ui.reuse.guest_blocked_message">Tamu tidak dapat melihat halaman ini.</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">Pengguna</string>

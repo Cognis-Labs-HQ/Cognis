@@ -1,5 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
+  <string name="ui.reuse.brand_name">Cognis</string>
+  <string name="ui.reuse.login">サインイン</string>
+  <string name="ui.reuse.register">登録</string>
   <string name="ui.reuse.dashboard">ダッシュボード</string>
   <string name="ui.reuse.messages">メッセージ</string>
   <string name="ui.reuse.study">学習</string>
@@ -31,6 +34,7 @@
   <string name="ui.reuse.discard_and_leave">破棄して移動</string>
   <string name="ui.reuse.stay">このページに留まる</string>
   <string name="ui.reuse.close_form_warning">未保存の変更があります。このフォームを閉じると、変更が失われます。</string>
+  <string name="ui.reuse.mail">メール</string>
 
   <string name="ui.reuse.enable">有効化</string>
   <string name="ui.reuse.disable">無効化</string>
@@ -66,6 +70,10 @@
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>
   <string name="ui.reuse.system">システム</string>
+  <string name="ui.reuse.host">主催者</string>
+  <string name="ui.reuse.scheduled_at">予定日時</string>
+  <string name="ui.reuse.available_now">現在利用可能</string>
+  <string name="ui.reuse.join">参加</string>
   <string name="ui.reuse.authentication">認証</string>
   <string name="ui.reuse.adapters">アダプター</string>
   <string name="ui.reuse.configure">設定</string>
@@ -84,6 +92,8 @@
   <string name="ui.reuse.runtime_error_context_unhandled_rejection">未処理の Promise 拒否</string>
   <string name="ui.reuse.runtime_error_context_route_mount">ルートマウント失敗</string>
   <string name="ui.reuse.runtime_error_context_route_load">ルート読み込み失敗</string>
+  <string name="ui.reuse.guest_blocked_title">アクセス制限</string>
+  <string name="ui.reuse.guest_blocked_message">ゲストはこのページを表示できません。</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">ユーザー</string>

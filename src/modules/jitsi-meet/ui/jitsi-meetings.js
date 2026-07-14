@@ -211,9 +211,11 @@ export function createMeetingHandlers({
             const activeApi = state.jitsiApi;
             state.jitsiApi = null;
             state.jitsiParticipantId = "";
+            state.jitsiConferenceJoined = false;
             state.jitsiModerator = false;
             activeApi.dispose();
         }
+        utils.syncShareButtonAvailability();
         const frame = root.querySelector("#jitsi-meeting-frame");
         if (!(frame instanceof HTMLElement)) return;
         frame.hidden = true;

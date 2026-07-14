@@ -45,6 +45,8 @@ Treat all meaningful operations as named `ctx` flows with explicit stages. A flo
 
 - Register every orchestration pipeline as a flow with ordered stage IDs.
 - Components must extend behavior by injecting stage hooks into flows, not by editing unrelated internals.
+- Treat flows as the preferred lattice for interactions between otherwise-isolated components: a caller invokes a generic ctx capability or flow, and the owning component contributes behavior through stages rather than being imported directly.
+- TODO: Proliferate flow use across legacy cross-component seams so fewer routes need component-specific branching or direct capability choreography.
 - Flow hooks must be removable so disabling a component cleanly unhooks its behavior.
 - Flows may call other flows through `ctx` to compose behavior (for example login page flow calling login flow, login flow calling LDAP flow).
 - Provider-specific choices (like LDAP availability) must be expressed as flow hook participation and capability checks, not hardcoded route/UI branches.
@@ -301,6 +303,13 @@ For every change:
 - Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.
 - Keep HTML and JS/TS in separate files; do not embed page markup as feature-sized string templates in JS/TS modules.
 - Keep files at or below 1000 lines. If a file grows beyond that limit, convert it into a subdirectory with `index` as the entry point and split logic into focused sibling files.
+- Before writing any new feature, estimate the minimal-footprint implementation first: identify the smallest set of files and lines that satisfy the requirement using existing gateways, adapters, capabilities, and `reuse/` utilities. Only add new abstractions, files, or scaffolding when the existing surface genuinely cannot express the behavior.
+- A feature request phrased in a single sentence (e.g. "add a share button") must not translate into thousands of added lines. If a change is trending toward that scale, stop and re-derive the plan around composing existing primitives (flows, capabilities, composer/router contracts, existing UI components) instead of building parallel infrastructure.
+- Prefer extending an existing flow, gateway route, or UI composer contribution over introducing a new one, whenever the existing contract already covers the use case.
+
+### Tests must respect component isolation
+
+Tests outside `src/core` must assume any gateway, adapter, or module outside the unit under test can disappear. Prefer testing a component through its public route/capability/flow contract with local fakes for external capabilities. Do not import concrete stores, gateways, or modules from sibling components just to make an integration convenient; if cross-component behavior needs coverage, assert the exported ctx contract and stage participation rather than coupling the test to another component's internals.
 
 ### Variable naming
 

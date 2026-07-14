@@ -20,7 +20,10 @@ test("runtime error popup renders branded header and supports previous-route fal
     assert.match(source, /hasLoadedMainPageBoilerplate/);
     assert.match(source, /didReloadIntoCurrentDocument/);
     assert.match(source, /id:\s*["']copy["']/);
-    assert.match(source, /navigator\.clipboard\?\.writeText/);
+    assert.match(
+        source,
+        /import\s*\{\s*copyTextToClipboard\s*\}\s*from\s*["']\.\/clipboard\.js["'];/,
+    );
     assert.match(
         source,
         /window\.location\.assign\(normalizedPreviousRoutePath\)/,
@@ -369,6 +372,14 @@ test("runtime error popup copy action writes full crash detail text", async () =
         normalizeSameOriginRoutePath(routePath) {
             return String(routePath ?? "");
         },
+        async copyTextToClipboard(value) {
+            try {
+                await context.navigator.clipboard.writeText(value);
+                return true;
+            } catch {
+                return false;
+            }
+        },
         navigator: {
             clipboard: {
                 writeText(value) {
@@ -489,6 +500,14 @@ test("runtime error popup copy action adds and removes copied class on success",
         setTimeout(fn, ms) {
             timeouts.push({ fn, ms });
         },
+        async copyTextToClipboard(value) {
+            try {
+                await context.navigator.clipboard.writeText(value);
+                return true;
+            } catch {
+                return false;
+            }
+        },
         navigator: {
             clipboard: {
                 writeText() {
@@ -570,6 +589,14 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
         },
         setTimeout(fn, ms) {
             timeouts.push({ fn, ms });
+        },
+        async copyTextToClipboard(value) {
+            try {
+                await context.navigator.clipboard.writeText(value);
+                return true;
+            } catch {
+                return false;
+            }
         },
         navigator: {
             clipboard: {

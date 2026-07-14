@@ -6,6 +6,10 @@ import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { handleProfileAvatarError } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
+import {
+    getShareContext,
+    ensureFullAccountSession,
+} from "/static/reuse/auth-session.js";
 import { ensureSessionId } from "./session.js";
 import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
 import {
@@ -26,6 +30,7 @@ import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
+import { bindShareButton } from "./share-button.js";
 
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 
@@ -39,18 +44,27 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     showReactionHoverPopup: () => undefined,
     toggleReaction: async () => undefined,
 });
-
 /**
  * Mounts the Meetings page inside the dashboard shell and wires all runtime
  * interactions (participant selection, meeting lifecycle polling, and chat
  * embed updates). The optional AbortSignal is used by the SPA router to clean
  * up timers and event listeners when users navigate away.
  *
+ * When the page is loaded inside a share context (detected via getShareContext()),
+ * the shell chrome (topbar, navbar, footer) is hidden and the share button is
+ * suppressed — no explicit `embedded` or `shareEnabled` flags are needed.
+ *
  * @param {HTMLElement} root - Page mount root (usually #app).
- * @param {{ signal?: AbortSignal }} [options] - Router-provided lifecycle options.
+ * @param {{ signal?: AbortSignal, requestedMeetingId?: string }} [options] - Router lifecycle options.
  * @returns {Promise<void>}
  */
-export async function mount(root, { signal } = {}) {
+export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
+    await ensureFullAccountSession();
+    const shareContext = getShareContext();
+    const inShareView = shareContext !== null;
+    const resolvedMeetingId =
+        requestedMeetingId ||
+        (inShareView ? String(shareContext?.resourceId ?? "") : "");
     const messageUiResources = await loadMessageUiResources();
     for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
         ensureStylesheetLoaded(stylesheetUrl);
@@ -101,13 +115,15 @@ export async function mount(root, { signal } = {}) {
         preflightNeedsConfig: false,
         sessionId: ensureSessionId(),
         requestedMeetingId: normalizeMeetingId(
-            new URL(window.location.href).searchParams.get("meetingId"),
+            resolvedMeetingId ||
+                new URL(window.location.href).searchParams.get("meetingId"),
         ),
         activeMeetings: [],
         activeMeetingsRefreshTimer: null,
         dragUsername: null,
         jitsiApi: null,
         jitsiParticipantId: "",
+        jitsiConferenceJoined: false,
         jitsiModerator: false,
         jitsiThemeMode: resolveThemeMode(),
         alonePromptMeetingId: "",
@@ -124,6 +140,7 @@ export async function mount(root, { signal } = {}) {
         resetParticipantSelection,
         selectedUsernames,
         setPreflightStatus,
+        syncShareButtonAvailability,
         updateOverlay,
     } = createMountUtilities({ root, state });
 
@@ -143,6 +160,7 @@ export async function mount(root, { signal } = {}) {
         resetParticipantSelection,
         selectedUsernames,
         setPreflightStatus,
+        syncShareButtonAvailability,
         updateOverlay,
     };
     const chatHandlers = createChatHandlers({
@@ -213,7 +231,6 @@ export async function mount(root, { signal } = {}) {
         runPreflightCheck,
     } = preflightHandlers;
     const { openMeetingEmbed, prepareMeetingStart } = embedHandlers;
-
     if (signal) {
         signal.addEventListener(
             "abort",
@@ -854,17 +871,26 @@ export async function mount(root, { signal } = {}) {
     }
 
     const elements = [
-        {
-            id: "jitsi-participants",
-            label: i18n.t("module.jitsi_meet.participants.heading"),
-            pinned: true,
-            gridSize: {
-                default: [12, 2],
-                min: [8, 2],
-                max: "full",
-            },
-            render: () => buildParticipantsMarkup(i18n),
-        },
+        // Share-link guests have no account and cannot search for or start
+        // meetings with other participants, so the participant-management
+        // panel (participant search, active-meeting list) is guest-facing
+        // clutter that doesn't apply to them — it is omitted entirely below
+        // rather than rendered empty.
+        ...(inShareView
+            ? []
+            : [
+                  {
+                      id: "jitsi-participants",
+                      label: i18n.t("module.jitsi_meet.participants.heading"),
+                      pinned: true,
+                      gridSize: {
+                          default: [12, 2],
+                          min: [8, 2],
+                          max: "full",
+                      },
+                      render: () => buildParticipantsMarkup(i18n),
+                  },
+              ]),
         {
             id: "jitsi-stage",
             label: i18n.t("module.jitsi_meet.overlay.title"),
@@ -906,7 +932,7 @@ export async function mount(root, { signal } = {}) {
     }));
 
     const composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: !inShareView,
         elements,
         preferenceKey: "meetings-layout-v3",
         i18n,
@@ -914,13 +940,33 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
-        persistLayoutPreferences: true,
-        onRender: bindInteractiveHandlers,
+        showTopbar: true,
+        showNavbar: !inShareView,
+        showFooter: true,
+        showThemeToggle: true,
+        persistLayoutPreferences: !inShareView,
+        frameless: false,
+        onRender: (...args) => {
+            bindInteractiveHandlers(...args);
+            if (!inShareView) {
+                bindShareButton({
+                    root,
+                    signal,
+                    state,
+                    i18n,
+                    deferAloneParticipantPrompt,
+                });
+            }
+        },
     });
 
     await composer.init();
-    await loadActiveMeetings({ resolveRequested: true });
-    startActiveMeetingsPolling();
+    if (inShareView && state.requestedMeetingId) {
+        await joinMeetingById(state.requestedMeetingId);
+    } else {
+        await loadActiveMeetings({ resolveRequested: true });
+        startActiveMeetingsPolling();
+    }
     await runPreflightCheck();
 }
 

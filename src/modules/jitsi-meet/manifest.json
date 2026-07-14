@@ -1,7 +1,7 @@
 {
     "id": "jitsi-meet",
     "name": "Jitsi Meet",
-    "version": "1.0.5",
+    "version": "1.2.1",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["meeting:video", "meeting:chat", "meeting:moderation"],
@@ -15,6 +15,17 @@
         "componentConfig": {
             "scriptUrl": "/static/modules/jitsi-meet/admin-config-popup.js"
         }
+    },
+    "share": {
+        "shareable": true,
+        "mountScriptUrl": "/static/modules/jitsi-meet/share-mount.js",
+        "stringsBaseUrl": "/static/modules/jitsi-meet/languages",
+        "guestApiScopes": [
+            "meeting:join",
+            "participants:read",
+            "chat:read",
+            "chat:write"
+        ]
     },
     "requires": ["social"]
 }

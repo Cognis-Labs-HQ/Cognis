@@ -4,6 +4,7 @@ import {
     type CanonicalFlowContract,
 } from "./flow-contract.js";
 import { PROFILE_MEDIA_FLOW_CATALOG } from "./profile/media-flow-catalog.js";
+import { SHARE_FLOW_CATALOG } from "./share/flow-catalog.js";
 
 export const CTX_CAPABILITY = "system:ctx";
 export type {
@@ -568,6 +569,79 @@ export const CLI_FLOW_CATALOG = Object.freeze([
     }),
 ]);
 
+export const CLIENT_SIDE_FLOW_CATALOG = Object.freeze([
+    createFlowContract({
+        id: "authenticate-session",
+        owner: "ui-client",
+        description:
+            "Validate and resolve the browser session. Runs on every page load and SPA navigation. Components hook in to provide alternate auth paths (e.g. share guest tokens) without owning the session lifecycle.",
+        stages: [
+            {
+                id: "validate-stored-token",
+                description:
+                    "Check whether the JWT in localStorage is still valid via the API. Returns { valid, accountId, role, reason }.",
+            },
+            {
+                id: "apply-alternate-auth",
+                description:
+                    "Optional override slot. Hooks provide alternate auth paths such as share guest token injection. Returns { authenticated, shareContext? }.",
+            },
+            {
+                id: "enforce-setup-requirements",
+                description:
+                    "Check TFA and account-setup constraints. Returns { requiresSetup, redirectTo }.",
+            },
+            {
+                id: "resolve-session",
+                description:
+                    "Produce a normalized { authenticated, accountId, role, requiresRedirect, redirectTo, shareContext } result from prior stage outputs.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "navigate-to",
+        owner: "ui-client",
+        description:
+            "Orchestrate an SPA navigation: resolve the target route, authenticate, inject stylesheets, and mount the page module.",
+        stages: [
+            {
+                id: "resolve-route",
+                description: "Match the target path to a route descriptor.",
+            },
+            {
+                id: "authenticate",
+                description:
+                    "Run authenticate-session as a sub-flow; redirect if it requires one.",
+            },
+            {
+                id: "prepare-assets",
+                description: "Inject stylesheets for the target route.",
+            },
+            {
+                id: "mount-page",
+                description:
+                    "Abort the previous controller, load the module, and call mount(root, { signal }).",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "load-page",
+        owner: "ui-client",
+        description:
+            "Authenticate and mount a page on direct (non-SPA) URL loads. Used by page-entry.js so individual page modules need not call auth helpers directly.",
+        stages: [
+            {
+                id: "authenticate",
+                description: "Run authenticate-session; redirect if required.",
+            },
+            {
+                id: "mount-page",
+                description: "Call the current page mount() function.",
+            },
+        ],
+    }),
+]);
+
 export const CORE_FLOW_CATALOG = Object.freeze([
     ...BOOTSTRAP_FLOW_CATALOG,
     ...AUTH_FLOW_CATALOG,
@@ -575,10 +649,12 @@ export const CORE_FLOW_CATALOG = Object.freeze([
     ...UI_SURFACE_FLOW_CATALOG,
     ...MESSAGING_FLOW_CATALOG,
     ...PROFILE_MEDIA_FLOW_CATALOG,
+    ...SHARE_FLOW_CATALOG,
     ...MEETINGS_FLOW_CATALOG,
     ...GATEWAY_LIFECYCLE_FLOW_CATALOG,
     ...MODULE_LIFECYCLE_FLOW_CATALOG,
     ...CLI_FLOW_CATALOG,
+    ...CLIENT_SIDE_FLOW_CATALOG,
 ]);
 
 export function listCanonicalFlowContracts(): readonly CanonicalFlowContract[] {
