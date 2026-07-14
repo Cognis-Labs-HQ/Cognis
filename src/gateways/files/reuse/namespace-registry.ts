@@ -5,8 +5,8 @@ import type { NamespaceDefinition } from "@cognis/core";
  * bootstrap time via the `files:registerNamespace` capability. Mirrors the
  * RouteRegistry.registerPrefix pattern: each namespace id is claimed exactly
  * once by its owning component, and every subsequent file operation is
- * resolved against this registry to determine ACL ceilings and cross
- * -component access.
+ * resolved against this registry to determine ACL ceilings and
+ * cross-component access.
  */
 export class NamespaceRegistry {
     private readonly namespaces = new Map<string, NamespaceDefinition>();

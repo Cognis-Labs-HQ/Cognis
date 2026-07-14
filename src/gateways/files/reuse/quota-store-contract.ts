@@ -16,10 +16,14 @@ export interface UserQuotaSnapshot {
 }
 
 export interface FileQuotaStore {
-    /** Seed/refresh the default quota row for a namespace (admin-tunable). */
+    /**
+     * Seed the default quota row for a namespace (admin-tunable). If
+     * `quotaBytes` is omitted, implementations fall back to their own
+     * built-in default and only seed the row if it does not already exist.
+     */
     ensureNamespaceDefault(
         namespaceId: string,
-        quotaBytes: number,
+        quotaBytes?: number,
     ): Promise<void>;
     listNamespaceDefaults(): Promise<NamespaceQuotaDefaults[]>;
     setNamespaceDefault(namespaceId: string, quotaBytes: number): Promise<void>;
