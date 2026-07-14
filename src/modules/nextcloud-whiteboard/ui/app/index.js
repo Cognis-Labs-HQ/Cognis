@@ -272,7 +272,27 @@ function bindCanvasToolbar(canvas) {
         canvas.setStrokeWidth(strokeSelect.value);
     });
 
-    document.getElementById("wb-clear")?.addEventListener("click", () => {
+    canvas.onSelectionChange?.((element) => {
+        if (colorInput && element?.strokeColor) colorInput.value = element.strokeColor;
+        if (strokeSelect) {
+            strokeSelect.disabled = !element?.strokeWidthApplicable;
+            if (element?.strokeWidthApplicable) {
+                strokeSelect.value = String(element.strokeWidth ?? 4);
+            }
+        }
+    });
+
+    document.getElementById("wb-clear")?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const result = await openPopup({
+            title: t("module.nextcloud_whiteboard.clear_board"),
+            body: `<p>${escapeHtml(t("module.nextcloud_whiteboard.clear_confirm"))}</p>`,
+            actions: [
+                { id: "cancel", label: t("module.nextcloud_whiteboard.close"), variant: "cancel" },
+                { id: "clear", label: t("module.nextcloud_whiteboard.clear_board"), variant: "danger" },
+            ],
+        });
+        if (result !== "clear") return;
         canvas.clearAll();
         savedElements = [];
     });
@@ -455,18 +475,18 @@ function renderCanvasElement() {
                 aria-label="${escapeHtml(t("module.nextcloud_whiteboard.toolbar_label"))}"
             >
                 <div class="wb-toolbar-group">
-                    <button type="button" id="wb-new" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋</button>
-                    <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">☰</button>
+                    <button type="button" id="wb-new" class="wb-tool wb-new-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋ <span>New</span></button>
+                    <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">↺</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" data-tool="select" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">↖</button>
+                    <button type="button" data-tool="select" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
                     <button type="button" data-tool="pen" class="wb-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
                     <button type="button" data-tool="rectangle" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
                     <button type="button" data-tool="diamond" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
                     <button type="button" data-tool="ellipse" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
                     <button type="button" data-tool="arrow" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}">→</button>
                     <button type="button" data-tool="line" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}">−</button>
-                    <button type="button" data-tool="text" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">A</button>
+                    <button type="button" data-tool="text" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">T</button>
                     <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
@@ -478,7 +498,7 @@ function renderCanvasElement() {
                     </select>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" id="wb-clear" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</button>
+                    <a href="#" id="wb-clear" class="wb-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
                 </div>
                 <span id="wb-board-title" class="wb-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
                 <span id="wb-sync-status" class="wb-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>

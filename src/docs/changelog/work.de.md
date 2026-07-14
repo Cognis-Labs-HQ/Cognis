@@ -1,9 +1,5 @@
-# Whiteboards
+# Whiteboard-Zeichensteuerung
 
-## Nextcloud-Whiteboard-Modul
+## Verbesserte Whiteboard-Zeichenwerkzeuge
 
-Ein eigenständiges Modul wurde hinzugefügt, um Nextcloud-Whiteboard-Sitzungen mit von Cognis verwalteter Zugriffskontrolle zu konfigurieren und zu starten.
-
-## Administrations-Einstellungsdialog
-
-Die Einstellungen-Schaltfläche des Moduls in der Administration öffnet nun einen lokalisierten Konfigurationsdialog für die Nextcloud-URL und den API-Schlüssel.
+Die Whiteboard-Fläche hat jetzt besseren Kontrast im hellen und dunklen Modus, klarere Auswahl-, Verlauf-, Text- und Neu-Schaltflächen, Pfeilspitzen, Auswahlanker, Größenänderungsgriffe, Farb- und Linienstärkenänderungen für ausgewählte Elemente sowie eine Bestätigung vor dem Leeren eines Boards.

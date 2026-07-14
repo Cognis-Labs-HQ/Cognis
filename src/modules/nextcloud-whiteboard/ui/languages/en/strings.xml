@@ -72,5 +72,6 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">Arrow</string>
   <string name="module.nextcloud_whiteboard.tool_line">Line</string>
   <string name="module.nextcloud_whiteboard.tool_text">Text</string>
+  <string name="module.nextcloud_whiteboard.clear_confirm">This permanently clears every item on the current whiteboard. Continue?</string>
 </resources>
 
