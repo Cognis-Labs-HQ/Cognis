@@ -265,3 +265,27 @@
     border-radius: 0.5rem;
     padding: 0.2rem 0.4rem;
 }
+
+.wb-canvas-stage {
+    --wb-canvas-bg: color-mix(in srgb, var(--surface, #ffffff) 92%, var(--text, #1f2937) 8%);
+    background: var(--wb-canvas-bg);
+}
+
+#wb-canvas {
+    background: var(--wb-canvas-bg);
+}
+
+.wb-tool:disabled,
+#wb-stroke-width:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.wb-new-tool {
+    gap: 0.25rem;
+    min-width: 4.75rem;
+}
+
+.wb-tool.btn-cancel {
+    text-decoration: none;
+}

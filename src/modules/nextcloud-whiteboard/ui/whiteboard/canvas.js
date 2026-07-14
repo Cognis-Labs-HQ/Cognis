@@ -77,8 +77,8 @@ function buildShapeElement(
         points:
             type === "line" || type === "arrow"
                 ? [
-                      [0, 0],
-                      [endX - startX, endY - startY],
+                      [startX - x, startY - y],
+                      [endX - x, endY - y],
                   ]
                 : undefined,
         isDeleted: false,
@@ -220,6 +220,40 @@ function renderImage(context, element) {
     image.src = element.dataUrl;
 }
 
+function drawAnchor(context, x, y) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.strokeStyle = "#2563eb";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.arc(x, y, 5, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.restore();
+}
+
+function getElementAnchorPoints(element) {
+    if (element.type === "line" || element.type === "arrow") {
+        const points = element.points ?? [[0, 0], [element.width ?? 1, element.height ?? 1]];
+        return points.slice(0, 2).map(([px, py]) => [element.x + px, element.y + py]);
+    }
+    return [
+        [element.x, element.y],
+        [element.x + (element.width ?? 1), element.y],
+        [element.x + (element.width ?? 1), element.y + (element.height ?? 1)],
+        [element.x, element.y + (element.height ?? 1)],
+    ];
+}
+
+function isStrokeWidthApplicable(element) {
+    return Boolean(
+        element &&
+            ["freedraw", "rectangle", "diamond", "ellipse", "line", "arrow"].includes(
+                element.type,
+            ),
+    );
+}
+
 function renderLine(context, element) {
     const rawPoints = element.points ?? [];
     if (rawPoints.length < 2) return;
@@ -238,6 +272,26 @@ function renderLine(context, element) {
         );
     }
     context.stroke();
+    if (element.type === "arrow") {
+        const end = rawPoints.at(-1);
+        const previous = rawPoints.at(-2);
+        const endX = element.x + end[0];
+        const endY = element.y + end[1];
+        const angle = Math.atan2(end[1] - previous[1], end[0] - previous[0]);
+        const size = Math.max(12, (element.strokeWidth ?? 2) * 4);
+        context.beginPath();
+        context.moveTo(endX, endY);
+        context.lineTo(
+            endX - size * Math.cos(angle - Math.PI / 6),
+            endY - size * Math.sin(angle - Math.PI / 6),
+        );
+        context.moveTo(endX, endY);
+        context.lineTo(
+            endX - size * Math.cos(angle + Math.PI / 6),
+            endY - size * Math.sin(angle + Math.PI / 6),
+        );
+        context.stroke();
+    }
     context.restore();
 }
 
@@ -281,9 +335,11 @@ export function createWhiteboardCanvas(canvasElement) {
     let activeTool = "pen";
     let imageUploadMaxBytes = 1048576;
     let selectedElementId = null;
+    let activeAnchorIndex = null;
     let dragStartPoint = null;
     let originalElement = null;
     let changeCallback = null;
+    let selectionCallback = null;
     let pendingRender = false;
 
     function scheduleRender() {
@@ -296,7 +352,9 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function redraw() {
-        context.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        const style = getComputedStyle(canvasElement);
+        context.fillStyle = style.getPropertyValue("--wb-canvas-bg").trim() || "#ffffff";
+        context.fillRect(0, 0, canvasElement.width, canvasElement.height);
         for (const element of elements) {
             renderElement(context, element);
             if (element.id === selectedElementId) {
@@ -310,6 +368,9 @@ export function createWhiteboardCanvas(canvasElement) {
                     (element.height ?? 1) + 8,
                 );
                 context.restore();
+                for (const [anchorX, anchorY] of getElementAnchorPoints(element)) {
+                    drawAnchor(context, anchorX, anchorY);
+                }
             }
         }
         if (isDrawing && currentPoints.length >= 2 && activeTool === "pen") {
@@ -349,6 +410,22 @@ export function createWhiteboardCanvas(canvasElement) {
     function getCanvasPoint(event) {
         const rect = canvasElement.getBoundingClientRect();
         return [event.clientX - rect.left, event.clientY - rect.top];
+    }
+
+    function findAnchorAt(element, x, y) {
+        if (!element) return -1;
+        return getElementAnchorPoints(element).findIndex(
+            ([anchorX, anchorY]) => Math.hypot(anchorX - x, anchorY - y) <= 10,
+        );
+    }
+
+    function selectedElement() {
+        return elements.find((element) => element.id === selectedElementId) ?? null;
+    }
+
+    function notifySelection() {
+        const element = selectedElement();
+        selectionCallback?.(element ? { ...element, strokeWidthApplicable: isStrokeWidthApplicable(element) } : null);
     }
 
     function findElementAt(x, y) {
@@ -396,9 +473,12 @@ export function createWhiteboardCanvas(canvasElement) {
         const [x, y] = getCanvasPoint(event);
         dragStartPoint = [x, y];
         if (activeTool === "select") {
-            const selected = findElementAt(x, y);
-            selectedElementId = selected?.id ?? null;
-            originalElement = selected ? { ...selected } : null;
+            const selected = selectedElement();
+            activeAnchorIndex = findAnchorAt(selected, x, y);
+            const target = activeAnchorIndex >= 0 ? selected : findElementAt(x, y);
+            selectedElementId = target?.id ?? null;
+            originalElement = target ? { ...target, points: target.points?.map((point) => [...point]) } : null;
+            notifySelection();
             scheduleRender();
             return;
         }
@@ -429,17 +509,50 @@ export function createWhiteboardCanvas(canvasElement) {
         ) {
             const dx = x - dragStartPoint[0];
             const dy = y - dragStartPoint[1];
-            elements = elements.map((element) =>
-                element.id === selectedElementId
-                    ? {
-                          ...element,
-                          x: originalElement.x + dx,
-                          y: originalElement.y + dy,
-                          version: (originalElement.version ?? 1) + 1,
-                          versionNonce: randomNonce(),
-                      }
-                    : element,
-            );
+            elements = elements.map((element) => {
+                if (element.id !== selectedElementId) return element;
+                if (activeAnchorIndex >= 0) {
+                    if (element.type === "line" || element.type === "arrow") {
+                        const points = (originalElement.points ?? []).map((point) => [...point]);
+                        points[activeAnchorIndex] = [
+                            (points[activeAnchorIndex]?.[0] ?? 0) + dx,
+                            (points[activeAnchorIndex]?.[1] ?? 0) + dy,
+                        ];
+                        const absolutePoints = points.map(([px, py]) => [
+                            originalElement.x + px,
+                            originalElement.y + py,
+                        ]);
+                        const minX = Math.min(...absolutePoints.map(([px]) => px));
+                        const minY = Math.min(...absolutePoints.map(([, py]) => py));
+                        const maxX = Math.max(...absolutePoints.map(([px]) => px));
+                        const maxY = Math.max(...absolutePoints.map(([, py]) => py));
+                        return {
+                            ...element,
+                            x: minX,
+                            y: minY,
+                            width: Math.max(1, maxX - minX),
+                            height: Math.max(1, maxY - minY),
+                            points: absolutePoints.map(([px, py]) => [px - minX, py - minY]),
+                            version: (originalElement.version ?? 1) + 1,
+                            versionNonce: randomNonce(),
+                        };
+                    }
+                    const leftAnchors = new Set([0, 3]);
+                    const topAnchors = new Set([0, 1]);
+                    const nextX = leftAnchors.has(activeAnchorIndex) ? originalElement.x + dx : originalElement.x;
+                    const nextY = topAnchors.has(activeAnchorIndex) ? originalElement.y + dy : originalElement.y;
+                    const nextRight = leftAnchors.has(activeAnchorIndex) ? originalElement.x + originalElement.width : originalElement.x + originalElement.width + dx;
+                    const nextBottom = topAnchors.has(activeAnchorIndex) ? originalElement.y + originalElement.height : originalElement.y + originalElement.height + dy;
+                    return { ...element, x: Math.min(nextX, nextRight), y: Math.min(nextY, nextBottom), width: Math.max(1, Math.abs(nextRight - nextX)), height: Math.max(1, Math.abs(nextBottom - nextY)), version: (originalElement.version ?? 1) + 1, versionNonce: randomNonce() };
+                }
+                return {
+                    ...element,
+                    x: originalElement.x + dx,
+                    y: originalElement.y + dy,
+                    version: (originalElement.version ?? 1) + 1,
+                    versionNonce: randomNonce(),
+                };
+            });
             scheduleRender();
             return;
         }
@@ -484,6 +597,7 @@ export function createWhiteboardCanvas(canvasElement) {
         currentPoints = [];
         dragStartPoint = null;
         originalElement = null;
+        activeAnchorIndex = null;
         scheduleRender();
     }
 
@@ -527,9 +641,17 @@ export function createWhiteboardCanvas(canvasElement) {
         },
         setStrokeColor(color) {
             strokeColor = color;
+            if (selectedElementId) {
+                commitElements(elements.map((element) => element.id === selectedElementId ? { ...element, strokeColor: color, version: (element.version ?? 1) + 1, versionNonce: randomNonce() } : element));
+                notifySelection();
+            }
         },
         setStrokeWidth(width) {
             strokeWidth = Number(width);
+            if (selectedElementId && isStrokeWidthApplicable(selectedElement())) {
+                commitElements(elements.map((element) => element.id === selectedElementId ? { ...element, strokeWidth, version: (element.version ?? 1) + 1, versionNonce: randomNonce() } : element));
+                notifySelection();
+            }
         },
         setImageUploadMaxBytes(maxBytes) {
             imageUploadMaxBytes = Number(maxBytes);
@@ -563,13 +685,21 @@ export function createWhiteboardCanvas(canvasElement) {
                 }
             }
             elements = [...localById.values()];
+            if (selectedElementId && !selectedElement()) selectedElementId = null;
+            notifySelection();
             scheduleRender();
         },
         clearAll() {
             elements = [];
             currentPoints = [];
             scheduleRender();
+            selectedElementId = null;
+            notifySelection();
             changeCallback?.([]);
+        },
+        onSelectionChange(callback) {
+            selectionCallback = callback;
+            notifySelection();
         },
         onChange(callback) {
             changeCallback = callback;

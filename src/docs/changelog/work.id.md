@@ -1,9 +1,5 @@
-# Papan tulis
+# Kontrol kanvas papan tulis
 
-## Modul Nextcloud Whiteboard
+## Alat gambar papan tulis ditingkatkan
 
-Menambahkan modul mandiri untuk mengonfigurasi dan membuka sesi kolaborasi Nextcloud Whiteboard dengan kontrol akses yang dikelola oleh Cognis.
-
-## Popup pengaturan administrasi
-
-Memperbaiki tombol pengaturan modul di administrasi agar membuka popup konfigurasi lokal untuk URL Nextcloud dan kunci API.
+Kanvas papan tulis kini memiliki kontras yang lebih baik di mode terang dan gelap, tombol pilih/riwayat/teks/baru yang lebih jelas, kepala panah, titik jangkar pilihan, pegangan ubah ukuran, pembaruan warna dan ketebalan untuk item terpilih, serta konfirmasi sebelum mengosongkan papan.
