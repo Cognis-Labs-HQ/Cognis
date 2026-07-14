@@ -72,6 +72,27 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">Pfeil</string>
   <string name="module.nextcloud_whiteboard.tool_line">Linie</string>
   <string name="module.nextcloud_whiteboard.tool_text">Text</string>
+  <string name="module.nextcloud_whiteboard.undo">Rückgängig</string>
+  <string name="module.nextcloud_whiteboard.redo">Wiederholen</string>
+  <string name="module.nextcloud_whiteboard.share_button">Teilen</string>
+  <string name="module.nextcloud_whiteboard.share_popup_title">Whiteboard teilen</string>
+  <string name="module.nextcloud_whiteboard.share_empty">Noch keine Freigabelinks.</string>
+  <string name="module.nextcloud_whiteboard.share_untitled">Unbenannter Link</string>
+  <string name="module.nextcloud_whiteboard.share_copy_link">Link kopieren</string>
+  <string name="module.nextcloud_whiteboard.share_revoke">Widerrufen</string>
+  <string name="module.nextcloud_whiteboard.share_options_label">Teilen:</string>
+  <string name="module.nextcloud_whiteboard.share_label">Bezeichnung</string>
+  <string name="module.nextcloud_whiteboard.share_label_placeholder">Teamprüfung</string>
+  <string name="module.nextcloud_whiteboard.share_expiry_label">Läuft ab in (Stunden)</string>
+  <string name="module.nextcloud_whiteboard.share_status_active">Aktiv</string>
+  <string name="module.nextcloud_whiteboard.share_status_expired">Abgelaufen</string>
+  <string name="module.nextcloud_whiteboard.share_expires_at_label">Läuft ab</string>
+  <string name="module.nextcloud_whiteboard.share_expired_at_label">Abgelaufen</string>
+  <string name="module.nextcloud_whiteboard.share_generate_link">Link erzeugen</string>
+  <string name="module.nextcloud_whiteboard.share_create_failed">Freigabelink konnte nicht erstellt werden.</string>
+  <string name="module.nextcloud_whiteboard.share_copy_success">Freigabelink kopiert.</string>
+  <string name="module.nextcloud_whiteboard.share_copy_failed">Freigabelink konnte nicht kopiert werden.</string>
+  <string name="module.nextcloud_whiteboard.share_delete_failed">Freigabelink konnte nicht widerrufen werden.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Dadurch werden alle Elemente auf dem aktuellen Whiteboard dauerhaft gelöscht. Fortfahren?</string>
 </resources>
 

@@ -1,9 +1,9 @@
-# Whiteboard Refresh
+# Whiteboard Sharing
 
-## Direct page refreshes finish loading
+## Share links for whiteboards
 
-The whiteboard page now uses the shared direct-mount helper, so refreshing a whiteboard URL clears the loading state the same way SPA navigation does.
+Whiteboards can now create Share gateway links so invited guests can open the current board and contribute with scoped guest access.
 
-## Drawing previews render correctly
+## Canvas editing controls
 
-Pen previews now use the extracted element renderer, preventing runtime errors after the whiteboard element rendering helpers moved into their own module.
+The whiteboard page now disables page layout editing, adds per-user undo and redo controls, and expands the canvas when content moves beyond the visible bounds.

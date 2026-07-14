@@ -35,6 +35,9 @@ export function createWhiteboardCanvas(canvasElement) {
     let selectionCallback = null;
     let toolCallback = null;
     let pendingRender = false;
+    let historyPast = [];
+    let historyFuture = [];
+    let historySnapshot = null;
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -128,12 +131,52 @@ export function createWhiteboardCanvas(canvasElement) {
         }
     }
 
+    function cloneElements(items = elements) {
+        return items.map((element) => ({
+            ...element,
+            points: element.points?.map((point) => [...point]),
+        }));
+    }
+
     function resizeCanvas() {
-        const rect = canvasElement.parentElement?.getBoundingClientRect();
-        if (!rect) return;
-        canvasElement.width = rect.width;
-        canvasElement.height = rect.height;
+        updateCanvasOverflow();
         scheduleRender();
+    }
+
+    function updateCanvasOverflow() {
+        const parent = canvasElement.parentElement;
+        const rect = parent?.getBoundingClientRect();
+        if (!rect) return;
+        const padding = 160;
+        const bounds = elements.map(getElementBounds);
+        const maxX = Math.max(
+            rect.width,
+            ...bounds.map((item) => item.x + item.width + padding),
+        );
+        const maxY = Math.max(
+            rect.height,
+            ...bounds.map((item) => item.y + item.height + padding),
+        );
+        const minX = Math.min(0, ...bounds.map((item) => item.x - padding));
+        const minY = Math.min(0, ...bounds.map((item) => item.y - padding));
+        if (minX < 0 || minY < 0) {
+            const dx = Math.abs(minX);
+            const dy = Math.abs(minY);
+            elements = elements.map((element) =>
+                bumpElementVersion(element, {
+                    x: element.x + dx,
+                    y: element.y + dy,
+                }),
+            );
+            parent.scrollLeft += dx;
+            parent.scrollTop += dy;
+        }
+        const width = Math.ceil(maxX + Math.abs(minX));
+        const height = Math.ceil(maxY + Math.abs(minY));
+        if (canvasElement.width !== width) canvasElement.width = width;
+        if (canvasElement.height !== height) canvasElement.height = height;
+        canvasElement.style.width = `${width}px`;
+        canvasElement.style.height = `${height}px`;
     }
 
     function getCanvasPoint(event) {
@@ -189,10 +232,40 @@ export function createWhiteboardCanvas(canvasElement) {
             );
     }
 
-    function commitElements(nextElements) {
+    function commitElements(nextElements, { record = true } = {}) {
+        if (record) {
+            historyPast.push(cloneElements());
+            historyPast = historyPast.slice(-100);
+            historyFuture = [];
+        }
         elements = nextElements;
+        updateCanvasOverflow();
         scheduleRender();
         changeCallback?.([...elements]);
+    }
+
+    function restoreElements(snapshot) {
+        elements = cloneElements(snapshot);
+        updateCanvasOverflow();
+        scheduleRender();
+        changeCallback?.([...elements]);
+        notifySelection();
+    }
+
+    function undo() {
+        const previous = historyPast.pop();
+        if (!previous) return false;
+        historyFuture.push(cloneElements());
+        restoreElements(previous);
+        return true;
+    }
+
+    function redo() {
+        const next = historyFuture.pop();
+        if (!next) return false;
+        historyPast.push(cloneElements());
+        restoreElements(next);
+        return true;
     }
 
     function scaleElementToBounds(element, nextBounds) {
@@ -327,6 +400,7 @@ export function createWhiteboardCanvas(canvasElement) {
         isDrawing = true;
         const [x, y] = getCanvasPoint(event);
         dragStartPoint = [x, y];
+        historySnapshot = cloneElements();
         if (activeTool === "select") {
             const selected = selectedElement();
             activeAnchorIndex = findAnchorAt(selected, x, y);
@@ -517,7 +591,13 @@ export function createWhiteboardCanvas(canvasElement) {
         if (!isDrawing) return;
         isDrawing = false;
         if (activeTool === "select") {
-            if (selectDragMode) changeCallback?.([...elements]);
+            if (selectDragMode) {
+                historyPast.push(historySnapshot ?? cloneElements());
+                historyPast = historyPast.slice(-100);
+                historyFuture = [];
+                updateCanvasOverflow();
+                changeCallback?.([...elements]);
+            }
         } else if (activeTool === "eraser") {
             if (eraserSelectionIds.size > 0) {
                 commitElements(
@@ -558,6 +638,7 @@ export function createWhiteboardCanvas(canvasElement) {
         originalElement = null;
         originalSelection = new Map();
         activeAnchorIndex = null;
+        historySnapshot = null;
         eraserSelectionIds = new Set();
         dragSelectBox = null;
         selectDragMode = null;
@@ -684,6 +765,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 }
             }
             elements = [...localById.values()];
+            updateCanvasOverflow();
             const currentIds = new Set(elements.map((element) => element.id));
             selectedElementIds = new Set(
                 [...selectedElementIds].filter((id) => currentIds.has(id)),
@@ -694,6 +776,11 @@ export function createWhiteboardCanvas(canvasElement) {
             scheduleRender();
         },
         clearAll() {
+            if (elements.length > 0) {
+                historyPast.push(cloneElements());
+                historyPast = historyPast.slice(-100);
+                historyFuture = [];
+            }
             elements = [];
             currentPoints = [];
             eraserSelectionIds = new Set();
@@ -714,6 +801,8 @@ export function createWhiteboardCanvas(canvasElement) {
         onChange(callback) {
             changeCallback = callback;
         },
+        undo,
+        redo,
         destroy() {
             resizeObserver.disconnect();
             themeObserver.disconnect();

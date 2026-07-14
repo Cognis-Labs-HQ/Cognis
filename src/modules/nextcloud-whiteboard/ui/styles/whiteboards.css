@@ -297,6 +297,7 @@
 .wb-canvas-stage {
     --wb-canvas-bg: var(--surface, #ffffff);
     --wb-auto-stroke: var(--text, #111827);
+    overflow: auto;
 }
 
 .wb-board-title {

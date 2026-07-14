@@ -1,9 +1,9 @@
-# Pembaruan Whiteboard
+# Berbagi Whiteboard
 
-## Refresh halaman langsung selesai dimuat
+## Tautan berbagi untuk whiteboard
 
-Halaman whiteboard kini memakai pembantu direct-mount bersama, sehingga refresh URL whiteboard menghapus status pemuatan seperti navigasi SPA.
+Whiteboard kini dapat membuat tautan melalui Share gateway sehingga tamu yang diundang dapat membuka board saat ini dan berkontribusi dengan akses tamu terbatas.
 
-## Pratinjau gambar dirender benar
+## Kontrol pengeditan kanvas
 
-Pratinjau pena kini memakai renderer elemen yang diekstrak, mencegah galat runtime setelah pembantu render elemen whiteboard dipindahkan ke modul sendiri.
+Halaman whiteboard kini menonaktifkan pengeditan tata letak halaman, menambahkan tombol urungkan dan ulangi per pengguna, serta memperluas kanvas saat konten dipindahkan melewati batas terlihat.
