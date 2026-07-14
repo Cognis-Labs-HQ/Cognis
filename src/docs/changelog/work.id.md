@@ -1,9 +1,9 @@
-# Keandalan Sesi Whiteboard
+# Perbaikan Berbagi Whiteboard
 
-## Pemuatan sesi diperbaiki
+## Adapter berbagi dimuat
 
-Halaman whiteboard kini memuat sesi dengan benar meskipun kapabilitas Share gateway tidak tersedia saat pendaftaran rute.
+Tombol berbagi whiteboard kini mengimpor adapternya dari root modul statis sehingga popup dapat terbuka tanpa 404.
 
 ## Cakupan regresi
 
-Pengujian rute API terarah memastikan endpoint sesi tetap mengembalikan token ruang yang dapat digunakan untuk pengguna biasa tanpa kapabilitas berbagi.
+Pengujian sumber UI kini memastikan impor adapter berbagi memakai path statis yang disajikan, bukan subdirektori app yang tidak ada.

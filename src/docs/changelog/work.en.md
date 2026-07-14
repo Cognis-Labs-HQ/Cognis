@@ -1,9 +1,9 @@
-# Whiteboard Session Reliability
+# Whiteboard Sharing Fix
 
-## Session loading fixed
+## Share adapter loading fixed
 
-Whiteboard pages now load sessions correctly even when Share gateway capabilities are unavailable during route registration.
+The whiteboard share button now imports its adapter from the static module root so the popup can open without a 404.
 
 ## Regression coverage
 
-A targeted API route test verifies the session endpoint continues to return a usable room token for regular users without share capabilities.
+A UI source test now verifies the share adapter import uses the served static path instead of a non-existent app subdirectory.

@@ -1,9 +1,9 @@
-# Whiteboard-Sitzungen
+# Whiteboard-Freigabe-Fix
 
-## Sitzungsstart korrigiert
+## Share-Adapter lädt wieder
 
-Whiteboard-Seiten laden Sitzungen jetzt korrekt, auch wenn Share-Gateway-Funktionen bei der Routenregistrierung nicht verfügbar sind.
+Die Whiteboard-Freigabeschaltfläche importiert ihren Adapter jetzt aus dem statischen Modulstamm, sodass das Popup ohne 404 geöffnet werden kann.
 
 ## Regressionsabdeckung
 
-Ein gezielter API-Routentest prüft, dass der Sitzungsendpunkt für normale Benutzer weiterhin ein nutzbares Raum-Token ohne Share-Funktionen zurückgibt.
+Ein UI-Quelltest prüft jetzt, dass der Share-Adapter den bereitgestellten statischen Pfad statt eines nicht vorhandenen app-Unterordners verwendet.
