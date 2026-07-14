@@ -262,3 +262,12 @@ test("page composer preserves missing placements and shows warning placeholders"
         /state\.layout\.hidden = state\.layout\.hidden\.filter\(\s*\(id\) => id && typeof id === "string",\s*\)/m,
     );
 });
+
+test("page composer supports full width and height grid tokens", () => {
+    const source = readPageComposerBundle();
+
+    assert.match(source, /fullWidth = maxVal\[0\] === "full";/);
+    assert.match(source, /fullHeight = maxVal\[1\] === "full";/);
+    assert.match(source, /gridSize\?\.fullHeight \? state\.gridRows : orig\.h/);
+    assert.match(source, /gridSize\.fullHeight && p\.h !== state\.gridRows/);
+});

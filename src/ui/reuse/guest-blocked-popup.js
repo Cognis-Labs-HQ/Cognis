@@ -82,12 +82,12 @@ export async function openGuestBlockedPopup({
                 {
                     id: "login",
                     label: i18n.t("ui.reuse.login"),
-                    variant: "cancel",
+                    variant: "neutral",
                 },
                 {
                     id: "register",
                     label: i18n.t("ui.reuse.register"),
-                    variant: "confirm",
+                    variant: "neutral",
                 },
             ],
         });

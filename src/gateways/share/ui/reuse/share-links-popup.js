@@ -195,13 +195,13 @@ function renderRows(labels, links) {
               <div class="share-links-row-main">
                 <div class="share-links-row-header">
                   <p class="share-links-row-label">${escapeHtml(shareLabel)}</p>
-                  <a
+                  <button
+                    type="button"
                     class="share-links-row-copy"
-                    href="${escapeHtml(shareUrl)}"
                     data-share-copy="${escapeHtml(shareUrl)}"
                     title="${escapeHtml(shareUrl)}"
                     aria-label="${escapeHtml(labels.copyLink)}: ${escapeHtml(shareUrl)}"
-                  >🔗</a>
+                  >🔗</button>
                 </div>
                 ${renderShareStatus(link, labels)}
               </div>

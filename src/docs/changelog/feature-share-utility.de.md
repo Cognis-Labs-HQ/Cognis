@@ -150,3 +150,7 @@ Das Teilnehmersuche-/Aktive-Meetings-Panel der Jitsi-Meet-Seite wurde bisher imm
 ## Share-Link-Liste zeigt jetzt den Ablauf nach einem Meeting-Neustart korrekt an
 
 Das Share-Links-Popup zeigte Links aus einer früheren Meeting-Instanz weiterhin als „Aktiv" an, obwohl Gäste, die sie verwendeten, von der Zugriffsprüfung bereits als abgelaufen abgewiesen wurden, da der Listen-Endpunkt nur die Ablaufzeit jedes Tokens betrachtete und die gespeicherte Meeting-Instanz-ID nie mit der aktuellen Instanz des Meetings verglich. Das Share-Gateway stellt jetzt die gespeicherten Metadaten jedes Tokens bereit, und die Meeting-Share-Liste kennzeichnet jeden Link, dessen gespeicherte Instanz-ID nicht mehr mit der aktuellen Instanz des Meetings übereinstimmt, als „Abgelaufen", sodass Hosts und Teilnehmer den korrekten Status sehen statt eines lebendig wirkenden toten Links.
+
+## Share-Seitenaktionen verfeinert
+
+Share-Link-Zeilen kopieren ihre URL jetzt über einen ausdrücklichen Button, statt sich wie Navigationslinks zu verhalten. Die Aktionen im Popup für eingeschränkten Zugriff verwenden neutrale Button-Stile, und eingebettete Share-Seiten können eine Page-Composer-Platzierung mit voller Breite und voller Höhe anfordern. Abgelaufene oder nicht verfügbare Share-Links zeigen ihren Status nun außerdem in der Seitenbeschreibung, statt den generischen Untertitel für geteilte Inhalte zu wiederholen.

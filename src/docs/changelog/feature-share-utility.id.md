@@ -150,3 +150,7 @@ Panel pencarian peserta / rapat aktif pada halaman Jitsi Meet sebelumnya selalu 
 ## Daftar Tautan Berbagi Kini Mencerminkan Kedaluwarsa Setelah Rapat Dimulai Ulang
 
 Popup tautan berbagi menampilkan tautan dari instans rapat sebelumnya sebagai "Aktif" meskipun tamu yang menggunakannya sudah ditolak sebagai kedaluwarsa oleh pemeriksaan akses, karena titik akhir daftar hanya melihat waktu kedaluwarsa setiap token dan tidak pernah membandingkan ID instans rapat yang tersimpan dengan instans rapat saat ini. Gateway berbagi kini menampilkan metadata tersimpan setiap token, dan daftar berbagi rapat kini menandai tautan mana pun yang ID instansnya tidak lagi cocok dengan instans rapat saat ini sebagai "Kedaluwarsa", sehingga host dan peserta melihat status yang akurat alih-alih tautan mati yang tampak aktif.
+
+## Poles Aksi Halaman Share
+
+Baris tautan share kini menyalin URL melalui tombol eksplisit, bukan berperilaku seperti tautan navigasi. Aksi pada popup akses terbatas memakai gaya tombol netral, dan halaman share yang dimuat dapat meminta penempatan page composer dengan lebar dan tinggi penuh. Tautan share yang kedaluwarsa atau tidak tersedia kini juga menampilkan statusnya di deskripsi halaman, bukan mengulang subtitle konten bersama yang generik.

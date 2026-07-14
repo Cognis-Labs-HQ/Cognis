@@ -22,16 +22,23 @@ function renderFallbackBody(i18n, messageKey) {
     `;
 }
 
+function updatePageDescriptor(root, i18n, subtitleKey) {
+    const context = root.querySelector(".page-context");
+    const subtitle = context?.querySelector("p");
+    if (subtitle instanceof HTMLElement) {
+        subtitle.textContent = i18n.t(subtitleKey);
+    }
+}
+
 /**
  * Builds the composer element for the share page.
  *
  * Grid sizing differs by state: a mounted full-page app (e.g. the real
  * Jitsi Meet meetings page) must occupy the entire content grid so it
  * renders with all of its own boilerplate layout classes intact, which
- * requires the scalar `max: "full"` token (an array like `["full","full"]`
- * is not recognized by the composer and silently falls back to the small
- * default card size). The loading/expired/deleted fallback state is just a
- * small message card, so it keeps a fixed numeric max instead.
+ * uses the special `["full", "full"]` width/height tokens supported by
+ * the composer. The loading/expired/deleted fallback state is just a small
+ * message card, so it keeps a fixed numeric max instead.
  */
 function buildShareElement(state) {
     return {
@@ -42,7 +49,7 @@ function buildShareElement(state) {
             ? {
                   default: [12, 10],
                   min: [8, 6],
-                  max: "full",
+                  max: ["full", "full"],
               }
             : {
                   default: [12, 6],
@@ -136,6 +143,7 @@ export async function mount(root, { signal } = {}) {
         // directly instead of the generic missing/malformed messages below.
         state.loading = false;
         state.errorKey = "share.error.expired";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
     }
@@ -146,6 +154,7 @@ export async function mount(root, { signal } = {}) {
             shareContext === null
                 ? "share.error.missing_token"
                 : "share.error.malformed_response";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
     }
@@ -153,6 +162,7 @@ export async function mount(root, { signal } = {}) {
     if (!session?.authenticated) {
         state.loading = false;
         state.errorKey = "share.error.expired";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
     }
@@ -192,6 +202,7 @@ export async function mount(root, { signal } = {}) {
         if (!mountSharedPage) {
             state.loading = false;
             state.errorKey = "share.error.renderer_missing";
+            updatePageDescriptor(root, state.i18n, state.errorKey);
             composer.refresh([buildShareElement(state)]);
             return;
         }
@@ -222,6 +233,7 @@ export async function mount(root, { signal } = {}) {
     if (!renderer) {
         state.loading = false;
         state.errorKey = "share.error.renderer_missing";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
     }

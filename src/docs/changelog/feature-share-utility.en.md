@@ -155,3 +155,7 @@ The Jitsi Meet page's participant search / active-meetings panel was always incl
 ## Share Links List Now Reflects a Restarted Meeting's Expiry
 
 The share links popup listed links from a prior meeting instance as "Active" even though guests using them were already rejected as expired by the access check, because the list endpoint only looked at each token's expiry time and never compared its recorded meeting-instance id against the meeting's current one. The share gateway now exposes each token's stored metadata, and the meeting share list remaps any link whose recorded instance id no longer matches the meeting's current instance to "Expired", so hosts and participants see accurate status instead of a live-looking dead link.
+
+## Polish Share Page Actions
+
+Share link rows now copy their URL from an explicit button instead of behaving like navigation links, restricted-access popup actions use neutral button styling, and mounted shared pages can request full-width/full-height composer placement. Expired or unavailable share links now also show their status in the page descriptor instead of repeating the generic shared-content subtitle.
