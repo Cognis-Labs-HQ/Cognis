@@ -67,7 +67,7 @@ export function createComposerRenderer({
             } else {
                 w = Math.min(orig.w, maxCols);
             }
-            const h = gridSize?.fullHeight ? state.gridRows : orig.h;
+            const h = orig.h;
             let placed = false;
             for (let row = 0; !placed; row += cStep) {
                 for (
@@ -78,7 +78,7 @@ export function createComposerRenderer({
                     const cells = buildOccupiedSet(packed, [], null);
                     const fits = checkPlacement(cells, col, row, w, h);
                     if (fits) {
-                        packed.push({ ...orig, col, row, w, h });
+                        packed.push({ ...orig, col, row, w });
                         placed = true;
                         break;
                     }
@@ -495,7 +495,6 @@ export function createComposerRenderer({
             if (!element) return false;
             const gridSize = getGridSize(element);
             if (gridSize.fullWidth && p.w !== state.gridCols) return true;
-            if (gridSize.fullHeight && p.h !== state.gridRows) return true;
             if (gridSize.halfWidth) {
                 const target = Math.min(
                     state.gridCols,
@@ -529,7 +528,6 @@ export function createComposerRenderer({
             if (!element) return false;
             const gridSize = getGridSize(element);
             if (gridSize.fullWidth && pl.w !== subState.gridCols) return true;
-            if (gridSize.fullHeight && pl.h !== subState.gridRows) return true;
             if (gridSize.halfWidth) {
                 const target = Math.min(
                     subState.gridCols,

@@ -31,7 +31,7 @@ export function createSubComposerPanelHandlers({
                     : gridSize.halfWidth
                       ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
                       : Math.min(gridSize.default[0], state.gridCols);
-            const h = gridSize.fullHeight || gridSize.fillHeight
+            const h = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
                   ? Math.max(gridSize.min[1], halfGrid(state.gridRows))

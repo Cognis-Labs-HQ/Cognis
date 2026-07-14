@@ -14,7 +14,7 @@
  *     onRender?: () => void,
  *     onUnmount?: () => void,
  *     pinned?: boolean,
- *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['full'|'half'|'fill'|number, 'full'|'half'|'fill'|number] },
+ *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
  *   preferenceKey: string,
  *   i18n: object,
@@ -229,7 +229,6 @@ export function createPageComposer(
                 fullWidth: true,
                 fillWidth: false,
                 halfWidth: false,
-                fullHeight: false,
                 halfHeight: false,
                 fillHeight: false,
             };
@@ -243,7 +242,6 @@ export function createPageComposer(
                 fullWidth: false,
                 fillWidth: true,
                 halfWidth: false,
-                fullHeight: false,
                 halfHeight: false,
                 fillHeight: false,
             };
@@ -257,35 +255,26 @@ export function createPageComposer(
                 fullWidth: false,
                 fillWidth: false,
                 halfWidth: true,
-                fullHeight: false,
                 halfHeight: false,
                 fillHeight: false,
             };
         }
 
         let resolvedMax = maxVal ?? null;
-        let fullWidth = false;
         let halfWidth = false;
         let halfHeight = false;
         let fillWidth = false;
-        let fullHeight = false;
         let fillHeight = false;
 
         if (Array.isArray(maxVal)) {
             halfWidth = maxVal[0] === "half";
-            fullWidth = maxVal[0] === "full";
             fillWidth = maxVal[0] === "fill";
             halfHeight = maxVal[1] === "half";
-            fullHeight = maxVal[1] === "full";
             fillHeight = maxVal[1] === "fill";
             const resolvedWidth =
-                halfWidth || fullWidth || fillWidth
-                    ? null
-                    : (maxVal[0] ?? null);
+                halfWidth || fillWidth ? null : (maxVal[0] ?? null);
             const resolvedHeight =
-                halfHeight || fullHeight || fillHeight
-                    ? null
-                    : (maxVal[1] ?? null);
+                halfHeight || fillHeight ? null : (maxVal[1] ?? null);
             resolvedMax =
                 resolvedWidth === null && resolvedHeight === null
                     ? null
@@ -296,10 +285,9 @@ export function createPageComposer(
             default: el.gridSize?.default ?? [4, 3],
             min: el.gridSize?.min ?? [2, 2],
             max: resolvedMax,
-            fullWidth,
+            fullWidth: false,
             fillWidth,
             halfWidth,
-            fullHeight,
             halfHeight,
             fillHeight,
         };

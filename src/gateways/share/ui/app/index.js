@@ -33,29 +33,20 @@ function updatePageDescriptor(root, i18n, subtitleKey) {
 /**
  * Builds the composer element for the share page.
  *
- * Grid sizing differs by state: a mounted full-page app (e.g. the real
- * Jitsi Meet meetings page) must occupy the entire content grid so it
- * renders with all of its own boilerplate layout classes intact, which
- * uses the special `["full", "full"]` width/height tokens supported by
- * the composer. The loading/expired/deleted fallback state is just a small
- * message card, so it keeps a fixed numeric max instead.
+ * The share page owns the whole public share surface, so the element asks
+ * the existing composer sizing contract to fill the available grid space
+ * rather than relying on the smaller default card dimensions.
  */
 function buildShareElement(state) {
     return {
         id: "share-page",
         label: state.i18n.t("share.page_title"),
         pinned: true,
-        gridSize: state.isMountedApp
-            ? {
-                  default: [12, 10],
-                  min: [8, 6],
-                  max: ["full", "full"],
-              }
-            : {
-                  default: [12, 6],
-                  min: [8, 5],
-                  max: [12, 10],
-              },
+        gridSize: {
+            default: [12, 10],
+            min: [8, 5],
+            max: ["fill", "fill"],
+        },
         render: () => {
             if (state.isMountedApp && !state.errorKey) {
                 // A mounted app (e.g. the real Jitsi Meet meetings page)

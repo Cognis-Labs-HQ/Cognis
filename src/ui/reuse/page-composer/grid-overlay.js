@@ -171,11 +171,9 @@ export function createGridOverlayHandlers({
                 : gridSize.halfWidth
                   ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
                   : Math.min(gridSize.default[0], state.gridCols);
-            const baseH = gridSize.fullHeight
-                ? state.gridRows
-                : gridSize.halfHeight
-                  ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
-                  : gridSize.default[1];
+            const baseH = gridSize.halfHeight
+                ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
+                : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row += rStep) {
                 const colLimit = gridSize.fillWidth
@@ -701,7 +699,7 @@ export function createGridOverlayHandlers({
                     : gridSize.halfWidth
                       ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
                       : Math.min(gridSize.default[0], state.gridCols);
-            const h = gridSize.fullHeight || gridSize.fillHeight
+            const h = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
                   ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
