@@ -102,8 +102,4 @@
   <string name="module.jitsi_meet.share.create_failed">Could not create the share link.</string>
   <string name="module.jitsi_meet.share.delete_failed">Could not revoke the share link.</string>
   <string name="module.jitsi_meet.share.no_meeting">Start or join a meeting before sharing it.</string>
-  <string name="module.jitsi_meet.share.host">Host</string>
-  <string name="module.jitsi_meet.share.scheduled_at">Scheduled At</string>
-  <string name="module.jitsi_meet.share.unscheduled">Available Now</string>
-  <string name="module.jitsi_meet.share.join">Join Meeting</string>
 </resources>

@@ -70,6 +70,10 @@
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>
   <string name="ui.reuse.system">システム</string>
+  <string name="ui.reuse.host">主催者</string>
+  <string name="ui.reuse.scheduled_at">予定日時</string>
+  <string name="ui.reuse.available_now">現在利用可能</string>
+  <string name="ui.reuse.join">参加</string>
   <string name="ui.reuse.authentication">認証</string>
   <string name="ui.reuse.adapters">アダプター</string>
   <string name="ui.reuse.configure">設定</string>

@@ -51,7 +51,7 @@ export function createMountUtilities({ root, state }) {
      * (`videoConferenceJoined`), not merely once the embed has been created.
      */
     function syncShareButtonAvailability() {
-        const shareButton = root.querySelector("#jitsi-share-meeting-btn");
+        const shareButton = root.querySelector("#share-resource-btn");
         if (shareButton instanceof HTMLButtonElement) {
             shareButton.disabled = !state.jitsiConferenceJoined;
         }

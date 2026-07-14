@@ -102,8 +102,4 @@
   <string name="module.jitsi_meet.share.create_failed">Der Freigabelink konnte nicht erstellt werden.</string>
   <string name="module.jitsi_meet.share.delete_failed">Der Freigabelink konnte nicht widerrufen werden.</string>
   <string name="module.jitsi_meet.share.no_meeting">Starten oder betreten Sie zuerst ein Meeting, bevor Sie es teilen.</string>
-  <string name="module.jitsi_meet.share.host">Gastgeber</string>
-  <string name="module.jitsi_meet.share.scheduled_at">Geplant für</string>
-  <string name="module.jitsi_meet.share.unscheduled">Jetzt verfügbar</string>
-  <string name="module.jitsi_meet.share.join">Meeting beitreten</string>
 </resources>

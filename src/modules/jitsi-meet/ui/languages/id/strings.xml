@@ -102,8 +102,4 @@
   <string name="module.jitsi_meet.share.create_failed">Tautan bagikan tidak dapat dibuat.</string>
   <string name="module.jitsi_meet.share.delete_failed">Tautan bagikan tidak dapat dicabut.</string>
   <string name="module.jitsi_meet.share.no_meeting">Mulai atau gabung ke rapat sebelum membagikannya.</string>
-  <string name="module.jitsi_meet.share.host">Host</string>
-  <string name="module.jitsi_meet.share.scheduled_at">Dijadwalkan Pada</string>
-  <string name="module.jitsi_meet.share.unscheduled">Tersedia Sekarang</string>
-  <string name="module.jitsi_meet.share.join">Gabung Rapat</string>
 </resources>

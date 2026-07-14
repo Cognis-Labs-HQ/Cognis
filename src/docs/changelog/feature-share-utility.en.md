@@ -21,12 +21,11 @@ This aborted the import and prevented the entire `/meetings` SPA route from load
 `share-links-popup.js` inside the share button click handler, so it is never requested
 until the user is in an authenticated session and deliberately opens the share popup.
 
-## Remove Orphaned Jitsi Meet Files
+## Restore Legacy Jitsi Meet Page Files
 
-The legacy `ui/app/index.js` and `ui/pages/meetings.html` files in the Jitsi Meet module were
-orphaned by a prior refactor and never served to browsers. `index.js` contained a broken
-import (`/static/reuse/page-composer.js` instead of `/static/reuse/page-composer/index.js`),
-which would cause a load failure if the file were ever reached. Both files have been removed.
+The legacy `ui/app/index.js` and `ui/pages/meetings.html` files in the Jitsi Meet module are
+kept in place for compatibility, with the page-composer import corrected to the current
+folder-based entry point.
 
 ## Fix Calendar Invitation Test Date
 

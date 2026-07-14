@@ -21,7 +21,7 @@ export async function bindShareButton({
         return;
     }
     const existingButton = shareButtonSlot.querySelector(
-        "#jitsi-share-meeting-btn",
+        "#share-resource-btn",
     );
     if (existingButton instanceof HTMLButtonElement) {
         // Already mounted from a prior composer render pass — just refresh
@@ -46,7 +46,7 @@ export async function bindShareButton({
     const shareButton = shareButtonModule.mountShareButton({
         container: shareButtonSlot,
         label: i18n.t("module.jitsi_meet.share.button"),
-        id: "jitsi-share-meeting-btn",
+        id: "share-resource-btn",
         signal,
         onClick: async () => {
             if (!state.meeting?.id || !state.jitsiConferenceJoined) {

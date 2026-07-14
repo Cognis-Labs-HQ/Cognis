@@ -21,13 +21,10 @@ Meetings の `app.js` における `share-adapter.js` の静的トップレベ�
 ハンドラー内で遅延動的インポートとして取得されるようになりました。これにより、認証済みの
 セッションでユーザーが意図的に共有ポップアップを開くまでファイルが要求されることはありません。
 
-## Jitsi Meet 孤立ファイルを削除
+## Jitsi Meet レガシーページファイルを復元
 
-Jitsi Meet モジュールの `ui/app/index.js` および `ui/pages/meetings.html` は、
-以前のリファクタリングによって使用されなくなったファイルであり、ブラウザに配信されることは
-ありませんでした。`index.js` には壊れたインポート（`/static/reuse/page-composer/index.js`
-ではなく `/static/reuse/page-composer.js`）が含まれており、アクセスされた場合に読み込みエラーを
-引き起こす可能性がありました。両ファイルを削除しました。
+Jitsi Meet モジュールの `ui/app/index.js` および `ui/pages/meetings.html` は互換性のために
+保持し、page-composer のインポートを現在のフォルダーベースのエントリーポイントに修正しました。
 
 ## 認証チェックによる公開共有リンクのブロックを修正
 

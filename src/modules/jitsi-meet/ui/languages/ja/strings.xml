@@ -102,8 +102,4 @@
   <string name="module.jitsi_meet.share.create_failed">共有リンクを作成できませんでした。</string>
   <string name="module.jitsi_meet.share.delete_failed">共有リンクを無効化できませんでした。</string>
   <string name="module.jitsi_meet.share.no_meeting">共有する前にミーティングを開始するか参加してください。</string>
-  <string name="module.jitsi_meet.share.host">主催者</string>
-  <string name="module.jitsi_meet.share.scheduled_at">予定日時</string>
-  <string name="module.jitsi_meet.share.unscheduled">現在利用可能</string>
-  <string name="module.jitsi_meet.share.join">ミーティングに参加</string>
 </resources>

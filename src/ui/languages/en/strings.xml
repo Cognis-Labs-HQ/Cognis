@@ -70,6 +70,10 @@
   <string name="ui.reuse.save_failed">Save Failed</string>
   <string name="ui.reuse.more_information">More information</string>
   <string name="ui.reuse.system">System</string>
+  <string name="ui.reuse.host">Host</string>
+  <string name="ui.reuse.scheduled_at">Scheduled At</string>
+  <string name="ui.reuse.available_now">Available Now</string>
+  <string name="ui.reuse.join">Join</string>
   <string name="ui.reuse.authentication">Authentication</string>
   <string name="ui.reuse.adapters">Adapters</string>
   <string name="ui.reuse.configure">Configure</string>

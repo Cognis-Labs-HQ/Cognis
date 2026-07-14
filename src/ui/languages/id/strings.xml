@@ -70,6 +70,10 @@
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
   <string name="ui.reuse.system">Sistem</string>
+  <string name="ui.reuse.host">Host</string>
+  <string name="ui.reuse.scheduled_at">Dijadwalkan Pada</string>
+  <string name="ui.reuse.available_now">Tersedia Sekarang</string>
+  <string name="ui.reuse.join">Gabung</string>
   <string name="ui.reuse.authentication">Autentikasi</string>
   <string name="ui.reuse.adapters">Adaptor</string>
   <string name="ui.reuse.configure">Konfigurasikan</string>

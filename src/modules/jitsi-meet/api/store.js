@@ -9,7 +9,7 @@ import {
     normalizeHandleKeys,
 } from "../../../api/reuse/normalize-handle.js";
 import { normalizeMeetingPrefix } from "./meeting-values.js";
-import { readTimestampValue } from "../../../api/reuse/timestamp.js";
+import { readDbTimestampValue } from "../../../gateways/db/reuse/timestamp.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 // Background/unfocused browser tabs are throttled by the browser and can
@@ -190,7 +190,7 @@ export class JitsiMeetStore {
             meetingPrefix: row?.meeting_prefix
                 ? String(row.meeting_prefix)
                 : "",
-            updatedAt: readTimestampValue(row?.updated_at),
+            updatedAt: readDbTimestampValue(row?.updated_at),
         };
     }
 
@@ -266,8 +266,8 @@ export class JitsiMeetStore {
             chatRoomId: row.chat_room_id ? String(row.chat_room_id) : null,
             classroomId: row.classroom_id ? String(row.classroom_id) : null,
             createdBy: row.created_by ? String(row.created_by) : "",
-            createdAt: readTimestampValue(row.created_at),
-            updatedAt: readTimestampValue(row.updated_at),
+            createdAt: readDbTimestampValue(row.created_at),
+            updatedAt: readDbTimestampValue(row.updated_at),
         };
     }
 
@@ -441,7 +441,7 @@ export class JitsiMeetStore {
                 set: {
                     instance_id: instanceId,
                     updated_at: row.updated_at
-                        ? readTimestampValue(row.updated_at)
+                        ? readDbTimestampValue(row.updated_at)
                         : new Date().toISOString(),
                 },
                 where: [{ column: "meeting_id", value: meetingId }],
@@ -453,16 +453,16 @@ export class JitsiMeetStore {
             firstJoinedBy: row.first_joined_by
                 ? String(row.first_joined_by)
                 : null,
-            firstJoinedAt: readTimestampValue(row.first_joined_at),
+            firstJoinedAt: readDbTimestampValue(row.first_joined_at),
             authRequired: Number(row.auth_required ?? 0) === 1,
             authStartedBy: row.auth_started_by
                 ? String(row.auth_started_by)
                 : null,
-            authStartedAt: readTimestampValue(row.auth_started_at),
-            authCompletedAt: readTimestampValue(row.auth_completed_at),
-            updatedAt: readTimestampValue(row.updated_at),
+            authStartedAt: readDbTimestampValue(row.auth_started_at),
+            authCompletedAt: readDbTimestampValue(row.auth_completed_at),
+            updatedAt: readDbTimestampValue(row.updated_at),
             endedBy: row.ended_by ? String(row.ended_by) : null,
-            endedAt: readTimestampValue(row.ended_at),
+            endedAt: readDbTimestampValue(row.ended_at),
         };
     }
 
@@ -561,7 +561,7 @@ export class JitsiMeetStore {
             username: String(row.username),
             sessionId: String(row.session_id),
             active: Number(row.active ?? 0) === 1,
-            lastSeenAt: readTimestampValue(row.last_seen_at),
+            lastSeenAt: readDbTimestampValue(row.last_seen_at),
         }));
     }
 
@@ -609,8 +609,8 @@ export class JitsiMeetStore {
                         ? String(row.classroom_id)
                         : null,
                     createdBy: String(row.created_by),
-                    createdAt: readTimestampValue(row.created_at),
-                    updatedAt: readTimestampValue(row.updated_at),
+                    createdAt: readDbTimestampValue(row.created_at),
+                    updatedAt: readDbTimestampValue(row.updated_at),
                 };
                 const [presence, participants, state] = await Promise.all([
                     this.listPresence(meeting.id),
@@ -713,7 +713,7 @@ export class JitsiMeetStore {
                     meetingUrl: String(row.meeting_url),
                     meetingName: String(row.meeting_name ?? "Cognis Classroom"),
                     createdBy: String(row.created_by),
-                    createdAt: readTimestampValue(row.created_at),
+                    createdAt: readDbTimestampValue(row.created_at),
                 };
                 const [presence, participants, state] = await Promise.all([
                     this.listPresence(meeting.id),
