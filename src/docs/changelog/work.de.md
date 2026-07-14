@@ -1,9 +1,9 @@
-# Whiteboard-Freigabe
+# Whiteboard-Sitzungen
 
-## Freigabelinks für Whiteboards
+## Sitzungsstart korrigiert
 
-Whiteboards können jetzt Links über das Share-Gateway erstellen, damit eingeladene Gäste das aktuelle Board öffnen und mit beschränktem Gastzugriff beitragen können.
+Whiteboard-Seiten laden Sitzungen jetzt korrekt, auch wenn Share-Gateway-Funktionen bei der Routenregistrierung nicht verfügbar sind.
 
-## Canvas-Bearbeitung
+## Regressionsabdeckung
 
-Die Whiteboard-Seite deaktiviert nun die Seitenlayout-Bearbeitung, ergänzt benutzerbezogene Rückgängig- und Wiederholen-Schaltflächen und erweitert den Canvas, wenn Inhalte über die sichtbaren Grenzen verschoben werden.
+Ein gezielter API-Routentest prüft, dass der Sitzungsendpunkt für normale Benutzer weiterhin ein nutzbares Raum-Token ohne Share-Funktionen zurückgibt.

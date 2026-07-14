@@ -1,9 +1,9 @@
-# Whiteboard Sharing
+# Whiteboard Session Reliability
 
-## Share links for whiteboards
+## Session loading fixed
 
-Whiteboards can now create Share gateway links so invited guests can open the current board and contribute with scoped guest access.
+Whiteboard pages now load sessions correctly even when Share gateway capabilities are unavailable during route registration.
 
-## Canvas editing controls
+## Regression coverage
 
-The whiteboard page now disables page layout editing, adds per-user undo and redo controls, and expands the canvas when content moves beyond the visible bounds.
+A targeted API route test verifies the session endpoint continues to return a usable room token for regular users without share capabilities.

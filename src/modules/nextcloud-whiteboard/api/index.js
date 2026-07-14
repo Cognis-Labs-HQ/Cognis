@@ -380,6 +380,9 @@ export function registerApiRoutes(router, ctx) {
     const registerScriptOrigins = ctx.getCapability(
         "auth:registerPageScriptOrigins",
     );
+    const getShareTokenById = ctx.getCapability("share:getTokenById");
+    const listSharesByResource = ctx.getCapability("share:listByResource");
+    const systemCtx = ctx.getCapability("system:ctx");
 
     if (!dbExecutor || !profileStore) {
         router.get(
