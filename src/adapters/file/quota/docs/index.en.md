@@ -24,7 +24,7 @@ Not responsible for: usage accounting (the files gateway's `DbFileObjectStore` d
 | `file_user_namespace_quotas`    | Per-user, per-namespace quota override       |
 | `file_user_global_quotas`       | Per-user global quota override               |
 
-Built-in fallback constants apply when no default has ever been set: `1 GiB` per namespace, `5 GiB` globally.
+Built-in fallback constants apply when no default has ever been set: `1 GiB` per namespace, `5 GiB` globally. These are conservative starting points sized for personal documents and small media attachments (profile avatars/banners); admins should raise them via the admin routes below for namespaces expected to hold larger content (e.g. classroom materials) once those features are built out.
 
 ### Lazy schema initialization
 

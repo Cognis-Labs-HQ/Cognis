@@ -48,9 +48,12 @@ async function loadQuotaStore(
     const quotaAdapterModule = await import(
         `${quotaAdapterPath}?t=${Date.now()}`
     );
-    const DbFileQuotaStoreClass = quotaAdapterModule.DbFileQuotaStore as new (
-        getDb: () => DbExecutor | undefined,
-    ) => FileQuotaStore;
+    const DbFileQuotaStoreClass = quotaAdapterModule.DbFileQuotaStore as
+        | (new (getDb: () => DbExecutor | undefined) => FileQuotaStore)
+        | undefined;
+    if (!DbFileQuotaStoreClass) {
+        throw new Error("file_quota_adapter_missing_store_class");
+    }
     return new DbFileQuotaStoreClass(getDb);
 }
 

@@ -24,7 +24,7 @@ Nicht zuständig für: Nutzungsabrechnung (das erledigt `DbFileObjectStore` des 
 | `file_user_namespace_quotas`    | Pro-Benutzer-, Pro-Namensraum-Kontingent-Override                      |
 | `file_user_global_quotas`       | Pro-Benutzer-globales Kontingent-Override                              |
 
-Eingebaute Fallback-Konstanten gelten, wenn noch nie ein Standardwert festgelegt wurde: `1 GiB` pro Namensraum, `5 GiB` global.
+Eingebaute Fallback-Konstanten gelten, wenn noch nie ein Standardwert festgelegt wurde: `1 GiB` pro Namensraum, `5 GiB` global. Dies sind konservative Ausgangswerte für persönliche Dokumente und kleine Medienanhänge (Profilbilder/-banner); Administratoren sollten sie über die unten stehenden Admin-Routen erhöhen, sobald Namensräume für größere Inhalte (z. B. Kursmaterialien) genutzt werden.
 
 ### Träge Schemainitialisierung
 

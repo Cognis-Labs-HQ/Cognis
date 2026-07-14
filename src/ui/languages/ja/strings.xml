@@ -330,6 +330,7 @@
   <string name="ui.app.users.storage_quotas">ストレージクォータ</string>
   <string name="ui.app.users.storage_quota_global">グローバルクォータ（バイト）</string>
   <string name="ui.app.users.storage_quotas_saved">ストレージクォータを更新しました。</string>
+  <string name="ui.app.users.storage_quota_invalid">ストレージクォータは正の整数で入力してください。</string>
   <string name="ui.app.users.new_password">新しいパスワード</string>
   <string name="ui.app.users.password_reset_done">パスワードを更新しました。</string>
   <string name="ui.app.users.reset_tfa">二要素認証をリセット</string>

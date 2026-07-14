@@ -207,9 +207,20 @@ async function promptStorageQuotas(username) {
         },
     });
     if (result !== "confirm" || !inputs) return;
-    for (const input of inputs) {
-        const quotaBytes = Number(input.value);
-        if (!Number.isInteger(quotaBytes) || quotaBytes <= 0) continue;
+    const quotasByInput = inputs.map((input) => ({
+        input,
+        quotaBytes: Number(input.value),
+    }));
+    const invalidInput = quotasByInput.find(
+        ({ quotaBytes }) => !Number.isInteger(quotaBytes) || quotaBytes <= 0,
+    );
+    if (invalidInput) {
+        showToast(i18n.t("ui.app.users.storage_quota_invalid"), {
+            variant: "error",
+        });
+        return;
+    }
+    for (const { input, quotaBytes } of quotasByInput) {
         await apiFetch(
             `/api/v1/files/admin/users/${encodeURIComponent(username)}/quotas/${encodeURIComponent(input.dataset.namespaceId)}`,
             {

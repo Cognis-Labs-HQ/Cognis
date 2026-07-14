@@ -330,6 +330,7 @@
   <string name="ui.app.users.storage_quotas">Speicherkontingente</string>
   <string name="ui.app.users.storage_quota_global">Globales Kontingent (Bytes)</string>
   <string name="ui.app.users.storage_quotas_saved">Speicherkontingente aktualisiert.</string>
+  <string name="ui.app.users.storage_quota_invalid">Speicherkontingente müssen positive ganze Zahlen sein.</string>
   <string name="ui.app.users.new_password">Neues Passwort</string>
   <string name="ui.app.users.password_reset_done">Passwort aktualisiert.</string>
   <string name="ui.app.users.reset_tfa">Zwei-Faktor-Authentifizierung Zurücksetzen</string>

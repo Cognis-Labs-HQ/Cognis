@@ -24,7 +24,7 @@ Tidak bertanggung jawab atas: akuntansi penggunaan (dilakukan oleh `DbFileObject
 | `file_user_namespace_quotas`    | Override kuota per-pengguna, per-namespace                  |
 | `file_user_global_quotas`       | Override kuota global per-pengguna                          |
 
-Konstanta fallback bawaan berlaku ketika belum pernah ada default yang ditetapkan: `1 GiB` per namespace, `5 GiB` secara global.
+Konstanta fallback bawaan berlaku ketika belum pernah ada default yang ditetapkan: `1 GiB` per namespace, `5 GiB` secara global. Ini adalah nilai awal yang konservatif untuk dokumen pribadi dan lampiran media kecil (avatar/banner profil); admin sebaiknya menaikkannya melalui rute admin di bawah untuk namespace yang diharapkan menampung konten lebih besar (misalnya materi kelas) ketika fitur tersebut dibangun.
 
 ### Inisialisasi skema secara lambat
 
