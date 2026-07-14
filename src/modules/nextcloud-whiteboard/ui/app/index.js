@@ -382,7 +382,7 @@ async function openSharePopup() {
         const [{ openShareLinksPopup }, { buildShareCallbacks }] =
             await Promise.all([
                 import("/static/gateways/share/ui/reuse/share-links-popup.js"),
-                import("./share-adapter.js"),
+                import("/static/modules/nextcloud-whiteboard/share-adapter.js"),
             ]);
         await openShareLinksPopup({
             title: t("module.nextcloud_whiteboard.share_popup_title"),
