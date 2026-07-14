@@ -2,11 +2,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../../api/reuse/read-json.js";
 import {
-    hasShareCapability,
-    resolveShareGuestId,
-    resolveShareGuestSessionId,
-} from "../../../../../api/reuse/share-guest.js";
-import {
     canMessage,
     enrichMembersWithProfiles,
     hasAdminBypass,
@@ -37,7 +32,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const sub = roomMatch[2];
         const subArg = roomMatch[3];
         const subArg2 = roomMatch[4];
-        const shareGuestId = resolveShareGuestId({ sub: accountId });
+        const resolveShareGuestId = ctx.getCapability<
+            (claims: { sub?: string }) => string
+        >("share:resolveGuestId");
+        const resolveShareGuestSessionId = ctx.getCapability<
+            (claims: { sub?: string }) => string
+        >("share:resolveGuestSessionId");
+        const hasShareCapability = ctx.getCapability<
+            (
+                tokenRecord: { grantedCapabilities?: string[] } | null | undefined,
+                requiredCapability: string,
+            ) => boolean
+        >("share:hasCapability");
+        const shareGuestId = resolveShareGuestId?.({ sub: accountId }) ?? "";
         const getShareTokenById = ctx.getCapability<
             (shareId: string) => Promise<{
                 resourceType: string;
@@ -89,8 +96,8 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             typeof shareMeeting?.chatRoomId === "string" &&
             shareMeeting.chatRoomId === roomId;
         const hasMeetingChatAccess = (capability: "chat:read" | "chat:write") =>
-            hasShareCapability(shareGuestToken, capability) ||
-            hasShareCapability(shareGuestToken, "meeting:join");
+            hasShareCapability?.(shareGuestToken, capability) === true ||
+            hasShareCapability?.(shareGuestToken, "meeting:join") === true;
         if (!member && !isAllowedShareGuest) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(

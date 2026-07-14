@@ -63,6 +63,18 @@ function makeRoutes({
     };
     const capabilities: Record<string, (...args: any[]) => any> = {
         "share:getTokenById": async () => shareToken,
+        "share:resolveGuestId": (claims: { sub?: string }) =>
+            String(claims?.sub ?? "").startsWith("share:")
+                ? String(claims?.sub).split(":")[1] || ""
+                : "",
+        "share:resolveGuestSessionId": (claims: { sub?: string }) =>
+            String(claims?.sub ?? "").split(":")[2] || "",
+        "share:hasCapability": (
+            tokenRecord: { grantedCapabilities?: string[] } | null,
+            capability: string,
+        ) =>
+            !capability ||
+            Boolean(tokenRecord?.grantedCapabilities?.includes(capability)),
         "jitsi-meet:getMeetingById": async () => meeting,
         "share:getGuestProfile": async () => null,
     };

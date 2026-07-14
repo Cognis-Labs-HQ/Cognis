@@ -2,7 +2,7 @@ import { normalizeHandleKey } from "../../../../api/reuse/normalize-handle.js";
 import {
     hasShareCapability,
     resolveShareGuestId,
-} from "../../../../api/reuse/share-guest.js";
+} from "../../../../gateways/share/reuse/share-guest.js";
 import { resolveRequesterUsername } from "./requester.js";
 
 /**

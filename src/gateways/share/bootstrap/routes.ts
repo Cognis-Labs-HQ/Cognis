@@ -6,7 +6,7 @@ import { readJson } from "../../../api/reuse/read-json.js";
 import {
     resolveShareGuestId,
     resolveShareGuestSessionId,
-} from "../../../api/reuse/share-guest.js";
+} from "../reuse/share-guest.js";
 import {
     resolveRouteContext,
     type RouteContext,

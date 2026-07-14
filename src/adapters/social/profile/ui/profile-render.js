@@ -12,8 +12,8 @@ import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
 const PROFILE_ROLE_ICON_PATHS = {
-    owner: "/static/assets/icons/crown.svg",
-    admin: "/static/assets/icons/wrench.svg",
+    owner: "/static/assets/reuse/crown.svg",
+    admin: "/static/assets/reuse/wrench.svg",
 };
 const PROFILE_ROLE_ICON_ROLES = new Set(["owner", "admin", "teacher"]);
 
@@ -356,7 +356,7 @@ export function renderHero({
                     data-message-target="${escapeHtml(profile?.handle ?? "")}"
                     aria-label="${escapeHtml(i18n.t("ui.reuse.message"))}"
                     title="${escapeHtml(i18n.t("ui.reuse.message"))}"
-                  ><img src="/static/assets/icons/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/icons/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
+                  ><img src="/static/assets/reuse/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/reuse/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
                 : ""
         }
         <button

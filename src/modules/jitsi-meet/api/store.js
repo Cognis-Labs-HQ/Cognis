@@ -9,7 +9,7 @@ import {
     normalizeHandleKeys,
 } from "../../../api/reuse/normalize-handle.js";
 import { normalizeMeetingPrefix } from "./meeting-values.js";
-import { readTimestampValue } from "../../../gateways/db/reuse/db-table.js";
+import { readTimestampValue } from "../../../api/reuse/timestamp.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 // Background/unfocused browser tabs are throttled by the browser and can

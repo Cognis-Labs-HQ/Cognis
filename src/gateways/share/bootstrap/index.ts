@@ -13,6 +13,11 @@ import { ShareApprovalRequestStore } from "../gateway/approval-request-store.js"
 import { CoreShareGateway } from "../gateway/index.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
 import { createShareRoutes } from "./routes.js";
+import {
+    hasShareCapability,
+    resolveShareGuestId,
+    resolveShareGuestSessionId,
+} from "../reuse/share-guest.js";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -73,6 +78,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "share:buildAbsoluteUrl",
         gateway.buildAbsoluteUrl.bind(gateway),
     );
+
+    ctx.capabilities.contribute("share:resolveGuestId", resolveShareGuestId);
+    ctx.capabilities.contribute(
+        "share:resolveGuestSessionId",
+        resolveShareGuestSessionId,
+    );
+    ctx.capabilities.contribute("share:hasCapability", hasShareCapability);
     ctx.capabilities.contribute(
         "share:listPendingApprovalsForAccount",
         gateway.listPendingApprovalsForAccount.bind(gateway),
