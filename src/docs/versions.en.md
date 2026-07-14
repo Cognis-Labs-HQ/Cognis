@@ -76,10 +76,10 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 ## Modules
 
-| Component            | Path                                | Version |
-| -------------------- | ----------------------------------- | ------- |
-| Analytics            | `src/modules/analytics/`            | `2.0.1` |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.2` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.9` |
-| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4` |
-| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2` |
+| Component            | Path                                | Version  |
+| -------------------- | ----------------------------------- | -------- |
+| Analytics            | `src/modules/analytics/`            | `2.0.1`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.2`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.10` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |
