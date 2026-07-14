@@ -96,7 +96,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 strokeColor,
                 strokeWidth,
             );
-            if (previewElement) renderFreedraw(context, previewElement);
+            if (previewElement) renderElement(context, previewElement);
         } else if (
             isDrawing &&
             dragStartPoint &&

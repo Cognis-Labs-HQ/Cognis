@@ -1,9 +1,9 @@
-# Whiteboard Fixes
+# Whiteboard Refresh
 
-## Theme-aware auto strokes refresh immediately
+## Direct page refreshes finish loading
 
-Whiteboard objects created with the automatic stroke color now resolve their color during rendering, so they switch between the light and dark theme colors as soon as the app theme changes and the canvas background repaints at the same time.
+The whiteboard page now uses the shared direct-mount helper, so refreshing a whiteboard URL clears the loading state the same way SPA navigation does.
 
-## Whiteboard rename requests are validated safely
+## Drawing previews render correctly
 
-The rename flow now keeps a reliable board id, trims the submitted title, and returns explicit validation errors for malformed rename requests instead of surfacing generic bad request failures.
+Pen previews now use the extracted element renderer, preventing runtime errors after the whiteboard element rendering helpers moved into their own module.
