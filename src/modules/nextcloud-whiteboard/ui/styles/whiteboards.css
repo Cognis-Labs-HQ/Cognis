@@ -292,12 +292,8 @@
 
 .wb-canvas-stage {
     --wb-canvas-bg: var(--surface, #ffffff);
-    --wb-auto-stroke: var(--text, #111827);
 }
 
-.wb-color-mode {
-    min-width: 5.5rem;
-}
 
 .wb-board-title {
     flex: 0 1 auto;

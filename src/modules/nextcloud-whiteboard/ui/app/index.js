@@ -79,9 +79,15 @@ async function loadBoards() {
 }
 
 async function renameBoard(boardId, title) {
+    const normalizedTitle = String(title ?? "").trim();
+    const normalizedBoardId = String(boardId ?? "").trim();
+    if (!normalizedBoardId || !normalizedTitle) {
+        throw new Error(t("module.nextcloud_whiteboard.rename_failed"));
+    }
     return apiFetchJson("/whiteboards/rename", {
         method: "POST",
-        body: JSON.stringify({ id: boardId, title }),
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: normalizedBoardId, title: normalizedTitle }),
     });
 }
 
@@ -304,20 +310,17 @@ function bindCanvasToolbar(canvas) {
         .getElementById("wb-board-title")
         ?.addEventListener("dblclick", () => void renameActiveBoard());
 
-    const colorModeSelect = document.getElementById("wb-color-mode");
     const colorInput = document.getElementById("wb-color");
-
-    function applyColorSelection() {
-        const color =
-            colorModeSelect?.value === "custom"
-                ? (colorInput?.value ?? "#1e1e2e")
-                : (colorModeSelect?.value ?? "auto");
-        if (colorInput) colorInput.disabled = colorModeSelect?.value !== "custom";
-        canvas.setStrokeColor(color);
+    const autoStrokeColor = getComputedStyle(document.body)
+        .getPropertyValue("--text")
+        .trim() || "#111827";
+    if (colorInput) {
+        colorInput.value = autoStrokeColor;
+        canvas.setStrokeColor(autoStrokeColor);
     }
-
-    colorModeSelect?.addEventListener("change", applyColorSelection);
-    colorInput?.addEventListener("input", applyColorSelection);
+    colorInput?.addEventListener("input", () => {
+        canvas.setStrokeColor(colorInput.value);
+    });
 
     const strokeSelect = document.getElementById("wb-stroke-width");
     strokeSelect?.addEventListener("change", () => {
@@ -326,15 +329,8 @@ function bindCanvasToolbar(canvas) {
 
     canvas.onSelectionChange?.((element) => {
         selectedElement = element;
-        if (colorModeSelect && element?.strokeColor) {
-            const color = element.strokeColor;
-            if (["auto", "#111827", "#ffffff"].includes(color)) {
-                colorModeSelect.value = color;
-            } else {
-                colorModeSelect.value = "custom";
-                if (colorInput) colorInput.value = color;
-            }
-            if (colorInput) colorInput.disabled = colorModeSelect.value !== "custom";
+        if (colorInput && element?.strokeColor) {
+            colorInput.value = element.strokeColor;
         }
         updateStyleControls();
     });
@@ -573,13 +569,7 @@ function renderCanvasElement() {
                     <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <select id="wb-color-mode" class="wb-tool wb-color-mode" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}">
-                        <option value="auto" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_auto"))}</option>
-                        <option value="#111827">${escapeHtml(t("module.nextcloud_whiteboard.stroke_black"))}</option>
-                        <option value="#ffffff">${escapeHtml(t("module.nextcloud_whiteboard.stroke_white"))}</option>
-                        <option value="custom">${escapeHtml(t("module.nextcloud_whiteboard.stroke_custom"))}</option>
-                    </select>
-                    <input type="color" id="wb-color" value="#1e1e2e" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" disabled />
+                    <input type="color" id="wb-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
                     <select id="wb-stroke-width" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
                         <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
                         <option value="4" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_medium"))}</option>
