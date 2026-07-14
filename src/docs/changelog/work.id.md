@@ -1,9 +1,9 @@
-# Berbagi Whiteboard
+# Keandalan Sesi Whiteboard
 
-## Tautan berbagi untuk whiteboard
+## Pemuatan sesi diperbaiki
 
-Whiteboard kini dapat membuat tautan melalui Share gateway sehingga tamu yang diundang dapat membuka board saat ini dan berkontribusi dengan akses tamu terbatas.
+Halaman whiteboard kini memuat sesi dengan benar meskipun kapabilitas Share gateway tidak tersedia saat pendaftaran rute.
 
-## Kontrol pengeditan kanvas
+## Cakupan regresi
 
-Halaman whiteboard kini menonaktifkan pengeditan tata letak halaman, menambahkan tombol urungkan dan ulangi per pengguna, serta memperluas kanvas saat konten dipindahkan melewati batas terlihat.
+Pengujian rute API terarah memastikan endpoint sesi tetap mengembalikan token ruang yang dapat digunakan untuk pengguna biasa tanpa kapabilitas berbagi.
