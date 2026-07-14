@@ -1,9 +1,9 @@
-# Whiteboard Save Fixes
+# Whiteboard Sync Fix
 
-## Snapshot saves fixed
+## Element saves stay synced
 
-Whiteboard element snapshots now use the structured database conflict format so repeated saves update the existing snapshot instead of failing with duplicate keys.
+Whiteboard snapshot saves now use the structured database update field when refreshing board timestamps, preventing the API from returning 400 after a canvas edit.
 
-## Share creation stabilized
+## Route tests mirror real updates
 
-The sharing flow registration remains on the system context while persistence tests cover repeated session restores and snapshot saves.
+The whiteboard route tests now exercise structured update payloads so future persistence regressions match production database behavior.

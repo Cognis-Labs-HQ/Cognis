@@ -34,7 +34,8 @@ function createMemoryDb() {
             }
             if (command.option === "UPDATE") {
                 const selected = applyWhere(rows, command.where);
-                for (const row of selected) Object.assign(row, command.values);
+                for (const row of selected)
+                    Object.assign(row, command.set ?? command.values);
                 return { rows: [] };
             }
             if (command.option === "INSERT") {
@@ -122,4 +123,18 @@ test("nextcloud whiteboard store renames boards", async () => {
     const renamed = await store.renameWhiteboard(board.id, "Updated planning");
 
     assert.equal(renamed.title, "Updated planning");
+});
+
+test("nextcloud whiteboard store uses structured update payloads", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../api/store.js", import.meta.url), "utf8"),
+    );
+    assert.doesNotMatch(
+        source,
+        new RegExp('option:\\s*"UPDATE",\\n\\s*table:[^\\n]+\\n\\s*values:'),
+    );
+    assert.match(
+        source,
+        new RegExp('option:\\s*"UPDATE",\\n\\s*table:[^\\n]+\\n\\s*set:'),
+    );
 });

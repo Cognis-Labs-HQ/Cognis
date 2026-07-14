@@ -36,7 +36,8 @@ function createMemoryDb() {
             }
             if (command.option === "UPDATE") {
                 const selected = applyWhere(rows, command.where);
-                for (const row of selected) Object.assign(row, command.values);
+                for (const row of selected)
+                    Object.assign(row, command.set ?? command.values);
                 return { rows: [] };
             }
             if (command.option === "INSERT") {
