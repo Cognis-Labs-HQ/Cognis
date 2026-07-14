@@ -148,15 +148,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const rect = parent?.getBoundingClientRect();
         if (!rect) return;
         const padding = 160;
-        const bounds = elements.map(getElementBounds);
-        const maxX = Math.max(
-            rect.width,
-            ...bounds.map((item) => item.x + item.width + padding),
-        );
-        const maxY = Math.max(
-            rect.height,
-            ...bounds.map((item) => item.y + item.height + padding),
-        );
+        let bounds = elements.map(getElementBounds);
         const minX = Math.min(0, ...bounds.map((item) => item.x - padding));
         const minY = Math.min(0, ...bounds.map((item) => item.y - padding));
         if (minX < 0 || minY < 0) {
@@ -168,11 +160,20 @@ export function createWhiteboardCanvas(canvasElement) {
                     y: element.y + dy,
                 }),
             );
+            bounds = elements.map(getElementBounds);
             parent.scrollLeft += dx;
             parent.scrollTop += dy;
         }
-        const width = Math.ceil(maxX + Math.abs(minX));
-        const height = Math.ceil(maxY + Math.abs(minY));
+        const maxX = Math.max(
+            rect.width,
+            ...bounds.map((item) => item.x + item.width + padding),
+        );
+        const maxY = Math.max(
+            rect.height,
+            ...bounds.map((item) => item.y + item.height + padding),
+        );
+        const width = Math.ceil(maxX);
+        const height = Math.ceil(maxY);
         if (canvasElement.width !== width) canvasElement.width = width;
         if (canvasElement.height !== height) canvasElement.height = height;
         canvasElement.style.width = `${width}px`;

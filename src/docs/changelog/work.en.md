@@ -1,9 +1,9 @@
-# Whiteboard Sharing Fix
+# Whiteboard Persistence
 
-## Share adapter loading fixed
+## Board contents survive refresh
 
-The whiteboard share button now imports its adapter from the static module root so the popup can open without a 404.
+Whiteboard element snapshots are now saved through the Cognis API and returned with each session so valid users and share guests load the same board contents for the same URL.
 
-## Regression coverage
+## Sharing and overflow fixes
 
-A UI source test now verifies the share adapter import uses the served static path instead of a non-existent app subdirectory.
+Whiteboard share hooks are registered on the system flow context so link creation can authorize correctly, and canvas overflow sizing now recomputes bounds after coordinate reclamation so the canvas can shrink again.

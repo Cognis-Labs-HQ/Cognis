@@ -1,9 +1,9 @@
-# Whiteboard-Freigabe-Fix
+# Whiteboard-Persistenz
 
-## Share-Adapter lädt wieder
+## Inhalte bleiben nach Refresh
 
-Die Whiteboard-Freigabeschaltfläche importiert ihren Adapter jetzt aus dem statischen Modulstamm, sodass das Popup ohne 404 geöffnet werden kann.
+Whiteboard-Element-Snapshots werden jetzt über die Cognis-API gespeichert und mit jeder Sitzung zurückgegeben, damit berechtigte Benutzer und Share-Gäste für dieselbe URL dieselben Inhalte laden.
 
-## Regressionsabdeckung
+## Freigabe und Overflow
 
-Ein UI-Quelltest prüft jetzt, dass der Share-Adapter den bereitgestellten statischen Pfad statt eines nicht vorhandenen app-Unterordners verwendet.
+Whiteboard-Share-Hooks werden im System-Flow-Kontext registriert, sodass Linkerstellung korrekt autorisiert wird, und die Canvas-Overflow-Größe berechnet Bounds nach Koordinatenrückgewinnung neu.

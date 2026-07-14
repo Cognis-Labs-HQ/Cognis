@@ -137,3 +137,123 @@ test("nextcloud whiteboard session route works without share capabilities", asyn
     assert.equal(body.data.serverUrl, "https://whiteboard.example.test");
     assert.ok(body.data.token);
 });
+
+test("nextcloud whiteboard registers share hooks on system ctx flow", () => {
+    const db = createMemoryDb();
+    const router = createRouterCapture();
+    const extensions = [];
+    const systemCtx = {
+        flow: {
+            exists(name) {
+                return [
+                    "mint-share-token",
+                    "resolve-share-token",
+                    "construct-share-page",
+                    "revoke-share-token",
+                ].includes(name);
+            },
+            extend(flowName, stageName, options) {
+                extensions.push({ flowName, stageName, id: options.id });
+            },
+        },
+    };
+
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                };
+            }
+            if (key === "system:ctx") return systemCtx;
+            return undefined;
+        },
+    });
+
+    assert.ok(
+        extensions.some(
+            (item) =>
+                item.flowName === "mint-share-token" &&
+                item.stageName === "validate-resource" &&
+                item.id === "nextcloud-whiteboard:validate-share-resource",
+        ),
+    );
+    assert.ok(
+        extensions.some(
+            (item) =>
+                item.flowName === "revoke-share-token" &&
+                item.stageName === "authorize-revocation" &&
+                item.id === "nextcloud-whiteboard:authorize-share-revocation",
+        ),
+    );
+});
+
+test("nextcloud whiteboard elements persist through session reload", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    await store.saveConfig({
+        serverUrl: "https://whiteboard.example.test",
+        apiKey: "session-token-secret-at-least-16-chars",
+    });
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: [],
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                };
+            }
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+    const token = issueAccessToken("alice", "user", 60);
+    const elements = [
+        {
+            id: "shape-1",
+            type: "rectangle",
+            x: 20,
+            y: 30,
+            width: 40,
+            height: 50,
+        },
+    ];
+    const saveReq = {
+        url: "/api/v1/modules/nextcloud-whiteboard/whiteboards/elements",
+        headers: { authorization: `Bearer ${token}` },
+        async *[Symbol.asyncIterator]() {
+            yield Buffer.from(JSON.stringify({ id: board.id, elements }));
+        },
+    };
+    const saveRes = createJsonResponse();
+    await router.handler(
+        "POST",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/elements",
+    )(saveReq, saveRes);
+    assert.equal(saveRes.statusCode, 200);
+
+    const sessionReq = {
+        url: `/api/v1/modules/nextcloud-whiteboard/whiteboards/session?id=${board.id}`,
+        headers: { authorization: `Bearer ${token}` },
+    };
+    const sessionRes = createJsonResponse();
+    await router.handler(
+        "GET",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/session",
+    )(sessionReq, sessionRes);
+
+    assert.equal(sessionRes.statusCode, 200);
+    assert.deepEqual(sessionRes.json().data.elements, elements);
+});

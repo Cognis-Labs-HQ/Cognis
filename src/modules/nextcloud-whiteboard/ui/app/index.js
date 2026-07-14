@@ -106,6 +106,14 @@ async function fetchSession(boardId) {
     );
 }
 
+async function saveElements(boardId, elements) {
+    return apiFetchJson("/whiteboards/elements", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: boardId, elements }),
+    });
+}
+
 function debounce(callback, delay) {
     let timer;
     return (...args) => {
@@ -175,6 +183,21 @@ function connectSocket(io, session, canvas) {
         reconnectionDelayMax: RECONNECT_MAX_DELAY_MS,
     });
 
+    const persistChanges = debounce(async (elements) => {
+        try {
+            await saveElements(roomId, elements);
+            setSyncStatus(
+                "synced",
+                "module.nextcloud_whiteboard.status_synced",
+            );
+        } catch (error) {
+            reportClientError(
+                error,
+                "module.nextcloud_whiteboard.status_sync_failed",
+            );
+        }
+    }, EMIT_DEBOUNCE_MS);
+
     const emitChanges = debounce((elements) => {
         if (!socket.connected) {
             setSyncStatus(
@@ -185,7 +208,6 @@ function connectSocket(io, session, canvas) {
         }
         setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
         socket.emit("elements:changed", { elements, roomId });
-        setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
     }, EMIT_DEBOUNCE_MS);
 
     canvas.onChange((elements, meta) => {
@@ -199,6 +221,8 @@ function connectSocket(io, session, canvas) {
             );
             return;
         }
+        savedElements = elements;
+        persistChanges(elements);
         emitChanges(elements);
     });
 
@@ -613,12 +637,10 @@ async function openBoard(board) {
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
+    savedElements = Array.isArray(session.elements) ? session.elements : [];
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
     }
-    canvasInstance.onChange((elements) => {
-        savedElements = elements;
-    });
 
     socketInstance = connectSocket(io, session, canvasInstance);
     bindCanvasToolbar(canvasInstance);
@@ -719,7 +741,8 @@ function onCanvasRender() {
         });
     });
     const canvasElement = document.getElementById("wb-canvas");
-    if (!canvasElement || canvasInstance || !activeBoard) return;
+    if (!canvasElement || canvasInstance || !activeBoard || !activeSession)
+        return;
     if (preflightStatus !== "passed") return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);

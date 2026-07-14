@@ -400,7 +400,7 @@ export function registerApiRoutes(router, ctx) {
     }
 
     const store = resolveStore(dbExecutor, log);
-    registerWhiteboardShareFlowHooks(ctx, store, profileStore);
+    registerWhiteboardShareFlowHooks(systemCtx ?? ctx, store, profileStore);
     void registerStoredOrigin({ store, registerScriptOrigins, log });
 
     const moduleApi = {
@@ -636,15 +636,51 @@ export function registerApiRoutes(router, ctx) {
                 whiteboardId: whiteboard.id,
                 username,
             });
+            const elements = await store.getElementsSnapshot(whiteboard.id);
             sendJson(res, 200, {
                 data: {
                     roomId: whiteboard.id,
                     title: whiteboard.title,
                     serverUrl: config.serverUrl,
                     imageUploadMaxBytes: config.imageUploadMaxBytes,
+                    elements,
                     token,
                 },
             });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/elements",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const whiteboardId = String(body.id ?? "").trim();
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            const saved = await store.saveElementsSnapshot(
+                whiteboard.id,
+                body.elements,
+            );
+            sendJson(res, 200, { data: saved });
         },
         { access: { minRole: "user" } },
     );

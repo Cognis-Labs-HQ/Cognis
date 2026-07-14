@@ -85,6 +85,24 @@ export class NextcloudWhiteboardStore {
             ],
             primaryKey: ["whiteboard_id", "username"],
         });
+        await this.db.ensureTable({
+            name: "nextcloud_whiteboard_snapshots",
+            columns: [
+                { name: "whiteboard_id", type: "text", primaryKey: true },
+                {
+                    name: "elements_json",
+                    type: "text",
+                    notNull: true,
+                    default: "[]",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
     }
 
     async getConfig() {
@@ -241,6 +259,48 @@ export class NextcloudWhiteboardStore {
             limit: 1,
         });
         return Boolean(result.rows?.[0]);
+    }
+
+    async getElementsSnapshot(id) {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "nextcloud_whiteboard_snapshots",
+            where: [{ column: "whiteboard_id", value: String(id ?? "") }],
+            limit: 1,
+        });
+        const raw = result.rows?.[0]?.elements_json;
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(String(raw));
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    }
+
+    async saveElementsSnapshot(id, elements) {
+        const safeElements = Array.isArray(elements) ? elements : [];
+        const updatedAt = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "nextcloud_whiteboard_snapshots",
+            values: {
+                whiteboard_id: String(id ?? ""),
+                elements_json: JSON.stringify(safeElements),
+                updated_at: updatedAt,
+            },
+            onConflict: {
+                columns: ["whiteboard_id"],
+                merge: ["elements_json", "updated_at"],
+            },
+        });
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "nextcloud_whiteboards",
+            values: { updated_at: updatedAt },
+            where: [{ column: "id", value: String(id ?? "") }],
+        });
+        return { elements: safeElements, updatedAt };
     }
 
     mintSessionToken(config, board, user) {
