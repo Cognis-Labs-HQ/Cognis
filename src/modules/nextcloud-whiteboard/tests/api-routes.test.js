@@ -292,3 +292,77 @@ test("nextcloud whiteboard elements persist through session reload", async () =>
     assert.equal(sessionRes.statusCode, 200);
     assert.deepEqual(sessionRes.json().data.elements, elements);
 });
+
+test("nextcloud whiteboard share route accepts issue-token flow result", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: [],
+    });
+    const shareRecord = {
+        id: "share-1",
+        resourceType: "whiteboard",
+        resourceId: board.id,
+    };
+    const router = createRouterCapture();
+    const systemCtx = {
+        flow: {
+            exists(name) {
+                return [
+                    "mint-share-token",
+                    "resolve-share-token",
+                    "construct-share-page",
+                    "revoke-share-token",
+                ].includes(name);
+            },
+            extend() {
+                return true;
+            },
+            async run(flowName, input) {
+                assert.equal(flowName, "mint-share-token");
+                assert.equal(input.resourceType, "whiteboard");
+                assert.equal(input.resourceId, board.id);
+                return {
+                    stageResults: {
+                        "issue-token": [{ minted: true, shareRecord }],
+                    },
+                };
+            },
+        },
+    };
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                };
+            }
+            if (key === "system:ctx") return systemCtx;
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+    const token = issueAccessToken("alice", "user", 60);
+    const req = {
+        url: "/api/v1/modules/nextcloud-whiteboard/share",
+        headers: { authorization: `Bearer ${token}` },
+        async *[Symbol.asyncIterator]() {
+            yield Buffer.from(JSON.stringify({ whiteboardId: board.id }));
+        },
+    };
+    const res = createJsonResponse();
+
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/share")(
+        req,
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.json().data, shareRecord);
+});
