@@ -137,6 +137,20 @@ export async function bootstrapStudyAdapter(
 
     adapterReady = true;
 
+    // Foundational namespace registration for classroom materials; no
+    // upload UI/API is built yet.
+    ctx.capabilities.get<
+        (definition: {
+            id: string;
+            ownerComponent: string;
+            acl: { visibility: string };
+        }) => void
+    >("files:registerNamespace")?.({
+        id: "classes",
+        ownerComponent: "study-classes",
+        acl: { visibility: "private-group" },
+    });
+
     const isEnabled = () => ctx.isAdapterEnabled();
     const preferenceStore =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");

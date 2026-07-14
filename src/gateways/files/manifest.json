@@ -1,8 +1,8 @@
 {
     "id": "files",
     "name": "File Storage Gateway",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "required": true,
-    "description": "Provides local file storage for uploads and application logging.",
+    "description": "Provides namespaced, ACL- and quota-enforced file storage for uploads and application logging.",
     "publisher": "Cognis Labs HQ"
 }

@@ -59,13 +59,18 @@ const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
 
 /**
- * Builds the authenticated API URL for a stored file by key.
+ * Builds the authenticated API URL for a stored file by key. Room/chatroom
+ * avatar keys are namespaced under "chats" (prefixed with "chatrooms/" by
+ * convention); every other avatar key belongs to the "profile" namespace.
  *
  * @param {string} avatarKey
  * @returns {string}
  */
 function buildAvatarFileUrl(avatarKey) {
-    return `/api/v1/files/${String(avatarKey)
+    const namespace = String(avatarKey).startsWith("chatrooms/")
+        ? "chats"
+        : "profile";
+    return `/api/v1/files/${namespace}/${String(avatarKey)
         .split("/")
         .map((segment) => encodeURIComponent(segment))
         .join("/")}`;

@@ -31,7 +31,8 @@ function fakeFileGateway() {
         async get(key: string) {
             return store.get(key) ?? null;
         },
-        async delete(key: string) {
+        async delete(actorId: string, key: string) {
+            void actorId;
             store.delete(key);
             return true;
         },

@@ -18,15 +18,27 @@ const MIME_EXT: Record<string, string> = {
     "image/gif": "gif",
 };
 
+/**
+ * Local filesystem implementation of the namespace-scoped FileStorageGateway
+ * contract. Every method takes a namespaceId first — the adapter has no
+ * concept of ACLs or quotas, it simply confines physical storage to
+ * `<rootPath>/<namespaceId>/...`. All ACL/quota enforcement happens one
+ * layer up, in the files gateway's namespace file service.
+ */
 export class LocalFileGateway implements FileStorageGateway {
     constructor(private readonly rootPath: string) {}
 
+    private namespaceRoot(namespaceId: string): string {
+        return join(this.rootPath, namespaceId);
+    }
+
     async put(
+        namespaceId: string,
         key: string,
         content: Uint8Array,
         contentType?: string,
     ): Promise<StoredObject> {
-        const target = join(this.rootPath, key);
+        const target = join(this.namespaceRoot(namespaceId), key);
         await mkdir(dirname(target), { recursive: true });
         await writeFile(target, content);
         const info = await stat(target);
@@ -40,7 +52,8 @@ export class LocalFileGateway implements FileStorageGateway {
     }
 
     async store(
-        userId: string,
+        namespaceId: string,
+        actorId: string,
         content: Uint8Array,
         contentType?: string,
     ): Promise<StoredObject> {
@@ -48,12 +61,12 @@ export class LocalFileGateway implements FileStorageGateway {
             ? (MIME_EXT[contentType.toLowerCase()] ?? "")
             : "";
         const filename = ext ? `${randomUUID()}.${ext}` : randomUUID();
-        const key = `${userId}/${filename}`;
-        return this.put(key, content, contentType);
+        const key = `${actorId}/${filename}`;
+        return this.put(namespaceId, key, content, contentType);
     }
 
-    async get(key: string): Promise<Uint8Array | null> {
-        const target = join(this.rootPath, key);
+    async get(namespaceId: string, key: string): Promise<Uint8Array | null> {
+        const target = join(this.namespaceRoot(namespaceId), key);
 
         try {
             return await readFile(target);
@@ -62,8 +75,8 @@ export class LocalFileGateway implements FileStorageGateway {
         }
     }
 
-    async delete(key: string): Promise<boolean> {
-        const target = join(this.rootPath, key);
+    async delete(namespaceId: string, key: string): Promise<boolean> {
+        const target = join(this.namespaceRoot(namespaceId), key);
         try {
             await rm(target);
             return true;
@@ -72,8 +85,8 @@ export class LocalFileGateway implements FileStorageGateway {
         }
     }
 
-    async list(prefix = ""): Promise<StoredObject[]> {
-        const baseDir = join(this.rootPath, prefix);
+    async list(namespaceId: string, prefix = ""): Promise<StoredObject[]> {
+        const baseDir = join(this.namespaceRoot(namespaceId), prefix);
         try {
             const entries = await readdir(baseDir, { withFileTypes: true });
             const files = entries.filter((entry) => entry.isFile());
@@ -83,7 +96,10 @@ export class LocalFileGateway implements FileStorageGateway {
                     const relative = prefix
                         ? `${prefix}/${entry.name}`
                         : entry.name;
-                    const fullPath = join(this.rootPath, relative);
+                    const fullPath = join(
+                        this.namespaceRoot(namespaceId),
+                        relative,
+                    );
                     const info = await stat(fullPath);
                     return {
                         key: relative,

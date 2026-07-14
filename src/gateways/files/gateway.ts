@@ -1,3 +1,19 @@
-import type { FileStorageGateway, StoredObject } from "@cognis/core";
+import type {
+    FileAccessContext,
+    FileObjectAcl,
+    NamespaceAcl,
+    NamespaceDefinition,
+    NamespaceVisibility,
+    FileStorageGateway,
+    StoredObject,
+} from "@cognis/core";
 
-export type { FileStorageGateway, StoredObject };
+export type {
+    FileAccessContext,
+    FileObjectAcl,
+    NamespaceAcl,
+    NamespaceDefinition,
+    NamespaceVisibility,
+    FileStorageGateway,
+    StoredObject,
+};

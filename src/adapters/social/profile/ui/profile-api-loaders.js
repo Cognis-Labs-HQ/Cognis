@@ -95,7 +95,7 @@ export async function loadUserPosts(handle) {
 export async function loadImageAsBlob(fileKey) {
     if (!fileKey) return null;
     try {
-        const response = await apiFetch(`/api/v1/files/${fileKey}`);
+        const response = await apiFetch(`/api/v1/files/profile/${fileKey}`);
         if (!response.ok) return null;
         return URL.createObjectURL(await response.blob());
     } catch {

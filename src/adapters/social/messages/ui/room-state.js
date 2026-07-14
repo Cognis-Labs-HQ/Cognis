@@ -579,7 +579,7 @@ export function createMessagesRoomState({
             const extension = extensionFromType(file.type);
             const key = `chatrooms/${selectedRoomId}-${Date.now()}.${extension}`;
             const buffer = await file.arrayBuffer();
-            const upload = await apiFetch(`/api/v1/files/${key}`, {
+            const upload = await apiFetch(`/api/v1/files/chats/${key}`, {
                 method: "PUT",
                 headers: { "content-type": file.type || "image/jpeg" },
                 body: buffer,

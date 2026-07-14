@@ -134,7 +134,7 @@ export async function fetchCurrentProfile() {
     const avatarKey =
         typeof profile.avatarKey === "string" ? profile.avatarKey.trim() : "";
     const avatarUrl = avatarKey
-        ? `${window.location.origin}/api/v1/files/${avatarKey
+        ? `${window.location.origin}/api/v1/files/profile/${avatarKey
               .split("/")
               .map((part) => encodeURIComponent(part))
               .join("/")}`
@@ -177,7 +177,7 @@ async function fetchShareGuestProfile() {
     const avatarKey =
         typeof profile.avatarKey === "string" ? profile.avatarKey.trim() : "";
     const avatarUrl = avatarKey
-        ? `${window.location.origin}/api/v1/files/${avatarKey
+        ? `${window.location.origin}/api/v1/files/profile/${avatarKey
               .split("/")
               .map((part) => encodeURIComponent(part))
               .join("/")}`
