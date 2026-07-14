@@ -1,9 +1,9 @@
-# Whiteboard-Speicherfixes
+# Whiteboard-Sync-Fix
 
-## Snapshot-Speichern repariert
+## Element-Speicherung bleibt synchron
 
-Whiteboard-Element-Snapshots verwenden jetzt das strukturierte Datenbank-Konfliktformat, sodass wiederholte Speicherungen den bestehenden Snapshot aktualisieren statt mit doppelten Schlüsseln zu scheitern.
+Whiteboard-Snapshot-Speicherungen verwenden jetzt das strukturierte Datenbank-Update-Feld beim Aktualisieren von Board-Zeitstempeln und verhindern 400-Antworten nach Canvas-Änderungen.
 
-## Freigabe stabilisiert
+## Routentests spiegeln Updates
 
-Die Share-Flow-Registrierung bleibt im Systemkontext, während Persistenztests wiederholte Sitzungswiederherstellungen und Snapshot-Speicherungen abdecken.
+Die Whiteboard-Routentests nutzen jetzt strukturierte Update-Payloads, damit künftige Persistenzregressionen dem Produktionsdatenbankverhalten entsprechen.

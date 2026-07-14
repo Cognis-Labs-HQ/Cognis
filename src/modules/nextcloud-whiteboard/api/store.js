@@ -250,7 +250,7 @@ export class NextcloudWhiteboardStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "nextcloud_whiteboards",
-            values: { title: normalizedTitle, updated_at: updatedAt },
+            set: { title: normalizedTitle, updated_at: updatedAt },
             where: [{ column: "id", value: String(id ?? "") }],
         });
         return this.getWhiteboardById(id);
@@ -309,7 +309,7 @@ export class NextcloudWhiteboardStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "nextcloud_whiteboards",
-            values: { updated_at: updatedAt },
+            set: { updated_at: updatedAt },
             where: [{ column: "id", value: String(id ?? "") }],
         });
         return { elements: safeElements, updatedAt };

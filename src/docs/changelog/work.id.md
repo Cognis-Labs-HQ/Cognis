@@ -1,9 +1,9 @@
-# Perbaikan Simpan Whiteboard
+# Sinkronisasi Whiteboard
 
-## Penyimpanan snapshot diperbaiki
+## Penyimpanan elemen tetap sinkron
 
-Snapshot elemen whiteboard kini memakai format konflik database terstruktur sehingga penyimpanan berulang memperbarui snapshot yang ada, bukan gagal karena kunci duplikat.
+Penyimpanan snapshot whiteboard kini memakai field update database terstruktur saat memperbarui timestamp papan, sehingga API tidak lagi mengembalikan 400 setelah edit canvas.
 
-## Pembuatan tautan stabil
+## Pengujian rute meniru update nyata
 
-Registrasi flow berbagi tetap berada pada konteks sistem, sementara pengujian persistensi mencakup pemulihan sesi dan penyimpanan snapshot berulang.
+Pengujian rute whiteboard kini menjalankan payload update terstruktur agar regresi persistensi berikutnya cocok dengan perilaku database produksi.
