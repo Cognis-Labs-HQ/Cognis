@@ -1,5 +1,5 @@
 # Whiteboard-Zeichensteuerung
 
-## Verbesserte Whiteboard-Zeichenwerkzeuge
+## Verbesserte Whiteboard-Bearbeitung
 
-Die Whiteboard-Fläche hat jetzt besseren Kontrast im hellen und dunklen Modus, klarere Auswahl-, Verlauf-, Text- und Neu-Schaltflächen, Pfeilspitzen, Auswahlanker, Größenänderungsgriffe, Farb- und Linienstärkenänderungen für ausgewählte Elemente sowie eine Bestätigung vor dem Leeren eines Boards.
+Das Whiteboard unterstützt jetzt automatische, themenabhängige Linienfarben, sichereres Umbenennen von Boards, passendere Titelbreiten, größere bearbeitbare Textfelder, Textbearbeitung über Text- oder Auswahlwerkzeug, nur einmal ausgelöste Toolbar-Aktionen, automatisches Auswählen nach dem Erstellen und Radieren per Ziehrahmen.

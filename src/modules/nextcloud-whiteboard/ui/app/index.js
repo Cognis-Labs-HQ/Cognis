@@ -240,17 +240,59 @@ async function createAndOpenBoard() {
 
 function bindCanvasToolbar(canvas) {
     const toolbar = document.getElementById("wb-toolbar");
-    if (!toolbar) return;
+    if (!toolbar || toolbar.dataset.bound === "true") return;
+    toolbar.dataset.bound = "true";
+
+    const strokeTools = new Set([
+        "pen",
+        "rectangle",
+        "diamond",
+        "ellipse",
+        "line",
+        "arrow",
+    ]);
+    let selectedElement = null;
+    let activeTool = "pen";
+
+    function activateTool(tool) {
+        activeTool = tool;
+        toolbar.querySelectorAll("[data-tool]").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.tool === tool);
+        });
+        updateStyleControls();
+    }
+
+    function selectedCanUseStrokeWidth() {
+        return Boolean(selectedElement?.strokeWidthApplicable);
+    }
+
+    function activeToolCanUseStrokeWidth() {
+        return strokeTools.has(activeTool);
+    }
+
+    function updateStyleControls() {
+        const strokeSelect = document.getElementById("wb-stroke-width");
+        if (strokeSelect) {
+            strokeSelect.disabled = !(
+                selectedCanUseStrokeWidth() || activeToolCanUseStrokeWidth()
+            );
+            if (selectedCanUseStrokeWidth()) {
+                strokeSelect.value = String(selectedElement.strokeWidth ?? 4);
+            }
+        }
+    }
 
     toolbar.querySelectorAll("[data-tool]").forEach((button) => {
-        button.addEventListener("click", () => {
-            toolbar
-                .querySelectorAll("[data-tool]")
-                .forEach((btn) => btn.classList.remove("active"));
-            button.classList.add("active");
-            canvas.setTool(button.dataset.tool);
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const tool = button.dataset.tool;
+            activateTool(tool);
+            canvas.setTool(tool);
         });
     });
+
+    canvas.onToolChange?.((tool) => activateTool(tool));
 
     document
         .getElementById("wb-new")
@@ -262,10 +304,20 @@ function bindCanvasToolbar(canvas) {
         .getElementById("wb-board-title")
         ?.addEventListener("dblclick", () => void renameActiveBoard());
 
+    const colorModeSelect = document.getElementById("wb-color-mode");
     const colorInput = document.getElementById("wb-color");
-    colorInput?.addEventListener("input", () => {
-        canvas.setStrokeColor(colorInput.value);
-    });
+
+    function applyColorSelection() {
+        const color =
+            colorModeSelect?.value === "custom"
+                ? (colorInput?.value ?? "#1e1e2e")
+                : (colorModeSelect?.value ?? "auto");
+        if (colorInput) colorInput.disabled = colorModeSelect?.value !== "custom";
+        canvas.setStrokeColor(color);
+    }
+
+    colorModeSelect?.addEventListener("change", applyColorSelection);
+    colorInput?.addEventListener("input", applyColorSelection);
 
     const strokeSelect = document.getElementById("wb-stroke-width");
     strokeSelect?.addEventListener("change", () => {
@@ -273,14 +325,20 @@ function bindCanvasToolbar(canvas) {
     });
 
     canvas.onSelectionChange?.((element) => {
-        if (colorInput && element?.strokeColor) colorInput.value = element.strokeColor;
-        if (strokeSelect) {
-            strokeSelect.disabled = !element?.strokeWidthApplicable;
-            if (element?.strokeWidthApplicable) {
-                strokeSelect.value = String(element.strokeWidth ?? 4);
+        selectedElement = element;
+        if (colorModeSelect && element?.strokeColor) {
+            const color = element.strokeColor;
+            if (["auto", "#111827", "#ffffff"].includes(color)) {
+                colorModeSelect.value = color;
+            } else {
+                colorModeSelect.value = "custom";
+                if (colorInput) colorInput.value = color;
             }
+            if (colorInput) colorInput.disabled = colorModeSelect.value !== "custom";
         }
+        updateStyleControls();
     });
+    updateStyleControls();
 
     document.getElementById("wb-clear")?.addEventListener("click", async (event) => {
         event.preventDefault();
@@ -336,12 +394,27 @@ async function openHistoryPopup() {
 async function renameActiveBoard() {
     if (!activeBoard) return;
     const titleEl = document.getElementById("wb-board-title");
-    if (!titleEl) return;
+    if (!titleEl || titleEl.dataset.renaming === "true") return;
+    titleEl.dataset.renaming = "true";
     titleEl.contentEditable = "true";
     titleEl.focus();
-    const finish = async () => {
+    document.getSelection()?.selectAllChildren(titleEl);
+    let finishing = false;
+    const cleanup = () => {
         titleEl.contentEditable = "false";
+        delete titleEl.dataset.renaming;
+        titleEl.removeEventListener("blur", finish);
+        titleEl.removeEventListener("keydown", onKeydown);
+    };
+    const finish = async () => {
+        if (finishing) return;
+        finishing = true;
         const nextTitle = titleEl.textContent?.trim() || activeBoard.title;
+        cleanup();
+        if (nextTitle === activeBoard.title) {
+            titleEl.textContent = activeBoard.title;
+            return;
+        }
         try {
             const renamed = await renameBoard(activeBoard.id, nextTitle);
             activeBoard = renamed;
@@ -357,9 +430,19 @@ async function renameActiveBoard() {
             );
             titleEl.textContent = activeBoard.title;
         }
-        titleEl.removeEventListener("blur", finish);
     };
-    titleEl.addEventListener("blur", finish, { once: true });
+    const onKeydown = (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            titleEl.blur();
+        } else if (event.key === "Escape") {
+            event.preventDefault();
+            cleanup();
+            titleEl.textContent = activeBoard.title;
+        }
+    };
+    titleEl.addEventListener("blur", finish);
+    titleEl.addEventListener("keydown", onKeydown);
 }
 
 async function runPreflightCheck() {
@@ -490,7 +573,13 @@ function renderCanvasElement() {
                     <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <input type="color" id="wb-color" value="#1e1e2e" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
+                    <select id="wb-color-mode" class="wb-tool wb-color-mode" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}">
+                        <option value="auto" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_auto"))}</option>
+                        <option value="#111827">${escapeHtml(t("module.nextcloud_whiteboard.stroke_black"))}</option>
+                        <option value="#ffffff">${escapeHtml(t("module.nextcloud_whiteboard.stroke_white"))}</option>
+                        <option value="custom">${escapeHtml(t("module.nextcloud_whiteboard.stroke_custom"))}</option>
+                    </select>
+                    <input type="color" id="wb-color" value="#1e1e2e" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" disabled />
                     <select id="wb-stroke-width" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
                         <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
                         <option value="4" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_medium"))}</option>
