@@ -1,9 +1,9 @@
-# Whiteboard-Aktualisierung
+# Whiteboard-Freigabe
 
-## Direkte Seitenaktualisierungen laden fertig
+## Freigabelinks für Whiteboards
 
-Die Whiteboard-Seite verwendet jetzt die gemeinsame Direct-Mount-Hilfe, sodass beim Aktualisieren einer Whiteboard-URL der Ladezustand genauso beendet wird wie bei der SPA-Navigation.
+Whiteboards können jetzt Links über das Share-Gateway erstellen, damit eingeladene Gäste das aktuelle Board öffnen und mit beschränktem Gastzugriff beitragen können.
 
-## Zeichenvorschauen werden korrekt gerendert
+## Canvas-Bearbeitung
 
-Stiftvorschauen verwenden nun den ausgelagerten Element-Renderer und verhindern Laufzeitfehler, nachdem die Whiteboard-Renderhilfen in ein eigenes Modul verschoben wurden.
+Die Whiteboard-Seite deaktiviert nun die Seitenlayout-Bearbeitung, ergänzt benutzerbezogene Rückgängig- und Wiederholen-Schaltflächen und erweitert den Canvas, wenn Inhalte über die sichtbaren Grenzen verschoben werden.

@@ -17,6 +17,7 @@ let composer = null;
 let boards = [];
 let activeBoard = null;
 let activeSession = null;
+let activeShareContext = null;
 let canvasInstance = null;
 let socketInstance = null;
 let savedElements = [];
@@ -307,6 +308,15 @@ function bindCanvasToolbar(canvas) {
     document
         .getElementById("wb-history")
         ?.addEventListener("click", () => void openHistoryPopup());
+    document.getElementById("wb-undo")?.addEventListener("click", () => {
+        canvas.undo?.();
+    });
+    document.getElementById("wb-redo")?.addEventListener("click", () => {
+        canvas.redo?.();
+    });
+    document.getElementById("wb-share")?.addEventListener("click", () => {
+        void openSharePopup();
+    });
     document
         .getElementById("wb-board-title")
         ?.addEventListener("dblclick", () => void renameActiveBoard());
@@ -364,6 +374,69 @@ function bindCanvasToolbar(canvas) {
             canvas.clearAll();
             savedElements = [];
         });
+}
+
+async function openSharePopup() {
+    if (!activeBoard?.id) return;
+    try {
+        const [{ openShareLinksPopup }, { buildShareCallbacks }] =
+            await Promise.all([
+                import("/static/gateways/share/ui/reuse/share-links-popup.js"),
+                import("./share-adapter.js"),
+            ]);
+        await openShareLinksPopup({
+            title: t("module.nextcloud_whiteboard.share_popup_title"),
+            labels: {
+                empty: t("module.nextcloud_whiteboard.share_empty"),
+                untitled: t("module.nextcloud_whiteboard.share_untitled"),
+                copyLink: t("module.nextcloud_whiteboard.share_copy_link"),
+                revoke: t("module.nextcloud_whiteboard.share_revoke"),
+                shareOptions: t(
+                    "module.nextcloud_whiteboard.share_options_label",
+                ),
+                mail: t("ui.reuse.mail"),
+                label: t("module.nextcloud_whiteboard.share_label"),
+                labelPlaceholder: t(
+                    "module.nextcloud_whiteboard.share_label_placeholder",
+                ),
+                expiryLabel: t(
+                    "module.nextcloud_whiteboard.share_expiry_label",
+                ),
+                statusActive: t(
+                    "module.nextcloud_whiteboard.share_status_active",
+                ),
+                statusExpired: t(
+                    "module.nextcloud_whiteboard.share_status_expired",
+                ),
+                expiresAtLabel: t(
+                    "module.nextcloud_whiteboard.share_expires_at_label",
+                ),
+                expiredAtLabel: t(
+                    "module.nextcloud_whiteboard.share_expired_at_label",
+                ),
+                generateLink: t(
+                    "module.nextcloud_whiteboard.share_generate_link",
+                ),
+                done: t("ui.reuse.done"),
+                createFailed: t(
+                    "module.nextcloud_whiteboard.share_create_failed",
+                ),
+                copySuccess: t(
+                    "module.nextcloud_whiteboard.share_copy_success",
+                ),
+                copyFailed: t("module.nextcloud_whiteboard.share_copy_failed"),
+                deleteFailed: t(
+                    "module.nextcloud_whiteboard.share_delete_failed",
+                ),
+            },
+            ...buildShareCallbacks(activeBoard.id),
+        });
+    } catch (error) {
+        reportClientError(
+            error,
+            "module.nextcloud_whiteboard.share_create_failed",
+        );
+    }
 }
 
 async function openHistoryPopup() {
@@ -591,6 +664,10 @@ function renderCanvasElement() {
                     <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <button type="button" id="wb-undo" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}">↶</button>
+                    <button type="button" id="wb-redo" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}">↷</button>
+                </div>
+                <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
                     <input type="color" id="wb-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
                     <select id="wb-stroke-width" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
                         <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
@@ -599,6 +676,7 @@ function renderCanvasElement() {
                     </select>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <button type="button" id="wb-share" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.share_button"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.share_button"))}">🔗</button>
                     <a href="#" id="wb-clear" class="wb-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
                 </div>
                 <span id="wb-board-title" class="wb-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
@@ -669,7 +747,7 @@ function buildElements() {
     ];
 }
 
-export async function mount(root, { signal } = {}) {
+export async function mount(root, { signal, shareContext } = {}) {
     i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/modules/nextcloud-whiteboard/languages",
@@ -684,9 +762,10 @@ export async function mount(root, { signal } = {}) {
         ),
     );
 
-    const initialBoardId = new URLSearchParams(window.location.search).get(
-        "id",
-    );
+    activeShareContext = shareContext ?? null;
+    const initialBoardId =
+        activeShareContext?.payload?.whiteboardId ??
+        new URLSearchParams(window.location.search).get("id");
     if (initialBoardId) {
         activeBoard = {
             id: initialBoardId,
@@ -697,9 +776,10 @@ export async function mount(root, { signal } = {}) {
     signal?.addEventListener("abort", () => teardownCanvas(), { once: true });
 
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: false,
         elements: buildElements(),
         preferenceKey: "nextcloud-whiteboard-layout",
+        persistLayoutPreferences: false,
         i18n,
         pageContext: {
             title: t("module.nextcloud_whiteboard.page_title"),
