@@ -571,6 +571,7 @@ export function registerApiRoutes(router, ctx) {
                 }
                 presence.push({
                     id: entry.username,
+                    sessionId: entry.sessionId,
                     displayName: entry.displayName,
                     handle,
                     avatarKey,
