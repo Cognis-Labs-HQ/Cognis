@@ -1,9 +1,9 @@
-# Freigabe-Flow-Fix
+# Freigabeansicht-Fix
 
-## Whiteboard-Freigaben repariert
+## Whiteboard-Freigabeanzeige repariert
 
-Die Erstellung von Whiteboard-Freigabelinks ignoriert jetzt nicht passende Ergebnisse anderer freigabefähiger Module und verwendet das passende autorisierte Whiteboard-Ergebnis, damit keine falschen 403-Fehler mehr entstehen.
+Whiteboard-Freigabelinks wählen jetzt den passenden Seiten-Renderer statt des ersten Renderer-Hook-Ergebnisses, sodass die geteilte Whiteboard-App geladen wird und nicht die allgemeine Nicht-verfügbar-Meldung erscheint.
 
-## Meeting-Freigaben getrennt
+## Canvas-Überlauf reduziert
 
-Meeting-Freigabe-Hooks und das Share-Gateway wählen nun erfolgreiche passende Stufenergebnisse aus, statt anzunehmen, dass das erste Hook-Ergebnis zur angefragten Ressource gehört. Dadurch können Whiteboard- und Meeting-Freigaben sicher nebeneinander laufen.
+Die Whiteboard-Canvas behält jetzt ihre Standardgröße, solange Inhalte hineinpassen, und fügt Überlaufbereich erst hinzu, wenn Elemente die sichtbaren Canvas-Grenzen wirklich überschreiten.

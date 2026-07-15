@@ -427,8 +427,23 @@ export async function registerShareBootstrapHooks(input: {
             const shellResult =
                 pageResult?.stageResults["resolve-shell"]?.[0] ?? {};
             const rendererResult =
-                pageResult?.stageResults["resolve-resource-renderer"]?.[0] ??
-                {};
+                (getFirstMatchingStageResult(
+                    pageResult?.stageResults,
+                    "resolve-resource-renderer",
+                    (result) => {
+                        if (!result || typeof result !== "object") {
+                            return false;
+                        }
+                        const candidate = result as {
+                            mountScriptUrl?: unknown;
+                            rendererScriptUrl?: unknown;
+                        };
+                        return Boolean(
+                            candidate.mountScriptUrl ||
+                            candidate.rendererScriptUrl,
+                        );
+                    },
+                ) as Record<string, unknown> | null) ?? {};
             return {
                 resolved: true,
                 resourceType: resourceResult.resourceType,

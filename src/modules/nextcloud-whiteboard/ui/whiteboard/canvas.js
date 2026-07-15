@@ -147,13 +147,13 @@ export function createWhiteboardCanvas(canvasElement) {
         const parent = canvasElement.parentElement;
         const rect = parent?.getBoundingClientRect();
         if (!rect) return;
-        const padding = 160;
+        const overflowPadding = 48;
         let bounds = elements.map(getElementBounds);
-        const minX = Math.min(0, ...bounds.map((item) => item.x - padding));
-        const minY = Math.min(0, ...bounds.map((item) => item.y - padding));
+        const minX = Math.min(0, ...bounds.map((item) => item.x));
+        const minY = Math.min(0, ...bounds.map((item) => item.y));
         if (minX < 0 || minY < 0) {
-            const dx = Math.abs(minX);
-            const dy = Math.abs(minY);
+            const dx = minX < 0 ? Math.abs(minX) + overflowPadding : 0;
+            const dy = minY < 0 ? Math.abs(minY) + overflowPadding : 0;
             elements = elements.map((element) =>
                 bumpElementVersion(element, {
                     x: element.x + dx,
@@ -164,14 +164,22 @@ export function createWhiteboardCanvas(canvasElement) {
             parent.scrollLeft += dx;
             parent.scrollTop += dy;
         }
-        const maxX = Math.max(
-            rect.width,
-            ...bounds.map((item) => item.x + item.width + padding),
+        const contentRight = Math.max(
+            0,
+            ...bounds.map((item) => item.x + item.width),
         );
-        const maxY = Math.max(
-            rect.height,
-            ...bounds.map((item) => item.y + item.height + padding),
+        const contentBottom = Math.max(
+            0,
+            ...bounds.map((item) => item.y + item.height),
         );
+        const maxX =
+            contentRight > rect.width
+                ? contentRight + overflowPadding
+                : rect.width;
+        const maxY =
+            contentBottom > rect.height
+                ? contentBottom + overflowPadding
+                : rect.height;
         const width = Math.ceil(maxX);
         const height = Math.ceil(maxY);
         if (canvasElement.width !== width) canvasElement.width = width;
