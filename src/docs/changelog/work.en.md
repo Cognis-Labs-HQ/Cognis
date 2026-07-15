@@ -15,3 +15,7 @@ The Share gateway now supplies guest-safe page defaults that hide navigation and
 ## Whiteboard Sharing Defers to Share Gateway
 
 The whiteboard toolbar now asks the Share gateway to render share controls, so guest sessions do not see a share button and share behavior stays gateway-owned.
+
+## Keyboard Deletion for Selection
+
+Selected whiteboard objects can now be removed directly with the Delete or Backspace key.

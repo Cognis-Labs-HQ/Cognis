@@ -15,3 +15,7 @@ Das Share-Gateway liefert jetzt gastfreundliche Seitenstandards, die Navigation 
 ## Whiteboard-Freigabe nutzt das Share-Gateway
 
 Die Whiteboard-Werkzeugleiste lässt Freigabesteuerungen jetzt vom Share-Gateway rendern, sodass Gastsitzungen keine Freigabeschaltfläche sehen und das Freigabeverhalten im Gateway bleibt.
+
+## Auswahl per Tastatur löschen
+
+Ausgewählte Whiteboard-Objekte können jetzt direkt mit der Entf- oder Rücktaste entfernt werden.

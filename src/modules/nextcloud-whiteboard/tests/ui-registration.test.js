@@ -74,3 +74,25 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /showNavbar:\s*sharePageFlag\("showNavbar",\s*true\)/);
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });
+
+test("nextcloud whiteboard canvas deletes selected objects via keyboard", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+        fs.readFile(
+            new URL("../ui/whiteboard/canvas.js", import.meta.url),
+            "utf8",
+        ),
+    );
+    assert.match(source, /function deleteSelectedElements\(\)/);
+    assert.match(
+        source,
+        /event\.key !== "Delete" && event\.key !== "Backspace"/,
+    );
+    assert.match(
+        source,
+        /canvasElement\.addEventListener\("keydown", onKeyDown\)/,
+    );
+    assert.match(
+        source,
+        /canvasElement\.removeEventListener\("keydown", onKeyDown\)/,
+    );
+});

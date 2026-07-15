@@ -328,6 +328,19 @@ export function createWhiteboardCanvas(canvasElement) {
         scheduleRender();
     }
 
+    function deleteSelectedElements() {
+        if (selectedElementIds.size === 0) return false;
+        const idsToDelete = new Set(selectedElementIds);
+        commitElements(
+            elements.filter((element) => !idsToDelete.has(element.id)),
+        );
+        selectedElementIds = new Set();
+        selectedElementId = null;
+        notifySelection();
+        scheduleRender();
+        return true;
+    }
+
     function toggleElementSelection(elementId) {
         if (!elementId) return;
         selectedElementIds = new Set(selectedElementIds);
@@ -701,6 +714,14 @@ export function createWhiteboardCanvas(canvasElement) {
         }
     }
 
+    function onKeyDown(event) {
+        if (event.key !== "Delete" && event.key !== "Backspace") return;
+        if (deleteSelectedElements()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }
+
     function onPaste(event) {
         const imageFile = [...(event.clipboardData?.files ?? [])].find((file) =>
             file.type.startsWith("image/"),
@@ -730,6 +751,7 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointerup", onPointerUp);
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
+    canvasElement.addEventListener("keydown", onKeyDown);
     canvasElement.addEventListener("dblclick", onDoubleClick);
     canvasElement.addEventListener("auxclick", (event) => {
         if (event.button === 1) event.preventDefault();
@@ -878,6 +900,7 @@ export function createWhiteboardCanvas(canvasElement) {
             canvasElement.removeEventListener("pointerup", onPointerUp);
             canvasElement.removeEventListener("pointercancel", onPointerUp);
             canvasElement.removeEventListener("paste", onPaste);
+            canvasElement.removeEventListener("keydown", onKeyDown);
             canvasElement.removeEventListener("dblclick", onDoubleClick);
             canvasElement.parentElement
                 ?.querySelector(".wb-text-editor")

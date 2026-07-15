@@ -15,3 +15,7 @@ Gateway Share sekarang menyediakan default halaman yang aman untuk tamu dengan m
 ## Berbagi Whiteboard Mengikuti Gateway Share
 
 Toolbar whiteboard sekarang meminta Gateway Share merender kontrol berbagi, sehingga sesi tamu tidak melihat tombol berbagi dan perilaku berbagi tetap dimiliki gateway.
+
+## Hapus Seleksi dengan Keyboard
+
+Objek whiteboard yang dipilih sekarang dapat dihapus langsung dengan tombol Delete atau Backspace.
