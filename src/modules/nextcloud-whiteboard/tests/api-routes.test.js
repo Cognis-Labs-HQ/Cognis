@@ -239,6 +239,67 @@ test("nextcloud whiteboard rename route allows only the owner", async () => {
     assert.equal(ownerRes.json().data.title, "Owner title");
 });
 
+test("nextcloud whiteboard presence route handles store failures without server-level 400", async () => {
+    const db = {
+        async ensureTable() {
+            throw new Error("schema unavailable");
+        },
+        async executeCommand() {
+            return { rows: [] };
+        },
+        async transaction(callback) {
+            await callback(db);
+        },
+    };
+    const router = createRouterCapture();
+    const logs = [];
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                };
+            }
+            if (key === "logging:log") {
+                return (level, message, details) =>
+                    logs.push({ level, message, details });
+            }
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler(
+        "POST",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+    )(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("alice", "user", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        pageId: "board-1",
+                        sessionId: "session-1",
+                        active: true,
+                    }),
+                );
+            },
+        },
+        res,
+    );
+
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.json().error.code, "presence_unavailable");
+    assert.ok(
+        logs.some((entry) => entry.details?.operation === "upsert_presence"),
+    );
+});
+
 test("nextcloud whiteboard registers share hooks on system ctx flow", () => {
     const db = createMemoryDb();
     const router = createRouterCapture();
