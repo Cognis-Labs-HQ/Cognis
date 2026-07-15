@@ -94,8 +94,8 @@ export class NextcloudWhiteboardStore {
                 { name: "display_name", type: "text", notNull: true },
                 { name: "guest", type: "integer", notNull: true, default: 0 },
                 { name: "active", type: "integer", notNull: true, default: 1 },
-                { name: "pointer_x", type: "real" },
-                { name: "pointer_y", type: "real" },
+                { name: "pointer_x", type: "text" },
+                { name: "pointer_y", type: "text" },
                 { name: "pointer_style", type: "text" },
                 { name: "pointer_updated_at", type: "timestamp" },
                 {
@@ -312,10 +312,10 @@ export class NextcloudWhiteboardStore {
                 guest: guest ? 1 : 0,
                 active: active ? 1 : 0,
                 pointer_x: Number.isFinite(Number(pointer?.x))
-                    ? Number(pointer.x)
+                    ? String(Number(pointer.x))
                     : null,
                 pointer_y: Number.isFinite(Number(pointer?.y))
-                    ? Number(pointer.y)
+                    ? String(Number(pointer.y))
                     : null,
                 pointer_style: String(pointer?.style ?? "").trim(),
                 pointer_updated_at: String(pointer?.updatedAt ?? "").trim(),
