@@ -778,14 +778,16 @@ export async function mount(root, { signal, shareContext } = {}) {
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
 
-    await loadBoards().catch((error) =>
-        reportClientError(
-            error,
-            "module.nextcloud_whiteboard.load_boards_failed",
-        ),
-    );
-
     activeShareContext = shareContext ?? null;
+    if (!activeShareContext) {
+        await loadBoards().catch((error) =>
+            reportClientError(
+                error,
+                "module.nextcloud_whiteboard.load_boards_failed",
+            ),
+        );
+    }
+
     const initialBoardId =
         activeShareContext?.payload?.whiteboardId ??
         new URLSearchParams(window.location.search).get("id");

@@ -1,9 +1,13 @@
-# Perbaikan Tampilan Share
+# Perbaikan Share Whiteboard
 
-## Tampilan share whiteboard diperbaiki
+## Guest share whiteboard diperbaiki
 
-Tautan share whiteboard kini memilih renderer halaman yang sesuai, bukan hasil hook renderer pertama, sehingga aplikasi whiteboard bersama dimuat alih-alih menampilkan pesan konten bersama tidak tersedia.
+Sesi share whiteboard kini memakai profil guest yang dibuat oleh Share gateway untuk tautan tersebut, sehingga guest mendapat nama stabil yang dihasilkan otomatis tanpa perlu profil terlihat.
 
-## Overflow canvas dikurangi
+## Pencabutan share diperbaiki
 
-Canvas whiteboard kini mempertahankan ukuran default saat konten masih muat dan hanya menambahkan ruang overflow ketika elemen benar-benar melewati batas canvas yang terlihat.
+Penghapusan share whiteboard kini tetap berhasil meski ada hook pencabutan dari modul lain dan mengirim konteks pemilik yang sama seperti share meeting.
+
+## Panning klik tengah ditambahkan
+
+Canvas whiteboard kini mendukung drag dengan tombol tengah mouse untuk menggeser area canvas yang meluas tanpa mengganti tool atau memilih objek.

@@ -134,6 +134,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     flowCtx.flow.extend(
         "revoke-share-token",
         "authorize-revocation",
+        { id: "test:unsupported-revocation" },
+        () => ({ authorized: false, reason: "unsupported_resource_type" }),
+    );
+    flowCtx.flow.extend(
+        "revoke-share-token",
+        "authorize-revocation",
         { id: "test:authorize-revocation" },
         (stageCtx) => ({ authorized: true, ...(stageCtx.input ?? {}) }),
     );
