@@ -739,8 +739,20 @@ async function runPreflightCheck() {
     return true;
 }
 
+function syncBoardUrl(boardId) {
+    if (activeShareContext || !boardId) return;
+    const nextUrl = `/whiteboard?id=${encodeURIComponent(boardId)}`;
+    if (
+        window.location.pathname !== "/whiteboard" ||
+        window.location.search !== `?id=${encodeURIComponent(boardId)}`
+    ) {
+        window.history.replaceState(null, "", nextUrl);
+    }
+}
+
 async function openBoard(board) {
     activeBoard = board;
+    syncBoardUrl(board?.id);
     teardownCanvas();
     composer.refresh(buildElements());
 

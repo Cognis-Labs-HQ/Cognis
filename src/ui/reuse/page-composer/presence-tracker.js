@@ -22,9 +22,10 @@ import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
 import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "./pointer-tracker.js";
 
-const HEARTBEAT_INTERVAL_MS = 20000;
-const REFRESH_INTERVAL_MS = 10000;
-const ACTIVE_WINDOW_MS = 45000;
+const HEARTBEAT_INTERVAL_MS = 5000;
+const REFRESH_INTERVAL_MS = 1500;
+const ACTIVE_WINDOW_MS = 15000;
+const IDLE_AFTER_MS = 30000;
 
 function normalizePresenceName(value) {
     return (
@@ -81,6 +82,15 @@ export function createPresenceTracker({
     let markInactive = null;
     let handleVisibilityChange = null;
     let pointerTracker = null;
+    let lastActivityAt = Date.now();
+
+    function noteActivity() {
+        lastActivityAt = Date.now();
+    }
+
+    function isRecentlyActive() {
+        return Date.now() - lastActivityAt <= IDLE_AFTER_MS;
+    }
 
     function currentPageId() {
         return String(resolveOption(pageId) ?? "").trim();
@@ -95,7 +105,7 @@ export function createPresenceTracker({
             body: JSON.stringify({
                 pageId: resolvedPageId,
                 sessionId,
-                active,
+                active: active && isRecentlyActive(),
                 pointer: pointerTracker?.getPointerPayload?.() ?? null,
             }),
             keepalive,
@@ -140,12 +150,13 @@ export function createPresenceTracker({
             pointerTracker = createPointerTracker({
                 contentGrid,
                 i18n,
+                noteActivity,
                 requestPresenceUpdate: () => void sendPresence(true),
             });
         }
         void sendPresence(true).then(refresh);
         heartbeatTimer = window.setInterval(
-            () => void sendPresence(true),
+            () => void sendPresence(true).then(refresh),
             HEARTBEAT_INTERVAL_MS,
         );
         refreshTimer = window.setInterval(
@@ -159,6 +170,9 @@ export function createPresenceTracker({
         };
         window.addEventListener("pagehide", markInactive);
         window.addEventListener("beforeunload", markInactive);
+        for (const eventName of ["pointermove", "keydown", "focus"]) {
+            window.addEventListener(eventName, noteActivity, { passive: true });
+        }
         document.addEventListener("visibilitychange", handleVisibilityChange);
     }
 
@@ -169,6 +183,9 @@ export function createPresenceTracker({
         if (markInactive) {
             window.removeEventListener("pagehide", markInactive);
             window.removeEventListener("beforeunload", markInactive);
+        }
+        for (const eventName of ["pointermove", "keydown", "focus"]) {
+            window.removeEventListener(eventName, noteActivity);
         }
         if (handleVisibilityChange) {
             document.removeEventListener(

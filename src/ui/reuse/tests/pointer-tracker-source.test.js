@@ -22,11 +22,14 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /export function createPointerTracker/);
     assert.match(pointerSource, /contentGrid\.addEventListener\("pointermove"/);
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
+    assert.match(pointerSource, /noteActivity\?\.\(\)/);
     assert.match(pointerSource, /page-pointer--/);
     assert.match(presenceSource, /pointerTracking\?\.enabled === true/);
     assert.match(
         presenceSource,
         /pointer: pointerTracker\?\.getPointerPayload/,
     );
+    assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 1500/);
+    assert.match(presenceSource, /function isRecentlyActive\(\)/);
     assert.match(composerSource, /pointerTracking\?: \{ enabled\?: boolean \}/);
 });

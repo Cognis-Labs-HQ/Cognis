@@ -59,6 +59,7 @@ export function createPointerTracker({
     contentGrid,
     i18n,
     requestPresenceUpdate,
+    noteActivity,
 } = {}) {
     if (!(contentGrid instanceof HTMLElement)) {
         return {
@@ -111,6 +112,7 @@ export function createPointerTracker({
         if (destroyed) return;
         const bounds = contentGrid.getBoundingClientRect();
         if (!bounds.width || !bounds.height) return;
+        noteActivity?.();
         pointerPayload = {
             x: Math.min(
                 1,
@@ -131,6 +133,7 @@ export function createPointerTracker({
         pointerStyle = POINTER_STYLES[(index + 1) % POINTER_STYLES.length];
         window.localStorage.setItem(POINTER_STYLE_STORAGE_KEY, pointerStyle);
         if (pointerPayload) {
+            noteActivity?.();
             pointerPayload = {
                 ...pointerPayload,
                 style: pointerStyle,
