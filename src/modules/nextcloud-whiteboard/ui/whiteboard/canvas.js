@@ -1,5 +1,5 @@
 import {
-    boxContains,
+    boxContainsElementContent,
     buildDragBox,
     buildFreedrawElement,
     buildImageElement,
@@ -9,6 +9,7 @@ import {
     drawAnchor,
     getElementAnchorPoints,
     getElementBounds,
+    elementContainsPoint,
     isStrokeWidthApplicable,
     renderElement,
 } from "./elements.js";
@@ -20,7 +21,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let isDrawing = false;
     let strokeColor = "auto";
     let strokeWidth = 4;
-    let activeTool = "pen";
+    let activeTool = "select";
     let imageUploadMaxBytes = 1048576;
     let selectedElementId = null;
     let selectedElementIds = new Set();
@@ -140,7 +141,7 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function resizeCanvas() {
-        updateCanvasOverflow();
+        if (!isDrawing) updateCanvasOverflow();
         scheduleRender();
     }
 
@@ -173,14 +174,18 @@ export function createWhiteboardCanvas(canvasElement) {
             0,
             ...bounds.map((item) => item.y + item.height),
         );
-        const maxX =
+        const maxX = Math.max(
+            canvasElement.width || 0,
             contentRight > rect.width
                 ? contentRight + overflowPadding
-                : rect.width;
-        const maxY =
+                : rect.width,
+        );
+        const maxY = Math.max(
+            canvasElement.height || 0,
             contentBottom > rect.height
                 ? contentBottom + overflowPadding
-                : rect.height;
+                : rect.height,
+        );
         const width = Math.ceil(maxX);
         const height = Math.ceil(maxY);
         if (canvasElement.width !== width) canvasElement.width = width;
@@ -229,17 +234,7 @@ export function createWhiteboardCanvas(canvasElement) {
     function findElementAt(x, y) {
         return [...elements]
             .reverse()
-            .find(
-                (element) =>
-                    x >= getElementBounds(element).x &&
-                    x <=
-                        getElementBounds(element).x +
-                            getElementBounds(element).width &&
-                    y >= getElementBounds(element).y &&
-                    y <=
-                        getElementBounds(element).y +
-                            getElementBounds(element).height,
-            );
+            .find((element) => elementContainsPoint(element, x, y));
     }
 
     function commitElements(nextElements, { record = true } = {}) {
@@ -302,9 +297,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const box = buildDragBox(dragStartPoint, endPoint);
         eraserSelectionIds = new Set(
             elements
-                .filter((element) =>
-                    boxContains(box, getElementBounds(element)),
-                )
+                .filter((element) => boxContainsElementContent(box, element))
                 .map((element) => element.id),
         );
         scheduleRender();
@@ -313,6 +306,11 @@ export function createWhiteboardCanvas(canvasElement) {
     function setActiveTool(tool) {
         activeTool = tool;
         eraserSelectionIds = new Set();
+        if (tool !== "select" && selectedElementIds.size > 0) {
+            selectedElementIds = new Set();
+            selectedElementId = null;
+            notifySelection();
+        }
         canvasElement.style.cursor =
             tool === "select"
                 ? "grab"
@@ -328,6 +326,19 @@ export function createWhiteboardCanvas(canvasElement) {
         selectedElementId = elementId ?? null;
         notifySelection();
         scheduleRender();
+    }
+
+    function deleteSelectedElements() {
+        if (selectedElementIds.size === 0) return false;
+        const idsToDelete = new Set(selectedElementIds);
+        commitElements(
+            elements.filter((element) => !idsToDelete.has(element.id)),
+        );
+        selectedElementIds = new Set();
+        selectedElementId = null;
+        notifySelection();
+        scheduleRender();
+        return true;
     }
 
     function toggleElementSelection(elementId) {
@@ -420,9 +431,15 @@ export function createWhiteboardCanvas(canvasElement) {
             return;
         }
         if (event.button !== 0) return;
+        event.preventDefault();
         canvasElement.setPointerCapture(event.pointerId);
         canvasElement.focus();
         isDrawing = true;
+        if (activeTool !== "select" && selectedElementIds.size > 0) {
+            selectedElementIds = new Set();
+            selectedElementId = null;
+            notifySelection();
+        }
         const [x, y] = getCanvasPoint(event);
         dragStartPoint = [x, y];
         historySnapshot = cloneElements();
@@ -503,6 +520,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 panState.scrollTop - (event.clientY - panState.startY);
             return;
         }
+        if (isDrawing) event.preventDefault();
         const [x, y] = getCanvasPoint(event);
         if (!isDrawing) {
             if (activeTool === "select") {
@@ -520,10 +538,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 selectedElementIds = new Set(
                     elements
                         .filter((element) =>
-                            boxContains(
-                                dragSelectBox,
-                                getElementBounds(element),
-                            ),
+                            boxContainsElementContent(dragSelectBox, element),
                         )
                         .map((element) => element.id),
                 );
@@ -699,10 +714,86 @@ export function createWhiteboardCanvas(canvasElement) {
         }
     }
 
-    function onPaste(event) {
-        const imageFile = [...(event.clipboardData?.files ?? [])].find((file) =>
-            file.type.startsWith("image/"),
+    function onKeyDown(event) {
+        if (event.key !== "Delete" && event.key !== "Backspace") return;
+        if (deleteSelectedElements()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }
+
+    function calculateImageDimensions(image) {
+        const maxWidth = 480;
+        const maxHeight = 360;
+        const naturalWidth = Math.max(
+            1,
+            image.naturalWidth || image.width || 240,
         );
+        const naturalHeight = Math.max(
+            1,
+            image.naturalHeight || image.height || 180,
+        );
+        const scale = Math.min(
+            1,
+            maxWidth / naturalWidth,
+            maxHeight / naturalHeight,
+        );
+        return {
+            width: Math.round(naturalWidth * scale),
+            height: Math.round(naturalHeight * scale),
+        };
+    }
+
+    function createImageElementFromDataUrl(dataUrl) {
+        const image = new Image();
+        image.addEventListener(
+            "load",
+            () => {
+                commitCreatedElement(
+                    buildImageElement(
+                        [24, 24],
+                        dataUrl,
+                        calculateImageDimensions(image),
+                    ),
+                );
+            },
+            { once: true },
+        );
+        image.addEventListener(
+            "error",
+            () => {
+                commitCreatedElement(buildImageElement([24, 24], dataUrl));
+            },
+            { once: true },
+        );
+        image.src = dataUrl;
+    }
+
+    function eventTargetAcceptsTextInput(event) {
+        const target = event.target;
+        return Boolean(
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement ||
+            target?.isContentEditable,
+        );
+    }
+
+    function findClipboardImageFile(event) {
+        const files = [...(event.clipboardData?.files ?? [])];
+        const directFile = files.find((file) => file.type.startsWith("image/"));
+        if (directFile) return directFile;
+        const items = [...(event.clipboardData?.items ?? [])];
+        return (
+            items
+                .find((item) => item.type.startsWith("image/"))
+                ?.getAsFile?.() ?? null
+        );
+    }
+
+    function onPaste(event) {
+        if (event.defaultPrevented) return;
+        if (eventTargetAcceptsTextInput(event)) return;
+        const imageFile = findClipboardImageFile(event);
         if (!imageFile) return;
         event.preventDefault();
         if (imageFile.size > imageUploadMaxBytes) {
@@ -715,10 +806,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const reader = new FileReader();
         reader.addEventListener("load", () => {
             if (typeof reader.result !== "string") return;
-            commitElements([
-                ...elements,
-                buildImageElement([24, 24], reader.result),
-            ]);
+            createImageElementFromDataUrl(reader.result);
         });
         reader.readAsDataURL(imageFile);
     }
@@ -728,6 +816,9 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointerup", onPointerUp);
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
+    document.addEventListener("paste", onPaste);
+    canvasElement.addEventListener("keydown", onKeyDown);
+    canvasElement.addEventListener("whiteboard:image-loaded", scheduleRender);
     canvasElement.addEventListener("dblclick", onDoubleClick);
     canvasElement.addEventListener("auxclick", (event) => {
         if (event.button === 1) event.preventDefault();
@@ -876,6 +967,12 @@ export function createWhiteboardCanvas(canvasElement) {
             canvasElement.removeEventListener("pointerup", onPointerUp);
             canvasElement.removeEventListener("pointercancel", onPointerUp);
             canvasElement.removeEventListener("paste", onPaste);
+            document.removeEventListener("paste", onPaste);
+            canvasElement.removeEventListener("keydown", onKeyDown);
+            canvasElement.removeEventListener(
+                "whiteboard:image-loaded",
+                scheduleRender,
+            );
             canvasElement.removeEventListener("dblclick", onDoubleClick);
             canvasElement.parentElement
                 ?.querySelector(".wb-text-editor")

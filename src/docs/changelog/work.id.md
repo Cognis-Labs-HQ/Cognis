@@ -1,13 +1,29 @@
-# Sinkron Langsung Papan
+# Kehadiran Whiteboard dan Default Berbagi
 
-## Kolaborasi langsung diperbaiki
+## Kehadiran Dibersihkan Cepat
 
-Perubahan papan tulis kini memakai protokol Socket.IO Nextcloud Whiteboard, sehingga pemilik dan tamu berbagi menerima pembaruan adegan melalui server kolaborasi yang dikonfigurasi, bukan hanya snapshot Cognis.
+Kehadiran whiteboard sekarang segera menghapus sesi tidak aktif dan menyembunyikan pengunjung usang yang tidak memperbarui status selama lebih dari lima menit.
 
-## Kehadiran halaman ditambahkan
+## Sinkronisasi Whiteboard Dimulai Bersih
 
-Page Composer kini dapat menampilkan bilah kehadiran ringkas di atas kisi konten. Halaman papan tulis memakainya untuk menampilkan inisial pemilik dan tamu, cincin aktif, serta pratinjau profil untuk pengguna masuk.
+Indikator sinkronisasi whiteboard sekarang keluar dari status sinkronisasi segera setelah socket bergabung ke ruang, tanpa menunggu edit kanvas pertama.
 
-## Sesi berbagi ditingkatkan
+## Halaman Berbagi Aman untuk Tamu secara Default
 
-Tamu berbagi papan tulis mempertahankan nama tampilan yang dibuat Share Gateway dalam sesi kehadiran dan kolaborasi papan tulis.
+Gateway Share sekarang menyediakan default halaman yang aman untuk tamu dengan menyembunyikan navigasi dan kontrol berbagi kecuali halaman bersama mengaktifkannya secara eksplisit.
+
+## Berbagi Whiteboard Mengikuti Gateway Share
+
+Toolbar whiteboard sekarang meminta Gateway Share merender kontrol berbagi, sehingga sesi tamu tidak melihat tombol berbagi dan perilaku berbagi tetap dimiliki gateway.
+
+## Hapus Seleksi dengan Keyboard
+
+Objek whiteboard yang dipilih sekarang dapat dihapus langsung dengan tombol Delete atau Backspace.
+
+## Gambar Unggahan Ditampilkan dan Dipilih
+
+Unggahan gambar yang ditempel sekarang dimasukkan melalui alur pembuatan normal, langsung disimpan, dipilih untuk diubah ukurannya, dan digambar ulang setelah browser selesai memuat gambar.
+
+## Gambar Clipboard dan Default Seleksi
+
+Tempel gambar dari clipboard sekarang bekerja dari halaman maupun kanvas, membaca item gambar clipboard saat file tidak langsung tersedia, dan whiteboard yang dimuat ulang kini memakai alat seleksi secara default.

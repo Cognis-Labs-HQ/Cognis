@@ -199,3 +199,16 @@ test("share session-flow-hooks.js registers an apply-alternate-auth hook on auth
         "share session-flow-hooks.js must register an apply-alternate-auth hook on authenticate-session",
     );
 });
+
+test("share session-flow-hooks.js defaults guest share chrome to hidden", () => {
+    const src = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    assert.match(src, /SHARE_GUEST_PAGE_DEFAULTS[\s\S]*showNavbar:\s*false/);
+    assert.match(
+        src,
+        /SHARE_GUEST_PAGE_DEFAULTS[\s\S]*showShareControls:\s*false/,
+    );
+    assert.match(
+        src,
+        /page:\s*\{[\s\S]*\.\.\.SHARE_GUEST_PAGE_DEFAULTS[\s\S]*\.\.\.\(shareData\.page \?\? \{\}\)/,
+    );
+});

@@ -67,5 +67,92 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /\/static\/modules\/nextcloud-whiteboard\/share-adapter\.js/,
     );
+    assert.match(
+        source,
+        /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,
+    );
+    assert.match(source, /showNavbar:\s*sharePageFlag\("showNavbar",\s*true\)/);
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
+});
+
+test("nextcloud whiteboard canvas deletes selected objects via keyboard", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+        fs.readFile(
+            new URL("../ui/whiteboard/canvas.js", import.meta.url),
+            "utf8",
+        ),
+    );
+    assert.match(source, /function deleteSelectedElements\(\)/);
+    assert.match(
+        source,
+        /event\.key !== "Delete" && event\.key !== "Backspace"/,
+    );
+    assert.match(
+        source,
+        /canvasElement\.addEventListener\("keydown", onKeyDown\)/,
+    );
+    assert.match(
+        source,
+        /canvasElement\.removeEventListener\("keydown", onKeyDown\)/,
+    );
+});
+
+test("nextcloud whiteboard image paste saves and selects resizable image objects", async () => {
+    const [canvasSource, elementsSource] = await Promise.all([
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/elements.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+    ]);
+    assert.match(
+        canvasSource,
+        /function createImageElementFromDataUrl\(dataUrl\)/,
+    );
+    assert.match(canvasSource, /commitCreatedElement\(\s*buildImageElement/);
+    assert.match(
+        canvasSource,
+        /document\.addEventListener\("paste", onPaste\)/,
+    );
+    assert.match(canvasSource, /if \(event\.defaultPrevented\) return/);
+    assert.match(canvasSource, /findClipboardImageFile\(event\)/);
+    assert.doesNotMatch(
+        canvasSource,
+        /commitElements\(\[\s*\.\.\.elements,\s*buildImageElement/,
+    );
+    assert.match(elementsSource, /const imageElementCache = new Map\(\)/);
+    assert.match(elementsSource, /whiteboard:image-loaded/);
+    assert.match(
+        canvasSource,
+        /addEventListener\("whiteboard:image-loaded", scheduleRender\)/,
+    );
+    assert.match(
+        elementsSource,
+        /export function buildImageElement\(point, dataUrl, dimensions = \{\}\)/,
+    );
+});
+
+test("nextcloud whiteboard defaults to select after canvas refresh", async () => {
+    const [canvasSource, appSource] = await Promise.all([
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+        ),
+    ]);
+    assert.match(canvasSource, /let activeTool = "select"/);
+    assert.match(appSource, /let activeTool = "select"/);
+    assert.match(appSource, /data-tool="select" class="wb-tool active"/);
+    assert.match(appSource, /data-tool="pen" class="wb-tool"/);
 });

@@ -63,6 +63,9 @@ export function mountShareButton({
     label,
     onClick,
     id = "share-gateway-share-btn",
+    className = "btn-confirm btn-animated",
+    icon = "🔗",
+    title = "",
     signal,
 } = {}) {
     if (!(container instanceof Element)) return null;
@@ -71,8 +74,12 @@ export function mountShareButton({
     const button = document.createElement("button");
     button.id = id;
     button.type = "button";
-    button.className = "btn-confirm btn-animated";
-    button.textContent = `🔗 ${label ?? ""}`;
+    button.className = className;
+    button.textContent = `${icon ? `${icon} ` : ""}${label ?? ""}`;
+    if (title) {
+        button.title = title;
+        button.setAttribute("aria-label", title);
+    }
     if (typeof onClick === "function") {
         button.addEventListener("click", onClick, { signal });
     }

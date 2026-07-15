@@ -1,13 +1,29 @@
-# Whiteboard Live-Sync
+# Whiteboard-Präsenz und Freigabe-Standards
 
-## Live-Zusammenarbeit korrigiert
+## Präsenz verschwindet zeitnah
 
-Whiteboard-Änderungen verwenden jetzt das Socket.IO-Protokoll von Nextcloud Whiteboard, sodass Besitzer und Freigabe-Gäste Szenenaktualisierungen über den konfigurierten Kollaborationsserver erhalten statt nur über Cognis-Snapshots.
+Die Whiteboard-Präsenz entfernt inaktive Sitzungen jetzt sofort und blendet veraltete Besucher aus, die sich seit mehr als fünf Minuten nicht gemeldet haben.
 
-## Seitenpräsenz hinzugefügt
+## Whiteboard-Synchronisierung startet sauber
 
-Der Page Composer kann oberhalb des Inhaltsrasters eine kompakte Präsenzleiste anzeigen. Die Whiteboard-Seite nutzt sie für Initialen von Besitzern und Gästen, aktive grüne Ringe und Profilvorschauen für angemeldete Benutzer.
+Die Synchronisierungsanzeige des Whiteboards verlässt den Synchronisierungsstatus, sobald der Socket dem Raum beigetreten ist, ohne auf die erste Canvas-Bearbeitung zu warten.
 
-## Freigabesitzungen verbessert
+## Geteilte Seiten nutzen gastfreundliche Standardwerte
 
-Whiteboard-Freigabe-Gäste behalten ihre vom Share-Gateway erzeugten Anzeigenamen in Präsenz- und Kollaborationssitzungen.
+Das Share-Gateway liefert jetzt gastfreundliche Seitenstandards, die Navigation und Freigabesteuerungen ausblenden, sofern eine geteilte Seite sie nicht ausdrücklich aktiviert.
+
+## Whiteboard-Freigabe nutzt das Share-Gateway
+
+Die Whiteboard-Werkzeugleiste lässt Freigabesteuerungen jetzt vom Share-Gateway rendern, sodass Gastsitzungen keine Freigabeschaltfläche sehen und das Freigabeverhalten im Gateway bleibt.
+
+## Auswahl per Tastatur löschen
+
+Ausgewählte Whiteboard-Objekte können jetzt direkt mit der Entf- oder Rücktaste entfernt werden.
+
+## Hochgeladene Bilder werden angezeigt und ausgewählt
+
+Eingefügte Bild-Uploads werden jetzt über den normalen Erstellungsablauf eingefügt, sofort gespeichert, zum Skalieren ausgewählt und nach dem Laden durch den Browser neu gezeichnet.
+
+## Zwischenablagebilder und Standardauswahl
+
+Das Einfügen von Bildern aus der Zwischenablage funktioniert jetzt auf der Seite ebenso wie auf der Canvas, liest Bild-Clipboard-Elemente, wenn Dateien nicht direkt bereitstehen, und aktualisierte Whiteboards starten mit dem Auswahlwerkzeug.

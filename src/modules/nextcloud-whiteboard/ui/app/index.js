@@ -38,6 +38,17 @@ function reportClientError(error, fallbackKey) {
     showToast(error?.message || t(fallbackKey), { variant: "error" });
 }
 
+function sharePageFlag(name, fallback) {
+    if (!activeShareContext?.page) return fallback;
+    return activeShareContext.page[name] !== undefined
+        ? Boolean(activeShareContext.page[name])
+        : fallback;
+}
+
+function canManageShares() {
+    return sharePageFlag("showShareControls", !activeShareContext);
+}
+
 function updateSyncStatusBox() {
     const statusBox = document.getElementById("wb-sync-status");
     if (!statusBox) return;
@@ -235,6 +246,7 @@ function connectSocket(io, session, canvas) {
             encodeSceneMessage(type, elements),
             [],
         );
+        setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
     }, EMIT_DEBOUNCE_MS);
 
     canvas.onChange((elements, meta) => {
@@ -264,14 +276,21 @@ function connectSocket(io, session, canvas) {
 
     socket.on("room-user-change", () => {
         joinedRoom = true;
+        setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
         if (isDedicatedSyncer)
             emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
     });
 
     socket.on("sync-designate", ({ isSyncer } = {}) => {
         isDedicatedSyncer = Boolean(isSyncer);
-        if (joinedRoom && isDedicatedSyncer)
+        if (joinedRoom && isDedicatedSyncer) {
             emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
+        } else if (joinedRoom) {
+            setSyncStatus(
+                "synced",
+                "module.nextcloud_whiteboard.status_synced",
+            );
+        }
     });
 
     socket.on("user-joined", () => {
@@ -346,7 +365,7 @@ function bindCanvasToolbar(canvas) {
         "arrow",
     ]);
     let selectedElement = null;
-    let activeTool = "pen";
+    let activeTool = "select";
 
     function activateTool(tool) {
         activeTool = tool;
@@ -400,9 +419,9 @@ function bindCanvasToolbar(canvas) {
     document.getElementById("wb-redo")?.addEventListener("click", () => {
         canvas.redo?.();
     });
-    document.getElementById("wb-share")?.addEventListener("click", () => {
-        void openSharePopup();
-    });
+    if (canManageShares()) {
+        bindShareButton(toolbar);
+    }
     document
         .getElementById("wb-board-title")
         ?.addEventListener("dblclick", () => void renameActiveBoard());
@@ -462,8 +481,29 @@ function bindCanvasToolbar(canvas) {
         });
 }
 
+async function bindShareButton(toolbar) {
+    const slot = toolbar.querySelector("#wb-share-slot");
+    if (!(slot instanceof HTMLElement) || !activeBoard?.id) return;
+    let shareModule;
+    try {
+        shareModule =
+            await import("/static/gateways/share/ui/reuse/share-button.js");
+    } catch {
+        return;
+    }
+    shareModule.mountShareButton?.({
+        container: slot,
+        label: t("module.nextcloud_whiteboard.share_button"),
+        id: "wb-share",
+        className: "wb-tool",
+        icon: "🔗",
+        title: t("module.nextcloud_whiteboard.share_button"),
+        onClick: () => void openSharePopup(),
+    });
+}
+
 async function openSharePopup() {
-    if (!activeBoard?.id) return;
+    if (!activeBoard?.id || !canManageShares()) return;
     try {
         const [{ openShareLinksPopup }, { buildShareCallbacks }] =
             await Promise.all([
@@ -704,10 +744,10 @@ async function openBoard(board) {
         canvasInstance.applyElements(savedElements);
     }
 
+    setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
     socketInstance = connectSocket(io, session, canvasInstance);
     composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
-    setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
 
     setOverlayVisible(false);
 }
@@ -738,8 +778,8 @@ function renderCanvasElement() {
                     <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">↺</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" data-tool="select" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
-                    <button type="button" data-tool="pen" class="wb-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
+                    <button type="button" data-tool="select" class="wb-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
+                    <button type="button" data-tool="pen" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
                     <button type="button" data-tool="rectangle" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
                     <button type="button" data-tool="diamond" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
                     <button type="button" data-tool="ellipse" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
@@ -754,14 +794,14 @@ function renderCanvasElement() {
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
                     <input type="color" id="wb-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
-                    <select id="wb-stroke-width" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
+                    <select id="wb-stroke-width" class="wb-tool theme-select" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
                         <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
                         <option value="4" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_medium"))}</option>
                         <option value="8">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thick"))}</option>
                     </select>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" id="wb-share" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.share_button"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.share_button"))}">🔗</button>
+                    ${canManageShares() ? '<span id="wb-share-slot"></span>' : ""}
                     <a href="#" id="wb-clear" class="wb-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
                 </div>
                 <span id="wb-board-title" class="wb-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
@@ -878,6 +918,10 @@ export async function mount(root, { signal, shareContext } = {}) {
             title: t("module.nextcloud_whiteboard.page_title"),
             subtitle: t("module.nextcloud_whiteboard.page_subtitle"),
         },
+        showNavbar: sharePageFlag("showNavbar", true),
+        showTopbar: sharePageFlag("showTopbar", true),
+        showFooter: sharePageFlag("showFooter", true),
+        showThemeToggle: sharePageFlag("showThemeToggle", true),
     });
     await composer.init();
 

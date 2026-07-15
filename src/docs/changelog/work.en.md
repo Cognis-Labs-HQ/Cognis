@@ -1,13 +1,29 @@
-# Whiteboard Live Sync
+# Whiteboard Presence and Share Defaults
 
-## Fixed live collaboration
+## Presence Clears Promptly
 
-Whiteboard edits now use the Nextcloud Whiteboard Socket.IO protocol so owners and share guests receive scene updates through the configured collaboration server instead of only Cognis snapshot persistence.
+Whiteboard presence now drops inactive sessions immediately and hides stale visitors that have not checked in for more than five minutes.
 
-## Added page presence
+## Whiteboard Sync Starts Cleanly
 
-The page composer can render a compact presence strip above the content grid. The whiteboard page uses it to show owner and guest initials, active rings, and profile previews for signed-in users.
+The whiteboard sync indicator now moves out of the syncing state as soon as the socket joins the room, without waiting for the first canvas edit.
 
-## Improved share sessions
+## Shared Pages Default to Guest-Safe Chrome
 
-Whiteboard share guests keep their gateway-generated display names in whiteboard presence and collaboration sessions.
+The Share gateway now supplies guest-safe page defaults that hide navigation and share controls unless a shared page explicitly opts into them.
+
+## Whiteboard Sharing Defers to Share Gateway
+
+The whiteboard toolbar now asks the Share gateway to render share controls, so guest sessions do not see a share button and share behavior stays gateway-owned.
+
+## Keyboard Deletion for Selection
+
+Selected whiteboard objects can now be removed directly with the Delete or Backspace key.
+
+## Uploaded Images Render and Select
+
+Pasted image uploads are now inserted through the normal creation flow, saved immediately, selected for resizing, and redrawn after the browser finishes loading the image.
+
+## Clipboard Images and Select Default
+
+Clipboard image paste now works from the page as well as the canvas, reads image clipboard items when files are not exposed directly, and refreshed whiteboards now default to the select tool.
