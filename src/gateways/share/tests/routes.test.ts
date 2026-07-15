@@ -157,6 +157,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     flowCtx.flow.extend(
         "construct-share-page",
         "resolve-resource-renderer",
+        { id: "test:unsupported-renderer" },
+        () => null,
+    );
+    flowCtx.flow.extend(
+        "construct-share-page",
+        "resolve-resource-renderer",
         { id: "test:renderer" },
         () => ({
             rendererScriptUrl: "/static/modules/jitsi-meet/share-renderer.js",

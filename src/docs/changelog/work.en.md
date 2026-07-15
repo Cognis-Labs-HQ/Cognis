@@ -1,9 +1,9 @@
-# Share Flow Fix
+# Share View Fix
 
-## Fixed whiteboard share links
+## Fixed whiteboard share display
 
-Whiteboard share-link creation now ignores unsupported results from other share-enabled modules and selects the matching authorized whiteboard result, preventing false 403 errors when multiple modules extend the same Share flow.
+Whiteboard share links now select the matching page renderer instead of the first renderer hook result, so the shared whiteboard app mounts instead of showing the generic unavailable shared-content fallback.
 
-## Kept meeting shares isolated
+## Reduced canvas overflow
 
-Meeting share hooks and the Share gateway now select successful matching stage results instead of assuming the first hook result belongs to the requested resource, so whiteboard and meeting sharing can coexist safely.
+The whiteboard canvas now keeps its default size when content fits and only adds overflow space once elements genuinely pass the visible canvas bounds.

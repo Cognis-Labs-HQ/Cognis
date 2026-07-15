@@ -31,7 +31,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | ------------------------- | ---------------------------- | ------- |
 | Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
 | Authentifizierung (auth)  | `src/gateways/auth/`         | `1.4.9` |
-| Share                     | `src/gateways/share/`        | `1.2.3` |
+| Share                     | `src/gateways/share/`        | `1.2.4` |
 | Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
 | Social                    | `src/gateways/social/`       | `1.2.6` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
@@ -57,6 +57,6 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | -------------------- | ----------------------------------- | -------- |
 | Analytik             | `src/modules/analytics/`            | `2.0.1`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.13` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.14` |
 | Cognis Japanisch     | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis Englisch      | `src/modules/study/languages/en/`   | `1.2.2`  |

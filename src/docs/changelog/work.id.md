@@ -1,9 +1,9 @@
-# Perbaikan Alur Share
+# Perbaikan Tampilan Share
 
-## Tautan share whiteboard diperbaiki
+## Tampilan share whiteboard diperbaiki
 
-Pembuatan tautan share whiteboard kini mengabaikan hasil yang tidak cocok dari modul lain yang juga memakai Share flow dan memilih hasil whiteboard yang sesuai serta terotorisasi, sehingga kesalahan 403 palsu tidak lagi muncul.
+Tautan share whiteboard kini memilih renderer halaman yang sesuai, bukan hasil hook renderer pertama, sehingga aplikasi whiteboard bersama dimuat alih-alih menampilkan pesan konten bersama tidak tersedia.
 
-## Share meeting tetap terpisah
+## Overflow canvas dikurangi
 
-Hook share meeting dan Share gateway kini memilih hasil tahap yang berhasil dan cocok, bukan menganggap hasil hook pertama selalu milik resource yang diminta. Dengan begitu share whiteboard dan meeting dapat berjalan berdampingan dengan aman.
+Canvas whiteboard kini mempertahankan ukuran default saat konten masih muat dan hanya menambahkan ruang overflow ketika elemen benar-benar melewati batas canvas yang terlihat.
