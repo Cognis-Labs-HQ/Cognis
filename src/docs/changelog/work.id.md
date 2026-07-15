@@ -1,13 +1,13 @@
-# Perbaikan Share Whiteboard
+# Sinkron Langsung Papan
 
-## Guest share whiteboard diperbaiki
+## Kolaborasi langsung diperbaiki
 
-Sesi share whiteboard kini memakai profil guest yang dibuat oleh Share gateway untuk tautan tersebut, sehingga guest mendapat nama stabil yang dihasilkan otomatis tanpa perlu profil terlihat.
+Perubahan papan tulis kini memakai protokol Socket.IO Nextcloud Whiteboard, sehingga pemilik dan tamu berbagi menerima pembaruan adegan melalui server kolaborasi yang dikonfigurasi, bukan hanya snapshot Cognis.
 
-## Pencabutan share diperbaiki
+## Kehadiran halaman ditambahkan
 
-Penghapusan share whiteboard kini tetap berhasil meski ada hook pencabutan dari modul lain dan mengirim konteks pemilik yang sama seperti share meeting.
+Page Composer kini dapat menampilkan bilah kehadiran ringkas di atas kisi konten. Halaman papan tulis memakainya untuk menampilkan inisial pemilik dan tamu, cincin aktif, serta pratinjau profil untuk pengguna masuk.
 
-## Panning klik tengah ditambahkan
+## Sesi berbagi ditingkatkan
 
-Canvas whiteboard kini mendukung drag dengan tombol tengah mouse untuk menggeser area canvas yang meluas tanpa mengganti tool atau memilih objek.
+Tamu berbagi papan tulis mempertahankan nama tampilan yang dibuat Share Gateway dalam sesi kehadiran dan kolaborasi papan tulis.

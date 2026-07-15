@@ -34,6 +34,7 @@
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  *   requireAccountSession?: boolean,
+ *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string) },
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -48,6 +49,7 @@ import { createGridOverlayHandlers } from "./grid-overlay.js";
 import { createSubComposerHandlers } from "./sub-composer.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
+import { createPresenceTracker } from "./presence-tracker.js";
 
 const TOOLBAR_TOGGLE_OPEN_SVG =
     '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
@@ -79,6 +81,7 @@ export function createPageComposer(
         pageOverrides = {},
         onBeforeSubPageSwitch,
         requireAccountSession = showTopbar || showNavbar,
+        presenceTracker = null,
     },
 ) {
     function escapeHtml(value) {
@@ -103,6 +106,7 @@ export function createPageComposer(
     let gridSection = null;
     let editToggleAbortController = null;
     let layoutProfiles = { layoutsByGrid: {} };
+    let activePresenceTracker = null;
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
@@ -679,6 +683,13 @@ export function createPageComposer(
             }
         }
 
+        const mainWindow = root.querySelector(".main-window");
+        if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
+            activePresenceTracker?.destroy();
+            activePresenceTracker = createPresenceTracker(presenceTracker);
+            activePresenceTracker.mount(mainWindow);
+        }
+
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
@@ -946,5 +957,12 @@ export function createPageComposer(
         restoreWindowScrollPosition(previousScrollLeft, previousScrollTop);
     }
 
-    return { init, refresh, getFloatingSlot, showToast };
+    return {
+        init,
+        refresh,
+        getFloatingSlot,
+        showToast,
+        refreshPresence: () => activePresenceTracker?.refresh(),
+        destroy: () => activePresenceTracker?.destroy(),
+    };
 }

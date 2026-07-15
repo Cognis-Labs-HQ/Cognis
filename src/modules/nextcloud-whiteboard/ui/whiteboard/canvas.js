@@ -790,7 +790,21 @@ export function createWhiteboardCanvas(canvasElement) {
         getElements() {
             return [...elements];
         },
-        applyElements(remoteElements) {
+        applyElements(remoteElements, { replace = false } = {}) {
+            if (replace) {
+                elements = cloneElements(remoteElements);
+                updateCanvasOverflow();
+                selectedElementIds = new Set(
+                    [...selectedElementIds].filter((id) =>
+                        elements.some((element) => element.id === id),
+                    ),
+                );
+                if (selectedElementId && !selectedElement())
+                    selectedElementId = null;
+                notifySelection();
+                scheduleRender();
+                return;
+            }
             const remoteById = new Map(
                 remoteElements.map((element) => [element.id, element]),
             );

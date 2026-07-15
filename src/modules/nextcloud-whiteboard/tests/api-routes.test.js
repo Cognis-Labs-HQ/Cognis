@@ -466,3 +466,109 @@ test("nextcloud whiteboard share guests use gateway guest profiles", async () =>
     assert.equal(sessionPayload.user.id, "guest:guest-1");
     assert.equal(sessionPayload.user.name, "Guest #123456");
 });
+
+test("nextcloud whiteboard presence tracks share guests and profile users", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: [],
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                    async getProfileByHandle(handle) {
+                        return {
+                            handle,
+                            displayName: handle === "alice" ? "Alice" : handle,
+                            avatarKey:
+                                handle === "alice" ? "avatars/alice" : null,
+                        };
+                    },
+                };
+            }
+            if (key === "share:getTokenById") {
+                return async (shareId) =>
+                    shareId === "share-1"
+                        ? {
+                              resourceType: "whiteboard",
+                              resourceId: board.id,
+                              grantedCapabilities: ["whiteboard:write"],
+                          }
+                        : null;
+            }
+            if (key === "share:resolveGuestSessionId") {
+                return (claims) =>
+                    String(claims?.sub ?? "").split(":")[2] ?? "";
+            }
+            if (key === "share:getGuestProfile") {
+                return async () => ({ displayName: "Guest #123456" });
+            }
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const ownerToken = issueAccessToken("alice", "user", 60);
+    const guestToken = issueAccessToken("share:share-1:guest-1", "user", 60);
+    for (const [token, sessionId] of [
+        [ownerToken, "owner-session"],
+        [guestToken, "guest-session"],
+    ]) {
+        const res = createJsonResponse();
+        await router.handler(
+            "POST",
+            "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+        )(
+            {
+                headers: { authorization: `Bearer ${token}` },
+                async *[Symbol.asyncIterator]() {
+                    yield Buffer.from(
+                        JSON.stringify({
+                            pageId: board.id,
+                            sessionId,
+                            active: true,
+                        }),
+                    );
+                },
+            },
+            res,
+        );
+        assert.equal(res.statusCode, 200);
+    }
+
+    const listRes = createJsonResponse();
+    await router.handler(
+        "GET",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+    )(
+        {
+            url: `/api/v1/modules/nextcloud-whiteboard/whiteboards/presence?pageId=${board.id}`,
+            headers: { authorization: `Bearer ${ownerToken}` },
+        },
+        listRes,
+    );
+
+    assert.equal(listRes.statusCode, 200);
+    const entries = listRes.json().data.presence;
+    assert.ok(
+        entries.some(
+            (entry) =>
+                entry.handle === "alice" && entry.avatarKey === "avatars/alice",
+        ),
+    );
+    assert.ok(
+        entries.some(
+            (entry) =>
+                entry.guest === true && entry.displayName === "Guest #123456",
+        ),
+    );
+});

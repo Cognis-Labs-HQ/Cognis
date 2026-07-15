@@ -1,13 +1,13 @@
-# Whiteboard-Freigaben
+# Whiteboard Live-Sync
 
-## Whiteboard-Gäste repariert
+## Live-Zusammenarbeit korrigiert
 
-Whiteboard-Freigabesitzungen verwenden jetzt das vom Share-Gateway erzeugte Gastprofil für den Link, sodass Gäste stabile generierte Namen erhalten, ohne sichtbare Profile zu benötigen.
+Whiteboard-Änderungen verwenden jetzt das Socket.IO-Protokoll von Nextcloud Whiteboard, sodass Besitzer und Freigabe-Gäste Szenenaktualisierungen über den konfigurierten Kollaborationsserver erhalten statt nur über Cognis-Snapshots.
 
-## Freigabe-Widerruf repariert
+## Seitenpräsenz hinzugefügt
 
-Das Löschen von Whiteboard-Freigaben funktioniert jetzt auch neben Widerrufs-Hooks anderer Module und sendet denselben Besitzerkontext wie Meeting-Freigaben.
+Der Page Composer kann oberhalb des Inhaltsrasters eine kompakte Präsenzleiste anzeigen. Die Whiteboard-Seite nutzt sie für Initialen von Besitzern und Gästen, aktive grüne Ringe und Profilvorschauen für angemeldete Benutzer.
 
-## Mittelklick-Schwenken ergänzt
+## Freigabesitzungen verbessert
 
-Die Whiteboard-Canvas unterstützt jetzt Ziehen mit der mittleren Maustaste, um über erweiterten Canvas-Bereich zu schwenken, ohne Werkzeuge zu wechseln oder Objekte auszuwählen.
+Whiteboard-Freigabe-Gäste behalten ihre vom Share-Gateway erzeugten Anzeigenamen in Präsenz- und Kollaborationssitzungen.

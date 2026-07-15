@@ -560,6 +560,108 @@ export function registerApiRoutes(router, ctx) {
         { access: { minRole: "user" } },
     );
 
+    router.get(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const url = new URL(req.url, "http://localhost");
+            const whiteboardId = url.searchParams.get("pageId") ?? "";
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            const rows = await store.listPresence(whiteboard.id);
+            const profileCache = new Map();
+            const presence = [];
+            for (const entry of rows) {
+                let handle = "";
+                let avatarKey = null;
+                if (!entry.guest && !entry.username.startsWith("guest:")) {
+                    handle = entry.username;
+                    if (!profileCache.has(handle)) {
+                        profileCache.set(
+                            handle,
+                            profileStore
+                                .getProfileByHandle(handle)
+                                .catch(() => null),
+                        );
+                    }
+                    const profile = await profileCache.get(handle);
+                    avatarKey = profile?.avatarKey ?? null;
+                }
+                presence.push({
+                    id: entry.username,
+                    displayName: entry.displayName,
+                    handle,
+                    avatarKey,
+                    guest: entry.guest || entry.username.startsWith("guest:"),
+                    active: entry.active,
+                    lastSeenAt: entry.lastSeenAt,
+                });
+            }
+            sendJson(res, 200, { data: { presence } });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const whiteboardId = String(body.pageId ?? "").trim();
+            const sessionId = String(body.sessionId ?? "").trim();
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard || !sessionId) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            await store.upsertPresence({
+                whiteboardId: whiteboard.id,
+                username: access.username,
+                sessionId,
+                displayName: access.displayName || access.username,
+                guest: access.username.startsWith("guest:"),
+                active: body.active !== false,
+            });
+            sendJson(res, 200, { data: { ok: true } });
+        },
+        { access: { minRole: "user" } },
+    );
+
     router.post(
         "/api/v1/modules/nextcloud-whiteboard/whiteboards/rename",
         async (req, res) => {
