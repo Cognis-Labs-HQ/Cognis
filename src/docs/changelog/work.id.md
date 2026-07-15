@@ -19,3 +19,7 @@ Toolbar whiteboard sekarang meminta Gateway Share merender kontrol berbagi, sehi
 ## Hapus Seleksi dengan Keyboard
 
 Objek whiteboard yang dipilih sekarang dapat dihapus langsung dengan tombol Delete atau Backspace.
+
+## Gambar Unggahan Ditampilkan dan Dipilih
+
+Unggahan gambar yang ditempel sekarang dimasukkan melalui alur pembuatan normal, langsung disimpan, dipilih untuk diubah ukurannya, dan digambar ulang setelah browser selesai memuat gambar.

@@ -722,6 +722,53 @@ export function createWhiteboardCanvas(canvasElement) {
         }
     }
 
+    function calculateImageDimensions(image) {
+        const maxWidth = 480;
+        const maxHeight = 360;
+        const naturalWidth = Math.max(
+            1,
+            image.naturalWidth || image.width || 240,
+        );
+        const naturalHeight = Math.max(
+            1,
+            image.naturalHeight || image.height || 180,
+        );
+        const scale = Math.min(
+            1,
+            maxWidth / naturalWidth,
+            maxHeight / naturalHeight,
+        );
+        return {
+            width: Math.round(naturalWidth * scale),
+            height: Math.round(naturalHeight * scale),
+        };
+    }
+
+    function createImageElementFromDataUrl(dataUrl) {
+        const image = new Image();
+        image.addEventListener(
+            "load",
+            () => {
+                commitCreatedElement(
+                    buildImageElement(
+                        [24, 24],
+                        dataUrl,
+                        calculateImageDimensions(image),
+                    ),
+                );
+            },
+            { once: true },
+        );
+        image.addEventListener(
+            "error",
+            () => {
+                commitCreatedElement(buildImageElement([24, 24], dataUrl));
+            },
+            { once: true },
+        );
+        image.src = dataUrl;
+    }
+
     function onPaste(event) {
         const imageFile = [...(event.clipboardData?.files ?? [])].find((file) =>
             file.type.startsWith("image/"),
@@ -738,10 +785,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const reader = new FileReader();
         reader.addEventListener("load", () => {
             if (typeof reader.result !== "string") return;
-            commitElements([
-                ...elements,
-                buildImageElement([24, 24], reader.result),
-            ]);
+            createImageElementFromDataUrl(reader.result);
         });
         reader.readAsDataURL(imageFile);
     }
@@ -752,6 +796,7 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
     canvasElement.addEventListener("keydown", onKeyDown);
+    canvasElement.addEventListener("whiteboard:image-loaded", scheduleRender);
     canvasElement.addEventListener("dblclick", onDoubleClick);
     canvasElement.addEventListener("auxclick", (event) => {
         if (event.button === 1) event.preventDefault();
@@ -901,6 +946,10 @@ export function createWhiteboardCanvas(canvasElement) {
             canvasElement.removeEventListener("pointercancel", onPointerUp);
             canvasElement.removeEventListener("paste", onPaste);
             canvasElement.removeEventListener("keydown", onKeyDown);
+            canvasElement.removeEventListener(
+                "whiteboard:image-loaded",
+                scheduleRender,
+            );
             canvasElement.removeEventListener("dblclick", onDoubleClick);
             canvasElement.parentElement
                 ?.querySelector(".wb-text-editor")

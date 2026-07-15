@@ -19,3 +19,7 @@ Die Whiteboard-Werkzeugleiste lässt Freigabesteuerungen jetzt vom Share-Gateway
 ## Auswahl per Tastatur löschen
 
 Ausgewählte Whiteboard-Objekte können jetzt direkt mit der Entf- oder Rücktaste entfernt werden.
+
+## Hochgeladene Bilder werden angezeigt und ausgewählt
+
+Eingefügte Bild-Uploads werden jetzt über den normalen Erstellungsablauf eingefügt, sofort gespeichert, zum Skalieren ausgewählt und nach dem Laden durch den Browser neu gezeichnet.

@@ -19,3 +19,7 @@ The whiteboard toolbar now asks the Share gateway to render share controls, so g
 ## Keyboard Deletion for Selection
 
 Selected whiteboard objects can now be removed directly with the Delete or Backspace key.
+
+## Uploaded Images Render and Select
+
+Pasted image uploads are now inserted through the normal creation flow, saved immediately, selected for resizing, and redrawn after the browser finishes loading the image.
