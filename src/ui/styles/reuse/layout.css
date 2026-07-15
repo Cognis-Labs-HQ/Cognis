@@ -797,3 +797,48 @@ button.dropdown-item {
 .profile-mini-preview__stats {
     margin: 10px 0 0;
 }
+
+.page-presence {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    min-height: 2rem;
+    margin: 0 0 0.75rem auto;
+    padding-inline: 0.25rem;
+    position: relative;
+    z-index: 5;
+}
+
+.page-presence[hidden] {
+    display: none;
+}
+
+.page-presence__profile {
+    display: inline-flex;
+    border-radius: 999px;
+    text-decoration: none;
+}
+
+.page-presence__avatar {
+    align-items: center;
+    background: var(--initials-bg, var(--accent));
+    border: 2px solid var(--panel-border, rgba(148, 163, 184, 0.35));
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 700;
+    height: 2rem;
+    justify-content: center;
+    line-height: 1;
+    min-width: 2rem;
+    padding: 0 0.35rem;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.page-presence__avatar.is-active {
+    border-color: #22c55e;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, #22c55e 35%, transparent),
+        0 8px 20px rgba(15, 23, 42, 0.12);
+}

@@ -86,6 +86,24 @@ export class NextcloudWhiteboardStore {
             primaryKey: ["whiteboard_id", "username"],
         });
         await this.db.ensureTable({
+            name: "nextcloud_whiteboard_presence",
+            columns: [
+                { name: "whiteboard_id", type: "text", notNull: true },
+                { name: "username", type: "text", notNull: true },
+                { name: "session_id", type: "text", notNull: true },
+                { name: "display_name", type: "text", notNull: true },
+                { name: "guest", type: "integer", notNull: true, default: 0 },
+                { name: "active", type: "integer", notNull: true, default: 1 },
+                {
+                    name: "last_seen_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["whiteboard_id", "username", "session_id"],
+        });
+        await this.db.ensureTable({
             name: "nextcloud_whiteboard_snapshots",
             columns: [
                 { name: "whiteboard_id", type: "text", primaryKey: true },
@@ -267,6 +285,55 @@ export class NextcloudWhiteboardStore {
             limit: 1,
         });
         return Boolean(result.rows?.[0]);
+    }
+
+    async upsertPresence({
+        whiteboardId,
+        username,
+        sessionId,
+        displayName,
+        guest,
+        active = true,
+    }) {
+        const timestamp = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "nextcloud_whiteboard_presence",
+            values: {
+                whiteboard_id: String(whiteboardId ?? ""),
+                username: String(username ?? ""),
+                session_id: String(sessionId ?? ""),
+                display_name: String(displayName || username || "Guest"),
+                guest: guest ? 1 : 0,
+                active: active ? 1 : 0,
+                last_seen_at: timestamp,
+            },
+            conflict: {
+                action: "update",
+                target: ["whiteboard_id", "username", "session_id"],
+            },
+        });
+        return timestamp;
+    }
+
+    async listPresence(whiteboardId) {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "nextcloud_whiteboard_presence",
+            where: [
+                { column: "whiteboard_id", value: String(whiteboardId ?? "") },
+            ],
+            orderBy: [{ column: "last_seen_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) => ({
+            whiteboardId: String(row.whiteboard_id),
+            username: String(row.username),
+            sessionId: String(row.session_id),
+            displayName: String(row.display_name || row.username),
+            guest: Number(row.guest ?? 0) === 1,
+            active: Number(row.active ?? 0) === 1,
+            lastSeenAt: String(row.last_seen_at),
+        }));
     }
 
     async getElementsSnapshot(id) {

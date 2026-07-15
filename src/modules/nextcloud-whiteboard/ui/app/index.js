@@ -10,6 +10,8 @@ import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
 const EMIT_DEBOUNCE_MS = 80;
 const RECONNECT_MAX_DELAY_MS = 30000;
+const SYNC_MESSAGE_SCENE_INIT = "SCENE_INIT";
+const SYNC_MESSAGE_SCENE_UPDATE = "SCENE_UPDATE";
 
 let i18n = null;
 let composer = null;
@@ -174,6 +176,24 @@ function teardownCanvas() {
     activeSession = null;
 }
 
+function encodeSceneMessage(type, elements) {
+    return new TextEncoder().encode(
+        JSON.stringify({ type, payload: { elements } }),
+    );
+}
+
+function decodeSceneMessage(payload) {
+    const text =
+        typeof payload === "string"
+            ? payload
+            : new TextDecoder().decode(
+                  payload instanceof Uint8Array
+                      ? payload
+                      : new Uint8Array(payload),
+              );
+    return JSON.parse(text);
+}
+
 function connectSocket(io, session, canvas) {
     const { serverUrl, roomId, token } = session;
     const socket = io(serverUrl, {
@@ -182,6 +202,8 @@ function connectSocket(io, session, canvas) {
         reconnectionDelay: 1000,
         reconnectionDelayMax: RECONNECT_MAX_DELAY_MS,
     });
+    let joinedRoom = false;
+    let isDedicatedSyncer = false;
 
     const persistChanges = debounce(async (elements) => {
         try {
@@ -198,8 +220,8 @@ function connectSocket(io, session, canvas) {
         }
     }, EMIT_DEBOUNCE_MS);
 
-    const emitChanges = debounce((elements) => {
-        if (!socket.connected) {
+    const emitChanges = debounce((elements, type = SYNC_MESSAGE_SCENE_INIT) => {
+        if (!socket.connected || !joinedRoom) {
             setSyncStatus(
                 "error",
                 "module.nextcloud_whiteboard.status_sync_failed",
@@ -207,7 +229,12 @@ function connectSocket(io, session, canvas) {
             return;
         }
         setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
-        socket.emit("elements:changed", { elements, roomId });
+        socket.emit(
+            "server-broadcast",
+            roomId,
+            encodeSceneMessage(type, elements),
+            [],
+        );
     }, EMIT_DEBOUNCE_MS);
 
     canvas.onChange((elements, meta) => {
@@ -223,12 +250,33 @@ function connectSocket(io, session, canvas) {
         }
         savedElements = elements;
         persistChanges(elements);
-        emitChanges(elements);
+        emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
     });
 
     socket.on("connect", () => {
         lastConnectionToast = "";
-        socket.emit("joinRoom", { roomID: roomId, token });
+        joinedRoom = false;
+    });
+
+    socket.on("init-room", () => {
+        socket.emit("join-room", roomId);
+    });
+
+    socket.on("room-user-change", () => {
+        joinedRoom = true;
+        if (isDedicatedSyncer)
+            emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
+    });
+
+    socket.on("sync-designate", ({ isSyncer } = {}) => {
+        isDedicatedSyncer = Boolean(isSyncer);
+        if (joinedRoom && isDedicatedSyncer)
+            emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
+    });
+
+    socket.on("user-joined", () => {
+        if (joinedRoom && isDedicatedSyncer)
+            emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
     });
 
     socket.on("connect_error", (error) => {
@@ -242,12 +290,26 @@ function connectSocket(io, session, canvas) {
         }
     });
 
-    socket.on("server-volatile:elements:updated", ({ elements }) => {
-        if (Array.isArray(elements)) canvas.applyElements(elements);
-    });
-
-    socket.on("elements:updated", ({ elements }) => {
-        if (Array.isArray(elements)) canvas.applyElements(elements);
+    socket.on("client-broadcast", (payload) => {
+        try {
+            const message = decodeSceneMessage(payload);
+            if (
+                (message.type === SYNC_MESSAGE_SCENE_INIT ||
+                    message.type === SYNC_MESSAGE_SCENE_UPDATE) &&
+                Array.isArray(message.payload?.elements)
+            ) {
+                savedElements = message.payload.elements;
+                canvas.applyElements(message.payload.elements, {
+                    replace: true,
+                });
+                persistChanges(message.payload.elements);
+            }
+        } catch (error) {
+            console.warn(
+                "[nextcloud-whiteboard] ignored remote sync payload",
+                error,
+            );
+        }
     });
 
     return socket;
@@ -643,6 +705,7 @@ async function openBoard(board) {
     }
 
     socketInstance = connectSocket(io, session, canvasInstance);
+    composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
     setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
 
@@ -805,6 +868,11 @@ export async function mount(root, { signal, shareContext } = {}) {
         elements: buildElements(),
         preferenceKey: "nextcloud-whiteboard-layout",
         persistLayoutPreferences: false,
+        presenceTracker: {
+            endpoint: `${API_BASE}/whiteboards/presence`,
+            pageId: () => activeBoard?.id ?? "",
+            storageKey: "nextcloud_whiteboard_presence_session",
+        },
         i18n,
         pageContext: {
             title: t("module.nextcloud_whiteboard.page_title"),
@@ -814,7 +882,7 @@ export async function mount(root, { signal, shareContext } = {}) {
     await composer.init();
 
     if (activeBoard) {
-        void openBoard(activeBoard);
+        void openBoard(activeBoard).then(() => composer?.refreshPresence?.());
     }
 }
 
