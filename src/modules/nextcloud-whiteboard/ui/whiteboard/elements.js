@@ -1,5 +1,7 @@
 export const SESSION_VERSION_NONCE_MAX = 2 ** 31;
 
+const imageElementCache = new Map();
+
 function generateElementId() {
     return typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
@@ -119,11 +121,13 @@ export function buildTextElement(point, text, strokeColor) {
     );
 }
 
-export function buildImageElement(point, dataUrl) {
+export function buildImageElement(point, dataUrl, dimensions = {}) {
+    const width = Math.max(1, Number(dimensions.width) || 240);
+    const height = Math.max(1, Number(dimensions.height) || 180);
     return buildShapeElement(
         "image",
         point,
-        [point[0] + 240, point[1] + 180],
+        [point[0] + width, point[1] + height],
         "#000000",
         1,
         {
@@ -227,7 +231,20 @@ function renderText(context, element) {
 
 function renderImage(context, element) {
     if (!element.dataUrl) return;
+    const cachedImage = imageElementCache.get(element.dataUrl);
+    if (cachedImage?.complete && cachedImage.naturalWidth > 0) {
+        context.drawImage(
+            cachedImage,
+            element.x,
+            element.y,
+            element.width,
+            element.height,
+        );
+        return;
+    }
+    if (cachedImage) return;
     const image = new Image();
+    imageElementCache.set(element.dataUrl, image);
     image.onload = () => {
         context.drawImage(
             image,
@@ -236,7 +253,11 @@ function renderImage(context, element) {
             element.width,
             element.height,
         );
+        context.canvas.dispatchEvent(
+            new CustomEvent("whiteboard:image-loaded"),
+        );
     };
+    image.onerror = () => imageElementCache.delete(element.dataUrl);
     image.src = element.dataUrl;
 }
 

@@ -96,3 +96,39 @@ test("nextcloud whiteboard canvas deletes selected objects via keyboard", async 
         /canvasElement\.removeEventListener\("keydown", onKeyDown\)/,
     );
 });
+
+test("nextcloud whiteboard image paste saves and selects resizable image objects", async () => {
+    const [canvasSource, elementsSource] = await Promise.all([
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/elements.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+    ]);
+    assert.match(
+        canvasSource,
+        /function createImageElementFromDataUrl\(dataUrl\)/,
+    );
+    assert.match(canvasSource, /commitCreatedElement\(\s*buildImageElement/);
+    assert.doesNotMatch(
+        canvasSource,
+        /commitElements\(\[\s*\.\.\.elements,\s*buildImageElement/,
+    );
+    assert.match(elementsSource, /const imageElementCache = new Map\(\)/);
+    assert.match(elementsSource, /whiteboard:image-loaded/);
+    assert.match(
+        canvasSource,
+        /addEventListener\("whiteboard:image-loaded", scheduleRender\)/,
+    );
+    assert.match(
+        elementsSource,
+        /export function buildImageElement\(point, dataUrl, dimensions = \{\}\)/,
+    );
+});
