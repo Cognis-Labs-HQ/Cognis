@@ -160,4 +160,10 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         /data-tool="select" class="whiteboard-tool active"/,
     );
     assert.match(appSource, /data-tool="pen" class="whiteboard-tool"/);
+    assert.match(
+        appSource,
+        /const SYNC_MESSAGE_BOARD_RENAMED = "BOARD_RENAMED"/,
+    );
+    assert.match(appSource, /function canRenameActiveBoard\(\)/);
+    assert.match(appSource, /function emitBoardRenamed\(title\)/);
 });

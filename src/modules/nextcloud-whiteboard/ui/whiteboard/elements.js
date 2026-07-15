@@ -139,7 +139,7 @@ export function buildImageElement(point, dataUrl, dimensions = {}) {
 function resolvedStrokeColor(context, element) {
     return element.strokeColor === "auto"
         ? getComputedStyle(context.canvas)
-              .getPropertyValue("--wb-auto-stroke")
+              .getPropertyValue("--whiteboard-auto-stroke")
               .trim() || "#111827"
         : (element.strokeColor ?? "#000000");
 }
