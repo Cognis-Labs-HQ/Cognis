@@ -18,8 +18,8 @@
  * @returns {{ getPointerPayload(): object|null, render(entries: Array<object>, sessionId: string): void, destroy(): void }}
  */
 
-import { escapeHtml } from "../escape-html.js";
-import { pickInitialsColor } from "../avatar-utils.js";
+import { escapeHtml } from "./escape-html.js";
+import { pickInitialsColor } from "./avatar-utils.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
