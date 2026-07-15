@@ -1,9 +1,13 @@
-# Share View Fix
+# Whiteboard Share Fixes
 
-## Fixed whiteboard share display
+## Fixed whiteboard share guests
 
-Whiteboard share links now select the matching page renderer instead of the first renderer hook result, so the shared whiteboard app mounts instead of showing the generic unavailable shared-content fallback.
+Whiteboard share sessions now use the Share gateway guest profile generated for the link, so guests get stable generated names without triggering visible-profile requirements.
 
-## Reduced canvas overflow
+## Fixed share revocation
 
-The whiteboard canvas now keeps its default size when content fits and only adds overflow space once elements genuinely pass the visible canvas bounds.
+Whiteboard share deletion now survives other modules' revoke hooks and sends the same owner context as meeting shares.
+
+## Added middle-click panning
+
+The whiteboard canvas now supports middle-click dragging to pan around expanded canvas space without changing tools or selecting objects.

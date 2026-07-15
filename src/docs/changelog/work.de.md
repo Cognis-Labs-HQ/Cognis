@@ -1,9 +1,13 @@
-# Freigabeansicht-Fix
+# Whiteboard-Freigaben
 
-## Whiteboard-Freigabeanzeige repariert
+## Whiteboard-Gäste repariert
 
-Whiteboard-Freigabelinks wählen jetzt den passenden Seiten-Renderer statt des ersten Renderer-Hook-Ergebnisses, sodass die geteilte Whiteboard-App geladen wird und nicht die allgemeine Nicht-verfügbar-Meldung erscheint.
+Whiteboard-Freigabesitzungen verwenden jetzt das vom Share-Gateway erzeugte Gastprofil für den Link, sodass Gäste stabile generierte Namen erhalten, ohne sichtbare Profile zu benötigen.
 
-## Canvas-Überlauf reduziert
+## Freigabe-Widerruf repariert
 
-Die Whiteboard-Canvas behält jetzt ihre Standardgröße, solange Inhalte hineinpassen, und fügt Überlaufbereich erst hinzu, wenn Elemente die sichtbaren Canvas-Grenzen wirklich überschreiten.
+Das Löschen von Whiteboard-Freigaben funktioniert jetzt auch neben Widerrufs-Hooks anderer Module und sendet denselben Besitzerkontext wie Meeting-Freigaben.
+
+## Mittelklick-Schwenken ergänzt
+
+Die Whiteboard-Canvas unterstützt jetzt Ziehen mit der mittleren Maustaste, um über erweiterten Canvas-Bereich zu schwenken, ohne Werkzeuge zu wechseln oder Objekte auszuwählen.

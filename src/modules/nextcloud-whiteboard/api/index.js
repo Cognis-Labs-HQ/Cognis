@@ -1,14 +1,12 @@
 import path from "node:path";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
-import {
-    getFirstMatchingStageResult,
-    getFirstStageResult,
-} from "../../../api/reuse/flow-helpers.js";
+import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import { NextcloudWhiteboardStore } from "./store.js";
+import { registerWhiteboardShareFlowHooks } from "./share-hooks.js";
 
 const LIVENESS_TIMEOUT_MS = 5000;
 
@@ -83,6 +81,8 @@ async function resolveWhiteboardUserAccess({
     store,
     whiteboardId,
     getShareTokenById,
+    resolveShareGuestSessionId,
+    getShareGuestProfile,
     requireWrite = false,
 }) {
     const shareTokenId = parseShareTokenId(claims);
@@ -96,7 +96,23 @@ async function resolveWhiteboardUserAccess({
             token?.resourceId === whiteboardId &&
             (!requireWrite || capabilities.includes("whiteboard:write"))
         ) {
-            return { authorized: true, username: `guest:${shareTokenId}` };
+            const guestSessionId =
+                typeof resolveShareGuestSessionId === "function"
+                    ? resolveShareGuestSessionId(claims)
+                    : "";
+            const guestProfile =
+                guestSessionId && typeof getShareGuestProfile === "function"
+                    ? await getShareGuestProfile(guestSessionId).catch(
+                          () => null,
+                      )
+                    : null;
+            const displayName = String(guestProfile?.displayName ?? "").trim();
+            return {
+                authorized: true,
+                username: `guest:${guestSessionId || shareTokenId}`,
+                displayName:
+                    displayName || `Guest ${guestSessionId || shareTokenId}`,
+            };
         }
         return {
             authorized: false,
@@ -138,173 +154,6 @@ function resolveExpiry(hoursValue) {
     const parsed = Number(hoursValue);
     if (!Number.isFinite(parsed) || parsed <= 0) return null;
     return new Date(Date.now() + parsed * 60 * 60 * 1000).toISOString();
-}
-
-function registerWhiteboardShareFlowHooks(ctx, store, profileStore) {
-    if (
-        !ctx.flow?.exists?.("mint-share-token") ||
-        !ctx.flow?.exists?.("resolve-share-token")
-    )
-        return;
-    ctx.flow.extend(
-        "mint-share-token",
-        "validate-resource",
-        { id: "nextcloud-whiteboard:validate-share-resource" },
-        async (stageCtx) => {
-            const input = stageCtx.input ?? {};
-            if (String(input.resourceType ?? "") !== "whiteboard")
-                return { valid: false, reason: "unsupported_resource_type" };
-            await store.ensureSchema();
-            const whiteboard = await store.getWhiteboardById(
-                String(input.resourceId ?? ""),
-            );
-            if (!whiteboard)
-                return { valid: false, reason: "resource_not_found" };
-            const access = await resolveWhiteboardUserAccess({
-                claims: input.claims ?? {},
-                profileStore,
-                store,
-                whiteboardId: whiteboard.id,
-            });
-            if (!access.authorized)
-                return { valid: false, reason: "forbidden" };
-            return {
-                valid: true,
-                resourceType: "whiteboard",
-                resourceId: whiteboard.id,
-                ownerAccountId: String(
-                    input.claims?.sub ?? input.ownerAccountId ?? "",
-                ),
-            };
-        },
-    );
-    ctx.flow.extend(
-        "mint-share-token",
-        "authorize-minter",
-        { id: "nextcloud-whiteboard:authorize-share-minter" },
-        (stageCtx) => {
-            const resourceResult = getFirstMatchingStageResult(
-                stageCtx.stageResults,
-                "validate-resource",
-                (result) =>
-                    result?.valid === true &&
-                    result?.resourceType === "whiteboard",
-            );
-            return resourceResult?.valid
-                ? {
-                      authorized: true,
-                      ownerAccountId: resourceResult.ownerAccountId,
-                  }
-                : {
-                      authorized: false,
-                      reason: resourceResult?.reason ?? "invalid_resource",
-                  };
-        },
-    );
-    ctx.flow.extend(
-        "resolve-share-token",
-        "resolve-resource",
-        { id: "nextcloud-whiteboard:resolve-share-resource" },
-        async (stageCtx) => {
-            const tokenResult = getFirstStageResult(
-                stageCtx.stageResults,
-                "validate-token",
-            );
-            const token = tokenResult?.tokenRecord ?? null;
-            if (!tokenResult?.valid || token?.resourceType !== "whiteboard")
-                return { resolved: false, reason: "unsupported_resource_type" };
-            await store.ensureSchema();
-            const whiteboard = await store.getWhiteboardById(
-                String(token.resourceId ?? ""),
-            );
-            if (!whiteboard)
-                return { resolved: false, reason: "resource_not_found" };
-            return {
-                resolved: true,
-                resourceType: "whiteboard",
-                resourceId: whiteboard.id,
-                payload: {
-                    whiteboardId: whiteboard.id,
-                    title: whiteboard.title,
-                },
-            };
-        },
-    );
-    ctx.flow.extend(
-        "resolve-share-token",
-        "check-access",
-        { id: "nextcloud-whiteboard:check-share-access" },
-        (stageCtx) => {
-            const resourceResult = getFirstMatchingStageResult(
-                stageCtx.stageResults,
-                "resolve-resource",
-                (result) =>
-                    result?.resolved === true &&
-                    result?.resourceType === "whiteboard",
-            );
-            return resourceResult?.resolved
-                ? { allowed: true }
-                : {
-                      allowed: false,
-                      reason: resourceResult?.reason ?? "resource_not_found",
-                  };
-        },
-    );
-    if (ctx.flow.exists("construct-share-page")) {
-        ctx.flow.extend(
-            "construct-share-page",
-            "resolve-resource-renderer",
-            { id: "nextcloud-whiteboard:share-renderer" },
-            (stageCtx) => {
-                const input = stageCtx.input ?? {};
-                if (String(input.resourceType ?? "") !== "whiteboard")
-                    return null;
-                return {
-                    mountScriptUrl:
-                        "/static/modules/nextcloud-whiteboard/app/index.js",
-                    stringsBaseUrl: [
-                        "/static/modules/nextcloud-whiteboard/languages",
-                    ],
-                    stylesheetUrls: WHITEBOARD_STYLESHEETS,
-                };
-            },
-        );
-    }
-    if (ctx.flow.exists("revoke-share-token")) {
-        ctx.flow.extend(
-            "revoke-share-token",
-            "authorize-revocation",
-            { id: "nextcloud-whiteboard:authorize-share-revocation" },
-            async (stageCtx) => {
-                const input = stageCtx.input ?? {};
-                if (String(input.resourceType ?? "") !== "whiteboard")
-                    return {
-                        authorized: false,
-                        reason: "unsupported_resource_type",
-                    };
-                await store.ensureSchema();
-                const whiteboard = await store.getWhiteboardById(
-                    String(input.resourceId ?? ""),
-                );
-                if (!whiteboard)
-                    return { authorized: false, reason: "resource_not_found" };
-                const access = await resolveWhiteboardUserAccess({
-                    claims: input.claims ?? {},
-                    profileStore,
-                    store,
-                    whiteboardId: whiteboard.id,
-                });
-                return access.authorized
-                    ? {
-                          authorized: true,
-                          shareId: String(input.shareId ?? ""),
-                          resourceType: "whiteboard",
-                          resourceId: whiteboard.id,
-                      }
-                    : { authorized: false, reason: "forbidden" };
-            },
-        );
-    }
 }
 
 function publicConfig(config) {
@@ -390,6 +239,10 @@ export function registerApiRoutes(router, ctx) {
         "auth:registerPageScriptOrigins",
     );
     const getShareTokenById = ctx.getCapability("share:getTokenById");
+    const resolveShareGuestSessionId = ctx.getCapability(
+        "share:resolveGuestSessionId",
+    );
+    const getShareGuestProfile = ctx.getCapability("share:getGuestProfile");
     const listSharesByResource = ctx.getCapability("share:listByResource");
     const systemCtx = ctx.getCapability("system:ctx");
 
@@ -410,7 +263,13 @@ export function registerApiRoutes(router, ctx) {
 
     const store = resolveStore(dbExecutor, log);
     const ensureShareFlowHooks = () =>
-        registerWhiteboardShareFlowHooks(systemCtx ?? ctx, store, profileStore);
+        registerWhiteboardShareFlowHooks({
+            ctx: systemCtx ?? ctx,
+            store,
+            profileStore,
+            resolveWhiteboardUserAccess,
+            whiteboardStylesheets: WHITEBOARD_STYLESHEETS,
+        });
     ensureShareFlowHooks();
     void registerStoredOrigin({ store, registerScriptOrigins, log });
 
@@ -620,6 +479,8 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -627,6 +488,7 @@ export function registerApiRoutes(router, ctx) {
                 return;
             }
             const username = access.username;
+            const displayName = access.displayName || username;
             const config = await store.getConfig();
             if (!config.serverUrl || !config.apiKeyConfigured) {
                 sendError(
@@ -639,7 +501,7 @@ export function registerApiRoutes(router, ctx) {
             }
             const token = store.mintSessionToken(config, whiteboard, {
                 id: username,
-                name: username,
+                name: displayName,
             });
             log?.("info", "Nextcloud Whiteboard session token issued.", {
                 component: "nextcloud-whiteboard-module",
@@ -681,6 +543,8 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -786,6 +650,8 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -872,6 +738,7 @@ export function registerApiRoutes(router, ctx) {
                 resourceType: "whiteboard",
                 resourceId: String(body.whiteboardId ?? "").trim(),
                 shareId: String(body.shareId ?? "").trim(),
+                ownerAccountId: claims.sub,
                 claims,
             });
             const revoked = getFirstStageResult(
@@ -911,13 +778,14 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
                 requireWrite: true,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
                 return;
             }
-            const username = access.username;
             res.writeHead(302, {
                 location: buildCognisWhiteboardUrl(whiteboardId),
             });

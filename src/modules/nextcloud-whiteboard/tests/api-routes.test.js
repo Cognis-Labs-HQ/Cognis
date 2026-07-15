@@ -101,6 +101,12 @@ function createRouterCapture() {
     };
 }
 
+function decodeJwtPayload(token) {
+    const payload = String(token ?? "").split(".")[1] ?? "";
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(Buffer.from(normalized, "base64").toString("utf8"));
+}
+
 function createJsonResponse() {
     return {
         statusCode: 0,
@@ -392,4 +398,71 @@ test("nextcloud whiteboard share route accepts issue-token flow result", async (
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.json().data, shareRecord);
+});
+
+test("nextcloud whiteboard share guests use gateway guest profiles", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    await store.saveConfig({
+        serverUrl: "https://whiteboard.example.test",
+        apiKey: "session-token-secret-at-least-16-chars",
+    });
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: [],
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile() {
+                        throw new Error("profile store should not be used");
+                    },
+                };
+            }
+            if (key === "share:getTokenById") {
+                return async (shareId) =>
+                    shareId === "share-1"
+                        ? {
+                              resourceType: "whiteboard",
+                              resourceId: board.id,
+                              grantedCapabilities: ["whiteboard:write"],
+                          }
+                        : null;
+            }
+            if (key === "share:resolveGuestSessionId") {
+                return (claims) =>
+                    String(claims?.sub ?? "").split(":")[2] ?? "";
+            }
+            if (key === "share:getGuestProfile") {
+                return async (guestId) =>
+                    guestId === "guest-1"
+                        ? { displayName: "Guest #123456", avatarKey: null }
+                        : null;
+            }
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const token = issueAccessToken("share:share-1:guest-1", "user", 60);
+    const req = {
+        url: `/api/v1/modules/nextcloud-whiteboard/whiteboards/session?id=${board.id}`,
+        headers: { authorization: `Bearer ${token}` },
+    };
+    const res = createJsonResponse();
+
+    await router.handler(
+        "GET",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/session",
+    )(req, res);
+
+    assert.equal(res.statusCode, 200);
+    const sessionPayload = decodeJwtPayload(res.json().data.token);
+    assert.equal(sessionPayload.user.id, "guest:guest-1");
+    assert.equal(sessionPayload.user.name, "Guest #123456");
 });

@@ -38,6 +38,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let historyPast = [];
     let historyFuture = [];
     let historySnapshot = null;
+    let panState = null;
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -403,6 +404,21 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function onPointerDown(event) {
+        if (event.button === 1) {
+            event.preventDefault();
+            const parent = canvasElement.parentElement;
+            if (!parent) return;
+            canvasElement.setPointerCapture(event.pointerId);
+            panState = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                scrollLeft: parent.scrollLeft,
+                scrollTop: parent.scrollTop,
+            };
+            canvasElement.style.cursor = "grabbing";
+            return;
+        }
         if (event.button !== 0) return;
         canvasElement.setPointerCapture(event.pointerId);
         canvasElement.focus();
@@ -477,6 +493,16 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function onPointerMove(event) {
+        if (panState?.pointerId === event.pointerId) {
+            event.preventDefault();
+            const parent = canvasElement.parentElement;
+            if (!parent) return;
+            parent.scrollLeft =
+                panState.scrollLeft - (event.clientX - panState.startX);
+            parent.scrollTop =
+                panState.scrollTop - (event.clientY - panState.startY);
+            return;
+        }
         const [x, y] = getCanvasPoint(event);
         if (!isDrawing) {
             if (activeTool === "select") {
@@ -596,7 +622,17 @@ export function createWhiteboardCanvas(canvasElement) {
         scheduleRender();
     }
 
-    function onPointerUp() {
+    function onPointerUp(event) {
+        if (panState && (!event || panState.pointerId === event.pointerId)) {
+            panState = null;
+            canvasElement.style.cursor =
+                activeTool === "select"
+                    ? "grab"
+                    : activeTool === "eraser"
+                      ? "cell"
+                      : "crosshair";
+            return;
+        }
         if (!isDrawing) return;
         isDrawing = false;
         if (activeTool === "select") {
@@ -693,6 +729,12 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
     canvasElement.addEventListener("dblclick", onDoubleClick);
+    canvasElement.addEventListener("auxclick", (event) => {
+        if (event.button === 1) event.preventDefault();
+    });
+    canvasElement.addEventListener("contextmenu", (event) => {
+        if (panState) event.preventDefault();
+    });
 
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvasElement.parentElement ?? document.body);

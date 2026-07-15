@@ -471,9 +471,11 @@ export async function registerShareBootstrapHooks(input: {
         "delete-token",
         { id: "share-gateway:delete-token" },
         async (stageCtx) => {
-            const authorizeResult = getFirstStageResult(
+            const authorizeResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "authorize-revocation",
+                (result) =>
+                    Boolean((result as { authorized?: boolean })?.authorized),
             ) as {
                 authorized?: boolean;
                 shareId?: string;
