@@ -1,9 +1,13 @@
-# Papan tulis
+# Sinkron Langsung Papan
 
-## Modul Nextcloud Whiteboard
+## Kolaborasi langsung diperbaiki
 
-Menambahkan modul mandiri untuk mengonfigurasi dan membuka sesi kolaborasi Nextcloud Whiteboard dengan kontrol akses yang dikelola oleh Cognis.
+Perubahan papan tulis kini memakai protokol Socket.IO Nextcloud Whiteboard, sehingga pemilik dan tamu berbagi menerima pembaruan adegan melalui server kolaborasi yang dikonfigurasi, bukan hanya snapshot Cognis.
 
-## Popup pengaturan administrasi
+## Kehadiran halaman ditambahkan
 
-Memperbaiki tombol pengaturan modul di administrasi agar membuka popup konfigurasi lokal untuk URL Nextcloud dan kunci API.
+Page Composer kini dapat menampilkan bilah kehadiran ringkas di atas kisi konten. Halaman papan tulis memakainya untuk menampilkan inisial pemilik dan tamu, cincin aktif, serta pratinjau profil untuk pengguna masuk.
+
+## Sesi berbagi ditingkatkan
+
+Tamu berbagi papan tulis mempertahankan nama tampilan yang dibuat Share Gateway dalam sesi kehadiran dan kolaborasi papan tulis.

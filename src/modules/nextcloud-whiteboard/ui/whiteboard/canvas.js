@@ -1,290 +1,44 @@
-const SESSION_VERSION_NONCE_MAX = 2 ** 31;
-
-function generateElementId() {
-    return typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2);
-}
-
-function randomNonce() {
-    return Math.floor(Math.random() * SESSION_VERSION_NONCE_MAX);
-}
-
-function buildFreedrawElement(points, strokeColor, strokeWidth) {
-    if (!points.length) return null;
-    let minX = Infinity,
-        minY = Infinity,
-        maxX = -Infinity,
-        maxY = -Infinity;
-    for (const [x, y] of points) {
-        if (x < minX) minX = x;
-        if (y < minY) minY = y;
-        if (x > maxX) maxX = x;
-        if (y > maxY) maxY = y;
-    }
-    return {
-        id: generateElementId(),
-        type: "freedraw",
-        x: minX,
-        y: minY,
-        width: maxX - minX || 1,
-        height: maxY - minY || 1,
-        strokeColor,
-        backgroundColor: "transparent",
-        fillStyle: "solid",
-        strokeWidth,
-        roughness: 1,
-        opacity: 100,
-        points: points.map(([x, y]) => [x - minX, y - minY]),
-        pressures: [],
-        simulatePressure: true,
-        isDeleted: false,
-        groupIds: [],
-        seed: randomNonce(),
-        version: 1,
-        versionNonce: randomNonce(),
-        angle: 0,
-    };
-}
-
-function buildShapeElement(
-    type,
-    startPoint,
-    endPoint,
-    strokeColor,
-    strokeWidth,
-    extra = {},
-) {
-    const [startX, startY] = startPoint;
-    const [endX, endY] = endPoint;
-    const x = Math.min(startX, endX);
-    const y = Math.min(startY, endY);
-    const width = Math.max(1, Math.abs(endX - startX));
-    const height = Math.max(1, Math.abs(endY - startY));
-    return {
-        id: generateElementId(),
-        type,
-        x,
-        y,
-        width,
-        height,
-        strokeColor,
-        backgroundColor: "transparent",
-        fillStyle: "solid",
-        strokeWidth,
-        roughness: 1,
-        opacity: 100,
-        points:
-            type === "line" || type === "arrow"
-                ? [
-                      [0, 0],
-                      [endX - startX, endY - startY],
-                  ]
-                : undefined,
-        isDeleted: false,
-        groupIds: [],
-        seed: randomNonce(),
-        version: 1,
-        versionNonce: randomNonce(),
-        angle: 0,
-        ...extra,
-    };
-}
-
-function buildTextElement(point, text, strokeColor) {
-    return buildShapeElement(
-        "text",
-        point,
-        [point[0] + 140, point[1] + 32],
-        strokeColor,
-        1,
-        {
-            text,
-            fontSize: 20,
-            fontFamily: "sans-serif",
-        },
-    );
-}
-
-function buildImageElement(point, dataUrl) {
-    return buildShapeElement(
-        "image",
-        point,
-        [point[0] + 240, point[1] + 180],
-        "#000000",
-        1,
-        {
-            dataUrl,
-        },
-    );
-}
-
-function renderFreedraw(context, element) {
-    const rawPoints = element.points ?? [];
-    if (rawPoints.length < 2) return;
-    context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
-    context.lineWidth = element.strokeWidth ?? 2;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.globalAlpha = (element.opacity ?? 100) / 100;
-    context.beginPath();
-    context.moveTo(element.x + rawPoints[0][0], element.y + rawPoints[0][1]);
-    for (let i = 1; i < rawPoints.length; i++) {
-        context.lineTo(
-            element.x + rawPoints[i][0],
-            element.y + rawPoints[i][1],
-        );
-    }
-    context.stroke();
-    context.restore();
-}
-
-function renderRectangle(context, element) {
-    context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
-    context.lineWidth = element.strokeWidth ?? 2;
-    context.globalAlpha = (element.opacity ?? 100) / 100;
-    if (element.backgroundColor && element.backgroundColor !== "transparent") {
-        context.fillStyle = element.backgroundColor;
-        context.fillRect(element.x, element.y, element.width, element.height);
-    }
-    context.strokeRect(element.x, element.y, element.width, element.height);
-    context.restore();
-}
-
-function renderDiamond(context, element) {
-    context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
-    context.lineWidth = element.strokeWidth ?? 2;
-    context.globalAlpha = (element.opacity ?? 100) / 100;
-    context.beginPath();
-    context.moveTo(element.x + element.width / 2, element.y);
-    context.lineTo(element.x + element.width, element.y + element.height / 2);
-    context.lineTo(element.x + element.width / 2, element.y + element.height);
-    context.lineTo(element.x, element.y + element.height / 2);
-    context.closePath();
-    context.stroke();
-    context.restore();
-}
-
-function renderEllipse(context, element) {
-    context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
-    context.lineWidth = element.strokeWidth ?? 2;
-    context.globalAlpha = (element.opacity ?? 100) / 100;
-    context.beginPath();
-    context.ellipse(
-        element.x + element.width / 2,
-        element.y + element.height / 2,
-        Math.abs(element.width / 2),
-        Math.abs(element.height / 2),
-        0,
-        0,
-        Math.PI * 2,
-    );
-    if (element.backgroundColor && element.backgroundColor !== "transparent") {
-        context.fillStyle = element.backgroundColor;
-        context.fill();
-    }
-    context.stroke();
-    context.restore();
-}
-
-function renderText(context, element) {
-    if (!element.text) return;
-    context.save();
-    context.fillStyle = element.strokeColor ?? "#000000";
-    context.font = `${element.fontSize ?? 16}px ${element.fontFamily ?? "sans-serif"}`;
-    context.globalAlpha = (element.opacity ?? 100) / 100;
-    context.fillText(
-        element.text,
-        element.x,
-        element.y + (element.fontSize ?? 16),
-    );
-    context.restore();
-}
-
-function renderImage(context, element) {
-    if (!element.dataUrl) return;
-    const image = new Image();
-    image.onload = () => {
-        context.drawImage(
-            image,
-            element.x,
-            element.y,
-            element.width,
-            element.height,
-        );
-    };
-    image.src = element.dataUrl;
-}
-
-function renderLine(context, element) {
-    const rawPoints = element.points ?? [];
-    if (rawPoints.length < 2) return;
-    context.save();
-    context.strokeStyle = element.strokeColor ?? "#000000";
-    context.lineWidth = element.strokeWidth ?? 2;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.globalAlpha = (element.opacity ?? 100) / 100;
-    context.beginPath();
-    context.moveTo(element.x + rawPoints[0][0], element.y + rawPoints[0][1]);
-    for (let i = 1; i < rawPoints.length; i++) {
-        context.lineTo(
-            element.x + rawPoints[i][0],
-            element.y + rawPoints[i][1],
-        );
-    }
-    context.stroke();
-    context.restore();
-}
-
-function renderElement(context, element) {
-    if (element.isDeleted) return;
-    switch (element.type) {
-        case "freedraw":
-            renderFreedraw(context, element);
-            break;
-        case "rectangle":
-            renderRectangle(context, element);
-            break;
-        case "ellipse":
-            renderEllipse(context, element);
-            break;
-        case "diamond":
-            renderDiamond(context, element);
-            break;
-        case "image":
-            renderImage(context, element);
-            break;
-        case "text":
-            renderText(context, element);
-            break;
-        case "line":
-        case "arrow":
-            renderLine(context, element);
-            break;
-        default:
-            break;
-    }
-}
+import {
+    boxContains,
+    buildDragBox,
+    buildFreedrawElement,
+    buildImageElement,
+    buildShapeElement,
+    buildTextElement,
+    bumpElementVersion,
+    drawAnchor,
+    getElementAnchorPoints,
+    getElementBounds,
+    isStrokeWidthApplicable,
+    renderElement,
+} from "./elements.js";
 
 export function createWhiteboardCanvas(canvasElement) {
     const context = canvasElement.getContext("2d");
     let elements = [];
     let currentPoints = [];
     let isDrawing = false;
-    let strokeColor = "#1e1e2e";
+    let strokeColor = "auto";
     let strokeWidth = 4;
     let activeTool = "pen";
     let imageUploadMaxBytes = 1048576;
     let selectedElementId = null;
+    let selectedElementIds = new Set();
+    let eraserSelectionIds = new Set();
+    let activeAnchorIndex = null;
     let dragStartPoint = null;
+    let dragSelectBox = null;
+    let selectDragMode = null;
     let originalElement = null;
+    let originalSelection = new Map();
     let changeCallback = null;
+    let selectionCallback = null;
+    let toolCallback = null;
     let pendingRender = false;
+    let historyPast = [];
+    let historyFuture = [];
+    let historySnapshot = null;
+    let panState = null;
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -296,21 +50,49 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function redraw() {
-        context.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        const style = getComputedStyle(canvasElement);
+        context.fillStyle =
+            style.getPropertyValue("--wb-canvas-bg").trim() || "#ffffff";
+        context.fillRect(0, 0, canvasElement.width, canvasElement.height);
         for (const element of elements) {
             renderElement(context, element);
-            if (element.id === selectedElementId) {
+            if (
+                selectedElementIds.has(element.id) ||
+                eraserSelectionIds.has(element.id)
+            ) {
+                const bounds = getElementBounds(element);
                 context.save();
                 context.setLineDash([6, 4]);
-                context.strokeStyle = "#2d9e5c";
+                context.strokeStyle = eraserSelectionIds.has(element.id)
+                    ? "#c0392b"
+                    : "#2d9e5c";
                 context.strokeRect(
-                    element.x - 4,
-                    element.y - 4,
-                    (element.width ?? 1) + 8,
-                    (element.height ?? 1) + 8,
+                    bounds.x - 4,
+                    bounds.y - 4,
+                    bounds.width + 8,
+                    bounds.height + 8,
                 );
                 context.restore();
+                if (element.id === selectedElementId) {
+                    for (const [anchorX, anchorY] of getElementAnchorPoints(
+                        element,
+                    )) {
+                        drawAnchor(context, anchorX, anchorY);
+                    }
+                }
             }
+        }
+        if (dragSelectBox) {
+            context.save();
+            context.setLineDash([4, 4]);
+            context.strokeStyle = "#2563eb";
+            context.strokeRect(
+                dragSelectBox.x,
+                dragSelectBox.y,
+                dragSelectBox.width,
+                dragSelectBox.height,
+            );
+            context.restore();
         }
         if (isDrawing && currentPoints.length >= 2 && activeTool === "pen") {
             const previewElement = buildFreedrawElement(
@@ -318,7 +100,19 @@ export function createWhiteboardCanvas(canvasElement) {
                 strokeColor,
                 strokeWidth,
             );
-            if (previewElement) renderFreedraw(context, previewElement);
+            if (previewElement) renderElement(context, previewElement);
+        } else if (
+            isDrawing &&
+            dragStartPoint &&
+            currentPoints.length >= 1 &&
+            activeTool === "eraser"
+        ) {
+            const box = buildDragBox(dragStartPoint, currentPoints.at(-1));
+            context.save();
+            context.setLineDash([4, 4]);
+            context.strokeStyle = "#c0392b";
+            context.strokeRect(box.x, box.y, box.width, box.height);
+            context.restore();
         } else if (
             isDrawing &&
             dragStartPoint &&
@@ -338,12 +132,61 @@ export function createWhiteboardCanvas(canvasElement) {
         }
     }
 
+    function cloneElements(items = elements) {
+        return items.map((element) => ({
+            ...element,
+            points: element.points?.map((point) => [...point]),
+        }));
+    }
+
     function resizeCanvas() {
-        const rect = canvasElement.parentElement?.getBoundingClientRect();
-        if (!rect) return;
-        canvasElement.width = rect.width;
-        canvasElement.height = rect.height;
+        updateCanvasOverflow();
         scheduleRender();
+    }
+
+    function updateCanvasOverflow() {
+        const parent = canvasElement.parentElement;
+        const rect = parent?.getBoundingClientRect();
+        if (!rect) return;
+        const overflowPadding = 48;
+        let bounds = elements.map(getElementBounds);
+        const minX = Math.min(0, ...bounds.map((item) => item.x));
+        const minY = Math.min(0, ...bounds.map((item) => item.y));
+        if (minX < 0 || minY < 0) {
+            const dx = minX < 0 ? Math.abs(minX) + overflowPadding : 0;
+            const dy = minY < 0 ? Math.abs(minY) + overflowPadding : 0;
+            elements = elements.map((element) =>
+                bumpElementVersion(element, {
+                    x: element.x + dx,
+                    y: element.y + dy,
+                }),
+            );
+            bounds = elements.map(getElementBounds);
+            parent.scrollLeft += dx;
+            parent.scrollTop += dy;
+        }
+        const contentRight = Math.max(
+            0,
+            ...bounds.map((item) => item.x + item.width),
+        );
+        const contentBottom = Math.max(
+            0,
+            ...bounds.map((item) => item.y + item.height),
+        );
+        const maxX =
+            contentRight > rect.width
+                ? contentRight + overflowPadding
+                : rect.width;
+        const maxY =
+            contentBottom > rect.height
+                ? contentBottom + overflowPadding
+                : rect.height;
+        const width = Math.ceil(maxX);
+        const height = Math.ceil(maxY);
+        if (canvasElement.width !== width) canvasElement.width = width;
+        if (canvasElement.height !== height) canvasElement.height = height;
+        canvasElement.style.width = `${width}px`;
+        canvasElement.style.height = `${height}px`;
     }
 
     function getCanvasPoint(event) {
@@ -351,66 +194,297 @@ export function createWhiteboardCanvas(canvasElement) {
         return [event.clientX - rect.left, event.clientY - rect.top];
     }
 
+    function findAnchorAt(element, x, y) {
+        if (!element) return -1;
+        return getElementAnchorPoints(element).findIndex(
+            ([anchorX, anchorY]) => Math.hypot(anchorX - x, anchorY - y) <= 10,
+        );
+    }
+
+    function selectedElement() {
+        return (
+            elements.find((element) => element.id === selectedElementId) ?? null
+        );
+    }
+
+    function syncPrimarySelection() {
+        if (selectedElementId && selectedElementIds.has(selectedElementId))
+            return;
+        selectedElementId = selectedElementIds.values().next().value ?? null;
+    }
+
+    function notifySelection() {
+        syncPrimarySelection();
+        const element = selectedElement();
+        selectionCallback?.(
+            element
+                ? {
+                      ...element,
+                      strokeWidthApplicable: isStrokeWidthApplicable(element),
+                  }
+                : null,
+        );
+    }
+
     function findElementAt(x, y) {
         return [...elements]
             .reverse()
             .find(
                 (element) =>
-                    x >= element.x &&
-                    x <= element.x + (element.width ?? 1) &&
-                    y >= element.y &&
-                    y <= element.y + (element.height ?? 1),
+                    x >= getElementBounds(element).x &&
+                    x <=
+                        getElementBounds(element).x +
+                            getElementBounds(element).width &&
+                    y >= getElementBounds(element).y &&
+                    y <=
+                        getElementBounds(element).y +
+                            getElementBounds(element).height,
             );
     }
 
-    function commitElements(nextElements) {
+    function commitElements(nextElements, { record = true } = {}) {
+        if (record) {
+            historyPast.push(cloneElements());
+            historyPast = historyPast.slice(-100);
+            historyFuture = [];
+        }
         elements = nextElements;
+        updateCanvasOverflow();
         scheduleRender();
         changeCallback?.([...elements]);
     }
 
-    function eraseAt(x, y, radius = 16) {
-        const before = elements.length;
-        elements = elements.filter((element) => {
-            if (element.type === "freedraw") {
-                return !element.points.some(
-                    ([px, py]) =>
-                        Math.hypot(element.x + px - x, element.y + py - y) <
-                        radius,
-                );
-            }
-            const centerX = element.x + (element.width ?? 0) / 2;
-            const centerY = element.y + (element.height ?? 0) / 2;
-            return Math.hypot(centerX - x, centerY - y) >= radius;
-        });
-        if (elements.length !== before) {
-            commitElements(elements);
+    function restoreElements(snapshot) {
+        elements = cloneElements(snapshot);
+        updateCanvasOverflow();
+        scheduleRender();
+        changeCallback?.([...elements]);
+        notifySelection();
+    }
+
+    function undo() {
+        const previous = historyPast.pop();
+        if (!previous) return false;
+        historyFuture.push(cloneElements());
+        restoreElements(previous);
+        return true;
+    }
+
+    function redo() {
+        const next = historyFuture.pop();
+        if (!next) return false;
+        historyPast.push(cloneElements());
+        restoreElements(next);
+        return true;
+    }
+
+    function scaleElementToBounds(element, nextBounds) {
+        const originalBounds = getElementBounds(element);
+        const scaleX = nextBounds.width / Math.max(1, originalBounds.width);
+        const scaleY = nextBounds.height / Math.max(1, originalBounds.height);
+        const patch = {
+            x: nextBounds.x,
+            y: nextBounds.y,
+            width: Math.max(1, nextBounds.width),
+            height: Math.max(1, nextBounds.height),
+        };
+        if (Array.isArray(element.points)) {
+            patch.points = element.points.map(([px, py]) => [
+                (element.x + px - originalBounds.x) * scaleX,
+                (element.y + py - originalBounds.y) * scaleY,
+            ]);
         }
+        return bumpElementVersion(element, patch);
+    }
+
+    function updateEraserSelection(endPoint) {
+        if (!dragStartPoint) return;
+        const box = buildDragBox(dragStartPoint, endPoint);
+        eraserSelectionIds = new Set(
+            elements
+                .filter((element) =>
+                    boxContains(box, getElementBounds(element)),
+                )
+                .map((element) => element.id),
+        );
+        scheduleRender();
+    }
+
+    function setActiveTool(tool) {
+        activeTool = tool;
+        eraserSelectionIds = new Set();
+        canvasElement.style.cursor =
+            tool === "select"
+                ? "grab"
+                : tool === "eraser"
+                  ? "cell"
+                  : "crosshair";
+        toolCallback?.(tool);
+        scheduleRender();
+    }
+
+    function selectOnlyElement(elementId) {
+        selectedElementIds = elementId ? new Set([elementId]) : new Set();
+        selectedElementId = elementId ?? null;
+        notifySelection();
+        scheduleRender();
+    }
+
+    function toggleElementSelection(elementId) {
+        if (!elementId) return;
+        selectedElementIds = new Set(selectedElementIds);
+        if (selectedElementIds.has(elementId)) {
+            selectedElementIds.delete(elementId);
+        } else {
+            selectedElementIds.add(elementId);
+        }
+        if (!selectedElementIds.has(selectedElementId)) {
+            selectedElementId = elementId;
+        }
+        notifySelection();
+        scheduleRender();
+    }
+
+    function commitCreatedElement(element) {
+        commitElements([...elements, element]);
+        selectOnlyElement(element.id);
+        setActiveTool("select");
+    }
+
+    function updateTextElement(element, text) {
+        const nextText = text.trim() || "Text";
+        const fontSize = element.fontSize ?? 28;
+        const width = Math.max(160, nextText.length * fontSize * 0.62);
+        const height = Math.max(56, fontSize * 1.8);
+        commitElements(
+            elements.map((item) =>
+                item.id === element.id
+                    ? bumpElementVersion(item, {
+                          text: nextText,
+                          width,
+                          height,
+                      })
+                    : item,
+            ),
+        );
+        selectOnlyElement(element.id);
+    }
+
+    function openTextEditor(element) {
+        const parent = canvasElement.parentElement;
+        if (!parent) return;
+        parent.querySelector(".wb-text-editor")?.remove();
+        const editor = document.createElement("textarea");
+        editor.className = "wb-text-editor";
+        editor.value = element.text ?? "Text";
+        editor.style.left = `${element.x}px`;
+        editor.style.top = `${element.y}px`;
+        editor.style.width = `${Math.max(180, element.width ?? 180)}px`;
+        editor.style.height = `${Math.max(64, element.height ?? 64)}px`;
+        editor.style.fontSize = `${element.fontSize ?? 28}px`;
+        parent.appendChild(editor);
+        editor.focus();
+        editor.select();
+        const finish = () => {
+            if (!editor.isConnected) return;
+            const value = editor.value;
+            editor.remove();
+            updateTextElement(element, value);
+        };
+        editor.addEventListener("blur", finish, { once: true });
+        editor.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                editor.remove();
+                selectOnlyElement(element.id);
+            } else if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                finish();
+            }
+        });
     }
 
     function onPointerDown(event) {
+        if (event.button === 1) {
+            event.preventDefault();
+            const parent = canvasElement.parentElement;
+            if (!parent) return;
+            canvasElement.setPointerCapture(event.pointerId);
+            panState = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                scrollLeft: parent.scrollLeft,
+                scrollTop: parent.scrollTop,
+            };
+            canvasElement.style.cursor = "grabbing";
+            return;
+        }
         if (event.button !== 0) return;
         canvasElement.setPointerCapture(event.pointerId);
         canvasElement.focus();
         isDrawing = true;
         const [x, y] = getCanvasPoint(event);
         dragStartPoint = [x, y];
+        historySnapshot = cloneElements();
         if (activeTool === "select") {
-            const selected = findElementAt(x, y);
-            selectedElementId = selected?.id ?? null;
-            originalElement = selected ? { ...selected } : null;
+            const selected = selectedElement();
+            activeAnchorIndex = findAnchorAt(selected, x, y);
+            const target =
+                activeAnchorIndex >= 0 ? selected : findElementAt(x, y);
+            if (event.shiftKey && target) {
+                toggleElementSelection(target.id);
+                isDrawing = false;
+                return;
+            }
+            if (activeAnchorIndex >= 0 && selected) {
+                selectDragMode = "resize";
+                originalElement = {
+                    ...selected,
+                    points: selected.points?.map((point) => [...point]),
+                };
+            } else if (target) {
+                if (!selectedElementIds.has(target.id))
+                    selectOnlyElement(target.id);
+                selectDragMode = "move";
+                originalSelection = new Map(
+                    elements
+                        .filter((element) => selectedElementIds.has(element.id))
+                        .map((element) => [
+                            element.id,
+                            {
+                                ...element,
+                                points: element.points?.map((point) => [
+                                    ...point,
+                                ]),
+                            },
+                        ]),
+                );
+            } else {
+                selectOnlyElement(null);
+                selectDragMode = "box";
+                dragSelectBox = buildDragBox(dragStartPoint, [x, y]);
+            }
+            notifySelection();
             scheduleRender();
             return;
         }
         if (activeTool === "eraser") {
-            eraseAt(x, y);
+            currentPoints = [[x, y]];
+            updateEraserSelection([x, y]);
             return;
         }
         if (activeTool === "text") {
-            commitElements([
-                ...elements,
-                buildTextElement([x, y], "Text", strokeColor),
-            ]);
+            const existingText = findElementAt(x, y);
+            if (existingText?.type === "text") {
+                selectOnlyElement(existingText.id);
+                openTextEditor(existingText);
+                isDrawing = false;
+                setActiveTool("select");
+                return;
+            }
+            const element = buildTextElement([x, y], "Text", strokeColor);
+            commitCreatedElement(element);
+            openTextEditor(element);
             isDrawing = false;
             return;
         }
@@ -419,50 +493,174 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function onPointerMove(event) {
-        if (!isDrawing) return;
-        const [x, y] = getCanvasPoint(event);
-        if (
-            activeTool === "select" &&
-            selectedElementId &&
-            originalElement &&
-            dragStartPoint
-        ) {
-            const dx = x - dragStartPoint[0];
-            const dy = y - dragStartPoint[1];
-            elements = elements.map((element) =>
-                element.id === selectedElementId
-                    ? {
-                          ...element,
-                          x: originalElement.x + dx,
-                          y: originalElement.y + dy,
-                          version: (originalElement.version ?? 1) + 1,
-                          versionNonce: randomNonce(),
-                      }
-                    : element,
-            );
-            scheduleRender();
+        if (panState?.pointerId === event.pointerId) {
+            event.preventDefault();
+            const parent = canvasElement.parentElement;
+            if (!parent) return;
+            parent.scrollLeft =
+                panState.scrollLeft - (event.clientX - panState.startX);
+            parent.scrollTop =
+                panState.scrollTop - (event.clientY - panState.startY);
             return;
         }
+        const [x, y] = getCanvasPoint(event);
+        if (!isDrawing) {
+            if (activeTool === "select") {
+                const anchorIndex = findAnchorAt(selectedElement(), x, y);
+                canvasElement.style.cursor =
+                    anchorIndex >= 0 ? "pointer" : "grab";
+            }
+            return;
+        }
+        if (activeTool === "select" && dragStartPoint) {
+            const dx = x - dragStartPoint[0];
+            const dy = y - dragStartPoint[1];
+            if (selectDragMode === "box") {
+                dragSelectBox = buildDragBox(dragStartPoint, [x, y]);
+                selectedElementIds = new Set(
+                    elements
+                        .filter((element) =>
+                            boxContains(
+                                dragSelectBox,
+                                getElementBounds(element),
+                            ),
+                        )
+                        .map((element) => element.id),
+                );
+                notifySelection();
+                scheduleRender();
+                return;
+            }
+            if (selectDragMode === "move" && originalSelection.size > 0) {
+                elements = elements.map((element) => {
+                    const original = originalSelection.get(element.id);
+                    if (!original) return element;
+                    return bumpElementVersion(element, {
+                        x: original.x + dx,
+                        y: original.y + dy,
+                    });
+                });
+                scheduleRender();
+                return;
+            }
+            if (
+                selectDragMode === "resize" &&
+                selectedElementId &&
+                originalElement &&
+                activeAnchorIndex >= 0
+            ) {
+                elements = elements.map((element) => {
+                    if (element.id !== selectedElementId) return element;
+                    if (element.type === "line" || element.type === "arrow") {
+                        const points = (originalElement.points ?? []).map(
+                            (point) => [...point],
+                        );
+                        points[activeAnchorIndex] = [
+                            (points[activeAnchorIndex]?.[0] ?? 0) + dx,
+                            (points[activeAnchorIndex]?.[1] ?? 0) + dy,
+                        ];
+                        const absolutePoints = points.map(([px, py]) => [
+                            originalElement.x + px,
+                            originalElement.y + py,
+                        ]);
+                        const minX = Math.min(
+                            ...absolutePoints.map(([px]) => px),
+                        );
+                        const minY = Math.min(
+                            ...absolutePoints.map(([, py]) => py),
+                        );
+                        const maxX = Math.max(
+                            ...absolutePoints.map(([px]) => px),
+                        );
+                        const maxY = Math.max(
+                            ...absolutePoints.map(([, py]) => py),
+                        );
+                        return bumpElementVersion(element, {
+                            x: minX,
+                            y: minY,
+                            width: Math.max(1, maxX - minX),
+                            height: Math.max(1, maxY - minY),
+                            points: absolutePoints.map(([px, py]) => [
+                                px - minX,
+                                py - minY,
+                            ]),
+                        });
+                    }
+                    const leftAnchors = new Set([0, 3]);
+                    const topAnchors = new Set([0, 1]);
+                    const right = originalElement.x + originalElement.width;
+                    const bottom = originalElement.y + originalElement.height;
+                    const nextX = leftAnchors.has(activeAnchorIndex)
+                        ? originalElement.x + dx
+                        : originalElement.x;
+                    const nextY = topAnchors.has(activeAnchorIndex)
+                        ? originalElement.y + dy
+                        : originalElement.y;
+                    const nextRight = leftAnchors.has(activeAnchorIndex)
+                        ? right
+                        : right + dx;
+                    const nextBottom = topAnchors.has(activeAnchorIndex)
+                        ? bottom
+                        : bottom + dy;
+                    return scaleElementToBounds(element, {
+                        x: Math.min(nextX, nextRight),
+                        y: Math.min(nextY, nextBottom),
+                        width: Math.max(1, Math.abs(nextRight - nextX)),
+                        height: Math.max(1, Math.abs(nextBottom - nextY)),
+                    });
+                });
+                scheduleRender();
+                return;
+            }
+        }
         if (activeTool === "eraser") {
-            eraseAt(x, y);
+            currentPoints.push([x, y]);
+            updateEraserSelection([x, y]);
             return;
         }
         currentPoints.push([x, y]);
         scheduleRender();
     }
 
-    function onPointerUp() {
+    function onPointerUp(event) {
+        if (panState && (!event || panState.pointerId === event.pointerId)) {
+            panState = null;
+            canvasElement.style.cursor =
+                activeTool === "select"
+                    ? "grab"
+                    : activeTool === "eraser"
+                      ? "cell"
+                      : "crosshair";
+            return;
+        }
         if (!isDrawing) return;
         isDrawing = false;
-        if (activeTool === "select" && selectedElementId) {
-            changeCallback?.([...elements]);
+        if (activeTool === "select") {
+            if (selectDragMode) {
+                historyPast.push(historySnapshot ?? cloneElements());
+                historyPast = historyPast.slice(-100);
+                historyFuture = [];
+                updateCanvasOverflow();
+                changeCallback?.([...elements]);
+            }
+        } else if (activeTool === "eraser") {
+            if (eraserSelectionIds.size > 0) {
+                commitElements(
+                    elements.filter(
+                        (element) => !eraserSelectionIds.has(element.id),
+                    ),
+                );
+                selectedElementIds = new Set();
+                selectedElementId = null;
+                notifySelection();
+            }
         } else if (activeTool === "pen" && currentPoints.length >= 2) {
             const element = buildFreedrawElement(
                 currentPoints,
                 strokeColor,
                 strokeWidth,
             );
-            if (element) commitElements([...elements, element]);
+            if (element) commitCreatedElement(element);
         } else if (
             ["rectangle", "diamond", "ellipse", "line", "arrow"].includes(
                 activeTool,
@@ -470,8 +668,7 @@ export function createWhiteboardCanvas(canvasElement) {
             dragStartPoint &&
             currentPoints.length >= 1
         ) {
-            commitElements([
-                ...elements,
+            commitCreatedElement(
                 buildShapeElement(
                     activeTool,
                     dragStartPoint,
@@ -479,12 +676,27 @@ export function createWhiteboardCanvas(canvasElement) {
                     strokeColor,
                     strokeWidth,
                 ),
-            ]);
+            );
         }
         currentPoints = [];
         dragStartPoint = null;
         originalElement = null;
+        originalSelection = new Map();
+        activeAnchorIndex = null;
+        historySnapshot = null;
+        eraserSelectionIds = new Set();
+        dragSelectBox = null;
+        selectDragMode = null;
         scheduleRender();
+    }
+
+    function onDoubleClick(event) {
+        const [x, y] = getCanvasPoint(event);
+        const element = findElementAt(x, y);
+        if (activeTool === "select" && element?.type === "text") {
+            selectOnlyElement(element.id);
+            openTextEditor(element);
+        }
     }
 
     function onPaste(event) {
@@ -516,20 +728,61 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointerup", onPointerUp);
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
+    canvasElement.addEventListener("dblclick", onDoubleClick);
+    canvasElement.addEventListener("auxclick", (event) => {
+        if (event.button === 1) event.preventDefault();
+    });
+    canvasElement.addEventListener("contextmenu", (event) => {
+        if (panState) event.preventDefault();
+    });
 
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvasElement.parentElement ?? document.body);
+    const themeObserver = new MutationObserver(scheduleRender);
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme", "style"],
+    });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme", "style"],
+    });
     resizeCanvas();
 
     return {
         setTool(tool) {
-            activeTool = tool;
+            setActiveTool(tool);
         },
         setStrokeColor(color) {
             strokeColor = color;
+            if (selectedElementId) {
+                commitElements(
+                    elements.map((element) =>
+                        element.id === selectedElementId
+                            ? bumpElementVersion(element, {
+                                  strokeColor: color,
+                              })
+                            : element,
+                    ),
+                );
+                notifySelection();
+            }
         },
         setStrokeWidth(width) {
             strokeWidth = Number(width);
+            if (
+                selectedElementId &&
+                isStrokeWidthApplicable(selectedElement())
+            ) {
+                commitElements(
+                    elements.map((element) =>
+                        element.id === selectedElementId
+                            ? bumpElementVersion(element, { strokeWidth })
+                            : element,
+                    ),
+                );
+                notifySelection();
+            }
         },
         setImageUploadMaxBytes(maxBytes) {
             imageUploadMaxBytes = Number(maxBytes);
@@ -537,7 +790,21 @@ export function createWhiteboardCanvas(canvasElement) {
         getElements() {
             return [...elements];
         },
-        applyElements(remoteElements) {
+        applyElements(remoteElements, { replace = false } = {}) {
+            if (replace) {
+                elements = cloneElements(remoteElements);
+                updateCanvasOverflow();
+                selectedElementIds = new Set(
+                    [...selectedElementIds].filter((id) =>
+                        elements.some((element) => element.id === id),
+                    ),
+                );
+                if (selectedElementId && !selectedElement())
+                    selectedElementId = null;
+                notifySelection();
+                scheduleRender();
+                return;
+            }
             const remoteById = new Map(
                 remoteElements.map((element) => [element.id, element]),
             );
@@ -563,24 +830,56 @@ export function createWhiteboardCanvas(canvasElement) {
                 }
             }
             elements = [...localById.values()];
+            updateCanvasOverflow();
+            const currentIds = new Set(elements.map((element) => element.id));
+            selectedElementIds = new Set(
+                [...selectedElementIds].filter((id) => currentIds.has(id)),
+            );
+            if (selectedElementId && !selectedElement())
+                selectedElementId = null;
+            notifySelection();
             scheduleRender();
         },
         clearAll() {
+            if (elements.length > 0) {
+                historyPast.push(cloneElements());
+                historyPast = historyPast.slice(-100);
+                historyFuture = [];
+            }
             elements = [];
             currentPoints = [];
+            eraserSelectionIds = new Set();
+            selectedElementIds = new Set();
             scheduleRender();
+            selectedElementId = null;
+            notifySelection();
             changeCallback?.([]);
+        },
+        onSelectionChange(callback) {
+            selectionCallback = callback;
+            notifySelection();
+        },
+        onToolChange(callback) {
+            toolCallback = callback;
+            toolCallback?.(activeTool);
         },
         onChange(callback) {
             changeCallback = callback;
         },
+        undo,
+        redo,
         destroy() {
             resizeObserver.disconnect();
+            themeObserver.disconnect();
             canvasElement.removeEventListener("pointerdown", onPointerDown);
             canvasElement.removeEventListener("pointermove", onPointerMove);
             canvasElement.removeEventListener("pointerup", onPointerUp);
             canvasElement.removeEventListener("pointercancel", onPointerUp);
             canvasElement.removeEventListener("paste", onPaste);
+            canvasElement.removeEventListener("dblclick", onDoubleClick);
+            canvasElement.parentElement
+                ?.querySelector(".wb-text-editor")
+                ?.remove();
         },
     };
 }

@@ -85,6 +85,42 @@ export class NextcloudWhiteboardStore {
             ],
             primaryKey: ["whiteboard_id", "username"],
         });
+        await this.db.ensureTable({
+            name: "nextcloud_whiteboard_presence",
+            columns: [
+                { name: "whiteboard_id", type: "text", notNull: true },
+                { name: "username", type: "text", notNull: true },
+                { name: "session_id", type: "text", notNull: true },
+                { name: "display_name", type: "text", notNull: true },
+                { name: "guest", type: "integer", notNull: true, default: 0 },
+                { name: "active", type: "integer", notNull: true, default: 1 },
+                {
+                    name: "last_seen_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["whiteboard_id", "username", "session_id"],
+        });
+        await this.db.ensureTable({
+            name: "nextcloud_whiteboard_snapshots",
+            columns: [
+                { name: "whiteboard_id", type: "text", primaryKey: true },
+                {
+                    name: "elements_json",
+                    type: "text",
+                    notNull: true,
+                    default: "[]",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
     }
 
     async getConfig() {
@@ -127,14 +163,15 @@ export class NextcloudWhiteboardStore {
                 image_upload_max_bytes: normalizedImageUploadMaxBytes,
                 updated_at: updatedAt,
             },
-            onConflict: {
-                columns: ["id"],
-                merge: [
-                    "server_url",
-                    "api_key",
-                    "image_upload_max_bytes",
-                    "updated_at",
-                ],
+            conflict: {
+                action: "update",
+                target: ["id"],
+                update: {
+                    server_url: normalizedServerUrl,
+                    api_key: normalizedApiKey,
+                    image_upload_max_bytes: normalizedImageUploadMaxBytes,
+                    updated_at: updatedAt,
+                },
             },
         });
         return this.getConfig();
@@ -177,9 +214,16 @@ export class NextcloudWhiteboardStore {
                             username === normalizedCreator ? "owner" : "editor",
                         granted_at: now,
                     },
-                    onConflict: {
-                        columns: ["whiteboard_id", "username"],
-                        merge: ["role", "granted_at"],
+                    conflict: {
+                        action: "update",
+                        target: ["whiteboard_id", "username"],
+                        update: {
+                            role:
+                                username === normalizedCreator
+                                    ? "owner"
+                                    : "editor",
+                            granted_at: now,
+                        },
                     },
                 });
             }
@@ -224,7 +268,7 @@ export class NextcloudWhiteboardStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "nextcloud_whiteboards",
-            values: { title: normalizedTitle, updated_at: updatedAt },
+            set: { title: normalizedTitle, updated_at: updatedAt },
             where: [{ column: "id", value: String(id ?? "") }],
         });
         return this.getWhiteboardById(id);
@@ -241,6 +285,101 @@ export class NextcloudWhiteboardStore {
             limit: 1,
         });
         return Boolean(result.rows?.[0]);
+    }
+
+    async upsertPresence({
+        whiteboardId,
+        username,
+        sessionId,
+        displayName,
+        guest,
+        active = true,
+    }) {
+        const timestamp = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "nextcloud_whiteboard_presence",
+            values: {
+                whiteboard_id: String(whiteboardId ?? ""),
+                username: String(username ?? ""),
+                session_id: String(sessionId ?? ""),
+                display_name: String(displayName || username || "Guest"),
+                guest: guest ? 1 : 0,
+                active: active ? 1 : 0,
+                last_seen_at: timestamp,
+            },
+            conflict: {
+                action: "update",
+                target: ["whiteboard_id", "username", "session_id"],
+            },
+        });
+        return timestamp;
+    }
+
+    async listPresence(whiteboardId) {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "nextcloud_whiteboard_presence",
+            where: [
+                { column: "whiteboard_id", value: String(whiteboardId ?? "") },
+            ],
+            orderBy: [{ column: "last_seen_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) => ({
+            whiteboardId: String(row.whiteboard_id),
+            username: String(row.username),
+            sessionId: String(row.session_id),
+            displayName: String(row.display_name || row.username),
+            guest: Number(row.guest ?? 0) === 1,
+            active: Number(row.active ?? 0) === 1,
+            lastSeenAt: String(row.last_seen_at),
+        }));
+    }
+
+    async getElementsSnapshot(id) {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "nextcloud_whiteboard_snapshots",
+            where: [{ column: "whiteboard_id", value: String(id ?? "") }],
+            limit: 1,
+        });
+        const raw = result.rows?.[0]?.elements_json;
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(String(raw));
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    }
+
+    async saveElementsSnapshot(id, elements) {
+        const safeElements = Array.isArray(elements) ? elements : [];
+        const updatedAt = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "nextcloud_whiteboard_snapshots",
+            values: {
+                whiteboard_id: String(id ?? ""),
+                elements_json: JSON.stringify(safeElements),
+                updated_at: updatedAt,
+            },
+            conflict: {
+                action: "update",
+                target: ["whiteboard_id"],
+                update: {
+                    elements_json: JSON.stringify(safeElements),
+                    updated_at: updatedAt,
+                },
+            },
+        });
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "nextcloud_whiteboards",
+            set: { updated_at: updatedAt },
+            where: [{ column: "id", value: String(id ?? "") }],
+        });
+        return { elements: safeElements, updatedAt };
     }
 
     mintSessionToken(config, board, user) {

@@ -63,4 +63,9 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         /componentStringBaseUrls:\s*\[\s*"\/static\/modules\/nextcloud-whiteboard\/languages"/,
     );
     assert.doesNotMatch(source, /wb-connection-status/);
+    assert.match(
+        source,
+        /\/static\/modules\/nextcloud-whiteboard\/share-adapter\.js/,
+    );
+    assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });

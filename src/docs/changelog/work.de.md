@@ -1,9 +1,13 @@
-# Whiteboards
+# Whiteboard Live-Sync
 
-## Nextcloud-Whiteboard-Modul
+## Live-Zusammenarbeit korrigiert
 
-Ein eigenständiges Modul wurde hinzugefügt, um Nextcloud-Whiteboard-Sitzungen mit von Cognis verwalteter Zugriffskontrolle zu konfigurieren und zu starten.
+Whiteboard-Änderungen verwenden jetzt das Socket.IO-Protokoll von Nextcloud Whiteboard, sodass Besitzer und Freigabe-Gäste Szenenaktualisierungen über den konfigurierten Kollaborationsserver erhalten statt nur über Cognis-Snapshots.
 
-## Administrations-Einstellungsdialog
+## Seitenpräsenz hinzugefügt
 
-Die Einstellungen-Schaltfläche des Moduls in der Administration öffnet nun einen lokalisierten Konfigurationsdialog für die Nextcloud-URL und den API-Schlüssel.
+Der Page Composer kann oberhalb des Inhaltsrasters eine kompakte Präsenzleiste anzeigen. Die Whiteboard-Seite nutzt sie für Initialen von Besitzern und Gästen, aktive grüne Ringe und Profilvorschauen für angemeldete Benutzer.
+
+## Freigabesitzungen verbessert
+
+Whiteboard-Freigabe-Gäste behalten ihre vom Share-Gateway erzeugten Anzeigenamen in Präsenz- und Kollaborationssitzungen.

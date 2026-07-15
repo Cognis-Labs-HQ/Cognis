@@ -1,5 +1,6 @@
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { apiFetch } from "/static/reuse/api-client.js";
@@ -9,6 +10,8 @@ import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
 const EMIT_DEBOUNCE_MS = 80;
 const RECONNECT_MAX_DELAY_MS = 30000;
+const SYNC_MESSAGE_SCENE_INIT = "SCENE_INIT";
+const SYNC_MESSAGE_SCENE_UPDATE = "SCENE_UPDATE";
 
 let i18n = null;
 let composer = null;
@@ -16,6 +19,7 @@ let composer = null;
 let boards = [];
 let activeBoard = null;
 let activeSession = null;
+let activeShareContext = null;
 let canvasInstance = null;
 let socketInstance = null;
 let savedElements = [];
@@ -79,9 +83,15 @@ async function loadBoards() {
 }
 
 async function renameBoard(boardId, title) {
+    const normalizedTitle = String(title ?? "").trim();
+    const normalizedBoardId = String(boardId ?? "").trim();
+    if (!normalizedBoardId || !normalizedTitle) {
+        throw new Error(t("module.nextcloud_whiteboard.rename_failed"));
+    }
     return apiFetchJson("/whiteboards/rename", {
         method: "POST",
-        body: JSON.stringify({ id: boardId, title }),
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: normalizedBoardId, title: normalizedTitle }),
     });
 }
 
@@ -96,6 +106,14 @@ async function fetchSession(boardId) {
     return apiFetchJson(
         `/whiteboards/session?id=${encodeURIComponent(boardId)}`,
     );
+}
+
+async function saveElements(boardId, elements) {
+    return apiFetchJson("/whiteboards/elements", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: boardId, elements }),
+    });
 }
 
 function debounce(callback, delay) {
@@ -158,6 +176,24 @@ function teardownCanvas() {
     activeSession = null;
 }
 
+function encodeSceneMessage(type, elements) {
+    return new TextEncoder().encode(
+        JSON.stringify({ type, payload: { elements } }),
+    );
+}
+
+function decodeSceneMessage(payload) {
+    const text =
+        typeof payload === "string"
+            ? payload
+            : new TextDecoder().decode(
+                  payload instanceof Uint8Array
+                      ? payload
+                      : new Uint8Array(payload),
+              );
+    return JSON.parse(text);
+}
+
 function connectSocket(io, session, canvas) {
     const { serverUrl, roomId, token } = session;
     const socket = io(serverUrl, {
@@ -166,9 +202,26 @@ function connectSocket(io, session, canvas) {
         reconnectionDelay: 1000,
         reconnectionDelayMax: RECONNECT_MAX_DELAY_MS,
     });
+    let joinedRoom = false;
+    let isDedicatedSyncer = false;
 
-    const emitChanges = debounce((elements) => {
-        if (!socket.connected) {
+    const persistChanges = debounce(async (elements) => {
+        try {
+            await saveElements(roomId, elements);
+            setSyncStatus(
+                "synced",
+                "module.nextcloud_whiteboard.status_synced",
+            );
+        } catch (error) {
+            reportClientError(
+                error,
+                "module.nextcloud_whiteboard.status_sync_failed",
+            );
+        }
+    }, EMIT_DEBOUNCE_MS);
+
+    const emitChanges = debounce((elements, type = SYNC_MESSAGE_SCENE_INIT) => {
+        if (!socket.connected || !joinedRoom) {
             setSyncStatus(
                 "error",
                 "module.nextcloud_whiteboard.status_sync_failed",
@@ -176,8 +229,12 @@ function connectSocket(io, session, canvas) {
             return;
         }
         setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
-        socket.emit("elements:changed", { elements, roomId });
-        setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
+        socket.emit(
+            "server-broadcast",
+            roomId,
+            encodeSceneMessage(type, elements),
+            [],
+        );
     }, EMIT_DEBOUNCE_MS);
 
     canvas.onChange((elements, meta) => {
@@ -191,12 +248,35 @@ function connectSocket(io, session, canvas) {
             );
             return;
         }
-        emitChanges(elements);
+        savedElements = elements;
+        persistChanges(elements);
+        emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
     });
 
     socket.on("connect", () => {
         lastConnectionToast = "";
-        socket.emit("joinRoom", { roomID: roomId, token });
+        joinedRoom = false;
+    });
+
+    socket.on("init-room", () => {
+        socket.emit("join-room", roomId);
+    });
+
+    socket.on("room-user-change", () => {
+        joinedRoom = true;
+        if (isDedicatedSyncer)
+            emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
+    });
+
+    socket.on("sync-designate", ({ isSyncer } = {}) => {
+        isDedicatedSyncer = Boolean(isSyncer);
+        if (joinedRoom && isDedicatedSyncer)
+            emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
+    });
+
+    socket.on("user-joined", () => {
+        if (joinedRoom && isDedicatedSyncer)
+            emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
     });
 
     socket.on("connect_error", (error) => {
@@ -210,12 +290,26 @@ function connectSocket(io, session, canvas) {
         }
     });
 
-    socket.on("server-volatile:elements:updated", ({ elements }) => {
-        if (Array.isArray(elements)) canvas.applyElements(elements);
-    });
-
-    socket.on("elements:updated", ({ elements }) => {
-        if (Array.isArray(elements)) canvas.applyElements(elements);
+    socket.on("client-broadcast", (payload) => {
+        try {
+            const message = decodeSceneMessage(payload);
+            if (
+                (message.type === SYNC_MESSAGE_SCENE_INIT ||
+                    message.type === SYNC_MESSAGE_SCENE_UPDATE) &&
+                Array.isArray(message.payload?.elements)
+            ) {
+                savedElements = message.payload.elements;
+                canvas.applyElements(message.payload.elements, {
+                    replace: true,
+                });
+                persistChanges(message.payload.elements);
+            }
+        } catch (error) {
+            console.warn(
+                "[nextcloud-whiteboard] ignored remote sync payload",
+                error,
+            );
+        }
     });
 
     return socket;
@@ -240,17 +334,59 @@ async function createAndOpenBoard() {
 
 function bindCanvasToolbar(canvas) {
     const toolbar = document.getElementById("wb-toolbar");
-    if (!toolbar) return;
+    if (!toolbar || toolbar.dataset.bound === "true") return;
+    toolbar.dataset.bound = "true";
+
+    const strokeTools = new Set([
+        "pen",
+        "rectangle",
+        "diamond",
+        "ellipse",
+        "line",
+        "arrow",
+    ]);
+    let selectedElement = null;
+    let activeTool = "pen";
+
+    function activateTool(tool) {
+        activeTool = tool;
+        toolbar.querySelectorAll("[data-tool]").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.tool === tool);
+        });
+        updateStyleControls();
+    }
+
+    function selectedCanUseStrokeWidth() {
+        return Boolean(selectedElement?.strokeWidthApplicable);
+    }
+
+    function activeToolCanUseStrokeWidth() {
+        return strokeTools.has(activeTool);
+    }
+
+    function updateStyleControls() {
+        const strokeSelect = document.getElementById("wb-stroke-width");
+        if (strokeSelect) {
+            strokeSelect.disabled = !(
+                selectedCanUseStrokeWidth() || activeToolCanUseStrokeWidth()
+            );
+            if (selectedCanUseStrokeWidth()) {
+                strokeSelect.value = String(selectedElement.strokeWidth ?? 4);
+            }
+        }
+    }
 
     toolbar.querySelectorAll("[data-tool]").forEach((button) => {
-        button.addEventListener("click", () => {
-            toolbar
-                .querySelectorAll("[data-tool]")
-                .forEach((btn) => btn.classList.remove("active"));
-            button.classList.add("active");
-            canvas.setTool(button.dataset.tool);
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const tool = button.dataset.tool;
+            activateTool(tool);
+            canvas.setTool(tool);
         });
     });
+
+    canvas.onToolChange?.((tool) => activateTool(tool));
 
     document
         .getElementById("wb-new")
@@ -258,11 +394,27 @@ function bindCanvasToolbar(canvas) {
     document
         .getElementById("wb-history")
         ?.addEventListener("click", () => void openHistoryPopup());
+    document.getElementById("wb-undo")?.addEventListener("click", () => {
+        canvas.undo?.();
+    });
+    document.getElementById("wb-redo")?.addEventListener("click", () => {
+        canvas.redo?.();
+    });
+    document.getElementById("wb-share")?.addEventListener("click", () => {
+        void openSharePopup();
+    });
     document
         .getElementById("wb-board-title")
         ?.addEventListener("dblclick", () => void renameActiveBoard());
 
     const colorInput = document.getElementById("wb-color");
+    const themeStrokeColor = () =>
+        getComputedStyle(document.body).getPropertyValue("--text").trim() ||
+        "#111827";
+    if (colorInput) {
+        colorInput.value = themeStrokeColor();
+        canvas.setStrokeColor("auto");
+    }
     colorInput?.addEventListener("input", () => {
         canvas.setStrokeColor(colorInput.value);
     });
@@ -272,10 +424,105 @@ function bindCanvasToolbar(canvas) {
         canvas.setStrokeWidth(strokeSelect.value);
     });
 
-    document.getElementById("wb-clear")?.addEventListener("click", () => {
-        canvas.clearAll();
-        savedElements = [];
+    canvas.onSelectionChange?.((element) => {
+        selectedElement = element;
+        if (colorInput && element?.strokeColor) {
+            colorInput.value =
+                element.strokeColor === "auto"
+                    ? themeStrokeColor()
+                    : element.strokeColor;
+        }
+        updateStyleControls();
     });
+    updateStyleControls();
+
+    document
+        .getElementById("wb-clear")
+        ?.addEventListener("click", async (event) => {
+            event.preventDefault();
+            const result = await openPopup({
+                title: t("module.nextcloud_whiteboard.clear_board"),
+                body: `<p>${escapeHtml(t("module.nextcloud_whiteboard.clear_confirm"))}</p>`,
+                actions: [
+                    {
+                        id: "cancel",
+                        label: t("module.nextcloud_whiteboard.close"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "clear",
+                        label: t("module.nextcloud_whiteboard.clear_board"),
+                        variant: "danger",
+                    },
+                ],
+            });
+            if (result !== "clear") return;
+            canvas.clearAll();
+            savedElements = [];
+        });
+}
+
+async function openSharePopup() {
+    if (!activeBoard?.id) return;
+    try {
+        const [{ openShareLinksPopup }, { buildShareCallbacks }] =
+            await Promise.all([
+                import("/static/gateways/share/ui/reuse/share-links-popup.js"),
+                import("/static/modules/nextcloud-whiteboard/share-adapter.js"),
+            ]);
+        await openShareLinksPopup({
+            title: t("module.nextcloud_whiteboard.share_popup_title"),
+            labels: {
+                empty: t("module.nextcloud_whiteboard.share_empty"),
+                untitled: t("module.nextcloud_whiteboard.share_untitled"),
+                copyLink: t("module.nextcloud_whiteboard.share_copy_link"),
+                revoke: t("module.nextcloud_whiteboard.share_revoke"),
+                shareOptions: t(
+                    "module.nextcloud_whiteboard.share_options_label",
+                ),
+                mail: t("ui.reuse.mail"),
+                label: t("module.nextcloud_whiteboard.share_label"),
+                labelPlaceholder: t(
+                    "module.nextcloud_whiteboard.share_label_placeholder",
+                ),
+                expiryLabel: t(
+                    "module.nextcloud_whiteboard.share_expiry_label",
+                ),
+                statusActive: t(
+                    "module.nextcloud_whiteboard.share_status_active",
+                ),
+                statusExpired: t(
+                    "module.nextcloud_whiteboard.share_status_expired",
+                ),
+                expiresAtLabel: t(
+                    "module.nextcloud_whiteboard.share_expires_at_label",
+                ),
+                expiredAtLabel: t(
+                    "module.nextcloud_whiteboard.share_expired_at_label",
+                ),
+                generateLink: t(
+                    "module.nextcloud_whiteboard.share_generate_link",
+                ),
+                done: t("ui.reuse.done"),
+                createFailed: t(
+                    "module.nextcloud_whiteboard.share_create_failed",
+                ),
+                copySuccess: t(
+                    "module.nextcloud_whiteboard.share_copy_success",
+                ),
+                copyFailed: t("module.nextcloud_whiteboard.share_copy_failed"),
+                deleteFailed: t(
+                    "module.nextcloud_whiteboard.share_delete_failed",
+                ),
+            },
+            ...buildShareCallbacks(activeBoard.id),
+        });
+    } catch (error) {
+        reportClientError(
+            error,
+            "module.nextcloud_whiteboard.share_create_failed",
+        );
+    }
 }
 
 async function openHistoryPopup() {
@@ -316,17 +563,40 @@ async function openHistoryPopup() {
 async function renameActiveBoard() {
     if (!activeBoard) return;
     const titleEl = document.getElementById("wb-board-title");
-    if (!titleEl) return;
+    if (!titleEl || titleEl.dataset.renaming === "true") return;
+    titleEl.dataset.renaming = "true";
     titleEl.contentEditable = "true";
     titleEl.focus();
-    const finish = async () => {
+    document.getSelection()?.selectAllChildren(titleEl);
+    let finishing = false;
+    const cleanup = () => {
         titleEl.contentEditable = "false";
+        delete titleEl.dataset.renaming;
+        titleEl.removeEventListener("blur", finish);
+        titleEl.removeEventListener("keydown", onKeydown);
+    };
+    const finish = async () => {
+        if (finishing) return;
+        finishing = true;
         const nextTitle = titleEl.textContent?.trim() || activeBoard.title;
+        cleanup();
+        if (nextTitle === activeBoard.title) {
+            titleEl.textContent = activeBoard.title;
+            return;
+        }
         try {
-            const renamed = await renameBoard(activeBoard.id, nextTitle);
-            activeBoard = renamed;
-            if (activeSession) activeSession.title = renamed.title;
-            titleEl.textContent = renamed.title;
+            const boardId =
+                activeBoard.id ||
+                activeSession?.roomId ||
+                new URLSearchParams(window.location.search).get("id");
+            const renamed = await renameBoard(boardId, nextTitle);
+            activeBoard = {
+                ...activeBoard,
+                ...renamed,
+                id: renamed.id || boardId,
+            };
+            if (activeSession) activeSession.title = activeBoard.title;
+            titleEl.textContent = activeBoard.title;
             showToast(t("module.nextcloud_whiteboard.rename_success"), {
                 variant: "success",
             });
@@ -337,9 +607,19 @@ async function renameActiveBoard() {
             );
             titleEl.textContent = activeBoard.title;
         }
-        titleEl.removeEventListener("blur", finish);
     };
-    titleEl.addEventListener("blur", finish, { once: true });
+    const onKeydown = (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            titleEl.blur();
+        } else if (event.key === "Escape") {
+            event.preventDefault();
+            cleanup();
+            titleEl.textContent = activeBoard.title;
+        }
+    };
+    titleEl.addEventListener("blur", finish);
+    titleEl.addEventListener("keydown", onKeydown);
 }
 
 async function runPreflightCheck() {
@@ -419,14 +699,13 @@ async function openBoard(board) {
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
+    savedElements = Array.isArray(session.elements) ? session.elements : [];
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
     }
-    canvasInstance.onChange((elements) => {
-        savedElements = elements;
-    });
 
     socketInstance = connectSocket(io, session, canvasInstance);
+    composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
     setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
 
@@ -455,22 +734,26 @@ function renderCanvasElement() {
                 aria-label="${escapeHtml(t("module.nextcloud_whiteboard.toolbar_label"))}"
             >
                 <div class="wb-toolbar-group">
-                    <button type="button" id="wb-new" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋</button>
-                    <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">☰</button>
+                    <button type="button" id="wb-new" class="wb-tool wb-new-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋ <span>New</span></button>
+                    <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">↺</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" data-tool="select" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">↖</button>
+                    <button type="button" data-tool="select" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
                     <button type="button" data-tool="pen" class="wb-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
                     <button type="button" data-tool="rectangle" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
                     <button type="button" data-tool="diamond" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
                     <button type="button" data-tool="ellipse" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
                     <button type="button" data-tool="arrow" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}">→</button>
                     <button type="button" data-tool="line" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}">−</button>
-                    <button type="button" data-tool="text" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">A</button>
+                    <button type="button" data-tool="text" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">T</button>
                     <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <input type="color" id="wb-color" value="#1e1e2e" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
+                    <button type="button" id="wb-undo" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}">↶</button>
+                    <button type="button" id="wb-redo" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}">↷</button>
+                </div>
+                <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <input type="color" id="wb-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
                     <select id="wb-stroke-width" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
                         <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
                         <option value="4" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_medium"))}</option>
@@ -478,7 +761,8 @@ function renderCanvasElement() {
                     </select>
                 </div>
                 <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" id="wb-clear" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</button>
+                    <button type="button" id="wb-share" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.share_button"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.share_button"))}">🔗</button>
+                    <a href="#" id="wb-clear" class="wb-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
                 </div>
                 <span id="wb-board-title" class="wb-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
                 <span id="wb-sync-status" class="wb-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
@@ -520,7 +804,8 @@ function onCanvasRender() {
         });
     });
     const canvasElement = document.getElementById("wb-canvas");
-    if (!canvasElement || canvasInstance || !activeBoard) return;
+    if (!canvasElement || canvasInstance || !activeBoard || !activeSession)
+        return;
     if (preflightStatus !== "passed") return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
@@ -548,7 +833,7 @@ function buildElements() {
     ];
 }
 
-export async function mount(root, { signal } = {}) {
+export async function mount(root, { signal, shareContext } = {}) {
     i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/modules/nextcloud-whiteboard/languages",
@@ -556,16 +841,19 @@ export async function mount(root, { signal } = {}) {
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
 
-    await loadBoards().catch((error) =>
-        reportClientError(
-            error,
-            "module.nextcloud_whiteboard.load_boards_failed",
-        ),
-    );
+    activeShareContext = shareContext ?? null;
+    if (!activeShareContext) {
+        await loadBoards().catch((error) =>
+            reportClientError(
+                error,
+                "module.nextcloud_whiteboard.load_boards_failed",
+            ),
+        );
+    }
 
-    const initialBoardId = new URLSearchParams(window.location.search).get(
-        "id",
-    );
+    const initialBoardId =
+        activeShareContext?.payload?.whiteboardId ??
+        new URLSearchParams(window.location.search).get("id");
     if (initialBoardId) {
         activeBoard = {
             id: initialBoardId,
@@ -576,9 +864,15 @@ export async function mount(root, { signal } = {}) {
     signal?.addEventListener("abort", () => teardownCanvas(), { once: true });
 
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: false,
         elements: buildElements(),
         preferenceKey: "nextcloud-whiteboard-layout",
+        persistLayoutPreferences: false,
+        presenceTracker: {
+            endpoint: `${API_BASE}/whiteboards/presence`,
+            pageId: () => activeBoard?.id ?? "",
+            storageKey: "nextcloud_whiteboard_presence_session",
+        },
         i18n,
         pageContext: {
             title: t("module.nextcloud_whiteboard.page_title"),
@@ -588,11 +882,8 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 
     if (activeBoard) {
-        void openBoard(activeBoard);
+        void openBoard(activeBoard).then(() => composer?.refreshPresence?.());
     }
 }
 
-if (!globalThis.__spaRouter) {
-    const root = document.querySelector("#app");
-    if (root) await mount(root);
-}
+await mountWhenDirect(mount);

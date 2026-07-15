@@ -72,5 +72,27 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">矢印</string>
   <string name="module.nextcloud_whiteboard.tool_line">線</string>
   <string name="module.nextcloud_whiteboard.tool_text">テキスト</string>
+  <string name="module.nextcloud_whiteboard.undo">元に戻す</string>
+  <string name="module.nextcloud_whiteboard.redo">やり直す</string>
+  <string name="module.nextcloud_whiteboard.share_button">共有</string>
+  <string name="module.nextcloud_whiteboard.share_popup_title">ホワイトボードを共有</string>
+  <string name="module.nextcloud_whiteboard.share_empty">共有リンクはまだありません。</string>
+  <string name="module.nextcloud_whiteboard.share_untitled">無題のリンク</string>
+  <string name="module.nextcloud_whiteboard.share_copy_link">リンクをコピー</string>
+  <string name="module.nextcloud_whiteboard.share_revoke">取り消す</string>
+  <string name="module.nextcloud_whiteboard.share_options_label">共有:</string>
+  <string name="module.nextcloud_whiteboard.share_label">ラベル</string>
+  <string name="module.nextcloud_whiteboard.share_label_placeholder">チーム確認</string>
+  <string name="module.nextcloud_whiteboard.share_expiry_label">有効期限（時間）</string>
+  <string name="module.nextcloud_whiteboard.share_status_active">有効</string>
+  <string name="module.nextcloud_whiteboard.share_status_expired">期限切れ</string>
+  <string name="module.nextcloud_whiteboard.share_expires_at_label">期限</string>
+  <string name="module.nextcloud_whiteboard.share_expired_at_label">期限切れ</string>
+  <string name="module.nextcloud_whiteboard.share_generate_link">リンクを作成</string>
+  <string name="module.nextcloud_whiteboard.share_create_failed">共有リンクを作成できませんでした。</string>
+  <string name="module.nextcloud_whiteboard.share_copy_success">共有リンクをコピーしました。</string>
+  <string name="module.nextcloud_whiteboard.share_copy_failed">共有リンクをコピーできませんでした。</string>
+  <string name="module.nextcloud_whiteboard.share_delete_failed">共有リンクを取り消せませんでした。</string>
+  <string name="module.nextcloud_whiteboard.clear_confirm">現在のホワイトボード上のすべての項目を完全に削除します。続行しますか？</string>
 </resources>
 

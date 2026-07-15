@@ -72,5 +72,27 @@
   <string name="module.nextcloud_whiteboard.tool_arrow">Panah</string>
   <string name="module.nextcloud_whiteboard.tool_line">Garis</string>
   <string name="module.nextcloud_whiteboard.tool_text">Teks</string>
+  <string name="module.nextcloud_whiteboard.undo">Urungkan</string>
+  <string name="module.nextcloud_whiteboard.redo">Ulangi</string>
+  <string name="module.nextcloud_whiteboard.share_button">Bagikan</string>
+  <string name="module.nextcloud_whiteboard.share_popup_title">Bagikan Whiteboard</string>
+  <string name="module.nextcloud_whiteboard.share_empty">Belum ada tautan berbagi.</string>
+  <string name="module.nextcloud_whiteboard.share_untitled">Tautan tanpa judul</string>
+  <string name="module.nextcloud_whiteboard.share_copy_link">Salin tautan</string>
+  <string name="module.nextcloud_whiteboard.share_revoke">Cabut</string>
+  <string name="module.nextcloud_whiteboard.share_options_label">Bagikan:</string>
+  <string name="module.nextcloud_whiteboard.share_label">Label</string>
+  <string name="module.nextcloud_whiteboard.share_label_placeholder">Tinjauan tim</string>
+  <string name="module.nextcloud_whiteboard.share_expiry_label">Kedaluwarsa dalam (jam)</string>
+  <string name="module.nextcloud_whiteboard.share_status_active">Aktif</string>
+  <string name="module.nextcloud_whiteboard.share_status_expired">Kedaluwarsa</string>
+  <string name="module.nextcloud_whiteboard.share_expires_at_label">Kedaluwarsa</string>
+  <string name="module.nextcloud_whiteboard.share_expired_at_label">Kedaluwarsa</string>
+  <string name="module.nextcloud_whiteboard.share_generate_link">Buat tautan</string>
+  <string name="module.nextcloud_whiteboard.share_create_failed">Tidak dapat membuat tautan berbagi.</string>
+  <string name="module.nextcloud_whiteboard.share_copy_success">Tautan berbagi disalin.</string>
+  <string name="module.nextcloud_whiteboard.share_copy_failed">Tidak dapat menyalin tautan berbagi.</string>
+  <string name="module.nextcloud_whiteboard.share_delete_failed">Tidak dapat mencabut tautan berbagi.</string>
+  <string name="module.nextcloud_whiteboard.clear_confirm">Ini akan menghapus permanen semua item di papan tulis saat ini. Lanjutkan?</string>
 </resources>
 

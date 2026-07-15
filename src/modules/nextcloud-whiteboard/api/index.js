@@ -1,10 +1,12 @@
 import path from "node:path";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
+import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
 import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import { NextcloudWhiteboardStore } from "./store.js";
+import { registerWhiteboardShareFlowHooks } from "./share-hooks.js";
 
 const LIVENESS_TIMEOUT_MS = 5000;
 
@@ -66,6 +68,92 @@ async function resolveParticipantHandles(
 
 function buildCognisWhiteboardUrl(whiteboardId) {
     return `/whiteboard?id=${encodeURIComponent(whiteboardId)}`;
+}
+
+function parseShareTokenId(claims) {
+    const subject = String(claims?.sub ?? "");
+    return subject.startsWith("share:") ? subject.split(":")[1] || "" : "";
+}
+
+async function resolveWhiteboardUserAccess({
+    claims,
+    profileStore,
+    store,
+    whiteboardId,
+    getShareTokenById,
+    resolveShareGuestSessionId,
+    getShareGuestProfile,
+    requireWrite = false,
+}) {
+    const shareTokenId = parseShareTokenId(claims);
+    if (shareTokenId && typeof getShareTokenById === "function") {
+        const token = await getShareTokenById(shareTokenId).catch(() => null);
+        const capabilities = Array.isArray(token?.grantedCapabilities)
+            ? token.grantedCapabilities
+            : [];
+        if (
+            token?.resourceType === "whiteboard" &&
+            token?.resourceId === whiteboardId &&
+            (!requireWrite || capabilities.includes("whiteboard:write"))
+        ) {
+            const guestSessionId =
+                typeof resolveShareGuestSessionId === "function"
+                    ? resolveShareGuestSessionId(claims)
+                    : "";
+            const guestProfile =
+                guestSessionId && typeof getShareGuestProfile === "function"
+                    ? await getShareGuestProfile(guestSessionId).catch(
+                          () => null,
+                      )
+                    : null;
+            const displayName = String(guestProfile?.displayName ?? "").trim();
+            return {
+                authorized: true,
+                username: `guest:${guestSessionId || shareTokenId}`,
+                displayName:
+                    displayName || `Guest ${guestSessionId || shareTokenId}`,
+            };
+        }
+        return {
+            authorized: false,
+            status: 403,
+            code: "forbidden",
+            message: "This share link cannot access the requested whiteboard.",
+        };
+    }
+    const username = await resolveRequesterUsername(
+        profileStore,
+        claims.sub,
+    ).catch((error) => ({ error }));
+    if (username?.error)
+        return {
+            authorized: false,
+            status: 409,
+            code: "profile_required",
+            message: username.error.message,
+        };
+    const authorized = await store.canAccessWhiteboard(whiteboardId, username);
+    return authorized
+        ? { authorized: true, username }
+        : {
+              authorized: false,
+              status: 403,
+              code: "forbidden",
+              message:
+                  "You are not listed as an allowed whiteboard participant.",
+          };
+}
+
+function resolveExpiry(hoursValue) {
+    if (
+        hoursValue === null ||
+        hoursValue === undefined ||
+        String(hoursValue).trim() === ""
+    )
+        return "";
+    const parsed = Number(hoursValue);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return new Date(Date.now() + parsed * 60 * 60 * 1000).toISOString();
 }
 
 function publicConfig(config) {
@@ -150,6 +238,13 @@ export function registerApiRoutes(router, ctx) {
     const registerScriptOrigins = ctx.getCapability(
         "auth:registerPageScriptOrigins",
     );
+    const getShareTokenById = ctx.getCapability("share:getTokenById");
+    const resolveShareGuestSessionId = ctx.getCapability(
+        "share:resolveGuestSessionId",
+    );
+    const getShareGuestProfile = ctx.getCapability("share:getGuestProfile");
+    const listSharesByResource = ctx.getCapability("share:listByResource");
+    const systemCtx = ctx.getCapability("system:ctx");
 
     if (!dbExecutor || !profileStore) {
         router.get(
@@ -167,6 +262,15 @@ export function registerApiRoutes(router, ctx) {
     }
 
     const store = resolveStore(dbExecutor, log);
+    const ensureShareFlowHooks = () =>
+        registerWhiteboardShareFlowHooks({
+            ctx: systemCtx ?? ctx,
+            store,
+            profileStore,
+            resolveWhiteboardUserAccess,
+            whiteboardStylesheets: WHITEBOARD_STYLESHEETS,
+        });
+    ensureShareFlowHooks();
     void registerStoredOrigin({ store, registerScriptOrigins, log });
 
     const moduleApi = {
@@ -364,32 +468,27 @@ export function registerApiRoutes(router, ctx) {
             if (!claims) return;
             const url = new URL(req.url, "http://localhost");
             const whiteboardId = url.searchParams.get("id") ?? "";
-            const username = await resolveRequesterUsername(
-                profileStore,
-                claims.sub,
-            ).catch((error) => {
-                sendError(res, 409, "profile_required", error.message);
-                return null;
-            });
-            if (!username) return;
             const whiteboard = await store.getWhiteboardById(whiteboardId);
             if (!whiteboard) {
                 sendError(res, 404, "not_found", "Whiteboard not found.");
                 return;
             }
-            const authorized = await store.canAccessWhiteboard(
-                whiteboard.id,
-                username,
-            );
-            if (!authorized) {
-                sendError(
-                    res,
-                    403,
-                    "forbidden",
-                    "You are not listed as an allowed whiteboard participant.",
-                );
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
                 return;
             }
+            const username = access.username;
+            const displayName = access.displayName || username;
             const config = await store.getConfig();
             if (!config.serverUrl || !config.apiKeyConfigured) {
                 sendError(
@@ -402,7 +501,7 @@ export function registerApiRoutes(router, ctx) {
             }
             const token = store.mintSessionToken(config, whiteboard, {
                 id: username,
-                name: username,
+                name: displayName,
             });
             log?.("info", "Nextcloud Whiteboard session token issued.", {
                 component: "nextcloud-whiteboard-module",
@@ -410,15 +509,155 @@ export function registerApiRoutes(router, ctx) {
                 whiteboardId: whiteboard.id,
                 username,
             });
+            const elements = await store.getElementsSnapshot(whiteboard.id);
             sendJson(res, 200, {
                 data: {
                     roomId: whiteboard.id,
                     title: whiteboard.title,
                     serverUrl: config.serverUrl,
                     imageUploadMaxBytes: config.imageUploadMaxBytes,
+                    elements,
                     token,
                 },
             });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/elements",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const whiteboardId = String(body.id ?? "").trim();
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            const saved = await store.saveElementsSnapshot(
+                whiteboard.id,
+                body.elements,
+            );
+            sendJson(res, 200, { data: saved });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.get(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const url = new URL(req.url, "http://localhost");
+            const whiteboardId = url.searchParams.get("pageId") ?? "";
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            const rows = await store.listPresence(whiteboard.id);
+            const profileCache = new Map();
+            const presence = [];
+            for (const entry of rows) {
+                let handle = "";
+                let avatarKey = null;
+                if (!entry.guest && !entry.username.startsWith("guest:")) {
+                    handle = entry.username;
+                    if (!profileCache.has(handle)) {
+                        profileCache.set(
+                            handle,
+                            profileStore
+                                .getProfileByHandle(handle)
+                                .catch(() => null),
+                        );
+                    }
+                    const profile = await profileCache.get(handle);
+                    avatarKey = profile?.avatarKey ?? null;
+                }
+                presence.push({
+                    id: entry.username,
+                    displayName: entry.displayName,
+                    handle,
+                    avatarKey,
+                    guest: entry.guest || entry.username.startsWith("guest:"),
+                    active: entry.active,
+                    lastSeenAt: entry.lastSeenAt,
+                });
+            }
+            sendJson(res, 200, { data: { presence } });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const whiteboardId = String(body.pageId ?? "").trim();
+            const sessionId = String(body.sessionId ?? "").trim();
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard || !sessionId) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            await store.upsertPresence({
+                whiteboardId: whiteboard.id,
+                username: access.username,
+                sessionId,
+                displayName: access.displayName || access.username,
+                guest: access.username.startsWith("guest:"),
+                active: body.active !== false,
+            });
+            sendJson(res, 200, { data: { ok: true } });
         },
         { access: { minRole: "user" } },
     );
@@ -429,7 +668,29 @@ export function registerApiRoutes(router, ctx) {
             await store.ensureSchema();
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
-            const body = await readJson(req);
+            let body;
+            try {
+                body = await readJson(req);
+            } catch {
+                sendError(
+                    res,
+                    400,
+                    "invalid_json",
+                    "Rename request body must be valid JSON.",
+                );
+                return;
+            }
+            const whiteboardId = String(body.id ?? "").trim();
+            const title = String(body.title ?? "").trim();
+            if (!whiteboardId || !title) {
+                sendError(
+                    res,
+                    422,
+                    "invalid_rename",
+                    "Whiteboard id and title are required.",
+                );
+                return;
+            }
             const username = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
@@ -438,7 +699,6 @@ export function registerApiRoutes(router, ctx) {
                 return null;
             });
             if (!username) return;
-            const whiteboardId = String(body.id ?? "");
             const authorized = await store.canAccessWhiteboard(
                 whiteboardId,
                 username,
@@ -452,11 +712,151 @@ export function registerApiRoutes(router, ctx) {
                 );
                 return;
             }
-            const renamed = await store.renameWhiteboard(
-                whiteboardId,
-                body.title,
-            );
+            const renamed = await store.renameWhiteboard(whiteboardId, title);
+            if (!renamed) {
+                sendError(res, 404, "not_found", "Whiteboard was not found.");
+                return;
+            }
             sendJson(res, 200, { data: renamed });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.get(
+        "/api/v1/modules/nextcloud-whiteboard/share",
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            if (typeof listSharesByResource !== "function") {
+                sendError(
+                    res,
+                    503,
+                    "service_unavailable",
+                    "Share capabilities are unavailable.",
+                );
+                return;
+            }
+            await store.ensureSchema();
+            const url = new URL(req.url, "http://localhost");
+            const whiteboardId = String(
+                url.searchParams.get("whiteboardId") ?? "",
+            ).trim();
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard not found.");
+                return;
+            }
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
+                return;
+            }
+            const shares = await listSharesByResource({
+                resourceType: "whiteboard",
+                resourceId: whiteboard.id,
+            });
+            sendJson(res, 200, { data: shares });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/share",
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            ensureShareFlowHooks();
+            if (!systemCtx?.flow?.exists?.("mint-share-token")) {
+                sendError(
+                    res,
+                    503,
+                    "service_unavailable",
+                    "Share capabilities are unavailable.",
+                );
+                return;
+            }
+            const body = await readJson(req);
+            const whiteboardId = String(body.whiteboardId ?? "").trim();
+            const expiresAt = resolveExpiry(body.expiresInHours);
+            if (expiresAt === null) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "expiresInHours must be a positive number.",
+                );
+                return;
+            }
+            const result = await systemCtx.flow.run("mint-share-token", {
+                resourceType: "whiteboard",
+                resourceId: whiteboardId,
+                claims,
+                label: body.label,
+                expiresAt,
+                grantedCapabilities: ["whiteboard:read", "whiteboard:write"],
+            });
+            const issued =
+                getFirstStageResult(result.stageResults, "issue-token") ??
+                getFirstStageResult(result.stageResults, "emit-event");
+            if (!issued?.minted && !issued?.emitted) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Whiteboard cannot be shared.",
+                );
+                return;
+            }
+            sendJson(res, 200, { data: issued.shareRecord ?? null });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/share/delete",
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            ensureShareFlowHooks();
+            if (!systemCtx?.flow?.exists?.("revoke-share-token")) {
+                sendError(
+                    res,
+                    503,
+                    "service_unavailable",
+                    "Share capabilities are unavailable.",
+                );
+                return;
+            }
+            const body = await readJson(req);
+            const result = await systemCtx.flow.run("revoke-share-token", {
+                resourceType: "whiteboard",
+                resourceId: String(body.whiteboardId ?? "").trim(),
+                shareId: String(body.shareId ?? "").trim(),
+                ownerAccountId: claims.sub,
+                claims,
+            });
+            const revoked = getFirstStageResult(
+                result.stageResults,
+                "delete-token",
+            );
+            if (!revoked?.revoked) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Share link cannot be revoked.",
+                );
+                return;
+            }
+            sendJson(res, 200, { data: { deleted: true } });
         },
         { access: { minRole: "user" } },
     );
@@ -469,30 +869,23 @@ export function registerApiRoutes(router, ctx) {
             if (!claims) return;
             const url = new URL(req.url, "http://localhost");
             const whiteboardId = url.searchParams.get("id") ?? "";
-            const username = await resolveRequesterUsername(
-                profileStore,
-                claims.sub,
-            ).catch((error) => {
-                sendError(res, 409, "profile_required", error.message);
-                return null;
-            });
-            if (!username) return;
             const whiteboard = await store.getWhiteboardById(whiteboardId);
             if (!whiteboard) {
                 sendError(res, 404, "not_found", "Whiteboard not found.");
                 return;
             }
-            const authorized = await store.canAccessWhiteboard(
-                whiteboard.id,
-                username,
-            );
-            if (!authorized) {
-                sendError(
-                    res,
-                    403,
-                    "forbidden",
-                    "You are not listed as an allowed whiteboard participant.",
-                );
+            const access = await resolveWhiteboardUserAccess({
+                claims,
+                profileStore,
+                store,
+                whiteboardId: whiteboard.id,
+                getShareTokenById,
+                resolveShareGuestSessionId,
+                getShareGuestProfile,
+                requireWrite: true,
+            });
+            if (!access.authorized) {
+                sendError(res, access.status, access.code, access.message);
                 return;
             }
             res.writeHead(302, {

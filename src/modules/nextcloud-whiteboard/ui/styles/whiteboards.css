@@ -265,3 +265,65 @@
     border-radius: 0.5rem;
     padding: 0.2rem 0.4rem;
 }
+
+.wb-canvas-stage {
+    --wb-canvas-bg: color-mix(
+        in srgb,
+        var(--surface, #ffffff) 92%,
+        var(--text, #1f2937) 8%
+    );
+    background: var(--wb-canvas-bg);
+}
+
+#wb-canvas {
+    background: var(--wb-canvas-bg);
+}
+
+.wb-tool:disabled,
+#wb-stroke-width:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.wb-new-tool {
+    gap: 0.25rem;
+    min-width: 4.75rem;
+}
+
+.wb-tool.btn-cancel {
+    text-decoration: none;
+}
+
+.wb-canvas-stage {
+    --wb-canvas-bg: var(--surface, #ffffff);
+    --wb-auto-stroke: var(--text, #111827);
+    overflow: auto;
+}
+
+.wb-board-title {
+    flex: 0 1 auto;
+    margin-inline-start: auto;
+    max-width: 45%;
+    min-width: 0;
+    width: max-content;
+}
+
+.wb-board-title[contenteditable="true"] {
+    display: inline-block;
+    min-width: 8rem;
+    text-align: end;
+}
+
+.wb-text-editor {
+    background: var(--surface, #ffffff);
+    border: 2px solid var(--accent, #5e81f4);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.25rem var(--shadow, rgb(15 23 42 / 20%));
+    color: var(--text, #111827);
+    font: inherit;
+    line-height: 1.25;
+    padding: 0.35rem 0.5rem;
+    position: absolute;
+    resize: both;
+    z-index: 3;
+}
