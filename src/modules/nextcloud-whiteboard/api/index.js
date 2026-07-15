@@ -1,15 +1,15 @@
 import path from "node:path";
 import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
+import { sendError, sendJson } from "../../../api/reuse/http-response.js";
 import { getFirstStageResult } from "../../../api/reuse/flow-helpers.js";
 import { normalizeHttpUrl } from "../../../api/reuse/url-parts.js";
-import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
+import { normalizeHandleKey } from "../../../api/reuse/normalize-handle.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import { NextcloudWhiteboardStore } from "./store.js";
 import { registerWhiteboardShareFlowHooks } from "./share-hooks.js";
 
 const LIVENESS_TIMEOUT_MS = 5000;
-const PRESENCE_ACTIVE_WINDOW_MS = 5 * 60 * 1000;
 
 const MODULE_ID = "nextcloud-whiteboard";
 const PAGE_RESOURCE_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
@@ -19,15 +19,6 @@ const WHITEBOARD_STYLESHEETS = [
     "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
 ];
 const storeByExecutor = new WeakMap();
-
-function sendJson(res, status, payload) {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify(payload));
-}
-
-function sendError(res, status, code, message) {
-    sendJson(res, status, { error: { code, message } });
-}
 
 function resolveStore(dbExecutor, log) {
     const existingStore = storeByExecutor.get(dbExecutor);
@@ -71,56 +62,38 @@ function buildCognisWhiteboardUrl(whiteboardId) {
     return `/whiteboard?id=${encodeURIComponent(whiteboardId)}`;
 }
 
-function parseShareTokenId(claims) {
-    const subject = String(claims?.sub ?? "");
-    return subject.startsWith("share:") ? subject.split(":")[1] || "" : "";
-}
-
 async function resolveWhiteboardUserAccess({
     claims,
     profileStore,
     store,
     whiteboardId,
-    getShareTokenById,
-    resolveShareGuestSessionId,
-    getShareGuestProfile,
+    resolveShareGuestAccess,
     requireWrite = false,
 }) {
-    const shareTokenId = parseShareTokenId(claims);
-    if (shareTokenId && typeof getShareTokenById === "function") {
-        const token = await getShareTokenById(shareTokenId).catch(() => null);
-        const capabilities = Array.isArray(token?.grantedCapabilities)
-            ? token.grantedCapabilities
-            : [];
-        if (
-            token?.resourceType === "whiteboard" &&
-            token?.resourceId === whiteboardId &&
-            (!requireWrite || capabilities.includes("whiteboard:write"))
-        ) {
-            const guestSessionId =
-                typeof resolveShareGuestSessionId === "function"
-                    ? resolveShareGuestSessionId(claims)
-                    : "";
-            const guestProfile =
-                guestSessionId && typeof getShareGuestProfile === "function"
-                    ? await getShareGuestProfile(guestSessionId).catch(
-                          () => null,
-                      )
-                    : null;
-            const displayName = String(guestProfile?.displayName ?? "").trim();
-            return {
-                authorized: true,
-                username: `guest:${guestSessionId || shareTokenId}`,
-                displayName:
-                    displayName || `Guest ${guestSessionId || shareTokenId}`,
-            };
+    if (typeof resolveShareGuestAccess === "function") {
+        const shareAccess = await resolveShareGuestAccess({
+            claims,
+            resourceType: "whiteboard",
+            resourceId: whiteboardId,
+            requiredCapability: requireWrite
+                ? "whiteboard:write"
+                : "whiteboard:read",
+        }).catch(() => null);
+        if (shareAccess?.shareGuest) {
+            return shareAccess.authorized
+                ? {
+                      authorized: true,
+                      username: shareAccess.username,
+                      displayName: shareAccess.displayName,
+                  }
+                : {
+                      authorized: false,
+                      status: 403,
+                      code: "forbidden",
+                      message:
+                          "This share link cannot access the requested whiteboard.",
+                  };
         }
-        return {
-            authorized: false,
-            status: 403,
-            code: "forbidden",
-            message: "This share link cannot access the requested whiteboard.",
-        };
     }
     const username = await resolveRequesterUsername(
         profileStore,
@@ -218,11 +191,6 @@ export function registerUi(ctx) {
         stylesheets: WHITEBOARD_STYLESHEETS,
         access: { minRole: "user" },
     });
-    ctx.registerPageExtension?.("dashboard", {
-        id: "nextcloud-whiteboard-dashboard-launcher",
-        scriptUrl: "/static/modules/nextcloud-whiteboard/dashboard-element.js",
-        access: { minRole: "user" },
-    });
     ctx.registerAdminSection({
         id: "module-nextcloud-whiteboard",
         label: "Nextcloud Whiteboard",
@@ -239,11 +207,9 @@ export function registerApiRoutes(router, ctx) {
     const registerScriptOrigins = ctx.getCapability(
         "auth:registerPageScriptOrigins",
     );
-    const getShareTokenById = ctx.getCapability("share:getTokenById");
-    const resolveShareGuestSessionId = ctx.getCapability(
-        "share:resolveGuestSessionId",
+    const resolveShareGuestAccess = ctx.getCapability(
+        "share:resolveGuestAccess",
     );
-    const getShareGuestProfile = ctx.getCapability("share:getGuestProfile");
     const listSharesByResource = ctx.getCapability("share:listByResource");
     const systemCtx = ctx.getCapability("system:ctx");
 
@@ -479,9 +445,7 @@ export function registerApiRoutes(router, ctx) {
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
-                getShareTokenById,
-                resolveShareGuestSessionId,
-                getShareGuestProfile,
+                resolveShareGuestAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -543,9 +507,7 @@ export function registerApiRoutes(router, ctx) {
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
-                getShareTokenById,
-                resolveShareGuestSessionId,
-                getShareGuestProfile,
+                resolveShareGuestAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -579,9 +541,7 @@ export function registerApiRoutes(router, ctx) {
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
-                getShareTokenById,
-                resolveShareGuestSessionId,
-                getShareGuestProfile,
+                resolveShareGuestAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -591,13 +551,8 @@ export function registerApiRoutes(router, ctx) {
             const rows = await store.listPresence(whiteboard.id);
             const profileCache = new Map();
             const presence = [];
-            const activeCutoff = Date.now() - PRESENCE_ACTIVE_WINDOW_MS;
             for (const entry of rows) {
                 if (!entry.active) continue;
-                const lastSeenAt = Date.parse(entry.lastSeenAt || "");
-                if (!Number.isFinite(lastSeenAt) || lastSeenAt < activeCutoff) {
-                    continue;
-                }
                 let handle = "";
                 let avatarKey = null;
                 if (!entry.guest && !entry.username.startsWith("guest:")) {
@@ -647,9 +602,7 @@ export function registerApiRoutes(router, ctx) {
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
-                getShareTokenById,
-                resolveShareGuestSessionId,
-                getShareGuestProfile,
+                resolveShareGuestAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -758,9 +711,7 @@ export function registerApiRoutes(router, ctx) {
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
-                getShareTokenById,
-                resolveShareGuestSessionId,
-                getShareGuestProfile,
+                resolveShareGuestAccess,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -886,9 +837,7 @@ export function registerApiRoutes(router, ctx) {
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
-                getShareTokenById,
-                resolveShareGuestSessionId,
-                getShareGuestProfile,
+                resolveShareGuestAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {

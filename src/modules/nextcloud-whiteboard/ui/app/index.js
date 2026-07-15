@@ -50,7 +50,7 @@ function canManageShares() {
 }
 
 function updateSyncStatusBox() {
-    const statusBox = document.getElementById("wb-sync-status");
+    const statusBox = document.getElementById("whiteboard-sync-status");
     if (!statusBox) return;
     statusBox.dataset.status = syncStatus;
     statusBox.title =
@@ -154,10 +154,10 @@ function loadSocketIo(serverUrl) {
 }
 
 function setOverlayVisible(visible, message = "") {
-    const overlay = document.getElementById("wb-canvas-overlay");
+    const overlay = document.getElementById("whiteboard-canvas-overlay");
     if (!overlay) return;
     overlay.hidden = !visible;
-    const messageEl = overlay.querySelector(".wb-overlay-message");
+    const messageEl = overlay.querySelector(".whiteboard-overlay-message");
     if (messageEl) messageEl.textContent = message;
 }
 
@@ -352,7 +352,7 @@ async function createAndOpenBoard() {
 }
 
 function bindCanvasToolbar(canvas) {
-    const toolbar = document.getElementById("wb-toolbar");
+    const toolbar = document.getElementById("whiteboard-toolbar");
     if (!toolbar || toolbar.dataset.bound === "true") return;
     toolbar.dataset.bound = "true";
 
@@ -384,7 +384,7 @@ function bindCanvasToolbar(canvas) {
     }
 
     function updateStyleControls() {
-        const strokeSelect = document.getElementById("wb-stroke-width");
+        const strokeSelect = document.getElementById("whiteboard-stroke-width");
         if (strokeSelect) {
             strokeSelect.disabled = !(
                 selectedCanUseStrokeWidth() || activeToolCanUseStrokeWidth()
@@ -408,25 +408,29 @@ function bindCanvasToolbar(canvas) {
     canvas.onToolChange?.((tool) => activateTool(tool));
 
     document
-        .getElementById("wb-new")
+        .getElementById("whiteboard-new")
         ?.addEventListener("click", () => void createAndOpenBoard());
     document
-        .getElementById("wb-history")
+        .getElementById("whiteboard-history")
         ?.addEventListener("click", () => void openHistoryPopup());
-    document.getElementById("wb-undo")?.addEventListener("click", () => {
-        canvas.undo?.();
-    });
-    document.getElementById("wb-redo")?.addEventListener("click", () => {
-        canvas.redo?.();
-    });
+    document
+        .getElementById("whiteboard-undo")
+        ?.addEventListener("click", () => {
+            canvas.undo?.();
+        });
+    document
+        .getElementById("whiteboard-redo")
+        ?.addEventListener("click", () => {
+            canvas.redo?.();
+        });
     if (canManageShares()) {
         bindShareButton(toolbar);
     }
     document
-        .getElementById("wb-board-title")
+        .getElementById("whiteboard-board-title")
         ?.addEventListener("dblclick", () => void renameActiveBoard());
 
-    const colorInput = document.getElementById("wb-color");
+    const colorInput = document.getElementById("whiteboard-color");
     const themeStrokeColor = () =>
         getComputedStyle(document.body).getPropertyValue("--text").trim() ||
         "#111827";
@@ -438,7 +442,7 @@ function bindCanvasToolbar(canvas) {
         canvas.setStrokeColor(colorInput.value);
     });
 
-    const strokeSelect = document.getElementById("wb-stroke-width");
+    const strokeSelect = document.getElementById("whiteboard-stroke-width");
     strokeSelect?.addEventListener("change", () => {
         canvas.setStrokeWidth(strokeSelect.value);
     });
@@ -456,7 +460,7 @@ function bindCanvasToolbar(canvas) {
     updateStyleControls();
 
     document
-        .getElementById("wb-clear")
+        .getElementById("whiteboard-clear")
         ?.addEventListener("click", async (event) => {
             event.preventDefault();
             const result = await openPopup({
@@ -465,7 +469,7 @@ function bindCanvasToolbar(canvas) {
                 actions: [
                     {
                         id: "cancel",
-                        label: t("module.nextcloud_whiteboard.close"),
+                        label: t("ui.reuse.close"),
                         variant: "cancel",
                     },
                     {
@@ -482,7 +486,7 @@ function bindCanvasToolbar(canvas) {
 }
 
 async function bindShareButton(toolbar) {
-    const slot = toolbar.querySelector("#wb-share-slot");
+    const slot = toolbar.querySelector("#whiteboard-share-slot");
     if (!(slot instanceof HTMLElement) || !activeBoard?.id) return;
     let shareModule;
     try {
@@ -494,8 +498,8 @@ async function bindShareButton(toolbar) {
     shareModule.mountShareButton?.({
         container: slot,
         label: t("module.nextcloud_whiteboard.share_button"),
-        id: "wb-share",
-        className: "wb-tool",
+        id: "whiteboard-share",
+        className: "whiteboard-tool",
         icon: "🔗",
         title: t("module.nextcloud_whiteboard.share_button"),
         onClick: () => void openSharePopup(),
@@ -576,10 +580,10 @@ async function openHistoryPopup() {
         return;
     }
     const body = boards.length
-        ? `<div class="wb-history-list">${boards
+        ? `<div class="whiteboard-history-list">${boards
               .map(
                   (board) => `
-                    <article class="wb-history-card">
+                    <article class="whiteboard-history-card">
                         <h3>${escapeHtml(board.title)}</h3>
                         <p>${escapeHtml(new Date(board.updatedAt).toLocaleString())}</p>
                         <button type="button" disabled>${escapeHtml(t("module.nextcloud_whiteboard.open"))}</button>
@@ -593,7 +597,7 @@ async function openHistoryPopup() {
         actions: [
             {
                 id: "done",
-                label: t("module.nextcloud_whiteboard.close"),
+                label: t("ui.reuse.close"),
                 variant: "confirm",
             },
         ],
@@ -602,7 +606,7 @@ async function openHistoryPopup() {
 
 async function renameActiveBoard() {
     if (!activeBoard) return;
-    const titleEl = document.getElementById("wb-board-title");
+    const titleEl = document.getElementById("whiteboard-board-title");
     if (!titleEl || titleEl.dataset.renaming === "true") return;
     titleEl.dataset.renaming = "true";
     titleEl.contentEditable = "true";
@@ -722,7 +726,7 @@ async function openBoard(board) {
         session.imageUploadMaxBytes ?? imageUploadMaxBytes,
     );
 
-    const titleEl = document.getElementById("wb-board-title");
+    const titleEl = document.getElementById("whiteboard-board-title");
     if (titleEl) titleEl.textContent = session.title ?? "";
 
     let io;
@@ -734,7 +738,7 @@ async function openBoard(board) {
         return;
     }
 
-    const canvasElement = document.getElementById("wb-canvas");
+    const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasElement) return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
@@ -761,67 +765,67 @@ function renderCanvasElement() {
     const boardList = boards
         .map(
             (board) =>
-                `<button type="button" class="wb-overlay-board" data-board-id="${escapeHtml(board.id)}">${escapeHtml(board.title)}</button>`,
+                `<button type="button" class="whiteboard-overlay-board" data-board-id="${escapeHtml(board.id)}">${escapeHtml(board.title)}</button>`,
         )
         .join("");
 
     return `
-        <div class="wb-canvas-wrap">
+        <div class="whiteboard-canvas-wrap">
             <div
-                id="wb-toolbar"
-                class="wb-toolbar"
+                id="whiteboard-toolbar"
+                class="whiteboard-toolbar"
                 role="toolbar"
                 aria-label="${escapeHtml(t("module.nextcloud_whiteboard.toolbar_label"))}"
             >
-                <div class="wb-toolbar-group">
-                    <button type="button" id="wb-new" class="wb-tool wb-new-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋ <span>New</span></button>
-                    <button type="button" id="wb-history" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">↺</button>
+                <div class="whiteboard-toolbar-group">
+                    <button type="button" id="whiteboard-new" class="whiteboard-tool whiteboard-new-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋ <span>New</span></button>
+                    <button type="button" id="whiteboard-history" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">↺</button>
                 </div>
-                <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" data-tool="select" class="wb-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
-                    <button type="button" data-tool="pen" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
-                    <button type="button" data-tool="rectangle" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
-                    <button type="button" data-tool="diamond" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
-                    <button type="button" data-tool="ellipse" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
-                    <button type="button" data-tool="arrow" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}">→</button>
-                    <button type="button" data-tool="line" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}">−</button>
-                    <button type="button" data-tool="text" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">T</button>
-                    <button type="button" data-tool="eraser" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
+                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <button type="button" data-tool="select" class="whiteboard-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
+                    <button type="button" data-tool="pen" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
+                    <button type="button" data-tool="rectangle" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
+                    <button type="button" data-tool="diamond" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
+                    <button type="button" data-tool="ellipse" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
+                    <button type="button" data-tool="arrow" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}">→</button>
+                    <button type="button" data-tool="line" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}">−</button>
+                    <button type="button" data-tool="text" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">T</button>
+                    <button type="button" data-tool="eraser" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
                 </div>
-                <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" id="wb-undo" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}">↶</button>
-                    <button type="button" id="wb-redo" class="wb-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}">↷</button>
+                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <button type="button" id="whiteboard-undo" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}">↶</button>
+                    <button type="button" id="whiteboard-redo" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}">↷</button>
                 </div>
-                <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <input type="color" id="wb-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
-                    <select id="wb-stroke-width" class="wb-tool theme-select" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
+                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    <input type="color" id="whiteboard-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
+                    <select id="whiteboard-stroke-width" class="whiteboard-tool theme-select" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
                         <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
                         <option value="4" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_medium"))}</option>
                         <option value="8">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thick"))}</option>
                     </select>
                 </div>
-                <div class="wb-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    ${canManageShares() ? '<span id="wb-share-slot"></span>' : ""}
-                    <a href="#" id="wb-clear" class="wb-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
+                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
+                    ${canManageShares() ? '<span id="whiteboard-share-slot"></span>' : ""}
+                    <a href="#" id="whiteboard-clear" class="whiteboard-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
                 </div>
-                <span id="wb-board-title" class="wb-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
-                <span id="wb-sync-status" class="wb-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
+                <span id="whiteboard-board-title" class="whiteboard-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
+                <span id="whiteboard-sync-status" class="whiteboard-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
             </div>
-            <div class="wb-canvas-stage">
+            <div class="whiteboard-canvas-stage">
                 <canvas
-                    id="wb-canvas"
+                    id="whiteboard-canvas"
                     tabindex="0"
                     aria-label="${escapeHtml(t("module.nextcloud_whiteboard.canvas_label"))}"
                 ></canvas>
                 <div
-                    id="wb-canvas-overlay"
-                    class="wb-canvas-overlay"
+                    id="whiteboard-canvas-overlay"
+                    class="whiteboard-canvas-overlay"
                     ${overlayHidden ? "hidden" : ""}
                     aria-live="polite"
                 >
-                    <div class="wb-start-panel">
-                        <p class="wb-overlay-message">${escapeHtml(overlayMessage)}</p>
-                        ${hasActiveBoard ? "" : `<div class="wb-start-actions"><button type="button" id="wb-start-new">${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}</button><button type="button" id="wb-start-history">${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}</button></div><div class="wb-overlay-board-list">${boardList || `<p>${escapeHtml(t("module.nextcloud_whiteboard.empty"))}</p>`}</div>`}
+                    <div class="whiteboard-start-panel">
+                        <p class="whiteboard-overlay-message">${escapeHtml(overlayMessage)}</p>
+                        ${hasActiveBoard ? "" : `<div class="whiteboard-start-actions"><button type="button" id="whiteboard-start-new">${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}</button><button type="button" id="whiteboard-start-history">${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}</button></div><div class="whiteboard-overlay-board-list">${boardList || `<p>${escapeHtml(t("module.nextcloud_whiteboard.empty"))}</p>`}</div>`}
                     </div>
                 </div>
             </div>
@@ -830,12 +834,12 @@ function renderCanvasElement() {
 
 function onCanvasRender() {
     document
-        .getElementById("wb-start-new")
+        .getElementById("whiteboard-start-new")
         ?.addEventListener("click", () => void createAndOpenBoard());
     document
-        .getElementById("wb-start-history")
+        .getElementById("whiteboard-start-history")
         ?.addEventListener("click", () => void openHistoryPopup());
-    document.querySelectorAll(".wb-overlay-board").forEach((button) => {
+    document.querySelectorAll(".whiteboard-overlay-board").forEach((button) => {
         button.addEventListener("click", () => {
             const board = boards.find(
                 (item) => item.id === button.dataset.boardId,
@@ -843,7 +847,7 @@ function onCanvasRender() {
             if (board) void openBoard(board);
         });
     });
-    const canvasElement = document.getElementById("wb-canvas");
+    const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasElement || canvasInstance || !activeBoard || !activeSession)
         return;
     if (preflightStatus !== "passed") return;

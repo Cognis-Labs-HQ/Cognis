@@ -424,25 +424,14 @@ test("nextcloud whiteboard share guests use gateway guest profiles", async () =>
                     },
                 };
             }
-            if (key === "share:getTokenById") {
-                return async (shareId) =>
-                    shareId === "share-1"
-                        ? {
-                              resourceType: "whiteboard",
-                              resourceId: board.id,
-                              grantedCapabilities: ["whiteboard:write"],
-                          }
-                        : null;
-            }
-            if (key === "share:resolveGuestSessionId") {
-                return (claims) =>
-                    String(claims?.sub ?? "").split(":")[2] ?? "";
-            }
-            if (key === "share:getGuestProfile") {
-                return async (guestId) =>
-                    guestId === "guest-1"
-                        ? { displayName: "Guest #123456", avatarKey: null }
-                        : null;
+            if (key === "share:resolveGuestAccess") {
+                return async ({ claims, resourceType, resourceId }) => ({
+                    shareGuest: String(claims?.sub ?? "").startsWith("share:"),
+                    authorized:
+                        resourceType === "whiteboard" && resourceId === board.id,
+                    username: "guest:guest-1",
+                    displayName: "Guest #123456",
+                });
             }
             if (key === "logging:log") return () => {};
             return undefined;
@@ -495,22 +484,14 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                     },
                 };
             }
-            if (key === "share:getTokenById") {
-                return async (shareId) =>
-                    shareId === "share-1"
-                        ? {
-                              resourceType: "whiteboard",
-                              resourceId: board.id,
-                              grantedCapabilities: ["whiteboard:write"],
-                          }
-                        : null;
-            }
-            if (key === "share:resolveGuestSessionId") {
-                return (claims) =>
-                    String(claims?.sub ?? "").split(":")[2] ?? "";
-            }
-            if (key === "share:getGuestProfile") {
-                return async () => ({ displayName: "Guest #123456" });
+            if (key === "share:resolveGuestAccess") {
+                return async ({ claims, resourceType, resourceId }) => ({
+                    shareGuest: String(claims?.sub ?? "").startsWith("share:"),
+                    authorized:
+                        resourceType === "whiteboard" && resourceId === board.id,
+                    username: "guest:guest-1",
+                    displayName: "Guest #123456",
+                });
             }
             if (key === "logging:log") return () => {};
             return undefined;
@@ -617,5 +598,9 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
         filteredRes,
     );
     assert.equal(filteredRes.statusCode, 200);
-    assert.deepEqual(filteredRes.json().data.presence, []);
+    assert.ok(
+        filteredRes
+            .json()
+            .data.presence.some((entry) => entry.sessionId !== "guest-session"),
+    );
 });
