@@ -1,17 +1,17 @@
-# Perbaikan Kehadiran dan Seleksi Whiteboard
+# Kehadiran Whiteboard dan Default Berbagi
 
-## Kehadiran Berakhir dengan Benar
+## Kehadiran Dibersihkan Cepat
 
-Kehadiran di halaman whiteboard sekarang menandai pengunjung tidak aktif saat halaman disembunyikan, ditutup, atau ditinggalkan, dan inisial avatar tamu mengabaikan karakter pagar di awal nama.
+Kehadiran whiteboard sekarang segera menghapus sesi tidak aktif dan menyembunyikan pengunjung usang yang tidak memperbarui status selama lebih dari lima menit.
 
-## Kanvas Menggambar Lebih Stabil
+## Sinkronisasi Whiteboard Dimulai Bersih
 
-Kanvas whiteboard mempertahankan ukuran bidang gambar saat menggambar dan menghapus seleksi sebelumnya segera setelah alat selain seleksi digunakan.
+Indikator sinkronisasi whiteboard sekarang keluar dari status sinkronisasi segera setelah socket bergabung ke ruang, tanpa menunggu edit kanvas pertama.
 
-## Seleksi Mengikuti Isi Gambar
+## Halaman Berbagi Aman untuk Tamu secara Default
 
-Deteksi klik dan seleksi kotak di whiteboard sekarang memakai isi gambar yang terlihat, bukan seluruh area pembatas elemen.
+Gateway Share sekarang menyediakan default halaman yang aman untuk tamu dengan menyembunyikan navigasi dan kontrol berbagi kecuali halaman bersama mengaktifkannya secara eksplisit.
 
-## Kontrol Whiteboard Lebih Baik di Mode Gelap
+## Berbagi Whiteboard Mengikuti Gateway Share
 
-Dropdown ketebalan garis sekarang memakai gaya theme-select, dan pemilih warna native memakai skema warna terang/gelap browser jika didukung.
+Toolbar whiteboard sekarang meminta Gateway Share merender kontrol berbagi, sehingga sesi tamu tidak melihat tombol berbagi dan perilaku berbagi tetap dimiliki gateway.

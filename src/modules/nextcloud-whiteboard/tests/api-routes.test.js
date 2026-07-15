@@ -571,4 +571,51 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                 entry.guest === true && entry.displayName === "Guest #123456",
         ),
     );
+
+    const inactiveRes = createJsonResponse();
+    await router.handler(
+        "POST",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+    )(
+        {
+            headers: { authorization: `Bearer ${guestToken}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        pageId: board.id,
+                        sessionId: "guest-session",
+                        active: false,
+                    }),
+                );
+            },
+        },
+        inactiveRes,
+    );
+    assert.equal(inactiveRes.statusCode, 200);
+
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "nextcloud_whiteboard_presence",
+        set: {
+            last_seen_at: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
+        },
+        where: [
+            { column: "whiteboard_id", value: board.id },
+            { column: "session_id", value: "owner-session" },
+        ],
+    });
+
+    const filteredRes = createJsonResponse();
+    await router.handler(
+        "GET",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/presence",
+    )(
+        {
+            url: `/api/v1/modules/nextcloud-whiteboard/whiteboards/presence?pageId=${board.id}`,
+            headers: { authorization: `Bearer ${ownerToken}` },
+        },
+        filteredRes,
+    );
+    assert.equal(filteredRes.statusCode, 200);
+    assert.deepEqual(filteredRes.json().data.presence, []);
 });

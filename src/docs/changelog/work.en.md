@@ -1,17 +1,17 @@
-# Whiteboard Presence and Selection Fixes
+# Whiteboard Presence and Share Defaults
 
-## Presence Leaves Cleanly
+## Presence Clears Promptly
 
-Whiteboard page presence now marks visitors inactive when they hide, unload, or navigate away from the page, and guest avatar initials ignore leading hash characters.
+Whiteboard presence now drops inactive sessions immediately and hides stale visitors that have not checked in for more than five minutes.
 
-## Canvas Drawing Is More Stable
+## Whiteboard Sync Starts Cleanly
 
-The whiteboard canvas keeps its drawing surface dimensions stable while drawing and clears previous selections as soon as non-selection tools are used.
+The whiteboard sync indicator now moves out of the syncing state as soon as the socket joins the room, without waiting for the first canvas edit.
 
-## Drawing Selection Uses Visible Content
+## Shared Pages Default to Guest-Safe Chrome
 
-Whiteboard hit-testing and box selection now target the visible drawing content instead of selecting by an element's full bounding area.
+The Share gateway now supplies guest-safe page defaults that hide navigation and share controls unless a shared page explicitly opts into them.
 
-## Whiteboard Controls Improve Dark Mode
+## Whiteboard Sharing Defers to Share Gateway
 
-The line thickness dropdown now uses the themed select styling, and the native color input opts into light/dark browser color schemes where supported.
+The whiteboard toolbar now asks the Share gateway to render share controls, so guest sessions do not see a share button and share behavior stays gateway-owned.
