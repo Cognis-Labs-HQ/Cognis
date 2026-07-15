@@ -42,16 +42,11 @@
   <string name="module.nextcloud_whiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
   <string name="module.nextcloud_whiteboard.api_key_description">The shared secret used to sign JWT session tokens for the whiteboard server.</string>
   <string name="module.nextcloud_whiteboard.api_key_placeholder">Paste API key</string>
-  <string name="module.nextcloud_whiteboard.dashboard_label">Nextcloud Whiteboard</string>
-  <string name="module.nextcloud_whiteboard.dashboard_description">Open a collaborative whiteboard in this page layout.</string>
-  <string name="module.nextcloud_whiteboard.dashboard_open">Open Whiteboard</string>
-  <string name="module.nextcloud_whiteboard.dashboard_title">Dashboard Whiteboard</string>
   <string name="module.nextcloud_whiteboard.refresh_failed">Whiteboard created, but the list could not refresh.</string>
   <string name="module.nextcloud_whiteboard.spawn_failed">Could not open the whiteboard.</string>
   <string name="module.nextcloud_whiteboard.new_board">New whiteboard</string>
   <string name="module.nextcloud_whiteboard.new_board_title">Untitled Whiteboard</string>
   <string name="module.nextcloud_whiteboard.history_title">Whiteboard history</string>
-  <string name="module.nextcloud_whiteboard.close">Close</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Could not connect to the whiteboard server at {server_url}. Ask an administrator to confirm the WebSocket URL and CSP configuration.</string>
   <string name="module.nextcloud_whiteboard.created_success">Whiteboard created.</string>
   <string name="module.nextcloud_whiteboard.rename_success">Whiteboard renamed.</string>

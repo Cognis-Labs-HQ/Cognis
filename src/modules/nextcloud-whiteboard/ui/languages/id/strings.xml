@@ -42,16 +42,11 @@
   <string name="module.nextcloud_whiteboard.server_url_placeholder">https://whiteboard.example.com:3002</string>
   <string name="module.nextcloud_whiteboard.api_key_description">Rahasia bersama untuk menandatangani token sesi JWT bagi server papan tulis.</string>
   <string name="module.nextcloud_whiteboard.api_key_placeholder">Tempel kunci API</string>
-  <string name="module.nextcloud_whiteboard.dashboard_label">Papan tulis Nextcloud</string>
-  <string name="module.nextcloud_whiteboard.dashboard_description">Buka papan tulis kolaboratif dalam tata letak halaman ini.</string>
-  <string name="module.nextcloud_whiteboard.dashboard_open">Buka papan tulis</string>
-  <string name="module.nextcloud_whiteboard.dashboard_title">Papan tulis dasbor</string>
   <string name="module.nextcloud_whiteboard.refresh_failed">Papan tulis dibuat, tetapi daftar tidak dapat dimuat ulang.</string>
   <string name="module.nextcloud_whiteboard.spawn_failed">Tidak dapat membuka papan tulis.</string>
   <string name="module.nextcloud_whiteboard.new_board">Papan tulis baru</string>
   <string name="module.nextcloud_whiteboard.new_board_title">Papan tulis tanpa judul</string>
   <string name="module.nextcloud_whiteboard.history_title">Riwayat papan tulis</string>
-  <string name="module.nextcloud_whiteboard.close">Tutup</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Tidak dapat terhubung ke server papan tulis di {server_url}. Minta administrator memeriksa URL WebSocket dan konfigurasi CSP.</string>
   <string name="module.nextcloud_whiteboard.created_success">Papan tulis dibuat.</string>
   <string name="module.nextcloud_whiteboard.rename_success">Papan tulis diganti nama.</string>

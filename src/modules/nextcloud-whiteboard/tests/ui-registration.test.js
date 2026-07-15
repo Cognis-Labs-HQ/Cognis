@@ -36,8 +36,10 @@ function captureUiRegistration() {
 }
 
 test("nextcloud whiteboard registers full SPA routing and boilerplate styles", () => {
-    const { spaRoutes } = captureUiRegistration();
+    const { spaRoutes, pageExtensions } = captureUiRegistration();
     const routesByBase = new Map(spaRoutes.map((route) => [route.base, route]));
+
+    assert.deepEqual(pageExtensions, []);
 
     for (const base of ["/whiteboards", "/whiteboard"]) {
         const route = routesByBase.get(base);
@@ -62,7 +64,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /componentStringBaseUrls:\s*\[\s*"\/static\/modules\/nextcloud-whiteboard\/languages"/,
     );
-    assert.doesNotMatch(source, /wb-connection-status/);
+    assert.doesNotMatch(source, /whiteboard-connection-status/);
     assert.match(
         source,
         /\/static\/modules\/nextcloud-whiteboard\/share-adapter\.js/,
@@ -153,6 +155,9 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
     ]);
     assert.match(canvasSource, /let activeTool = "select"/);
     assert.match(appSource, /let activeTool = "select"/);
-    assert.match(appSource, /data-tool="select" class="wb-tool active"/);
-    assert.match(appSource, /data-tool="pen" class="wb-tool"/);
+    assert.match(
+        appSource,
+        /data-tool="select" class="whiteboard-tool active"/,
+    );
+    assert.match(appSource, /data-tool="pen" class="whiteboard-tool"/);
 });
