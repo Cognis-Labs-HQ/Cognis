@@ -94,6 +94,10 @@ export class NextcloudWhiteboardStore {
                 { name: "display_name", type: "text", notNull: true },
                 { name: "guest", type: "integer", notNull: true, default: 0 },
                 { name: "active", type: "integer", notNull: true, default: 1 },
+                { name: "pointer_x", type: "real" },
+                { name: "pointer_y", type: "real" },
+                { name: "pointer_style", type: "text" },
+                { name: "pointer_updated_at", type: "timestamp" },
                 {
                     name: "last_seen_at",
                     type: "timestamp",
@@ -294,6 +298,7 @@ export class NextcloudWhiteboardStore {
         displayName,
         guest,
         active = true,
+        pointer = null,
     }) {
         const timestamp = new Date().toISOString();
         await this.db.executeCommand({
@@ -306,6 +311,14 @@ export class NextcloudWhiteboardStore {
                 display_name: String(displayName || username || "Guest"),
                 guest: guest ? 1 : 0,
                 active: active ? 1 : 0,
+                pointer_x: Number.isFinite(Number(pointer?.x))
+                    ? Number(pointer.x)
+                    : null,
+                pointer_y: Number.isFinite(Number(pointer?.y))
+                    ? Number(pointer.y)
+                    : null,
+                pointer_style: String(pointer?.style ?? "").trim(),
+                pointer_updated_at: String(pointer?.updatedAt ?? "").trim(),
                 last_seen_at: timestamp,
             },
             conflict: {
@@ -332,6 +345,17 @@ export class NextcloudWhiteboardStore {
             displayName: String(row.display_name || row.username),
             guest: Number(row.guest ?? 0) === 1,
             active: Number(row.active ?? 0) === 1,
+            pointer:
+                Number.isFinite(Number(row.pointer_x)) &&
+                Number.isFinite(Number(row.pointer_y)) &&
+                String(row.pointer_updated_at ?? "").trim()
+                    ? {
+                          x: Number(row.pointer_x),
+                          y: Number(row.pointer_y),
+                          style: String(row.pointer_style ?? "mouse"),
+                          updatedAt: String(row.pointer_updated_at),
+                      }
+                    : null,
             lastSeenAt: String(row.last_seen_at),
         }));
     }
