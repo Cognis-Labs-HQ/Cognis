@@ -282,6 +282,135 @@ export function buildDragBox(startPoint, endPoint) {
         height: Math.abs(endY - startY),
     };
 }
+function distanceToSegment(pointX, pointY, startX, startY, endX, endY) {
+    const dx = endX - startX;
+    const dy = endY - startY;
+    if (dx === 0 && dy === 0)
+        return Math.hypot(pointX - startX, pointY - startY);
+    const t = Math.max(
+        0,
+        Math.min(
+            1,
+            ((pointX - startX) * dx + (pointY - startY) * dy) /
+                (dx * dx + dy * dy),
+        ),
+    );
+    return Math.hypot(pointX - (startX + t * dx), pointY - (startY + t * dy));
+}
+
+function elementContentPoints(element) {
+    if (Array.isArray(element.points) && element.points.length > 0) {
+        return element.points.map(([px, py]) => [
+            element.x + px,
+            element.y + py,
+        ]);
+    }
+    switch (element.type) {
+        case "rectangle":
+        case "image":
+        case "text":
+            return [
+                [element.x, element.y],
+                [element.x + (element.width ?? 1), element.y],
+                [
+                    element.x + (element.width ?? 1),
+                    element.y + (element.height ?? 1),
+                ],
+                [element.x, element.y + (element.height ?? 1)],
+            ];
+        case "diamond":
+            return [
+                [element.x + (element.width ?? 1) / 2, element.y],
+                [
+                    element.x + (element.width ?? 1),
+                    element.y + (element.height ?? 1) / 2,
+                ],
+                [
+                    element.x + (element.width ?? 1) / 2,
+                    element.y + (element.height ?? 1),
+                ],
+                [element.x, element.y + (element.height ?? 1) / 2],
+            ];
+        case "ellipse": {
+            const cx = element.x + (element.width ?? 1) / 2;
+            const cy = element.y + (element.height ?? 1) / 2;
+            const rx = Math.abs((element.width ?? 1) / 2);
+            const ry = Math.abs((element.height ?? 1) / 2);
+            return Array.from({ length: 16 }, (_, index) => {
+                const angle = (Math.PI * 2 * index) / 16;
+                return [cx + Math.cos(angle) * rx, cy + Math.sin(angle) * ry];
+            });
+        }
+        default:
+            return [[element.x, element.y]];
+    }
+}
+
+export function boxContainsElementContent(container, element) {
+    return elementContentPoints(element).every(
+        ([x, y]) =>
+            x >= container.x &&
+            y >= container.y &&
+            x <= container.x + container.width &&
+            y <= container.y + container.height,
+    );
+}
+
+export function elementContainsPoint(element, x, y) {
+    const tolerance = Math.max(8, (element.strokeWidth ?? 2) + 4);
+    const points = elementContentPoints(element);
+    if (["freedraw", "line", "arrow"].includes(element.type)) {
+        return points.some((point, index) => {
+            if (index === 0) return false;
+            const previous = points[index - 1];
+            return (
+                distanceToSegment(
+                    x,
+                    y,
+                    previous[0],
+                    previous[1],
+                    point[0],
+                    point[1],
+                ) <= tolerance
+            );
+        });
+    }
+    if (element.type === "rectangle" || element.type === "image") {
+        const left = element.x;
+        const top = element.y;
+        const right = element.x + (element.width ?? 1);
+        const bottom = element.y + (element.height ?? 1);
+        if (element.type === "image")
+            return x >= left && x <= right && y >= top && y <= bottom;
+        return (
+            x >= left - tolerance &&
+            x <= right + tolerance &&
+            y >= top - tolerance &&
+            y <= bottom + tolerance &&
+            (Math.abs(x - left) <= tolerance ||
+                Math.abs(x - right) <= tolerance ||
+                Math.abs(y - top) <= tolerance ||
+                Math.abs(y - bottom) <= tolerance)
+        );
+    }
+    if (element.type === "text") {
+        const bounds = getElementBounds(element);
+        return (
+            x >= bounds.x &&
+            x <= bounds.x + bounds.width &&
+            y >= bounds.y &&
+            y <= bounds.y + bounds.height
+        );
+    }
+    return points.some((point, index) => {
+        const next = points[(index + 1) % points.length];
+        return (
+            distanceToSegment(x, y, point[0], point[1], next[0], next[1]) <=
+            tolerance
+        );
+    });
+}
+
 export function drawAnchor(context, x, y) {
     context.save();
     context.fillStyle = "#ffffff";

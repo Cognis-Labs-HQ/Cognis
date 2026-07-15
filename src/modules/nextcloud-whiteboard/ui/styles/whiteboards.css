@@ -115,6 +115,7 @@
 }
 
 #wb-color {
+    color-scheme: light dark;
     inline-size: 2.5rem;
     padding: 0.25rem;
 }

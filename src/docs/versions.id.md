@@ -51,6 +51,6 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | -------------------- | ----------------------------------- | -------- |
 | Analitik             | `src/modules/analytics/`            | `2.0.1`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.16` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.17` |
 | Cognis Jepang        | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis Inggris       | `src/modules/study/languages/en/`   | `1.2.2`  |
