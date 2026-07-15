@@ -138,3 +138,32 @@ test("nextcloud whiteboard store uses structured update payloads", async () => {
         new RegExp('option:\\s*"UPDATE",\\n\\s*table:[^\\n]+\\n\\s*set:'),
     );
 });
+
+test("nextcloud whiteboard presence pointer columns use structured text types", async () => {
+    const definitions = [];
+    const db = {
+        async ensureTable(definition) {
+            definitions.push(definition);
+        },
+        async executeCommand() {
+            return { rows: [] };
+        },
+        async transaction(callback) {
+            await callback(db);
+        },
+    };
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const presenceTable = definitions.find(
+        (definition) => definition.name === "nextcloud_whiteboard_presence",
+    );
+    const pointerColumns = new Map(
+        presenceTable.columns
+            .filter((column) => column.name.startsWith("pointer_"))
+            .map((column) => [column.name, column.type]),
+    );
+    assert.equal(pointerColumns.get("pointer_x"), "text");
+    assert.equal(pointerColumns.get("pointer_y"), "text");
+    assert.equal(pointerColumns.get("pointer_style"), "text");
+    assert.equal(pointerColumns.get("pointer_updated_at"), "timestamp");
+});
