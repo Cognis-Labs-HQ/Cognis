@@ -11,9 +11,7 @@ function readSource(relativePath) {
 }
 
 test("page composer pointer tracker is opt-in through presence tracking", () => {
-    const pointerSource = readSource(
-        "src/ui/reuse/page-composer/pointer-tracker.js",
-    );
+    const pointerSource = readSource("src/ui/reuse/pointer-tracker.js");
     const presenceSource = readSource(
         "src/ui/reuse/page-composer/presence-tracker.js",
     );
@@ -24,12 +22,15 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
     assert.match(pointerSource, /page-pointer--/);
-    assert.match(presenceSource, /pointerTracking\?\.enabled === true/);
+    assert.match(presenceSource, /pointerTracking === true/);
     assert.match(
         presenceSource,
         /pointer: pointerTracker\?\.getPointerPayload/,
     );
     assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 1500/);
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
-    assert.match(composerSource, /pointerTracking\?: \{ enabled\?: boolean \}/);
+    assert.match(
+        composerSource,
+        /pageManifest\?: \{ features\?: \{ pointerTracking\?: boolean \} \}/,
+    );
 });
