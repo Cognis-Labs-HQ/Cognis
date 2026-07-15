@@ -18,6 +18,8 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     const composerSource = readSource("src/ui/reuse/page-composer/init.js");
 
     assert.match(pointerSource, /export function createPointerTracker/);
+    assert.match(pointerSource, /from "\.\/escape-html\.js"/);
+    assert.match(pointerSource, /from "\.\/avatar-utils\.js"/);
     assert.match(pointerSource, /contentGrid\.addEventListener\("pointermove"/);
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
