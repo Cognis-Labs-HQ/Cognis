@@ -12,6 +12,7 @@ const EMIT_DEBOUNCE_MS = 80;
 const RECONNECT_MAX_DELAY_MS = 30000;
 const SYNC_MESSAGE_SCENE_INIT = "SCENE_INIT";
 const SYNC_MESSAGE_SCENE_UPDATE = "SCENE_UPDATE";
+const SYNC_MESSAGE_BOARD_RENAMED = "BOARD_RENAMED";
 
 let i18n = null;
 let composer = null;
@@ -187,10 +188,12 @@ function teardownCanvas() {
     activeSession = null;
 }
 
+function encodeSyncMessage(type, payload = {}) {
+    return new TextEncoder().encode(JSON.stringify({ type, payload }));
+}
+
 function encodeSceneMessage(type, elements) {
-    return new TextEncoder().encode(
-        JSON.stringify({ type, payload: { elements } }),
-    );
+    return encodeSyncMessage(type, { elements });
 }
 
 function decodeSceneMessage(payload) {
@@ -203,6 +206,34 @@ function decodeSceneMessage(payload) {
                       : new Uint8Array(payload),
               );
     return JSON.parse(text);
+}
+
+function canRenameActiveBoard() {
+    return Boolean(activeSession?.canRename && activeBoard?.id);
+}
+
+function applyBoardTitle(title) {
+    const normalizedTitle = String(title ?? "").trim();
+    if (!normalizedTitle) return;
+    activeBoard = {
+        ...(activeBoard ?? {}),
+        title: normalizedTitle,
+    };
+    if (activeSession) activeSession.title = normalizedTitle;
+    const titleEl = document.getElementById("whiteboard-board-title");
+    if (titleEl && titleEl.dataset.renaming !== "true") {
+        titleEl.textContent = normalizedTitle;
+    }
+}
+
+function emitBoardRenamed(title) {
+    if (!socketInstance?.connected || !activeSession?.roomId) return;
+    socketInstance.emit(
+        "server-broadcast",
+        activeSession.roomId,
+        encodeSyncMessage(SYNC_MESSAGE_BOARD_RENAMED, { title }),
+        [],
+    );
 }
 
 function connectSocket(io, session, canvas) {
@@ -312,6 +343,10 @@ function connectSocket(io, session, canvas) {
     socket.on("client-broadcast", (payload) => {
         try {
             const message = decodeSceneMessage(payload);
+            if (message.type === SYNC_MESSAGE_BOARD_RENAMED) {
+                applyBoardTitle(message.payload?.title);
+                return;
+            }
             if (
                 (message.type === SYNC_MESSAGE_SCENE_INIT ||
                     message.type === SYNC_MESSAGE_SCENE_UPDATE) &&
@@ -426,9 +461,11 @@ function bindCanvasToolbar(canvas) {
     if (canManageShares()) {
         bindShareButton(toolbar);
     }
-    document
-        .getElementById("whiteboard-board-title")
-        ?.addEventListener("dblclick", () => void renameActiveBoard());
+    if (canRenameActiveBoard()) {
+        document
+            .getElementById("whiteboard-board-title")
+            ?.addEventListener("dblclick", () => void renameActiveBoard());
+    }
 
     const colorInput = document.getElementById("whiteboard-color");
     const themeStrokeColor = () =>
@@ -605,7 +642,7 @@ async function openHistoryPopup() {
 }
 
 async function renameActiveBoard() {
-    if (!activeBoard) return;
+    if (!activeBoard || !canRenameActiveBoard()) return;
     const titleEl = document.getElementById("whiteboard-board-title");
     if (!titleEl || titleEl.dataset.renaming === "true") return;
     titleEl.dataset.renaming = "true";
@@ -639,8 +676,8 @@ async function renameActiveBoard() {
                 ...renamed,
                 id: renamed.id || boardId,
             };
-            if (activeSession) activeSession.title = activeBoard.title;
-            titleEl.textContent = activeBoard.title;
+            applyBoardTitle(activeBoard.title);
+            emitBoardRenamed(activeBoard.title);
             showToast(t("module.nextcloud_whiteboard.rename_success"), {
                 variant: "success",
             });
@@ -726,8 +763,7 @@ async function openBoard(board) {
         session.imageUploadMaxBytes ?? imageUploadMaxBytes,
     );
 
-    const titleEl = document.getElementById("whiteboard-board-title");
-    if (titleEl) titleEl.textContent = session.title ?? "";
+    applyBoardTitle(session.title);
 
     let io;
     try {
@@ -808,7 +844,7 @@ function renderCanvasElement() {
                     ${canManageShares() ? '<span id="whiteboard-share-slot"></span>' : ""}
                     <a href="#" id="whiteboard-clear" class="whiteboard-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
                 </div>
-                <span id="whiteboard-board-title" class="whiteboard-board-title" title="${escapeHtml(t("module.nextcloud_whiteboard.rename_hint"))}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
+                <span id="whiteboard-board-title" class="whiteboard-board-title" title="${escapeHtml(canRenameActiveBoard() ? t("module.nextcloud_whiteboard.rename_hint") : "")}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
                 <span id="whiteboard-sync-status" class="whiteboard-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
             </div>
             <div class="whiteboard-canvas-stage">

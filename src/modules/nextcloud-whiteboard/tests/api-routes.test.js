@@ -170,7 +170,73 @@ test("nextcloud whiteboard session route works without share capabilities", asyn
     const body = res.json();
     assert.equal(body.data.roomId, board.id);
     assert.equal(body.data.serverUrl, "https://whiteboard.example.test");
+    assert.equal(body.data.canRename, true);
     assert.ok(body.data.token);
+});
+
+test("nextcloud whiteboard rename route allows only the owner", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: ["bob"],
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                };
+            }
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const participantRes = createJsonResponse();
+    await router.handler(
+        "POST",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/rename",
+    )(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("bob", "user", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ id: board.id, title: "Bob title" }),
+                );
+            },
+        },
+        participantRes,
+    );
+    assert.equal(participantRes.statusCode, 403);
+
+    const ownerRes = createJsonResponse();
+    await router.handler(
+        "POST",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/rename",
+    )(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("alice", "user", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ id: board.id, title: "Owner title" }),
+                );
+            },
+        },
+        ownerRes,
+    );
+    assert.equal(ownerRes.statusCode, 200);
+    assert.equal(ownerRes.json().data.title, "Owner title");
 });
 
 test("nextcloud whiteboard registers share hooks on system ctx flow", () => {
@@ -428,7 +494,8 @@ test("nextcloud whiteboard share guests use gateway guest profiles", async () =>
                 return async ({ claims, resourceType, resourceId }) => ({
                     shareGuest: String(claims?.sub ?? "").startsWith("share:"),
                     authorized:
-                        resourceType === "whiteboard" && resourceId === board.id,
+                        resourceType === "whiteboard" &&
+                        resourceId === board.id,
                     username: "guest:guest-1",
                     displayName: "Guest #123456",
                 });
@@ -488,7 +555,8 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                 return async ({ claims, resourceType, resourceId }) => ({
                     shareGuest: String(claims?.sub ?? "").startsWith("share:"),
                     authorized:
-                        resourceType === "whiteboard" && resourceId === board.id,
+                        resourceType === "whiteboard" &&
+                        resourceId === board.id,
                     username: "guest:guest-1",
                     displayName: "Guest #123456",
                 });

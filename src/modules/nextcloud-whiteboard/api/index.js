@@ -479,6 +479,7 @@ export function registerApiRoutes(router, ctx) {
                 data: {
                     roomId: whiteboard.id,
                     title: whiteboard.title,
+                    canRename: access.username === whiteboard.createdBy,
                     serverUrl: config.serverUrl,
                     imageUploadMaxBytes: config.imageUploadMaxBytes,
                     elements,
@@ -659,16 +660,17 @@ export function registerApiRoutes(router, ctx) {
                 return null;
             });
             if (!username) return;
-            const authorized = await store.canAccessWhiteboard(
-                whiteboardId,
-                username,
-            );
-            if (!authorized) {
+            const whiteboard = await store.getWhiteboardById(whiteboardId);
+            if (!whiteboard) {
+                sendError(res, 404, "not_found", "Whiteboard was not found.");
+                return;
+            }
+            if (whiteboard.createdBy !== username) {
                 sendError(
                     res,
                     403,
                     "forbidden",
-                    "You are not listed as an allowed whiteboard participant.",
+                    "Only the whiteboard owner can rename this whiteboard.",
                 );
                 return;
             }

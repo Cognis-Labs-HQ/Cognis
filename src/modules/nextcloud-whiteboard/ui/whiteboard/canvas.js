@@ -53,7 +53,8 @@ export function createWhiteboardCanvas(canvasElement) {
     function redraw() {
         const style = getComputedStyle(canvasElement);
         context.fillStyle =
-            style.getPropertyValue("--wb-canvas-bg").trim() || "#ffffff";
+            style.getPropertyValue("--whiteboard-canvas-bg").trim() ||
+            "#ffffff";
         context.fillRect(0, 0, canvasElement.width, canvasElement.height);
         for (const element of elements) {
             renderElement(context, element);
