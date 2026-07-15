@@ -24,6 +24,14 @@ const HEARTBEAT_INTERVAL_MS = 20000;
 const REFRESH_INTERVAL_MS = 10000;
 const ACTIVE_WINDOW_MS = 45000;
 
+function normalizePresenceName(value) {
+    return (
+        String(value || "Guest")
+            .replace(/^#+/, "")
+            .trim() || "Guest"
+    );
+}
+
 function resolveOption(value) {
     return typeof value === "function" ? value() : value;
 }
@@ -38,8 +46,10 @@ function createSessionId(storageKey) {
 }
 
 function renderPresenceEntry(entry) {
-    const displayName = String(entry.displayName || entry.handle || "Guest");
-    const handle = String(entry.handle || "").replace(/^@/, "");
+    const displayName = normalizePresenceName(
+        entry.displayName || entry.handle,
+    );
+    const handle = String(entry.handle || "").replace(/^[@#]+/, "");
     const active = Boolean(entry.active);
     const initials = getInitialsText(displayName);
     const color = pickInitialsColor(handle || displayName);
@@ -64,12 +74,14 @@ export function createPresenceTracker({
     let heartbeatTimer = null;
     let refreshTimer = null;
     let destroyed = false;
+    let markInactive = null;
+    let handleVisibilityChange = null;
 
     function currentPageId() {
         return String(resolveOption(pageId) ?? "").trim();
     }
 
-    async function sendPresence(active = true) {
+    async function sendPresence(active = true, { keepalive = false } = {}) {
         const resolvedPageId = currentPageId();
         if (!enabled || !endpoint || !resolvedPageId) return;
         await apiFetch(endpoint, {
@@ -80,6 +92,7 @@ export function createPresenceTracker({
                 sessionId,
                 active,
             }),
+            keepalive,
         }).catch(() => null);
     }
 
@@ -127,16 +140,31 @@ export function createPresenceTracker({
             () => void refresh(),
             REFRESH_INTERVAL_MS,
         );
-        window.addEventListener("pagehide", () => void sendPresence(false), {
-            once: true,
-        });
+        markInactive = () => void sendPresence(false, { keepalive: true });
+        handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") markInactive?.();
+            else void sendPresence(true).then(refresh);
+        };
+        window.addEventListener("pagehide", markInactive);
+        window.addEventListener("beforeunload", markInactive);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
     }
 
     function destroy() {
         destroyed = true;
         if (heartbeatTimer) window.clearInterval(heartbeatTimer);
         if (refreshTimer) window.clearInterval(refreshTimer);
-        void sendPresence(false);
+        if (markInactive) {
+            window.removeEventListener("pagehide", markInactive);
+            window.removeEventListener("beforeunload", markInactive);
+        }
+        if (handleVisibilityChange) {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+        }
+        void sendPresence(false, { keepalive: true });
         container?.remove();
         container = null;
     }

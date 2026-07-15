@@ -1,13 +1,17 @@
-# Sinkron Langsung Papan
+# Perbaikan Kehadiran dan Seleksi Whiteboard
 
-## Kolaborasi langsung diperbaiki
+## Kehadiran Berakhir dengan Benar
 
-Perubahan papan tulis kini memakai protokol Socket.IO Nextcloud Whiteboard, sehingga pemilik dan tamu berbagi menerima pembaruan adegan melalui server kolaborasi yang dikonfigurasi, bukan hanya snapshot Cognis.
+Kehadiran di halaman whiteboard sekarang menandai pengunjung tidak aktif saat halaman disembunyikan, ditutup, atau ditinggalkan, dan inisial avatar tamu mengabaikan karakter pagar di awal nama.
 
-## Kehadiran halaman ditambahkan
+## Kanvas Menggambar Lebih Stabil
 
-Page Composer kini dapat menampilkan bilah kehadiran ringkas di atas kisi konten. Halaman papan tulis memakainya untuk menampilkan inisial pemilik dan tamu, cincin aktif, serta pratinjau profil untuk pengguna masuk.
+Kanvas whiteboard mempertahankan ukuran bidang gambar saat menggambar dan menghapus seleksi sebelumnya segera setelah alat selain seleksi digunakan.
 
-## Sesi berbagi ditingkatkan
+## Seleksi Mengikuti Isi Gambar
 
-Tamu berbagi papan tulis mempertahankan nama tampilan yang dibuat Share Gateway dalam sesi kehadiran dan kolaborasi papan tulis.
+Deteksi klik dan seleksi kotak di whiteboard sekarang memakai isi gambar yang terlihat, bukan seluruh area pembatas elemen.
+
+## Kontrol Whiteboard Lebih Baik di Mode Gelap
+
+Dropdown ketebalan garis sekarang memakai gaya theme-select, dan pemilih warna native memakai skema warna terang/gelap browser jika didukung.

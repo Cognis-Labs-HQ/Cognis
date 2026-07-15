@@ -1,13 +1,17 @@
-# Whiteboard Live-Sync
+# Whiteboard-Präsenz und Auswahl verbessert
 
-## Live-Zusammenarbeit korrigiert
+## Präsenz wird sauber beendet
 
-Whiteboard-Änderungen verwenden jetzt das Socket.IO-Protokoll von Nextcloud Whiteboard, sodass Besitzer und Freigabe-Gäste Szenenaktualisierungen über den konfigurierten Kollaborationsserver erhalten statt nur über Cognis-Snapshots.
+Die Whiteboard-Seitenpräsenz markiert Besucher jetzt als inaktiv, wenn sie die Seite ausblenden, entladen oder verlassen, und Gast-Avatar-Initialen ignorieren führende Rautezeichen.
 
-## Seitenpräsenz hinzugefügt
+## Die Zeichenfläche ist stabiler
 
-Der Page Composer kann oberhalb des Inhaltsrasters eine kompakte Präsenzleiste anzeigen. Die Whiteboard-Seite nutzt sie für Initialen von Besitzern und Gästen, aktive grüne Ringe und Profilvorschauen für angemeldete Benutzer.
+Die Whiteboard-Zeichenfläche hält ihre Abmessungen beim Zeichnen stabil und hebt vorherige Auswahlen auf, sobald Werkzeuge außerhalb der Auswahl verwendet werden.
 
-## Freigabesitzungen verbessert
+## Auswahl nutzt sichtbare Zeichnungen
 
-Whiteboard-Freigabe-Gäste behalten ihre vom Share-Gateway erzeugten Anzeigenamen in Präsenz- und Kollaborationssitzungen.
+Trefferprüfung und Rahmenauswahl im Whiteboard orientieren sich jetzt am sichtbaren Zeicheninhalt statt an der vollständigen Begrenzungsfläche eines Elements.
+
+## Whiteboard-Steuerung unterstützt Dark Mode besser
+
+Das Dropdown für die Linienstärke nutzt nun das Theme-Select-Styling, und die native Farbauswahl verwendet unterstützte helle und dunkle Browser-Farbschemata.

@@ -1,5 +1,5 @@
 import {
-    boxContains,
+    boxContainsElementContent,
     buildDragBox,
     buildFreedrawElement,
     buildImageElement,
@@ -9,6 +9,7 @@ import {
     drawAnchor,
     getElementAnchorPoints,
     getElementBounds,
+    elementContainsPoint,
     isStrokeWidthApplicable,
     renderElement,
 } from "./elements.js";
@@ -140,7 +141,7 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function resizeCanvas() {
-        updateCanvasOverflow();
+        if (!isDrawing) updateCanvasOverflow();
         scheduleRender();
     }
 
@@ -173,14 +174,18 @@ export function createWhiteboardCanvas(canvasElement) {
             0,
             ...bounds.map((item) => item.y + item.height),
         );
-        const maxX =
+        const maxX = Math.max(
+            canvasElement.width || 0,
             contentRight > rect.width
                 ? contentRight + overflowPadding
-                : rect.width;
-        const maxY =
+                : rect.width,
+        );
+        const maxY = Math.max(
+            canvasElement.height || 0,
             contentBottom > rect.height
                 ? contentBottom + overflowPadding
-                : rect.height;
+                : rect.height,
+        );
         const width = Math.ceil(maxX);
         const height = Math.ceil(maxY);
         if (canvasElement.width !== width) canvasElement.width = width;
@@ -229,17 +234,7 @@ export function createWhiteboardCanvas(canvasElement) {
     function findElementAt(x, y) {
         return [...elements]
             .reverse()
-            .find(
-                (element) =>
-                    x >= getElementBounds(element).x &&
-                    x <=
-                        getElementBounds(element).x +
-                            getElementBounds(element).width &&
-                    y >= getElementBounds(element).y &&
-                    y <=
-                        getElementBounds(element).y +
-                            getElementBounds(element).height,
-            );
+            .find((element) => elementContainsPoint(element, x, y));
     }
 
     function commitElements(nextElements, { record = true } = {}) {
@@ -302,9 +297,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const box = buildDragBox(dragStartPoint, endPoint);
         eraserSelectionIds = new Set(
             elements
-                .filter((element) =>
-                    boxContains(box, getElementBounds(element)),
-                )
+                .filter((element) => boxContainsElementContent(box, element))
                 .map((element) => element.id),
         );
         scheduleRender();
@@ -313,6 +306,11 @@ export function createWhiteboardCanvas(canvasElement) {
     function setActiveTool(tool) {
         activeTool = tool;
         eraserSelectionIds = new Set();
+        if (tool !== "select" && selectedElementIds.size > 0) {
+            selectedElementIds = new Set();
+            selectedElementId = null;
+            notifySelection();
+        }
         canvasElement.style.cursor =
             tool === "select"
                 ? "grab"
@@ -420,9 +418,15 @@ export function createWhiteboardCanvas(canvasElement) {
             return;
         }
         if (event.button !== 0) return;
+        event.preventDefault();
         canvasElement.setPointerCapture(event.pointerId);
         canvasElement.focus();
         isDrawing = true;
+        if (activeTool !== "select" && selectedElementIds.size > 0) {
+            selectedElementIds = new Set();
+            selectedElementId = null;
+            notifySelection();
+        }
         const [x, y] = getCanvasPoint(event);
         dragStartPoint = [x, y];
         historySnapshot = cloneElements();
@@ -503,6 +507,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 panState.scrollTop - (event.clientY - panState.startY);
             return;
         }
+        if (isDrawing) event.preventDefault();
         const [x, y] = getCanvasPoint(event);
         if (!isDrawing) {
             if (activeTool === "select") {
@@ -520,10 +525,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 selectedElementIds = new Set(
                     elements
                         .filter((element) =>
-                            boxContains(
-                                dragSelectBox,
-                                getElementBounds(element),
-                            ),
+                            boxContainsElementContent(dragSelectBox, element),
                         )
                         .map((element) => element.id),
                 );

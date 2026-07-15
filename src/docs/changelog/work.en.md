@@ -1,13 +1,17 @@
-# Whiteboard Live Sync
+# Whiteboard Presence and Selection Fixes
 
-## Fixed live collaboration
+## Presence Leaves Cleanly
 
-Whiteboard edits now use the Nextcloud Whiteboard Socket.IO protocol so owners and share guests receive scene updates through the configured collaboration server instead of only Cognis snapshot persistence.
+Whiteboard page presence now marks visitors inactive when they hide, unload, or navigate away from the page, and guest avatar initials ignore leading hash characters.
 
-## Added page presence
+## Canvas Drawing Is More Stable
 
-The page composer can render a compact presence strip above the content grid. The whiteboard page uses it to show owner and guest initials, active rings, and profile previews for signed-in users.
+The whiteboard canvas keeps its drawing surface dimensions stable while drawing and clears previous selections as soon as non-selection tools are used.
 
-## Improved share sessions
+## Drawing Selection Uses Visible Content
 
-Whiteboard share guests keep their gateway-generated display names in whiteboard presence and collaboration sessions.
+Whiteboard hit-testing and box selection now target the visible drawing content instead of selecting by an element's full bounding area.
+
+## Whiteboard Controls Improve Dark Mode
+
+The line thickness dropdown now uses the themed select styling, and the native color input opts into light/dark browser color schemes where supported.
