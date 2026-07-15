@@ -9,7 +9,7 @@
  *   const tracker = createPresenceTracker({
  *     endpoint: '/api/v1/modules/example/presence',
  *     pageId: () => activePageId,
- *     pointerTracking: { enabled: true },
+ *     pointerTracking: true,
  *   });
  *   tracker.mount(mainWindow);
  *
@@ -20,7 +20,7 @@
 import { apiFetch } from "../api-client.js";
 import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
 import { escapeHtml } from "../escape-html.js";
-import { createPointerTracker } from "./pointer-tracker.js";
+import { createPointerTracker } from "../pointer-tracker.js";
 
 const HEARTBEAT_INTERVAL_MS = 5000;
 const REFRESH_INTERVAL_MS = 1500;
@@ -71,7 +71,7 @@ export function createPresenceTracker({
     pageId,
     enabled = true,
     storageKey = "cognis_page_presence_session",
-    pointerTracking = null,
+    pointerTracking = false,
     i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
@@ -146,7 +146,7 @@ export function createPresenceTracker({
         container.hidden = true;
         const contentGrid = parent.querySelector(".content-grid");
         parent.insertBefore(container, contentGrid ?? null);
-        if (pointerTracking?.enabled === true && contentGrid) {
+        if (pointerTracking === true && contentGrid) {
             pointerTracker = createPointerTracker({
                 contentGrid,
                 i18n,

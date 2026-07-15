@@ -34,7 +34,8 @@
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  *   requireAccountSession?: boolean,
- *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string), pointerTracking?: { enabled?: boolean } },
+ *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string) },
+ *   pageManifest?: { features?: { pointerTracking?: boolean } },
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -82,6 +83,7 @@ export function createPageComposer(
         onBeforeSubPageSwitch,
         requireAccountSession = showTopbar || showNavbar,
         presenceTracker = null,
+        pageManifest = null,
     },
 ) {
     function escapeHtml(value) {
@@ -688,6 +690,8 @@ export function createPageComposer(
             activePresenceTracker?.destroy();
             activePresenceTracker = createPresenceTracker({
                 ...presenceTracker,
+                pointerTracking:
+                    pageManifest?.features?.pointerTracking === true,
                 i18n,
             });
             activePresenceTracker.mount(mainWindow);
