@@ -952,6 +952,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             endpoint: `${API_BASE}/whiteboards/presence`,
             pageId: () => activeBoard?.id ?? "",
             storageKey: "nextcloud_whiteboard_presence_session",
+            pointerTracking: { enabled: true },
         },
         i18n,
         pageContext: {

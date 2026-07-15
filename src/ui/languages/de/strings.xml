@@ -627,4 +627,8 @@
   <string name="ui.app.dashboard.element.student_classes.go">Zu meinen Klassen</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.label">Bevorstehende Kalenderereignisse</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">Keine bevorstehenden Kalenderereignisse.</string>
+  <string name="ui.reuse.pointer_style">Zeigerstil</string>
+  <string name="ui.reuse.pointer_mouse">Maus</string>
+  <string name="ui.reuse.pointer_laser">Laserzeiger</string>
+  <string name="ui.reuse.pointer_crosshair">Fadenkreuz</string>
 </resources>

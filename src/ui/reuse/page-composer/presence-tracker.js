@@ -9,6 +9,7 @@
  *   const tracker = createPresenceTracker({
  *     endpoint: '/api/v1/modules/example/presence',
  *     pageId: () => activePageId,
+ *     pointerTracking: { enabled: true },
  *   });
  *   tracker.mount(mainWindow);
  *
@@ -19,6 +20,7 @@
 import { apiFetch } from "../api-client.js";
 import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
 import { escapeHtml } from "../escape-html.js";
+import { createPointerTracker } from "./pointer-tracker.js";
 
 const HEARTBEAT_INTERVAL_MS = 20000;
 const REFRESH_INTERVAL_MS = 10000;
@@ -68,6 +70,8 @@ export function createPresenceTracker({
     pageId,
     enabled = true,
     storageKey = "cognis_page_presence_session",
+    pointerTracking = null,
+    i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
     let container = null;
@@ -76,6 +80,7 @@ export function createPresenceTracker({
     let destroyed = false;
     let markInactive = null;
     let handleVisibilityChange = null;
+    let pointerTracker = null;
 
     function currentPageId() {
         return String(resolveOption(pageId) ?? "").trim();
@@ -91,6 +96,7 @@ export function createPresenceTracker({
                 pageId: resolvedPageId,
                 sessionId,
                 active,
+                pointer: pointerTracker?.getPointerPayload?.() ?? null,
             }),
             keepalive,
         }).catch(() => null);
@@ -111,16 +117,15 @@ export function createPresenceTracker({
             ? payload.data.presence
             : [];
         container.hidden = entries.length === 0;
-        container.innerHTML = entries
-            .map((entry) => ({
-                ...entry,
-                active:
-                    entry.active !== false &&
-                    Date.now() - Date.parse(entry.lastSeenAt || 0) <=
-                        ACTIVE_WINDOW_MS,
-            }))
-            .map(renderPresenceEntry)
-            .join("");
+        const activeEntries = entries.map((entry) => ({
+            ...entry,
+            active:
+                entry.active !== false &&
+                Date.now() - Date.parse(entry.lastSeenAt || 0) <=
+                    ACTIVE_WINDOW_MS,
+        }));
+        container.innerHTML = activeEntries.map(renderPresenceEntry).join("");
+        pointerTracker?.render(activeEntries, sessionId);
     }
 
     function mount(parent) {
@@ -131,6 +136,13 @@ export function createPresenceTracker({
         container.hidden = true;
         const contentGrid = parent.querySelector(".content-grid");
         parent.insertBefore(container, contentGrid ?? null);
+        if (pointerTracking?.enabled === true && contentGrid) {
+            pointerTracker = createPointerTracker({
+                contentGrid,
+                i18n,
+                requestPresenceUpdate: () => void sendPresence(true),
+            });
+        }
         void sendPresence(true).then(refresh);
         heartbeatTimer = window.setInterval(
             () => void sendPresence(true),
@@ -165,6 +177,8 @@ export function createPresenceTracker({
             );
         }
         void sendPresence(false, { keepalive: true });
+        pointerTracker?.destroy();
+        pointerTracker = null;
         container?.remove();
         container = null;
     }

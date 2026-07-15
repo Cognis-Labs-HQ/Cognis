@@ -576,6 +576,7 @@ export function registerApiRoutes(router, ctx) {
                     avatarKey,
                     guest: entry.guest || entry.username.startsWith("guest:"),
                     active: entry.active,
+                    pointer: entry.pointer,
                     lastSeenAt: entry.lastSeenAt,
                 });
             }
@@ -617,6 +618,7 @@ export function registerApiRoutes(router, ctx) {
                 displayName: access.displayName || access.username,
                 guest: access.username.startsWith("guest:"),
                 active: body.active !== false,
+                pointer: body.pointer,
             });
             sendJson(res, 200, { data: { ok: true } });
         },

@@ -34,7 +34,7 @@
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  *   requireAccountSession?: boolean,
- *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string) },
+ *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string), pointerTracking?: { enabled?: boolean } },
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -686,7 +686,10 @@ export function createPageComposer(
         const mainWindow = root.querySelector(".main-window");
         if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
             activePresenceTracker?.destroy();
-            activePresenceTracker = createPresenceTracker(presenceTracker);
+            activePresenceTracker = createPresenceTracker({
+                ...presenceTracker,
+                i18n,
+            });
             activePresenceTracker.mount(mainWindow);
         }
 

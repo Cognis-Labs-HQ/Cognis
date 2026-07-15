@@ -585,6 +585,15 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                             pageId: board.id,
                             sessionId,
                             active: true,
+                            pointer:
+                                sessionId === "owner-session"
+                                    ? {
+                                          x: 0.25,
+                                          y: 0.75,
+                                          style: "laser",
+                                          updatedAt: "2026-07-15T00:00:00.000Z",
+                                      }
+                                    : null,
                         }),
                     );
                 },
