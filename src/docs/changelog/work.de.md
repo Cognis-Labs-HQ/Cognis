@@ -23,3 +23,7 @@ Ausgewählte Whiteboard-Objekte können jetzt direkt mit der Entf- oder Rücktas
 ## Hochgeladene Bilder werden angezeigt und ausgewählt
 
 Eingefügte Bild-Uploads werden jetzt über den normalen Erstellungsablauf eingefügt, sofort gespeichert, zum Skalieren ausgewählt und nach dem Laden durch den Browser neu gezeichnet.
+
+## Zwischenablagebilder und Standardauswahl
+
+Das Einfügen von Bildern aus der Zwischenablage funktioniert jetzt auf der Seite ebenso wie auf der Canvas, liest Bild-Clipboard-Elemente, wenn Dateien nicht direkt bereitstehen, und aktualisierte Whiteboards starten mit dem Auswahlwerkzeug.

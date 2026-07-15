@@ -23,3 +23,7 @@ Selected whiteboard objects can now be removed directly with the Delete or Backs
 ## Uploaded Images Render and Select
 
 Pasted image uploads are now inserted through the normal creation flow, saved immediately, selected for resizing, and redrawn after the browser finishes loading the image.
+
+## Clipboard Images and Select Default
+
+Clipboard image paste now works from the page as well as the canvas, reads image clipboard items when files are not exposed directly, and refreshed whiteboards now default to the select tool.

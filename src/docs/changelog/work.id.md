@@ -23,3 +23,7 @@ Objek whiteboard yang dipilih sekarang dapat dihapus langsung dengan tombol Dele
 ## Gambar Unggahan Ditampilkan dan Dipilih
 
 Unggahan gambar yang ditempel sekarang dimasukkan melalui alur pembuatan normal, langsung disimpan, dipilih untuk diubah ukurannya, dan digambar ulang setelah browser selesai memuat gambar.
+
+## Gambar Clipboard dan Default Seleksi
+
+Tempel gambar dari clipboard sekarang bekerja dari halaman maupun kanvas, membaca item gambar clipboard saat file tidak langsung tersedia, dan whiteboard yang dimuat ulang kini memakai alat seleksi secara default.

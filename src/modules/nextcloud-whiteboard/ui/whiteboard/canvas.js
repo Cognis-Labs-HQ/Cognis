@@ -21,7 +21,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let isDrawing = false;
     let strokeColor = "auto";
     let strokeWidth = 4;
-    let activeTool = "pen";
+    let activeTool = "select";
     let imageUploadMaxBytes = 1048576;
     let selectedElementId = null;
     let selectedElementIds = new Set();
@@ -769,10 +769,31 @@ export function createWhiteboardCanvas(canvasElement) {
         image.src = dataUrl;
     }
 
-    function onPaste(event) {
-        const imageFile = [...(event.clipboardData?.files ?? [])].find((file) =>
-            file.type.startsWith("image/"),
+    function eventTargetAcceptsTextInput(event) {
+        const target = event.target;
+        return Boolean(
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement ||
+            target?.isContentEditable,
         );
+    }
+
+    function findClipboardImageFile(event) {
+        const files = [...(event.clipboardData?.files ?? [])];
+        const directFile = files.find((file) => file.type.startsWith("image/"));
+        if (directFile) return directFile;
+        const items = [...(event.clipboardData?.items ?? [])];
+        return (
+            items
+                .find((item) => item.type.startsWith("image/"))
+                ?.getAsFile?.() ?? null
+        );
+    }
+
+    function onPaste(event) {
+        if (event.defaultPrevented) return;
+        if (eventTargetAcceptsTextInput(event)) return;
+        const imageFile = findClipboardImageFile(event);
         if (!imageFile) return;
         event.preventDefault();
         if (imageFile.size > imageUploadMaxBytes) {
@@ -795,6 +816,7 @@ export function createWhiteboardCanvas(canvasElement) {
     canvasElement.addEventListener("pointerup", onPointerUp);
     canvasElement.addEventListener("pointercancel", onPointerUp);
     canvasElement.addEventListener("paste", onPaste);
+    document.addEventListener("paste", onPaste);
     canvasElement.addEventListener("keydown", onKeyDown);
     canvasElement.addEventListener("whiteboard:image-loaded", scheduleRender);
     canvasElement.addEventListener("dblclick", onDoubleClick);
@@ -945,6 +967,7 @@ export function createWhiteboardCanvas(canvasElement) {
             canvasElement.removeEventListener("pointerup", onPointerUp);
             canvasElement.removeEventListener("pointercancel", onPointerUp);
             canvasElement.removeEventListener("paste", onPaste);
+            document.removeEventListener("paste", onPaste);
             canvasElement.removeEventListener("keydown", onKeyDown);
             canvasElement.removeEventListener(
                 "whiteboard:image-loaded",

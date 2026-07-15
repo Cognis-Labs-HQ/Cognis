@@ -117,6 +117,12 @@ test("nextcloud whiteboard image paste saves and selects resizable image objects
         /function createImageElementFromDataUrl\(dataUrl\)/,
     );
     assert.match(canvasSource, /commitCreatedElement\(\s*buildImageElement/);
+    assert.match(
+        canvasSource,
+        /document\.addEventListener\("paste", onPaste\)/,
+    );
+    assert.match(canvasSource, /if \(event\.defaultPrevented\) return/);
+    assert.match(canvasSource, /findClipboardImageFile\(event\)/);
     assert.doesNotMatch(
         canvasSource,
         /commitElements\(\[\s*\.\.\.elements,\s*buildImageElement/,
@@ -131,4 +137,22 @@ test("nextcloud whiteboard image paste saves and selects resizable image objects
         elementsSource,
         /export function buildImageElement\(point, dataUrl, dimensions = \{\}\)/,
     );
+});
+
+test("nextcloud whiteboard defaults to select after canvas refresh", async () => {
+    const [canvasSource, appSource] = await Promise.all([
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+        ),
+    ]);
+    assert.match(canvasSource, /let activeTool = "select"/);
+    assert.match(appSource, /let activeTool = "select"/);
+    assert.match(appSource, /data-tool="select" class="wb-tool active"/);
+    assert.match(appSource, /data-tool="pen" class="wb-tool"/);
 });
