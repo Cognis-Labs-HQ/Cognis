@@ -9,6 +9,7 @@ import { NextcloudWhiteboardStore } from "./store.js";
 import { registerWhiteboardShareFlowHooks } from "./share-hooks.js";
 
 const LIVENESS_TIMEOUT_MS = 5000;
+const PRESENCE_ACTIVE_WINDOW_MS = 5 * 60 * 1000;
 
 const MODULE_ID = "nextcloud-whiteboard";
 const PAGE_RESOURCE_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
@@ -590,7 +591,13 @@ export function registerApiRoutes(router, ctx) {
             const rows = await store.listPresence(whiteboard.id);
             const profileCache = new Map();
             const presence = [];
+            const activeCutoff = Date.now() - PRESENCE_ACTIVE_WINDOW_MS;
             for (const entry of rows) {
+                if (!entry.active) continue;
+                const lastSeenAt = Date.parse(entry.lastSeenAt || "");
+                if (!Number.isFinite(lastSeenAt) || lastSeenAt < activeCutoff) {
+                    continue;
+                }
                 let handle = "";
                 let avatarKey = null;
                 if (!entry.guest && !entry.username.startsWith("guest:")) {

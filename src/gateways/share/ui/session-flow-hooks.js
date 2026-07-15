@@ -45,6 +45,11 @@ const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
 const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
 
+const SHARE_GUEST_PAGE_DEFAULTS = Object.freeze({
+    showNavbar: false,
+    showShareControls: false,
+});
+
 function resolveShareTokenFromLocation() {
     const pathnameMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
     if (pathnameMatch) return decodeURIComponent(pathnameMatch[1]);
@@ -149,7 +154,10 @@ uiCtx.extendFlow(
             grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
                 ? shareData.grantedCapabilities
                 : [],
-            page: shareData.page ?? {},
+            page: {
+                ...SHARE_GUEST_PAGE_DEFAULTS,
+                ...(shareData.page ?? {}),
+            },
             guestAccessToken: shareData.guestAccessToken ?? null,
         };
 

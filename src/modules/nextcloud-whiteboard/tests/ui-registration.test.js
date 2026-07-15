@@ -67,5 +67,10 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /\/static\/modules\/nextcloud-whiteboard\/share-adapter\.js/,
     );
+    assert.match(
+        source,
+        /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,
+    );
+    assert.match(source, /showNavbar:\s*sharePageFlag\("showNavbar",\s*true\)/);
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });

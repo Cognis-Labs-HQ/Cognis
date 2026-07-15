@@ -1,17 +1,17 @@
-# Whiteboard-Präsenz und Auswahl verbessert
+# Whiteboard-Präsenz und Freigabe-Standards
 
-## Präsenz wird sauber beendet
+## Präsenz verschwindet zeitnah
 
-Die Whiteboard-Seitenpräsenz markiert Besucher jetzt als inaktiv, wenn sie die Seite ausblenden, entladen oder verlassen, und Gast-Avatar-Initialen ignorieren führende Rautezeichen.
+Die Whiteboard-Präsenz entfernt inaktive Sitzungen jetzt sofort und blendet veraltete Besucher aus, die sich seit mehr als fünf Minuten nicht gemeldet haben.
 
-## Die Zeichenfläche ist stabiler
+## Whiteboard-Synchronisierung startet sauber
 
-Die Whiteboard-Zeichenfläche hält ihre Abmessungen beim Zeichnen stabil und hebt vorherige Auswahlen auf, sobald Werkzeuge außerhalb der Auswahl verwendet werden.
+Die Synchronisierungsanzeige des Whiteboards verlässt den Synchronisierungsstatus, sobald der Socket dem Raum beigetreten ist, ohne auf die erste Canvas-Bearbeitung zu warten.
 
-## Auswahl nutzt sichtbare Zeichnungen
+## Geteilte Seiten nutzen gastfreundliche Standardwerte
 
-Trefferprüfung und Rahmenauswahl im Whiteboard orientieren sich jetzt am sichtbaren Zeicheninhalt statt an der vollständigen Begrenzungsfläche eines Elements.
+Das Share-Gateway liefert jetzt gastfreundliche Seitenstandards, die Navigation und Freigabesteuerungen ausblenden, sofern eine geteilte Seite sie nicht ausdrücklich aktiviert.
 
-## Whiteboard-Steuerung unterstützt Dark Mode besser
+## Whiteboard-Freigabe nutzt das Share-Gateway
 
-Das Dropdown für die Linienstärke nutzt nun das Theme-Select-Styling, und die native Farbauswahl verwendet unterstützte helle und dunkle Browser-Farbschemata.
+Die Whiteboard-Werkzeugleiste lässt Freigabesteuerungen jetzt vom Share-Gateway rendern, sodass Gastsitzungen keine Freigabeschaltfläche sehen und das Freigabeverhalten im Gateway bleibt.
