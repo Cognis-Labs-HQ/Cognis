@@ -167,3 +167,37 @@ test("nextcloud whiteboard presence pointer columns use structured text types", 
     assert.equal(pointerColumns.get("pointer_style"), "text");
     assert.equal(pointerColumns.get("pointer_updated_at"), "timestamp");
 });
+
+test("nextcloud whiteboard presence stores null pointer timestamp when no pointer is available", async () => {
+    const commands = [];
+    const db = {
+        async ensureTable() {},
+        async executeCommand(command) {
+            commands.push(command);
+            return { rows: [] };
+        },
+        async transaction(callback) {
+            await callback(db);
+        },
+    };
+    const store = new NextcloudWhiteboardStore({ db });
+
+    await store.upsertPresence({
+        whiteboardId: "board-1",
+        username: "alice",
+        sessionId: "session-1",
+        displayName: "Alice",
+        guest: false,
+        active: true,
+    });
+
+    const insert = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "nextcloud_whiteboard_presence",
+    );
+    assert.equal(insert.values.pointer_x, null);
+    assert.equal(insert.values.pointer_y, null);
+    assert.equal(insert.values.pointer_style, null);
+    assert.equal(insert.values.pointer_updated_at, null);
+});

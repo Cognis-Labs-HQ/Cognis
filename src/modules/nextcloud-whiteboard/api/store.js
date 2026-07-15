@@ -301,6 +301,13 @@ export class NextcloudWhiteboardStore {
         pointer = null,
     }) {
         const timestamp = new Date().toISOString();
+        const pointerX = Number(pointer?.x);
+        const pointerY = Number(pointer?.y);
+        const pointerUpdatedAt = String(pointer?.updatedAt ?? "").trim();
+        const hasPointer =
+            Number.isFinite(pointerX) &&
+            Number.isFinite(pointerY) &&
+            !Number.isNaN(Date.parse(pointerUpdatedAt));
         await this.db.executeCommand({
             option: "INSERT",
             table: "nextcloud_whiteboard_presence",
@@ -311,14 +318,12 @@ export class NextcloudWhiteboardStore {
                 display_name: String(displayName || username || "Guest"),
                 guest: guest ? 1 : 0,
                 active: active ? 1 : 0,
-                pointer_x: Number.isFinite(Number(pointer?.x))
-                    ? String(Number(pointer.x))
+                pointer_x: hasPointer ? String(pointerX) : null,
+                pointer_y: hasPointer ? String(pointerY) : null,
+                pointer_style: hasPointer
+                    ? String(pointer?.style || "mouse").trim() || "mouse"
                     : null,
-                pointer_y: Number.isFinite(Number(pointer?.y))
-                    ? String(Number(pointer.y))
-                    : null,
-                pointer_style: String(pointer?.style ?? "").trim(),
-                pointer_updated_at: String(pointer?.updatedAt ?? "").trim(),
+                pointer_updated_at: hasPointer ? pointerUpdatedAt : null,
                 last_seen_at: timestamp,
             },
             conflict: {
