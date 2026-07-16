@@ -686,17 +686,6 @@ export function createPageComposer(
         }
 
         const mainWindow = root.querySelector(".main-window");
-        if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
-            activePresenceTracker?.destroy();
-            activePresenceTracker = createPresenceTracker({
-                ...presenceTracker,
-                pointerTracking:
-                    pageManifest?.features?.pointerTracking === true,
-                i18n,
-            });
-            activePresenceTracker.mount(mainWindow);
-        }
-
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
@@ -911,6 +900,17 @@ export function createPageComposer(
         }
 
         render();
+
+        if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
+            activePresenceTracker?.destroy();
+            activePresenceTracker = createPresenceTracker({
+                ...presenceTracker,
+                pointerTracking:
+                    pageManifest?.features?.pointerTracking === true,
+                i18n,
+            });
+            activePresenceTracker.mount(mainWindow);
+        }
 
         if (persistLayoutPreferences) {
             loadLayout()

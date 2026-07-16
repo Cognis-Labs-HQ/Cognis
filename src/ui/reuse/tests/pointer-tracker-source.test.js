@@ -37,4 +37,9 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         composerSource,
         /pageManifest\?: \{ features\?: \{ pointerTracking\?: boolean \} \}/,
     );
+    assert.ok(
+        composerSource.indexOf("render();") <
+            composerSource.indexOf("activePresenceTracker.mount(mainWindow)"),
+        "presence tracker must mount after composer content renders so the pointer overlay is not removed",
+    );
 });
