@@ -7,3 +7,7 @@ Share guests now receive their generated guest display name through the same ses
 ## Stale whiteboard presence is hidden promptly
 
 Whiteboard presence now ignores entries whose heartbeat has aged out, so abruptly disconnected guest sessions disappear instead of lingering as active participants.
+
+## Collaborative selection indicators
+
+Whiteboard selections now appear for other active users with a highlighted outline and floating name label, sharing canvas object selection alongside pointer presence.

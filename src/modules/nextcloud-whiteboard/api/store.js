@@ -11,6 +11,49 @@ import {
     normalizeHandleKeys,
 } from "../../../gateways/social/bootstrap.js";
 
+function serializePresenceSelection(selection) {
+    const items = Array.isArray(selection?.items) ? selection.items : [];
+    const normalizedItems = items
+        .slice(0, 24)
+        .map((item) => {
+            const x = Number(item?.x);
+            const y = Number(item?.y);
+            const width = Number(item?.width);
+            const height = Number(item?.height);
+            if (
+                !Number.isFinite(x) ||
+                !Number.isFinite(y) ||
+                !Number.isFinite(width) ||
+                !Number.isFinite(height) ||
+                width <= 0 ||
+                height <= 0
+            )
+                return null;
+            return { x, y, width, height };
+        })
+        .filter(Boolean);
+    if (normalizedItems.length === 0) return null;
+    return JSON.stringify({
+        items: normalizedItems,
+        updatedAt: new Date().toISOString(),
+    });
+}
+
+function parsePresenceSelection(value) {
+    const raw = String(value ?? "").trim();
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed?.items) || !parsed.items.length) return null;
+        return {
+            items: parsed.items,
+            updatedAt: String(parsed.updatedAt ?? ""),
+        };
+    } catch {
+        return null;
+    }
+}
+
 export class NextcloudWhiteboardStore {
     constructor({ db, log }) {
         this.db = db;
@@ -98,6 +141,7 @@ export class NextcloudWhiteboardStore {
                 { name: "pointer_y", type: "text" },
                 { name: "pointer_style", type: "text" },
                 { name: "pointer_updated_at", type: "timestamp" },
+                { name: "selection_payload", type: "text" },
                 {
                     name: "last_seen_at",
                     type: "timestamp",
@@ -299,6 +343,7 @@ export class NextcloudWhiteboardStore {
         guest,
         active = true,
         pointer = null,
+        selection = null,
     }) {
         const timestamp = new Date().toISOString();
         const pointerX = Number(pointer?.x);
@@ -308,6 +353,7 @@ export class NextcloudWhiteboardStore {
             Number.isFinite(pointerX) &&
             Number.isFinite(pointerY) &&
             !Number.isNaN(Date.parse(pointerUpdatedAt));
+        const selectionPayload = serializePresenceSelection(selection);
         await this.db.executeCommand({
             option: "INSERT",
             table: "nextcloud_whiteboard_presence",
@@ -324,6 +370,7 @@ export class NextcloudWhiteboardStore {
                     ? String(pointer?.style || "mouse").trim() || "mouse"
                     : null,
                 pointer_updated_at: hasPointer ? pointerUpdatedAt : null,
+                selection_payload: selectionPayload,
                 last_seen_at: timestamp,
             },
             conflict: {
@@ -361,6 +408,7 @@ export class NextcloudWhiteboardStore {
                           updatedAt: String(row.pointer_updated_at),
                       }
                     : null,
+            selection: parsePresenceSelection(row.selection_payload),
             lastSeenAt: String(row.last_seen_at),
         }));
     }

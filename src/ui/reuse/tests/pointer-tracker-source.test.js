@@ -24,11 +24,13 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
     assert.match(pointerSource, /page-pointer--/);
+    assert.match(pointerSource, /page-selection/);
     assert.match(presenceSource, /pointerTracking === true/);
     assert.match(
         presenceSource,
         /pointer: pointerTracker\?\.getPointerPayload/,
     );
+    assert.match(presenceSource, /getSelectionPayload/);
     assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 1500/);
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
     assert.match(
