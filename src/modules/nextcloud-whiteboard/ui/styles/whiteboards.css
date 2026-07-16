@@ -209,7 +209,8 @@
 
 #page-presence-section {
     flex: 0 0 auto;
-    margin-left: auto;
+    justify-content: flex-start;
+    margin-left: 0;
     width: fit-content;
 }
 
