@@ -85,6 +85,12 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /getPointerOffset,/);
     assert.match(source, /id="page-presence-section"/);
     assert.match(source, /function throttleLatest\(callback, delay\)/);
+    assert.match(source, /function updateHistoryControls\(\)/);
+    assert.match(
+        source,
+        /canvas\.onHistoryChange\?\.\(updateHistoryControls\)/,
+    );
+    assert.match(source, /redoButton\?\.addEventListener\("click"/);
     assert.match(
         source,
         /if \(meta\?\.transient !== true\) persistChanges\(elements\)/,
@@ -105,6 +111,8 @@ test("nextcloud whiteboard canvas deletes selected objects via keyboard", async 
     assert.doesNotMatch(source, /canvasElement\.width \|\| 0/);
     assert.match(source, /viewportOffsetX/);
     assert.match(source, /getViewportOffset\(\)/);
+    assert.match(source, /function notifyHistoryChange\(\)/);
+    assert.match(source, /canRedo\(\)/);
     assert.doesNotMatch(source, /parent\.scrollLeft =/);
     assert.match(
         source,

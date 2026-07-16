@@ -459,6 +459,14 @@ function bindCanvasToolbar(canvas) {
         }
     }
 
+    const undoButton = document.getElementById("whiteboard-undo");
+    const redoButton = document.getElementById("whiteboard-redo");
+
+    function updateHistoryControls() {
+        if (undoButton) undoButton.disabled = !canvas.canUndo?.();
+        if (redoButton) redoButton.disabled = !canvas.canRedo?.();
+    }
+
     toolbar.querySelectorAll("[data-tool]").forEach((button) => {
         button.addEventListener("click", (event) => {
             event.preventDefault();
@@ -470,6 +478,7 @@ function bindCanvasToolbar(canvas) {
     });
 
     canvas.onToolChange?.((tool) => activateTool(tool));
+    canvas.onHistoryChange?.(updateHistoryControls);
 
     document
         .getElementById("whiteboard-new")
@@ -477,16 +486,18 @@ function bindCanvasToolbar(canvas) {
     document
         .getElementById("whiteboard-history")
         ?.addEventListener("click", () => void openHistoryPopup());
-    document
-        .getElementById("whiteboard-undo")
-        ?.addEventListener("click", () => {
-            canvas.undo?.();
-        });
-    document
-        .getElementById("whiteboard-redo")
-        ?.addEventListener("click", () => {
-            canvas.redo?.();
-        });
+    undoButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        canvas.undo?.();
+        updateHistoryControls();
+    });
+    redoButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        canvas.redo?.();
+        updateHistoryControls();
+    });
     if (canManageShares()) {
         bindShareButton(toolbar);
     }

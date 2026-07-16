@@ -34,6 +34,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let originalSelection = new Map();
     let changeCallback = null;
     let selectionCallback = null;
+    let historyCallback = null;
     let toolCallback = null;
     let pendingRender = false;
     let historyPast = [];
@@ -250,11 +251,19 @@ export function createWhiteboardCanvas(canvasElement) {
             historyPast.push(cloneElements());
             historyPast = historyPast.slice(-100);
             historyFuture = [];
+            notifyHistoryChange();
         }
         elements = nextElements;
         updateCanvasOverflow();
         scheduleRender();
         changeCallback?.([...elements]);
+    }
+
+    function notifyHistoryChange() {
+        historyCallback?.({
+            canUndo: historyPast.length > 0,
+            canRedo: historyFuture.length > 0,
+        });
     }
 
     function restoreElements(snapshot) {
@@ -270,6 +279,7 @@ export function createWhiteboardCanvas(canvasElement) {
         if (!previous) return false;
         historyFuture.push(cloneElements());
         restoreElements(previous);
+        notifyHistoryChange();
         return true;
     }
 
@@ -278,6 +288,7 @@ export function createWhiteboardCanvas(canvasElement) {
         if (!next) return false;
         historyPast.push(cloneElements());
         restoreElements(next);
+        notifyHistoryChange();
         return true;
     }
 
@@ -667,6 +678,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 historyPast.push(historySnapshot ?? cloneElements());
                 historyPast = historyPast.slice(-100);
                 historyFuture = [];
+                notifyHistoryChange();
                 updateCanvasOverflow();
                 changeCallback?.([...elements]);
             }
@@ -954,6 +966,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 historyPast.push(cloneElements());
                 historyPast = historyPast.slice(-100);
                 historyFuture = [];
+                notifyHistoryChange();
             }
             elements = [];
             currentPoints = [];
@@ -971,6 +984,16 @@ export function createWhiteboardCanvas(canvasElement) {
         onToolChange(callback) {
             toolCallback = callback;
             toolCallback?.(activeTool);
+        },
+        onHistoryChange(callback) {
+            historyCallback = callback;
+            notifyHistoryChange();
+        },
+        canUndo() {
+            return historyPast.length > 0;
+        },
+        canRedo() {
+            return historyFuture.length > 0;
         },
         onChange(callback) {
             changeCallback = callback;
