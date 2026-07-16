@@ -10,6 +10,7 @@
  *     endpoint: '/api/v1/modules/example/presence',
  *     pageId: () => activePageId,
  *     pointerTracking: true,
+ *     getSelectionPayload: () => ({ items: [] }),
  *   });
  *   tracker.mount(mainWindow);
  *
@@ -72,6 +73,7 @@ export function createPresenceTracker({
     enabled = true,
     storageKey = "cognis_page_presence_session",
     pointerTracking = false,
+    getSelectionPayload = null,
     i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
@@ -107,6 +109,10 @@ export function createPresenceTracker({
                 sessionId,
                 active: active && isRecentlyActive(),
                 pointer: pointerTracker?.getPointerPayload?.() ?? null,
+                selection:
+                    typeof getSelectionPayload === "function"
+                        ? getSelectionPayload()
+                        : null,
             }),
             keepalive,
         }).catch(() => null);

@@ -7,3 +7,7 @@ Share-Gäste erhalten ihren generierten Gast-Anzeigenamen jetzt über denselben 
 ## Veraltete Whiteboard-Präsenz wird zeitnah ausgeblendet
 
 Die Whiteboard-Präsenz ignoriert jetzt Einträge, deren Heartbeat abgelaufen ist, sodass abrupt getrennte Gastsitzungen nicht mehr als aktive Teilnehmende hängen bleiben.
+
+## Gemeinsame Auswahlindikatoren
+
+Whiteboard-Auswahlen werden anderen aktiven Benutzern jetzt mit hervorgehobener Kontur und schwebendem Namenslabel angezeigt, sodass die Objektauswahl auf der Leinwand zusammen mit der Zeigerpräsenz geteilt wird.

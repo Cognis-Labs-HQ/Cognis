@@ -219,6 +219,15 @@ export function createWhiteboardCanvas(canvasElement) {
         selectedElementId = selectedElementIds.values().next().value ?? null;
     }
 
+    function getSelectedElementBounds() {
+        return elements
+            .filter((element) => selectedElementIds.has(element.id))
+            .map((element) => ({
+                id: element.id,
+                ...getElementBounds(element),
+            }));
+    }
+
     function notifySelection() {
         syncPrimarySelection();
         const element = selectedElement();
@@ -881,6 +890,9 @@ export function createWhiteboardCanvas(canvasElement) {
         },
         getElements() {
             return [...elements];
+        },
+        getSelectionBounds() {
+            return getSelectedElementBounds();
         },
         applyElements(remoteElements, { replace = false } = {}) {
             if (replace) {

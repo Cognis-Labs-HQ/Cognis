@@ -655,6 +655,19 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                                           updatedAt: "2026-07-15T00:00:00.000Z",
                                       }
                                     : null,
+                            selection:
+                                sessionId === "owner-session"
+                                    ? {
+                                          items: [
+                                              {
+                                                  x: 0.1,
+                                                  y: 0.2,
+                                                  width: 0.3,
+                                                  height: 0.4,
+                                              },
+                                          ],
+                                      }
+                                    : null,
                         }),
                     );
                 },
@@ -678,12 +691,14 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
 
     assert.equal(listRes.statusCode, 200);
     const entries = listRes.json().data.presence;
-    assert.ok(
-        entries.some(
-            (entry) =>
-                entry.handle === "alice" && entry.avatarKey === "avatars/alice",
-        ),
+    const ownerPresence = entries.find(
+        (entry) =>
+            entry.handle === "alice" && entry.avatarKey === "avatars/alice",
     );
+    assert.ok(ownerPresence);
+    assert.deepEqual(ownerPresence.selection.items, [
+        { x: 0.1, y: 0.2, width: 0.3, height: 0.4 },
+    ]);
     assert.ok(
         entries.some(
             (entry) =>

@@ -493,6 +493,7 @@ function bindCanvasToolbar(canvas) {
                     : element.strokeColor;
         }
         updateStyleControls();
+        composer?.refreshPresence?.();
     });
     updateStyleControls();
 
@@ -907,8 +908,28 @@ function onCanvasRender() {
     }
     canvasInstance.onChange((elements) => {
         savedElements = elements;
+        composer?.refreshPresence?.();
     });
     bindCanvasToolbar(canvasInstance);
+}
+
+function getSelectionPayload() {
+    if (!canvasInstance || !canvasElement) return null;
+    const bounds = canvasInstance.getSelectionBounds?.() ?? [];
+    if (!bounds.length) return null;
+    const contentGrid = canvasElement.closest(".content-grid");
+    const gridRect = contentGrid?.getBoundingClientRect();
+    const canvasRect = canvasElement.getBoundingClientRect();
+    if (!gridRect?.width || !gridRect?.height) return null;
+    const scaleX = canvasRect.width / Math.max(1, canvasElement.width);
+    const scaleY = canvasRect.height / Math.max(1, canvasElement.height);
+    const items = bounds.map((item) => ({
+        x: (canvasRect.left - gridRect.left + item.x * scaleX) / gridRect.width,
+        y: (canvasRect.top - gridRect.top + item.y * scaleY) / gridRect.height,
+        width: (item.width * scaleX) / gridRect.width,
+        height: (item.height * scaleY) / gridRect.height,
+    }));
+    return { items };
 }
 
 function buildElements() {
@@ -964,6 +985,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             endpoint: `${API_BASE}/whiteboards/presence`,
             pageId: () => activeBoard?.id ?? "",
             storageKey: "nextcloud_whiteboard_presence_session",
+            getSelectionPayload,
         },
         pageManifest: {
             features: {

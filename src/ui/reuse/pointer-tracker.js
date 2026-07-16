@@ -25,6 +25,7 @@ const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
 const POINTER_SEND_THROTTLE_MS = 120;
 const POINTER_VISIBLE_MS = 5000;
+const SELECTION_VISIBLE_MS = 5000;
 
 function normalizeStyle(value) {
     return POINTER_STYLES.includes(value) ? value : "mouse";
@@ -43,6 +44,34 @@ function getDisplayName(entry) {
 
 function getPointerColor(entry) {
     return pickInitialsColor(entry?.handle || getDisplayName(entry));
+}
+
+function normalizeSelectionItems(selection) {
+    const items = Array.isArray(selection?.items) ? selection.items : [];
+    return items
+        .map((item) => {
+            const x = Number(item?.x);
+            const y = Number(item?.y);
+            const width = Number(item?.width);
+            const height = Number(item?.height);
+            if (
+                !Number.isFinite(x) ||
+                !Number.isFinite(y) ||
+                !Number.isFinite(width) ||
+                !Number.isFinite(height) ||
+                width <= 0 ||
+                height <= 0
+            ) {
+                return null;
+            }
+            return {
+                x: Math.min(1, Math.max(0, x)),
+                y: Math.min(1, Math.max(0, y)),
+                width: Math.min(1, Math.max(0, width)),
+                height: Math.min(1, Math.max(0, height)),
+            };
+        })
+        .filter(Boolean);
 }
 
 function renderPointerIcon(style) {
@@ -156,22 +185,38 @@ export function createPointerTracker({
             .filter(
                 (entry) => String(entry?.sessionId ?? "") !== currentSessionId,
             )
-            .filter((entry) => entry?.pointer && entry.active !== false)
-            .filter((entry) => {
-                const updatedAt = Date.parse(entry.pointer.updatedAt || "");
-                return (
-                    Number.isFinite(updatedAt) &&
-                    now - updatedAt <= POINTER_VISIBLE_MS
+            .filter((entry) => entry?.active !== false)
+            .flatMap((entry) => {
+                const displayName = getDisplayName(entry);
+                const color = getPointerColor(entry);
+                const selectionUpdatedAt = Date.parse(
+                    entry.selection?.updatedAt || "",
                 );
-            })
-            .map((entry) => {
+                const selectionItems =
+                    Number.isFinite(selectionUpdatedAt) &&
+                    now - selectionUpdatedAt <= SELECTION_VISIBLE_MS
+                        ? normalizeSelectionItems(entry.selection)
+                        : [];
+                const selectionMarkup = selectionItems.map(
+                    (item, index) =>
+                        `<div class="page-selection" style="--selection-x:${item.x}; --selection-y:${item.y}; --selection-width:${item.width}; --selection-height:${item.height}; --selection-color:${escapeHtml(color)};"><div class="page-selection__label">${index === 0 ? escapeHtml(displayName) : ""}</div></div>`,
+                );
+                if (!entry?.pointer) return selectionMarkup;
+                const updatedAt = Date.parse(entry.pointer.updatedAt || "");
+                if (
+                    !Number.isFinite(updatedAt) ||
+                    now - updatedAt > POINTER_VISIBLE_MS
+                ) {
+                    return selectionMarkup;
+                }
                 const pointer = entry.pointer;
                 const x = Math.min(1, Math.max(0, Number(pointer.x ?? 0)));
                 const y = Math.min(1, Math.max(0, Number(pointer.y ?? 0)));
                 const style = normalizeStyle(pointer.style);
-                const displayName = getDisplayName(entry);
-                const color = getPointerColor(entry);
-                return `<div class="page-pointer page-pointer--${escapeHtml(style)}" style="--pointer-x:${x}; --pointer-y:${y}; --pointer-color:${escapeHtml(color)};"><div class="page-pointer__icon">${renderPointerIcon(style)}</div><div class="page-pointer__label">${escapeHtml(displayName)}</div></div>`;
+                return [
+                    ...selectionMarkup,
+                    `<div class="page-pointer page-pointer--${escapeHtml(style)}" style="--pointer-x:${x}; --pointer-y:${y}; --pointer-color:${escapeHtml(color)};"><div class="page-pointer__icon">${renderPointerIcon(style)}</div><div class="page-pointer__label">${escapeHtml(displayName)}</div></div>`,
+                ];
             })
             .join("");
     }

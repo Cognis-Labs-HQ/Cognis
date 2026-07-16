@@ -166,6 +166,12 @@ test("nextcloud whiteboard presence pointer columns use structured text types", 
     assert.equal(pointerColumns.get("pointer_y"), "text");
     assert.equal(pointerColumns.get("pointer_style"), "text");
     assert.equal(pointerColumns.get("pointer_updated_at"), "timestamp");
+    assert.equal(
+        presenceTable.columns.find(
+            (column) => column.name === "selection_payload",
+        )?.type,
+        "text",
+    );
 });
 
 test("nextcloud whiteboard presence stores null pointer timestamp when no pointer is available", async () => {
