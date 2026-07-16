@@ -119,7 +119,17 @@ export function createPresenceTracker({
         }).catch(() => null);
     }
 
+    function placePresenceContainer() {
+        if (!container?.isConnected) return;
+        const parent = container.closest(".main-window");
+        const presenceSlot = parent?.querySelector("#page-presence-section");
+        if (presenceSlot && container.parentElement !== presenceSlot) {
+            presenceSlot.replaceChildren(container);
+        }
+    }
+
     async function refresh() {
+        placePresenceContainer();
         const resolvedPageId = currentPageId();
         if (!container || !enabled || !endpoint || !resolvedPageId) {
             if (container) container.hidden = true;

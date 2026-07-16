@@ -167,24 +167,8 @@ export function createWhiteboardCanvas(canvasElement) {
             parent.scrollLeft += dx;
             parent.scrollTop += dy;
         }
-        const contentRight = Math.max(
-            0,
-            ...bounds.map((item) => item.x + item.width),
-        );
-        const contentBottom = Math.max(
-            0,
-            ...bounds.map((item) => item.y + item.height),
-        );
-        const maxX =
-            contentRight > rect.width
-                ? contentRight + overflowPadding
-                : rect.width;
-        const maxY =
-            contentBottom > rect.height
-                ? contentBottom + overflowPadding
-                : rect.height;
-        const width = Math.ceil(maxX);
-        const height = Math.ceil(maxY);
+        const width = Math.ceil(rect.width);
+        const height = Math.ceil(rect.height);
         if (canvasElement.width !== width) canvasElement.width = width;
         if (canvasElement.height !== height) canvasElement.height = height;
         canvasElement.style.width = `${width}px`;
