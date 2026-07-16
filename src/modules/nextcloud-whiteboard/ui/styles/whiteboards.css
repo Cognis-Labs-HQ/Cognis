@@ -203,6 +203,16 @@
     text-align: center;
 }
 
+.whiteboard-presence-section {
+    align-items: center;
+    display: inline-flex;
+    margin-left: auto;
+}
+
+.whiteboard-presence-section:empty {
+    display: none;
+}
+
 .whiteboard-sync-status {
     border: 1px solid var(--border, #d8dee9);
     border-radius: 999px;

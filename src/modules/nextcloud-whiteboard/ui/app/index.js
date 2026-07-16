@@ -888,6 +888,7 @@ function renderCanvasElement() {
                 </div>
                 <span id="whiteboard-board-title" class="whiteboard-board-title" title="${escapeHtml(canRenameActiveBoard() ? t("module.nextcloud_whiteboard.rename_hint") : "")}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
                 <span id="whiteboard-sync-status" class="whiteboard-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
+                <span id="page-presence-section" class="whiteboard-presence-section" aria-live="polite"></span>
             </div>
             <div class="whiteboard-canvas-stage">
                 <canvas

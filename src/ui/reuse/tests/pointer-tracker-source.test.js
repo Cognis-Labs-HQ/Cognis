@@ -16,6 +16,7 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         "src/ui/reuse/page-composer/presence-tracker.js",
     );
     const composerSource = readSource("src/ui/reuse/page-composer/init.js");
+    const layoutCssSource = readSource("src/ui/styles/reuse/layout.css");
 
     assert.match(pointerSource, /export function createPointerTracker/);
     assert.match(pointerSource, /from "\.\/escape-html\.js"/);
@@ -31,6 +32,10 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         pointerSource,
         /POINTER_VISIBLE_MS|SELECTION_VISIBLE_MS/,
     );
+    assert.match(pointerSource, /--selection-color:\$\{escapeHtml\(color\)\}/);
+    assert.match(pointerSource, /--pointer-color:\$\{escapeHtml\(color\)\}/);
+    assert.match(layoutCssSource, /page-pointer-laser-pulse/);
+    assert.match(layoutCssSource, /page-pointer-laser-spark/);
     assert.match(presenceSource, /pointerTracking === true/);
     assert.match(
         presenceSource,
@@ -38,6 +43,7 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     );
     assert.match(presenceSource, /getSelectionPayload/);
     assert.match(presenceSource, /overlayRoot:\s*parent/);
+    assert.match(presenceSource, /#page-presence-section/);
     assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 500/);
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
     assert.match(

@@ -151,7 +151,12 @@ export function createPresenceTracker({
         container.setAttribute("aria-label", "Page presence");
         container.hidden = true;
         const contentGrid = parent.querySelector(".content-grid");
-        parent.insertBefore(container, contentGrid ?? null);
+        const presenceSlot = parent.querySelector("#page-presence-section");
+        if (presenceSlot) {
+            presenceSlot.replaceChildren(container);
+        } else {
+            parent.insertBefore(container, contentGrid ?? null);
+        }
         if (pointerTracking === true && contentGrid) {
             pointerTracker = createPointerTracker({
                 contentGrid,
