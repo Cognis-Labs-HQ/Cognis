@@ -970,81 +970,27 @@ button.dropdown-item {
     white-space: nowrap;
 }
 
-.page-pointer__laser {
+.page-pointer__laser-dot {
     animation: page-pointer-laser-pulse 0.9s ease-in-out infinite;
-    background: linear-gradient(
-        to bottom,
-        transparent 0,
-        color-mix(in srgb, currentColor 30%, transparent) 12%,
-        currentColor 48%,
-        color-mix(in srgb, currentColor 75%, white) 52%,
-        currentColor 56%,
-        color-mix(in srgb, currentColor 28%, transparent) 88%,
-        transparent 100%
-    );
-    border-radius: 999px;
-    box-shadow:
-        0 0 8px currentColor,
-        0 0 18px color-mix(in srgb, currentColor 75%, transparent),
-        0 0 32px color-mix(in srgb, currentColor 45%, transparent);
-    display: block;
-    height: 1.15rem;
-    position: relative;
-    transform: rotate(35deg);
-    transform-origin: 50% 10%;
-    width: 0.12rem;
-}
-
-.page-pointer__laser::before {
     background: currentColor;
     border-radius: 999px;
     box-shadow:
         0 0 10px currentColor,
-        0 0 22px currentColor;
-    content: "";
-    height: 0.32rem;
-    left: 50%;
-    position: absolute;
-    top: -0.12rem;
-    transform: translateX(-50%);
-    width: 0.32rem;
-}
-
-.page-pointer__laser::after {
-    animation: page-pointer-laser-spark 1.2s ease-in-out infinite;
-    background: white;
-    border-radius: 999px;
-    box-shadow: 0 0 10px currentColor;
-    content: "";
-    height: 0.18rem;
-    left: 50%;
-    position: absolute;
-    top: 0.48rem;
-    transform: translateX(-50%);
-    width: 0.12rem;
+        0 0 24px color-mix(in srgb, currentColor 70%, transparent);
+    display: block;
+    height: 0.62rem;
+    width: 0.62rem;
 }
 
 @keyframes page-pointer-laser-pulse {
     0%,
     100% {
         opacity: 0.72;
-        filter: brightness(0.95);
+        transform: scale(0.88);
     }
     50% {
         opacity: 1;
-        filter: brightness(1.4);
-    }
-}
-
-@keyframes page-pointer-laser-spark {
-    0%,
-    100% {
-        opacity: 0.25;
-        top: 0.22rem;
-    }
-    50% {
-        opacity: 1;
-        top: 0.92rem;
+        transform: scale(1.08);
     }
 }
 
@@ -1078,12 +1024,20 @@ button.dropdown-item {
 }
 
 .pointer-style-toggle__laser {
-    background: currentColor;
+    background: linear-gradient(
+        to bottom,
+        transparent 0,
+        color-mix(in srgb, currentColor 35%, transparent) 10%,
+        currentColor 50%,
+        color-mix(in srgb, currentColor 35%, transparent) 90%,
+        transparent 100%
+    );
     border-radius: 999px;
-    box-shadow: 0 0 8px currentColor;
+    box-shadow: 0 0 7px currentColor;
     display: inline-block;
-    height: 0.55rem;
-    width: 0.55rem;
+    height: 1.15rem;
+    transform: rotate(35deg);
+    width: 0.16rem;
 }
 
 .pointer-style-toggle {

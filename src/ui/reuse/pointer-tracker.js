@@ -74,7 +74,7 @@ function normalizeSelectionItems(selection) {
 
 function renderPointerIcon(style) {
     if (style === "laser") {
-        return '<span class="page-pointer__laser" aria-hidden="true"></span>';
+        return '<span class="page-pointer__laser-dot" aria-hidden="true"></span>';
     }
     if (style === "crosshair") {
         return '<span class="page-pointer__crosshair" aria-hidden="true"></span>';

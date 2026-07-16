@@ -74,6 +74,7 @@ export function createPresenceTracker({
     storageKey = "cognis_page_presence_session",
     pointerTracking = false,
     getSelectionPayload = null,
+    pointerOverlayRoot = null,
     i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
@@ -160,7 +161,7 @@ export function createPresenceTracker({
         if (pointerTracking === true && contentGrid) {
             pointerTracker = createPointerTracker({
                 contentGrid,
-                overlayRoot: parent,
+                overlayRoot: resolveOption(pointerOverlayRoot) ?? parent,
                 i18n,
                 noteActivity,
                 requestPresenceUpdate: () => void sendPresence(true),

@@ -35,14 +35,14 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /--selection-color:\$\{escapeHtml\(color\)\}/);
     assert.match(pointerSource, /--pointer-color:\$\{escapeHtml\(color\)\}/);
     assert.match(layoutCssSource, /page-pointer-laser-pulse/);
-    assert.match(layoutCssSource, /page-pointer-laser-spark/);
+    assert.match(layoutCssSource, /page-pointer__laser-dot/);
     assert.match(presenceSource, /pointerTracking === true/);
     assert.match(
         presenceSource,
         /pointer: pointerTracker\?\.getPointerPayload/,
     );
     assert.match(presenceSource, /getSelectionPayload/);
-    assert.match(presenceSource, /overlayRoot:\s*parent/);
+    assert.match(presenceSource, /pointerOverlayRoot/);
     assert.match(presenceSource, /#page-presence-section/);
     assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 500/);
     assert.match(presenceSource, /function isRecentlyActive\(\)/);

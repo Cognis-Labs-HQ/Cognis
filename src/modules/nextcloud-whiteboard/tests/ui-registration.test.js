@@ -80,6 +80,8 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /const canvasElement = document\.getElementById\("whiteboard-canvas"\);/,
     );
+    assert.match(source, /function getPointerOverlayRoot\(\)/);
+    assert.match(source, /pointerOverlayRoot:\s*getPointerOverlayRoot/);
     assert.match(source, /canvasElement\.closest\("\.main-window"\)/);
     assert.match(source, /id="page-presence-section"/);
     assert.match(source, /function throttleLatest\(callback, delay\)/);
@@ -100,6 +102,7 @@ test("nextcloud whiteboard canvas deletes selected objects via keyboard", async 
     assert.match(source, /function deleteSelectedElements\(\)/);
     assert.match(source, /function notifyTransientChange\(\)/);
     assert.match(source, /transient:\s*true/);
+    assert.doesNotMatch(source, /canvasElement\.width \|\| 0/);
     assert.match(
         source,
         /event\.key !== "Delete" && event\.key !== "Backspace"/,

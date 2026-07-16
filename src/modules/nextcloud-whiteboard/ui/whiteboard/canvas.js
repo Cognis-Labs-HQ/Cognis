@@ -175,18 +175,14 @@ export function createWhiteboardCanvas(canvasElement) {
             0,
             ...bounds.map((item) => item.y + item.height),
         );
-        const maxX = Math.max(
-            canvasElement.width || 0,
+        const maxX =
             contentRight > rect.width
                 ? contentRight + overflowPadding
-                : rect.width,
-        );
-        const maxY = Math.max(
-            canvasElement.height || 0,
+                : rect.width;
+        const maxY =
             contentBottom > rect.height
                 ? contentBottom + overflowPadding
-                : rect.height,
-        );
+                : rect.height;
         const width = Math.ceil(maxX);
         const height = Math.ceil(maxY);
         if (canvasElement.width !== width) canvasElement.width = width;
