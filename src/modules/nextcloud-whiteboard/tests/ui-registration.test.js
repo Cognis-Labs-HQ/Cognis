@@ -120,6 +120,11 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         styles,
         /#page-presence-section\s*\{[^}]*width:\s*fit-content;/s,
     );
+    assert.match(
+        styles,
+        /#page-presence-section\s*\{[^}]*justify-content:\s*flex-start;/s,
+    );
+    assert.match(styles, /#page-presence-section\s*\{[^}]*margin-left:\s*0;/s);
     assert.match(styles, /\.whiteboard-text-menu/);
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });
