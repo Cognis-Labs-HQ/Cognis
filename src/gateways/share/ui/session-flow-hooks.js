@@ -43,7 +43,11 @@ import { GUEST_SESSION_ACTIVE_STORAGE_KEY } from "./reuse/share-button.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
+const PREV_ACCOUNT_KEY = "cognis_prev_account";
+const PREV_DISPLAY_NAME_KEY = "cognis_prev_display_name";
 const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
+const DISPLAY_NAME_KEY = "cognis_display_name";
+const ACCOUNT_KEY = "cognis_account";
 
 const SHARE_GUEST_PAGE_DEFAULTS = Object.freeze({
     showNavbar: false,
@@ -58,29 +62,58 @@ function resolveShareTokenFromLocation() {
     ).trim();
 }
 
-function activateGuestToken(guestAccessToken) {
+function activateGuestToken(guestAccessToken, guestProfile = null) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
     const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const priorAccount = localStorage.getItem(ACCOUNT_KEY);
+    const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
     if (prior) {
         sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
     } else {
         sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
     }
+    if (priorAccount) {
+        sessionStorage.setItem(PREV_ACCOUNT_KEY, priorAccount);
+    } else {
+        sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+    }
+    if (priorDisplayName) {
+        sessionStorage.setItem(PREV_DISPLAY_NAME_KEY, priorDisplayName);
+    } else {
+        sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
+    localStorage.removeItem(ACCOUNT_KEY);
+    const displayName = String(guestProfile?.displayName ?? "").trim();
+    if (displayName) localStorage.setItem(DISPLAY_NAME_KEY, displayName);
     return new AbortController();
 }
 
 function restoreGuestToken() {
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
+    const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
+    const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);
     if (prior) {
         localStorage.setItem(ACCESS_TOKEN_KEY, prior);
     } else {
         localStorage.removeItem(ACCESS_TOKEN_KEY);
     }
+    if (priorAccount) {
+        localStorage.setItem(ACCOUNT_KEY, priorAccount);
+    } else {
+        localStorage.removeItem(ACCOUNT_KEY);
+    }
+    if (priorDisplayName) {
+        localStorage.setItem(DISPLAY_NAME_KEY, priorDisplayName);
+    } else {
+        localStorage.removeItem(DISPLAY_NAME_KEY);
+    }
     sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+    sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
 }
 
@@ -159,6 +192,7 @@ uiCtx.extendFlow(
                 ...(shareData.page ?? {}),
             },
             guestAccessToken: shareData.guestAccessToken ?? null,
+            guestProfile: shareData.guestProfile ?? null,
         };
 
         if (priorSessionResult?.valid && shareData.directAccess === true) {
@@ -176,7 +210,10 @@ uiCtx.extendFlow(
             };
         }
 
-        const abortController = activateGuestToken(shareData.guestAccessToken);
+        const abortController = activateGuestToken(
+            shareData.guestAccessToken,
+            shareData.guestProfile,
+        );
         if (abortController && stageCtx.data) {
             stageCtx.data.shareAbortController = abortController;
         }

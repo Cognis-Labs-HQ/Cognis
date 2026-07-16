@@ -47,6 +47,13 @@ function getDisplayName() {
     );
 }
 
+function isGuestSession() {
+    return (
+        sessionStorage.getItem("cognis_share_guest_active") === "1" ||
+        !localStorage.getItem("cognis_account")
+    );
+}
+
 function updateDisplayedName(displayName = getDisplayName()) {
     const nameElement = document.querySelector("#profile-name");
     if (nameElement) nameElement.textContent = displayName;
@@ -61,8 +68,11 @@ function storeProfileDisplayName(displayName) {
 
 async function refreshDisplayNameFromProfile() {
     if (!localStorage.getItem("cognis_access_token")) return;
+    const endpoint = isGuestSession()
+        ? "/api/v1/share/guest-profile"
+        : "/api/v1/social/profile";
     try {
-        const response = await apiFetch("/api/v1/social/profile");
+        const response = await apiFetch(endpoint);
         if (!response.ok) return;
         const payload = await response.json().catch(() => null);
         storeProfileDisplayName(payload?.data?.displayName);
