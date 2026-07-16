@@ -914,6 +914,7 @@ function onCanvasRender() {
 }
 
 function getSelectionPayload() {
+    const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasInstance || !canvasElement) return null;
     const bounds = canvasInstance.getSelectionBounds?.() ?? [];
     if (!bounds.length) return null;

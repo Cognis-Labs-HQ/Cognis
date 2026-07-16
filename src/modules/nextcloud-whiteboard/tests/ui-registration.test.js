@@ -76,6 +76,10 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /showNavbar:\s*sharePageFlag\("showNavbar",\s*true\)/);
     assert.match(source, /pageManifest:\s*\{/);
     assert.match(source, /pointerTracking:\s*true/);
+    assert.match(
+        source,
+        /const canvasElement = document\.getElementById\("whiteboard-canvas"\);/,
+    );
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });
 
