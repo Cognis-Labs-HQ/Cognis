@@ -359,6 +359,10 @@ export async function registerShareBootstrapHooks(input: {
                 },
             );
             stageCtx.data.guestAccessToken = guestAccessToken;
+            stageCtx.data.guestProfile = {
+                displayName: guestProfile.displayName,
+                avatarKey: guestProfile.avatarKey,
+            };
             return { issued: true };
         },
     );
@@ -458,6 +462,10 @@ export async function registerShareBootstrapHooks(input: {
                     (tokenResult.tokenRecord?.grantedCapabilities as
                         | string[]
                         | undefined) ?? [],
+                guestProfile:
+                    typeof stageCtx.data.guestProfile === "object"
+                        ? stageCtx.data.guestProfile
+                        : null,
                 page: {
                     ...shellResult,
                     ...rendererResult,

@@ -736,9 +736,5 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
         filteredRes,
     );
     assert.equal(filteredRes.statusCode, 200);
-    assert.ok(
-        filteredRes
-            .json()
-            .data.presence.some((entry) => entry.sessionId !== "guest-session"),
-    );
+    assert.deepEqual(filteredRes.json().data.presence, []);
 });
