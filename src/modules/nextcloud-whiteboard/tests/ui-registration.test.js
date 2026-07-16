@@ -57,9 +57,17 @@ test("nextcloud whiteboard registers full SPA routing and boilerplate styles", (
 });
 
 test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
-    const source = await import("node:fs/promises").then((fs) =>
-        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
-    );
+    const [source, styles] = await Promise.all([
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/styles/whiteboards.css", import.meta.url),
+                "utf8",
+            ),
+        ),
+    ]);
     assert.match(
         source,
         /componentStringBaseUrls:\s*\[\s*"\/static\/modules\/nextcloud-whiteboard\/languages"/,
@@ -95,6 +103,11 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(
         source,
         /if \(meta\?\.transient !== true\) persistChanges\(elements\)/,
+    );
+    assert.match(styles, /#page-presence-section\s*\{[^}]*flex:\s*0 0 auto;/s);
+    assert.match(
+        styles,
+        /#page-presence-section\s*\{[^}]*width:\s*fit-content;/s,
     );
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });
