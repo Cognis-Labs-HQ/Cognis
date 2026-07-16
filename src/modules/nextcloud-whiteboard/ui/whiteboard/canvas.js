@@ -247,6 +247,10 @@ export function createWhiteboardCanvas(canvasElement) {
             .find((element) => elementContainsPoint(element, x, y));
     }
 
+    function notifyTransientChange() {
+        changeCallback?.([...elements], { transient: true });
+    }
+
     function commitElements(nextElements, { record = true } = {}) {
         if (record) {
             historyPast.push(cloneElements());
@@ -566,6 +570,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     });
                 });
                 scheduleRender();
+                notifyTransientChange();
                 return;
             }
             if (
@@ -635,6 +640,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     });
                 });
                 scheduleRender();
+                notifyTransientChange();
                 return;
             }
         }

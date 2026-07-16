@@ -80,6 +80,11 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /const canvasElement = document\.getElementById\("whiteboard-canvas"\);/,
     );
+    assert.match(source, /function throttleLatest\(callback, delay\)/);
+    assert.match(
+        source,
+        /if \(meta\?\.transient !== true\) persistChanges\(elements\)/,
+    );
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });
 
@@ -91,6 +96,8 @@ test("nextcloud whiteboard canvas deletes selected objects via keyboard", async 
         ),
     );
     assert.match(source, /function deleteSelectedElements\(\)/);
+    assert.match(source, /function notifyTransientChange\(\)/);
+    assert.match(source, /transient:\s*true/);
     assert.match(
         source,
         /event\.key !== "Delete" && event\.key !== "Backspace"/,
