@@ -875,14 +875,14 @@ button.dropdown-item {
                 transparent
             ),
         0 10px 24px rgb(15 23 42 / 0.18);
-    height: calc(var(--selection-height, 0) * 100%);
-    left: calc(var(--selection-x, 0) * 100%);
+    height: var(--selection-height, 0);
+    left: var(--selection-x, 0);
     min-height: 0.75rem;
     min-width: 0.75rem;
     pointer-events: none;
     position: absolute;
-    top: calc(var(--selection-y, 0) * 100%);
-    width: calc(var(--selection-width, 0) * 100%);
+    top: var(--selection-y, 0);
+    width: var(--selection-width, 0);
 }
 
 .page-selection__label {
@@ -933,10 +933,10 @@ button.dropdown-item {
     color: var(--pointer-color, var(--accent));
     display: grid;
     gap: 0.15rem;
-    left: calc(var(--pointer-x, 0) * 100%);
+    left: var(--pointer-x, 0);
     pointer-events: none;
     position: absolute;
-    top: calc(var(--pointer-y, 0) * 100%);
+    top: var(--pointer-y, 0);
     transform: translate(0.25rem, 0.25rem);
     transition:
         left 120ms ease,
@@ -988,11 +988,11 @@ button.dropdown-item {
         0 0 18px color-mix(in srgb, currentColor 75%, transparent),
         0 0 32px color-mix(in srgb, currentColor 45%, transparent);
     display: block;
-    height: 3.1rem;
+    height: 1.15rem;
     position: relative;
     transform: rotate(35deg);
     transform-origin: 50% 10%;
-    width: 0.18rem;
+    width: 0.12rem;
 }
 
 .page-pointer__laser::before {
@@ -1002,12 +1002,12 @@ button.dropdown-item {
         0 0 10px currentColor,
         0 0 22px currentColor;
     content: "";
-    height: 0.6rem;
+    height: 0.32rem;
     left: 50%;
     position: absolute;
-    top: -0.24rem;
+    top: -0.12rem;
     transform: translateX(-50%);
-    width: 0.6rem;
+    width: 0.32rem;
 }
 
 .page-pointer__laser::after {
@@ -1019,9 +1019,9 @@ button.dropdown-item {
     height: 0.18rem;
     left: 50%;
     position: absolute;
-    top: 1.25rem;
+    top: 0.48rem;
     transform: translateX(-50%);
-    width: 0.18rem;
+    width: 0.12rem;
 }
 
 @keyframes page-pointer-laser-pulse {
@@ -1040,11 +1040,11 @@ button.dropdown-item {
     0%,
     100% {
         opacity: 0.25;
-        top: 0.55rem;
+        top: 0.22rem;
     }
     50% {
         opacity: 1;
-        top: 2.35rem;
+        top: 0.92rem;
     }
 }
 
@@ -1075,6 +1075,15 @@ button.dropdown-item {
 .page-pointer__crosshair::after {
     height: 2px;
     width: 1.75rem;
+}
+
+.pointer-style-toggle__laser {
+    background: currentColor;
+    border-radius: 999px;
+    box-shadow: 0 0 8px currentColor;
+    display: inline-block;
+    height: 0.55rem;
+    width: 0.55rem;
 }
 
 .pointer-style-toggle {
