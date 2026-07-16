@@ -15,3 +15,7 @@ Pilihan di whiteboard kini muncul untuk pengguna aktif lain dengan garis sorot d
 ## Polling responsif dan kehadiran di toolbar
 
 Penyegaran kehadiran kini memakai helper polling adaptif yang mempercepat setelah aktivitas dan melambat saat sepi. Toolbar whiteboard juga menyediakan slot kehadiran khusus yang dipasang kembali jika toolbar dirender ulang.
+
+## Pengeditan teks dan riwayat per pengguna
+
+Kotak teks kini langsung membuka editor aman di tempat, menjaga overlay tetap sejajar dengan kanvas yang digeser, menyediakan kontrol font dan gaya mengambang, serta undo/redo hanya memutar ulang objek yang diubah pengguna lokal agar kolaborator tidak tertimpa.

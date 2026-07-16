@@ -342,3 +342,46 @@
     resize: both;
     z-index: 3;
 }
+
+.whiteboard-text-menu {
+    align-items: center;
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 999px;
+    box-shadow: 0 0.5rem 1.25rem var(--shadow, rgb(15 23 42 / 20%));
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    position: absolute;
+    width: max-content;
+    z-index: 4;
+}
+
+.whiteboard-text-menu button,
+.whiteboard-text-menu input,
+.whiteboard-text-menu select {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 999px;
+    font: inherit;
+    min-height: 1.8rem;
+}
+
+.whiteboard-text-menu button {
+    background: transparent;
+    min-width: 1.8rem;
+}
+
+.whiteboard-text-menu button.active {
+    background: var(--accent, #5e81f4);
+    color: #fff;
+}
+
+.whiteboard-text-menu input {
+    max-width: 4.5rem;
+    padding-inline: 0.45rem;
+}
+
+.whiteboard-text-menu select {
+    max-width: 12rem;
+    padding-inline: 0.45rem;
+}

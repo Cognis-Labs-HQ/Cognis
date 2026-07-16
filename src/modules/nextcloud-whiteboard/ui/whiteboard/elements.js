@@ -117,6 +117,9 @@ export function buildTextElement(point, text, strokeColor) {
             text,
             fontSize: 28,
             fontFamily: "sans-serif",
+            fontWeight: "400",
+            fontStyle: "normal",
+            textDecoration: "none",
         },
     );
 }
@@ -219,13 +222,26 @@ function renderText(context, element) {
     if (!element.text) return;
     context.save();
     context.fillStyle = resolvedStrokeColor(context, element);
-    context.font = `${element.fontSize ?? 16}px ${element.fontFamily ?? "sans-serif"}`;
+    const fontSize = element.fontSize ?? 16;
+    const fontStyle = element.fontStyle === "italic" ? "italic" : "normal";
+    const fontWeight = element.fontWeight === "700" ? "700" : "400";
+    context.font = `${fontStyle} ${fontWeight} ${fontSize}px ${element.fontFamily ?? "sans-serif"}`;
     context.globalAlpha = (element.opacity ?? 100) / 100;
-    context.fillText(
-        element.text,
-        element.x,
-        element.y + (element.fontSize ?? 16),
-    );
+    const baselineY = element.y + fontSize;
+    context.fillText(element.text, element.x, baselineY);
+    const metrics = context.measureText(element.text);
+    const decoration = String(element.textDecoration ?? "none");
+    if (decoration.includes("underline")) {
+        context.fillRect(element.x, baselineY + 3, metrics.width, 2);
+    }
+    if (decoration.includes("line-through")) {
+        context.fillRect(
+            element.x,
+            element.y + fontSize * 0.55,
+            metrics.width,
+            2,
+        );
+    }
     context.restore();
 }
 

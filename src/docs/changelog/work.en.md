@@ -15,3 +15,7 @@ Whiteboard selections now appear for other active users with a highlighted outli
 ## Responsive polling and toolbar presence
 
 Presence refreshes now use an adaptive polling helper that speeds up after activity and slows down while quiet, and the whiteboard toolbar provides a dedicated presence slot that is reattached if the toolbar rerenders.
+
+## Text editing and per-user history
+
+Text boxes now open a safe in-place editor immediately, keep their overlay aligned with the panned canvas, expose floating font/style controls, and undo/redo only replays the local user's changed objects so collaborators are not clobbered.
