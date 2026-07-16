@@ -943,6 +943,10 @@ function onCanvasRender() {
     bindCanvasToolbar(canvasInstance);
 }
 
+function getPointerOffset() {
+    return canvasInstance?.getViewportOffset?.() ?? { x: 0, y: 0 };
+}
+
 function getSelectionPayload() {
     const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasInstance || !canvasElement) return null;
@@ -1031,6 +1035,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             pageId: () => activeBoard?.id ?? "",
             storageKey: "nextcloud_whiteboard_presence_session",
             getSelectionPayload,
+            getPointerOffset,
         },
         pageManifest: {
             features: {
