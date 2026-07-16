@@ -947,17 +947,19 @@ function getSelectionPayload() {
     if (!canvasInstance || !canvasElement) return null;
     const bounds = canvasInstance.getSelectionBounds?.() ?? [];
     if (!bounds.length) return null;
-    const contentGrid = canvasElement.closest(".content-grid");
-    const gridRect = contentGrid?.getBoundingClientRect();
+    const trackingRoot =
+        canvasElement.closest(".main-window") ??
+        canvasElement.closest(".content-grid");
+    const rootRect = trackingRoot?.getBoundingClientRect();
     const canvasRect = canvasElement.getBoundingClientRect();
-    if (!gridRect?.width || !gridRect?.height) return null;
+    if (!rootRect?.width || !rootRect?.height) return null;
     const scaleX = canvasRect.width / Math.max(1, canvasElement.width);
     const scaleY = canvasRect.height / Math.max(1, canvasElement.height);
     const items = bounds.map((item) => ({
-        x: (canvasRect.left - gridRect.left + item.x * scaleX) / gridRect.width,
-        y: (canvasRect.top - gridRect.top + item.y * scaleY) / gridRect.height,
-        width: (item.width * scaleX) / gridRect.width,
-        height: (item.height * scaleY) / gridRect.height,
+        x: (canvasRect.left - rootRect.left + item.x * scaleX) / rootRect.width,
+        y: (canvasRect.top - rootRect.top + item.y * scaleY) / rootRect.height,
+        width: (item.width * scaleX) / rootRect.width,
+        height: (item.height * scaleY) / rootRect.height,
     }));
     return { items };
 }

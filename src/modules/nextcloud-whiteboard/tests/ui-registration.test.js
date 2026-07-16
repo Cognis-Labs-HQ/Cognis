@@ -80,6 +80,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /const canvasElement = document\.getElementById\("whiteboard-canvas"\);/,
     );
+    assert.match(source, /canvasElement\.closest\("\.main-window"\)/);
     assert.match(source, /function throttleLatest\(callback, delay\)/);
     assert.match(
         source,

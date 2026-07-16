@@ -155,6 +155,7 @@ export function createPresenceTracker({
         if (pointerTracking === true && contentGrid) {
             pointerTracker = createPointerTracker({
                 contentGrid,
+                overlayRoot: parent,
                 i18n,
                 noteActivity,
                 requestPresenceUpdate: () => void sendPresence(true),
