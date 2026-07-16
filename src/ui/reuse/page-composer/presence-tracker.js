@@ -24,7 +24,7 @@ import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "../pointer-tracker.js";
 
 const HEARTBEAT_INTERVAL_MS = 5000;
-const REFRESH_INTERVAL_MS = 1500;
+const REFRESH_INTERVAL_MS = 500;
 const ACTIVE_WINDOW_MS = 15000;
 const IDLE_AFTER_MS = 30000;
 
