@@ -40,6 +40,9 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /--pointer-color:\$\{escapeHtml\(color\)\}/);
     assert.match(layoutCssSource, /page-pointer-laser-pulse/);
     assert.match(layoutCssSource, /page-pointer__laser-dot/);
+    assert.match(layoutCssSource, /#page-presence-section \.page-presence/);
+    assert.match(layoutCssSource, /gap: 0/);
+    assert.match(layoutCssSource, /margin-left: -0\.65rem/);
     assert.match(presenceSource, /pointerTracking === true/);
     assert.match(
         presenceSource,
