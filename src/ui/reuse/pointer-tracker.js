@@ -24,8 +24,6 @@ import { pickInitialsColor } from "./avatar-utils.js";
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
 const POINTER_SEND_THROTTLE_MS = 120;
-const POINTER_VISIBLE_MS = 5000;
-const SELECTION_VISIBLE_MS = 5000;
 
 function normalizeStyle(value) {
     return POINTER_STYLES.includes(value) ? value : "mouse";
@@ -183,7 +181,6 @@ export function createPointerTracker({
 
     function render(entries = [], currentSessionId = "") {
         if (destroyed) return;
-        const now = Date.now();
         overlay.innerHTML = entries
             .filter(
                 (entry) => String(entry?.sessionId ?? "") !== currentSessionId,
@@ -192,26 +189,14 @@ export function createPointerTracker({
             .flatMap((entry) => {
                 const displayName = getDisplayName(entry);
                 const color = getPointerColor(entry);
-                const selectionUpdatedAt = Date.parse(
-                    entry.selection?.updatedAt || "",
-                );
-                const selectionItems =
-                    Number.isFinite(selectionUpdatedAt) &&
-                    now - selectionUpdatedAt <= SELECTION_VISIBLE_MS
-                        ? normalizeSelectionItems(entry.selection)
-                        : [];
+                const selectionItems = normalizeSelectionItems(entry.selection);
                 const selectionMarkup = selectionItems.map(
                     (item, index) =>
                         `<div class="page-selection" style="--selection-x:${item.x}; --selection-y:${item.y}; --selection-width:${item.width}; --selection-height:${item.height}; --selection-color:${escapeHtml(color)};"><div class="page-selection__label">${index === 0 ? escapeHtml(displayName) : ""}</div></div>`,
                 );
                 if (!entry?.pointer) return selectionMarkup;
                 const updatedAt = Date.parse(entry.pointer.updatedAt || "");
-                if (
-                    !Number.isFinite(updatedAt) ||
-                    now - updatedAt > POINTER_VISIBLE_MS
-                ) {
-                    return selectionMarkup;
-                }
+                if (!Number.isFinite(updatedAt)) return selectionMarkup;
                 const pointer = entry.pointer;
                 const x = Math.min(1, Math.max(0, Number(pointer.x ?? 0)));
                 const y = Math.min(1, Math.max(0, Number(pointer.y ?? 0)));

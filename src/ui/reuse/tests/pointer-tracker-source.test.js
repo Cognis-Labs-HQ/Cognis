@@ -27,6 +27,10 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
     assert.match(pointerSource, /page-pointer--/);
     assert.match(pointerSource, /page-selection/);
+    assert.doesNotMatch(
+        pointerSource,
+        /POINTER_VISIBLE_MS|SELECTION_VISIBLE_MS/,
+    );
     assert.match(presenceSource, /pointerTracking === true/);
     assert.match(
         presenceSource,
@@ -34,7 +38,7 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     );
     assert.match(presenceSource, /getSelectionPayload/);
     assert.match(presenceSource, /overlayRoot:\s*parent/);
-    assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 1500/);
+    assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 500/);
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
     assert.match(
         composerSource,
