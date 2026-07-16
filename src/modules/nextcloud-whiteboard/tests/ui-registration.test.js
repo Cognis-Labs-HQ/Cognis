@@ -57,9 +57,15 @@ test("nextcloud whiteboard registers full SPA routing and boilerplate styles", (
 });
 
 test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
-    const [source, styles] = await Promise.all([
+    const [source, canvasSource, styles] = await Promise.all([
         import("node:fs/promises").then((fs) =>
             fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
         ),
         import("node:fs/promises").then((fs) =>
             fs.readFile(
@@ -91,6 +97,11 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /canvasElement\.closest\("\.main-window"\)/);
     assert.match(source, /function getPointerOffset\(\)/);
     assert.match(source, /getPointerOffset,/);
+    assert.match(canvasSource, /loadFontsCatalog/);
+    assert.match(canvasSource, /whiteboard-text-menu/);
+    assert.match(canvasSource, /parentNode\?\.removeChild\(editor\)/);
+    assert.match(canvasSource, /function pushHistoryEntry\(/);
+    assert.match(canvasSource, /function applyHistorySnapshot\(/);
     assert.match(source, /id="page-presence-section"/);
     assert.match(source, /class="whiteboard-toolbar-group" aria-live="polite"/);
     assert.match(source, /function throttleLatest\(callback, delay\)/);
@@ -109,6 +120,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         styles,
         /#page-presence-section\s*\{[^}]*width:\s*fit-content;/s,
     );
+    assert.match(styles, /\.whiteboard-text-menu/);
     assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
 });
 

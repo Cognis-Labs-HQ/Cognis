@@ -13,6 +13,11 @@ import {
     isStrokeWidthApplicable,
     renderElement,
 } from "./elements.js";
+import {
+    loadFontsCatalog,
+    parseSavedFont,
+    toFontFamilyValue,
+} from "/static/reuse/font-prefs.js";
 
 export function createWhiteboardCanvas(canvasElement) {
     const context = canvasElement.getContext("2d");
@@ -40,6 +45,8 @@ export function createWhiteboardCanvas(canvasElement) {
     let historyPast = [];
     let historyFuture = [];
     let historySnapshot = null;
+    let textFormatMenu = null;
+    let fontCatalogPromise = null;
     let panState = null;
     let viewportOffsetX = 0;
     let viewportOffsetY = 0;
@@ -234,6 +241,7 @@ export function createWhiteboardCanvas(canvasElement) {
                   }
                 : null,
         );
+        syncTextFormatMenu();
     }
 
     function findElementAt(x, y) {
@@ -246,12 +254,63 @@ export function createWhiteboardCanvas(canvasElement) {
         changeCallback?.([...elements], { transient: true });
     }
 
+    function createHistoryEntry(beforeSnapshot, afterSnapshot) {
+        const beforeById = new Map(
+            beforeSnapshot.map((item) => [item.id, item]),
+        );
+        const afterById = new Map(afterSnapshot.map((item) => [item.id, item]));
+        const changedIds = new Set([...beforeById.keys(), ...afterById.keys()]);
+        return {
+            before: beforeSnapshot,
+            after: afterSnapshot,
+            changedIds: [...changedIds].filter((id) => {
+                const before = beforeById.get(id);
+                const after = afterById.get(id);
+                return (
+                    JSON.stringify(before ?? null) !==
+                    JSON.stringify(after ?? null)
+                );
+            }),
+        };
+    }
+
+    function pushHistoryEntry(beforeSnapshot, afterSnapshot) {
+        const entry = createHistoryEntry(beforeSnapshot, afterSnapshot);
+        if (entry.changedIds.length === 0) return;
+        historyPast.push(entry);
+        historyPast = historyPast.slice(-100);
+        historyFuture = [];
+        notifyHistoryChange();
+    }
+
+    function applyHistorySnapshot(snapshot, changedIds) {
+        const snapshotById = new Map(snapshot.map((item) => [item.id, item]));
+        const changed = new Set(changedIds);
+        elements = [
+            ...elements
+                .filter((element) => !changed.has(element.id))
+                .map((element) => ({
+                    ...element,
+                    points: element.points?.map((point) => [...point]),
+                })),
+            ...[...changed]
+                .map((id) => snapshotById.get(id))
+                .filter(Boolean)
+                .map((element) => ({
+                    ...element,
+                    points: element.points?.map((point) => [...point]),
+                })),
+        ];
+        updateCanvasOverflow();
+        scheduleRender();
+        changeCallback?.([...elements]);
+        notifySelection();
+    }
+
     function commitElements(nextElements, { record = true } = {}) {
+        const before = cloneElements();
         if (record) {
-            historyPast.push(cloneElements());
-            historyPast = historyPast.slice(-100);
-            historyFuture = [];
-            notifyHistoryChange();
+            pushHistoryEntry(before, cloneElements(nextElements));
         }
         elements = nextElements;
         updateCanvasOverflow();
@@ -275,19 +334,19 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function undo() {
-        const previous = historyPast.pop();
-        if (!previous) return false;
-        historyFuture.push(cloneElements());
-        restoreElements(previous);
+        const entry = historyPast.pop();
+        if (!entry) return false;
+        historyFuture.push(entry);
+        applyHistorySnapshot(entry.before, entry.changedIds);
         notifyHistoryChange();
         return true;
     }
 
     function redo() {
-        const next = historyFuture.pop();
-        if (!next) return false;
-        historyPast.push(cloneElements());
-        restoreElements(next);
+        const entry = historyFuture.pop();
+        if (!entry) return false;
+        historyPast.push(entry);
+        applyHistorySnapshot(entry.after, entry.changedIds);
         notifyHistoryChange();
         return true;
     }
@@ -375,6 +434,158 @@ export function createWhiteboardCanvas(canvasElement) {
         scheduleRender();
     }
 
+    function currentAppFont() {
+        const value = getComputedStyle(document.documentElement)
+            .getPropertyValue("--app-font")
+            .trim();
+        return parseSavedFont(value);
+    }
+
+    function textElement() {
+        const selected = selectedElement();
+        return selected?.type === "text" ? selected : null;
+    }
+
+    function positionTextOverlay(overlay, element, yOffset = 0) {
+        overlay.style.left = `${element.x - viewportOffsetX}px`;
+        overlay.style.top = `${element.y - viewportOffsetY + yOffset}px`;
+        overlay.style.width = `${Math.max(180, element.width ?? 180)}px`;
+    }
+
+    function updateTextStyle(elementId, patch) {
+        const before = cloneElements();
+        elements = elements.map((item) =>
+            item.id === elementId ? bumpElementVersion(item, patch) : item,
+        );
+        pushHistoryEntry(before, cloneElements());
+        scheduleRender();
+        changeCallback?.([...elements]);
+        notifySelection();
+    }
+
+    function loadTextMenuFonts(select, selectedFont) {
+        if (!fontCatalogPromise) {
+            fontCatalogPromise = loadFontsCatalog().catch(() => [
+                currentAppFont(),
+                "Inter",
+                "Arial",
+                "sans-serif",
+            ]);
+        }
+        void fontCatalogPromise.then((fonts) => {
+            if (!select.isConnected) return;
+            const options = Array.from(
+                new Set([selectedFont, ...fonts]),
+            ).filter(Boolean);
+            select.replaceChildren(
+                ...options.map((font) => {
+                    const option = document.createElement("option");
+                    option.value = font;
+                    option.textContent = font;
+                    option.style.fontFamily = `${toFontFamilyValue(font)}, Arial, sans-serif`;
+                    if (font === selectedFont) option.selected = true;
+                    return option;
+                }),
+            );
+        });
+    }
+
+    function syncTextFormatMenu() {
+        const element = textElement();
+        if (!element) {
+            textFormatMenu?.remove();
+            textFormatMenu = null;
+            return;
+        }
+        const parent = canvasElement.parentElement;
+        if (!parent) return;
+        if (!textFormatMenu?.isConnected) {
+            textFormatMenu = document.createElement("div");
+            textFormatMenu.className = "whiteboard-text-menu";
+            textFormatMenu.innerHTML = `
+                <button type="button" data-text-toggle="bold" aria-label="Bold">B</button>
+                <button type="button" data-text-toggle="italic" aria-label="Italic"><em>I</em></button>
+                <button type="button" data-text-toggle="underline" aria-label="Underline"><u>U</u></button>
+                <button type="button" data-text-toggle="line-through" aria-label="Strikethrough"><s>S</s></button>
+                <input type="number" min="8" max="96" step="1" data-text-size aria-label="Font size" />
+                <select data-text-font aria-label="Font family"></select>
+            `;
+            parent.appendChild(textFormatMenu);
+            textFormatMenu.addEventListener("click", (event) => {
+                const button = event.target.closest("[data-text-toggle]");
+                if (!button || !selectedElementId) return;
+                const target = textElement();
+                if (!target) return;
+                const toggle = button.dataset.textToggle;
+                if (toggle === "bold") {
+                    updateTextStyle(target.id, {
+                        fontWeight: target.fontWeight === "700" ? "400" : "700",
+                    });
+                } else if (toggle === "italic") {
+                    updateTextStyle(target.id, {
+                        fontStyle:
+                            target.fontStyle === "italic" ? "normal" : "italic",
+                    });
+                } else {
+                    const parts = new Set(
+                        String(target.textDecoration ?? "none")
+                            .split(" ")
+                            .filter((item) => item && item !== "none"),
+                    );
+                    if (parts.has(toggle)) parts.delete(toggle);
+                    else parts.add(toggle);
+                    updateTextStyle(target.id, {
+                        textDecoration: parts.size
+                            ? [...parts].join(" ")
+                            : "none",
+                    });
+                }
+            });
+            textFormatMenu
+                .querySelector("[data-text-size]")
+                ?.addEventListener("change", (event) => {
+                    const target = textElement();
+                    if (!target) return;
+                    updateTextStyle(target.id, {
+                        fontSize: Math.max(
+                            8,
+                            Math.min(96, Number(event.target.value) || 28),
+                        ),
+                    });
+                });
+            textFormatMenu
+                .querySelector("[data-text-font]")
+                ?.addEventListener("change", (event) => {
+                    const target = textElement();
+                    if (!target) return;
+                    updateTextStyle(target.id, {
+                        fontFamily: `${toFontFamilyValue(event.target.value)}, Arial, sans-serif`,
+                    });
+                });
+        }
+        positionTextOverlay(textFormatMenu, element, -48);
+        const sizeInput = textFormatMenu.querySelector("[data-text-size]");
+        if (sizeInput) sizeInput.value = String(element.fontSize ?? 28);
+        const fontSelect = textFormatMenu.querySelector("[data-text-font]");
+        const selectedFont = parseSavedFont(
+            element.fontFamily || currentAppFont(),
+        );
+        if (fontSelect) loadTextMenuFonts(fontSelect, selectedFont);
+        textFormatMenu
+            .querySelector('[data-text-toggle="bold"]')
+            ?.classList.toggle("active", element.fontWeight === "700");
+        textFormatMenu
+            .querySelector('[data-text-toggle="italic"]')
+            ?.classList.toggle("active", element.fontStyle === "italic");
+        const decoration = String(element.textDecoration ?? "none");
+        textFormatMenu
+            .querySelector('[data-text-toggle="underline"]')
+            ?.classList.toggle("active", decoration.includes("underline"));
+        textFormatMenu
+            .querySelector('[data-text-toggle="line-through"]')
+            ?.classList.toggle("active", decoration.includes("line-through"));
+    }
+
     function commitCreatedElement(element) {
         commitElements([...elements, element]);
         selectOnlyElement(element.id);
@@ -405,26 +616,32 @@ export function createWhiteboardCanvas(canvasElement) {
         if (!parent) return;
         parent.querySelector(".wb-text-editor")?.remove();
         const editor = document.createElement("textarea");
-        editor.className = "wb-text-editor";
+        editor.className = "wb-text-editor whiteboard-text-editor";
         editor.value = element.text ?? "Text";
-        editor.style.left = `${element.x - viewportOffsetX}px`;
-        editor.style.top = `${element.y - viewportOffsetY}px`;
+        positionTextOverlay(editor, element);
         editor.style.width = `${Math.max(180, element.width ?? 180)}px`;
         editor.style.height = `${Math.max(64, element.height ?? 64)}px`;
         editor.style.fontSize = `${element.fontSize ?? 28}px`;
+        editor.style.fontFamily = `${element.fontFamily || toFontFamilyValue(currentAppFont())}, Arial, sans-serif`;
+        editor.style.fontWeight = element.fontWeight === "700" ? "700" : "400";
+        editor.style.fontStyle =
+            element.fontStyle === "italic" ? "italic" : "normal";
         parent.appendChild(editor);
         editor.focus();
         editor.select();
+        let finished = false;
         const finish = () => {
-            if (!editor.isConnected) return;
+            if (finished) return;
+            finished = true;
             const value = editor.value;
-            editor.remove();
+            editor.parentNode?.removeChild(editor);
             updateTextElement(element, value);
         };
         editor.addEventListener("blur", finish, { once: true });
         editor.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
-                editor.remove();
+                finished = true;
+                editor.parentNode?.removeChild(editor);
                 selectOnlyElement(element.id);
             } else if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
@@ -518,7 +735,12 @@ export function createWhiteboardCanvas(canvasElement) {
                 setActiveTool("select");
                 return;
             }
-            const element = buildTextElement([x, y], "Text", strokeColor);
+            const element = bumpElementVersion(
+                buildTextElement([x, y], "Text", strokeColor),
+                {
+                    fontFamily: `${toFontFamilyValue(currentAppFont())}, Arial, sans-serif`,
+                },
+            );
             commitCreatedElement(element);
             openTextEditor(element);
             isDrawing = false;
@@ -538,6 +760,7 @@ export function createWhiteboardCanvas(canvasElement) {
             viewportOffsetY =
                 panState.offsetY - (event.clientY - panState.startY);
             scheduleRender();
+            syncTextFormatMenu();
             notifyTransientChange();
             return;
         }
@@ -577,6 +800,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     });
                 });
                 scheduleRender();
+                syncTextFormatMenu();
                 notifyTransientChange();
                 return;
             }
@@ -647,6 +871,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     });
                 });
                 scheduleRender();
+                syncTextFormatMenu();
                 notifyTransientChange();
                 return;
             }
@@ -675,10 +900,10 @@ export function createWhiteboardCanvas(canvasElement) {
         isDrawing = false;
         if (activeTool === "select") {
             if (selectDragMode) {
-                historyPast.push(historySnapshot ?? cloneElements());
-                historyPast = historyPast.slice(-100);
-                historyFuture = [];
-                notifyHistoryChange();
+                pushHistoryEntry(
+                    historySnapshot ?? cloneElements(),
+                    cloneElements(),
+                );
                 updateCanvasOverflow();
                 changeCallback?.([...elements]);
             }
@@ -963,10 +1188,7 @@ export function createWhiteboardCanvas(canvasElement) {
         },
         clearAll() {
             if (elements.length > 0) {
-                historyPast.push(cloneElements());
-                historyPast = historyPast.slice(-100);
-                historyFuture = [];
-                notifyHistoryChange();
+                pushHistoryEntry(cloneElements(), []);
             }
             elements = [];
             currentPoints = [];
@@ -1001,6 +1223,7 @@ export function createWhiteboardCanvas(canvasElement) {
         undo,
         redo,
         destroy() {
+            textFormatMenu?.remove();
             resizeObserver.disconnect();
             themeObserver.disconnect();
             canvasElement.removeEventListener("pointerdown", onPointerDown);
