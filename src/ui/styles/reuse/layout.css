@@ -813,6 +813,13 @@ button.dropdown-item {
     display: none;
 }
 
+#page-presence-section .page-presence {
+    align-items: center;
+    margin: 0;
+    min-height: 0;
+    padding-inline: 0;
+}
+
 .page-presence__profile {
     display: inline-flex;
     border-radius: 999px;
@@ -964,13 +971,81 @@ button.dropdown-item {
 }
 
 .page-pointer__laser {
+    animation: page-pointer-laser-pulse 0.9s ease-in-out infinite;
+    background: linear-gradient(
+        to bottom,
+        transparent 0,
+        color-mix(in srgb, currentColor 30%, transparent) 12%,
+        currentColor 48%,
+        color-mix(in srgb, currentColor 75%, white) 52%,
+        currentColor 56%,
+        color-mix(in srgb, currentColor 28%, transparent) 88%,
+        transparent 100%
+    );
+    border-radius: 999px;
+    box-shadow:
+        0 0 8px currentColor,
+        0 0 18px color-mix(in srgb, currentColor 75%, transparent),
+        0 0 32px color-mix(in srgb, currentColor 45%, transparent);
+    display: block;
+    height: 3.1rem;
+    position: relative;
+    transform: rotate(35deg);
+    transform-origin: 50% 10%;
+    width: 0.18rem;
+}
+
+.page-pointer__laser::before {
     background: currentColor;
     border-radius: 999px;
+    box-shadow:
+        0 0 10px currentColor,
+        0 0 22px currentColor;
+    content: "";
+    height: 0.6rem;
+    left: 50%;
+    position: absolute;
+    top: -0.24rem;
+    transform: translateX(-50%);
+    width: 0.6rem;
+}
+
+.page-pointer__laser::after {
+    animation: page-pointer-laser-spark 1.2s ease-in-out infinite;
+    background: white;
+    border-radius: 999px;
     box-shadow: 0 0 10px currentColor;
-    display: block;
-    height: 2.25rem;
-    transform: rotate(35deg);
-    width: 0.25rem;
+    content: "";
+    height: 0.18rem;
+    left: 50%;
+    position: absolute;
+    top: 1.25rem;
+    transform: translateX(-50%);
+    width: 0.18rem;
+}
+
+@keyframes page-pointer-laser-pulse {
+    0%,
+    100% {
+        opacity: 0.72;
+        filter: brightness(0.95);
+    }
+    50% {
+        opacity: 1;
+        filter: brightness(1.4);
+    }
+}
+
+@keyframes page-pointer-laser-spark {
+    0%,
+    100% {
+        opacity: 0.25;
+        top: 0.55rem;
+    }
+    50% {
+        opacity: 1;
+        top: 2.35rem;
+    }
 }
 
 .page-pointer__crosshair {
