@@ -74,6 +74,7 @@ export function createPresenceTracker({
     storageKey = "cognis_page_presence_session",
     pointerTracking = false,
     getSelectionPayload = null,
+    getPointerOffset = null,
     pointerOverlayRoot = null,
     i18n = null,
 } = {}) {
@@ -174,6 +175,7 @@ export function createPresenceTracker({
                 overlayRoot: resolveOption(pointerOverlayRoot) ?? parent,
                 i18n,
                 noteActivity,
+                getPointerOffset,
                 requestPresenceUpdate: () => void sendPresence(true),
             });
         }

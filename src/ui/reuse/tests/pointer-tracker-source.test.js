@@ -23,6 +23,10 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /from "\.\/avatar-utils\.js"/);
     assert.match(pointerSource, /contentGrid\.addEventListener\("pointermove"/);
     assert.match(pointerSource, /overlayRoot = null/);
+    assert.match(pointerSource, /getPointerOffset/);
+    assert.match(pointerSource, /function currentPointerOffset\(\)/);
+    assert.match(pointerSource, /offset\.x/);
+    assert.match(pointerSource, /offset\.y/);
     assert.match(pointerSource, /renderRoot\.appendChild\(overlay\)/);
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
@@ -42,6 +46,7 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         /pointer: pointerTracker\?\.getPointerPayload/,
     );
     assert.match(presenceSource, /getSelectionPayload/);
+    assert.match(presenceSource, /getPointerOffset/);
     assert.match(presenceSource, /pointerOverlayRoot/);
     assert.match(presenceSource, /#page-presence-section/);
     assert.match(presenceSource, /const REFRESH_INTERVAL_MS = 500/);

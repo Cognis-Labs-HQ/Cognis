@@ -219,8 +219,6 @@ export function createWhiteboardCanvas(canvasElement) {
             .map((element) => ({
                 id: element.id,
                 ...getElementBounds(element),
-                x: getElementBounds(element).x - viewportOffsetX,
-                y: getElementBounds(element).y - viewportOffsetY,
             }));
     }
 
@@ -897,6 +895,9 @@ export function createWhiteboardCanvas(canvasElement) {
         },
         getSelectionBounds() {
             return getSelectedElementBounds();
+        },
+        getViewportOffset() {
+            return { x: viewportOffsetX, y: viewportOffsetY };
         },
         applyElements(remoteElements, { replace = false } = {}) {
             if (replace) {

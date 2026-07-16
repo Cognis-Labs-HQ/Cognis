@@ -63,10 +63,10 @@ function normalizeSelectionItems(selection) {
                 return null;
             }
             return {
-                x: Math.min(1, Math.max(0, x)),
-                y: Math.min(1, Math.max(0, y)),
-                width: Math.min(1, Math.max(0, width)),
-                height: Math.min(1, Math.max(0, height)),
+                x,
+                y,
+                width,
+                height,
             };
         })
         .filter(Boolean);
@@ -95,6 +95,7 @@ export function createPointerTracker({
     i18n,
     requestPresenceUpdate,
     noteActivity,
+    getPointerOffset,
 } = {}) {
     if (!(contentGrid instanceof HTMLElement)) {
         return {
@@ -145,6 +146,15 @@ export function createPointerTracker({
         requestPresenceUpdate?.();
     }
 
+    function currentPointerOffset() {
+        const offset =
+            typeof getPointerOffset === "function" ? getPointerOffset() : null;
+        return {
+            x: Number(offset?.x) || 0,
+            y: Number(offset?.y) || 0,
+        };
+    }
+
     function recordPointer(event) {
         if (destroyed) return;
         const bounds = renderRoot.getBoundingClientRect();
@@ -158,23 +168,17 @@ export function createPointerTracker({
         )
             return;
         noteActivity?.();
+        const offset = currentPointerOffset();
         pointerPayload = {
-            x: Math.min(
-                1,
-                Math.max(
-                    0,
-                    (event.clientX - bounds.left + renderRoot.scrollLeft) /
-                        trackingWidth,
-                ),
-            ),
-            y: Math.min(
-                1,
-                Math.max(
-                    0,
-                    (event.clientY - bounds.top + renderRoot.scrollTop) /
-                        trackingHeight,
-                ),
-            ),
+            x:
+                (event.clientX -
+                    bounds.left +
+                    renderRoot.scrollLeft +
+                    offset.x) /
+                trackingWidth,
+            y:
+                (event.clientY - bounds.top + renderRoot.scrollTop + offset.y) /
+                trackingHeight,
             style: pointerStyle,
             updatedAt: new Date().toISOString(),
         };
@@ -222,8 +226,11 @@ export function createPointerTracker({
                 );
                 const selectionItems = normalizeSelectionItems(entry.selection);
                 const selectionMarkup = selectionItems.map((item, index) => {
-                    const left = item.x * rootWidth - renderRoot.scrollLeft;
-                    const top = item.y * rootHeight - renderRoot.scrollTop;
+                    const offset = currentPointerOffset();
+                    const left =
+                        item.x * rootWidth - renderRoot.scrollLeft - offset.x;
+                    const top =
+                        item.y * rootHeight - renderRoot.scrollTop - offset.y;
                     const width = item.width * rootWidth;
                     const height = item.height * rootHeight;
                     return `<div class="page-selection" style="--selection-x:${left}px; --selection-y:${top}px; --selection-width:${width}px; --selection-height:${height}px; --selection-color:${escapeHtml(color)};"><div class="page-selection__label">${index === 0 ? escapeHtml(displayName) : ""}</div></div>`;
@@ -232,10 +239,13 @@ export function createPointerTracker({
                 const updatedAt = Date.parse(entry.pointer.updatedAt || "");
                 if (!Number.isFinite(updatedAt)) return selectionMarkup;
                 const pointer = entry.pointer;
-                const x = Math.min(1, Math.max(0, Number(pointer.x ?? 0)));
-                const y = Math.min(1, Math.max(0, Number(pointer.y ?? 0)));
-                const pointerLeft = x * rootWidth - renderRoot.scrollLeft;
-                const pointerTop = y * rootHeight - renderRoot.scrollTop;
+                const x = Number(pointer.x ?? 0);
+                const y = Number(pointer.y ?? 0);
+                const offset = currentPointerOffset();
+                const pointerLeft =
+                    x * rootWidth - renderRoot.scrollLeft - offset.x;
+                const pointerTop =
+                    y * rootHeight - renderRoot.scrollTop - offset.y;
                 const style = normalizeStyle(pointer.style);
                 return [
                     ...selectionMarkup,
