@@ -40,6 +40,8 @@ export function createWhiteboardCanvas(canvasElement) {
     let historyFuture = [];
     let historySnapshot = null;
     let panState = null;
+    let viewportOffsetX = 0;
+    let viewportOffsetY = 0;
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -56,6 +58,8 @@ export function createWhiteboardCanvas(canvasElement) {
             style.getPropertyValue("--whiteboard-canvas-bg").trim() ||
             "#ffffff";
         context.fillRect(0, 0, canvasElement.width, canvasElement.height);
+        context.save();
+        context.translate(-viewportOffsetX, -viewportOffsetY);
         for (const element of elements) {
             renderElement(context, element);
             if (
@@ -84,7 +88,10 @@ export function createWhiteboardCanvas(canvasElement) {
                 }
             }
         }
+        context.restore();
         if (dragSelectBox) {
+            context.save();
+            context.translate(-viewportOffsetX, -viewportOffsetY);
             context.save();
             context.setLineDash([4, 4]);
             context.strokeStyle = "#2563eb";
@@ -95,7 +102,10 @@ export function createWhiteboardCanvas(canvasElement) {
                 dragSelectBox.height,
             );
             context.restore();
+            context.restore();
         }
+        context.save();
+        context.translate(-viewportOffsetX, -viewportOffsetY);
         if (isDrawing && currentPoints.length >= 2 && activeTool === "pen") {
             const previewElement = buildFreedrawElement(
                 currentPoints,
@@ -132,6 +142,7 @@ export function createWhiteboardCanvas(canvasElement) {
             );
             renderElement(context, previewElement);
         }
+        context.restore();
     }
 
     function cloneElements(items = elements) {
@@ -164,8 +175,8 @@ export function createWhiteboardCanvas(canvasElement) {
                 }),
             );
             bounds = elements.map(getElementBounds);
-            parent.scrollLeft += dx;
-            parent.scrollTop += dy;
+            viewportOffsetX += dx;
+            viewportOffsetY += dy;
         }
         const width = Math.ceil(rect.width);
         const height = Math.ceil(rect.height);
@@ -177,7 +188,10 @@ export function createWhiteboardCanvas(canvasElement) {
 
     function getCanvasPoint(event) {
         const rect = canvasElement.getBoundingClientRect();
-        return [event.clientX - rect.left, event.clientY - rect.top];
+        return [
+            event.clientX - rect.left + viewportOffsetX,
+            event.clientY - rect.top + viewportOffsetY,
+        ];
     }
 
     function findAnchorAt(element, x, y) {
@@ -205,6 +219,8 @@ export function createWhiteboardCanvas(canvasElement) {
             .map((element) => ({
                 id: element.id,
                 ...getElementBounds(element),
+                x: getElementBounds(element).x - viewportOffsetX,
+                y: getElementBounds(element).y - viewportOffsetY,
             }));
     }
 
@@ -382,8 +398,8 @@ export function createWhiteboardCanvas(canvasElement) {
         const editor = document.createElement("textarea");
         editor.className = "wb-text-editor";
         editor.value = element.text ?? "Text";
-        editor.style.left = `${element.x}px`;
-        editor.style.top = `${element.y}px`;
+        editor.style.left = `${element.x - viewportOffsetX}px`;
+        editor.style.top = `${element.y - viewportOffsetY}px`;
         editor.style.width = `${Math.max(180, element.width ?? 180)}px`;
         editor.style.height = `${Math.max(64, element.height ?? 64)}px`;
         editor.style.fontSize = `${element.fontSize ?? 28}px`;
@@ -418,8 +434,8 @@ export function createWhiteboardCanvas(canvasElement) {
                 pointerId: event.pointerId,
                 startX: event.clientX,
                 startY: event.clientY,
-                scrollLeft: parent.scrollLeft,
-                scrollTop: parent.scrollTop,
+                offsetX: viewportOffsetX,
+                offsetY: viewportOffsetY,
             };
             canvasElement.style.cursor = "grabbing";
             return;
@@ -508,10 +524,12 @@ export function createWhiteboardCanvas(canvasElement) {
             event.preventDefault();
             const parent = canvasElement.parentElement;
             if (!parent) return;
-            parent.scrollLeft =
-                panState.scrollLeft - (event.clientX - panState.startX);
-            parent.scrollTop =
-                panState.scrollTop - (event.clientY - panState.startY);
+            viewportOffsetX =
+                panState.offsetX - (event.clientX - panState.startX);
+            viewportOffsetY =
+                panState.offsetY - (event.clientY - panState.startY);
+            scheduleRender();
+            notifyTransientChange();
             return;
         }
         if (isDrawing) event.preventDefault();

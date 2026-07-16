@@ -101,6 +101,8 @@ test("nextcloud whiteboard canvas deletes selected objects via keyboard", async 
     assert.match(source, /function notifyTransientChange\(\)/);
     assert.match(source, /transient:\s*true/);
     assert.doesNotMatch(source, /canvasElement\.width \|\| 0/);
+    assert.match(source, /viewportOffsetX/);
+    assert.doesNotMatch(source, /parent\.scrollLeft =/);
     assert.match(
         source,
         /event\.key !== "Delete" && event\.key !== "Backspace"/,
