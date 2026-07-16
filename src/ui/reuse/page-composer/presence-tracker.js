@@ -22,9 +22,12 @@ import { apiFetch } from "../api-client.js";
 import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
 import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "../pointer-tracker.js";
+import { createAdaptivePoller } from "../adaptive-poller.js";
 
-const HEARTBEAT_INTERVAL_MS = 5000;
-const REFRESH_INTERVAL_MS = 500;
+const HEARTBEAT_MIN_INTERVAL_MS = 2500;
+const HEARTBEAT_MAX_INTERVAL_MS = 5000;
+const REFRESH_MIN_INTERVAL_MS = 250;
+const REFRESH_MAX_INTERVAL_MS = 5000;
 const ACTIVE_WINDOW_MS = 15000;
 const IDLE_AFTER_MS = 30000;
 
@@ -80,16 +83,20 @@ export function createPresenceTracker({
 } = {}) {
     const sessionId = createSessionId(storageKey);
     let container = null;
-    let heartbeatTimer = null;
-    let refreshTimer = null;
+    let mountedParent = null;
+    let heartbeatPoller = null;
+    let refreshPoller = null;
     let destroyed = false;
     let markInactive = null;
     let handleVisibilityChange = null;
     let pointerTracker = null;
     let lastActivityAt = Date.now();
+    let lastPresenceSignature = "";
 
     function noteActivity() {
         lastActivityAt = Date.now();
+        heartbeatPoller?.markActivity();
+        refreshPoller?.markActivity();
     }
 
     function isRecentlyActive() {
@@ -121,12 +128,26 @@ export function createPresenceTracker({
     }
 
     function placePresenceContainer() {
-        if (!container?.isConnected) return;
-        const parent = container.closest(".main-window");
+        if (!container) return;
+        const parent = mountedParent ?? container.closest(".main-window");
         const presenceSlot = parent?.querySelector("#page-presence-section");
         if (presenceSlot && container.parentElement !== presenceSlot) {
             presenceSlot.replaceChildren(container);
         }
+    }
+
+    function createPresenceSignature(entries) {
+        return entries
+            .map((entry) =>
+                [
+                    entry.sessionId,
+                    entry.lastSeenAt,
+                    entry.active,
+                    entry.pointer?.updatedAt,
+                    JSON.stringify(entry.selection ?? null),
+                ].join(":"),
+            )
+            .join("|");
     }
 
     async function refresh() {
@@ -134,12 +155,12 @@ export function createPresenceTracker({
         const resolvedPageId = currentPageId();
         if (!container || !enabled || !endpoint || !resolvedPageId) {
             if (container) container.hidden = true;
-            return;
+            return false;
         }
         const response = await apiFetch(
             `${endpoint}?pageId=${encodeURIComponent(resolvedPageId)}`,
         ).catch(() => null);
-        if (!response?.ok) return;
+        if (!response?.ok) return false;
         const payload = await response.json().catch(() => ({}));
         const entries = Array.isArray(payload?.data?.presence)
             ? payload.data.presence
@@ -154,10 +175,15 @@ export function createPresenceTracker({
         }));
         container.innerHTML = activeEntries.map(renderPresenceEntry).join("");
         pointerTracker?.render(activeEntries, sessionId);
+        const nextSignature = createPresenceSignature(activeEntries);
+        const changed = nextSignature !== lastPresenceSignature;
+        lastPresenceSignature = nextSignature;
+        return changed;
     }
 
     function mount(parent) {
         if (!enabled || !parent || destroyed) return;
+        mountedParent = parent;
         container = document.createElement("section");
         container.className = "page-presence";
         container.setAttribute("aria-label", "Page presence");
@@ -176,22 +202,35 @@ export function createPresenceTracker({
                 i18n,
                 noteActivity,
                 getPointerOffset,
-                requestPresenceUpdate: () => void sendPresence(true),
+                requestPresenceUpdate: () => {
+                    refreshPoller?.markActivity();
+                    void sendPresence(true);
+                },
             });
         }
+        refreshPoller = createAdaptivePoller({
+            task: refresh,
+            minIntervalMs: REFRESH_MIN_INTERVAL_MS,
+            maxIntervalMs: REFRESH_MAX_INTERVAL_MS,
+            initialIntervalMs: REFRESH_MIN_INTERVAL_MS,
+        });
+        heartbeatPoller = createAdaptivePoller({
+            task: () => sendPresence(true).then(refresh),
+            minIntervalMs: HEARTBEAT_MIN_INTERVAL_MS,
+            maxIntervalMs: HEARTBEAT_MAX_INTERVAL_MS,
+            initialIntervalMs: HEARTBEAT_MIN_INTERVAL_MS,
+        });
         void sendPresence(true).then(refresh);
-        heartbeatTimer = window.setInterval(
-            () => void sendPresence(true).then(refresh),
-            HEARTBEAT_INTERVAL_MS,
-        );
-        refreshTimer = window.setInterval(
-            () => void refresh(),
-            REFRESH_INTERVAL_MS,
-        );
+        refreshPoller.start();
+        heartbeatPoller.start();
         markInactive = () => void sendPresence(false, { keepalive: true });
         handleVisibilityChange = () => {
             if (document.visibilityState === "hidden") markInactive?.();
-            else void sendPresence(true).then(refresh);
+            else {
+                heartbeatPoller?.markActivity();
+                refreshPoller?.trigger();
+                void sendPresence(true).then(refresh);
+            }
         };
         window.addEventListener("pagehide", markInactive);
         window.addEventListener("beforeunload", markInactive);
@@ -203,8 +242,10 @@ export function createPresenceTracker({
 
     function destroy() {
         destroyed = true;
-        if (heartbeatTimer) window.clearInterval(heartbeatTimer);
-        if (refreshTimer) window.clearInterval(refreshTimer);
+        heartbeatPoller?.stop();
+        refreshPoller?.stop();
+        heartbeatPoller = null;
+        refreshPoller = null;
         if (markInactive) {
             window.removeEventListener("pagehide", markInactive);
             window.removeEventListener("beforeunload", markInactive);
@@ -223,6 +264,7 @@ export function createPresenceTracker({
         pointerTracker = null;
         container?.remove();
         container = null;
+        mountedParent = null;
     }
 
     return { mount, refresh, destroy };

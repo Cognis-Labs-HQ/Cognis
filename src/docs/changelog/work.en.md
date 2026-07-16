@@ -11,3 +11,7 @@ Whiteboard presence now ignores entries whose heartbeat has aged out, so abruptl
 ## Collaborative selection indicators
 
 Whiteboard selections now appear for other active users with a highlighted outline and floating name label, sharing canvas object selection alongside pointer presence.
+
+## Responsive polling and toolbar presence
+
+Presence refreshes now use an adaptive polling helper that speeds up after activity and slows down while quiet, and the whiteboard toolbar provides a dedicated presence slot that is reattached if the toolbar rerenders.

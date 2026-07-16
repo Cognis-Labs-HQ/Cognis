@@ -207,13 +207,11 @@
     text-align: center;
 }
 
-.whiteboard-presence-section {
-    align-items: center;
-    display: inline-flex;
+#page-presence-section {
     margin-left: auto;
 }
 
-.whiteboard-presence-section:empty {
+#page-presence-section:empty {
     display: none;
 }
 
