@@ -49,6 +49,7 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         /pointer: pointerTracker\?\.getPointerPayload/,
     );
     assert.match(presenceSource, /getSelectionPayload/);
+    assert.match(presenceSource, /onPresenceUpdate/);
     assert.match(presenceSource, /getPointerOffset/);
     assert.match(presenceSource, /pointerOverlayRoot/);
     assert.match(presenceSource, /createAdaptivePoller/);

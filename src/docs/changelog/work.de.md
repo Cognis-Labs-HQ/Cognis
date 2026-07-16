@@ -10,7 +10,7 @@ Die Whiteboard-Präsenz ignoriert jetzt Einträge, deren Heartbeat abgelaufen is
 
 ## Kollaborative Auswahlindikatoren
 
-Whiteboard-Auswahlen erscheinen jetzt für andere aktive Benutzer mit hervorgehobener Umrandung und schwebendem Namensschild, sodass die Objektauswahl zusammen mit der Zeigerpräsenz geteilt wird.
+Whiteboard-Auswahlen teilen jetzt ausgewählte Objekt-IDs mit anderen aktiven Benutzern, sodass jeder Client diese Objekte direkt im Canvas mit der Präsenzfarbe dieses Benutzers neben der Zeigerpräsenz hervorheben kann.
 
 ## Reaktionsfähiges Polling und Toolbar-Präsenz
 

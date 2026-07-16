@@ -10,7 +10,7 @@ Kehadiran whiteboard kini mengabaikan entri yang heartbeat-nya sudah kedaluwarsa
 
 ## Indikator pilihan kolaboratif
 
-Pilihan di whiteboard kini muncul untuk pengguna aktif lain dengan garis sorot dan label nama mengambang, membagikan pilihan objek kanvas bersama kehadiran pointer.
+Pilihan di whiteboard kini membagikan ID objek yang dipilih kepada pengguna aktif lain, sehingga setiap klien dapat menyorot objek itu langsung di kanvas dengan warna kehadiran pengguna tersebut bersama kehadiran pointer.
 
 ## Polling responsif dan kehadiran di toolbar
 

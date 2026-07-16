@@ -666,6 +666,7 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                                                   height: 0.4,
                                               },
                                           ],
+                                          elementIds: ["shape-1"],
                                       }
                                     : null,
                         }),
@@ -699,6 +700,7 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
     assert.deepEqual(ownerPresence.selection.items, [
         { x: 0.1, y: 0.2, width: 0.3, height: 0.4 },
     ]);
+    assert.deepEqual(ownerPresence.selection.elementIds, ["shape-1"]);
     assert.ok(
         entries.some(
             (entry) =>

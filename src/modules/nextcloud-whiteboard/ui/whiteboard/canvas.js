@@ -50,6 +50,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let panState = null;
     let viewportOffsetX = 0;
     let viewportOffsetY = 0;
+    let remoteSelections = new Map();
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -70,22 +71,51 @@ export function createWhiteboardCanvas(canvasElement) {
         context.translate(-viewportOffsetX, -viewportOffsetY);
         for (const element of elements) {
             renderElement(context, element);
+            const remoteSelection = remoteSelections.get(element.id);
             if (
                 selectedElementIds.has(element.id) ||
-                eraserSelectionIds.has(element.id)
+                eraserSelectionIds.has(element.id) ||
+                remoteSelection
             ) {
                 const bounds = getElementBounds(element);
+                const localSelection = selectedElementIds.has(element.id);
+                const eraserSelection = eraserSelectionIds.has(element.id);
+                const selectionColor = eraserSelection
+                    ? "#c0392b"
+                    : localSelection
+                      ? "#2d9e5c"
+                      : remoteSelection?.color || "#5e81f4";
                 context.save();
                 context.setLineDash([6, 4]);
-                context.strokeStyle = eraserSelectionIds.has(element.id)
-                    ? "#c0392b"
-                    : "#2d9e5c";
+                context.strokeStyle = selectionColor;
+                context.lineWidth =
+                    remoteSelection && !localSelection ? 2.5 : 1;
                 context.strokeRect(
                     bounds.x - 4,
                     bounds.y - 4,
                     bounds.width + 8,
                     bounds.height + 8,
                 );
+                if (
+                    remoteSelection?.label &&
+                    !localSelection &&
+                    !eraserSelection
+                ) {
+                    context.font = "600 12px system-ui, sans-serif";
+                    const labelWidth =
+                        context.measureText(remoteSelection.label).width + 12;
+                    const labelX = bounds.x - 4;
+                    const labelY = Math.max(4, bounds.y - 22);
+                    context.setLineDash([]);
+                    context.fillStyle = selectionColor;
+                    context.fillRect(labelX, labelY, labelWidth, 18);
+                    context.fillStyle = "#ffffff";
+                    context.fillText(
+                        remoteSelection.label,
+                        labelX + 6,
+                        labelY + 13,
+                    );
+                }
                 context.restore();
                 if (element.id === selectedElementId) {
                     for (const [anchorX, anchorY] of getElementAnchorPoints(
@@ -228,6 +258,30 @@ export function createWhiteboardCanvas(canvasElement) {
                 id: element.id,
                 ...getElementBounds(element),
             }));
+    }
+
+    function getSelectedElementIds() {
+        return [...selectedElementIds].filter((id) =>
+            elements.some((element) => element.id === id),
+        );
+    }
+
+    function setRemoteSelections(selections = []) {
+        const nextSelections = new Map();
+        for (const selection of selections) {
+            const color = String(selection?.color || "#5e81f4");
+            const label = String(selection?.label || "").trim();
+            const elementIds = Array.isArray(selection?.elementIds)
+                ? selection.elementIds
+                : [];
+            for (const elementId of elementIds) {
+                const normalizedId = String(elementId ?? "").trim();
+                if (!normalizedId) continue;
+                nextSelections.set(normalizedId, { color, label });
+            }
+        }
+        remoteSelections = nextSelections;
+        scheduleRender();
     }
 
     function notifySelection() {
@@ -1133,6 +1187,12 @@ export function createWhiteboardCanvas(canvasElement) {
         getSelectionBounds() {
             return getSelectedElementBounds();
         },
+        getSelectedElementIds() {
+            return getSelectedElementIds();
+        },
+        setRemoteSelections(selections) {
+            setRemoteSelections(selections);
+        },
         getViewportOffset() {
             return { x: viewportOffsetX, y: viewportOffsetY };
         },
@@ -1147,6 +1207,11 @@ export function createWhiteboardCanvas(canvasElement) {
                 );
                 if (selectedElementId && !selectedElement())
                     selectedElementId = null;
+                remoteSelections = new Map(
+                    [...remoteSelections].filter(([id]) =>
+                        elements.some((element) => element.id === id),
+                    ),
+                );
                 notifySelection();
                 scheduleRender();
                 return;
@@ -1183,6 +1248,9 @@ export function createWhiteboardCanvas(canvasElement) {
             );
             if (selectedElementId && !selectedElement())
                 selectedElementId = null;
+            remoteSelections = new Map(
+                [...remoteSelections].filter(([id]) => currentIds.has(id)),
+            );
             notifySelection();
             scheduleRender();
         },
