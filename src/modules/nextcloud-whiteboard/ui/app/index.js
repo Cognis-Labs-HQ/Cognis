@@ -136,6 +136,25 @@ function debounce(callback, delay) {
     };
 }
 
+function throttleLatest(callback, delay) {
+    let timer = null;
+    let lastArgs = null;
+    return (...args) => {
+        lastArgs = args;
+        if (timer) return;
+        callback(...lastArgs);
+        lastArgs = null;
+        timer = setTimeout(() => {
+            timer = null;
+            if (lastArgs) {
+                const pendingArgs = lastArgs;
+                lastArgs = null;
+                callback(...pendingArgs);
+            }
+        }, delay);
+    };
+}
+
 function loadSocketIo(serverUrl) {
     return new Promise((resolve, reject) => {
         if (window.io) {
@@ -262,23 +281,32 @@ function connectSocket(io, session, canvas) {
         }
     }, EMIT_DEBOUNCE_MS);
 
-    const emitChanges = debounce((elements, type = SYNC_MESSAGE_SCENE_INIT) => {
-        if (!socket.connected || !joinedRoom) {
+    const emitChanges = throttleLatest(
+        (elements, type = SYNC_MESSAGE_SCENE_INIT) => {
+            if (!socket.connected || !joinedRoom) {
+                setSyncStatus(
+                    "error",
+                    "module.nextcloud_whiteboard.status_sync_failed",
+                );
+                return;
+            }
             setSyncStatus(
-                "error",
-                "module.nextcloud_whiteboard.status_sync_failed",
+                "syncing",
+                "module.nextcloud_whiteboard.status_syncing",
             );
-            return;
-        }
-        setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
-        socket.emit(
-            "server-broadcast",
-            roomId,
-            encodeSceneMessage(type, elements),
-            [],
-        );
-        setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
-    }, EMIT_DEBOUNCE_MS);
+            socket.emit(
+                "server-broadcast",
+                roomId,
+                encodeSceneMessage(type, elements),
+                [],
+            );
+            setSyncStatus(
+                "synced",
+                "module.nextcloud_whiteboard.status_synced",
+            );
+        },
+        EMIT_DEBOUNCE_MS,
+    );
 
     canvas.onChange((elements, meta) => {
         if (meta?.type === "image_rejected") {
@@ -292,7 +320,8 @@ function connectSocket(io, session, canvas) {
             return;
         }
         savedElements = elements;
-        persistChanges(elements);
+        composer?.refreshPresence?.();
+        if (meta?.transient !== true) persistChanges(elements);
         emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
     });
 
