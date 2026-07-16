@@ -82,6 +82,13 @@ function renderPointerIcon(style) {
     return '<span class="page-pointer__mouse" aria-hidden="true">➤</span>';
 }
 
+function renderPointerButtonIcon(style) {
+    if (style === "laser") {
+        return '<span class="pointer-style-toggle__laser" aria-hidden="true"></span>';
+    }
+    return renderPointerIcon(style);
+}
+
 export function createPointerTracker({
     contentGrid,
     overlayRoot = null,
@@ -128,7 +135,7 @@ export function createPointerTracker({
         button.title = `${label}: ${styleLabel}`;
         button.setAttribute("aria-label", button.title);
         button.dataset.pointerStyle = pointerStyle;
-        button.innerHTML = renderPointerIcon(pointerStyle);
+        button.innerHTML = renderPointerButtonIcon(pointerStyle);
     }
 
     function sendSoon() {
@@ -141,16 +148,32 @@ export function createPointerTracker({
     function recordPointer(event) {
         if (destroyed) return;
         const bounds = renderRoot.getBoundingClientRect();
-        if (!bounds.width || !bounds.height) return;
+        const trackingWidth = Math.max(renderRoot.scrollWidth, bounds.width);
+        const trackingHeight = Math.max(renderRoot.scrollHeight, bounds.height);
+        if (
+            !bounds.width ||
+            !bounds.height ||
+            !trackingWidth ||
+            !trackingHeight
+        )
+            return;
         noteActivity?.();
         pointerPayload = {
             x: Math.min(
                 1,
-                Math.max(0, (event.clientX - bounds.left) / bounds.width),
+                Math.max(
+                    0,
+                    (event.clientX - bounds.left + renderRoot.scrollLeft) /
+                        trackingWidth,
+                ),
             ),
             y: Math.min(
                 1,
-                Math.max(0, (event.clientY - bounds.top) / bounds.height),
+                Math.max(
+                    0,
+                    (event.clientY - bounds.top + renderRoot.scrollTop) /
+                        trackingHeight,
+                ),
             ),
             style: pointerStyle,
             updatedAt: new Date().toISOString(),
@@ -189,21 +212,34 @@ export function createPointerTracker({
             .flatMap((entry) => {
                 const displayName = getDisplayName(entry);
                 const color = getPointerColor(entry);
-                const selectionItems = normalizeSelectionItems(entry.selection);
-                const selectionMarkup = selectionItems.map(
-                    (item, index) =>
-                        `<div class="page-selection" style="--selection-x:${item.x}; --selection-y:${item.y}; --selection-width:${item.width}; --selection-height:${item.height}; --selection-color:${escapeHtml(color)};"><div class="page-selection__label">${index === 0 ? escapeHtml(displayName) : ""}</div></div>`,
+                const rootWidth = Math.max(
+                    renderRoot.scrollWidth,
+                    renderRoot.clientWidth,
                 );
+                const rootHeight = Math.max(
+                    renderRoot.scrollHeight,
+                    renderRoot.clientHeight,
+                );
+                const selectionItems = normalizeSelectionItems(entry.selection);
+                const selectionMarkup = selectionItems.map((item, index) => {
+                    const left = item.x * rootWidth - renderRoot.scrollLeft;
+                    const top = item.y * rootHeight - renderRoot.scrollTop;
+                    const width = item.width * rootWidth;
+                    const height = item.height * rootHeight;
+                    return `<div class="page-selection" style="--selection-x:${left}px; --selection-y:${top}px; --selection-width:${width}px; --selection-height:${height}px; --selection-color:${escapeHtml(color)};"><div class="page-selection__label">${index === 0 ? escapeHtml(displayName) : ""}</div></div>`;
+                });
                 if (!entry?.pointer) return selectionMarkup;
                 const updatedAt = Date.parse(entry.pointer.updatedAt || "");
                 if (!Number.isFinite(updatedAt)) return selectionMarkup;
                 const pointer = entry.pointer;
                 const x = Math.min(1, Math.max(0, Number(pointer.x ?? 0)));
                 const y = Math.min(1, Math.max(0, Number(pointer.y ?? 0)));
+                const pointerLeft = x * rootWidth - renderRoot.scrollLeft;
+                const pointerTop = y * rootHeight - renderRoot.scrollTop;
                 const style = normalizeStyle(pointer.style);
                 return [
                     ...selectionMarkup,
-                    `<div class="page-pointer page-pointer--${escapeHtml(style)}" style="--pointer-x:${x}; --pointer-y:${y}; --pointer-color:${escapeHtml(color)};"><div class="page-pointer__icon">${renderPointerIcon(style)}</div><div class="page-pointer__label">${escapeHtml(displayName)}</div></div>`,
+                    `<div class="page-pointer page-pointer--${escapeHtml(style)}" style="--pointer-x:${pointerLeft}px; --pointer-y:${pointerTop}px; --pointer-color:${escapeHtml(color)};"><div class="page-pointer__icon">${renderPointerIcon(style)}</div><div class="page-pointer__label">${escapeHtml(displayName)}</div></div>`,
                 ];
             })
             .join("");

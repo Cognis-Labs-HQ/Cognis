@@ -888,7 +888,7 @@ function renderCanvasElement() {
                 </div>
                 <span id="whiteboard-board-title" class="whiteboard-board-title" title="${escapeHtml(canRenameActiveBoard() ? t("module.nextcloud_whiteboard.rename_hint") : "")}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
                 <span id="whiteboard-sync-status" class="whiteboard-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
-                <span id="page-presence-section" class="whiteboard-presence-section" aria-live="polite"></span>
+                <div id="page-presence-section" class="whiteboard-presence-section" aria-live="polite"></div>
             </div>
             <div class="whiteboard-canvas-stage">
                 <canvas
@@ -954,13 +954,25 @@ function getSelectionPayload() {
     const rootRect = trackingRoot?.getBoundingClientRect();
     const canvasRect = canvasElement.getBoundingClientRect();
     if (!rootRect?.width || !rootRect?.height) return null;
+    const rootWidth = Math.max(trackingRoot.scrollWidth, rootRect.width);
+    const rootHeight = Math.max(trackingRoot.scrollHeight, rootRect.height);
     const scaleX = canvasRect.width / Math.max(1, canvasElement.width);
     const scaleY = canvasRect.height / Math.max(1, canvasElement.height);
     const items = bounds.map((item) => ({
-        x: (canvasRect.left - rootRect.left + item.x * scaleX) / rootRect.width,
-        y: (canvasRect.top - rootRect.top + item.y * scaleY) / rootRect.height,
-        width: (item.width * scaleX) / rootRect.width,
-        height: (item.height * scaleY) / rootRect.height,
+        x:
+            (canvasRect.left -
+                rootRect.left +
+                trackingRoot.scrollLeft +
+                item.x * scaleX) /
+            rootWidth,
+        y:
+            (canvasRect.top -
+                rootRect.top +
+                trackingRoot.scrollTop +
+                item.y * scaleY) /
+            rootHeight,
+        width: (item.width * scaleX) / rootWidth,
+        height: (item.height * scaleY) / rootHeight,
     }));
     return { items };
 }
