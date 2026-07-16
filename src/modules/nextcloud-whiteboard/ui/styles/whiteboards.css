@@ -208,7 +208,9 @@
 }
 
 #page-presence-section {
+    flex: 0 0 auto;
     margin-left: auto;
+    width: fit-content;
 }
 
 #page-presence-section:empty {
