@@ -10,7 +10,8 @@
  *     endpoint: '/api/v1/modules/example/presence',
  *     pageId: () => activePageId,
  *     pointerTracking: true,
- *     getSelectionPayload: () => ({ items: [] }),
+ *     getSelectionPayload: () => ({ elementIds: [] }),
+ *     onPresenceUpdate: (entries, sessionId) => void syncSelection(entries, sessionId),
  *   });
  *   tracker.mount(mainWindow);
  *
@@ -79,6 +80,7 @@ export function createPresenceTracker({
     getSelectionPayload = null,
     getPointerOffset = null,
     pointerOverlayRoot = null,
+    onPresenceUpdate = null,
     i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
@@ -175,6 +177,7 @@ export function createPresenceTracker({
         }));
         container.innerHTML = activeEntries.map(renderPresenceEntry).join("");
         pointerTracker?.render(activeEntries, sessionId);
+        onPresenceUpdate?.(activeEntries, sessionId);
         const nextSignature = createPresenceSignature(activeEntries);
         const changed = nextSignature !== lastPresenceSignature;
         lastPresenceSignature = nextSignature;
@@ -259,6 +262,7 @@ export function createPresenceTracker({
                 handleVisibilityChange,
             );
         }
+        onPresenceUpdate?.([], sessionId);
         void sendPresence(false, { keepalive: true });
         pointerTracker?.destroy();
         pointerTracker = null;

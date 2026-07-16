@@ -94,12 +94,16 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /const canvasElement = document\.getElementById\("whiteboard-canvas"\);/,
     );
-    assert.match(source, /canvasElement\.closest\("\.main-window"\)/);
     assert.match(source, /function getPointerOffset\(\)/);
     assert.match(source, /getPointerOffset,/);
+    assert.match(source, /function applyRemotePresenceSelections\(/);
+    assert.match(source, /onPresenceUpdate:\s*applyRemotePresenceSelections/);
     assert.match(canvasSource, /loadFontsCatalog/);
     assert.match(canvasSource, /whiteboard-text-menu/);
     assert.match(canvasSource, /parentNode\?\.removeChild\(editor\)/);
+    assert.match(canvasSource, /function getSelectedElementIds\(\)/);
+    assert.match(canvasSource, /function setRemoteSelections\(/);
+    assert.match(canvasSource, /remoteSelections\.get\(element\.id\)/);
     assert.match(canvasSource, /function pushHistoryEntry\(/);
     assert.match(canvasSource, /function applyHistorySnapshot\(/);
     assert.match(source, /id="page-presence-section"/);

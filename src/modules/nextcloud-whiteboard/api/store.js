@@ -11,9 +11,18 @@ import {
     normalizeHandleKeys,
 } from "../../../gateways/social/bootstrap.js";
 
-function serializePresenceSelection(selection) {
+function normalizeSelectionElementIds(selection) {
+    return Array.isArray(selection?.elementIds)
+        ? selection.elementIds
+              .slice(0, 100)
+              .map((id) => String(id ?? "").trim())
+              .filter(Boolean)
+        : [];
+}
+
+function normalizeSelectionItems(selection) {
     const items = Array.isArray(selection?.items) ? selection.items : [];
-    const normalizedItems = items
+    return items
         .slice(0, 24)
         .map((item) => {
             const x = Number(item?.x);
@@ -32,9 +41,15 @@ function serializePresenceSelection(selection) {
             return { x, y, width, height };
         })
         .filter(Boolean);
-    if (normalizedItems.length === 0) return null;
+}
+
+function serializePresenceSelection(selection) {
+    const normalizedItems = normalizeSelectionItems(selection);
+    const elementIds = normalizeSelectionElementIds(selection);
+    if (normalizedItems.length === 0 && elementIds.length === 0) return null;
     return JSON.stringify({
-        items: normalizedItems,
+        ...(normalizedItems.length ? { items: normalizedItems } : {}),
+        ...(elementIds.length ? { elementIds } : {}),
         updatedAt: new Date().toISOString(),
     });
 }
@@ -44,9 +59,12 @@ function parsePresenceSelection(value) {
     if (!raw) return null;
     try {
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed?.items) || !parsed.items.length) return null;
+        const items = normalizeSelectionItems(parsed);
+        const elementIds = normalizeSelectionElementIds(parsed);
+        if (items.length === 0 && elementIds.length === 0) return null;
         return {
-            items: parsed.items,
+            ...(items.length ? { items } : {}),
+            ...(elementIds.length ? { elementIds } : {}),
             updatedAt: String(parsed.updatedAt ?? ""),
         };
     } catch {

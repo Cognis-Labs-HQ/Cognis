@@ -5,6 +5,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { pickInitialsColor } from "/static/reuse/avatar-utils.js";
 import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
@@ -958,38 +959,36 @@ function getPointerOffset() {
     return canvasInstance?.getViewportOffset?.() ?? { x: 0, y: 0 };
 }
 
+function getPresenceDisplayName(entry) {
+    return String(entry?.displayName || entry?.handle || entry?.id || "Guest")
+        .replace(/^#+/, "")
+        .trim();
+}
+
+function getPresenceColor(entry) {
+    return pickInitialsColor(entry?.handle || getPresenceDisplayName(entry));
+}
+
 function getSelectionPayload() {
-    const canvasElement = document.getElementById("whiteboard-canvas");
-    if (!canvasInstance || !canvasElement) return null;
-    const bounds = canvasInstance.getSelectionBounds?.() ?? [];
-    if (!bounds.length) return null;
-    const trackingRoot =
-        canvasElement.closest(".main-window") ??
-        canvasElement.closest(".content-grid");
-    const rootRect = trackingRoot?.getBoundingClientRect();
-    const canvasRect = canvasElement.getBoundingClientRect();
-    if (!rootRect?.width || !rootRect?.height) return null;
-    const rootWidth = Math.max(trackingRoot.scrollWidth, rootRect.width);
-    const rootHeight = Math.max(trackingRoot.scrollHeight, rootRect.height);
-    const scaleX = canvasRect.width / Math.max(1, canvasElement.width);
-    const scaleY = canvasRect.height / Math.max(1, canvasElement.height);
-    const items = bounds.map((item) => ({
-        x:
-            (canvasRect.left -
-                rootRect.left +
-                trackingRoot.scrollLeft +
-                item.x * scaleX) /
-            rootWidth,
-        y:
-            (canvasRect.top -
-                rootRect.top +
-                trackingRoot.scrollTop +
-                item.y * scaleY) /
-            rootHeight,
-        width: (item.width * scaleX) / rootWidth,
-        height: (item.height * scaleY) / rootHeight,
-    }));
-    return { items };
+    const elementIds = canvasInstance?.getSelectedElementIds?.() ?? [];
+    if (!elementIds.length) return null;
+    return { elementIds };
+}
+
+function applyRemotePresenceSelections(entries = [], sessionId = "") {
+    if (!canvasInstance?.setRemoteSelections) return;
+    const selections = entries
+        .filter((entry) => String(entry?.sessionId ?? "") !== sessionId)
+        .filter((entry) => entry?.active !== false)
+        .map((entry) => ({
+            elementIds: Array.isArray(entry?.selection?.elementIds)
+                ? entry.selection.elementIds
+                : [],
+            color: getPresenceColor(entry),
+            label: getPresenceDisplayName(entry),
+        }))
+        .filter((selection) => selection.elementIds.length > 0);
+    canvasInstance.setRemoteSelections(selections);
 }
 
 function buildElements() {
@@ -1047,6 +1046,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             storageKey: "nextcloud_whiteboard_presence_session",
             getSelectionPayload,
             getPointerOffset,
+            onPresenceUpdate: applyRemotePresenceSelections,
         },
         pageManifest: {
             features: {

@@ -10,7 +10,7 @@ Whiteboard presence now ignores entries whose heartbeat has aged out, so abruptl
 
 ## Collaborative selection indicators
 
-Whiteboard selections now appear for other active users with a highlighted outline and floating name label, sharing canvas object selection alongside pointer presence.
+Whiteboard selections now share selected object IDs with other active users, letting each client highlight those objects directly in the canvas with that user's presence color alongside pointer presence.
 
 ## Responsive polling and toolbar presence
 
