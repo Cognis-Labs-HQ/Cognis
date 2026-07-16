@@ -943,12 +943,17 @@ function onCanvasRender() {
     bindCanvasToolbar(canvasInstance);
 }
 
+function getPointerOverlayRoot() {
+    return document.querySelector(".whiteboard-canvas-stage");
+}
+
 function getSelectionPayload() {
     const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasInstance || !canvasElement) return null;
     const bounds = canvasInstance.getSelectionBounds?.() ?? [];
     if (!bounds.length) return null;
     const trackingRoot =
+        getPointerOverlayRoot() ??
         canvasElement.closest(".main-window") ??
         canvasElement.closest(".content-grid");
     const rootRect = trackingRoot?.getBoundingClientRect();
@@ -1031,6 +1036,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             pageId: () => activeBoard?.id ?? "",
             storageKey: "nextcloud_whiteboard_presence_session",
             getSelectionPayload,
+            pointerOverlayRoot: getPointerOverlayRoot,
         },
         pageManifest: {
             features: {
