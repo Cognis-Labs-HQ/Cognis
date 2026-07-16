@@ -84,6 +84,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /function getPointerOffset\(\)/);
     assert.match(source, /getPointerOffset,/);
     assert.match(source, /id="page-presence-section"/);
+    assert.match(source, /class="whiteboard-toolbar-group" aria-live="polite"/);
     assert.match(source, /function throttleLatest\(callback, delay\)/);
     assert.match(source, /function updateHistoryControls\(\)/);
     assert.match(
