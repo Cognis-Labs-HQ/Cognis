@@ -86,6 +86,7 @@ function renderPointerIcon(style) {
 
 export function createPointerTracker({
     contentGrid,
+    overlayRoot = null,
     i18n,
     requestPresenceUpdate,
     noteActivity,
@@ -98,6 +99,8 @@ export function createPointerTracker({
         };
     }
 
+    const renderRoot =
+        overlayRoot instanceof HTMLElement ? overlayRoot : contentGrid;
     let pointerStyle = normalizeStyle(
         window.localStorage.getItem(POINTER_STYLE_STORAGE_KEY),
     );
@@ -107,7 +110,7 @@ export function createPointerTracker({
     const overlay = document.createElement("div");
     overlay.className = "page-pointer-layer";
     overlay.setAttribute("aria-hidden", "true");
-    contentGrid.appendChild(overlay);
+    renderRoot.appendChild(overlay);
 
     const button = document.createElement("button");
     button.type = "button";
@@ -139,7 +142,7 @@ export function createPointerTracker({
 
     function recordPointer(event) {
         if (destroyed) return;
-        const bounds = contentGrid.getBoundingClientRect();
+        const bounds = renderRoot.getBoundingClientRect();
         if (!bounds.width || !bounds.height) return;
         noteActivity?.();
         pointerPayload = {
