@@ -907,8 +907,8 @@ export function createGridOverlayHandlers({
       </div>
       <div class="composer-panel-actions">
         <a href="#" class="composer-discard-btn btn-cancel" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.done")}</button>
-        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.reset_layout")}</button>
+        <a href="#" class="composer-done-btn btn-confirm" role="button">${i18n.t("ui.reuse.done")}</a>
+        <a href="#" class="composer-reset-btn btn-neutral" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
       </div>
     `;
 
@@ -941,7 +941,8 @@ export function createGridOverlayHandlers({
 
         panel
             .querySelector(".composer-done-btn")
-            .addEventListener("click", async () => {
+            .addEventListener("click", async (event) => {
+                event.preventDefault();
                 compactPlacements();
                 state.editing = false;
                 endEditMode();
@@ -961,7 +962,8 @@ export function createGridOverlayHandlers({
 
         panel
             .querySelector(".composer-reset-btn")
-            .addEventListener("click", async () => {
+            .addEventListener("click", async (event) => {
+                event.preventDefault();
                 state.layout = { placements: [], hidden: [] };
                 initializePlacements();
                 state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));

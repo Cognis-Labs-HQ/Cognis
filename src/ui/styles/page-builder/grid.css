@@ -282,6 +282,37 @@
     flex: 1;
 }
 
+.composer-panel-actions .composer-done-btn,
+.composer-panel-actions .composer-discard-btn,
+.composer-panel-actions .composer-reset-btn {
+    text-align: center;
+    text-decoration: none;
+}
+
+.composer-panel-actions .composer-done-btn.btn-confirm {
+    background: transparent;
+    border-color: var(--color-success-border);
+    color: var(--color-success-outline-text, var(--color-success-text));
+}
+
+.composer-panel-actions .composer-done-btn.btn-confirm:hover {
+    background: var(--color-success-hover-bg);
+    border-color: var(--color-success-outline-text, var(--color-success-text));
+    color: var(--color-success-outline-text, var(--color-success-text));
+}
+
+.composer-panel-actions .composer-reset-btn.btn-neutral {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.composer-panel-actions .composer-reset-btn.btn-neutral:hover {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
 .composer-discard-btn {
     background: var(--surface-soft);
     border: 1px solid var(--border);
@@ -291,8 +322,6 @@
     border-radius: 8px;
     cursor: pointer;
     flex: 1;
-    text-align: center;
-    text-decoration: none;
     transition: background 0.15s ease;
 }
 
