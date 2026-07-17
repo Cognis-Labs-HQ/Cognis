@@ -112,6 +112,45 @@ test("calendar gateway exports ICS and parses ICS imports", () => {
     assert.equal(gateway.listEvents(calendar.id).length, 2);
 });
 
+test("calendar gateway exports midnight day ranges as all-day ICS events", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Schedule",
+    });
+    gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "All Day Event",
+        startAt: "2026-05-28T00:00:00.000Z",
+        endAt: "2026-05-29T00:00:00.000Z",
+    });
+
+    const exported = gateway.exportCalendarAsIcs(calendar.id);
+
+    assert.ok(exported.includes("DTSTART;VALUE=DATE:20260528"));
+    assert.ok(exported.includes("DTEND;VALUE=DATE:20260529"));
+});
+
+test("calendar gateway imports all-day ICS date values", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Schedule",
+    });
+
+    const imported = gateway.importIcs({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        ics: `BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Imported All Day\r\nDTSTART;VALUE=DATE:20260530\r\nDTEND;VALUE=DATE:20260531\r\nEND:VEVENT\r\nEND:VCALENDAR`,
+    });
+
+    const [event] = gateway.listEvents(calendar.id);
+    assert.equal(imported.importedCount, 1);
+    assert.equal(event.startAt, "2026-05-30T00:00:00.000Z");
+    assert.equal(event.endAt, "2026-05-31T00:00:00.000Z");
+});
+
 test("calendar gateway private export tokens expire and validate", () => {
     const gateway = new CoreCalendarGateway();
     const calendar = gateway.createCalendar({
