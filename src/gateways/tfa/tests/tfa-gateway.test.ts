@@ -130,6 +130,29 @@ function createAdapterMock(): TfaMethodAdapter {
     };
 }
 
+test("tfa gateway ignores configured methods when their adapter is disabled", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter(createAdapterMock());
+    await gateway.enableAdapter("totp");
+    await storeMock.upsertUserMethod({
+        accountId: "alice",
+        methodId: "totp",
+        enabled: true,
+        sortOrder: 0,
+        state: { secret: "abc" },
+        configuredAt: new Date().toISOString(),
+    });
+    await gateway.disableAdapter("totp");
+
+    const status = await gateway.getUserStatus("alice");
+    const methods = await gateway.getLoginMethods("alice");
+
+    assert.equal(status.hasConfiguredMethod, false);
+    assert.equal(status.enabledMethods.length, 0);
+    assert.equal(methods.length, 0);
+});
+
 test("tfa gateway exposes enabled method status for a user", async () => {
     const storeMock = createStoreMock();
     const gateway = new CoreTfaGateway(storeMock as any);

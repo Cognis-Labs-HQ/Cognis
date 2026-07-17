@@ -294,7 +294,12 @@ export class CoreTfaGateway {
     async getUserStatus(accountId: string): Promise<UserTfaStatus> {
         const userMethods = await this.store.listUserMethods(accountId);
         const enabledMethods = userMethods
-            .filter((method) => method.enabled)
+            .filter(
+                (method) =>
+                    method.enabled &&
+                    this.adapters.has(method.methodId) &&
+                    this.isAdapterEnabled(method.methodId),
+            )
             .sort((left, right) => left.sortOrder - right.sortOrder)
             .map((method) => ({
                 id: method.methodId,
