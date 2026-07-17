@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import {
     buildAccessTokenCookie,
@@ -26,9 +26,7 @@ export function sleep(ms: number): Promise<void> {
 export async function waitForPasswordResetResponseFloor(
     startedAt: number,
 ): Promise<void> {
-    const jitterMs = Math.floor(
-        Math.random() * PASSWORD_RESET_RESPONSE_JITTER_MS,
-    );
+    const jitterMs = randomInt(0, PASSWORD_RESET_RESPONSE_JITTER_MS);
     const targetMs = PASSWORD_RESET_MIN_RESPONSE_MS + jitterMs;
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs >= targetMs) return;

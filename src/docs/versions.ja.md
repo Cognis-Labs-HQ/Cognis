@@ -31,7 +31,7 @@
 | -------------------------- | ---------------------------- | ---------- |
 | データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
-| Share                      | `src/gateways/share/`        | `1.2.2`    |
+| Share                      | `src/gateways/share/`        | `1.2.6`    |
 | 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
@@ -47,9 +47,10 @@
 
 ## モジュール
 
-| コンポーネント | パス                              | バージョン |
-| -------------- | --------------------------------- | ---------- |
-| 分析           | `src/modules/analytics/`          | `2.0.1`    |
-| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.2.2`    |
-| Cognis 日本語  | `src/modules/study/languages/ja/` | `1.2.4`    |
-| Cognis 英語    | `src/modules/study/languages/en/` | `1.2.2`    |
+| コンポーネント       | パス                                | バージョン |
+| -------------------- | ----------------------------------- | ---------- |
+| 分析                 | `src/modules/analytics/`            | `2.0.1`    |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`    |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.29`   |
+| Cognis 日本語        | `src/modules/study/languages/ja/`   | `1.2.4`    |
+| Cognis 英語          | `src/modules/study/languages/en/`   | `1.2.2`    |

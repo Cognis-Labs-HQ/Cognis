@@ -46,3 +46,50 @@ export function hasShareCapability(tokenRecord, requiredCapability) {
         : [];
     return grantedCapabilities.includes(requiredCapability);
 }
+
+/**
+ * Resolves a share-guest claim against a resource and capability without
+ * exposing share token or guest-profile internals to consumers.
+ *
+ * @param {object} options
+ * @param {{ sub?: string } | undefined} options.claims
+ * @param {string} options.resourceType
+ * @param {string} options.resourceId
+ * @param {string} [options.requiredCapability]
+ * @param {(id: string) => Promise<object|null>} options.getTokenById
+ * @param {(id: string) => Promise<object|null>} [options.getGuestProfile]
+ * @returns {Promise<{ shareGuest: boolean, authorized: boolean, username?: string, displayName?: string }>}
+ */
+export async function resolveShareGuestAccess({
+    claims,
+    resourceType,
+    resourceId,
+    requiredCapability = "",
+    getTokenById,
+    getGuestProfile,
+} = {}) {
+    const shareId = resolveShareGuestId(claims);
+    if (!shareId) return { shareGuest: false, authorized: false };
+    if (typeof getTokenById !== "function") {
+        return { shareGuest: true, authorized: false };
+    }
+    const token = await getTokenById(shareId);
+    const authorized = Boolean(
+        token?.resourceType === resourceType &&
+        token?.resourceId === resourceId &&
+        hasShareCapability(token, requiredCapability),
+    );
+    if (!authorized) return { shareGuest: true, authorized: false };
+    const guestSessionId = resolveShareGuestSessionId(claims);
+    const guestProfile =
+        guestSessionId && typeof getGuestProfile === "function"
+            ? await getGuestProfile(guestSessionId).catch(() => null)
+            : null;
+    const displayName = String(guestProfile?.displayName ?? "").trim();
+    return {
+        shareGuest: true,
+        authorized: true,
+        username: `guest:${guestSessionId || shareId}`,
+        displayName: displayName || `Guest ${guestSessionId || shareId}`,
+    };
+}

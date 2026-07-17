@@ -40,7 +40,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         >("share:resolveGuestSessionId");
         const hasShareCapability = ctx.getCapability<
             (
-                tokenRecord: { grantedCapabilities?: string[] } | null | undefined,
+                tokenRecord:
+                    | { grantedCapabilities?: string[] }
+                    | null
+                    | undefined,
                 requiredCapability: string,
             ) => boolean
         >("share:hasCapability");
