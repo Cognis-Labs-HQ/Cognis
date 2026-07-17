@@ -29,14 +29,14 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 | Komponen                 | Path                         | Versi   |
 | ------------------------ | ---------------------------- | ------- |
-| Database (db)            | `src/gateways/db/`           | `1.1.2` |
+| Database (db)            | `src/gateways/db/`           | `1.1.3` |
 | Autentikasi (auth)       | `src/gateways/auth/`         | `1.4.9` |
 | Share                    | `src/gateways/share/`        | `1.2.6` |
-| Dua Faktor (tfa)         | `src/gateways/tfa/`          | `1.1.2` |
+| Dua Faktor (tfa)         | `src/gateways/tfa/`          | `1.1.3` |
 | Notifikasi (notify)      | `src/gateways/notify/`       | `1.1.1` |
 | Sosial                   | `src/gateways/social/`       | `1.2.6` |
 | Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |
-| Registrasi               | `src/gateways/registration/` | `1.1.2` |
+| Registrasi               | `src/gateways/registration/` | `1.1.3` |
 | Logging                  | `src/gateways/logging/`      | `1.4.0` |
 | Kalender                 | `src/gateways/calendar/`     | `1.2.0` |
 

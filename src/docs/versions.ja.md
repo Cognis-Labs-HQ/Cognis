@@ -29,14 +29,14 @@
 
 | コンポーネント             | パス                         | バージョン |
 | -------------------------- | ---------------------------- | ---------- |
-| データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
+| データベース (db)          | `src/gateways/db/`           | `1.1.3`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
 | Share                      | `src/gateways/share/`        | `1.2.6`    |
-| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.2`    |
+| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.3`    |
 | 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
-| 登録                       | `src/gateways/registration/` | `1.1.2`    |
+| 登録                       | `src/gateways/registration/` | `1.1.3`    |
 | ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
 | カレンダー                 | `src/gateways/calendar/`     | `1.2.0`    |
 
