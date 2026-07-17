@@ -52,7 +52,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.2.2`  |
+| Share                 | `src/gateways/share/`        | `1.2.6`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.1`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -76,9 +76,10 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 ## Modules
 
-| Component       | Path                              | Version |
-| --------------- | --------------------------------- | ------- |
-| Analytics       | `src/modules/analytics/`          | `2.0.1` |
-| Jitsi Meet      | `src/modules/jitsi-meet/`         | `1.2.2` |
-| Cognis Japanese | `src/modules/study/languages/ja/` | `1.2.4` |
-| Cognis English  | `src/modules/study/languages/en/` | `1.2.2` |
+| Component            | Path                                | Version  |
+| -------------------- | ----------------------------------- | -------- |
+| Analytics            | `src/modules/analytics/`            | `2.0.1`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.29` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

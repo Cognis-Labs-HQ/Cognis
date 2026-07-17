@@ -248,6 +248,7 @@ test("page composer preserves missing placements and shows warning placeholders"
     const source = readPageComposerBundle();
 
     assert.match(source, /function renderMissingElementContent\(elementId\)/);
+    assert.match(source, /createGridOverlayHandlers\(\{[\s\S]*?escapeHtml,/);
     assert.match(source, /class="composer-missing-element-icon"/);
     assert.match(
         source,

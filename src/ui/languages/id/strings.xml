@@ -631,4 +631,8 @@
   <string name="ui.app.dashboard.element.student_classes.go">Ke Kelas Saya</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.label">Acara Kalender Mendatang</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">Tidak ada acara kalender mendatang.</string>
+  <string name="ui.reuse.pointer_style">Gaya penunjuk</string>
+  <string name="ui.reuse.pointer_mouse">Mouse</string>
+  <string name="ui.reuse.pointer_laser">Penunjuk laser</string>
+  <string name="ui.reuse.pointer_crosshair">Garis bidik</string>
 </resources>

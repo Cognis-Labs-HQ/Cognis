@@ -631,4 +631,8 @@
   <string name="ui.app.dashboard.element.student_classes.go">マイクラスへ</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.label">今後のカレンダー予定</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">今後のカレンダー予定はありません。</string>
+  <string name="ui.reuse.pointer_style">ポインタースタイル</string>
+  <string name="ui.reuse.pointer_mouse">マウス</string>
+  <string name="ui.reuse.pointer_laser">レーザーポインター</string>
+  <string name="ui.reuse.pointer_crosshair">十字カーソル</string>
 </resources>

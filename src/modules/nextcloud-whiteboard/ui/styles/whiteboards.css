@@ -1,0 +1,388 @@
+.whiteboard-admin {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.whiteboard-admin {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.whiteboard-admin label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.whiteboard-boards-panel {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.whiteboard-spawn-form {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.whiteboard-spawn-form label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.whiteboard-board-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.whiteboard-board-card {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.875rem;
+}
+
+.whiteboard-board-card h2 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.whiteboard-board-meta {
+    color: var(--text-muted, #5d6677);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.whiteboard-board-open {
+    justify-self: start;
+}
+
+.whiteboard-empty {
+    color: var(--text-muted, #5d6677);
+}
+
+.whiteboard-canvas-wrap {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    overflow: hidden;
+}
+
+.whiteboard-toolbar {
+    align-items: center;
+    background: var(--surface, #ffffff);
+    border-bottom: 1px solid var(--border, #d8dee9);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.whiteboard-toolbar-group {
+    align-items: center;
+    display: flex;
+    gap: 0.45rem;
+}
+
+.whiteboard-toolbar-group[hidden] {
+    display: none;
+}
+
+.whiteboard-tool,
+#whiteboard-color {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 0.65rem;
+    box-sizing: border-box;
+    color: var(--text, #1f2937);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 1.1rem;
+    height: 2.5rem;
+    justify-content: center;
+    min-width: 2.5rem;
+    padding: 0 0.75rem;
+}
+
+#whiteboard-color {
+    color-scheme: light dark;
+    inline-size: 2.5rem;
+    padding: 0.25rem;
+}
+
+#whiteboard-stroke-width {
+    appearance: none;
+    min-width: 3.25rem;
+    text-align: center;
+}
+
+.whiteboard-tool.active {
+    background: var(--accent, #5e81f4);
+    border-color: var(--accent, #5e81f4);
+    color: #ffffff;
+}
+
+.whiteboard-board-title {
+    flex: 1;
+    font-weight: 600;
+    min-width: 10rem;
+    overflow: hidden;
+    text-align: end;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.whiteboard-history-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.whiteboard-history-card {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 0.75rem;
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+.whiteboard-history-card h3,
+.whiteboard-history-card p {
+    margin: 0;
+}
+
+.whiteboard-history-card p {
+    color: var(--text-muted, #5d6677);
+    font-size: 0.85rem;
+}
+
+.whiteboard-canvas-stage {
+    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    position: relative;
+}
+
+#whiteboard-canvas {
+    cursor: crosshair;
+    display: block;
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    touch-action: none;
+    width: 100%;
+}
+
+.whiteboard-canvas-overlay {
+    align-items: center;
+    background: var(--surface, #ffffff);
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+}
+
+.whiteboard-canvas-overlay[hidden] {
+    display: none;
+}
+
+.whiteboard-overlay-message {
+    color: var(--text-muted, #5d6677);
+    font-size: 0.95rem;
+    margin: 0;
+    padding: 2rem;
+    text-align: center;
+}
+
+#page-presence-section {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    margin-left: 0;
+    width: fit-content;
+}
+
+#page-presence-section:empty {
+    display: none;
+}
+
+.whiteboard-sync-status {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 999px;
+    display: inline-block;
+    height: 1rem;
+    width: 1rem;
+}
+
+.whiteboard-sync-status[data-status="synced"] {
+    background: var(--success, #2d9e5c);
+}
+
+.whiteboard-sync-status[data-status="syncing"] {
+    background: var(--warning, #c47900);
+}
+
+.whiteboard-sync-status[data-status="error"] {
+    background: var(--error, #c0392b);
+}
+
+.whiteboard-start-panel {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 1rem;
+    display: grid;
+    gap: 1rem;
+    max-height: min(32rem, 80%);
+    max-width: min(42rem, 90%);
+    padding: 1rem;
+    width: 100%;
+}
+
+.whiteboard-start-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.whiteboard-overlay-board-list {
+    border-top: 1px solid var(--border, #d8dee9);
+    display: grid;
+    gap: 0.5rem;
+    max-height: 14rem;
+    overflow: auto;
+    padding-top: 0.75rem;
+}
+
+.whiteboard-overlay-board {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    text-align: start;
+}
+
+.whiteboard-board-title[contenteditable="true"] {
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--accent, #5e81f4);
+    border-radius: 0.5rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.whiteboard-canvas-stage {
+    --whiteboard-canvas-bg: color-mix(
+        in srgb,
+        var(--surface, #ffffff) 92%,
+        var(--text, #1f2937) 8%
+    );
+    background: var(--whiteboard-canvas-bg);
+}
+
+#whiteboard-canvas {
+    background: var(--whiteboard-canvas-bg);
+}
+
+.whiteboard-tool:disabled,
+#whiteboard-stroke-width:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.whiteboard-new-tool {
+    gap: 0.25rem;
+    min-width: 4.75rem;
+}
+
+.whiteboard-tool.btn-cancel {
+    text-decoration: none;
+}
+
+.whiteboard-canvas-stage {
+    --whiteboard-canvas-bg: var(--surface, #ffffff);
+    --whiteboard-auto-stroke: var(--text, #111827);
+    overflow: auto;
+}
+
+.whiteboard-board-title {
+    flex: 0 1 auto;
+    margin-inline-start: auto;
+    max-width: 45%;
+    min-width: 0;
+    width: max-content;
+}
+
+.whiteboard-board-title[contenteditable="true"] {
+    display: inline-block;
+    min-width: 8rem;
+    text-align: end;
+}
+
+.whiteboard-text-editor {
+    background: var(--surface, #ffffff);
+    border: 2px solid var(--accent, #5e81f4);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.25rem var(--shadow, rgb(15 23 42 / 20%));
+    color: var(--text, #111827);
+    font: inherit;
+    line-height: 1.25;
+    padding: 0.35rem 0.5rem;
+    position: absolute;
+    resize: both;
+    z-index: 3;
+}
+
+.whiteboard-text-menu {
+    align-items: center;
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 999px;
+    box-shadow: 0 0.5rem 1.25rem var(--shadow, rgb(15 23 42 / 20%));
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    position: absolute;
+    width: max-content;
+    z-index: 4;
+}
+
+.whiteboard-text-menu button,
+.whiteboard-text-menu input,
+.whiteboard-text-menu select {
+    border: 1px solid var(--border, #d8dee9);
+    border-radius: 999px;
+    font: inherit;
+    min-height: 1.8rem;
+}
+
+.whiteboard-text-menu button {
+    background: transparent;
+    min-width: 1.8rem;
+}
+
+.whiteboard-text-menu button.active {
+    background: var(--accent, #5e81f4);
+    color: #fff;
+}
+
+.whiteboard-text-menu input {
+    max-width: 4.5rem;
+    padding-inline: 0.45rem;
+}
+
+.whiteboard-text-menu select {
+    max-width: 12rem;
+    padding-inline: 0.45rem;
+}

@@ -105,6 +105,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     flowCtx.flow.extend(
         "mint-share-token",
         "validate-resource",
+        { id: "test:unsupported-resource" },
+        () => ({ valid: false, reason: "unsupported_resource_type" }),
+    );
+    flowCtx.flow.extend(
+        "mint-share-token",
+        "validate-resource",
         { id: "test:validate-resource" },
         () => ({
             valid: true,
@@ -116,8 +122,20 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     flowCtx.flow.extend(
         "mint-share-token",
         "authorize-minter",
+        { id: "test:unsupported-minter" },
+        () => ({ authorized: false, reason: "unsupported_resource_type" }),
+    );
+    flowCtx.flow.extend(
+        "mint-share-token",
+        "authorize-minter",
         { id: "test:authorize-minter" },
         () => ({ authorized: true, ownerAccountId: "alice" }),
+    );
+    flowCtx.flow.extend(
+        "revoke-share-token",
+        "authorize-revocation",
+        { id: "test:unsupported-revocation" },
+        () => ({ authorized: false, reason: "unsupported_resource_type" }),
     );
     flowCtx.flow.extend(
         "revoke-share-token",
@@ -141,6 +159,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "check-access",
         { id: "test:check-access" },
         () => ({ allowed: true }),
+    );
+    flowCtx.flow.extend(
+        "construct-share-page",
+        "resolve-resource-renderer",
+        { id: "test:unsupported-renderer" },
+        () => null,
     );
     flowCtx.flow.extend(
         "construct-share-page",

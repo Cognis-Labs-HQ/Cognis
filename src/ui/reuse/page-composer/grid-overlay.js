@@ -15,6 +15,7 @@ export function createGridOverlayHandlers({
     state,
     UNIT,
     i18n,
+    escapeHtml,
     getGridSize,
     renderGridComposer,
     saveLayout,
