@@ -142,7 +142,7 @@ export function createSubComposerPanelHandlers({
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.discard")}</button>
+        <a href="#" class="composer-discard-btn btn-cancel" role="button">${i18n.t("ui.reuse.discard")}</a>
         <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.done")}</button>
         <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.reset_layout")}</button>
       </div>
@@ -235,7 +235,8 @@ export function createSubComposerPanelHandlers({
 
         panel
             .querySelector(".composer-discard-btn")
-            .addEventListener("click", () => {
+            .addEventListener("click", (event) => {
+                event.preventDefault();
                 state.layout = state.layoutSnapshot;
                 state.editing = false;
                 endEditMode();
