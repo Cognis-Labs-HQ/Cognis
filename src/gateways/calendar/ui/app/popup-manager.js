@@ -269,7 +269,7 @@ export function createCalendarPopupManager({
         });
     async function openEventPopup(calendarId, eventId) {
         try {
-            const eventData = await calendarUi.fetchEvent(calendarId, eventId);
+            let eventData = await calendarUi.fetchEvent(calendarId, eventId);
             if (!eventData?.event) {
                 showToast(
                     i18n.t("gateway.calendar.load_event_failed"),
@@ -288,7 +288,7 @@ export function createCalendarPopupManager({
                     ...Object.keys(eventData.event.responses ?? {}),
                 ]),
             );
-            const participantDirectory = await createParticipantDirectory(
+            let participantDirectory = await createParticipantDirectory(
                 apiFetch,
                 participantIds,
             );
@@ -301,23 +301,34 @@ export function createCalendarPopupManager({
                 );
             };
             const canRespond = eventData.meta?.canRespond === true;
-            const isAllDay = isAllDayRange(
-                eventData.event.startAt,
-                eventData.event.endAt,
-            );
+            const renderEventPopupBody = () => {
+                const isAllDay = isAllDayRange(
+                    eventData.event.startAt,
+                    eventData.event.endAt,
+                );
+                return renderReadOnlyEventPopupBody({
+                    eventData,
+                    i18n,
+                    escapeHtml,
+                    calendarUi,
+                    participantDirectory,
+                    renderParticipantName,
+                    buildParticipantCardHtml,
+                    isAllDay,
+                });
+            };
+            const hydrateEventPopupParticipants = (container) => {
+                bindProfilePreviews(i18n);
+                const attendeeList = container.querySelector(
+                    ".calendar-participant-list",
+                );
+                if (attendeeList instanceof HTMLElement) {
+                    hydrateProfileAvatars(attendeeList);
+                }
+            };
             await openPopup({
                 title: eventData.event.title,
-                body: () =>
-                    renderReadOnlyEventPopupBody({
-                        eventData,
-                        i18n,
-                        escapeHtml,
-                        calendarUi,
-                        participantDirectory,
-                        renderParticipantName,
-                        buildParticipantCardHtml,
-                        isAllDay,
-                    }),
+                body: renderEventPopupBody,
                 actions: [
                     ...(canRespond
                         ? calendarUi.EVENT_RESPONSE_OPTIONS.map(
@@ -371,13 +382,56 @@ export function createCalendarPopupManager({
                     },
                 ],
                 onOpen: (overlay) => {
-                    bindProfilePreviews(i18n);
-                    const attendeeList = overlay.querySelector(
-                        ".calendar-participant-list",
-                    );
-                    if (attendeeList instanceof HTMLElement) {
-                        hydrateProfileAvatars(attendeeList);
-                    }
+                    hydrateEventPopupParticipants(overlay);
+                    const responsePoll = window.setInterval(async () => {
+                        if (!overlay.isConnected) {
+                            window.clearInterval(responsePoll);
+                            return;
+                        }
+                        try {
+                            const refreshedEventData =
+                                await calendarUi.fetchEvent(
+                                    calendarId,
+                                    eventId,
+                                );
+                            if (!refreshedEventData?.event) return;
+                            eventData = refreshedEventData;
+                            const refreshedParticipantIds = Array.from(
+                                new Set([
+                                    ...(Array.isArray(eventData.event.attendees)
+                                        ? eventData.event.attendees
+                                        : []),
+                                    ...Object.keys(
+                                        eventData.event.responses ?? {},
+                                    ),
+                                ]),
+                            );
+                            participantDirectory =
+                                await createParticipantDirectory(
+                                    apiFetch,
+                                    refreshedParticipantIds,
+                                );
+                            const popupBody =
+                                overlay.querySelector(".popup-body");
+                            if (popupBody instanceof HTMLElement) {
+                                popupBody.innerHTML = renderEventPopupBody();
+                                hydrateEventPopupParticipants(popupBody);
+                            }
+                        } catch (error) {
+                            console.warn(
+                                "Failed to refresh calendar participant responses.",
+                                error,
+                            );
+                        }
+                    }, 60000);
+                    const popupRemovalObserver = new MutationObserver(() => {
+                        if (overlay.isConnected) return;
+                        window.clearInterval(responsePoll);
+                        popupRemovalObserver.disconnect();
+                    });
+                    popupRemovalObserver.observe(document.body, {
+                        childList: true,
+                    });
                 },
                 onAction: async (actionId) => {
                     if (actionId === null) {

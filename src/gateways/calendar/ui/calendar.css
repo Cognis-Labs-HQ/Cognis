@@ -690,6 +690,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    align-self: center;
     margin-left: auto;
 }
 
@@ -700,7 +701,12 @@
     min-width: 1.75rem;
     min-height: 1.75rem;
     line-height: 1;
+    text-align: center;
     text-decoration: none;
+}
+
+.calendar-event-detail-section:last-child {
+    margin-bottom: 1rem;
 }
 
 .calendar-participant-response {

@@ -425,6 +425,23 @@ test("calendar deep-link event popup does not block mount completion", () => {
     );
 });
 
+test("calendar event popup polls participant response updates", () => {
+    assert.match(POPUP_MANAGER_SOURCE, /window\.setInterval\(async \(\) => \{/);
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /calendarUi\.fetchEvent\(calendarId, eventId\)/,
+    );
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /popupBody\.innerHTML = renderEventPopupBody\(\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /window\.clearInterval\(responsePoll\);/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /\}, 60000\);/);
+});
+
 test("calendar participant remove control is a visible cancel action link", () => {
     assert.match(
         POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE,
