@@ -48,9 +48,17 @@ function createSessionId(storageKey) {
     const existing = window.sessionStorage.getItem(storageKey);
     if (existing) return existing;
     const generated =
-        window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+        window.crypto?.randomUUID?.() ?? createFallbackSessionId();
     window.sessionStorage.setItem(storageKey, generated);
     return generated;
+}
+
+function createFallbackSessionId() {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return `${Date.now()}-${Array.from(bytes, (byte) =>
+        byte.toString(16).padStart(2, "0"),
+    ).join("")}`;
 }
 
 function renderPresenceEntry(entry) {

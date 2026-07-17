@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { readJson, type GatewayBootstrapContext } from "../../../shared.js";
 import { resolveExternalBaseUrl } from "../../../../api/reuse/url-parts.js";
 import {
@@ -142,9 +143,7 @@ export function createLoginLinkRoutes({
                     },
                 });
             }
-            await sleep(
-                Math.floor(Math.random() * PASSWORD_RESET_LOOKUP_JITTER_MS),
-            );
+            await sleep(randomInt(0, PASSWORD_RESET_LOOKUP_JITTER_MS));
             const accountId = await getAccountIdByEmail(email).catch(
                 () => null,
             );

@@ -5,11 +5,13 @@ const imageElementCache = new Map();
 function generateElementId() {
     return typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2);
+        : `element-${randomNonce().toString(36)}-${randomNonce().toString(36)}`;
 }
 
 function randomNonce() {
-    return Math.floor(Math.random() * SESSION_VERSION_NONCE_MAX);
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    return values[0] % SESSION_VERSION_NONCE_MAX;
 }
 
 export function bumpElementVersion(element, patch = {}) {
