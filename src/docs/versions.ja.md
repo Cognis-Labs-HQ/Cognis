@@ -32,6 +32,7 @@
 | データベース (db)          | `src/gateways/db/`           | `1.1.2`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
 | Share                      | `src/gateways/share/`        | `1.2.6`    |
+| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.2`    |
 | 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
