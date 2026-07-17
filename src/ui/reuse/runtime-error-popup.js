@@ -385,7 +385,10 @@ export async function openRuntimeErrorPopup({
                 return false;
             },
         });
-        if (popupAction === null || popupAction === "close") {
+        if (
+            (popupAction === null || popupAction === "close") &&
+            shouldNavigateToPreviousRouteOnClose({ context, contextKey })
+        ) {
             navigateToPreviousRouteIfDifferent(
                 currentRoutePath,
                 previousRoutePath,
@@ -398,6 +401,19 @@ export async function openRuntimeErrorPopup({
 
 function normalizeRoutePath(routePath) {
     return normalizeSameOriginRoutePath(routePath, { logFailures: true });
+}
+
+function shouldNavigateToPreviousRouteOnClose({ context, contextKey } = {}) {
+    const routeFailureContextKeys = new Set([
+        "ui.reuse.runtime_error_context_route_load",
+        "ui.reuse.runtime_error_context_route_mount",
+    ]);
+    if (routeFailureContextKeys.has(contextKey)) return true;
+    const normalizedContext = String(context ?? "").toLowerCase();
+    return (
+        normalizedContext === "route load failed" ||
+        normalizedContext === "route mount failed"
+    );
 }
 
 function getPreviousRoutePathFromReferrer() {
