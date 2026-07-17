@@ -282,6 +282,46 @@
     flex: 1;
 }
 
+.composer-panel-actions .composer-done-btn,
+.composer-panel-actions .composer-discard-btn,
+.composer-panel-actions .composer-reset-btn {
+    text-align: center;
+    text-decoration: none;
+}
+
+.composer-panel-actions .btn-animated {
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+.composer-panel-actions .composer-done-btn.btn-confirm {
+    background: transparent;
+    border-color: var(--color-success-border);
+    color: var(--color-success-outline-text, var(--color-success-text));
+}
+
+.composer-panel-actions .composer-done-btn.btn-confirm:hover {
+    background: var(--color-success-hover-bg);
+    border-color: var(--color-success-outline-text, var(--color-success-text));
+    color: var(--color-success-outline-text, var(--color-success-text));
+}
+
+.composer-panel-actions .composer-reset-btn.btn-neutral {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.composer-panel-actions .composer-reset-btn.btn-neutral:hover {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
 .composer-discard-btn {
     background: var(--surface-soft);
     border: 1px solid var(--border);
@@ -294,10 +334,16 @@
     transition: background 0.15s ease;
 }
 
-.composer-discard-btn:hover {
-    background: var(--control-hover-bg);
-    border-color: var(--border-strong);
-    color: var(--text);
+.composer-discard-btn.btn-cancel {
+    background: transparent;
+    border-color: var(--color-danger-border);
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+}
+
+.composer-discard-btn.btn-cancel:hover {
+    background: var(--color-danger-hover-bg);
+    border-color: var(--color-danger-outline-text, var(--color-danger-text));
+    color: var(--color-danger-outline-text, var(--color-danger-text));
 }
 
 .composer-reset-btn {
