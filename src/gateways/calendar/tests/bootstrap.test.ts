@@ -746,6 +746,18 @@ test("calendar accept response via invitations API saves copy into chosen calend
         ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
+    capabilities.contribute("social:profileStore", {
+        async getProfile(accountId: string) {
+            if (accountId !== "bob") return null;
+            return { displayName: "Bob Builder", handle: "bob" };
+        },
+        async searchProfiles() {
+            return [];
+        },
+        async isFollowing() {
+            return false;
+        },
+    });
     const dispatched: Array<{
         recipientUsername: string;
         subject: string;
@@ -859,8 +871,9 @@ test("calendar accept response via invitations API saves copy into chosen calend
         dispatched.some(
             (entry) =>
                 entry.recipientUsername === "alice" &&
-                entry.subject === "Calendar response: Planning" &&
-                entry.body === "Event: Planning\nUser: bob\nResponse: accepted",
+                entry.subject === "Event invite accepted" &&
+                entry.body ===
+                    "Bob Builder has accepted the invite to Planning.",
         ),
     );
 });

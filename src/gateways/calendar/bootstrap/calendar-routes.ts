@@ -40,6 +40,7 @@ export function createCalendarCoreRoutes({
     resolveMeetingsProviderAvailability,
     resolveShareableUsers,
     resolveAccountId,
+    resolveAccountDisplayName,
     log,
     getDispatchNotification,
     ensureNotificationCategory,
@@ -61,6 +62,9 @@ export function createCalendarCoreRoutes({
           >)
         | null;
     resolveAccountId: ResolveAccountId | null;
+    resolveAccountDisplayName:
+        | ((accountId: string) => Promise<string> | string)
+        | null;
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
     ensureNotificationCategory: () => void;
@@ -930,6 +934,8 @@ export function createCalendarCoreRoutes({
                 gateway,
                 shareRegistry,
                 dispatchNotification,
+                resolveAccountDisplayName:
+                    resolveAccountDisplayName ?? undefined,
                 onEventUpdatedForReminders:
                     scheduleReminderNotificationsForEvent,
                 log,

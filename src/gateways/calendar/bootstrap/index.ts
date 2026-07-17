@@ -45,6 +45,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "auth:resolveAccountId",
     );
     const profileStore = ctx.capabilities.get<{
+        getProfile?: (accountId: string) => Promise<{
+            displayName?: string | null;
+            handle?: string | null;
+        } | null>;
         searchProfiles: (
             query: string,
             limit?: number,
@@ -62,6 +66,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             followingId: string,
         ) => Promise<boolean>;
     }>("social:profileStore");
+
+    const resolveAccountDisplayName = profileStore?.getProfile
+        ? async (accountId: string) => {
+              const profile = await profileStore.getProfile?.(accountId);
+              return (
+                  String(
+                      profile?.displayName ?? profile?.handle ?? "",
+                  ).trim() || accountId
+              );
+          }
+        : null;
 
     const resolveShareableUsers = profileStore
         ? async (input: { ownerAccountId: string; query: string }) => {
@@ -215,6 +230,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 resolveMeetingsProviderAvailability ?? null,
             resolveShareableUsers,
             resolveAccountId: resolveAccountId ?? null,
+            resolveAccountDisplayName,
             log: ctx.log,
             getDispatchNotification: () =>
                 notificationResolver.getDispatchNotification(),

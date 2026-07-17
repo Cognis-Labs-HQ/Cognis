@@ -6,6 +6,7 @@ import type {
 } from "../gateway/index.js";
 import {
     buildResponseNotificationBody,
+    buildResponseNotificationSubject,
     errorMessage,
     normalizeResponseValue,
     sendCalendarError,
@@ -26,6 +27,7 @@ export async function handleCalendarResponseRoute(input: {
     gateway: CoreCalendarGateway;
     shareRegistry: CalendarShareRegistry;
     dispatchNotification: NotificationDispatcher | null;
+    resolveAccountDisplayName?: (accountId: string) => Promise<string> | string;
     onEventUpdatedForReminders?: (event: CalendarEventRecord) => void;
     log?: CalendarLogger;
 }): Promise<void> {
@@ -239,13 +241,16 @@ export async function handleCalendarResponseRoute(input: {
             effectiveEvent.createdBy !== input.claims.sub
         ) {
             try {
+                const attendeeDisplayName = input.resolveAccountDisplayName
+                    ? await input.resolveAccountDisplayName(input.claims.sub)
+                    : input.claims.sub;
                 await input.dispatchNotification({
                     category: "calendar",
                     recipientUsername: effectiveEvent.createdBy,
-                    subject: `Calendar response: ${effectiveEvent.title}`,
+                    subject: buildResponseNotificationSubject(response),
                     body: buildResponseNotificationBody(
                         effectiveEvent,
-                        input.claims.sub,
+                        attendeeDisplayName,
                         response,
                     ),
                     actionUrl: "/calendar",

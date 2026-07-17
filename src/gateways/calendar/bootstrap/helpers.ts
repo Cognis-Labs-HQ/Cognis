@@ -334,16 +334,18 @@ export function buildExternalInviteBody(
     ].join("\n");
 }
 
-export function buildResponseNotificationBody(
-    event: CalendarEventRecord,
-    attendeeAccountId: string,
+export function buildResponseNotificationSubject(
     response: CalendarEventResponse,
 ): string {
-    return [
-        `Event: ${event.title}`,
-        `User: ${attendeeAccountId}`,
-        `Response: ${response}`,
-    ].join("\n");
+    return `Event invite ${response}`;
+}
+
+export function buildResponseNotificationBody(
+    event: CalendarEventRecord,
+    attendeeDisplayName: string,
+    response: CalendarEventResponse,
+): string {
+    return `${attendeeDisplayName} has ${response} the invite to ${event.title}.`;
 }
 
 export function buildCancellationNotificationBody(
