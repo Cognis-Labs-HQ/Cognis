@@ -641,7 +641,7 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
     assert.deepEqual(dispatched, [
         {
             recipientUsername: "bob",
-            subject: "Calendar invite: Planning",
+            subject: "alice invited you to Planning",
             senderName: "alice",
         },
     ]);
@@ -746,16 +746,30 @@ test("calendar accept response via invitations API saves copy into chosen calend
         ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
+    capabilities.contribute("social:profileStore", {
+        async getProfile(accountId: string) {
+            if (accountId !== "bob") return null;
+            return { displayName: "Bob Builder", handle: "bob" };
+        },
+        async searchProfiles() {
+            return [];
+        },
+        async isFollowing() {
+            return false;
+        },
+    });
     const dispatched: Array<{
         recipientUsername: string;
         subject: string;
         body: string;
+        senderName: string;
     }> = [];
     capabilities.contribute("notify:dispatch", async (envelope: any) => {
         dispatched.push({
             recipientUsername: String(envelope.recipientUsername ?? ""),
             subject: String(envelope.subject ?? ""),
             body: String(envelope.body ?? ""),
+            senderName: String(envelope.senderName ?? ""),
         });
         return { dispatched: ["internal"] };
     });
@@ -859,8 +873,10 @@ test("calendar accept response via invitations API saves copy into chosen calend
         dispatched.some(
             (entry) =>
                 entry.recipientUsername === "alice" &&
-                entry.subject === "Calendar response: Planning" &&
-                entry.body === "Event: Planning\nUser: bob\nResponse: accepted",
+                entry.subject === "Event invite accepted" &&
+                entry.body ===
+                    "Bob Builder has accepted the invite to Planning." &&
+                entry.senderName === "Bob Builder",
         ),
     );
 });

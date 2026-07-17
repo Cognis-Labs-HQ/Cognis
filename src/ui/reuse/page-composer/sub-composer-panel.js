@@ -142,9 +142,9 @@ export function createSubComposerPanelHandlers({
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.discard")}</button>
-        <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.done")}</button>
-        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.reset_layout")}</button>
+        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
+        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
       </div>
     `;
 
@@ -220,7 +220,8 @@ export function createSubComposerPanelHandlers({
 
         panel
             .querySelector(".composer-done-btn")
-            .addEventListener("click", async () => {
+            .addEventListener("click", async (event) => {
+                event.preventDefault();
                 compactSubPlacements(state);
                 state.editing = false;
                 endEditMode();
@@ -235,7 +236,8 @@ export function createSubComposerPanelHandlers({
 
         panel
             .querySelector(".composer-discard-btn")
-            .addEventListener("click", () => {
+            .addEventListener("click", (event) => {
+                event.preventDefault();
                 state.layout = state.layoutSnapshot;
                 state.editing = false;
                 endEditMode();
@@ -244,7 +246,8 @@ export function createSubComposerPanelHandlers({
 
         panel
             .querySelector(".composer-reset-btn")
-            .addEventListener("click", async () => {
+            .addEventListener("click", async (event) => {
+                event.preventDefault();
                 state.layout = { placements: [], hidden: [] };
                 initializeSubPlacements(state);
                 state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));

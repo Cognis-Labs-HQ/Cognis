@@ -19,6 +19,9 @@ test("runtime error popup renders branded header and supports previous-route fal
     assert.match(source, /window\.history\.state\?\.previousRouterPage/);
     assert.match(source, /hasLoadedMainPageBoilerplate/);
     assert.match(source, /didReloadIntoCurrentDocument/);
+    assert.match(source, /shouldNavigateToPreviousRouteOnClose/);
+    assert.match(source, /ui\.reuse\.runtime_error_context_route_load/);
+    assert.match(source, /ui\.reuse\.runtime_error_context_route_mount/);
     assert.match(source, /id:\s*["']copy["']/);
     assert.match(
         source,
@@ -295,6 +298,81 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
 
     assert.deepEqual(locationAssignCalls, []);
     assert.equal(historyBackCalls, 1);
+});
+
+test("runtime error popup keeps users on loaded pages after post-load crashes", async () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const testableSource =
+        source
+            .replace(/^import[\s\S]*?from .*;\n/gm, "")
+            .replace(/\bexport\s+/g, "") +
+        "\n" +
+        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
+
+    const locationAssignCalls = [];
+    let historyBackCalls = 0;
+    const context = {
+        console,
+        Date,
+        openPopup() {
+            return Promise.resolve("close");
+        },
+        shouldSuppressConnectionRecoveryPopup() {
+            return false;
+        },
+        createI18n() {
+            return Promise.resolve({
+                t(key) {
+                    return key;
+                },
+            });
+        },
+        escapeHtml(value) {
+            return String(value ?? "");
+        },
+        getCurrentRoutePath() {
+            return "/meetings/active";
+        },
+        normalizeSameOriginRoutePath(routePath) {
+            return String(routePath ?? "");
+        },
+        window: {
+            location: {
+                href: "https://example.com/meetings/active",
+                assign(routePath) {
+                    locationAssignCalls.push(routePath);
+                },
+            },
+            history: {
+                back() {
+                    historyBackCalls += 1;
+                },
+                state: {
+                    previousRouterPage: "/meetings",
+                },
+            },
+            addEventListener() {},
+        },
+        document: {
+            referrer: "",
+        },
+    };
+    context.globalThis = context;
+
+    vm.runInNewContext(testableSource, context, {
+        filename: "runtime-error-popup.js",
+    });
+
+    await context.__testExports.openRuntimeErrorPopup({
+        error: new Error("Share button failed"),
+        contextKey: "ui.reuse.runtime_error_context_window_runtime",
+    });
+
+    assert.deepEqual(locationAssignCalls, []);
+    assert.equal(historyBackCalls, 0);
 });
 
 test("runtime error popup caches main boilerplate lookup result", () => {

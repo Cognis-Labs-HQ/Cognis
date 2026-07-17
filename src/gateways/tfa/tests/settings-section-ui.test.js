@@ -108,3 +108,14 @@ test("available TFA rows try enabling before opening setup flow", () => {
         /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(methodId\);/,
     );
 });
+
+test("tfa setup conceals manual secrets behind reusable visibility toggles", () => {
+    assert.match(
+        SOURCE,
+        /from "\/static\/reuse\/secret-visibility-toggle\.js"/,
+    );
+    assert.match(SOURCE, /renderSecretVisibilityField/);
+    assert.match(SOURCE, /bindSecretVisibilityToggles\(\{ root: overlay \}\)/);
+    assert.match(SOURCE, /gateway\.tfa\.settings\.manual_secret_toggle/);
+    assert.doesNotMatch(SOURCE, /<code class="settings-tfa-setup-code">/);
+});

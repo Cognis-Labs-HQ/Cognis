@@ -17,6 +17,7 @@ async function bootstrapCalendarTest(input: {
         recipientUsername: string;
         subject: string;
         actionUrl?: string;
+        senderName?: string;
     }) => Promise<{ dispatched: string[] }>;
 }) {
     const gatewayRegistry = new GatewayRegistry();
@@ -50,6 +51,7 @@ test("shared-calendar invite notifications use each recipient shared calendar ro
         recipientUsername: string;
         subject: string;
         actionUrl?: string;
+        senderName?: string;
     }> = [];
     const dispatchJson = await bootstrapCalendarTest({
         claimsByToken: new Map([
@@ -127,9 +129,10 @@ test("shared-calendar invite notifications use each recipient shared calendar ro
     const charlieNotification = dispatched.find(
         (entry) =>
             entry.recipientUsername === "charlie" &&
-            entry.subject === "Calendar invite: Shared review",
+            entry.subject === "bob invited you to Shared review",
     );
     assert.ok(charlieNotification);
+    assert.equal(charlieNotification.senderName, "bob");
     assert.equal(
         charlieNotification.actionUrl,
         `/calendar?calendarId=${encodeURIComponent(charlieSharedCalendarId)}&eventId=${encodeURIComponent(createdEventId)}`,
@@ -316,6 +319,7 @@ test("recurring invite dispatches one internal notification per recipient", asyn
         recipientUsername: string;
         subject: string;
         actionUrl?: string;
+        senderName?: string;
     }> = [];
     const dispatchJson = await bootstrapCalendarTest({
         claimsByToken: new Map([
@@ -355,7 +359,7 @@ test("recurring invite dispatches one internal notification per recipient", asyn
     const inviteNotifications = dispatched.filter(
         (entry) =>
             entry.recipientUsername === "bob" &&
-            entry.subject === "Calendar invite: Recurring sync",
+            entry.subject === "alice invited you to Recurring sync",
     );
     assert.equal(inviteNotifications.length, 1);
 });
@@ -367,6 +371,7 @@ test("sharing a calendar with a user dispatches a calendar notification", async 
         recipientUsername: string;
         subject: string;
         actionUrl?: string;
+        senderName?: string;
     }> = [];
     const dispatchJson = await bootstrapCalendarTest({
         claimsByToken: new Map([
