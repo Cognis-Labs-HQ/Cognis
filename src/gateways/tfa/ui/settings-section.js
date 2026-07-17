@@ -5,6 +5,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { createQrImageSource } from "/static/reuse/qr-image-source.js";
+import {
+    bindSecretVisibilityToggles,
+    renderSecretVisibilityField,
+} from "/static/reuse/secret-visibility-toggle.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import {
     loadTfaStatus,
@@ -95,6 +99,17 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             resolveTranslatedMessage(normalizedMessage) ||
             i18n.t("gateway.tfa.settings.setup_failed")
         );
+    }
+
+    function renderManualSecretField(fieldId, manualSecret) {
+        if (!manualSecret) return "";
+        return renderSecretVisibilityField({
+            id: fieldId,
+            value: manualSecret,
+            label: i18n.t("gateway.tfa.settings.manual_secret"),
+            toggleLabel: i18n.t("gateway.tfa.settings.manual_secret_toggle"),
+            escapeHtml,
+        });
     }
 
     function makeEmptyMethodRow() {
@@ -282,7 +297,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 <div class="stack">
                   <p class="settings-tfa-setup-prompt">${escapeHtml(setupPrompt)}</p>
                   ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.tfa.settings.qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
-                  ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.tfa.settings.manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
+                  ${renderManualSecretField("settings-tfa-manual-secret", manualSecret)}
                   ${detailsHtml}
                   <label>
                     ${escapeHtml(codeLabel)}
@@ -303,6 +318,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 ],
                 onOpen: (overlay) => {
                     codeInput = overlay.querySelector("#settings-tfa-code");
+                    bindSecretVisibilityToggles({ root: overlay });
                 },
                 onAction: async (actionId) => {
                     if (actionId !== "confirm") {
@@ -372,7 +388,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 <div class="stack">
                   <p class="settings-tfa-setup-prompt">${escapeHtml(methodManagePrompt)}</p>
                   ${qrImage.src ? `<img src="${escapeHtml(qrImage.src)}" alt="${escapeHtml(i18n.t("gateway.tfa.settings.qr_code_alt"))}" class="settings-tfa-setup-qr" />` : ""}
-                  ${manualSecret ? `<label>${escapeHtml(i18n.t("gateway.tfa.settings.manual_secret"))}<code class="settings-tfa-setup-code">${escapeHtml(manualSecret)}</code></label>` : ""}
+                  ${renderManualSecretField("settings-tfa-manual-secret", manualSecret)}
                 </div>`,
                 actions: [
                     {
@@ -386,6 +402,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                         variant: "cancel",
                     },
                 ],
+                onOpen: (overlay) => {
+                    bindSecretVisibilityToggles({ root: overlay });
+                },
             });
         } finally {
             qrImage.revoke();
