@@ -32,6 +32,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
 | Authentifizierung (auth)  | `src/gateways/auth/`         | `1.4.9` |
 | Share                     | `src/gateways/share/`        | `1.2.6` |
+| Zwei-Faktor (tfa)         | `src/gateways/tfa/`          | `1.1.2` |
 | Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
 | Social                    | `src/gateways/social/`       | `1.2.6` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
