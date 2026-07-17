@@ -3,10 +3,6 @@ import { openModuleSettingsPopup } from "/static/reuse/module-settings-popup.js"
 
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
 
-function text(key) {
-    return window.CognisI18n?.t?.(key) ?? key;
-}
-
 export async function mount(root) {
     const configResponse = await fetch(`${API_BASE}/config`, {
         credentials: "same-origin",
@@ -21,10 +17,14 @@ export async function mount(root) {
     const form = document.createElement("form");
     form.className = "whiteboard-admin";
     const heading = document.createElement("h2");
-    heading.textContent = text("module.nextcloud_whiteboard.admin_title");
+    heading.textContent =
+        window.CognisI18n?.t?.("module.nextcloud_whiteboard.admin_title") ??
+        "module.nextcloud_whiteboard.admin_title";
     const serverUrlLabel = document.createElement("label");
     const serverUrlText = document.createElement("span");
-    serverUrlText.textContent = text("module.nextcloud_whiteboard.server_url");
+    serverUrlText.textContent = window.CognisI18n?.t?.(
+        "module.nextcloud_whiteboard.server_url",
+    );
     const serverUrlInput = document.createElement("input");
     serverUrlInput.name = "serverUrl";
     serverUrlInput.type = "url";
@@ -33,7 +33,9 @@ export async function mount(root) {
     serverUrlLabel.append(serverUrlText, serverUrlInput);
     const keyLabel = document.createElement("label");
     const keyText = document.createElement("span");
-    keyText.textContent = text("module.nextcloud_whiteboard.api_key");
+    keyText.textContent = window.CognisI18n?.t?.(
+        "module.nextcloud_whiteboard.api_key",
+    );
     const keyInput = document.createElement("input");
     keyInput.name = "apiKey";
     keyInput.type = "password";
@@ -54,7 +56,7 @@ export async function mount(root) {
     uploadLimitLabel.append(uploadLimitText, uploadLimitInput);
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
-    submitButton.textContent = text("ui.reuse.save");
+    submitButton.textContent = window.CognisI18n?.t?.("ui.reuse.save");
     form.append(
         heading,
         serverUrlLabel,

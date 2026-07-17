@@ -68,11 +68,11 @@ function storeProfileDisplayName(displayName) {
 
 async function refreshDisplayNameFromProfile() {
     if (!localStorage.getItem("cognis_access_token")) return;
-    const endpoint = isGuestSession()
+    const profileEndpoint = isGuestSession()
         ? "/api/v1/share/guest-profile"
         : "/api/v1/social/profile";
     try {
-        const response = await apiFetch(endpoint);
+        const response = await apiFetch(profileEndpoint);
         if (!response.ok) return;
         const payload = await response.json().catch(() => null);
         storeProfileDisplayName(payload?.data?.displayName);

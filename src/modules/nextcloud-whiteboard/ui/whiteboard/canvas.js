@@ -2,22 +2,18 @@ import {
     boxContainsElementContent,
     buildDragBox,
     buildFreedrawElement,
-    buildImageElement,
     buildShapeElement,
     buildTextElement,
     bumpElementVersion,
-    drawAnchor,
-    getElementAnchorPoints,
     getElementBounds,
     elementContainsPoint,
     isStrokeWidthApplicable,
-    renderElement,
 } from "./elements.js";
-import {
-    loadFontsCatalog,
-    parseSavedFont,
-    toFontFamilyValue,
-} from "/static/reuse/font-prefs.js";
+import { renderWhiteboardScene } from "./render-scene.js";
+import { toFontFamilyValue } from "/static/reuse/font-prefs.js";
+import { createWhiteboardTextTools } from "./text-tools.js";
+import { createClipboardImageHandler } from "./clipboard-images.js";
+import { bindWhiteboardCanvasEvents } from "./canvas-events.js";
 
 export function createWhiteboardCanvas(canvasElement) {
     const context = canvasElement.getContext("2d");
@@ -46,7 +42,6 @@ export function createWhiteboardCanvas(canvasElement) {
     let historyFuture = [];
     let historySnapshot = null;
     let textFormatMenu = null;
-    let fontCatalogPromise = null;
     let panState = null;
     let viewportOffsetX = 0;
     let viewportOffsetY = 0;
@@ -62,125 +57,24 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function redraw() {
-        const style = getComputedStyle(canvasElement);
-        context.fillStyle =
-            style.getPropertyValue("--whiteboard-canvas-bg").trim() ||
-            "#ffffff";
-        context.fillRect(0, 0, canvasElement.width, canvasElement.height);
-        context.save();
-        context.translate(-viewportOffsetX, -viewportOffsetY);
-        for (const element of elements) {
-            renderElement(context, element);
-            const remoteSelection = remoteSelections.get(element.id);
-            if (
-                selectedElementIds.has(element.id) ||
-                eraserSelectionIds.has(element.id) ||
-                remoteSelection
-            ) {
-                const bounds = getElementBounds(element);
-                const localSelection = selectedElementIds.has(element.id);
-                const eraserSelection = eraserSelectionIds.has(element.id);
-                const selectionColor = eraserSelection
-                    ? "#c0392b"
-                    : localSelection
-                      ? "#2d9e5c"
-                      : remoteSelection?.color || "#5e81f4";
-                context.save();
-                context.setLineDash([6, 4]);
-                context.strokeStyle = selectionColor;
-                context.lineWidth =
-                    remoteSelection && !localSelection ? 2.5 : 1;
-                context.strokeRect(
-                    bounds.x - 4,
-                    bounds.y - 4,
-                    bounds.width + 8,
-                    bounds.height + 8,
-                );
-                if (
-                    remoteSelection?.label &&
-                    !localSelection &&
-                    !eraserSelection
-                ) {
-                    context.font = "600 12px system-ui, sans-serif";
-                    const labelWidth =
-                        context.measureText(remoteSelection.label).width + 12;
-                    const labelX = bounds.x - 4;
-                    const labelY = Math.max(4, bounds.y - 22);
-                    context.setLineDash([]);
-                    context.fillStyle = selectionColor;
-                    context.fillRect(labelX, labelY, labelWidth, 18);
-                    context.fillStyle = "#ffffff";
-                    context.fillText(
-                        remoteSelection.label,
-                        labelX + 6,
-                        labelY + 13,
-                    );
-                }
-                context.restore();
-                if (element.id === selectedElementId) {
-                    for (const [anchorX, anchorY] of getElementAnchorPoints(
-                        element,
-                    )) {
-                        drawAnchor(context, anchorX, anchorY);
-                    }
-                }
-            }
-        }
-        context.restore();
-        if (dragSelectBox) {
-            context.save();
-            context.translate(-viewportOffsetX, -viewportOffsetY);
-            context.save();
-            context.setLineDash([4, 4]);
-            context.strokeStyle = "#2563eb";
-            context.strokeRect(
-                dragSelectBox.x,
-                dragSelectBox.y,
-                dragSelectBox.width,
-                dragSelectBox.height,
-            );
-            context.restore();
-            context.restore();
-        }
-        context.save();
-        context.translate(-viewportOffsetX, -viewportOffsetY);
-        if (isDrawing && currentPoints.length >= 2 && activeTool === "pen") {
-            const previewElement = buildFreedrawElement(
-                currentPoints,
-                strokeColor,
-                strokeWidth,
-            );
-            if (previewElement) renderElement(context, previewElement);
-        } else if (
-            isDrawing &&
-            dragStartPoint &&
-            currentPoints.length >= 1 &&
-            activeTool === "eraser"
-        ) {
-            const box = buildDragBox(dragStartPoint, currentPoints.at(-1));
-            context.save();
-            context.setLineDash([4, 4]);
-            context.strokeStyle = "#c0392b";
-            context.strokeRect(box.x, box.y, box.width, box.height);
-            context.restore();
-        } else if (
-            isDrawing &&
-            dragStartPoint &&
-            currentPoints.length >= 1 &&
-            ["rectangle", "diamond", "ellipse", "line", "arrow"].includes(
-                activeTool,
-            )
-        ) {
-            const previewElement = buildShapeElement(
-                activeTool,
-                dragStartPoint,
-                currentPoints.at(-1),
-                strokeColor,
-                strokeWidth,
-            );
-            renderElement(context, previewElement);
-        }
-        context.restore();
+        renderWhiteboardScene({
+            activeTool,
+            canvasElement,
+            context,
+            currentPoints,
+            dragSelectBox,
+            dragStartPoint,
+            elements,
+            eraserSelectionIds,
+            isDrawing,
+            remoteSelections,
+            selectedElementId,
+            selectedElementIds,
+            strokeColor,
+            strokeWidth,
+            viewportOffsetX,
+            viewportOffsetY,
+        });
     }
 
     function cloneElements(items = elements) {
@@ -506,139 +400,22 @@ export function createWhiteboardCanvas(canvasElement) {
         overlay.style.width = `${Math.max(180, element.width ?? 180)}px`;
     }
 
-    function updateTextStyle(elementId, patch) {
-        const before = cloneElements();
-        elements = elements.map((item) =>
-            item.id === elementId ? bumpElementVersion(item, patch) : item,
-        );
-        pushHistoryEntry(before, cloneElements());
-        scheduleRender();
-        changeCallback?.([...elements]);
-        notifySelection();
-    }
+    const textTools = createWhiteboardTextTools({
+        canvasElement,
+        commitElements,
+        currentAppFont,
+        getElements: () => elements,
+        getTextElement: textElement,
+        getTextFormatMenu: () => textFormatMenu,
+        positionTextOverlay,
+        selectOnlyElement,
+        setTextFormatMenu: (nextMenu) => {
+            textFormatMenu = nextMenu;
+        },
+    });
 
-    function loadTextMenuFonts(select, selectedFont) {
-        if (!fontCatalogPromise) {
-            fontCatalogPromise = loadFontsCatalog().catch(() => [
-                currentAppFont(),
-                "Inter",
-                "Arial",
-                "sans-serif",
-            ]);
-        }
-        void fontCatalogPromise.then((fonts) => {
-            if (!select.isConnected) return;
-            const options = Array.from(
-                new Set([selectedFont, ...fonts]),
-            ).filter(Boolean);
-            select.replaceChildren(
-                ...options.map((font) => {
-                    const option = document.createElement("option");
-                    option.value = font;
-                    option.textContent = font;
-                    option.style.fontFamily = `${toFontFamilyValue(font)}, Arial, sans-serif`;
-                    if (font === selectedFont) option.selected = true;
-                    return option;
-                }),
-            );
-        });
-    }
-
-    function syncTextFormatMenu() {
-        const element = textElement();
-        if (!element) {
-            textFormatMenu?.remove();
-            textFormatMenu = null;
-            return;
-        }
-        const parent = canvasElement.parentElement;
-        if (!parent) return;
-        if (!textFormatMenu?.isConnected) {
-            textFormatMenu = document.createElement("div");
-            textFormatMenu.className = "whiteboard-text-menu";
-            textFormatMenu.innerHTML = `
-                <button type="button" data-text-toggle="bold" aria-label="Bold">B</button>
-                <button type="button" data-text-toggle="italic" aria-label="Italic"><em>I</em></button>
-                <button type="button" data-text-toggle="underline" aria-label="Underline"><u>U</u></button>
-                <button type="button" data-text-toggle="line-through" aria-label="Strikethrough"><s>S</s></button>
-                <input type="number" min="8" max="96" step="1" data-text-size aria-label="Font size" />
-                <select data-text-font aria-label="Font family"></select>
-            `;
-            parent.appendChild(textFormatMenu);
-            textFormatMenu.addEventListener("click", (event) => {
-                const button = event.target.closest("[data-text-toggle]");
-                if (!button || !selectedElementId) return;
-                const target = textElement();
-                if (!target) return;
-                const toggle = button.dataset.textToggle;
-                if (toggle === "bold") {
-                    updateTextStyle(target.id, {
-                        fontWeight: target.fontWeight === "700" ? "400" : "700",
-                    });
-                } else if (toggle === "italic") {
-                    updateTextStyle(target.id, {
-                        fontStyle:
-                            target.fontStyle === "italic" ? "normal" : "italic",
-                    });
-                } else {
-                    const parts = new Set(
-                        String(target.textDecoration ?? "none")
-                            .split(" ")
-                            .filter((item) => item && item !== "none"),
-                    );
-                    if (parts.has(toggle)) parts.delete(toggle);
-                    else parts.add(toggle);
-                    updateTextStyle(target.id, {
-                        textDecoration: parts.size
-                            ? [...parts].join(" ")
-                            : "none",
-                    });
-                }
-            });
-            textFormatMenu
-                .querySelector("[data-text-size]")
-                ?.addEventListener("change", (event) => {
-                    const target = textElement();
-                    if (!target) return;
-                    updateTextStyle(target.id, {
-                        fontSize: Math.max(
-                            8,
-                            Math.min(96, Number(event.target.value) || 28),
-                        ),
-                    });
-                });
-            textFormatMenu
-                .querySelector("[data-text-font]")
-                ?.addEventListener("change", (event) => {
-                    const target = textElement();
-                    if (!target) return;
-                    updateTextStyle(target.id, {
-                        fontFamily: `${toFontFamilyValue(event.target.value)}, Arial, sans-serif`,
-                    });
-                });
-        }
-        positionTextOverlay(textFormatMenu, element, -48);
-        const sizeInput = textFormatMenu.querySelector("[data-text-size]");
-        if (sizeInput) sizeInput.value = String(element.fontSize ?? 28);
-        const fontSelect = textFormatMenu.querySelector("[data-text-font]");
-        const selectedFont = parseSavedFont(
-            element.fontFamily || currentAppFont(),
-        );
-        if (fontSelect) loadTextMenuFonts(fontSelect, selectedFont);
-        textFormatMenu
-            .querySelector('[data-text-toggle="bold"]')
-            ?.classList.toggle("active", element.fontWeight === "700");
-        textFormatMenu
-            .querySelector('[data-text-toggle="italic"]')
-            ?.classList.toggle("active", element.fontStyle === "italic");
-        const decoration = String(element.textDecoration ?? "none");
-        textFormatMenu
-            .querySelector('[data-text-toggle="underline"]')
-            ?.classList.toggle("active", decoration.includes("underline"));
-        textFormatMenu
-            .querySelector('[data-text-toggle="line-through"]')
-            ?.classList.toggle("active", decoration.includes("line-through"));
-    }
+    const syncTextFormatMenu = () => textTools.syncTextFormatMenu();
+    const openTextEditor = (element) => textTools.openTextEditor(element);
 
     function commitCreatedElement(element) {
         commitElements([...elements, element]);
@@ -1025,111 +802,30 @@ export function createWhiteboardCanvas(canvasElement) {
         }
     }
 
-    function calculateImageDimensions(image) {
-        const maxWidth = 480;
-        const maxHeight = 360;
-        const naturalWidth = Math.max(
-            1,
-            image.naturalWidth || image.width || 240,
-        );
-        const naturalHeight = Math.max(
-            1,
-            image.naturalHeight || image.height || 180,
-        );
-        const scale = Math.min(
-            1,
-            maxWidth / naturalWidth,
-            maxHeight / naturalHeight,
-        );
-        return {
-            width: Math.round(naturalWidth * scale),
-            height: Math.round(naturalHeight * scale),
-        };
-    }
-
-    function createImageElementFromDataUrl(dataUrl) {
-        const image = new Image();
-        image.addEventListener(
-            "load",
-            () => {
-                commitCreatedElement(
-                    buildImageElement(
-                        [24, 24],
-                        dataUrl,
-                        calculateImageDimensions(image),
-                    ),
-                );
-            },
-            { once: true },
-        );
-        image.addEventListener(
-            "error",
-            () => {
-                commitCreatedElement(buildImageElement([24, 24], dataUrl));
-            },
-            { once: true },
-        );
-        image.src = dataUrl;
-    }
-
-    function eventTargetAcceptsTextInput(event) {
-        const target = event.target;
-        return Boolean(
-            target instanceof HTMLInputElement ||
-            target instanceof HTMLTextAreaElement ||
-            target?.isContentEditable,
-        );
-    }
-
-    function findClipboardImageFile(event) {
-        const files = [...(event.clipboardData?.files ?? [])];
-        const directFile = files.find((file) => file.type.startsWith("image/"));
-        if (directFile) return directFile;
-        const items = [...(event.clipboardData?.items ?? [])];
-        return (
-            items
-                .find((item) => item.type.startsWith("image/"))
-                ?.getAsFile?.() ?? null
-        );
-    }
-
-    function onPaste(event) {
-        if (event.defaultPrevented) return;
-        if (eventTargetAcceptsTextInput(event)) return;
-        const imageFile = findClipboardImageFile(event);
-        if (!imageFile) return;
-        event.preventDefault();
-        if (imageFile.size > imageUploadMaxBytes) {
+    const onPaste = createClipboardImageHandler({
+        commitCreatedElement,
+        getImageUploadMaxBytes: () => imageUploadMaxBytes,
+        notifyImageRejected: () => {
             changeCallback?.([...elements], {
                 type: "image_rejected",
                 limit: imageUploadMaxBytes,
             });
-            return;
-        }
-        const reader = new FileReader();
-        reader.addEventListener("load", () => {
-            if (typeof reader.result !== "string") return;
-            createImageElementFromDataUrl(reader.result);
-        });
-        reader.readAsDataURL(imageFile);
-    }
-
-    canvasElement.addEventListener("pointerdown", onPointerDown);
-    canvasElement.addEventListener("pointermove", onPointerMove);
-    canvasElement.addEventListener("pointerup", onPointerUp);
-    canvasElement.addEventListener("pointercancel", onPointerUp);
-    canvasElement.addEventListener("paste", onPaste);
-    document.addEventListener("paste", onPaste);
-    canvasElement.addEventListener("keydown", onKeyDown);
-    canvasElement.addEventListener("whiteboard:image-loaded", scheduleRender);
-    canvasElement.addEventListener("dblclick", onDoubleClick);
-    canvasElement.addEventListener("auxclick", (event) => {
-        if (event.button === 1) event.preventDefault();
-    });
-    canvasElement.addEventListener("contextmenu", (event) => {
-        if (panState) event.preventDefault();
+        },
     });
 
+    const unbindCanvasEvents = bindWhiteboardCanvasEvents({
+        canvasElement,
+        onDoubleClick,
+        onKeyDown,
+        onPaste,
+        onPointerDown,
+        onPointerMove,
+        onPointerUp,
+        scheduleRender,
+        shouldPreventContextMenu: (event) => {
+            if (panState) event.preventDefault();
+        },
+    });
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvasElement.parentElement ?? document.body);
     const themeObserver = new MutationObserver(scheduleRender);
@@ -1142,7 +838,6 @@ export function createWhiteboardCanvas(canvasElement) {
         attributeFilter: ["class", "data-theme", "style"],
     });
     resizeCanvas();
-
     return {
         setTool(tool) {
             setActiveTool(tool);
@@ -1294,18 +989,7 @@ export function createWhiteboardCanvas(canvasElement) {
             textFormatMenu?.remove();
             resizeObserver.disconnect();
             themeObserver.disconnect();
-            canvasElement.removeEventListener("pointerdown", onPointerDown);
-            canvasElement.removeEventListener("pointermove", onPointerMove);
-            canvasElement.removeEventListener("pointerup", onPointerUp);
-            canvasElement.removeEventListener("pointercancel", onPointerUp);
-            canvasElement.removeEventListener("paste", onPaste);
-            document.removeEventListener("paste", onPaste);
-            canvasElement.removeEventListener("keydown", onKeyDown);
-            canvasElement.removeEventListener(
-                "whiteboard:image-loaded",
-                scheduleRender,
-            );
-            canvasElement.removeEventListener("dblclick", onDoubleClick);
+            unbindCanvasEvents();
             canvasElement.parentElement
                 ?.querySelector(".wb-text-editor")
                 ?.remove();

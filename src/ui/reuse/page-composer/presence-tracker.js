@@ -23,7 +23,7 @@ import { apiFetch } from "../api-client.js";
 import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
 import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "../pointer-tracker.js";
-import { createAdaptivePoller } from "../adaptive-poller.js";
+import { createAdaptivePoller } from "../../../reuse/adaptive-poller.js";
 
 const HEARTBEAT_MIN_INTERVAL_MS = 2500;
 const HEARTBEAT_MAX_INTERVAL_MS = 5000;

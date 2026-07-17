@@ -3,12 +3,32 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { pickInitialsColor } from "/static/reuse/avatar-utils.js";
 import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
+import { renderCanvasElement as renderWhiteboardCanvasElement } from "./render.js";
+import {
+    API_BASE,
+    apiFetchJson,
+    fetchWhiteboardList,
+    fetchWhiteboardSession,
+    renameWhiteboard,
+    saveWhiteboardElements,
+    spawnWhiteboard,
+} from "./api.js";
+import {
+    debounce,
+    decodeSceneMessage,
+    encodeSceneMessage,
+    encodeSyncMessage,
+    loadSocketIo,
+    throttleLatest,
+} from "./realtime.js";
+import {
+    applyRemotePresenceSelections,
+    getPointerOffset,
+    getSelectionPayload,
+} from "./presence.js";
 
-const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
 const EMIT_DEBOUNCE_MS = 80;
 const RECONNECT_MAX_DELAY_MS = 30000;
 const SYNC_MESSAGE_SCENE_INIT = "SCENE_INIT";
@@ -31,13 +51,15 @@ let imageUploadMaxBytes = 1048576;
 let syncStatus = "idle";
 let syncStatusMessage = "";
 
-function t(key) {
+function translateModuleString(key) {
     return i18n?.t(key) ?? key;
 }
 
 function reportClientError(error, fallbackKey) {
     console.error("[nextcloud-whiteboard] client error:", error);
-    showToast(error?.message || t(fallbackKey), { variant: "error" });
+    showToast(error?.message || translateModuleString(fallbackKey), {
+        variant: "error",
+    });
 }
 
 function sharePageFlag(name, fallback) {
@@ -56,12 +78,13 @@ function updateSyncStatusBox() {
     if (!statusBox) return;
     statusBox.dataset.status = syncStatus;
     statusBox.title =
-        syncStatusMessage || t("module.nextcloud_whiteboard.status_idle");
+        syncStatusMessage ||
+        translateModuleString("module.nextcloud_whiteboard.status_idle");
 }
 
 function setSyncStatus(status, messageKey) {
     syncStatus = status;
-    syncStatusMessage = t(messageKey);
+    syncStatusMessage = translateModuleString(messageKey);
     updateSyncStatusBox();
 }
 
@@ -71,107 +94,28 @@ function buildConnectionErrorMessage(error, serverUrl) {
         rawMessage,
     );
     if (!rawMessage || genericSocketFailure) {
-        return t("module.nextcloud_whiteboard.connection_failed").replace(
-            "{server_url}",
-            serverUrl,
-        );
+        return translateModuleString(
+            "module.nextcloud_whiteboard.connection_failed",
+        ).replace("{server_url}", serverUrl);
     }
-    return `${t("module.nextcloud_whiteboard.connect_error")}: ${rawMessage}`;
-}
-
-async function apiFetchJson(path, options = {}) {
-    const response = await apiFetch(`${API_BASE}${path}`, options);
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw Object.assign(
-            new Error(payload?.error?.message ?? "Request failed."),
-            { status: response.status, code: payload?.error?.code },
-        );
-    }
-    return payload.data;
+    return `${translateModuleString("module.nextcloud_whiteboard.connect_error")}: ${rawMessage}`;
 }
 
 async function loadBoards() {
-    boards = await apiFetchJson("/whiteboards");
+    boards = await fetchWhiteboardList();
 }
 
 async function renameBoard(boardId, title) {
-    const normalizedTitle = String(title ?? "").trim();
-    const normalizedBoardId = String(boardId ?? "").trim();
-    if (!normalizedBoardId || !normalizedTitle) {
-        throw new Error(t("module.nextcloud_whiteboard.rename_failed"));
-    }
-    return apiFetchJson("/whiteboards/rename", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: normalizedBoardId, title: normalizedTitle }),
-    });
-}
-
-async function spawnBoard({ title, participants = [] } = {}) {
-    return apiFetchJson("/whiteboards/spawn", {
-        method: "POST",
-        body: JSON.stringify({ title, participants }),
-    });
-}
-
-async function fetchSession(boardId) {
-    return apiFetchJson(
-        `/whiteboards/session?id=${encodeURIComponent(boardId)}`,
+    return renameWhiteboard(
+        boardId,
+        title,
+        i18n?.t("module.nextcloud_whiteboard.rename_failed") ??
+            "module.nextcloud_whiteboard.rename_failed",
     );
 }
 
-async function saveElements(boardId, elements) {
-    return apiFetchJson("/whiteboards/elements", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: boardId, elements }),
-    });
-}
-
-function debounce(callback, delay) {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => callback(...args), delay);
-    };
-}
-
-function throttleLatest(callback, delay) {
-    let timer = null;
-    let lastArgs = null;
-    return (...args) => {
-        lastArgs = args;
-        if (timer) return;
-        callback(...lastArgs);
-        lastArgs = null;
-        timer = setTimeout(() => {
-            timer = null;
-            if (lastArgs) {
-                const pendingArgs = lastArgs;
-                lastArgs = null;
-                callback(...pendingArgs);
-            }
-        }, delay);
-    };
-}
-
-function loadSocketIo(serverUrl) {
-    return new Promise((resolve, reject) => {
-        if (window.io) {
-            resolve(window.io);
-            return;
-        }
-        const origin = new URL(serverUrl).origin;
-        const script = document.createElement("script");
-        script.src = `${origin}/socket.io/socket.io.js`;
-        script.onload = () => resolve(window.io);
-        script.onerror = () =>
-            reject(
-                new Error(t("module.nextcloud_whiteboard.socket_load_failed")),
-            );
-        document.head.appendChild(script);
-    });
+async function spawnBoard({ title, participants = [] } = {}) {
+    return spawnWhiteboard({ title, participants });
 }
 
 function setOverlayVisible(visible, message = "") {
@@ -206,26 +150,6 @@ function teardownCanvas() {
         canvasInstance = null;
     }
     activeSession = null;
-}
-
-function encodeSyncMessage(type, payload = {}) {
-    return new TextEncoder().encode(JSON.stringify({ type, payload }));
-}
-
-function encodeSceneMessage(type, elements) {
-    return encodeSyncMessage(type, { elements });
-}
-
-function decodeSceneMessage(payload) {
-    const text =
-        typeof payload === "string"
-            ? payload
-            : new TextDecoder().decode(
-                  payload instanceof Uint8Array
-                      ? payload
-                      : new Uint8Array(payload),
-              );
-    return JSON.parse(text);
 }
 
 function canRenameActiveBoard() {
@@ -269,7 +193,7 @@ function connectSocket(io, session, canvas) {
 
     const persistChanges = debounce(async (elements) => {
         try {
-            await saveElements(roomId, elements);
+            await saveWhiteboardElements(roomId, elements);
             setSyncStatus(
                 "synced",
                 "module.nextcloud_whiteboard.status_synced",
@@ -312,10 +236,9 @@ function connectSocket(io, session, canvas) {
     canvas.onChange((elements, meta) => {
         if (meta?.type === "image_rejected") {
             showToast(
-                t("module.nextcloud_whiteboard.image_too_large").replace(
-                    "{limit}",
-                    String(meta.limit),
-                ),
+                translateModuleString(
+                    "module.nextcloud_whiteboard.image_too_large",
+                ).replace("{limit}", String(meta.limit)),
                 { variant: "error" },
             );
             return;
@@ -403,16 +326,21 @@ async function createAndOpenBoard() {
     let spawnResult;
     try {
         spawnResult = await spawnBoard({
-            title: t("module.nextcloud_whiteboard.new_board_title"),
+            title: translateModuleString(
+                "module.nextcloud_whiteboard.new_board_title",
+            ),
         });
     } catch (error) {
         reportClientError(error, "module.nextcloud_whiteboard.spawn_failed");
         return;
     }
     savedElements = [];
-    showToast(t("module.nextcloud_whiteboard.created_success"), {
-        variant: "success",
-    });
+    showToast(
+        translateModuleString("module.nextcloud_whiteboard.created_success"),
+        {
+            variant: "success",
+        },
+    );
     await openBoard(spawnResult.whiteboard);
 }
 
@@ -543,17 +471,21 @@ function bindCanvasToolbar(canvas) {
         ?.addEventListener("click", async (event) => {
             event.preventDefault();
             const result = await openPopup({
-                title: t("module.nextcloud_whiteboard.clear_board"),
-                body: `<p>${escapeHtml(t("module.nextcloud_whiteboard.clear_confirm"))}</p>`,
+                title: translateModuleString(
+                    "module.nextcloud_whiteboard.clear_board",
+                ),
+                body: `<p>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.clear_confirm"))}</p>`,
                 actions: [
                     {
                         id: "cancel",
-                        label: t("ui.reuse.close"),
+                        label: translateModuleString("ui.reuse.close"),
                         variant: "cancel",
                     },
                     {
                         id: "clear",
-                        label: t("module.nextcloud_whiteboard.clear_board"),
+                        label: translateModuleString(
+                            "module.nextcloud_whiteboard.clear_board",
+                        ),
                         variant: "danger",
                     },
                 ],
@@ -576,11 +508,15 @@ async function bindShareButton(toolbar) {
     }
     shareModule.mountShareButton?.({
         container: slot,
-        label: t("module.nextcloud_whiteboard.share_button"),
+        label: translateModuleString(
+            "module.nextcloud_whiteboard.share_button",
+        ),
         id: "whiteboard-share",
         className: "whiteboard-tool",
         icon: "🔗",
-        title: t("module.nextcloud_whiteboard.share_button"),
+        title: translateModuleString(
+            "module.nextcloud_whiteboard.share_button",
+        ),
         onClick: () => void openSharePopup(),
     });
 }
@@ -594,47 +530,61 @@ async function openSharePopup() {
                 import("/static/modules/nextcloud-whiteboard/share-adapter.js"),
             ]);
         await openShareLinksPopup({
-            title: t("module.nextcloud_whiteboard.share_popup_title"),
+            title: translateModuleString(
+                "module.nextcloud_whiteboard.share_popup_title",
+            ),
             labels: {
-                empty: t("module.nextcloud_whiteboard.share_empty"),
-                untitled: t("module.nextcloud_whiteboard.share_untitled"),
-                copyLink: t("module.nextcloud_whiteboard.share_copy_link"),
-                revoke: t("module.nextcloud_whiteboard.share_revoke"),
-                shareOptions: t(
+                empty: translateModuleString(
+                    "module.nextcloud_whiteboard.share_empty",
+                ),
+                untitled: translateModuleString(
+                    "module.nextcloud_whiteboard.share_untitled",
+                ),
+                copyLink: translateModuleString(
+                    "module.nextcloud_whiteboard.share_copy_link",
+                ),
+                revoke: translateModuleString(
+                    "module.nextcloud_whiteboard.share_revoke",
+                ),
+                shareOptions: translateModuleString(
                     "module.nextcloud_whiteboard.share_options_label",
                 ),
-                mail: t("ui.reuse.mail"),
-                label: t("module.nextcloud_whiteboard.share_label"),
-                labelPlaceholder: t(
+                mail: translateModuleString("ui.reuse.mail"),
+                label: translateModuleString(
+                    "module.nextcloud_whiteboard.share_label",
+                ),
+                labelPlaceholder: translateModuleString(
                     "module.nextcloud_whiteboard.share_label_placeholder",
                 ),
-                expiryLabel: t(
+                expiryLabel: translateModuleString(
                     "module.nextcloud_whiteboard.share_expiry_label",
                 ),
-                statusActive: t(
+                statusActive: translateModuleString(
                     "module.nextcloud_whiteboard.share_status_active",
                 ),
-                statusExpired: t(
+                statusExpired: translateModuleString(
                     "module.nextcloud_whiteboard.share_status_expired",
                 ),
-                expiresAtLabel: t(
+                expiresAtLabel: translateModuleString(
                     "module.nextcloud_whiteboard.share_expires_at_label",
                 ),
-                expiredAtLabel: t(
+                expiredAtLabel: translateModuleString(
                     "module.nextcloud_whiteboard.share_expired_at_label",
                 ),
-                generateLink: t(
+                generateLink: translateModuleString(
                     "module.nextcloud_whiteboard.share_generate_link",
                 ),
-                done: t("ui.reuse.done"),
-                createFailed: t(
+                done: translateModuleString("ui.reuse.done"),
+                createFailed: translateModuleString(
                     "module.nextcloud_whiteboard.share_create_failed",
                 ),
-                copySuccess: t(
+                copySuccess: translateModuleString(
                     "module.nextcloud_whiteboard.share_copy_success",
                 ),
-                copyFailed: t("module.nextcloud_whiteboard.share_copy_failed"),
-                deleteFailed: t(
+                copyFailed: translateModuleString(
+                    "module.nextcloud_whiteboard.share_copy_failed",
+                ),
+                deleteFailed: translateModuleString(
                     "module.nextcloud_whiteboard.share_delete_failed",
                 ),
             },
@@ -665,18 +615,20 @@ async function openHistoryPopup() {
                     <article class="whiteboard-history-card">
                         <h3>${escapeHtml(board.title)}</h3>
                         <p>${escapeHtml(new Date(board.updatedAt).toLocaleString())}</p>
-                        <button type="button" disabled>${escapeHtml(t("module.nextcloud_whiteboard.open"))}</button>
+                        <button type="button" disabled>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.open"))}</button>
                     </article>`,
               )
               .join("")}</div>`
-        : `<p>${escapeHtml(t("module.nextcloud_whiteboard.empty"))}</p>`;
+        : `<p>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.empty"))}</p>`;
     await openPopup({
-        title: t("module.nextcloud_whiteboard.history_title"),
+        title: translateModuleString(
+            "module.nextcloud_whiteboard.history_title",
+        ),
         body,
         actions: [
             {
                 id: "done",
-                label: t("ui.reuse.close"),
+                label: translateModuleString("ui.reuse.close"),
                 variant: "confirm",
             },
         ],
@@ -720,9 +672,14 @@ async function renameActiveBoard() {
             };
             applyBoardTitle(activeBoard.title);
             emitBoardRenamed(activeBoard.title);
-            showToast(t("module.nextcloud_whiteboard.rename_success"), {
-                variant: "success",
-            });
+            showToast(
+                translateModuleString(
+                    "module.nextcloud_whiteboard.rename_success",
+                ),
+                {
+                    variant: "success",
+                },
+            );
         } catch (error) {
             reportClientError(
                 error,
@@ -750,7 +707,7 @@ async function runPreflightCheck() {
     preflightStatus = "running";
     setOverlayVisible(
         true,
-        t("module.nextcloud_whiteboard.preflight_checking"),
+        translateModuleString("module.nextcloud_whiteboard.preflight_checking"),
     );
 
     let result;
@@ -762,8 +719,12 @@ async function runPreflightCheck() {
         preflightStatus = "failed";
         const message =
             error.code === "config_required"
-                ? t("module.nextcloud_whiteboard.preflight_config_required")
-                : t("module.nextcloud_whiteboard.preflight_failed");
+                ? translateModuleString(
+                      "module.nextcloud_whiteboard.preflight_config_required",
+                  )
+                : translateModuleString(
+                      "module.nextcloud_whiteboard.preflight_failed",
+                  );
         setOverlayVisible(true, message);
         showToast(message, { variant: "error" });
         return false;
@@ -771,7 +732,9 @@ async function runPreflightCheck() {
 
     if (!result?.alive) {
         preflightStatus = "failed";
-        const message = t("module.nextcloud_whiteboard.preflight_unreachable");
+        const message = translateModuleString(
+            "module.nextcloud_whiteboard.preflight_unreachable",
+        );
         setOverlayVisible(true, message);
         showToast(message, { variant: "error" });
         return false;
@@ -801,11 +764,14 @@ async function openBoard(board) {
     const passed = await runPreflightCheck();
     if (!passed) return;
 
-    setOverlayVisible(true, t("module.nextcloud_whiteboard.connecting"));
+    setOverlayVisible(
+        true,
+        translateModuleString("module.nextcloud_whiteboard.connecting"),
+    );
 
     let session;
     try {
-        session = await fetchSession(board.id);
+        session = await fetchWhiteboardSession(board.id);
     } catch (error) {
         setOverlayVisible(true, error.message);
         showToast(error.message, { variant: "error" });
@@ -847,80 +813,17 @@ async function openBoard(board) {
 }
 
 function renderCanvasElement() {
-    const hasActiveBoard = Boolean(activeBoard);
-    const overlayHidden = hasActiveBoard && preflightStatus === "passed";
-    const overlayMessage = hasActiveBoard
-        ? t("module.nextcloud_whiteboard.connecting_ellipsis")
-        : t("module.nextcloud_whiteboard.canvas_placeholder");
-    const boardList = boards
-        .map(
-            (board) =>
-                `<button type="button" class="whiteboard-overlay-board" data-board-id="${escapeHtml(board.id)}">${escapeHtml(board.title)}</button>`,
-        )
-        .join("");
-
-    return `
-        <div class="whiteboard-canvas-wrap">
-            <div
-                id="whiteboard-toolbar"
-                class="whiteboard-toolbar"
-                role="toolbar"
-                aria-label="${escapeHtml(t("module.nextcloud_whiteboard.toolbar_label"))}"
-            >
-                <div class="whiteboard-toolbar-group">
-                    <button type="button" id="whiteboard-new" class="whiteboard-tool whiteboard-new-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}">＋ <span>New</span></button>
-                    <button type="button" id="whiteboard-history" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}">↺</button>
-                </div>
-                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" data-tool="select" class="whiteboard-tool active" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_select"))}">🖱</button>
-                    <button type="button" data-tool="pen" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_pen"))}">✎</button>
-                    <button type="button" data-tool="rectangle" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_rectangle"))}">□</button>
-                    <button type="button" data-tool="diamond" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_diamond"))}">◇</button>
-                    <button type="button" data-tool="ellipse" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_ellipse"))}">○</button>
-                    <button type="button" data-tool="arrow" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_arrow"))}">→</button>
-                    <button type="button" data-tool="line" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_line"))}">−</button>
-                    <button type="button" data-tool="text" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_text"))}">T</button>
-                    <button type="button" data-tool="eraser" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.tool_eraser"))}">⌫</button>
-                </div>
-                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <button type="button" id="whiteboard-undo" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.undo"))}">↶</button>
-                    <button type="button" id="whiteboard-redo" class="whiteboard-tool" title="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.redo"))}">↷</button>
-                </div>
-                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    <input type="color" id="whiteboard-color" value="#111827" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_color"))}" />
-                    <select id="whiteboard-stroke-width" class="whiteboard-tool theme-select" title="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.stroke_width"))}">
-                        <option value="2">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thin"))}</option>
-                        <option value="4" selected>${escapeHtml(t("module.nextcloud_whiteboard.stroke_medium"))}</option>
-                        <option value="8">${escapeHtml(t("module.nextcloud_whiteboard.stroke_thick"))}</option>
-                    </select>
-                </div>
-                <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
-                    ${canManageShares() ? '<span id="whiteboard-share-slot"></span>' : ""}
-                    <a href="#" id="whiteboard-clear" class="whiteboard-tool btn-cancel" role="button" title="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}" aria-label="${escapeHtml(t("module.nextcloud_whiteboard.clear_board"))}">×</a>
-                </div>
-                <span id="whiteboard-board-title" class="whiteboard-board-title" title="${escapeHtml(canRenameActiveBoard() ? t("module.nextcloud_whiteboard.rename_hint") : "")}">${escapeHtml(activeSession?.title ?? activeBoard?.title ?? "")}</span>
-                <span id="whiteboard-sync-status" class="whiteboard-sync-status" data-status="${escapeHtml(syncStatus)}" title="${escapeHtml(syncStatusMessage || t("module.nextcloud_whiteboard.status_idle"))}"></span>
-                <div id="page-presence-section" class="whiteboard-toolbar-group" aria-live="polite"></div>
-            </div>
-            <div class="whiteboard-canvas-stage">
-                <canvas
-                    id="whiteboard-canvas"
-                    tabindex="0"
-                    aria-label="${escapeHtml(t("module.nextcloud_whiteboard.canvas_label"))}"
-                ></canvas>
-                <div
-                    id="whiteboard-canvas-overlay"
-                    class="whiteboard-canvas-overlay"
-                    ${overlayHidden ? "hidden" : ""}
-                    aria-live="polite"
-                >
-                    <div class="whiteboard-start-panel">
-                        <p class="whiteboard-overlay-message">${escapeHtml(overlayMessage)}</p>
-                        ${hasActiveBoard ? "" : `<div class="whiteboard-start-actions"><button type="button" id="whiteboard-start-new">${escapeHtml(t("module.nextcloud_whiteboard.new_board"))}</button><button type="button" id="whiteboard-start-history">${escapeHtml(t("module.nextcloud_whiteboard.history_title"))}</button></div><div class="whiteboard-overlay-board-list">${boardList || `<p>${escapeHtml(t("module.nextcloud_whiteboard.empty"))}</p>`}</div>`}
-                    </div>
-                </div>
-            </div>
-        </div>`;
+    return renderWhiteboardCanvasElement({
+        activeBoard,
+        activeSession,
+        boards,
+        canManageShares,
+        canRenameActiveBoard,
+        preflightStatus,
+        syncStatus,
+        syncStatusMessage,
+        translate: translateModuleString,
+    });
 }
 
 function onCanvasRender() {
@@ -955,47 +858,13 @@ function onCanvasRender() {
     bindCanvasToolbar(canvasInstance);
 }
 
-function getPointerOffset() {
-    return canvasInstance?.getViewportOffset?.() ?? { x: 0, y: 0 };
-}
-
-function getPresenceDisplayName(entry) {
-    return String(entry?.displayName || entry?.handle || entry?.id || "Guest")
-        .replace(/^#+/, "")
-        .trim();
-}
-
-function getPresenceColor(entry) {
-    return pickInitialsColor(entry?.handle || getPresenceDisplayName(entry));
-}
-
-function getSelectionPayload() {
-    const elementIds = canvasInstance?.getSelectedElementIds?.() ?? [];
-    if (!elementIds.length) return null;
-    return { elementIds };
-}
-
-function applyRemotePresenceSelections(entries = [], sessionId = "") {
-    if (!canvasInstance?.setRemoteSelections) return;
-    const selections = entries
-        .filter((entry) => String(entry?.sessionId ?? "") !== sessionId)
-        .filter((entry) => entry?.active !== false)
-        .map((entry) => ({
-            elementIds: Array.isArray(entry?.selection?.elementIds)
-                ? entry.selection.elementIds
-                : [],
-            color: getPresenceColor(entry),
-            label: getPresenceDisplayName(entry),
-        }))
-        .filter((selection) => selection.elementIds.length > 0);
-    canvasInstance.setRemoteSelections(selections);
-}
-
 function buildElements() {
     return [
         {
             id: "whiteboard-canvas",
-            label: t("module.nextcloud_whiteboard.canvas_window"),
+            label: translateModuleString(
+                "module.nextcloud_whiteboard.canvas_window",
+            ),
             pinned: true,
             gridSize: { default: [12, 5], min: [4, 4], max: "full" },
             render: renderCanvasElement,
@@ -1029,7 +898,9 @@ export async function mount(root, { signal, shareContext } = {}) {
     if (initialBoardId) {
         activeBoard = {
             id: initialBoardId,
-            title: t("module.nextcloud_whiteboard.canvas_window"),
+            title: translateModuleString(
+                "module.nextcloud_whiteboard.canvas_window",
+            ),
         };
     }
 
@@ -1044,9 +915,14 @@ export async function mount(root, { signal, shareContext } = {}) {
             endpoint: `${API_BASE}/whiteboards/presence`,
             pageId: () => activeBoard?.id ?? "",
             storageKey: "nextcloud_whiteboard_presence_session",
-            getSelectionPayload,
-            getPointerOffset,
-            onPresenceUpdate: applyRemotePresenceSelections,
+            getSelectionPayload: () => getSelectionPayload(canvasInstance),
+            getPointerOffset: () => getPointerOffset(canvasInstance),
+            onPresenceUpdate: (entries, sessionId) =>
+                applyRemotePresenceSelections({
+                    canvasInstance,
+                    entries,
+                    sessionId,
+                }),
         },
         pageManifest: {
             features: {
@@ -1055,8 +931,12 @@ export async function mount(root, { signal, shareContext } = {}) {
         },
         i18n,
         pageContext: {
-            title: t("module.nextcloud_whiteboard.page_title"),
-            subtitle: t("module.nextcloud_whiteboard.page_subtitle"),
+            title: translateModuleString(
+                "module.nextcloud_whiteboard.page_title",
+            ),
+            subtitle: translateModuleString(
+                "module.nextcloud_whiteboard.page_subtitle",
+            ),
         },
         showNavbar: sharePageFlag("showNavbar", true),
         showTopbar: sharePageFlag("showTopbar", true),

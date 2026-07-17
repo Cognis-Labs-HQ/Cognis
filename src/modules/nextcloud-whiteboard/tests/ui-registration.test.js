@@ -57,13 +57,45 @@ test("nextcloud whiteboard registers full SPA routing and boilerplate styles", (
 });
 
 test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
-    const [source, canvasSource, styles] = await Promise.all([
+    const [
+        source,
+        canvasSource,
+        presenceSource,
+        realtimeSource,
+        renderSource,
+        textToolsSource,
+        styles,
+    ] = await Promise.all([
         import("node:fs/promises").then((fs) =>
             fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
         ),
         import("node:fs/promises").then((fs) =>
             fs.readFile(
                 new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/app/presence.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/app/realtime.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/app/render.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/text-tools.js", import.meta.url),
                 "utf8",
             ),
         ),
@@ -94,21 +126,38 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         source,
         /const canvasElement = document\.getElementById\("whiteboard-canvas"\);/,
     );
-    assert.match(source, /function getPointerOffset\(\)/);
-    assert.match(source, /getPointerOffset,/);
-    assert.match(source, /function applyRemotePresenceSelections\(/);
-    assert.match(source, /onPresenceUpdate:\s*applyRemotePresenceSelections/);
-    assert.match(canvasSource, /loadFontsCatalog/);
-    assert.match(canvasSource, /whiteboard-text-menu/);
-    assert.match(canvasSource, /parentNode\?\.removeChild\(editor\)/);
+    assert.match(presenceSource, /function getPointerOffset\(canvasInstance\)/);
+    assert.match(
+        source,
+        /getPointerOffset:\s*\(\) => getPointerOffset\(canvasInstance\)/,
+    );
+    assert.match(presenceSource, /function applyRemotePresenceSelections\(/);
+    assert.match(
+        source,
+        /onPresenceUpdate:\s*\(entries, sessionId\) =>\s*applyRemotePresenceSelections/,
+    );
+    assert.match(textToolsSource, /loadFontsCatalog/);
+    assert.match(textToolsSource, /whiteboard-text-menu/);
+    assert.match(textToolsSource, /parentNode\?\.removeChild\(editor\)/);
     assert.match(canvasSource, /function getSelectedElementIds\(\)/);
     assert.match(canvasSource, /function setRemoteSelections\(/);
-    assert.match(canvasSource, /remoteSelections\.get\(element\.id\)/);
+    assert.match(
+        await import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/render-scene.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        /remoteSelections\.get\(element\.id\)/,
+    );
     assert.match(canvasSource, /function pushHistoryEntry\(/);
     assert.match(canvasSource, /function applyHistorySnapshot\(/);
-    assert.match(source, /id="page-presence-section"/);
-    assert.match(source, /class="whiteboard-toolbar-group" aria-live="polite"/);
-    assert.match(source, /function throttleLatest\(callback, delay\)/);
+    assert.match(renderSource, /id="page-presence-section"/);
+    assert.match(
+        renderSource,
+        /class="whiteboard-toolbar-group" aria-live="polite"/,
+    );
+    assert.match(realtimeSource, /function throttleLatest\(callback, delay\)/);
     assert.match(source, /function updateHistoryControls\(\)/);
     assert.match(
         source,
@@ -134,12 +183,20 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
 });
 
 test("nextcloud whiteboard canvas deletes selected objects via keyboard", async () => {
-    const source = await import("node:fs/promises").then((fs) =>
-        fs.readFile(
-            new URL("../ui/whiteboard/canvas.js", import.meta.url),
-            "utf8",
+    const [source, canvasEventsSource] = await Promise.all([
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                "utf8",
+            ),
         ),
-    );
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/canvas-events.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+    ]);
     assert.match(source, /function deleteSelectedElements\(\)/);
     assert.match(source, /function notifyTransientChange\(\)/);
     assert.match(source, /transient:\s*true/);
@@ -154,41 +211,60 @@ test("nextcloud whiteboard canvas deletes selected objects via keyboard", async 
         /event\.key !== "Delete" && event\.key !== "Backspace"/,
     );
     assert.match(
-        source,
+        canvasEventsSource,
         /canvasElement\.addEventListener\("keydown", onKeyDown\)/,
     );
     assert.match(
-        source,
+        canvasEventsSource,
         /canvasElement\.removeEventListener\("keydown", onKeyDown\)/,
     );
 });
 
 test("nextcloud whiteboard image paste saves and selects resizable image objects", async () => {
-    const [canvasSource, elementsSource] = await Promise.all([
-        import("node:fs/promises").then((fs) =>
-            fs.readFile(
-                new URL("../ui/whiteboard/canvas.js", import.meta.url),
-                "utf8",
+    const [canvasSource, clipboardSource, canvasEventsSource, elementsSource] =
+        await Promise.all([
+            import("node:fs/promises").then((fs) =>
+                fs.readFile(
+                    new URL("../ui/whiteboard/canvas.js", import.meta.url),
+                    "utf8",
+                ),
             ),
-        ),
-        import("node:fs/promises").then((fs) =>
-            fs.readFile(
-                new URL("../ui/whiteboard/elements.js", import.meta.url),
-                "utf8",
+            import("node:fs/promises").then((fs) =>
+                fs.readFile(
+                    new URL(
+                        "../ui/whiteboard/clipboard-images.js",
+                        import.meta.url,
+                    ),
+                    "utf8",
+                ),
             ),
-        ),
-    ]);
+            import("node:fs/promises").then((fs) =>
+                fs.readFile(
+                    new URL(
+                        "../ui/whiteboard/canvas-events.js",
+                        import.meta.url,
+                    ),
+                    "utf8",
+                ),
+            ),
+            import("node:fs/promises").then((fs) =>
+                fs.readFile(
+                    new URL("../ui/whiteboard/elements.js", import.meta.url),
+                    "utf8",
+                ),
+            ),
+        ]);
     assert.match(
-        canvasSource,
+        clipboardSource,
         /function createImageElementFromDataUrl\(dataUrl\)/,
     );
-    assert.match(canvasSource, /commitCreatedElement\(\s*buildImageElement/);
+    assert.match(clipboardSource, /commitCreatedElement\(\s*buildImageElement/);
     assert.match(
-        canvasSource,
+        canvasEventsSource,
         /document\.addEventListener\("paste", onPaste\)/,
     );
-    assert.match(canvasSource, /if \(event\.defaultPrevented\) return/);
-    assert.match(canvasSource, /findClipboardImageFile\(event\)/);
+    assert.match(clipboardSource, /if \(event\.defaultPrevented\) return/);
+    assert.match(clipboardSource, /findClipboardImageFile\(event\)/);
     assert.doesNotMatch(
         canvasSource,
         /commitElements\(\[\s*\.\.\.elements,\s*buildImageElement/,
@@ -196,7 +272,7 @@ test("nextcloud whiteboard image paste saves and selects resizable image objects
     assert.match(elementsSource, /const imageElementCache = new Map\(\)/);
     assert.match(elementsSource, /whiteboard:image-loaded/);
     assert.match(
-        canvasSource,
+        canvasEventsSource,
         /addEventListener\("whiteboard:image-loaded", scheduleRender\)/,
     );
     assert.match(
@@ -206,7 +282,7 @@ test("nextcloud whiteboard image paste saves and selects resizable image objects
 });
 
 test("nextcloud whiteboard defaults to select after canvas refresh", async () => {
-    const [canvasSource, appSource] = await Promise.all([
+    const [canvasSource, appSource, renderSource] = await Promise.all([
         import("node:fs/promises").then((fs) =>
             fs.readFile(
                 new URL("../ui/whiteboard/canvas.js", import.meta.url),
@@ -216,14 +292,23 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         import("node:fs/promises").then((fs) =>
             fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
         ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/app/render.js", import.meta.url),
+                "utf8",
+            ),
+        ),
     ]);
     assert.match(canvasSource, /let activeTool = "select"/);
-    assert.match(appSource, /let activeTool = "select"/);
+    assert.match(renderSource, /tool === "select" \? " active" : ""/);
     assert.match(
-        appSource,
-        /data-tool="select" class="whiteboard-tool active"/,
+        appSource + renderSource,
+        /data-tool="\$\{tool\}" class="whiteboard-tool/,
     );
-    assert.match(appSource, /data-tool="pen" class="whiteboard-tool"/);
+    assert.match(
+        appSource + renderSource,
+        /toolButton\("pen", "module.nextcloud_whiteboard.tool_pen", "✎"\)/,
+    );
     assert.match(
         appSource,
         /const SYNC_MESSAGE_BOARD_RENAMED = "BOARD_RENAMED"/,
