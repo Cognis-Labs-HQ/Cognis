@@ -1,8 +1,27 @@
+import { createHash, randomBytes } from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
     parseShareToken,
 } from "../reuse/token-format.js";
+
+export type SharePermission = "read" | "write";
+
+export type ShareRecipientType = "user" | "group" | "email";
+
+export interface ShareRecipient {
+    type: ShareRecipientType;
+    id: string;
+    label?: string | null;
+    permissions: SharePermission[];
+}
+
+export interface ShareAccessControls {
+    permissions: SharePermission[];
+    recipients: ShareRecipient[];
+    passwordProtected: boolean;
+    watermarkReadonly: boolean;
+}
 
 export interface ShareTokenRecord {
     id: string;
@@ -12,8 +31,10 @@ export interface ShareTokenRecord {
     metadata: Record<string, string> | null;
     tokenValue: string;
     tokenHash: string;
+    passwordHash: string | null;
     label: string | null;
     grantedCapabilities: string[];
+    accessControls: ShareAccessControls;
     expiresAt: string;
     createdAt: string;
     updatedAt: string;
@@ -25,6 +46,85 @@ function normalizeOptionalString(value: unknown): string | null {
     }
     const normalized = value.trim();
     return normalized ? normalized : null;
+}
+
+function normalizePermissions(value: unknown): SharePermission[] {
+    const entries = Array.isArray(value) ? value : ["read"];
+    const permissions = new Set<SharePermission>();
+    for (const entry of entries) {
+        const normalized = String(entry ?? "").trim();
+        if (normalized === "read" || normalized === "write") {
+            permissions.add(normalized);
+        }
+    }
+    if (permissions.size === 0) {
+        permissions.add("read");
+    }
+    if (permissions.has("write")) {
+        permissions.add("read");
+    }
+    return Array.from(permissions).sort();
+}
+
+function normalizeRecipients(value: unknown): ShareRecipient[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+    return value.flatMap((entry) => {
+        if (!entry || typeof entry !== "object") {
+            return [];
+        }
+        const candidate = entry as Record<string, unknown>;
+        const type = String(candidate.type ?? "").trim();
+        const id = String(candidate.id ?? "").trim();
+        if ((type !== "user" && type !== "group" && type !== "email") || !id) {
+            return [];
+        }
+        return [
+            {
+                type,
+                id,
+                label: normalizeOptionalString(candidate.label),
+                permissions: normalizePermissions(candidate.permissions),
+            },
+        ];
+    });
+}
+
+function normalizeAccessControls(value: unknown): ShareAccessControls {
+    const candidate =
+        value && typeof value === "object" && !Array.isArray(value)
+            ? (value as Record<string, unknown>)
+            : {};
+    const permissions = normalizePermissions(candidate.permissions);
+    return {
+        permissions,
+        recipients: normalizeRecipients(candidate.recipients),
+        passwordProtected: candidate.passwordProtected === true,
+        watermarkReadonly:
+            candidate.watermarkReadonly === true ||
+            (permissions.includes("read") && !permissions.includes("write")),
+    };
+}
+
+function parseJsonObject(value: unknown): Record<string, unknown> | null {
+    try {
+        const parsed = value ? JSON.parse(String(value)) : null;
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? (parsed as Record<string, unknown>)
+            : null;
+    } catch {
+        return null;
+    }
+}
+
+export function generateSharePassword(): string {
+    return randomBytes(9).toString("base64url");
+}
+
+export function hashSharePassword(password: string): string {
+    const normalized = String(password ?? "");
+    return createHash("sha256").update(normalized).digest("hex");
 }
 
 function normalizeCapabilities(value: unknown): string[] {
@@ -102,6 +202,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
         ),
         tokenValue,
         tokenHash,
+        passwordHash: normalizeOptionalString(row.password_hash),
         label: normalizeOptionalString(row.label),
         grantedCapabilities: normalizeCapabilities(
             (() => {
@@ -111,6 +212,9 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
                     return [];
                 }
             })(),
+        ),
+        accessControls: normalizeAccessControls(
+            parseJsonObject(row.access_controls),
         ),
         expiresAt,
         createdAt,
@@ -139,8 +243,10 @@ export class ShareTokenStore {
                 { name: "metadata", type: "text" },
                 { name: "token_value", type: "text", notNull: true },
                 { name: "token_hash", type: "text", notNull: true },
+                { name: "password_hash", type: "text" },
                 { name: "label", type: "text" },
                 { name: "granted_capabilities", type: "text", notNull: true },
+                { name: "access_controls", type: "text", notNull: true },
                 { name: "expires_at", type: "text", notNull: true },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
@@ -155,6 +261,8 @@ export class ShareTokenStore {
         metadata?: Record<string, string> | null;
         label?: string | null;
         grantedCapabilities?: string[];
+        accessControls?: Partial<ShareAccessControls>;
+        password?: string | null;
         expiresAt?: string;
     }): Promise<ShareTokenRecord> {
         const token = issueShareTokenValue();
@@ -167,10 +275,17 @@ export class ShareTokenStore {
             metadata: normalizeMetadata(input.metadata),
             tokenValue: token.tokenValue,
             tokenHash: token.tokenHash,
+            passwordHash: input.password
+                ? hashSharePassword(input.password)
+                : null,
             label: normalizeOptionalString(input.label),
             grantedCapabilities: normalizeCapabilities(
                 input.grantedCapabilities ?? [],
             ),
+            accessControls: normalizeAccessControls({
+                ...(input.accessControls ?? {}),
+                passwordProtected: Boolean(input.password),
+            }),
             expiresAt: String(input.expiresAt ?? ""),
             createdAt,
             updatedAt: createdAt,
@@ -188,10 +303,12 @@ export class ShareTokenStore {
                     : null,
                 token_value: record.tokenValue,
                 token_hash: record.tokenHash,
+                password_hash: record.passwordHash,
                 label: record.label,
                 granted_capabilities: JSON.stringify(
                     record.grantedCapabilities,
                 ),
+                access_controls: JSON.stringify(record.accessControls),
                 expires_at: record.expiresAt,
                 created_at: record.createdAt,
                 updated_at: record.updatedAt,
@@ -377,7 +494,77 @@ export class ShareTokenStore {
         }
     }
 
-    async resolve(rawToken: string): Promise<ShareTokenRecord | null> {
+    async updateById(input: {
+        shareId: string;
+        ownerAccountId: string;
+        label?: string | null;
+        grantedCapabilities?: string[];
+        accessControls?: Partial<ShareAccessControls>;
+        password?: string | null;
+        clearPassword?: boolean;
+        expiresAt?: string;
+    }): Promise<ShareTokenRecord | null> {
+        const record = await this.getById(input.shareId);
+        if (
+            !record ||
+            record.ownerAccountId !== String(input.ownerAccountId ?? "").trim()
+        ) {
+            return null;
+        }
+        const accessControlsInput = input.accessControls ?? {};
+        const keepExistingWatermark =
+            !Object.prototype.hasOwnProperty.call(
+                accessControlsInput,
+                "permissions",
+            ) ||
+            Object.prototype.hasOwnProperty.call(
+                accessControlsInput,
+                "watermarkReadonly",
+            );
+        const updatedControls = normalizeAccessControls({
+            ...record.accessControls,
+            ...(keepExistingWatermark ? {} : { watermarkReadonly: undefined }),
+            ...accessControlsInput,
+            passwordProtected: input.clearPassword
+                ? false
+                : Boolean(input.password) ||
+                  record.accessControls.passwordProtected,
+        });
+        const updatedAt = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "share_tokens",
+            values: {
+                label:
+                    input.label === undefined
+                        ? record.label
+                        : normalizeOptionalString(input.label),
+                granted_capabilities: JSON.stringify(
+                    input.grantedCapabilities === undefined
+                        ? record.grantedCapabilities
+                        : normalizeCapabilities(input.grantedCapabilities),
+                ),
+                access_controls: JSON.stringify(updatedControls),
+                password_hash: input.clearPassword
+                    ? null
+                    : input.password
+                      ? hashSharePassword(input.password)
+                      : record.passwordHash,
+                expires_at:
+                    input.expiresAt === undefined
+                        ? record.expiresAt
+                        : String(input.expiresAt ?? ""),
+                updated_at: updatedAt,
+            },
+            where: [{ column: "id", value: record.id }],
+        });
+        return this.getById(record.id);
+    }
+
+    async resolve(
+        rawToken: string,
+        password?: string | null,
+    ): Promise<ShareTokenRecord | null> {
         const parsedToken = parseShareToken(rawToken);
         if (!parsedToken) {
             return null;
@@ -391,6 +578,12 @@ export class ShareTokenStore {
         }
         if (isExpired(record.expiresAt)) {
             return null;
+        }
+        if (record.passwordHash) {
+            const candidate = password ? hashSharePassword(password) : "";
+            if (candidate !== record.passwordHash) {
+                return null;
+            }
         }
         return record;
     }

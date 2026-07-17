@@ -254,3 +254,39 @@ test("put allows writes within quota", async () => {
     );
     assert.equal(stored.key, "doc.txt");
 });
+
+test("namespace client binds namespace and caller component for operations", async () => {
+    const service = buildService([
+        {
+            id: "profile",
+            ownerComponent: "social-profile",
+            acl: { visibility: "component-managed" },
+        },
+    ]);
+    const client = service.createNamespaceClient("profile", "social-profile");
+
+    const stored = await client.store(
+        { actorId: "alice" },
+        Buffer.from("avatar"),
+        { publicRead: true },
+    );
+    const content = await client.get({ actorId: "bob" }, stored.key);
+
+    assert.deepEqual(Buffer.from(content ?? []).toString("utf8"), "avatar");
+});
+
+test("namespace client still enforces namespace allow-list", async () => {
+    const service = buildService([
+        {
+            id: "profile",
+            ownerComponent: "social-profile",
+            acl: { visibility: "component-managed" },
+        },
+    ]);
+    const client = service.createNamespaceClient("profile", "messages");
+
+    await assert.rejects(
+        client.store({ actorId: "alice" }, Buffer.from("avatar")),
+        AccessDeniedError,
+    );
+});

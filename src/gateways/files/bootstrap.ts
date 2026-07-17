@@ -1,6 +1,10 @@
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { FileStorageGateway, NamespaceDefinition } from "@cognis/core";
+import type {
+    FileStorageGateway,
+    NamespaceDefinition,
+    NamespaceFileClientFactory,
+} from "@cognis/core";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
@@ -65,6 +69,9 @@ async function loadQuotaStore(
  *   files:registerNamespace — (definition) => void
  *       Claims a namespace id. Called once by each owning component's
  *       bootstrap. Throws on duplicate registration.
+ *   files:namespace — ({ namespaceId, callerComponent }) => NamespaceFileClient
+ *       Binds a component to one namespace so call sites pass only actor/key
+ *       details while the files gateway keeps enforcing namespace ACLs.
  *   files:put / files:store / files:get / files:delete / files:list
  *       Namespace-scoped file operations for in-process/component use.
  *       Every call is ACL- and quota-checked before reaching storage.
@@ -112,6 +119,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             service.registerNamespace(definition);
         },
     );
+    ctx.capabilities.contribute("files:namespace", ((request) =>
+        service.createNamespaceClient(
+            request.namespaceId,
+            request.callerComponent,
+        )) satisfies NamespaceFileClientFactory);
     ctx.capabilities.contribute("files:put", service.put.bind(service));
     ctx.capabilities.contribute("files:store", service.store.bind(service));
     ctx.capabilities.contribute("files:get", service.get.bind(service));

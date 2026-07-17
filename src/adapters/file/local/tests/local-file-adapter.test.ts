@@ -65,3 +65,20 @@ test("local file gateway isolates namespaces on disk", async () => {
         await rm(root, { recursive: true, force: true });
     }
 });
+
+test("local file gateway rejects path traversal outside namespace root", async () => {
+    const root = await mkdtemp(join(tmpdir(), "cognis-files-"));
+    try {
+        const gateway = new LocalFileGateway(root);
+        await assert.rejects(
+            gateway.put("profile", "../escape.txt", Buffer.from("abc")),
+            /invalid_file_storage_path/,
+        );
+        await assert.rejects(
+            gateway.put("../profile", "avatar.txt", Buffer.from("abc")),
+            /invalid_file_storage_path/,
+        );
+    } finally {
+        await rm(root, { recursive: true, force: true });
+    }
+});

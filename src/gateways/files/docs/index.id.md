@@ -71,6 +71,7 @@ Penggunaan dilacak secara bertahap dalam tabel metadata objek file (`file_object
 | Kapabilitas                            | Deskripsi                                                                |
 | -------------------------------------- | ------------------------------------------------------------------------ |
 | `files:registerNamespace`              | Registrasi namespace satu kali (error pada id duplikat)                  |
+| `files:namespace`                      | Membuat klien terikat namespace untuk sebuah komponen                    |
 | `files:put`                            | Menulis ke kunci eksplisit relatif-namespace                             |
 | `files:store`                          | Menulis dengan kunci berbasis UUID yang dihasilkan di bawah `{actorId}/` |
 | `files:get`                            | Membaca, tunduk pada ACL                                                 |
@@ -79,7 +80,7 @@ Penggunaan dilacak secara bertahap dalam tabel metadata objek file (`file_object
 | `files:quota:provisionUser`            | Snapshot default kuota namespace/global saat ini untuk pengguna (baru)   |
 | `file:write`/`file:read`/`file:append` | Lama, non-namespace — hanya gateway logging                              |
 
-Semua kapabilitas berbasis namespace mengambil `FileAccessContext` (`actorId`, `callerComponent`, opsional `role`) sehingga gateway dapat memeriksa daftar izin lintas-komponen namespace (`"core"` selalu diizinkan) selain ACL per-objek.
+Komponen sebaiknya menggunakan `files:namespace` untuk operasi file rutin melalui `ctx`: ikat `namespaceId` dan `callerComponent` sekali saat bootstrap, lalu panggil klien yang dikembalikan dengan aktor, kunci, konten, dan opsi ACL untuk tiap operasi. Kapabilitas tingkat rendah `files:put`/`files:store`/`files:get`/`files:delete`/`files:list` tetap tersedia ketika pemanggil benar-benar perlu memilih namespace secara dinamis. Semua kapabilitas berbasis namespace mengambil `FileAccessContext` (`actorId`, `callerComponent`, opsional `role`) sehingga gateway dapat memeriksa daftar izin lintas-komponen namespace (`"core"` selalu diizinkan) selain ACL per-objek.
 
 ### Rute HTTP
 

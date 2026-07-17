@@ -202,6 +202,9 @@ export async function registerShareBootstrapHooks(input: {
             const inputPayload = (stageCtx.input ?? {}) as {
                 label?: string;
                 grantedCapabilities?: string[];
+                accessControls?: Record<string, unknown>;
+                password?: string | null;
+                generatePassword?: boolean;
                 expiresAt?: string;
             };
             const shareRecord = await input.gateway.issueToken({
@@ -226,6 +229,9 @@ export async function registerShareBootstrapHooks(input: {
                 )
                     ? inputPayload.grantedCapabilities
                     : [],
+                accessControls: inputPayload.accessControls,
+                password: inputPayload.password,
+                generatePassword: inputPayload.generatePassword === true,
                 expiresAt: String(inputPayload.expiresAt ?? ""),
             });
             stageCtx.data.shareRecord = shareRecord;
@@ -257,12 +263,18 @@ export async function registerShareBootstrapHooks(input: {
         "validate-token",
         { id: "share-gateway:validate-token" },
         async (stageCtx) => {
-            const inputPayload = (stageCtx.input ?? {}) as { token?: string };
+            const inputPayload = (stageCtx.input ?? {}) as {
+                token?: string;
+                password?: string | null;
+            };
             const token = String(inputPayload.token ?? "").trim();
             if (!token) {
                 return { valid: false, reason: "missing_token" };
             }
-            const tokenRecord = await input.gateway.resolveToken(token);
+            const tokenRecord = await input.gateway.resolveToken(
+                token,
+                inputPayload.password,
+            );
             if (!tokenRecord) {
                 return { valid: false, reason: "invalid_token" };
             }
@@ -462,6 +474,17 @@ export async function registerShareBootstrapHooks(input: {
                     (tokenResult.tokenRecord?.grantedCapabilities as
                         | string[]
                         | undefined) ?? [],
+                accessControls:
+                    (tokenResult.tokenRecord?.accessControls as
+                        | Record<string, unknown>
+                        | undefined) ?? {},
+                readonlyWatermark: Boolean(
+                    (
+                        tokenResult.tokenRecord?.accessControls as
+                            | { watermarkReadonly?: boolean }
+                            | undefined
+                    )?.watermarkReadonly,
+                ),
                 guestProfile:
                     typeof stageCtx.data.guestProfile === "object"
                         ? stageCtx.data.guestProfile

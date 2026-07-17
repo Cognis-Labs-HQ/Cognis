@@ -71,6 +71,7 @@ ctx.capabilities.get("files:registerNamespace")?.({
 | 機能                                   | 説明                                                                            |
 | -------------------------------------- | ------------------------------------------------------------------------------- |
 | `files:registerNamespace`              | 名前空間の一度限りの登録（重複IDでエラー）                                      |
+| `files:namespace`                      | コンポーネント向けの名前空間バインド済みクライアントを作成する                  |
 | `files:put`                            | 明示的な名前空間相対キーへの書き込み                                            |
 | `files:store`                          | `{actorId}/` の下に生成されたUUIDベースのキーで書き込み                         |
 | `files:get`                            | 読み取り（ACLに従う）                                                           |
@@ -79,7 +80,7 @@ ctx.capabilities.get("files:registerNamespace")?.({
 | `files:quota:provisionUser`            | （新規）ユーザーの現在の名前空間/グローバルクォータデフォルトのスナップショット |
 | `file:write`/`file:read`/`file:append` | レガシー、非名前空間 — ログゲートウェイのみ                                     |
 
-すべての名前空間ベースの機能は `FileAccessContext`（`actorId`、`callerComponent`、オプションの `role`）を取るため、ゲートウェイはオブジェクトごとのACLに加えて名前空間のコンポーネント横断許可リスト（`"core"` は常に許可）をチェックできます。
+コンポーネントは、`ctx` 経由の日常的なファイル操作では `files:namespace` を優先してください。ブートストラップ時に `namespaceId` と `callerComponent` を一度だけバインドし、その後は返されたクライアントへ操作ごとのアクター、キー、コンテンツ、ACLオプションを渡します。呼び出し元が本当に動的に名前空間を選ぶ必要がある場合に備えて、低レベルの `files:put`/`files:store`/`files:get`/`files:delete`/`files:list` 機能も引き続き利用できます。すべての名前空間ベースの機能は `FileAccessContext`（`actorId`、`callerComponent`、オプションの `role`）を取るため、ゲートウェイはオブジェクトごとのACLに加えて名前空間のコンポーネント横断許可リスト（`"core"` は常に許可）をチェックできます。
 
 ### HTTPルート
 

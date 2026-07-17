@@ -3,6 +3,7 @@ import type {
     FileObjectAcl,
     FileStorageGateway,
     NamespaceDefinition,
+    NamespaceFileClient,
     StoredObject,
 } from "@cognis/core";
 import { NamespaceRegistry } from "./namespace-registry.js";
@@ -51,6 +52,29 @@ export class NamespaceFileService {
 
     registerNamespace(definition: NamespaceDefinition): void {
         this.registry.register(definition);
+    }
+
+    createNamespaceClient(
+        namespaceId: string,
+        callerComponent: string,
+    ): NamespaceFileClient {
+        this.registry.require(namespaceId);
+        const toAccess = (access: { actorId: string; role?: string }) => ({
+            actorId: access.actorId,
+            role: access.role,
+            callerComponent,
+        });
+        return {
+            put: (access, key, content, options) =>
+                this.put(namespaceId, toAccess(access), key, content, options),
+            store: (access, content, options) =>
+                this.store(namespaceId, toAccess(access), content, options),
+            get: (access, key) => this.get(namespaceId, toAccess(access), key),
+            delete: (access, key) =>
+                this.delete(namespaceId, toAccess(access), key),
+            list: (access, prefix) =>
+                this.list(namespaceId, toAccess(access), prefix),
+        };
     }
 
     private resolveNamespace(

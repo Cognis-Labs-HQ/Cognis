@@ -71,6 +71,7 @@ Die Nutzung wird inkrementell in der Metadatentabelle der Dateiobjekte (`file_ob
 | Fähigkeit                              | Beschreibung                                                                                         |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `files:registerNamespace`              | Einmalige Namensraum-Registrierung (wirft Fehler bei doppelter ID)                                   |
+| `files:namespace`                      | Erstellt einen namensraumgebundenen Client für eine Komponente                                       |
 | `files:put`                            | Schreiben auf einen expliziten, namensraum-relativen Schlüssel                                       |
 | `files:store`                          | Schreiben mit generiertem UUID-basiertem Schlüssel unter `{actorId}/`                                |
 | `files:get`                            | Lesen, vorbehaltlich ACL                                                                             |
@@ -79,7 +80,7 @@ Die Nutzung wird inkrementell in der Metadatentabelle der Dateiobjekte (`file_ob
 | `files:quota:provisionUser`            | Schnappschuss der aktuellen Namensraum-/globalen Kontingent-Standardwerte für einen (neuen) Benutzer |
 | `file:write`/`file:read`/`file:append` | Veraltet, nicht namensraum-basiert — nur Logging-Gateway                                             |
 
-Alle namensraum-basierten Fähigkeiten nehmen einen `FileAccessContext` (`actorId`, `callerComponent`, optional `role`) entgegen, sodass das Gateway zusätzlich zur Objekt-ACL die komponentenübergreifende Zulassungsliste des Namensraums prüfen kann (`"core"` ist immer erlaubt).
+Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files:namespace` verwenden: `namespaceId` und `callerComponent` werden einmal beim Bootstrap gebunden, danach erhält der zurückgegebene Client pro Operation nur noch Akteur, Schlüssel, Inhalt und ACL-Optionen. Die niedrigeren Fähigkeiten `files:put`/`files:store`/`files:get`/`files:delete`/`files:list` bleiben verfügbar, wenn ein Aufrufer Namespaces wirklich dynamisch wählen muss. Alle namensraum-basierten Fähigkeiten nehmen einen `FileAccessContext` (`actorId`, `callerComponent`, optional `role`) entgegen, sodass das Gateway zusätzlich zur Objekt-ACL die komponentenübergreifende Zulassungsliste des Namensraums prüfen kann (`"core"` ist immer erlaubt).
 
 ### HTTP-Routen
 
