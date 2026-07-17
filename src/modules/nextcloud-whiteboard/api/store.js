@@ -340,6 +340,17 @@ export class NextcloudWhiteboardStore {
         return this.getWhiteboardById(id);
     }
 
+    async listParticipants(id) {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "nextcloud_whiteboard_access",
+            where: [{ column: "whiteboard_id", value: String(id ?? "") }],
+        });
+        return normalizeHandleKeys(
+            (result.rows ?? []).map((row) => row.username),
+        );
+    }
+
     async canAccessWhiteboard(id, username) {
         const result = await this.db.executeCommand({
             option: "SELECT",

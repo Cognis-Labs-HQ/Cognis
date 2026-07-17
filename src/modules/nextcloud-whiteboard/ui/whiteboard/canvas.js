@@ -25,6 +25,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let strokeWidth = 4;
     let activeTool = "select";
     let imageUploadMaxBytes = 1048576;
+    let imageUploader = null;
     let selectedElementId = null;
     let selectedElementIds = new Set();
     let eraserSelectionIds = new Set();
@@ -745,6 +746,7 @@ export function createWhiteboardCanvas(canvasElement) {
     const onPaste = createClipboardImageHandler({
         commitCreatedElement,
         getImageUploadMaxBytes: () => imageUploadMaxBytes,
+        uploadImage: (dataUrl) => imageUploader?.(dataUrl),
         notifyImageRejected: () => {
             changeCallback?.([...elements], {
                 type: "image_rejected",
@@ -815,6 +817,9 @@ export function createWhiteboardCanvas(canvasElement) {
         },
         setImageUploadMaxBytes(maxBytes) {
             imageUploadMaxBytes = Number(maxBytes);
+        },
+        setImageUploader(uploader) {
+            imageUploader = typeof uploader === "function" ? uploader : null;
         },
         getElements() {
             return [...elements];

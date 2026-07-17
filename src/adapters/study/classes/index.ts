@@ -137,19 +137,34 @@ export async function bootstrapStudyAdapter(
 
     adapterReady = true;
 
-    // Foundational namespace registration for classroom materials; no
-    // upload UI/API is built yet.
-    ctx.capabilities.get<
+    const registerFileNamespace = ctx.capabilities.get<
         (definition: {
             id: string;
             ownerComponent: string;
             acl: { visibility: string };
         }) => void
-    >("files:registerNamespace")?.({
+    >("files:registerNamespace");
+    const createNamespaceClient =
+        ctx.capabilities.get<
+            (request: {
+                namespaceId: string;
+                callerComponent: string;
+            }) => unknown
+        >("files:namespace");
+    registerFileNamespace?.({
         id: "classes",
         ownerComponent: "study-classes",
         acl: { visibility: "private-group" },
     });
+    if (createNamespaceClient) {
+        ctx.capabilities.contribute(
+            "study:classes:materialsFiles",
+            createNamespaceClient({
+                namespaceId: "classes",
+                callerComponent: "study-classes",
+            }),
+        );
+    }
 
     const isEnabled = () => ctx.isAdapterEnabled();
     const preferenceStore =
