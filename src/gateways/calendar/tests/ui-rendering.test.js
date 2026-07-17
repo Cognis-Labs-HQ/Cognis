@@ -417,11 +417,11 @@ test("calendar toolbar shows shared visibility icon", () => {
 test("calendar deep-link event popup does not block mount completion", () => {
     assert.match(
         APP_SOURCE,
-        /if \(selectedCalendarId && selectedEventId\)\s*\{\s*void openEventPopup\(selectedCalendarId, selectedEventId\);/s,
+        /if \(routeCalendarId && routeEventId\)\s*\{\s*void openEventPopup\(routeCalendarId, routeEventId\);/s,
     );
     assert.doesNotMatch(
         APP_SOURCE,
-        /if \(selectedCalendarId && selectedEventId\)\s*\{\s*await openEventPopup\(selectedCalendarId, selectedEventId\);/s,
+        /if \(routeCalendarId && routeEventId\)\s*\{\s*await openEventPopup\(routeCalendarId, routeEventId\);/s,
     );
 });
 

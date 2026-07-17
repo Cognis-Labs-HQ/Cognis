@@ -16,8 +16,10 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "gateway.calendar.page_title");
 
     let calendars = [];
-    let selectedCalendarId = calendarUi.parseCalendarSelection();
-    let selectedEventId = calendarUi.parseEventSelection();
+    const routeCalendarId = calendarUi.parseCalendarSelection();
+    const routeEventId = calendarUi.parseEventSelection();
+    let selectedCalendarId = routeCalendarId;
+    let selectedEventId = routeEventId;
     let eventsByCalendar = {};
     let pendingInvitations = [];
     let canInviteExternal = false;
@@ -712,7 +714,7 @@ export async function mount(root, { signal } = {}) {
 
     await composer.init();
     syncRouteSelection();
-    if (selectedCalendarId && selectedEventId) {
-        void openEventPopup(selectedCalendarId, selectedEventId);
+    if (routeCalendarId && routeEventId) {
+        void openEventPopup(routeCalendarId, routeEventId);
     }
 }

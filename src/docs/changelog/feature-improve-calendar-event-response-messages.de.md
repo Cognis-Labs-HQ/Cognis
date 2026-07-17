@@ -2,4 +2,4 @@
 
 ## Freundlichere Einladungsantworten
 
-Kalenderantwort-Benachrichtigungen verwenden jetzt einen persönlicheren Betreff und Text, damit Organisatoren sofort sehen, wer eine Einladung angenommen oder abgelehnt hat.
+Kalenderbenachrichtigungen verwenden jetzt freundlichere Texte für Einladungen, Antworten, Erinnerungen und Absagen, behalten Links zu ausstehenden Einladungen bei und zeigen den Einladenden oder Antwortenden als Absender.

@@ -254,6 +254,7 @@ export async function handleCalendarResponseRoute(input: {
                         response,
                     ),
                     actionUrl: "/calendar",
+                    senderName: attendeeDisplayName,
                     metadata: {
                         eventId: effectiveEvent.id,
                         response,

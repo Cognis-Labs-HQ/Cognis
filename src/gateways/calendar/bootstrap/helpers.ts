@@ -33,6 +33,9 @@ export type NotificationDispatcher = (envelope: {
 export type ResolveAccountId = (
     handleOrIdentifier: string,
 ) => Promise<string | null>;
+export type ResolveAccountDisplayName = (
+    accountId: string,
+) => Promise<string> | string;
 export type CalendarLogger = (
     level: string,
     msg: string,
@@ -302,19 +305,26 @@ export function buildEventActionUrl(
     return `/calendar?${query.toString()}`;
 }
 
+export function buildInviteNotificationSubject(
+    event: CalendarEventRecord,
+    inviterDisplayName: string,
+): string {
+    return `${inviterDisplayName} invited you to ${event.title}`;
+}
+
 export function buildInternalInviteBody(
     event: CalendarEventRecord,
     eventActionUrl: string,
+    inviterDisplayName: string,
 ): string {
     return [
-        `You were invited to ${event.title}.`,
+        `${inviterDisplayName} invited you to ${event.title}.`,
         "",
-        `Starts: ${event.startAt}`,
-        `Ends: ${event.endAt}`,
-        ...(event.description ? [`Description: ${event.description}`] : []),
+        `Starts ${event.startAt} and ends ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
         ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
         "",
-        "Open the event to respond with Accepted, Tentative, or Declined.",
+        "Open the event to accept, decline, or respond as tentative.",
         eventActionUrl,
     ].join("\n");
 }
@@ -322,14 +332,13 @@ export function buildInternalInviteBody(
 export function buildExternalInviteBody(
     event: CalendarEventRecord,
     meetingAccessUrl: string | null,
-    inviterAccountId: string,
+    inviterDisplayName: string,
 ): string {
     return [
-        `${inviterAccountId} invited you to ${event.title}.`,
+        `${inviterDisplayName} invited you to ${event.title}.`,
         "",
-        `Starts: ${event.startAt}`,
-        `Ends: ${event.endAt}`,
-        ...(event.description ? [`Description: ${event.description}`] : []),
+        `Starts ${event.startAt} and ends ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
         ...(meetingAccessUrl ? [`Meeting link: ${meetingAccessUrl}`] : []),
     ].join("\n");
 }
@@ -354,9 +363,8 @@ export function buildCancellationNotificationBody(
     return [
         `${event.title} has been cancelled.`,
         "",
-        `Starts: ${event.startAt}`,
-        `Ends: ${event.endAt}`,
-        ...(event.description ? [`Description: ${event.description}`] : []),
+        `It was scheduled from ${event.startAt} to ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
         ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
     ].join("\n");
 }
@@ -366,12 +374,10 @@ export function buildReminderNotificationBody(
     reminderOffsetMinutes: number,
 ): string {
     return [
-        `Reminder set for ${event.title}.`,
+        `${event.title} starts in ${reminderOffsetMinutes} minutes.`,
         "",
-        `Starts: ${event.startAt}`,
-        `Ends: ${event.endAt}`,
-        `Reminder: ${reminderOffsetMinutes} minutes before`,
-        ...(event.description ? [`Description: ${event.description}`] : []),
+        `Starts ${event.startAt} and ends ${event.endAt}.`,
+        ...(event.description ? [`Note: ${event.description}`] : []),
         ...(event.meetingUrl ? [`Meeting link: ${event.meetingUrl}`] : []),
     ].join("\n");
 }
@@ -398,6 +404,7 @@ export async function dispatchInviteNotifications({
     inviterAccountId,
     calendarId,
     resolveAccountId,
+    resolveAccountDisplayName,
     log,
 }: {
     gateway: CoreCalendarGateway;
@@ -409,9 +416,13 @@ export async function dispatchInviteNotifications({
     inviterAccountId: string;
     calendarId: string;
     resolveAccountId: ResolveAccountId | null;
+    resolveAccountDisplayName?: ResolveAccountDisplayName | null;
     log?: CalendarLogger;
 }): Promise<void> {
     if (!dispatchNotification) return;
+    const inviterDisplayName = resolveAccountDisplayName
+        ? await resolveAccountDisplayName(inviterAccountId)
+        : inviterAccountId;
     const activeShare = shareRegistry
         ? await shareRegistry.getByRecipientCalendarId(calendarId)
         : null;
@@ -453,10 +464,17 @@ export async function dispatchInviteNotifications({
                 await dispatchNotification({
                     category: "calendar",
                     recipientUsername,
-                    subject: `Calendar invite: ${event.title}`,
-                    body: buildInternalInviteBody(event, actionUrl),
+                    subject: buildInviteNotificationSubject(
+                        event,
+                        inviterDisplayName,
+                    ),
+                    body: buildInternalInviteBody(
+                        event,
+                        actionUrl,
+                        inviterDisplayName,
+                    ),
                     actionUrl,
-                    senderName: inviterAccountId,
+                    senderName: inviterDisplayName,
                     metadata: {
                         eventId: actionEventId,
                         calendarId: actionCalendarId,
@@ -492,13 +510,16 @@ export async function dispatchInviteNotifications({
                     category: "calendar",
                     recipientUsername: email,
                     recipientEmail: email,
-                    subject: `Calendar invite: ${event.title}`,
+                    subject: buildInviteNotificationSubject(
+                        event,
+                        inviterDisplayName,
+                    ),
                     body: buildExternalInviteBody(
                         event,
                         meetingAccessUrl,
-                        inviterAccountId,
+                        inviterDisplayName,
                     ),
-                    senderName: inviterAccountId,
+                    senderName: inviterDisplayName,
                     actionUrl:
                         meetingAccessUrl ??
                         buildEventActionUrl(calendarId, event.id),
