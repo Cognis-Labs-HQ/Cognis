@@ -105,15 +105,16 @@ export async function createParticipantDirectory(apiFetch, identifiers) {
  */
 export function buildParticipantCardHtml(
     entry,
-    { escapeHtml, i18n, participantKey, removable = true },
+    { escapeHtml, i18n, participantKey, removable = true, responseHtml = "" },
 ) {
     const key = escapeHtml(participantKey(entry));
     const removeLabel = escapeHtml(
         i18n.t("gateway.calendar.remove_participant"),
     );
     const removeButton = removable
-        ? `<button type="button" class="calendar-participant-card-remove" data-participant-remove="${key}" aria-label="${removeLabel}">×</button>`
+        ? `<a href="#" role="button" class="calendar-participant-card-remove btn-cancel" data-participant-remove="${key}" aria-label="${removeLabel}">×</a>`
         : "";
+    const responseBadge = responseHtml ? String(responseHtml) : "";
     if (entry.type === "user") {
         const handle = String(entry.value ?? "").trim();
         const displayName = String(entry.label ?? handle).trim();
@@ -127,7 +128,7 @@ export function buildParticipantCardHtml(
             fallbackClass: "calendar-participant-card-avatar-fallback",
             profileHandle: null,
         });
-        return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></div>${removeButton}</div>`;
+        return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayName)}</span><span class="calendar-participant-card-handle">@${escapeHtml(handle)}</span></span></div><span class="calendar-participant-card-actions">${responseBadge}${removeButton}</span></div>`;
     }
     const email = String(entry.value ?? "").trim();
     const displayLabel = String(entry.label ?? email).trim();
@@ -140,7 +141,7 @@ export function buildParticipantCardHtml(
         fallbackClass: "calendar-participant-card-avatar-fallback",
         profileHandle: null,
     });
-    return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayLabel)}</span></span></div>${removeButton}</div>`;
+    return `<div class="calendar-participant-card"><div class="calendar-participant-card-profile"><span class="calendar-participant-card-avatar">${avatarMarkup}</span><span class="calendar-participant-card-meta"><span class="calendar-participant-card-name">${escapeHtml(displayLabel)}</span></span></div><span class="calendar-participant-card-actions">${responseBadge}${removeButton}</span></div>`;
 }
 
 export function buildParticipantOptionHtml(option, { escapeHtml }) {

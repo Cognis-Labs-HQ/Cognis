@@ -53,14 +53,14 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
 | Share                 | `src/gateways/share/`        | `1.2.6`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.2`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.3`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
-| Calendar              | `src/gateways/calendar/`     | `1.2.0`  |
+| Calendar              | `src/gateways/calendar/`     | `1.2.4`  |
 
 ## Core contracts
 
