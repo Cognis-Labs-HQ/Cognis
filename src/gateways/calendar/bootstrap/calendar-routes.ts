@@ -26,6 +26,7 @@ import {
     validateSharedCalendars,
     type CalendarLogger,
     type NotificationDispatcher,
+    type ResolveAccountDisplayName,
     type ResolveAccountId,
 } from "./helpers.js";
 import { createReminderScheduler } from "./reminder-scheduler.js";
@@ -40,6 +41,7 @@ export function createCalendarCoreRoutes({
     resolveMeetingsProviderAvailability,
     resolveShareableUsers,
     resolveAccountId,
+    resolveAccountDisplayName,
     log,
     getDispatchNotification,
     ensureNotificationCategory,
@@ -61,6 +63,7 @@ export function createCalendarCoreRoutes({
           >)
         | null;
     resolveAccountId: ResolveAccountId | null;
+    resolveAccountDisplayName: ResolveAccountDisplayName | null;
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
     ensureNotificationCategory: () => void;
@@ -537,6 +540,7 @@ export function createCalendarCoreRoutes({
                     inviterAccountId: claims.sub,
                     calendarId,
                     resolveAccountId,
+                    resolveAccountDisplayName,
                     log,
                 });
                 createdSeries.forEach((event) => {
@@ -930,6 +934,8 @@ export function createCalendarCoreRoutes({
                 gateway,
                 shareRegistry,
                 dispatchNotification,
+                resolveAccountDisplayName:
+                    resolveAccountDisplayName ?? undefined,
                 onEventUpdatedForReminders:
                     scheduleReminderNotificationsForEvent,
                 log,
