@@ -108,9 +108,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             value: manualSecret,
             label: i18n.t("gateway.tfa.settings.manual_secret"),
             toggleLabel: i18n.t("gateway.tfa.settings.manual_secret_toggle"),
-            className: "settings-tfa-secret-field",
-            inputClassName: "settings-tfa-setup-code",
-            toggleClassName: "settings-tfa-secret-toggle",
             escapeHtml,
         });
     }

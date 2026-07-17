@@ -13,6 +13,19 @@
  * toggleSecretVisibility({ input, toggleControl: toggle });
  */
 
+const SECRET_VISIBILITY_STYLESHEET =
+    "/static/styles/reuse/secret-visibility-toggle.css";
+
+export function ensureSecretVisibilityStyles() {
+    if (typeof document === "undefined") return;
+    if (document.querySelector(`link[href="${SECRET_VISIBILITY_STYLESHEET}"]`))
+        return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SECRET_VISIBILITY_STYLESHEET;
+    document.head?.append(link);
+}
+
 function defaultEscapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -30,9 +43,6 @@ function defaultEscapeHtml(value) {
  *   value: string,
  *   label?: string,
  *   toggleLabel?: string,
- *   className?: string,
- *   inputClassName?: string,
- *   toggleClassName?: string,
  *   escapeHtml?: (value: string) => string
  * }} params
  * @returns {string}
@@ -42,18 +52,16 @@ export function renderSecretVisibilityField({
     value,
     label = "",
     toggleLabel = "Toggle secret visibility",
-    className = "secret-visibility-field",
-    inputClassName = "secret-visibility-input",
-    toggleClassName = "secret-visibility-toggle",
     escapeHtml = defaultEscapeHtml,
 }) {
+    ensureSecretVisibilityStyles();
     const fieldId = String(id ?? "").trim();
     if (!fieldId) return "";
     const escapedId = escapeHtml(fieldId);
     const labelMarkup = label
         ? `<span class="secret-visibility-label">${escapeHtml(label)}</span>`
         : "";
-    return `<label class="${escapeHtml(className)}" data-secret-visibility-field>${labelMarkup}<span class="secret-visibility-control"><input id="${escapedId}" class="${escapeHtml(inputClassName)}" type="password" readonly value="${escapeHtml(value)}" data-secret-visibility-input /><button type="button" class="${escapeHtml(toggleClassName)}" data-secret-visibility-toggle="${escapedId}" aria-controls="${escapedId}" aria-pressed="false" aria-label="${escapeHtml(toggleLabel)}"><span aria-hidden="true">👁</span></button></span></label>`;
+    return `<label class="secret-visibility-field" data-secret-visibility-field>${labelMarkup}<span class="secret-visibility-control"><input id="${escapedId}" class="secret-visibility-input" type="password" readonly value="${escapeHtml(value)}" data-secret-visibility-input /><button type="button" class="secret-visibility-toggle" data-secret-visibility-toggle="${escapedId}" aria-controls="${escapedId}" aria-pressed="false" aria-label="${escapeHtml(toggleLabel)}"><span aria-hidden="true">👁</span></button></span></label>`;
 }
 
 /**
@@ -121,6 +129,7 @@ export function bindSecretVisibilityToggles({
     revealedClassName = "is-revealed",
     signal,
 }) {
+    ensureSecretVisibilityStyles();
     if (!root || typeof root.addEventListener !== "function") return () => {};
     const handleToggleClick = (event) => {
         const target = event.target instanceof Element ? event.target : null;
