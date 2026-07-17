@@ -189,7 +189,7 @@ export function createWhiteboardCanvas(canvasElement) {
                   }
                 : null,
         );
-        syncTextFormatMenu();
+        textTools.syncTextFormatMenu();
     }
 
     function findElementAt(x, y) {
@@ -414,71 +414,10 @@ export function createWhiteboardCanvas(canvasElement) {
         },
     });
 
-    const syncTextFormatMenu = () => textTools.syncTextFormatMenu();
-    const openTextEditor = (element) => textTools.openTextEditor(element);
-
     function commitCreatedElement(element) {
         commitElements([...elements, element]);
         selectOnlyElement(element.id);
         setActiveTool("select");
-    }
-
-    function updateTextElement(element, text) {
-        const nextText = text.trim() || "Text";
-        const fontSize = element.fontSize ?? 28;
-        const width = Math.max(160, nextText.length * fontSize * 0.62);
-        const height = Math.max(56, fontSize * 1.8);
-        commitElements(
-            elements.map((item) =>
-                item.id === element.id
-                    ? bumpElementVersion(item, {
-                          text: nextText,
-                          width,
-                          height,
-                      })
-                    : item,
-            ),
-        );
-        selectOnlyElement(element.id);
-    }
-
-    function openTextEditor(element) {
-        const parent = canvasElement.parentElement;
-        if (!parent) return;
-        parent.querySelector(".wb-text-editor")?.remove();
-        const editor = document.createElement("textarea");
-        editor.className = "wb-text-editor whiteboard-text-editor";
-        editor.value = element.text ?? "Text";
-        positionTextOverlay(editor, element);
-        editor.style.width = `${Math.max(180, element.width ?? 180)}px`;
-        editor.style.height = `${Math.max(64, element.height ?? 64)}px`;
-        editor.style.fontSize = `${element.fontSize ?? 28}px`;
-        editor.style.fontFamily = `${element.fontFamily || toFontFamilyValue(currentAppFont())}, Arial, sans-serif`;
-        editor.style.fontWeight = element.fontWeight === "700" ? "700" : "400";
-        editor.style.fontStyle =
-            element.fontStyle === "italic" ? "italic" : "normal";
-        parent.appendChild(editor);
-        editor.focus();
-        editor.select();
-        let finished = false;
-        const finish = () => {
-            if (finished) return;
-            finished = true;
-            const value = editor.value;
-            editor.parentNode?.removeChild(editor);
-            updateTextElement(element, value);
-        };
-        editor.addEventListener("blur", finish, { once: true });
-        editor.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                finished = true;
-                editor.parentNode?.removeChild(editor);
-                selectOnlyElement(element.id);
-            } else if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                finish();
-            }
-        });
     }
 
     function onPointerDown(event) {
@@ -561,7 +500,7 @@ export function createWhiteboardCanvas(canvasElement) {
             const existingText = findElementAt(x, y);
             if (existingText?.type === "text") {
                 selectOnlyElement(existingText.id);
-                openTextEditor(existingText);
+                textTools.openTextEditor(existingText);
                 isDrawing = false;
                 setActiveTool("select");
                 return;
@@ -573,7 +512,7 @@ export function createWhiteboardCanvas(canvasElement) {
                 },
             );
             commitCreatedElement(element);
-            openTextEditor(element);
+            textTools.openTextEditor(element);
             isDrawing = false;
             return;
         }
@@ -591,7 +530,7 @@ export function createWhiteboardCanvas(canvasElement) {
             viewportOffsetY =
                 panState.offsetY - (event.clientY - panState.startY);
             scheduleRender();
-            syncTextFormatMenu();
+            textTools.syncTextFormatMenu();
             notifyTransientChange();
             return;
         }
@@ -631,7 +570,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     });
                 });
                 scheduleRender();
-                syncTextFormatMenu();
+                textTools.syncTextFormatMenu();
                 notifyTransientChange();
                 return;
             }
@@ -702,7 +641,7 @@ export function createWhiteboardCanvas(canvasElement) {
                     });
                 });
                 scheduleRender();
-                syncTextFormatMenu();
+                textTools.syncTextFormatMenu();
                 notifyTransientChange();
                 return;
             }
@@ -790,7 +729,7 @@ export function createWhiteboardCanvas(canvasElement) {
         const element = findElementAt(x, y);
         if (activeTool === "select" && element?.type === "text") {
             selectOnlyElement(element.id);
-            openTextEditor(element);
+            textTools.openTextEditor(element);
         }
     }
 
