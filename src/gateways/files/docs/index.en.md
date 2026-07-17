@@ -71,6 +71,7 @@ Usage is tracked incrementally in the file object metadata table (`file_objects`
 | Capability                             | Description                                                         |
 | -------------------------------------- | ------------------------------------------------------------------- |
 | `files:registerNamespace`              | One-time namespace registration (throws on duplicate id)            |
+| `files:namespace`                      | Create a namespace-bound client for a component                     |
 | `files:put`                            | Write to an explicit namespace-relative key                         |
 | `files:store`                          | Write with a generated UUID-based key under `{actorId}/`            |
 | `files:get`                            | Read, subject to ACL                                                |
@@ -79,7 +80,7 @@ Usage is tracked incrementally in the file object metadata table (`file_objects`
 | `files:quota:provisionUser`            | Snapshot current namespace/global quota defaults for a (new) user   |
 | `file:write`/`file:read`/`file:append` | Legacy, non-namespaced — logging gateway only                       |
 
-All namespaced capabilities take a `FileAccessContext` (`actorId`, `callerComponent`, optional `role`) so the gateway can check the namespace's cross-component allow-list (`"core"` is always permitted) in addition to per-object ACL.
+Components should prefer `files:namespace` for routine ctx file operations: bind `namespaceId` and `callerComponent` once during bootstrap, then call the returned client with the actor, key, content, and ACL options for each operation. The lower-level `files:put`/`files:store`/`files:get`/`files:delete`/`files:list` capabilities remain available when a caller genuinely needs to choose namespaces dynamically. All namespaced capabilities take a `FileAccessContext` (`actorId`, `callerComponent`, optional `role`) so the gateway can check the namespace's cross-component allow-list (`"core"` is always permitted) in addition to per-object ACL.
 
 ### HTTP routes
 

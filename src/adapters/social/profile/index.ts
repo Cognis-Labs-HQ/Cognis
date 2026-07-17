@@ -17,6 +17,7 @@ import type {
 } from "../../../gateways/social/gateway.js";
 import {
     createProfileFileClient,
+    createProfileNamespaceClientRequest,
     type ProfileFileClient,
 } from "./routes/profile-file-client.js";
 import {
@@ -132,7 +133,7 @@ export function createProfilePageRoutes(
  * Profile API routes are always registered. Avatar/banner routes return
  * `503 file_storage_unavailable` when the files gateway's namespaced
  * capabilities are absent. Avatar/banner uploads register the "profile"
- * namespace and only activate when files:store/files:delete are present.
+ * namespace and only activate when files:namespace is present.
  */
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
@@ -211,23 +212,24 @@ export async function bootstrapSocialAdapter(
             acl: { visibility: string };
         }) => void
     >("files:registerNamespace");
-    const filesStore =
-        ctx.capabilities.get<Parameters<typeof createProfileFileClient>[0]>(
-            "files:store",
-        );
-    const filesDelete =
-        ctx.capabilities.get<Parameters<typeof createProfileFileClient>[1]>(
-            "files:delete",
-        );
+    const createNamespaceClient =
+        ctx.capabilities.get<
+            (request: {
+                namespaceId: string;
+                callerComponent: string;
+            }) => Parameters<typeof createProfileFileClient>[0]
+        >("files:namespace");
 
     let fileGateway: ProfileFileClient | undefined;
-    if (registerNamespace && filesStore && filesDelete) {
+    if (registerNamespace && createNamespaceClient) {
         registerNamespace({
             id: "profile",
             ownerComponent: "social-profile",
             acl: { visibility: "component-managed" },
         });
-        fileGateway = createProfileFileClient(filesStore, filesDelete);
+        fileGateway = createProfileFileClient(
+            createNamespaceClient(createProfileNamespaceClientRequest()),
+        );
     }
     const onMessagesProfileChanged = ctx.capabilities.get<
         (input: {

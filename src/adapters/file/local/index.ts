@@ -6,7 +6,7 @@ import {
     stat,
     writeFile,
 } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { FileStorageGateway, StoredObject } from "@cognis/core";
 
@@ -29,7 +29,32 @@ export class LocalFileGateway implements FileStorageGateway {
     constructor(private readonly rootPath: string) {}
 
     private namespaceRoot(namespaceId: string): string {
-        return join(this.rootPath, namespaceId);
+        return this.resolveInsideRoot(this.rootPath, namespaceId);
+    }
+
+    private resolveInsideRoot(rootPath: string, relativePath: string): string {
+        const normalizedRelativePath = String(relativePath ?? "").trim();
+        if (
+            !normalizedRelativePath ||
+            isAbsolute(normalizedRelativePath) ||
+            normalizedRelativePath.split(/[\\/]+/).includes("..")
+        ) {
+            throw new Error("invalid_file_storage_path");
+        }
+        const root = resolve(rootPath);
+        const target = resolve(root, normalizedRelativePath);
+        const targetRelativeToRoot = relative(root, target);
+        if (
+            targetRelativeToRoot.startsWith("..") ||
+            isAbsolute(targetRelativeToRoot)
+        ) {
+            throw new Error("invalid_file_storage_path");
+        }
+        return target;
+    }
+
+    private objectPath(namespaceId: string, key: string): string {
+        return this.resolveInsideRoot(this.namespaceRoot(namespaceId), key);
     }
 
     async put(
@@ -38,7 +63,7 @@ export class LocalFileGateway implements FileStorageGateway {
         content: Uint8Array,
         contentType?: string,
     ): Promise<StoredObject> {
-        const target = join(this.namespaceRoot(namespaceId), key);
+        const target = this.objectPath(namespaceId, key);
         await mkdir(dirname(target), { recursive: true });
         await writeFile(target, content);
         const info = await stat(target);
@@ -66,7 +91,7 @@ export class LocalFileGateway implements FileStorageGateway {
     }
 
     async get(namespaceId: string, key: string): Promise<Uint8Array | null> {
-        const target = join(this.namespaceRoot(namespaceId), key);
+        const target = this.objectPath(namespaceId, key);
 
         try {
             return await readFile(target);
@@ -76,7 +101,7 @@ export class LocalFileGateway implements FileStorageGateway {
     }
 
     async delete(namespaceId: string, key: string): Promise<boolean> {
-        const target = join(this.namespaceRoot(namespaceId), key);
+        const target = this.objectPath(namespaceId, key);
         try {
             await rm(target);
             return true;
@@ -86,7 +111,9 @@ export class LocalFileGateway implements FileStorageGateway {
     }
 
     async list(namespaceId: string, prefix = ""): Promise<StoredObject[]> {
-        const baseDir = join(this.namespaceRoot(namespaceId), prefix);
+        const baseDir = prefix
+            ? this.objectPath(namespaceId, prefix)
+            : this.namespaceRoot(namespaceId);
         try {
             const entries = await readdir(baseDir, { withFileTypes: true });
             const files = entries.filter((entry) => entry.isFile());
@@ -96,10 +123,7 @@ export class LocalFileGateway implements FileStorageGateway {
                     const relative = prefix
                         ? `${prefix}/${entry.name}`
                         : entry.name;
-                    const fullPath = join(
-                        this.namespaceRoot(namespaceId),
-                        relative,
-                    );
+                    const fullPath = this.objectPath(namespaceId, relative);
                     const info = await stat(fullPath);
                     return {
                         key: relative,

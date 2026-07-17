@@ -73,6 +73,57 @@ export interface FileAccessContext {
     callerComponent: string;
 }
 
+export interface NamespaceFileWriteOptions {
+    groupIds?: string[];
+    publicRead?: boolean;
+    contentType?: string;
+}
+
+export interface NamespaceFileClientAccess {
+    actorId: string;
+    role?: string;
+}
+
+/**
+ * Namespace-bound file client exposed through ctx for component consumers.
+ * Components bind their namespace and component id once, then pass only the
+ * acting user and object details for each operation. This keeps namespace
+ * selection explicit at component bootstrap while avoiding repeated
+ * namespace/caller plumbing at every file operation call site.
+ */
+export interface NamespaceFileClient {
+    put(
+        access: NamespaceFileClientAccess,
+        key: string,
+        content: Uint8Array,
+        options?: NamespaceFileWriteOptions,
+    ): Promise<StoredObject>;
+    store(
+        access: NamespaceFileClientAccess,
+        content: Uint8Array,
+        options?: NamespaceFileWriteOptions,
+    ): Promise<StoredObject>;
+    get(
+        access: NamespaceFileClientAccess,
+        key: string,
+    ): Promise<Uint8Array | null>;
+    delete(access: NamespaceFileClientAccess, key: string): Promise<boolean>;
+    list(
+        access: NamespaceFileClientAccess,
+        prefix?: string,
+    ): Promise<StoredObject[]>;
+}
+
+export interface NamespaceFileClientRequest {
+    namespaceId: string;
+    callerComponent: string;
+}
+
+/** Factory capability contributed as `files:namespace`. */
+export type NamespaceFileClientFactory = (
+    request: NamespaceFileClientRequest,
+) => NamespaceFileClient;
+
 /**
  * Namespace-scoped file storage adapter contract. Implementations receive an
  * already-validated namespace id (ACL/quota checks happen in the files

@@ -101,6 +101,9 @@ export function createShareRoutes(input: {
                 resourceId?: unknown;
                 label?: unknown;
                 grantedCapabilities?: unknown;
+                accessControls?: unknown;
+                password?: unknown;
+                generatePassword?: unknown;
                 expiresAt?: unknown;
             };
             const resourceType = String(body.resourceType ?? "").trim();
@@ -123,6 +126,14 @@ export function createShareRoutes(input: {
                 grantedCapabilities: Array.isArray(body.grantedCapabilities)
                     ? body.grantedCapabilities
                     : [],
+                accessControls:
+                    body.accessControls &&
+                    typeof body.accessControls === "object"
+                        ? body.accessControls
+                        : {},
+                password:
+                    typeof body.password === "string" ? body.password : null,
+                generatePassword: body.generatePassword === true,
                 expiresAt:
                     typeof body.expiresAt === "string" ? body.expiresAt : "",
             });
@@ -140,6 +151,51 @@ export function createShareRoutes(input: {
                 return true;
             }
             sendJson(res, 200, { data: issued.shareRecord ?? null });
+            return true;
+        }
+
+        const updateMatch = url.pathname.match(
+            /^\/api\/v1\/share\/tokens\/([^/]+)$/,
+        );
+        if (req.method === "PATCH" && updateMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const shareId = decodeURIComponent(updateMatch[1]);
+            const body = (await readJson(req)) as {
+                label?: unknown;
+                grantedCapabilities?: unknown;
+                accessControls?: unknown;
+                password?: unknown;
+                generatePassword?: unknown;
+                clearPassword?: unknown;
+                expiresAt?: unknown;
+            };
+            const updated = await input.gateway.updateToken({
+                shareId,
+                ownerAccountId: claims.sub,
+                label: typeof body.label === "string" ? body.label : undefined,
+                grantedCapabilities: Array.isArray(body.grantedCapabilities)
+                    ? body.grantedCapabilities
+                    : undefined,
+                accessControls:
+                    body.accessControls &&
+                    typeof body.accessControls === "object"
+                        ? body.accessControls
+                        : undefined,
+                password:
+                    typeof body.password === "string" ? body.password : null,
+                generatePassword: body.generatePassword === true,
+                clearPassword: body.clearPassword === true,
+                expiresAt:
+                    typeof body.expiresAt === "string"
+                        ? body.expiresAt
+                        : undefined,
+            });
+            if (!updated) {
+                sendError(res, 404, "not_found", "Share token not found.");
+                return true;
+            }
+            sendJson(res, 200, { data: updated });
             return true;
         }
 
@@ -182,8 +238,12 @@ export function createShareRoutes(input: {
         const resolveMatch = url.pathname.match(
             /^\/api\/v1\/share\/resolve\/([^/]+)$/,
         );
-        if (req.method === "GET" && resolveMatch) {
+        if ((req.method === "GET" || req.method === "POST") && resolveMatch) {
             const token = decodeURIComponent(resolveMatch[1]);
+            const body =
+                req.method === "POST"
+                    ? ((await readJson(req)) as { password?: unknown })
+                    : {};
             const requesterClaims = routeContext.getAuthClaims(req);
             // Share guests resolving another share link (e.g. following a
             // link while already viewing a shared resource) are not "real"
@@ -196,6 +256,8 @@ export function createShareRoutes(input: {
                     : null;
             const flowResult = await input.flow.run("resolve-share-token", {
                 token,
+                password:
+                    typeof body.password === "string" ? body.password : null,
                 requesterClaims: directAccessClaims,
             });
             const resolved = getFirstStageResult<{
@@ -206,6 +268,8 @@ export function createShareRoutes(input: {
                 payload?: Record<string, unknown>;
                 directAccess?: boolean;
                 grantedCapabilities?: string[];
+                accessControls?: Record<string, unknown>;
+                readonlyWatermark?: boolean;
                 guestAccessToken?: string;
                 guestProfile?: Record<string, unknown> | null;
                 page?: Record<string, unknown>;
@@ -229,6 +293,8 @@ export function createShareRoutes(input: {
                     payload: resolved.payload ?? {},
                     directAccess: resolved.directAccess === true,
                     grantedCapabilities: resolved.grantedCapabilities ?? [],
+                    accessControls: resolved.accessControls ?? {},
+                    readonlyWatermark: resolved.readonlyWatermark === true,
                     guestAccessToken:
                         typeof resolved.guestAccessToken === "string"
                             ? resolved.guestAccessToken
@@ -236,6 +302,45 @@ export function createShareRoutes(input: {
                     guestProfile: resolved.guestProfile ?? null,
                     page: resolved.page ?? {},
                 },
+            });
+            return true;
+        }
+
+        if (
+            req.method === "GET" &&
+            url.pathname === "/api/v1/share/recipients/users"
+        ) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const query = String(url.searchParams.get("q") ?? "").trim();
+            const profileStore = input.gateway.getCapability<{
+                searchProfiles?: (
+                    query: string,
+                    limit?: number,
+                    options?: { includeHidden?: boolean },
+                ) => Promise<
+                    Array<{
+                        accountId: string;
+                        handle: string;
+                        displayName?: string | null;
+                        avatarKey?: string | null;
+                    }>
+                >;
+            }>("social:profileStore");
+            const profiles =
+                query && typeof profileStore?.searchProfiles === "function"
+                    ? await profileStore.searchProfiles(query, 10)
+                    : [];
+            sendJson(res, 200, {
+                data: profiles
+                    .filter((profile) => profile.accountId !== claims.sub)
+                    .map((profile) => ({
+                        type: "user",
+                        id: profile.accountId,
+                        handle: profile.handle,
+                        label: profile.displayName ?? profile.handle,
+                        avatarKey: profile.avatarKey ?? null,
+                    })),
             });
             return true;
         }
