@@ -125,8 +125,19 @@ export function registerWhiteboardShareFlowHooks({
                     allowed: false,
                     reason: resourceResult?.reason ?? "resource_not_found",
                 };
+            const tokenResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-token",
+            );
+            const tokenOwnerAccountId = String(
+                tokenResult?.tokenRecord?.ownerAccountId ?? "",
+            );
             const requesterClaims = stageCtx.input?.requesterClaims;
-            if (requesterClaims?.sub) {
+            const requesterAccountId = String(requesterClaims?.sub ?? "");
+            if (
+                requesterAccountId &&
+                requesterAccountId !== tokenOwnerAccountId
+            ) {
                 const directAccess = await resolveWhiteboardUserAccess({
                     claims: requesterClaims,
                     profileStore,

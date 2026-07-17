@@ -463,7 +463,7 @@ test("nextcloud whiteboard share hooks reject share guests managing links", asyn
     );
 });
 
-test("nextcloud whiteboard share hooks preserve direct account sessions", async () => {
+test("nextcloud whiteboard share hooks preserve direct participant sessions without reusing minter sessions", async () => {
     const db = createMemoryDb();
     const store = new NextcloudWhiteboardStore({ db });
     await store.ensureSchema();
@@ -516,6 +516,12 @@ test("nextcloud whiteboard share hooks preserve direct account sessions", async 
     );
     assert.ok(checkHook?.handler);
     const stageResults = {
+        "validate-token": [
+            {
+                valid: true,
+                tokenRecord: { ownerAccountId: "alice-account" },
+            },
+        ],
         "resolve-resource": [
             {
                 resolved: true,
@@ -530,7 +536,7 @@ test("nextcloud whiteboard share hooks preserve direct account sessions", async 
             input: { requesterClaims: { sub: "alice-account" } },
             stageResults,
         }),
-        { allowed: true, directAccess: true },
+        { allowed: true },
     );
     assert.deepEqual(
         await checkHook.handler({
