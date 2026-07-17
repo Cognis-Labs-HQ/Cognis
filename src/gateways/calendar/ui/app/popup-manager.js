@@ -768,6 +768,7 @@ export function createCalendarPopupManager({
                                 "[data-participant-remove]",
                             );
                             if (!(button instanceof HTMLElement)) return;
+                            event.preventDefault();
                             const key = String(
                                 button.getAttribute(
                                     "data-participant-remove",

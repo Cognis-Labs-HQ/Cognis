@@ -686,19 +686,25 @@
     max-width: 4rem;
 }
 
-.calendar-participant-card-remove {
-    border: 0;
-    background: transparent;
-    color: inherit;
-    padding: 0;
-    line-height: 1;
-    cursor: pointer;
-    font-size: 0.75rem;
-    opacity: 0.55;
+.calendar-participant-card-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
 }
 
-.calendar-participant-card-remove:hover {
-    opacity: 1;
+.calendar-participant-card-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.calendar-participant-response {
+    pointer-events: none;
 }
 
 .calendar-participant-options {

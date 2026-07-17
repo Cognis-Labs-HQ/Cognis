@@ -425,6 +425,31 @@ test("calendar deep-link event popup does not block mount completion", () => {
     );
 });
 
+test("calendar participant remove control is a visible cancel action link", () => {
+    assert.match(
+        POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE,
+        /<a href="#" role="button" class="calendar-participant-card-remove btn-cancel"/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /event\.preventDefault\(\);/);
+});
+
+test("calendar event popup combines participants and responses", () => {
+    assert.match(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /const participantIds = Array\.from\([\s\S]*Object\.keys\(eventData\.event\.responses \?\? \{\}\)/s,
+    );
+    assert.match(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /calendar-participant-response \$\{responseClass\}/,
+    );
+    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /accepted: "btn-confirm"/);
+    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /declined: "btn-cancel"/);
+    assert.doesNotMatch(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /gateway\.calendar\.responses_title/,
+    );
+});
+
 test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
     assert.doesNotMatch(POPUP_MANAGER_SOURCE, /calendar-popup-all-day-range/);
     assert.match(
