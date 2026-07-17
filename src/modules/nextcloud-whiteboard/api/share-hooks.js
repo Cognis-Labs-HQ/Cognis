@@ -8,6 +8,7 @@ export function registerWhiteboardShareFlowHooks({
     store,
     profileStore,
     resolveWhiteboardUserAccess,
+    resolveShareGuestId,
     whiteboardStylesheets,
 }) {
     if (
@@ -29,8 +30,18 @@ export function registerWhiteboardShareFlowHooks({
             );
             if (!whiteboard)
                 return { valid: false, reason: "resource_not_found" };
+            const claims = input.claims ?? {};
+            const ownerAccountId = String(
+                claims?.sub ?? input.ownerAccountId ?? "",
+            );
+            const isShareGuest =
+                typeof resolveShareGuestId === "function"
+                    ? Boolean(resolveShareGuestId(claims))
+                    : ownerAccountId.startsWith("share:");
+            if (!ownerAccountId || isShareGuest)
+                return { valid: false, reason: "account_owner_required" };
             const access = await resolveWhiteboardUserAccess({
-                claims: input.claims ?? {},
+                claims,
                 profileStore,
                 store,
                 whiteboardId: whiteboard.id,
@@ -41,9 +52,7 @@ export function registerWhiteboardShareFlowHooks({
                 valid: true,
                 resourceType: "whiteboard",
                 resourceId: whiteboard.id,
-                ownerAccountId: String(
-                    input.claims?.sub ?? input.ownerAccountId ?? "",
-                ),
+                ownerAccountId,
             };
         },
     );
@@ -103,7 +112,7 @@ export function registerWhiteboardShareFlowHooks({
         "resolve-share-token",
         "check-access",
         { id: "nextcloud-whiteboard:check-share-access" },
-        (stageCtx) => {
+        async (stageCtx) => {
             const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
                 "resolve-resource",
@@ -111,12 +120,23 @@ export function registerWhiteboardShareFlowHooks({
                     result?.resolved === true &&
                     result?.resourceType === "whiteboard",
             );
-            return resourceResult?.resolved
-                ? { allowed: true }
-                : {
-                      allowed: false,
-                      reason: resourceResult?.reason ?? "resource_not_found",
-                  };
+            if (!resourceResult?.resolved)
+                return {
+                    allowed: false,
+                    reason: resourceResult?.reason ?? "resource_not_found",
+                };
+            const requesterClaims = stageCtx.input?.requesterClaims;
+            if (requesterClaims?.sub) {
+                const directAccess = await resolveWhiteboardUserAccess({
+                    claims: requesterClaims,
+                    profileStore,
+                    store,
+                    whiteboardId: resourceResult.resourceId,
+                });
+                if (directAccess.authorized)
+                    return { allowed: true, directAccess: true };
+            }
+            return { allowed: true };
         },
     );
     if (ctx.flow.exists("construct-share-page")) {
@@ -157,8 +177,21 @@ export function registerWhiteboardShareFlowHooks({
                 );
                 if (!whiteboard)
                     return { authorized: false, reason: "resource_not_found" };
+                const claims = input.claims ?? {};
+                const ownerAccountId = String(
+                    claims?.sub ?? input.ownerAccountId ?? "",
+                );
+                const isShareGuest =
+                    typeof resolveShareGuestId === "function"
+                        ? Boolean(resolveShareGuestId(claims))
+                        : ownerAccountId.startsWith("share:");
+                if (!ownerAccountId || isShareGuest)
+                    return {
+                        authorized: false,
+                        reason: "account_owner_required",
+                    };
                 const access = await resolveWhiteboardUserAccess({
-                    claims: input.claims ?? {},
+                    claims,
                     profileStore,
                     store,
                     whiteboardId: whiteboard.id,
@@ -167,9 +200,7 @@ export function registerWhiteboardShareFlowHooks({
                     ? {
                           authorized: true,
                           shareId: String(input.shareId ?? ""),
-                          ownerAccountId: String(
-                              input.claims?.sub ?? input.ownerAccountId ?? "",
-                          ),
+                          ownerAccountId,
                           resourceType: "whiteboard",
                           resourceId: whiteboard.id,
                       }

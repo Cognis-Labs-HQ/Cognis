@@ -211,6 +211,7 @@ export function registerApiRoutes(router, ctx) {
     const resolveShareGuestAccess = ctx.getCapability(
         "share:resolveGuestAccess",
     );
+    const resolveShareGuestId = ctx.getCapability("share:resolveGuestId");
     const listSharesByResource = ctx.getCapability("share:listByResource");
     const systemCtx = ctx.getCapability("system:ctx");
 
@@ -236,6 +237,7 @@ export function registerApiRoutes(router, ctx) {
             store,
             profileStore,
             resolveWhiteboardUserAccess,
+            resolveShareGuestId,
             whiteboardStylesheets: WHITEBOARD_STYLESHEETS,
         });
     ensureShareFlowHooks();

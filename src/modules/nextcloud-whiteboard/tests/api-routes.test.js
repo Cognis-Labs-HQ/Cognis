@@ -380,6 +380,174 @@ test("nextcloud whiteboard registers share hooks on system ctx flow", () => {
     });
 });
 
+test("nextcloud whiteboard share hooks reject share guests managing links", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: [],
+    });
+    const extensions = [];
+    const systemCtx = {
+        flow: {
+            exists(name) {
+                return [
+                    "mint-share-token",
+                    "resolve-share-token",
+                    "revoke-share-token",
+                ].includes(name);
+            },
+            extend(flowName, stageName, options, handler) {
+                extensions.push({
+                    flowName,
+                    stageName,
+                    id: options.id,
+                    handler,
+                });
+            },
+        },
+    };
+
+    registerApiRoutes(createRouterCapture(), {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        return { handle: accountId };
+                    },
+                };
+            }
+            if (key === "system:ctx") return systemCtx;
+            if (key === "share:resolveGuestId") {
+                return (claims) =>
+                    String(claims?.sub ?? "").startsWith("share:")
+                        ? "share-1"
+                        : "";
+            }
+            return undefined;
+        },
+    });
+
+    const validateHook = extensions.find(
+        (item) => item.id === "nextcloud-whiteboard:validate-share-resource",
+    );
+    const revokeHook = extensions.find(
+        (item) => item.id === "nextcloud-whiteboard:authorize-share-revocation",
+    );
+    assert.ok(validateHook?.handler);
+    assert.ok(revokeHook?.handler);
+
+    assert.deepEqual(
+        await validateHook.handler({
+            input: {
+                resourceType: "whiteboard",
+                resourceId: board.id,
+                claims: { sub: "share:share-1:guest-1" },
+            },
+        }),
+        { valid: false, reason: "account_owner_required" },
+    );
+    assert.deepEqual(
+        await revokeHook.handler({
+            input: {
+                resourceType: "whiteboard",
+                resourceId: board.id,
+                shareId: "share-1",
+                claims: { sub: "share:share-1:guest-1" },
+            },
+        }),
+        { authorized: false, reason: "account_owner_required" },
+    );
+});
+
+test("nextcloud whiteboard share hooks preserve direct account sessions", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Planning",
+        createdBy: "alice",
+        participants: ["bob"],
+    });
+    const extensions = [];
+    const systemCtx = {
+        flow: {
+            exists(name) {
+                return ["mint-share-token", "resolve-share-token"].includes(
+                    name,
+                );
+            },
+            extend(flowName, stageName, options, handler) {
+                extensions.push({
+                    flowName,
+                    stageName,
+                    id: options.id,
+                    handler,
+                });
+            },
+        },
+    };
+
+    registerApiRoutes(createRouterCapture(), {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile(accountId) {
+                        const handles = {
+                            "alice-account": "alice",
+                            "bob-account": "bob",
+                            "carol-account": "carol",
+                        };
+                        return { handle: handles[accountId] ?? accountId };
+                    },
+                };
+            }
+            if (key === "system:ctx") return systemCtx;
+            return undefined;
+        },
+    });
+
+    const checkHook = extensions.find(
+        (item) => item.id === "nextcloud-whiteboard:check-share-access",
+    );
+    assert.ok(checkHook?.handler);
+    const stageResults = {
+        "resolve-resource": [
+            {
+                resolved: true,
+                resourceType: "whiteboard",
+                resourceId: board.id,
+            },
+        ],
+    };
+
+    assert.deepEqual(
+        await checkHook.handler({
+            input: { requesterClaims: { sub: "alice-account" } },
+            stageResults,
+        }),
+        { allowed: true, directAccess: true },
+    );
+    assert.deepEqual(
+        await checkHook.handler({
+            input: { requesterClaims: { sub: "bob-account" } },
+            stageResults,
+        }),
+        { allowed: true, directAccess: true },
+    );
+    assert.deepEqual(
+        await checkHook.handler({
+            input: { requesterClaims: { sub: "carol-account" } },
+            stageResults,
+        }),
+        { allowed: true },
+    );
+});
+
 test("nextcloud whiteboard elements persist through session reload", async () => {
     const db = createMemoryDb();
     const store = new NextcloudWhiteboardStore({ db });
