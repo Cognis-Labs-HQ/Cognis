@@ -2,4 +2,4 @@
 
 ## Tombol Tautan Menu Edit
 
-Menu edit page composer kini menampilkan aksinya sebagai tautan dengan kelas tombol bersama. Aksi buang tetap memakai gaya batal berbingkai bahaya, sementara selesai dan reset memakai gaya konfirmasi dan netral agar seluruh menu terlihat konsisten.
+Menu edit page composer kini menampilkan aksinya sebagai tautan beranimasi dengan kelas tombol bersama. Aksi buang tetap memakai gaya batal berbingkai bahaya, sementara selesai dan reset memakai gaya konfirmasi dan netral agar seluruh menu terlihat konsisten.
