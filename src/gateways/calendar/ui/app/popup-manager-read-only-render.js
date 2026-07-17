@@ -10,10 +10,30 @@ export function renderReadOnlyEventPopupBody({
     buildParticipantCardHtml,
     isAllDay,
 }) {
-    const attendeeMarkup = eventData.event.attendees?.length
-        ? `<div class="calendar-participant-list">${eventData.event.attendees
-              .map((attendee) =>
-                  buildParticipantCardHtml(
+    const responseClassByValue = {
+        accepted: "btn-confirm",
+        declined: "btn-cancel",
+        tentative: "btn-neutral",
+        pending: "btn-neutral",
+    };
+    const participantIds = Array.from(
+        new Set([
+            ...(Array.isArray(eventData.event.attendees)
+                ? eventData.event.attendees
+                : []),
+            ...Object.keys(eventData.event.responses ?? {}),
+        ]),
+    );
+    const attendeeMarkup = participantIds.length
+        ? `<div class="calendar-participant-list">${participantIds
+              .map((attendee) => {
+                  const response = String(
+                      eventData.event.responses?.[attendee] ?? "pending",
+                  );
+                  const responseClass =
+                      responseClassByValue[response] ?? "btn-neutral";
+                  const responseHtml = `<button type="button" class="calendar-participant-response ${responseClass}" disabled>${escapeHtml(i18n.t(calendarUi.getResponseLabelKey(response)))}</button>`;
+                  return buildParticipantCardHtml(
                       {
                           type: "user",
                           value: attendee,
@@ -27,9 +47,10 @@ export function renderReadOnlyEventPopupBody({
                           i18n,
                           removable: false,
                           participantKey: () => attendee,
+                          responseHtml,
                       },
-                  ),
-              )
+                  );
+              })
               .join("")}</div>`
         : `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_attendees"))}</p>`;
     const endDateForAllDay = new Date(eventData.event.endAt);
@@ -57,10 +78,6 @@ export function renderReadOnlyEventPopupBody({
             <section class="calendar-event-detail-section">
               <h4>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</h4>
               ${attendeeMarkup}
-            </section>
-            <section class="calendar-event-detail-section">
-              <h4>${escapeHtml(i18n.t("gateway.calendar.responses_title"))}</h4>
-              ${calendarUi.renderResponseSummary(eventData.event, i18n, participantDirectory) || `<p class="calendar-empty">${escapeHtml(i18n.t("gateway.calendar.no_responses"))}</p>`}
             </section>
           </div>
         `;

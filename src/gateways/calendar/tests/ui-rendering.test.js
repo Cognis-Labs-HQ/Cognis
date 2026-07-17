@@ -417,11 +417,53 @@ test("calendar toolbar shows shared visibility icon", () => {
 test("calendar deep-link event popup does not block mount completion", () => {
     assert.match(
         APP_SOURCE,
-        /if \(selectedCalendarId && selectedEventId\)\s*\{\s*void openEventPopup\(selectedCalendarId, selectedEventId\);/s,
+        /if \(routeCalendarId && routeEventId\)\s*\{\s*void openEventPopup\(routeCalendarId, routeEventId\);/s,
     );
     assert.doesNotMatch(
         APP_SOURCE,
-        /if \(selectedCalendarId && selectedEventId\)\s*\{\s*await openEventPopup\(selectedCalendarId, selectedEventId\);/s,
+        /if \(routeCalendarId && routeEventId\)\s*\{\s*await openEventPopup\(routeCalendarId, routeEventId\);/s,
+    );
+});
+
+test("calendar event popup polls participant response updates", () => {
+    assert.match(POPUP_MANAGER_SOURCE, /window\.setInterval\(async \(\) => \{/);
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /calendarUi\.fetchEvent\(calendarId, eventId\)/,
+    );
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /popupBody\.innerHTML = renderEventPopupBody\(\);/,
+    );
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /window\.clearInterval\(responsePoll\);/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /\}, 60000\);/);
+});
+
+test("calendar participant remove control is a visible cancel action link", () => {
+    assert.match(
+        POPUP_MANAGER_PARTICIPANT_UTILS_SOURCE,
+        /<a href="#" role="button" class="calendar-participant-card-remove btn-cancel"/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /event\.preventDefault\(\);/);
+});
+
+test("calendar event popup combines participants and responses", () => {
+    assert.match(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /const participantIds = Array\.from\([\s\S]*Object\.keys\(eventData\.event\.responses \?\? \{\}\)/s,
+    );
+    assert.match(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /calendar-participant-response \$\{responseClass\}/,
+    );
+    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /accepted: "btn-confirm"/);
+    assert.match(POPUP_MANAGER_READ_ONLY_SOURCE, /declined: "btn-cancel"/);
+    assert.doesNotMatch(
+        POPUP_MANAGER_READ_ONLY_SOURCE,
+        /gateway\.calendar\.responses_title/,
     );
 });
 
