@@ -42,6 +42,7 @@
   <string name="gateway.tfa.settings.recovery_codes_prefix">Wiederherstellungscode</string>
   <string name="gateway.tfa.settings.recovery_codes_used">Verwendet</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">Bereit</string>
+  <string name="gateway.tfa.settings.manual_secret_toggle">Manuelles Geheimnis ein- oder ausblenden</string>
   <string name="gateway.tfa.settings.manual_secret">Manuelles Geheimnis</string>
   <string name="gateway.tfa.settings.required_title">Zwei-Faktor-Einrichtung Erforderlich</string>
   <string name="gateway.tfa.settings.recovery_codes_hint">Verwenden Sie Wiederherstellungscodes, um auf Ihr Konto zuzugreifen, wenn Ihre konfigurierten Zwei-Faktor-Methoden nicht verfügbar sind.</string>

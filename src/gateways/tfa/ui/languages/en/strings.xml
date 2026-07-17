@@ -42,6 +42,7 @@
   <string name="gateway.tfa.settings.recovery_codes_prefix">Recovery Code</string>
   <string name="gateway.tfa.settings.recovery_codes_used">Used</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">Ready</string>
+  <string name="gateway.tfa.settings.manual_secret_toggle">Show or hide manual secret</string>
   <string name="gateway.tfa.settings.manual_secret">Manual Secret</string>
   <string name="gateway.tfa.settings.required_title">Two-Factor Setup Required</string>
   <string name="gateway.tfa.settings.recovery_codes_hint">Use recovery codes to access your account when your configured two-factor methods are unavailable.</string>

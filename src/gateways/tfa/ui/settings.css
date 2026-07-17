@@ -41,3 +41,39 @@
     white-space: pre-wrap;
     font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
+
+.settings-tfa-secret-field {
+    display: block;
+}
+
+.settings-tfa-secret-field .secret-visibility-label {
+    display: block;
+}
+
+.settings-tfa-secret-field .secret-visibility-control {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.settings-tfa-secret-field .settings-tfa-setup-code {
+    flex: 1;
+    min-width: 0;
+    margin-top: 0;
+    color: var(--text);
+}
+
+.settings-tfa-secret-toggle {
+    min-width: 42px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--control-bg);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.settings-tfa-secret-toggle.is-revealed {
+    border-color: var(--accent);
+    color: var(--accent);
+}

@@ -29,14 +29,14 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 
 | Komponente                | Pfad                         | Version |
 | ------------------------- | ---------------------------- | ------- |
-| Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
+| Datenbank (db)            | `src/gateways/db/`           | `1.1.3` |
 | Authentifizierung (auth)  | `src/gateways/auth/`         | `1.4.9` |
 | Share                     | `src/gateways/share/`        | `1.2.6` |
-| Zwei-Faktor (tfa)         | `src/gateways/tfa/`          | `1.1.2` |
+| Zwei-Faktor (tfa)         | `src/gateways/tfa/`          | `1.1.3` |
 | Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
 | Social                    | `src/gateways/social/`       | `1.2.6` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
-| Registrierung             | `src/gateways/registration/` | `1.1.2` |
+| Registrierung             | `src/gateways/registration/` | `1.1.3` |
 | Logging                   | `src/gateways/logging/`      | `1.4.0` |
 | Kalender                  | `src/gateways/calendar/`     | `1.2.0` |
 

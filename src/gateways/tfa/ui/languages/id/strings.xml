@@ -42,6 +42,7 @@
   <string name="gateway.tfa.settings.recovery_codes_prefix">Kode Pemulihan</string>
   <string name="gateway.tfa.settings.recovery_codes_used">Terpakai</string>
   <string name="gateway.tfa.settings.recovery_codes_ready_marker">Siap</string>
+  <string name="gateway.tfa.settings.manual_secret_toggle">Tampilkan atau sembunyikan rahasia manual</string>
   <string name="gateway.tfa.settings.manual_secret">Rahasia Manual</string>
   <string name="gateway.tfa.settings.required_title">Penyiapan Dua Faktor Wajib</string>
   <string name="gateway.tfa.settings.recovery_codes_hint">Gunakan kode pemulihan untuk mengakses akun Anda saat metode dua faktor yang dikonfigurasi tidak tersedia.</string>
