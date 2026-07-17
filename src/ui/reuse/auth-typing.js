@@ -33,6 +33,12 @@ export const DEFAULT_AUTH_TYPING_KEYS = [
 
 let activeShowcaseRun = 0;
 
+function randomIndex(length) {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0] % length;
+}
+
 export async function loadAuthTypingSamples(
     i18n,
     { fallbackKeys = DEFAULT_AUTH_TYPING_KEYS } = {},
@@ -74,7 +80,7 @@ export function runTypingShowcase(
         ? (() => {
               const usable = samples.filter(Boolean);
               if (usable.length < 2) return usable;
-              const startIndex = Math.floor(Math.random() * usable.length);
+              const startIndex = randomIndex(usable.length);
               return usable.map(
                   (_, index) => usable[(startIndex + index) % usable.length],
               );

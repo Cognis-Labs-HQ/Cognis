@@ -1,0 +1,14 @@
+[
+    {
+        "path": "/whiteboards",
+        "access": {
+            "minRole": "user"
+        }
+    },
+    {
+        "path": "/whiteboard",
+        "access": {
+            "minRole": "user"
+        }
+    }
+]

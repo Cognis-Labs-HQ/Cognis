@@ -15,6 +15,7 @@ import { registerShareBootstrapHooks } from "./flow-registrations.js";
 import { createShareRoutes } from "./routes.js";
 import {
     hasShareCapability,
+    resolveShareGuestAccess,
     resolveShareGuestId,
     resolveShareGuestSessionId,
 } from "../reuse/share-guest.js";
@@ -85,6 +86,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         resolveShareGuestSessionId,
     );
     ctx.capabilities.contribute("share:hasCapability", hasShareCapability);
+    ctx.capabilities.contribute("share:resolveGuestAccess", (options) =>
+        resolveShareGuestAccess({
+            ...options,
+            getTokenById: gateway.getTokenById.bind(gateway),
+            getGuestProfile: gateway.getGuestProfile.bind(gateway),
+        }),
+    );
     ctx.capabilities.contribute(
         "share:listPendingApprovalsForAccount",
         gateway.listPendingApprovalsForAccount.bind(gateway),
@@ -113,7 +121,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.2.2",
+        version: "1.2.5",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: false,

@@ -1,3 +1,5 @@
+import { randomInt } from "node:crypto";
+
 /**
  * Time-limited verification code utility.
  *
@@ -35,7 +37,7 @@ const DEFAULT_CODE_DIGITS = 6;
 
 export function generateNumericCode(digits = DEFAULT_CODE_DIGITS): string {
     const max = Math.pow(10, digits);
-    const value = Math.floor(Math.random() * max);
+    const value = randomInt(0, max);
     return String(value).padStart(digits, "0");
 }
 

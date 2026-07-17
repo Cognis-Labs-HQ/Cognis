@@ -20,9 +20,7 @@ export async function bindShareButton({
     if (!(shareButtonSlot instanceof HTMLElement)) {
         return;
     }
-    const existingButton = shareButtonSlot.querySelector(
-        "#share-resource-btn",
-    );
+    const existingButton = shareButtonSlot.querySelector("#share-resource-btn");
     if (existingButton instanceof HTMLButtonElement) {
         // Already mounted from a prior composer render pass — just refresh
         // its disabled state in case the meeting activity status changed.

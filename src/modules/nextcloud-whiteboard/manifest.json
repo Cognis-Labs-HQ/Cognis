@@ -1,0 +1,25 @@
+{
+    "id": "nextcloud-whiteboard",
+    "name": "Nextcloud Whiteboard",
+    "version": "2.1.29",
+    "class": "extension",
+    "coreApiVersion": "v1",
+    "capabilities": [
+        "whiteboard:collaboration",
+        "whiteboard:access-control",
+        "whiteboard:getEmbedUrl",
+        "whiteboard:fetchBoardData"
+    ],
+    "entrypoints": {
+        "bootstrap": "./bootstrap.js",
+        "api": "./api/index.js",
+        "ui": "./ui/index.html"
+    },
+    "publisher": "Cognis Labs HQ",
+    "ui": {
+        "componentConfig": {
+            "scriptUrl": "/static/modules/nextcloud-whiteboard/admin-section.js"
+        }
+    },
+    "requires": ["social", "share"]
+}

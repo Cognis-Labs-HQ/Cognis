@@ -29,11 +29,17 @@
  * @param {{ genericMessage?: string, signal?: AbortSignal }} [options]
  * @returns {{ isValid: () => boolean, detach: () => void }}
  */
+function createCriteriaCheckId() {
+    const values = new Uint32Array(2);
+    window.crypto.getRandomValues(values);
+    return Array.from(values, (value) => value.toString(36)).join("");
+}
+
 export function attachCriteriaCheck(field, criteria, options = {}) {
     const genericMessage =
         options.genericMessage ?? "This field does not meet the requirements.";
 
-    const indicatorId = `criteria-check-${field.name || field.id || Math.random().toString(36).slice(2)}`;
+    const indicatorId = `criteria-check-${field.name || field.id || createCriteriaCheckId()}`;
     const indicator = document.createElement("p");
     indicator.className = "criteria-check-message";
     indicator.id = indicatorId;

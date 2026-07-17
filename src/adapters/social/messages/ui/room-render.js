@@ -114,9 +114,15 @@ function renderMemberCountControl(room, members, i18n) {
     return `<span class="messages-thread-subtitle messages-thread-subtitle-action" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
 }
 
+function randomRank() {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0];
+}
+
 function randomSample(values, count) {
     return values
-        .map((value) => ({ value, rank: Math.random() }))
+        .map((value) => ({ value, rank: randomRank() }))
         .sort((entryA, entryB) => entryA.rank - entryB.rank)
         .slice(0, count)
         .map((item) => item.value);

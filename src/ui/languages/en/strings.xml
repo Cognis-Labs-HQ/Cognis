@@ -627,4 +627,8 @@
   <string name="ui.app.dashboard.element.student_classes.go">Go to My Classes</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.label">Upcoming Calendar Events</string>
   <string name="ui.app.dashboard.element.calendar_upcoming.empty">No upcoming calendar events.</string>
+  <string name="ui.reuse.pointer_style">Pointer style</string>
+  <string name="ui.reuse.pointer_mouse">Mouse</string>
+  <string name="ui.reuse.pointer_laser">Laser pointer</string>
+  <string name="ui.reuse.pointer_crosshair">Crosshair</string>
 </resources>

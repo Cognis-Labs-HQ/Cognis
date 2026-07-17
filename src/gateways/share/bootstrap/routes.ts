@@ -207,6 +207,7 @@ export function createShareRoutes(input: {
                 directAccess?: boolean;
                 grantedCapabilities?: string[];
                 guestAccessToken?: string;
+                guestProfile?: Record<string, unknown> | null;
                 page?: Record<string, unknown>;
             }>(flowResult.stageResults, "build-payload");
             if (!resolved?.resolved) {
@@ -232,6 +233,7 @@ export function createShareRoutes(input: {
                         typeof resolved.guestAccessToken === "string"
                             ? resolved.guestAccessToken
                             : "",
+                    guestProfile: resolved.guestProfile ?? null,
                     page: resolved.page ?? {},
                 },
             });
