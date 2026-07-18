@@ -176,6 +176,7 @@ export function formatIcsDateOnly(dateInput: string): string {
 export function isAllDayEventRange(startAt: string, endAt: string): boolean {
     const start = new Date(startAt);
     const end = new Date(endAt);
+    const dayMs = 24 * 60 * 60 * 1000;
     if (
         Number.isNaN(start.getTime()) ||
         Number.isNaN(end.getTime()) ||
@@ -194,10 +195,15 @@ export function isAllDayEventRange(startAt: string, endAt: string): boolean {
         end.getUTCSeconds() === 0 &&
         end.getUTCMilliseconds() === 0;
     const durationMs = end.getTime() - start.getTime();
+    if (durationMs % dayMs !== 0) return false;
+    const preservesLocalMidnightOffset =
+        start.getUTCHours() === end.getUTCHours() &&
+        start.getUTCMinutes() === end.getUTCMinutes() &&
+        start.getUTCSeconds() === end.getUTCSeconds() &&
+        start.getUTCMilliseconds() === end.getUTCMilliseconds();
     return (
-        startsAtUtcMidnight &&
-        endsAtUtcMidnight &&
-        durationMs % (24 * 60 * 60 * 1000) === 0
+        (startsAtUtcMidnight && endsAtUtcMidnight) ||
+        preservesLocalMidnightOffset
     );
 }
 
