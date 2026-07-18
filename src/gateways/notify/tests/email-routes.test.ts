@@ -217,6 +217,44 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
     assert.equal(emailsAfter[0].verified, true);
 });
 
+test("email verification codes use configured TFA SMTP code length", async () => {
+    const notifStore = await makeNotifStore();
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
+    const token = issueAccessToken("alice", "user", 60);
+
+    const sentEmails: Array<{ to: string; code: string }> = [];
+    const mockGateway = {
+        canSendVerificationEmail: () => true,
+        sendVerificationEmail: async (to: string, code: string) => {
+            sentEmails.push({ to, code });
+        },
+    } as any;
+
+    const route = createUserEmailRoutes(
+        notifStore,
+        tfaService,
+        verifyTokenService,
+        mockGateway,
+        undefined,
+        undefined,
+        () => 8,
+    );
+
+    const addRes = makeResponse();
+    await route(
+        makeRequest("POST", { email: "alice@example.com" }, token),
+        addRes,
+        new URL("http://localhost/api/v1/notify/users/alice/emails"),
+    );
+
+    assert.equal(addRes.status, 201);
+    assert.equal(sentEmails.length, 1);
+    assert.match(sentEmails[0].code, /^\d{8}$/);
+});
+
 test("email verification rejects wrong code with 422", async () => {
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");

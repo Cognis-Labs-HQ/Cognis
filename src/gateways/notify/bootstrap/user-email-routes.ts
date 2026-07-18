@@ -31,8 +31,15 @@ export function createUserEmailRoutes(
     gateway: CoreNotificationGateway,
     externalHost?: string,
     routeContext?: RouteContext,
+    getVerificationCodeLength?: () => number | undefined,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const issueVerificationCode = (key: string) =>
+        tfaService.issueOrGet(
+            key,
+            15 * 60 * 1000,
+            getVerificationCodeLength?.(),
+        );
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -214,7 +221,7 @@ export function createUserEmailRoutes(
 
                 try {
                     const key = `${username}:${email}`;
-                    const code = tfaService.issueOrGet(key);
+                    const code = issueVerificationCode(key);
                     const watchToken = verifyTokenService.issueOrGet(key);
                     const verifyUrl = externalHost
                         ? `${externalHost}/verify-email?token=${watchToken}`
@@ -424,7 +431,7 @@ export function createUserEmailRoutes(
                 }
                 try {
                     const key = `${username}:${email}`;
-                    const code = tfaService.issueOrGet(key);
+                    const code = issueVerificationCode(key);
                     const watchToken = verifyTokenService.issueOrGet(key);
                     const verifyUrl = externalHost
                         ? `${externalHost}/verify-email?token=${watchToken}`

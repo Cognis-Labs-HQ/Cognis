@@ -6,7 +6,7 @@ import {
 } from "../../shared.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
-import { CoreTfaGateway } from "../gateway.js";
+import { CoreTfaGateway, type TfaMethodAdapter } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
 
@@ -72,6 +72,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getPrimaryEmail = ctx.capabilities.get<
         (accountId: string) => Promise<string | null>
     >("notify:getPrimaryEmail");
+    const setNotifySenderEnabled = ctx.capabilities.get<
+        (senderId: string, enabled: boolean) => Promise<void>
+    >("notify:setSenderEnabled");
     const registerNotificationCategory = ctx.capabilities.get<
         (id: string, label: string) => void
     >("notify:registerCategory");
@@ -92,6 +95,28 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
+    const smtpAdapter = gateway.getAdapter("smtp") as
+        | (TfaMethodAdapter & { getCodeLength?: () => number })
+        | null;
+    if (smtpAdapter) {
+        gateway.setAdapterSyncTarget("smtp", {
+            gatewayId: "notify",
+            adapterId: "smtp",
+        });
+        if (setNotifySenderEnabled) {
+            gateway.onAdapterEnabledChange(
+                "tfa-smtp:sync-notify-smtp",
+                async (adapterId, enabled) => {
+                    if (adapterId === "smtp" && enabled) {
+                        await setNotifySenderEnabled("smtp", true);
+                    }
+                },
+            );
+        }
+        ctx.capabilities.contribute("tfa:smtpCodeLength", () =>
+            smtpAdapter.getCodeLength?.(),
+        );
+    }
     ctx.routeRegistry.register(
         createTfaRoutes(gateway, ctx.capabilities, ctx.log),
         "tfa",

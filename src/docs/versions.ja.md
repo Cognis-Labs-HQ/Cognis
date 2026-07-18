@@ -10,7 +10,7 @@
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.2`    |
+| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.4`    |
 | 内部通知                   | `src/adapters/notify/internal/`     | `0.5.2`    |
 | ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
 | ローカル認証               | `src/adapters/auth/local/`          | `0.2.5`    |
@@ -32,8 +32,8 @@
 | データベース (db)          | `src/gateways/db/`           | `1.1.3`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
 | Share                      | `src/gateways/share/`        | `1.2.6`    |
-| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.3`    |
-| 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
+| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.5`    |
+| 通知 (notify)              | `src/gateways/notify/`       | `1.4.11`   |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
 | 登録                       | `src/gateways/registration/` | `1.1.3`    |

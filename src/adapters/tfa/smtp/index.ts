@@ -1,13 +1,13 @@
-import { randomInt } from "node:crypto";
 import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "@cognis/core";
+import {
+    DEFAULT_SMTP_VERIFICATION_CODE_LENGTH,
+    clampSmtpVerificationCodeLength,
+    generateSmtpNumericCode,
+} from "../../notify/smtp/reuse/verification-codes.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
-const DEFAULT_CODE_LENGTH = 6;
-const MIN_CODE_LENGTH = 4;
-const MAX_CODE_LENGTH = 10;
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
-const NUMERIC_DIGITS = "0123456789";
 
 interface SmtpTfaAdapterContext {
     canSendVerificationEmail?: () => boolean;
@@ -44,26 +44,8 @@ interface CodeChallenge {
     expiresAt: number;
 }
 
-function clampCodeLength(input: unknown): number {
-    if (typeof input !== "number" && typeof input !== "string") {
-        return DEFAULT_CODE_LENGTH;
-    }
-    const parsed = Number.parseInt(String(input), 10);
-    if (!Number.isFinite(parsed)) {
-        return DEFAULT_CODE_LENGTH;
-    }
-    return Math.max(MIN_CODE_LENGTH, Math.min(MAX_CODE_LENGTH, parsed));
-}
-
 function challengeKey(scope: "setup" | "login", accountId: string): string {
     return `${scope}:${accountId}`;
-}
-
-function generateNumericCode(codeLength: number): string {
-    return Array.from(
-        { length: codeLength },
-        () => NUMERIC_DIGITS[randomInt(0, NUMERIC_DIGITS.length)],
-    ).join("");
 }
 
 class SmtpTfaAdapter implements TfaMethodAdapter {
@@ -72,7 +54,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
 
     private readonly challenges = new Map<string, CodeChallenge>();
     private readonly loginChallengeLastSentAt = new Map<string, number>();
-    private codeLength = DEFAULT_CODE_LENGTH;
+    private codeLength = DEFAULT_SMTP_VERIFICATION_CODE_LENGTH;
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
 
@@ -109,13 +91,13 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     private issueCode(key: string): string {
         this.cleanupExpiredChallenges();
         const existingCode = this.getLiveChallenge(key)?.code;
-        let code = generateNumericCode(this.codeLength);
+        let code = generateSmtpNumericCode(this.codeLength);
         let generationAttempts = 1;
         while (existingCode && code === existingCode) {
             if (generationAttempts >= MAX_CODE_GENERATION_ATTEMPTS) {
                 throw new Error("smtp_code_generation_failed");
             }
-            code = generateNumericCode(this.codeLength);
+            code = generateSmtpNumericCode(this.codeLength);
             generationAttempts += 1;
         }
         this.challenges.set(key, {
@@ -453,15 +435,19 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         return [
             {
                 key: "codeLength",
-                label: "Code Length",
+                label: "ui.app.admin.notif.smtp_code_length",
                 type: "number" as const,
                 required: false,
             },
         ];
     }
 
+    getCodeLength(): number {
+        return this.codeLength;
+    }
+
     configure(config: Record<string, unknown>): void {
-        this.codeLength = clampCodeLength(config.codeLength);
+        this.codeLength = clampSmtpVerificationCodeLength(config.codeLength);
     }
 }
 

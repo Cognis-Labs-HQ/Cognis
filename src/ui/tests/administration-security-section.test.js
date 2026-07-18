@@ -38,3 +38,15 @@ test("administration security section hides smtp mode when smtp adapter is unava
         /const validationMode = smtpAdapterActive[\s\S]*: originalUserValidationMode/,
     );
 });
+
+test("administration dependency links scroll centered after expanding target gateway", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /gatewayContainer\.setAttribute\("open", ""\)/);
+    assert.match(source, /requestAnimationFrame\(\(\) => \{/);
+    assert.match(source, /block: "center"/);
+    assert.match(source, /inline: "nearest"/);
+});

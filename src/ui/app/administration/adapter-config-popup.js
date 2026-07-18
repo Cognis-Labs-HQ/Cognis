@@ -26,6 +26,7 @@ export function createAdapterConfigPopup({
                 "ui.app.admin.notif.smtp_allow_self_signed",
             ),
             authDisabled: i18n.t("ui.app.admin.notif.smtp_auth_disabled"),
+            codeLength: i18n.t("ui.app.admin.notif.smtp_code_length"),
         };
         if (knownLabels[name]) return knownLabels[name];
         return name
@@ -150,11 +151,12 @@ export function createAdapterConfigPopup({
                     name.toLowerCase().includes("secret");
                 const isPort =
                     name === "port" || name.toLowerCase().endsWith("port");
+                const isNumber = isPort || name === "codeLength";
 
                 let inputHtml;
                 if (isPassword) {
                     inputHtml = `<input name="${escapeHtml(name)}" type="password" value="" />`;
-                } else if (isPort) {
+                } else if (isNumber) {
                     inputHtml = `<input name="${escapeHtml(name)}" type="number" value="${value}" />`;
                 } else {
                     inputHtml = `<input name="${escapeHtml(name)}" type="text" value="${value}" />`;
@@ -248,7 +250,9 @@ export function createAdapterConfigPopup({
                     return;
                 }
                 config[field.name] =
-                    field.name === "port" ? Number(field.value) : field.value;
+                    field.name === "port" || field.name === "codeLength"
+                        ? Number(field.value)
+                        : field.value;
                 return;
             }
             if (field instanceof HTMLSelectElement) {

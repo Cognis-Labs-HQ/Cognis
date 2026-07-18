@@ -12,6 +12,7 @@ The adapter implements greylisting-tolerant delivery: if the first send attempt 
 - Handle greylisting by retrying transient delivery failures (up to 2 retries, 5-minute delay).
 - Expose `getConfig()` and `setConfig()` for runtime reconfiguration via the admin API.
 - Expose `sendTestEmail(to)` for delivery verification without going through the notification pipeline.
+- `codeLength` (number, optional): Shared SMTP verification-code length used by email confirmation and SMTP TFA codes. Values are clamped to 4–10 digits and synchronized with the SMTP TFA adapter.
 - Register the notification category `email` with the notification gateway.
 
 Not responsible for: rendering email content (the notification gateway builds the message body), managing user notification preferences (the profile gateway owns those), or delivering non-email notification types.

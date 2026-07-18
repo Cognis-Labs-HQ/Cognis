@@ -11,6 +11,7 @@ Adapter mengimplementasikan pengiriman yang toleran terhadap greylisting: jika p
 - Mengirim email melalui server SMTP yang dikonfigurasi menggunakan Nodemailer.
 - Menangani kegagalan pengiriman sementara dengan percobaan ulang (hingga 2 percobaan, jeda 5 menit).
 - Mengekspos `getConfig()` dan `setConfig()` untuk rekonfigurasi runtime melalui API admin.
+- `codeLength` (angka, opsional): Panjang kode verifikasi SMTP bersama yang digunakan oleh konfirmasi email dan kode SMTP TFA. Nilai dibatasi ke rentang 4–10 digit dan disinkronkan dengan adapter SMTP TFA.
 - Mengekspos `sendTestEmail(to)` untuk verifikasi pengiriman.
 
 ## Konfigurasi
