@@ -33,7 +33,12 @@ test("social routes - follow and unfollow", async () => {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
         await profileStore.updateProfile("bob", { visibility: "community" });
-        const route = createSocialRoutes(profileStore);
+        const sentNotifications: any[] = [];
+        const route = createSocialRoutes(profileStore, undefined, {
+            dispatchNotification: async (envelope) => {
+                sentNotifications.push(envelope);
+            },
+        });
         const aliceToken = issueAccessToken("alice", "user", 60);
         let status = 0;
         let body = "";
@@ -53,6 +58,24 @@ test("social routes - follow and unfollow", async () => {
         assert.equal(status, 200);
         assert.match(body, /true/);
         assert.ok(await profileStore.isFollowing("alice", "bob"));
+        assert.deepEqual(sentNotifications, [
+            {
+                category: "social",
+                recipientUsername: "bob",
+                subject: "New follower",
+                body: "alice started following you.",
+                senderName: "Cognis Social",
+                actionUrl: "/profile/alice",
+                metadata: {
+                    class: "social",
+                    type: "follow",
+                    followerAccountId: "alice",
+                    followerHandle: "alice",
+                    targetAccountId: "bob",
+                    targetHandle: "bob",
+                },
+            },
+        ]);
 
         await route(
             makeReq("DELETE", aliceToken),

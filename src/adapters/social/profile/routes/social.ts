@@ -8,6 +8,23 @@ import type { DbProfileStore, AccountProfile } from "../store.js";
 import { visibilityRank } from "../store.js";
 
 const SEARCH_RESULTS_LIMIT = 10;
+const SOCIAL_NOTIFICATION_CATEGORY = "social";
+
+export interface SocialNotificationDispatcher {
+    (envelope: {
+        category: string;
+        recipientUsername: string;
+        subject: string;
+        body: string;
+        senderName?: string;
+        actionUrl?: string;
+        metadata?: Record<string, unknown>;
+    }): Promise<unknown>;
+}
+
+export interface SocialRoutesOptions {
+    dispatchNotification?: SocialNotificationDispatcher;
+}
 
 function hasAdminBypass(role: string | null | undefined): boolean {
     return Boolean(role && hasMinRole(role, "admin"));
@@ -53,6 +70,7 @@ async function canFollowProfile(
 export function createSocialRoutes(
     profileStore: DbProfileStore,
     routeContext?: RouteContext,
+    options: SocialRoutesOptions = {},
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -265,6 +283,28 @@ export function createSocialRoutes(
                     return true;
                 }
                 await profileStore.follow(claims.sub, target.accountId);
+                if (options.dispatchNotification) {
+                    const followerName =
+                        requester?.displayName ??
+                        requester?.handle ??
+                        claims.sub;
+                    await options.dispatchNotification({
+                        category: SOCIAL_NOTIFICATION_CATEGORY,
+                        recipientUsername: target.handle,
+                        subject: "New follower",
+                        body: `${followerName} started following you.`,
+                        senderName: "Cognis Social",
+                        actionUrl: `/profile/${encodeURIComponent(requester?.handle ?? claims.sub)}`,
+                        metadata: {
+                            class: SOCIAL_NOTIFICATION_CATEGORY,
+                            type: "follow",
+                            followerAccountId: claims.sub,
+                            followerHandle: requester?.handle ?? claims.sub,
+                            targetAccountId: target.accountId,
+                            targetHandle: target.handle,
+                        },
+                    });
+                }
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { following: true } }));
                 return true;

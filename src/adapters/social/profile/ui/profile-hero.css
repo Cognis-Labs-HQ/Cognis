@@ -291,6 +291,18 @@
     border-color: var(--accent);
 }
 
+.profile-hero-follow-btn.btn-cancel {
+    background: transparent;
+    border-color: var(--color-danger-border);
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+}
+
+.profile-hero-follow-btn.btn-cancel:hover {
+    background: var(--color-danger-hover-bg);
+    border-color: var(--color-danger-outline-text, var(--color-danger-text));
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+}
+
 .profile-hero-block-btn {
     border: 1px solid rgba(220, 38, 38, 0.4);
     background: transparent;

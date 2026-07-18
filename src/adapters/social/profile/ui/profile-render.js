@@ -345,7 +345,7 @@ export function renderHero({
       <div class="profile-hero-action-row">
         ${
             !isBlocked
-                ? `<button class="profile-hero-follow-btn" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>`
+                ? `<button class="profile-hero-follow-btn btn-animated" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>`
                 : ""
         }
         ${

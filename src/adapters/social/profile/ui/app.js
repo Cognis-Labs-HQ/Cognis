@@ -375,15 +375,34 @@ bannerFileInput.addEventListener("change", async () => {
     bannerFileInput.value = "";
 });
 
+function bindFollowButtonHover(button) {
+    if (button.dataset.following !== "true") return;
+
+    const followingLabel = i18n.t("ui.app.profile.following");
+    const unfollowLabel = i18n.t("ui.app.profile.unfollow");
+
+    button.addEventListener("mouseenter", () => {
+        button.textContent = unfollowLabel;
+        button.classList.add("btn-cancel");
+    });
+    button.addEventListener("mouseleave", () => {
+        button.textContent = followingLabel;
+        button.classList.remove("btn-cancel");
+    });
+}
+
 function bindPageEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
         openEditPopup,
     );
-    root.querySelector(".profile-hero-follow-btn")?.addEventListener(
-        "click",
-        () => postActions?.doFollowUser(urlHandle),
-    );
+    const heroFollowButton = root.querySelector(".profile-hero-follow-btn");
+    if (heroFollowButton) {
+        bindFollowButtonHover(heroFollowButton);
+        heroFollowButton.addEventListener("click", () =>
+            postActions?.doFollowUser(urlHandle),
+        );
+    }
     root.querySelector(".profile-hero-block-btn")?.addEventListener(
         "click",
         () => postActions?.doBlockUser(),
