@@ -1,9 +1,9 @@
-# Namespace File Clients
+# Namespaced media storage integration
 
-## Namespace-bound file clients
+## Whiteboard pasted images use file namespaces
 
-The files gateway now exposes `files:namespace`, a ctx capability that returns a client bound to a component and namespace so routine file operations no longer repeat namespace and caller metadata at every call site.
+Pasted whiteboard images are uploaded into the `whiteboards` file namespace and saved as whiteboard image URLs instead of embedding the full data URL directly in the scene snapshot.
 
-## Share gateway controls
+## Classroom materials expose a namespace client
 
-Added share-gateway owned controls for read/write permissions, in-app users, groups/classes, email recipients, password-protected links, generated passwords, editable expiry/permission updates, and readonly watermark metadata. Jitsi Meet and Nextcloud Whiteboard now create/list/delete shares through the generic Share gateway token routes instead of module-specific share endpoints.
+The classes adapter now binds and contributes its `classes` namespace client so future classroom material APIs use the same namespaced file-storage path from their first write.
