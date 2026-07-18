@@ -324,6 +324,13 @@ export class CoreNotificationGateway
         string,
         (senderId: string, enabled: boolean) => Promise<void> | void
     >();
+    private readonly senderConfigChangeListeners = new Map<
+        string,
+        (
+            senderId: string,
+            config: Record<string, unknown>,
+        ) => Promise<void> | void
+    >();
 
     constructor(
         private readonly prefStore: NotificationPreferenceStore,
@@ -452,9 +459,23 @@ export class CoreNotificationGateway
             delete persistConfig.password;
         }
         await this.configStore?.saveConfig(senderId, persistConfig);
+        await this.notifySenderConfigChange(senderId, persistConfig);
         if (wasEnabled !== isEnabled) {
             await this.notifySenderEnabledChange(senderId, isEnabled);
         }
+    }
+
+    async updateProviderConfig(
+        senderId: string,
+        patch: Record<string, unknown>,
+    ): Promise<void> {
+        const existing = this.getProviderConfig(senderId);
+        if (!existing) return;
+        await this.saveProviderConfig(senderId, {
+            ...existing,
+            ...patch,
+            enabled: this.isSenderEnabled(senderId),
+        });
     }
 
     async loadPersistedConfigs(): Promise<void> {
@@ -509,6 +530,25 @@ export class CoreNotificationGateway
         listener: (senderId: string, enabled: boolean) => Promise<void> | void,
     ): void {
         this.senderEnabledChangeListeners.set(listenerId, listener);
+    }
+
+    onSenderConfigChange(
+        listenerId: string,
+        listener: (
+            senderId: string,
+            config: Record<string, unknown>,
+        ) => Promise<void> | void,
+    ): void {
+        this.senderConfigChangeListeners.set(listenerId, listener);
+    }
+
+    private async notifySenderConfigChange(
+        senderId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
+        for (const listener of this.senderConfigChangeListeners.values()) {
+            await listener(senderId, config);
+        }
     }
 
     private async notifySenderEnabledChange(

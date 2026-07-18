@@ -21,6 +21,10 @@ export function createNotificationSender(
     const ehloHostname = env["HOST"];
     const externalHost =
         env["EXTERNAL_HOST"] ?? (env["HOST"] ? `http://${env["HOST"]}` : "");
+    const rawCodeLength = env["COGNIS_SMTP_CODE_LENGTH"];
+    const codeLength = rawCodeLength
+        ? Number.parseInt(rawCodeLength, 10)
+        : undefined;
 
     const envSnapshot: Record<string, string | undefined> = {
         host: env["COGNIS_SMTP_HOST"],
@@ -31,6 +35,7 @@ export function createNotificationSender(
         secure: env["COGNIS_SMTP_SECURE"],
         allowSelfSigned: env["COGNIS_SMTP_ALLOW_SELF_SIGNED"],
         authDisabled: env["COGNIS_SMTP_AUTH_DISABLED"],
+        codeLength: env["COGNIS_SMTP_CODE_LENGTH"],
     };
 
     return new SmtpNotificationSender(
@@ -46,6 +51,7 @@ export function createNotificationSender(
             authDisabled,
             ehloHostname,
             externalHost,
+            codeLength,
         },
         envSnapshot,
     );

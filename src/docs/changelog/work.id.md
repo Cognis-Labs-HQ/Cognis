@@ -6,4 +6,4 @@ Pesan SMTP yang hanya membawa kode autentikasi dua faktor kini memakai subjek ko
 
 ## Verifikasi email mengikuti panjang kode SMTP TFA
 
-Kode konfirmasi alamat email kini memakai panjang kode yang dikonfigurasi pada adapter SMTP TFA, sehingga administrator mengatur satu panjang bersama untuk kode verifikasi SMTP. Pengirim notifikasi SMTP dan adapter SMTP TFA juga menyinkronkan status aktif/nonaktifnya di kedua arah.
+Kode konfirmasi alamat email kini memakai pengaturan panjang kode SMTP bersama, sehingga administrator dapat mengatur satu panjang kode verifikasi SMTP dari adapter notifikasi SMTP ataupun adapter SMTP TFA. Pengirim notifikasi SMTP dan adapter SMTP TFA juga menyinkronkan status aktif/nonaktifnya di kedua arah, dan SMTP TFA tetap tidak aktif saat adapter notifikasi SMTP tidak tersedia.

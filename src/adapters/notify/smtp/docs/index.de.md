@@ -11,6 +11,7 @@ Der Adapter implementiert Greylist-tolerante Zustellung: Bei einer vorübergehen
 - E-Mails über den konfigurierten SMTP-Server mit Nodemailer senden.
 - Vorübergehende Zustellungsfehler mit Wiederholungsversuchen behandeln (bis zu 2 Wiederholungen, 5-Minuten-Verzögerung).
 - `getConfig()` und `setConfig()` für Laufzeit-Neukonfiguration über die Admin-API bereitstellen.
+- `codeLength` (Zahl, optional): Gemeinsame Länge für SMTP-Verifizierungscodes, die für E-Mail-Bestätigung und SMTP-TFA-Codes verwendet wird. Werte werden auf 4–10 Stellen begrenzt und mit dem SMTP-TFA-Adapter synchronisiert.
 - `sendTestEmail(to)` zur Zustellungsüberprüfung bereitstellen.
 
 ## Konfiguration

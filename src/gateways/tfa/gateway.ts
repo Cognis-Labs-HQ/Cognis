@@ -166,6 +166,13 @@ export class CoreTfaGateway {
         string,
         (adapterId: string, enabled: boolean) => Promise<void> | void
     >();
+    private readonly adapterConfigChangeListeners = new Map<
+        string,
+        (
+            adapterId: string,
+            config: Record<string, unknown>,
+        ) => Promise<void> | void
+    >();
 
     constructor(
         private readonly store: DbTfaStore,
@@ -256,6 +263,7 @@ export class CoreTfaGateway {
             this.enabledAdapters.delete(adapterId);
         }
         await this.store.saveAdapterConfig(adapterId, enabled, adapterConfig);
+        await this.notifyAdapterConfigChange(adapterId, adapterConfig);
         if (wasEnabled !== enabled) {
             await this.notifyAdapterEnabledChange(adapterId, enabled);
         }
@@ -312,6 +320,25 @@ export class CoreTfaGateway {
         listener: (adapterId: string, enabled: boolean) => Promise<void> | void,
     ): void {
         this.adapterEnabledChangeListeners.set(listenerId, listener);
+    }
+
+    onAdapterConfigChange(
+        listenerId: string,
+        listener: (
+            adapterId: string,
+            config: Record<string, unknown>,
+        ) => Promise<void> | void,
+    ): void {
+        this.adapterConfigChangeListeners.set(listenerId, listener);
+    }
+
+    private async notifyAdapterConfigChange(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
+        for (const listener of this.adapterConfigChangeListeners.values()) {
+            await listener(adapterId, config);
+        }
     }
 
     private async notifyAdapterEnabledChange(

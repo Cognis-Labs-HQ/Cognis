@@ -38,6 +38,7 @@ export interface SmtpConfig {
     greylistRetries?: number;
     greylistRetryDelayMs?: number;
     externalHost?: string;
+    codeLength?: number;
 }
 
 export class SmtpTemporaryError extends Error {
@@ -115,9 +116,23 @@ const LIGHT_PALETTE: ThemePalette = {
 
 const MAX_QP_LINE_LENGTH = 76;
 const MAX_HEADER_LINE_LENGTH = 78;
+const DEFAULT_CODE_LENGTH = 6;
+const MIN_CODE_LENGTH = 4;
+const MAX_CODE_LENGTH = 10;
 
 function normalizeNewlines(value: string): string {
     return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+function clampCodeLength(input: unknown): number {
+    if (typeof input !== "number" && typeof input !== "string") {
+        return DEFAULT_CODE_LENGTH;
+    }
+    const parsed = Number.parseInt(String(input), 10);
+    if (!Number.isFinite(parsed)) {
+        return DEFAULT_CODE_LENGTH;
+    }
+    return Math.max(MIN_CODE_LENGTH, Math.min(MAX_CODE_LENGTH, parsed));
 }
 
 function sanitizeHeader(value: string): string {
@@ -748,7 +763,12 @@ export class SmtpNotificationSender implements NotificationSender {
             greylistRetryDelayMs:
                 this.config.greylistRetryDelayMs ??
                 DEFAULT_GREYLIST_RETRY_DELAY_MS,
+            codeLength: this.getCodeLength(),
         };
+    }
+
+    getCodeLength(): number {
+        return clampCodeLength(this.config.codeLength);
     }
 
     setConfig(config: Record<string, unknown>): void {
@@ -775,6 +795,12 @@ export class SmtpNotificationSender implements NotificationSender {
             this.config.greylistRetries = config.greylistRetries;
         if (typeof config.greylistRetryDelayMs === "number")
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
+        if (
+            typeof config.codeLength === "number" ||
+            typeof config.codeLength === "string"
+        ) {
+            this.config.codeLength = clampCodeLength(config.codeLength);
+        }
     }
 
     listQueue(): NotificationSenderQueueEntry[] {

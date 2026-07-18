@@ -149,7 +149,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.10",
+        version: "1.4.11",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,
@@ -355,6 +355,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 enabled: boolean,
             ) => Promise<void> | void,
         ) => gateway.onSenderEnabledChange(listenerId, listener),
+    );
+    ctx.capabilities.contribute(
+        "notify:updateSenderConfig",
+        (senderId: string, patch: Record<string, unknown>) =>
+            gateway.updateProviderConfig(senderId, patch),
+    );
+    ctx.capabilities.contribute(
+        "notify:onSenderConfigChange",
+        (
+            listenerId: string,
+            listener: (
+                senderId: string,
+                config: Record<string, unknown>,
+            ) => Promise<void> | void,
+        ) => gateway.onSenderConfigChange(listenerId, listener),
     );
     ctx.capabilities.contribute(
         "notify:sendVerificationEmail",
