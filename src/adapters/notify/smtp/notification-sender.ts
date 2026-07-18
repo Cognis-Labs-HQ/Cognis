@@ -117,6 +117,7 @@ const LIGHT_PALETTE: ThemePalette = {
 
 const MAX_QP_LINE_LENGTH = 76;
 const MAX_HEADER_LINE_LENGTH = 78;
+
 function normalizeNewlines(value: string): string {
     return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
