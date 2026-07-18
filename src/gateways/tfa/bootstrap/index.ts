@@ -72,21 +72,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getPrimaryEmail = ctx.capabilities.get<
         (accountId: string) => Promise<string | null>
     >("notify:getPrimaryEmail");
-    const isNotifySenderEnabled = ctx.capabilities.get<
-        (senderId: string) => boolean
-    >("notify:isSenderEnabled");
     const setNotifySenderEnabled = ctx.capabilities.get<
         (senderId: string, enabled: boolean) => Promise<void>
     >("notify:setSenderEnabled");
-    const onNotifySenderEnabledChange = ctx.capabilities.get<
-        (
-            listenerId: string,
-            listener: (
-                senderId: string,
-                enabled: boolean,
-            ) => Promise<void> | void,
-        ) => void
-    >("notify:onSenderEnabledChange");
     const updateNotifySenderConfig = ctx.capabilities.get<
         (senderId: string, patch: Record<string, unknown>) => Promise<void>
     >("notify:updateSenderConfig");
@@ -123,14 +111,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         | (TfaMethodAdapter & { getCodeLength?: () => number })
         | null;
     if (smtpAdapter) {
-        if (isNotifySenderEnabled && canSendVerificationEmail) {
-            gateway.setAdapterAvailabilityCheck(
-                "smtp",
-                () =>
-                    isNotifySenderEnabled("smtp") &&
-                    canSendVerificationEmail() === true,
-            );
-        }
         gateway.setAdapterSyncTarget("smtp", {
             gatewayId: "notify",
             adapterId: "smtp",
@@ -139,23 +119,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway.onAdapterEnabledChange(
                 "tfa-smtp:sync-notify-smtp",
                 async (adapterId, enabled) => {
-                    if (adapterId === "smtp") {
-                        await setNotifySenderEnabled("smtp", enabled);
+                    if (adapterId === "smtp" && enabled) {
+                        await setNotifySenderEnabled("smtp", true);
                     }
                 },
             );
         }
-        onNotifySenderEnabledChange?.(
-            "notify-smtp:sync-tfa-smtp",
-            async (senderId, enabled) => {
-                if (senderId !== "smtp") return;
-                if (enabled) {
-                    await gateway.enableAdapter("smtp");
-                } else {
-                    await gateway.disableAdapter("smtp");
-                }
-            },
-        );
         let syncingSmtpCodeLength = false;
         gateway.onAdapterConfigChange(
             "tfa-smtp:sync-notify-code-length",

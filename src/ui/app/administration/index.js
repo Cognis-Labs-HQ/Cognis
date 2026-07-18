@@ -668,9 +668,12 @@ function bindDependencyLinks() {
             if (gatewayContainer instanceof HTMLElement) {
                 gatewayContainer.setAttribute("open", "");
             }
-            targetElement.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
+            requestAnimationFrame(() => {
+                targetElement.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "nearest",
+                });
             });
         });
     });

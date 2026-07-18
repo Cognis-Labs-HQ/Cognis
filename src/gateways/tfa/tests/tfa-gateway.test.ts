@@ -322,7 +322,7 @@ test("tfa gateway auto-enables adapters with defaultEnabled on fresh install", a
     assert.ok(available !== undefined);
 });
 
-test("tfa gateway adapter availability check controls enabled state and exposes sync target", async () => {
+test("tfa gateway exposes adapter sync targets without locking enabled state", async () => {
     const storeMock = createStoreMock();
     const gateway = new CoreTfaGateway(storeMock as any);
     gateway.registerAdapter({
@@ -334,8 +334,6 @@ test("tfa gateway adapter availability check controls enabled state and exposes 
         getConfigSchema: () => [],
         configure: () => undefined,
     });
-    let customEnabled = false;
-    gateway.setAdapterAvailabilityCheck("custom", () => customEnabled);
     gateway.setAdapterSyncTarget("custom", {
         gatewayId: "notify",
         adapterId: "smtp",
@@ -347,19 +345,19 @@ test("tfa gateway adapter availability check controls enabled state and exposes 
     const customOff = adaptersOff.find((adapter) => adapter.id === "custom");
     assert.ok(customOff !== undefined);
     assert.equal(customOff.enabled, false);
-    assert.equal(customOff.locked, true);
+    assert.equal(customOff.locked, undefined);
     assert.deepEqual(customOff.syncedTo, {
         gatewayId: "notify",
         adapterId: "smtp",
     });
 
-    customEnabled = true;
+    await gateway.enableAdapter("custom");
     assert.equal(gateway.isAdapterEnabled("custom"), true);
     const adaptersOn = gateway.listAdapters();
     const customOn = adaptersOn.find((adapter) => adapter.id === "custom");
     assert.ok(customOn !== undefined);
     assert.equal(customOn.enabled, true);
-    assert.equal(customOn.locked, true);
+    assert.equal(customOn.locked, undefined);
     assert.deepEqual(customOn.syncedTo, {
         gatewayId: "notify",
         adapterId: "smtp",
