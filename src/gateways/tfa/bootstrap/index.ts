@@ -75,18 +75,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const setNotifySenderEnabled = ctx.capabilities.get<
         (senderId: string, enabled: boolean) => Promise<void>
     >("notify:setSenderEnabled");
-    const updateNotifySenderConfig = ctx.capabilities.get<
-        (senderId: string, patch: Record<string, unknown>) => Promise<void>
-    >("notify:updateSenderConfig");
-    const onNotifySenderConfigChange = ctx.capabilities.get<
-        (
-            listenerId: string,
-            listener: (
-                senderId: string,
-                config: Record<string, unknown>,
-            ) => Promise<void> | void,
-        ) => void
-    >("notify:onSenderConfigChange");
     const registerNotificationCategory = ctx.capabilities.get<
         (id: string, label: string) => void
     >("notify:registerCategory");
@@ -125,57 +113,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 },
             );
         }
-        let syncingSmtpCodeLength = false;
-        gateway.onAdapterConfigChange(
-            "tfa-smtp:sync-notify-code-length",
-            async (adapterId, config) => {
-                if (
-                    syncingSmtpCodeLength ||
-                    adapterId !== "smtp" ||
-                    config.codeLength == null ||
-                    !updateNotifySenderConfig
-                ) {
-                    return;
-                }
-                syncingSmtpCodeLength = true;
-                try {
-                    await updateNotifySenderConfig("smtp", {
-                        codeLength: smtpAdapter.getCodeLength?.(),
-                    });
-                } finally {
-                    syncingSmtpCodeLength = false;
-                }
-            },
-        );
-        if (updateNotifySenderConfig) {
-            await updateNotifySenderConfig("smtp", {
-                codeLength: smtpAdapter.getCodeLength?.(),
-            });
-        }
-        onNotifySenderConfigChange?.(
-            "notify-smtp:sync-tfa-code-length",
-            async (senderId, config) => {
-                if (
-                    syncingSmtpCodeLength ||
-                    senderId !== "smtp" ||
-                    config.codeLength == null
-                ) {
-                    return;
-                }
-                syncingSmtpCodeLength = true;
-                try {
-                    const existingConfig =
-                        await gateway.getAdapterConfig("smtp");
-                    await gateway.saveAdapterConfig("smtp", {
-                        ...existingConfig,
-                        codeLength: config.codeLength,
-                        enabled: gateway.isAdapterEnabled("smtp"),
-                    });
-                } finally {
-                    syncingSmtpCodeLength = false;
-                }
-            },
-        );
         ctx.capabilities.contribute("tfa:smtpCodeLength", () =>
             smtpAdapter.getCodeLength?.(),
         );

@@ -1,11 +1,15 @@
+export type VerificationEmailMessageType =
+    | "verification-code"
+    | "email-address-verification";
+
 export function buildVerificationEmailMessage(
+    type: VerificationEmailMessageType,
     code: string,
-    verifyUrl?: string,
 ): {
     subject: string;
     body: string;
 } {
-    if (!verifyUrl) {
+    if (type === "verification-code") {
         return {
             subject: "Your verification code",
             body: `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`,
