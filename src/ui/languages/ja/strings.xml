@@ -532,6 +532,7 @@
   <string name="ui.app.admin.notif.enable_provider">アダプターを有効にする</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">自己署名証明書を許可する</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">認証を無効にする</string>
+  <string name="ui.app.admin.notif.smtp_code_length">コード長</string>
   <string name="ui.app.admin.notif.smtp_sender_name">送信者名</string>
   <string name="ui.app.admin.security.title">セキュリティ</string>
   <string name="ui.app.admin.security.trusted_domains_label">信頼済みドメイン</string>

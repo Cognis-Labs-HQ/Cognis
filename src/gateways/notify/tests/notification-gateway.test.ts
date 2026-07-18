@@ -513,6 +513,45 @@ test("CoreNotificationGateway.loadPersistedConfigs restores disabled state", asy
     assert.equal(info?.active, false);
 });
 
+test("CoreNotificationGateway notifies sender enabled state listeners", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    gateway.registerSender(new CapturingSender("smtp", "SMTP"));
+    const changes: Array<{ senderId: string; enabled: boolean }> = [];
+    gateway.onSenderEnabledChange("test", (senderId, enabled) => {
+        changes.push({ senderId, enabled });
+    });
+
+    await gateway.disableSender("smtp");
+    await gateway.enableSender("smtp");
+    await gateway.enableSender("smtp");
+
+    assert.deepEqual(changes, [
+        { senderId: "smtp", enabled: false },
+        { senderId: "smtp", enabled: true },
+    ]);
+});
+
+test("CoreNotificationGateway updateProviderConfig merges patches and emits config listeners", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    const sender = new ConfigurableSender("smtp", "SMTP", {
+        host: "mail.example.com",
+        codeLength: 6,
+    });
+    gateway.registerSender(sender);
+    const changes: Array<Record<string, unknown>> = [];
+    gateway.onSenderConfigChange("test", (_senderId, config) => {
+        changes.push(config);
+    });
+
+    await gateway.updateProviderConfig("smtp", { codeLength: 8 });
+
+    assert.equal(sender.getConfig().host, "mail.example.com");
+    assert.equal(sender.getConfig().codeLength, 8);
+    assert.equal(changes.at(-1)?.codeLength, 8);
+});
+
 test("CoreNotificationGateway.canSendVerificationEmail returns false when no verification-capable sender", () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);

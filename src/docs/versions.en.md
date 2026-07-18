@@ -26,7 +26,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.2` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.4` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
@@ -53,8 +53,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
 | Share                 | `src/gateways/share/`        | `1.2.6`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.3`  |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.9`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
