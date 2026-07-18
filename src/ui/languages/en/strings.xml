@@ -439,7 +439,7 @@
   <string name="ui.app.profile.social_links.website">Website</string>
   <string name="ui.app.profile.social_links.empty">No links set. Edit your profile to add a website.</string>
   <string name="ui.app.profile.suggested.empty">No suggestions right now.</string>
-  <string name="ui.app.profile.suggested.follow_back">Follow back</string>
+  <string name="ui.app.profile.suggested.follow_back">Follow Back</string>
   <string name="ui.app.profile.banner_menu_label">Banner options</string>
   <string name="ui.app.profile.banner_height.half">Half height</string>
   <string name="ui.app.profile.banner_height.full">Full height</string>

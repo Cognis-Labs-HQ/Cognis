@@ -333,9 +333,12 @@ export function renderHero({
 
     const isFollowingTarget = Boolean(relationship?.following);
     const isBlocked = Boolean(relationship?.blocked);
+    const isFollowedByTarget = Boolean(relationship?.followedBy);
     const followLabel = isFollowingTarget
         ? i18n.t("ui.app.profile.following")
-        : i18n.t("ui.app.profile.follow");
+        : isFollowedByTarget
+          ? i18n.t("ui.app.profile.suggested.follow_back")
+          : i18n.t("ui.app.profile.follow");
     const actionRow = isOwnProfile
         ? `
       <div class="profile-hero-action-row">
