@@ -22,7 +22,7 @@
 | 登録招待                   | `src/adapters/registration/invite/` | `0.1.1`    |
 | 登録トークン               | `src/adapters/registration/token/`  | `0.1.1`    |
 | 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
-| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.7`    |
+| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.11`   |
 | メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
 
 ## ゲートウェイ

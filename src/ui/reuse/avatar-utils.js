@@ -2,25 +2,25 @@
  * Avatar utilities: initials-based fallback avatar generation.
  *
  * Public exports:
- *   getInitialsText(handle) — returns a 1-2 letter initials string for the given handle.
+ *   getInitialsText(label) — returns a 1-2 letter initials string for the given profile label.
  *   pickInitialsColor(handle) — returns a deterministic hsl(...) color string for the given handle.
  *   generateInitialsDataUrl(handle, size) — canvas PNG data URL (kept for environments where
  *     a data: URI is acceptable; prefer CSS initials for CSP-restricted pages).
  *
  * Usage:
  *   import { getInitialsText, pickInitialsColor } from '../reuse/avatar-utils.js';
- *   span.textContent = getInitialsText('@alice_smith');        // → "AS"
+ *   span.textContent = getInitialsText('Alice Smith');        // → "AS"
  *   div.style.background = pickInitialsColor('@alice_smith');  // → "hsl(210, 55%, 42%)"
  *
- * @param {string} handle — the user's handle (leading '@' is stripped automatically).
+ * @param {string} label — the user's profile name or handle (leading '@' is stripped automatically).
  */
 
-export function getInitialsText(handle) {
-    if (!handle) return "?";
-    const clean = handle.replace(/^@/, "");
+export function getInitialsText(label) {
+    if (!label) return "?";
+    const clean = label.replace(/^@/, "").trim();
     const parts = clean.split(/[\s._-]+/).filter(Boolean);
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return clean.slice(0, 2).toUpperCase();
+    return (parts[0]?.[0] ?? clean[0] ?? "?").toUpperCase();
 }
 
 export function pickInitialsColor(handle) {

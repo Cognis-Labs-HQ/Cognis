@@ -202,6 +202,24 @@ export async function bootstrapSocialAdapter(
 
     const fileGateway =
         ctx.capabilities.get<FileStorageGateway>("file:gateway");
+    const dispatchNotification =
+        ctx.capabilities.get<
+            (envelope: {
+                category: string;
+                recipientUsername: string;
+                subject: string;
+                body: string;
+                senderName?: string;
+                actionUrl?: string;
+                metadata?: Record<string, unknown>;
+            }) => Promise<unknown>
+        >("notify:dispatch");
+    const registerNotificationCategory = ctx.capabilities.get<
+        (id: string, label: string) => void
+    >("notify:registerCategory");
+    if (registerNotificationCategory) {
+        registerNotificationCategory("social", "Social");
+    }
     const onMessagesProfileChanged = ctx.capabilities.get<
         (input: {
             accountId: string;
@@ -251,7 +269,12 @@ export async function bootstrapSocialAdapter(
         createProfilePageRoutes(routeContext, () => ctx.isGatewayEnabled()),
         "social",
     );
-    ctx.registerRoute(createSocialRoutes(profileStore, routeContext), "social");
+    ctx.registerRoute(
+        createSocialRoutes(profileStore, routeContext, {
+            dispatchNotification: dispatchNotification ?? undefined,
+        }),
+        "social",
+    );
     ctx.registerRoute(createPostRoutes(profileStore, routeContext), "social");
     ctx.registerRoute(
         createPreferencesRoutes(prefStore, routeContext),

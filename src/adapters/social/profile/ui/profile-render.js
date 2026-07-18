@@ -181,8 +181,9 @@ function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
     if (avatarBlobUrl) {
         return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
     }
-    const initials = getInitialsText(profile?.handle ?? "");
-    const initialsColor = pickInitialsColor(profile?.handle ?? "");
+    const initialsLabel = profile?.displayName || profile?.handle || "";
+    const initials = getInitialsText(initialsLabel);
+    const initialsColor = pickInitialsColor(initialsLabel);
     return `<div class="profile-avatar-initials" style="--initials-bg: ${escapeHtml(initialsColor)};">${escapeHtml(initials)}</div>`;
 }
 
@@ -332,9 +333,12 @@ export function renderHero({
 
     const isFollowingTarget = Boolean(relationship?.following);
     const isBlocked = Boolean(relationship?.blocked);
+    const isFollowedByTarget = Boolean(relationship?.followedBy);
     const followLabel = isFollowingTarget
         ? i18n.t("ui.app.profile.following")
-        : i18n.t("ui.app.profile.follow");
+        : isFollowedByTarget
+          ? i18n.t("ui.app.profile.suggested.follow_back")
+          : i18n.t("ui.app.profile.follow");
     const actionRow = isOwnProfile
         ? `
       <div class="profile-hero-action-row">
@@ -345,7 +349,7 @@ export function renderHero({
       <div class="profile-hero-action-row">
         ${
             !isBlocked
-                ? `<button class="profile-hero-follow-btn" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>`
+                ? `<button class="profile-hero-follow-btn btn-animated" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>`
                 : ""
         }
         ${
