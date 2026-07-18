@@ -10,6 +10,8 @@ import type {
 import {
     escapeIcsText,
     formatIcsDate,
+    formatIcsDateOnly,
+    isAllDayEventRange,
     normalizeAttendeeList,
     parseIcsAttendee,
     parseIcsDate,
@@ -37,12 +39,20 @@ export function exportCalendarAsIcs(
                     (attendee) =>
                         `ATTENDEE;CN=${escapeIcsText(attendee)}:mailto:${escapeIcsText(attendee)}`,
                 );
+            const dateLines = isAllDayEventRange(event.startAt, event.endAt)
+                ? [
+                      `DTSTART;VALUE=DATE:${formatIcsDateOnly(event.startAt)}`,
+                      `DTEND;VALUE=DATE:${formatIcsDateOnly(event.endAt)}`,
+                  ]
+                : [
+                      `DTSTART:${formatIcsDate(event.startAt)}`,
+                      `DTEND:${formatIcsDate(event.endAt)}`,
+                  ];
             return [
                 "BEGIN:VEVENT",
                 `UID:${event.id}`,
                 `DTSTAMP:${formatIcsDate(event.updatedAt)}`,
-                `DTSTART:${formatIcsDate(event.startAt)}`,
-                `DTEND:${formatIcsDate(event.endAt)}`,
+                ...dateLines,
                 `SUMMARY:${escapeIcsText(event.title)}`,
                 ...(event.description
                     ? [`DESCRIPTION:${escapeIcsText(event.description)}`]
@@ -124,10 +134,10 @@ export function importIcs(
             current.summary = line.slice("SUMMARY:".length).trim();
         } else if (line.startsWith("DESCRIPTION:")) {
             current.description = line.slice("DESCRIPTION:".length).trim();
-        } else if (line.startsWith("DTSTART:")) {
-            current.dtstart = line.slice("DTSTART:".length).trim();
-        } else if (line.startsWith("DTEND:")) {
-            current.dtend = line.slice("DTEND:".length).trim();
+        } else if (line.startsWith("DTSTART")) {
+            current.dtstart = line.split(":").at(-1)?.trim();
+        } else if (line.startsWith("DTEND")) {
+            current.dtend = line.split(":").at(-1)?.trim();
         } else if (line.startsWith("ATTENDEE")) {
             const attendee = parseIcsAttendee(line);
             if (attendee) current.attendees.push(attendee);

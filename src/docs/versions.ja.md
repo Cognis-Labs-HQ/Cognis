@@ -10,7 +10,7 @@
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.2`    |
+| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.4`    |
 | 内部通知                   | `src/adapters/notify/internal/`     | `0.5.2`    |
 | ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
 | ローカル認証               | `src/adapters/auth/local/`          | `0.2.5`    |
@@ -22,7 +22,7 @@
 | 登録招待                   | `src/adapters/registration/invite/` | `0.1.1`    |
 | 登録トークン               | `src/adapters/registration/token/`  | `0.1.1`    |
 | 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
-| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.7`    |
+| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.11`   |
 | メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
 
 ## ゲートウェイ
@@ -32,13 +32,13 @@
 | データベース (db)          | `src/gateways/db/`           | `1.1.3`    |
 | 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
 | Share                      | `src/gateways/share/`        | `1.2.6`    |
-| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.3`    |
-| 通知 (notify)              | `src/gateways/notify/`       | `1.1.1`    |
+| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.5`    |
+| 通知 (notify)              | `src/gateways/notify/`       | `1.4.11`   |
 | ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
 | 登録                       | `src/gateways/registration/` | `1.1.3`    |
 | ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
-| カレンダー                 | `src/gateways/calendar/`     | `1.2.0`    |
+| カレンダー                 | `src/gateways/calendar/`     | `1.2.5`    |
 
 ## API
 

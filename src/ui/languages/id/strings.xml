@@ -536,6 +536,7 @@
   <string name="ui.app.admin.notif.enable_provider">Aktifkan Adaptor</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Izinkan Sertifikat Self-Signed</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
+  <string name="ui.app.admin.notif.smtp_code_length">Panjang Kode</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Nama Pengirim</string>
   <string name="ui.app.admin.security.title">Keamanan</string>
   <string name="ui.app.admin.security.trusted_domains_label">Domain Tepercaya</string>

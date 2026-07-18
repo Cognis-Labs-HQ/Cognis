@@ -93,6 +93,24 @@ test("SmtpNotificationSender.setConfig updates host and port", () => {
     assert.equal(config.port, 465);
 });
 
+test("SmtpNotificationSender exposes configurable verification code length", () => {
+    const sender = new SmtpNotificationSender({
+        host: "smtp.example.com",
+        port: 587,
+        from: "no-reply@example.com",
+        secure: "starttls",
+        codeLength: 8,
+    });
+
+    assert.equal(sender.getCodeLength(), 8);
+    assert.equal(sender.getConfig().codeLength, 8);
+
+    sender.setConfig({ codeLength: 12 });
+
+    assert.equal(sender.getCodeLength(), 10);
+    assert.equal(sender.getConfig().codeLength, 10);
+});
+
 test("SmtpNotificationSender.senderName returns descriptive name", () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",

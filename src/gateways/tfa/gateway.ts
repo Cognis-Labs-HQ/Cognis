@@ -162,6 +162,17 @@ export class CoreTfaGateway {
             adapterId?: string;
         }
     >();
+    private readonly adapterEnabledChangeListeners = new Map<
+        string,
+        (adapterId: string, enabled: boolean) => Promise<void> | void
+    >();
+    private readonly adapterConfigChangeListeners = new Map<
+        string,
+        (
+            adapterId: string,
+            config: Record<string, unknown>,
+        ) => Promise<void> | void
+    >();
 
     constructor(
         private readonly store: DbTfaStore,
@@ -244,6 +255,7 @@ export class CoreTfaGateway {
             enabledValue === "true" ||
             enabledValue === 1;
         const { enabled: _omit, ...adapterConfig } = config;
+        const wasEnabled = this.enabledAdapters.has(adapterId);
         adapter.configure(adapterConfig);
         if (enabled) {
             this.enabledAdapters.add(adapterId);
@@ -251,22 +263,34 @@ export class CoreTfaGateway {
             this.enabledAdapters.delete(adapterId);
         }
         await this.store.saveAdapterConfig(adapterId, enabled, adapterConfig);
+        await this.notifyAdapterConfigChange(adapterId, adapterConfig);
+        if (wasEnabled !== enabled) {
+            await this.notifyAdapterEnabledChange(adapterId, enabled);
+        }
     }
 
     async enableAdapter(adapterId: string): Promise<void> {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return;
+        const wasEnabled = this.enabledAdapters.has(adapterId);
         const existingConfig = await this.getAdapterConfig(adapterId);
         this.enabledAdapters.add(adapterId);
         await this.store.saveAdapterConfig(adapterId, true, existingConfig);
+        if (!wasEnabled) {
+            await this.notifyAdapterEnabledChange(adapterId, true);
+        }
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return;
+        const wasEnabled = this.enabledAdapters.has(adapterId);
         const existingConfig = await this.getAdapterConfig(adapterId);
         this.enabledAdapters.delete(adapterId);
         await this.store.saveAdapterConfig(adapterId, false, existingConfig);
+        if (wasEnabled) {
+            await this.notifyAdapterEnabledChange(adapterId, false);
+        }
     }
 
     isAdapterEnabled(adapterId: string): boolean {
@@ -289,6 +313,41 @@ export class CoreTfaGateway {
         },
     ): void {
         this.adapterSyncTargets.set(adapterId, target);
+    }
+
+    onAdapterEnabledChange(
+        listenerId: string,
+        listener: (adapterId: string, enabled: boolean) => Promise<void> | void,
+    ): void {
+        this.adapterEnabledChangeListeners.set(listenerId, listener);
+    }
+
+    onAdapterConfigChange(
+        listenerId: string,
+        listener: (
+            adapterId: string,
+            config: Record<string, unknown>,
+        ) => Promise<void> | void,
+    ): void {
+        this.adapterConfigChangeListeners.set(listenerId, listener);
+    }
+
+    private async notifyAdapterConfigChange(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
+        for (const listener of this.adapterConfigChangeListeners.values()) {
+            await listener(adapterId, config);
+        }
+    }
+
+    private async notifyAdapterEnabledChange(
+        adapterId: string,
+        enabled: boolean,
+    ): Promise<void> {
+        for (const listener of this.adapterEnabledChangeListeners.values()) {
+            await listener(adapterId, enabled);
+        }
     }
 
     async getUserStatus(accountId: string): Promise<UserTfaStatus> {

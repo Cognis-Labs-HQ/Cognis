@@ -23,6 +23,7 @@ import {
     buildVerificationEmailMessage,
 } from "./message-builders.js";
 import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
+import { clampSmtpVerificationCodeLength } from "./reuse/verification-codes.js";
 
 export interface SmtpConfig {
     host: string;
@@ -38,6 +39,7 @@ export interface SmtpConfig {
     greylistRetries?: number;
     greylistRetryDelayMs?: number;
     externalHost?: string;
+    codeLength?: number;
 }
 
 export class SmtpTemporaryError extends Error {
@@ -748,7 +750,12 @@ export class SmtpNotificationSender implements NotificationSender {
             greylistRetryDelayMs:
                 this.config.greylistRetryDelayMs ??
                 DEFAULT_GREYLIST_RETRY_DELAY_MS,
+            codeLength: this.getCodeLength(),
         };
+    }
+
+    getCodeLength(): number {
+        return clampSmtpVerificationCodeLength(this.config.codeLength);
     }
 
     setConfig(config: Record<string, unknown>): void {
@@ -775,6 +782,11 @@ export class SmtpNotificationSender implements NotificationSender {
             this.config.greylistRetries = config.greylistRetries;
         if (typeof config.greylistRetryDelayMs === "number")
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
+        if (typeof config.codeLength === "number") {
+            this.config.codeLength = clampSmtpVerificationCodeLength(
+                config.codeLength,
+            );
+        }
     }
 
     listQueue(): NotificationSenderQueueEntry[] {
@@ -826,9 +838,12 @@ export class SmtpNotificationSender implements NotificationSender {
         theme?: string,
     ) {
         if (!to) throw new Error("smtp_requires_recipient");
+        const messageType = verifyUrl
+            ? "email-address-verification"
+            : "verification-code";
         const { subject, body } = buildVerificationEmailMessage(
+            messageType,
             code,
-            verifyUrl,
         );
         const queued = this.queue.enqueue({
             recipientEmail: to,

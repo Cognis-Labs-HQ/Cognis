@@ -536,6 +536,7 @@
   <string name="ui.app.admin.notif.enable_provider">Adapter aktivieren</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Selbstsigniertes Zertifikat erlauben</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Authentifizierung deaktivieren</string>
+  <string name="ui.app.admin.notif.smtp_code_length">Codelänge</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Absendername</string>
   <string name="ui.app.admin.security.title">Sicherheit</string>
   <string name="ui.app.admin.security.trusted_domains_label">Vertrauenswürdige Domains</string>

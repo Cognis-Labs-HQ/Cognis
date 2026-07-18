@@ -75,6 +75,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
+    const getTfaSmtpCodeLength = () =>
+        ctx.capabilities.get<() => number | undefined>(
+            "tfa:smtpCodeLength",
+        )?.();
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);
@@ -111,6 +115,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             externalHost,
             routeContext,
+            getTfaSmtpCodeLength,
         ),
         "notify",
     );
@@ -144,7 +149,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.9",
+        version: "1.4.11",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,
@@ -327,6 +332,44 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
      */
     ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
         gateway.canSendVerificationEmail(),
+    );
+    ctx.capabilities.contribute("notify:isSenderEnabled", (senderId: string) =>
+        gateway.isSenderEnabled(senderId),
+    );
+    ctx.capabilities.contribute(
+        "notify:setSenderEnabled",
+        async (senderId: string, enabled: boolean) => {
+            if (enabled) {
+                await gateway.enableSender(senderId);
+            } else {
+                await gateway.disableSender(senderId);
+            }
+        },
+    );
+    ctx.capabilities.contribute(
+        "notify:onSenderEnabledChange",
+        (
+            listenerId: string,
+            listener: (
+                senderId: string,
+                enabled: boolean,
+            ) => Promise<void> | void,
+        ) => gateway.onSenderEnabledChange(listenerId, listener),
+    );
+    ctx.capabilities.contribute(
+        "notify:updateSenderConfig",
+        (senderId: string, patch: Record<string, unknown>) =>
+            gateway.updateProviderConfig(senderId, patch),
+    );
+    ctx.capabilities.contribute(
+        "notify:onSenderConfigChange",
+        (
+            listenerId: string,
+            listener: (
+                senderId: string,
+                config: Record<string, unknown>,
+            ) => Promise<void> | void,
+        ) => gateway.onSenderConfigChange(listenerId, listener),
     );
     ctx.capabilities.contribute(
         "notify:sendVerificationEmail",

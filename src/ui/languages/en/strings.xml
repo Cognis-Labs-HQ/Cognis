@@ -443,7 +443,7 @@
   <string name="ui.app.profile.social_links.website">Website</string>
   <string name="ui.app.profile.social_links.empty">No links set. Edit your profile to add a website.</string>
   <string name="ui.app.profile.suggested.empty">No suggestions right now.</string>
-  <string name="ui.app.profile.suggested.follow_back">Follow back</string>
+  <string name="ui.app.profile.suggested.follow_back">Follow Back</string>
   <string name="ui.app.profile.banner_menu_label">Banner options</string>
   <string name="ui.app.profile.banner_height.half">Half height</string>
   <string name="ui.app.profile.banner_height.full">Full height</string>
@@ -536,6 +536,7 @@
   <string name="ui.app.admin.notif.enable_provider">Enable Adapter</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Allow Self-Signed Certificate</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
+  <string name="ui.app.admin.notif.smtp_code_length">Code Length</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Sender Name</string>
   <string name="ui.app.admin.security.title">Security</string>
   <string name="ui.app.admin.security.trusted_domains_label">Trusted Domains</string>
