@@ -47,8 +47,8 @@ export function buildAllDayDateRangeValues(startDateValue, endDateValue) {
     const endExclusiveDate = addDaysToDateInputValue(clampedEndDate, 1);
     if (!endExclusiveDate) return null;
     return {
-        startAt: `${normalizedStartDate}T00:00`,
-        endAt: `${endExclusiveDate}T00:00`,
+        startAt: `${normalizedStartDate}T00:00:00.000Z`,
+        endAt: `${endExclusiveDate}T00:00:00.000Z`,
     };
 }
 

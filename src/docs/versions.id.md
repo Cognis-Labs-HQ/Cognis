@@ -38,7 +38,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |
 | Registrasi               | `src/gateways/registration/` | `1.1.3` |
 | Logging                  | `src/gateways/logging/`      | `1.4.0` |
-| Kalender                 | `src/gateways/calendar/`     | `1.2.0` |
+| Kalender                 | `src/gateways/calendar/`     | `1.2.5` |
 
 ## API
 
