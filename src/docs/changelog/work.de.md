@@ -7,3 +7,7 @@ Profil-Schaltflächen im Zustand „Folge ich“ wechseln beim Darüberfahren zu
 ## Folgeaktivität nutzt die Social-Benachrichtigungsklasse
 
 Folgeaktionen registrieren und senden jetzt über die Social-Benachrichtigungskategorie, damit Empfänger Folgeaktivitäten über konfigurierte Benachrichtigungsanbieter erhalten können.
+
+## Profilinitialen bevorzugen Profilnamen
+
+Initialen für Profil-Avatar-Fallbacks verwenden jetzt zuerst den Profilanzeigenamen statt des Nutzernamens und können bei einteiligen Namen einen einzelnen Anfangsbuchstaben anzeigen.

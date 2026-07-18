@@ -181,8 +181,9 @@ function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
     if (avatarBlobUrl) {
         return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
     }
-    const initials = getInitialsText(profile?.handle ?? "");
-    const initialsColor = pickInitialsColor(profile?.handle ?? "");
+    const initialsLabel = profile?.displayName || profile?.handle || "";
+    const initials = getInitialsText(initialsLabel);
+    const initialsColor = pickInitialsColor(initialsLabel);
     return `<div class="profile-avatar-initials" style="--initials-bg: ${escapeHtml(initialsColor)};">${escapeHtml(initials)}</div>`;
 }
 
