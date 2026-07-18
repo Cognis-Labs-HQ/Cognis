@@ -48,12 +48,27 @@ export function assertWithinCeiling(
     }
 }
 
+export type FileAccessOperation = "read" | "write" | "delete";
+
+function isPrivileged(access: FileAccessContext): boolean {
+    return access.role === "admin" || access.role === "owner";
+}
+
 export function canAccess(
     namespaceAcl: NamespaceAcl,
     objectAcl: FileObjectAcl,
     access: FileAccessContext,
+    operation: FileAccessOperation = "read",
 ): boolean {
-    if (access.actorId === objectAcl.ownerId) return true;
+    if (operation === "write") {
+        return access.actorId === objectAcl.ownerId || isPrivileged(access);
+    }
+
+    if (operation === "delete") {
+        return access.actorId === objectAcl.ownerId || isPrivileged(access);
+    }
+    if (access.actorId === objectAcl.ownerId || isPrivileged(access))
+        return true;
 
     if (namespaceAcl.visibility === "private-owner") {
         return false;

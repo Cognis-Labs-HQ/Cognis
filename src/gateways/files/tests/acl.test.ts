@@ -119,3 +119,24 @@ test("canAccess denies unrelated actors in a component-managed namespace without
         false,
     );
 });
+
+test("canAccess restricts deletes to owners and privileged actors", () => {
+    assert.equal(
+        canAccess(
+            COMPONENT_MANAGED,
+            { ownerId: "alice", publicRead: true },
+            { actorId: "bob" },
+            "delete",
+        ),
+        false,
+    );
+    assert.equal(
+        canAccess(
+            COMPONENT_MANAGED,
+            { ownerId: "alice", publicRead: true },
+            { actorId: "root", role: "admin" },
+            "delete",
+        ),
+        true,
+    );
+});

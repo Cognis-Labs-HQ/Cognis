@@ -290,3 +290,53 @@ test("namespace client still enforces namespace allow-list", async () => {
         AccessDeniedError,
     );
 });
+
+test("public readers cannot delete component-managed objects", async () => {
+    const service = buildService([
+        {
+            id: "profile",
+            ownerComponent: "social-profile",
+            acl: { visibility: "component-managed" },
+        },
+    ]);
+    await service.put(
+        "profile",
+        { actorId: "alice", callerComponent: "social-profile" },
+        "avatar.png",
+        Buffer.from("avatar"),
+        { publicRead: true },
+    );
+
+    await assert.rejects(
+        service.delete(
+            "profile",
+            { actorId: "bob", callerComponent: "social-profile" },
+            "avatar.png",
+        ),
+        AccessDeniedError,
+    );
+});
+
+test("put charges quota by overwrite delta for the object owner", async () => {
+    const service = buildService(
+        [
+            {
+                id: "user",
+                ownerComponent: "core",
+                acl: { visibility: "private-owner" },
+            },
+        ],
+        fakeQuotaStore({ namespaceQuota: 6, globalQuota: 6 }),
+    );
+    const access = { actorId: "alice", callerComponent: "core" };
+    await service.put("user", access, "doc.txt", Buffer.from("12345"));
+
+    const stored = await service.put(
+        "user",
+        access,
+        "doc.txt",
+        Buffer.from("123456"),
+    );
+
+    assert.equal(stored.size, 6);
+});

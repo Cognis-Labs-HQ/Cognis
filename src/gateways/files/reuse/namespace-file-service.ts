@@ -96,6 +96,7 @@ export class NamespaceFileService {
         access: FileAccessContext,
         namespaceId: string,
         additionalBytes: number,
+        replacedBytes = 0,
     ): Promise<void> {
         const quotaStore = this.getQuotaStore();
         if (!quotaStore) return;
@@ -110,7 +111,7 @@ export class NamespaceFileService {
 
         if (
             namespaceQuota !== undefined &&
-            namespaceUsage + additionalBytes > namespaceQuota
+            namespaceUsage - replacedBytes + additionalBytes > namespaceQuota
         ) {
             throw new QuotaExceededError(
                 `Namespace quota exceeded for "${namespaceId}".`,
@@ -118,7 +119,7 @@ export class NamespaceFileService {
         }
         if (
             globalQuota !== undefined &&
-            globalUsage + additionalBytes > globalQuota
+            globalUsage - replacedBytes + additionalBytes > globalQuota
         ) {
             throw new QuotaExceededError("Global storage quota exceeded.");
         }
@@ -138,7 +139,21 @@ export class NamespaceFileService {
             publicRead: options.publicRead,
         };
         assertWithinCeiling(definition.acl, objectAcl);
-        await this.assertWithinQuota(access, namespaceId, content.byteLength);
+        const existing = await this.objects.getMetadata(namespaceId, key);
+        if (
+            existing &&
+            !canAccess(definition.acl, existing.acl, access, "write")
+        ) {
+            throw new AccessDeniedError(
+                `Actor "${access.actorId}" may not overwrite "${namespaceId}/${key}".`,
+            );
+        }
+        await this.assertWithinQuota(
+            access,
+            namespaceId,
+            content.byteLength,
+            existing?.acl.ownerId === access.actorId ? existing.sizeBytes : 0,
+        );
 
         const stored = await this.rawGateway.put(
             namespaceId,
@@ -183,7 +198,7 @@ export class NamespaceFileService {
         const definition = this.resolveNamespace(namespaceId, access);
         const objectAcl = await this.objects.get(namespaceId, key);
         if (!objectAcl) return null;
-        if (!canAccess(definition.acl, objectAcl, access)) {
+        if (!canAccess(definition.acl, objectAcl, access, "read")) {
             throw new AccessDeniedError(
                 `Actor "${access.actorId}" may not read "${namespaceId}/${key}".`,
             );
@@ -199,7 +214,7 @@ export class NamespaceFileService {
         const definition = this.resolveNamespace(namespaceId, access);
         const objectAcl = await this.objects.get(namespaceId, key);
         if (!objectAcl) return false;
-        if (!canAccess(definition.acl, objectAcl, access)) {
+        if (!canAccess(definition.acl, objectAcl, access, "delete")) {
             throw new AccessDeniedError(
                 `Actor "${access.actorId}" may not delete "${namespaceId}/${key}".`,
             );

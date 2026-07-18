@@ -27,6 +27,11 @@ const TABLE_DEF: StructuredDbTableDef = {
     indexes: [{ columns: ["owner_id"] }],
 };
 
+export interface FileObjectMetadata {
+    acl: FileObjectAcl;
+    sizeBytes: number;
+}
+
 interface FileObjectRow {
     namespace_id: string;
     object_key: string;
@@ -109,6 +114,13 @@ export class DbFileObjectStore {
         namespaceId: string,
         objectKey: string,
     ): Promise<FileObjectAcl | undefined> {
+        return (await this.getMetadata(namespaceId, objectKey))?.acl;
+    }
+
+    async getMetadata(
+        namespaceId: string,
+        objectKey: string,
+    ): Promise<FileObjectMetadata | undefined> {
         const executor = await this.ensureSchema();
         const result = await executor.executeCommand({
             option: "SELECT",
@@ -120,7 +132,9 @@ export class DbFileObjectStore {
             limit: 1,
         });
         const row = (result.rows as FileObjectRow[] | undefined)?.[0];
-        return row ? rowToAcl(row) : undefined;
+        return row
+            ? { acl: rowToAcl(row), sizeBytes: Number(row.size_bytes) }
+            : undefined;
     }
 
     async delete(namespaceId: string, objectKey: string): Promise<void> {

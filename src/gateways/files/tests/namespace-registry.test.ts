@@ -67,3 +67,26 @@ test("componentAllowed permits core, owner, and allow-listed components only", (
         false,
     );
 });
+
+test("namespace registry validates namespace and component ids", () => {
+    const registry = new NamespaceRegistry();
+
+    assert.throws(
+        () =>
+            registry.register({
+                id: "Profile Media",
+                ownerComponent: "social-profile",
+                acl: { visibility: "component-managed" },
+            }),
+        /Namespace id/,
+    );
+    assert.throws(
+        () =>
+            registry.register({
+                id: "profile",
+                ownerComponent: "SocialProfile",
+                acl: { visibility: "component-managed" },
+            }),
+        /Namespace owner component/,
+    );
+});
