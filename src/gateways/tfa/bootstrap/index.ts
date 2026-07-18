@@ -6,7 +6,7 @@ import {
 } from "../../shared.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
-import { CoreTfaGateway } from "../gateway.js";
+import { CoreTfaGateway, type TfaMethodAdapter } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
 
@@ -72,6 +72,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getPrimaryEmail = ctx.capabilities.get<
         (accountId: string) => Promise<string | null>
     >("notify:getPrimaryEmail");
+    const isNotifySenderEnabled = ctx.capabilities.get<
+        (senderId: string) => boolean
+    >("notify:isSenderEnabled");
+    const setNotifySenderEnabled = ctx.capabilities.get<
+        (senderId: string, enabled: boolean) => Promise<void>
+    >("notify:setSenderEnabled");
+    const onNotifySenderEnabledChange = ctx.capabilities.get<
+        (
+            listenerId: string,
+            listener: (
+                senderId: string,
+                enabled: boolean,
+            ) => Promise<void> | void,
+        ) => void
+    >("notify:onSenderEnabledChange");
     const registerNotificationCategory = ctx.capabilities.get<
         (id: string, label: string) => void
     >("notify:registerCategory");
@@ -92,6 +107,47 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
+    const smtpAdapter = gateway.getAdapter("smtp") as
+        | (TfaMethodAdapter & { getCodeLength?: () => number })
+        | null;
+    if (smtpAdapter) {
+        if (isNotifySenderEnabled && canSendVerificationEmail) {
+            gateway.setAdapterAvailabilityCheck(
+                "smtp",
+                () =>
+                    isNotifySenderEnabled("smtp") &&
+                    canSendVerificationEmail() === true,
+            );
+        }
+        gateway.setAdapterSyncTarget("smtp", {
+            gatewayId: "notify",
+            adapterId: "smtp",
+        });
+        if (setNotifySenderEnabled) {
+            gateway.onAdapterEnabledChange(
+                "tfa-smtp:sync-notify-smtp",
+                async (adapterId, enabled) => {
+                    if (adapterId === "smtp") {
+                        await setNotifySenderEnabled("smtp", enabled);
+                    }
+                },
+            );
+        }
+        onNotifySenderEnabledChange?.(
+            "notify-smtp:sync-tfa-smtp",
+            async (senderId, enabled) => {
+                if (senderId !== "smtp") return;
+                if (enabled) {
+                    await gateway.enableAdapter("smtp");
+                } else {
+                    await gateway.disableAdapter("smtp");
+                }
+            },
+        );
+        ctx.capabilities.contribute("tfa:smtpCodeLength", () =>
+            smtpAdapter.getCodeLength?.(),
+        );
+    }
     ctx.routeRegistry.register(
         createTfaRoutes(gateway, ctx.capabilities, ctx.log),
         "tfa",

@@ -320,6 +320,10 @@ export class CoreNotificationGateway
     private readonly disabledSenders = new Set<string>();
     private readonly senderRequires = new Map<string, string[]>();
     private readonly alwaysOnSenders = new Set<string>();
+    private readonly senderEnabledChangeListeners = new Map<
+        string,
+        (senderId: string, enabled: boolean) => Promise<void> | void
+    >();
 
     constructor(
         private readonly prefStore: NotificationPreferenceStore,
@@ -432,11 +436,13 @@ export class CoreNotificationGateway
         config: Record<string, unknown>,
     ): Promise<void> {
         const { enabled, ...senderConfig } = config;
+        const wasEnabled = this.isSenderEnabled(senderId);
         if (enabled === false || enabled === "false") {
             this.disabledSenders.add(senderId);
         } else {
             this.disabledSenders.delete(senderId);
         }
+        const isEnabled = this.isSenderEnabled(senderId);
         const sender = this.senders.get(senderId);
         if (sender && typeof sender.setConfig === "function") {
             sender.setConfig(senderConfig);
@@ -446,6 +452,9 @@ export class CoreNotificationGateway
             delete persistConfig.password;
         }
         await this.configStore?.saveConfig(senderId, persistConfig);
+        if (wasEnabled !== isEnabled) {
+            await this.notifySenderEnabledChange(senderId, isEnabled);
+        }
     }
 
     async loadPersistedConfigs(): Promise<void> {
@@ -464,21 +473,51 @@ export class CoreNotificationGateway
     }
 
     async enableSender(senderId: string): Promise<void> {
+        const wasDisabled = this.disabledSenders.has(senderId);
         this.disabledSenders.delete(senderId);
         const existing = (await this.configStore?.getConfig(senderId)) ?? null;
         await this.configStore?.saveConfig(senderId, {
             ...(existing ?? {}),
             enabled: true,
         });
+        if (wasDisabled) {
+            await this.notifySenderEnabledChange(senderId, true);
+        }
     }
 
     async disableSender(senderId: string): Promise<void> {
+        const wasDisabled = this.disabledSenders.has(senderId);
         this.disabledSenders.add(senderId);
         const existing = (await this.configStore?.getConfig(senderId)) ?? null;
         await this.configStore?.saveConfig(senderId, {
             ...(existing ?? {}),
             enabled: false,
         });
+        if (!wasDisabled) {
+            await this.notifySenderEnabledChange(senderId, false);
+        }
+    }
+
+    isSenderEnabled(senderId: string): boolean {
+        return (
+            this.senders.has(senderId) && !this.disabledSenders.has(senderId)
+        );
+    }
+
+    onSenderEnabledChange(
+        listenerId: string,
+        listener: (senderId: string, enabled: boolean) => Promise<void> | void,
+    ): void {
+        this.senderEnabledChangeListeners.set(listenerId, listener);
+    }
+
+    private async notifySenderEnabledChange(
+        senderId: string,
+        enabled: boolean,
+    ): Promise<void> {
+        for (const listener of this.senderEnabledChangeListeners.values()) {
+            await listener(senderId, enabled);
+        }
     }
 
     getSender(senderId: string): NotificationSender | undefined {

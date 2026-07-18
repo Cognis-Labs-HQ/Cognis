@@ -5,11 +5,16 @@ export function buildVerificationEmailMessage(
     subject: string;
     body: string;
 } {
+    if (!verifyUrl) {
+        return {
+            subject: "Your verification code",
+            body: `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`,
+        };
+    }
+
     return {
         subject: "Verify your email address",
-        body: verifyUrl
-            ? `Your verification code is: ${code}\n\nOr click the button below to verify your email address directly.\n\nBoth the code and the link expire in 15 minutes.`
-            : `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`,
+        body: `Your verification code is: ${code}\n\nOr click the button below to verify your email address directly.\n\nBoth the code and the link expire in 15 minutes.`,
     };
 }
 

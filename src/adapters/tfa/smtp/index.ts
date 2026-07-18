@@ -460,6 +460,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         ];
     }
 
+    getCodeLength(): number {
+        return this.codeLength;
+    }
+
     configure(config: Record<string, unknown>): void {
         this.codeLength = clampCodeLength(config.codeLength);
     }

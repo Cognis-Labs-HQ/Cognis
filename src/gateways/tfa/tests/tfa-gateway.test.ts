@@ -366,6 +366,33 @@ test("tfa gateway adapter availability check controls enabled state and exposes 
     });
 });
 
+test("tfa gateway notifies adapter enabled state listeners", async () => {
+    const storeMock = createStoreMock();
+    const gateway = new CoreTfaGateway(storeMock as any);
+    gateway.registerAdapter({
+        id: "smtp",
+        name: "Email",
+        beginSetup: async () => ({ pendingPayload: {}, view: { prompt: "" } }),
+        verifySetup: async () => ({ verified: true, state: {} }),
+        verifyLogin: async () => ({ verified: false }),
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+    const changes: Array<{ adapterId: string; enabled: boolean }> = [];
+    gateway.onAdapterEnabledChange("test", (adapterId, enabled) => {
+        changes.push({ adapterId, enabled });
+    });
+
+    await gateway.enableAdapter("smtp");
+    await gateway.disableAdapter("smtp");
+    await gateway.disableAdapter("smtp");
+
+    assert.deepEqual(changes, [
+        { adapterId: "smtp", enabled: true },
+        { adapterId: "smtp", enabled: false },
+    ]);
+});
+
 test("tfa gateway login methods follow configured preferred ordering", async () => {
     const storeMock = createStoreMock();
     const gateway = new CoreTfaGateway(storeMock as any);
