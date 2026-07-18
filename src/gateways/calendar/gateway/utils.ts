@@ -163,8 +163,59 @@ export function formatIcsDate(dateInput: string): string {
     return parsed.toISOString().replace(/[-:]/g, "").replace(".000", "");
 }
 
+export function formatIcsDateOnly(dateInput: string): string {
+    const parsed = new Date(dateInput);
+    const fallback = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    return [
+        String(fallback.getUTCFullYear()).padStart(4, "0"),
+        String(fallback.getUTCMonth() + 1).padStart(2, "0"),
+        String(fallback.getUTCDate()).padStart(2, "0"),
+    ].join("");
+}
+
+export function isAllDayEventRange(startAt: string, endAt: string): boolean {
+    const start = new Date(startAt);
+    const end = new Date(endAt);
+    const dayMs = 24 * 60 * 60 * 1000;
+    if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime()) ||
+        end.getTime() <= start.getTime()
+    ) {
+        return false;
+    }
+    const startsAtUtcMidnight =
+        start.getUTCHours() === 0 &&
+        start.getUTCMinutes() === 0 &&
+        start.getUTCSeconds() === 0 &&
+        start.getUTCMilliseconds() === 0;
+    const endsAtUtcMidnight =
+        end.getUTCHours() === 0 &&
+        end.getUTCMinutes() === 0 &&
+        end.getUTCSeconds() === 0 &&
+        end.getUTCMilliseconds() === 0;
+    const durationMs = end.getTime() - start.getTime();
+    if (durationMs % dayMs !== 0) return false;
+    const preservesLocalMidnightOffset =
+        start.getUTCHours() === end.getUTCHours() &&
+        start.getUTCMinutes() === end.getUTCMinutes() &&
+        start.getUTCSeconds() === end.getUTCSeconds() &&
+        start.getUTCMilliseconds() === end.getUTCMilliseconds();
+    return (
+        (startsAtUtcMidnight && endsAtUtcMidnight) ||
+        preservesLocalMidnightOffset
+    );
+}
+
 export function parseIcsDate(value: string): string | null {
     const compact = value.trim();
+    const dateOnlyMatch = compact.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (dateOnlyMatch) {
+        const [, year, month, day] = dateOnlyMatch;
+        return new Date(
+            Date.UTC(Number(year), Number(month) - 1, Number(day)),
+        ).toISOString();
+    }
     const match = compact.match(
         /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/,
     );
