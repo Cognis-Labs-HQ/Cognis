@@ -1,5 +1,4 @@
 import {
-    createHash,
     pbkdf2Sync,
     randomBytes,
     timingSafeEqual,
@@ -167,8 +166,7 @@ function verifySharePassword(password: string, storedHash: string): boolean {
         );
         return expected.length === actual.length && timingSafeEqual(expected, actual);
     }
-    const legacy = createHash("sha256").update(normalized).digest("hex");
-    return legacy === encoded;
+    return false;
 }
 
 function normalizeCapabilities(value: unknown): string[] {
