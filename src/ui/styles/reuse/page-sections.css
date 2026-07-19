@@ -271,30 +271,43 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 }
 
 .markdown-code-copy {
-    position: absolute;
-    z-index: 2;
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    min-height: 28px;
-    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted, var(--color-text-muted));
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.74rem;
+    line-height: 1;
     opacity: 0;
-    pointer-events: none;
-    transform: translateY(2px);
+    padding: 3px 4px;
     transition:
         opacity 0.15s ease,
-        transform 0.15s ease,
-        color 0.5s ease;
+        color 0.15s ease,
+        background 0.15s ease;
+}
+
+.markdown-code-copy:hover,
+.markdown-code-copy:focus-visible {
+    background: var(--surface-soft, rgba(255, 255, 255, 0.08));
+    color: var(--text, var(--color-text));
+    outline: none;
 }
 
 .markdown-code-block > .markdown-code-copy {
+    position: absolute;
     top: 0.45rem;
     right: 0.45rem;
+    z-index: 2;
 }
 
 .markdown-code-inline > .markdown-code-copy {
-    top: -2rem;
-    right: 0;
+    flex: 0 0 auto;
+    margin-left: 4px;
 }
 
 .markdown-code-block:hover > .markdown-code-copy,
@@ -302,29 +315,38 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 .markdown-code-inline:hover > .markdown-code-copy,
 .markdown-code-inline:focus-within > .markdown-code-copy {
     opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
 }
 
-.markdown-code-copy::before {
+.markdown-code-copy-icon {
+    position: relative;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+}
+
+.markdown-code-copy-icon::before,
+.markdown-code-copy-icon::after {
     content: "";
-    width: 14px;
-    height: 14px;
-    background: currentColor;
-    -webkit-mask-image: url("/static/assets/reuse/clipboard.svg");
-    mask-image: url("/static/assets/reuse/clipboard.svg");
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-position: center;
-    mask-position: center;
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
 }
 
-.markdown-code-copy.popup-action-btn--copied::before {
-    -webkit-mask-image: url("/static/assets/reuse/check.svg");
-    mask-image: url("/static/assets/reuse/check.svg");
-    animation: popup-copy-icon-pop 0.25s ease;
+.markdown-code-copy-icon::before {
+    top: 1px;
+    left: 4px;
+}
+
+.markdown-code-copy-icon::after {
+    top: 4px;
+    left: 1px;
+    background: var(--surface-2, rgba(15, 23, 42, 0.92));
+}
+
+.markdown-code-copy.popup-action-btn--copied {
+    color: var(--color-success-outline-text);
 }
 
 .markdown-code {

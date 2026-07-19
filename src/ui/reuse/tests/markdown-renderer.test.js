@@ -64,7 +64,7 @@ test("renderMarkdown adds copy controls to inline code", () => {
     );
     assert.match(
         html,
-        /<button class="markdown-code-copy popup-action-btn" data-markdown-code-copy="npm test" data-popup-action="copy" type="button" aria-label="Copy"><\/button>/,
+        /<button class="markdown-code-copy" data-markdown-code-copy="npm test" type="button" aria-label="Copy">.*<span class="markdown-code-copy-label"><\/span><\/button>/,
     );
 });
 
@@ -77,7 +77,7 @@ test("renderMarkdown inline code copy value preserves escaped source", () => {
 test("renderMarkdown adds copy controls with raw code block contents", () => {
     const html = renderMarkdown("```js\nconst x = 1;\n```");
     assert.match(html, /data-markdown-code-copy="const x = 1;"/);
-    assert.match(html, /data-popup-action="copy"/);
+    assert.match(html, /<span class="markdown-code-copy-label"><\/span>/);
 });
 
 test("renderMarkdown normalizes paragraph line spacing", () => {

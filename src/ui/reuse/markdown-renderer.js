@@ -17,6 +17,7 @@ import { showToast } from "./toast.js";
 
 let markdownCodeCopyReady = false;
 let markdownCodeCopyI18n = null;
+let markdownCodeCopyLabelObserver = null;
 
 function escapeHtml(value) {
     return String(value)
@@ -224,7 +225,7 @@ function highlightCode(code, language) {
 
 function renderMarkdownCopyButtonMarkup(copyValue) {
     const safeCopyValue = escapeHtmlAttribute(copyValue);
-    return `<button class="markdown-code-copy popup-action-btn" data-markdown-code-copy="${safeCopyValue}" data-popup-action="copy" type="button" aria-label="Copy"></button>`;
+    return `<button class="markdown-code-copy" data-markdown-code-copy="${safeCopyValue}" type="button" aria-label="Copy"><span class="markdown-code-copy-icon" aria-hidden="true"></span><span class="markdown-code-copy-label"></span></button>`;
 }
 
 function renderInlineCodeMarkup(codeText) {
@@ -275,6 +276,40 @@ function lineStartsBlock(line) {
     );
 }
 
+function updateMarkdownCodeCopyLabels(root, i18n) {
+    const copyButtons = [];
+    if (root.matches?.("[data-markdown-code-copy]")) copyButtons.push(root);
+    root.querySelectorAll?.("[data-markdown-code-copy]").forEach(
+        (copyButton) => {
+            copyButtons.push(copyButton);
+        },
+    );
+    copyButtons.forEach((copyButton) => {
+        const copyLabel = i18n.t("ui.reuse.copy");
+        copyButton.setAttribute("aria-label", copyLabel);
+        const labelElement = copyButton.querySelector(
+            ".markdown-code-copy-label",
+        );
+        if (labelElement) labelElement.textContent = copyLabel;
+    });
+}
+
+function observeMarkdownCodeCopyLabels(i18n) {
+    if (typeof MutationObserver === "undefined") return;
+    if (!document.body || markdownCodeCopyLabelObserver) return;
+    markdownCodeCopyLabelObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                updateMarkdownCodeCopyLabels(node, i18n);
+            });
+        });
+    });
+    markdownCodeCopyLabelObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+}
+
 /**
  * Attaches delegated copy-to-clipboard behavior for Markdown code controls.
  *
@@ -294,6 +329,10 @@ export function initializeMarkdownCodeCopy() {
             return labels[key] ?? key;
         },
     }));
+    markdownCodeCopyI18n.then((i18n) => {
+        updateMarkdownCodeCopyLabels(document, i18n);
+        observeMarkdownCodeCopyLabels(i18n);
+    });
 
     document.addEventListener("click", async (event) => {
         const copyButton = event.target?.closest?.("[data-markdown-code-copy]");
