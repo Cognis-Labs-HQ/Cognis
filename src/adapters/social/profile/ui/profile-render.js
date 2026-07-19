@@ -207,7 +207,6 @@ export function renderHero({
     const bannerContent = bannerBlobUrl
         ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
         : '<div class="profile-hero-banner-placeholder"></div>';
-
     const details = [
         profile?.location
             ? `<span class="profile-hero-detail-item">📍 ${escapeHtml(profile.location)}</span>`
@@ -229,13 +228,14 @@ export function renderHero({
     `
             : "";
 
-    const bannerMenuRemoveItem = bannerBlobUrl
+    const bannerRemoveButton = bannerBlobUrl
         ? `
-      <div class="profile-banner-menu-sep"></div>
-      <button
-        type="button"
-        class="profile-banner-menu-item profile-banner-menu-remove btn-cancel"
-      >${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}</button>
+        <button
+          class="btn-cancel profile-banner-remove-btn"
+          type="button"
+          aria-label="${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}"
+          title="${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}"
+        >&#215;</button>
     `
         : "";
 
@@ -247,6 +247,7 @@ export function renderHero({
         aria-label="${escapeHtml(i18n.t("ui.app.profile.change_banner"))}"
       >${bannerContent}</button>
       <div class="profile-banner-menu-wrap">
+        ${bannerRemoveButton}
         <button
           class="profile-banner-menu-btn"
           type="button"
@@ -259,9 +260,8 @@ export function renderHero({
             <input
               type="radio"
               class="profile-banner-height-radio"
-              name="banner-height"
               value="half"
-              ${bannerHeight === "half" ? "checked" : ""}
+              ${bannerHeight !== "full" ? "checked" : ""}
             >
             ${escapeHtml(i18n.t("ui.app.profile.banner_height.half"))}
           </label>
@@ -269,13 +269,11 @@ export function renderHero({
             <input
               type="radio"
               class="profile-banner-height-radio"
-              name="banner-height"
               value="full"
               ${bannerHeight === "full" ? "checked" : ""}
             >
             ${escapeHtml(i18n.t("ui.app.profile.banner_height.full"))}
           </label>
-          ${bannerMenuRemoveItem}
         </div>
       </div>
     `

@@ -33,6 +33,7 @@ import {
     renderFollowRequests,
 } from "./profile-render.js";
 import { createProfileImageUploadActions } from "./profile-image-upload.js";
+import { resolveBannerCropAspectRatio } from "./image-crop.js";
 import { createProfilePostActions } from "./profile-post-actions.js";
 
 let root = null;
@@ -46,7 +47,7 @@ let following = [];
 let posts = [];
 let avatarBlobUrl = null;
 let bannerBlobUrl = null;
-let bannerHeight = null;
+let bannerHeight = "half";
 let bannerPanX = 50;
 let bannerPanY = 50;
 let composer = null;
@@ -56,8 +57,7 @@ let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
 const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
-const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
-let pendingBannerAspectRatio = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
+let pendingBannerAspectRatio = resolveBannerCropAspectRatio(bannerHeight);
 let newPostFormController = null;
 let followerCountPoller = null;
 
@@ -474,14 +474,14 @@ function bindPageEvents() {
         "click",
         (event) => {
             const bannerButton = event.currentTarget;
-            const { width, height } = bannerButton.getBoundingClientRect();
-            pendingBannerAspectRatio =
-                width > 0 && height > 0
-                    ? Math.min(
-                          BANNER_CROP_WIDTH_TO_HEIGHT_RATIO,
-                          width / height,
-                      )
-                    : BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
+            const bannerRect =
+                bannerButton instanceof HTMLElement
+                    ? bannerButton.getBoundingClientRect()
+                    : null;
+            pendingBannerAspectRatio = resolveBannerCropAspectRatio(
+                bannerHeight,
+                bannerRect,
+            );
             bannerFileInput.click();
         },
     );
@@ -633,8 +633,14 @@ function bindPageEvents() {
             (bannerHeightRadio) => {
                 bannerHeightRadio.addEventListener("change", async () => {
                     const nextBannerHeight = bannerHeightRadio.value;
-                    if (!nextBannerHeight || nextBannerHeight === bannerHeight)
-                        return;
+                    if (!nextBannerHeight) return;
+                    bannerHeightRadio
+                        .closest(".profile-banner-menu-dropdown")
+                        ?.querySelectorAll(".profile-banner-height-radio")
+                        .forEach((radio) => {
+                            radio.checked = radio.value === nextBannerHeight;
+                        });
+                    if (nextBannerHeight === bannerHeight) return;
                     bannerHeight = nextBannerHeight;
                     dropdown.hidden = true;
                     menuButton.setAttribute("aria-expanded", "false");
@@ -653,7 +659,7 @@ function bindPageEvents() {
             },
         );
 
-        root.querySelector(".profile-banner-menu-remove")?.addEventListener(
+        root.querySelector(".profile-banner-remove-btn")?.addEventListener(
             "click",
             () => {
                 dropdown.hidden = true;
@@ -722,7 +728,7 @@ export async function mount(rootEl, { signal } = {}) {
     following = [];
     posts = [];
     profileImageActions?.revokeProfileBlobUrls();
-    bannerHeight = null;
+    bannerHeight = "half";
     bannerPanX = 50;
     bannerPanY = 50;
     composer = null;
