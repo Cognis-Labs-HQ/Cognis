@@ -1,32 +1,32 @@
-# Component Versions
+# コンポーネントバージョン
 
-## Overview
+## 概要
 
-This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
+このドキュメントは、Cognis コードベース内のすべてのゲートウェイ、アダプター、モジュールの現在バージョンを追跡します。これは changelog の索引であり、以前のリリース以降にコンポーネントが更新されたかを判断するためのクイックリファレンスです。
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
+各ゲートウェイ、アダプター、モジュールは `version` フィールドを持つ `package.json` を備えています。内部ロジック、データベーススキーマ、公開 API、設定形式など、そのコンポーネントを変更する場合は、Semantic Versioning に従って `package.json` のバージョンを上げる必要があります。このドキュメントも同時に更新します。changelog エントリは `src/docs/changelog/` 配下の PR ごとのファイルとして保存されます。
 
-## Responsibilities
+## 責務
 
-- Record the current version of every versioned component in the codebase.
-- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
-- Make it straightforward to detect version drift between deployed components and the current codebase.
+- コードベース内のバージョン管理された各コンポーネントの現在バージョンを記録する。
+- changelog 索引として、コンポーネントごとのドキュメントと履歴用の `src/docs/changelog/` へ導く。
+- デプロイ済みコンポーネントと現在のコードベースとのバージョンドリフトを検出しやすくする。
 
-Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
+責務外: バージョン上げの強制（これはコードレビューの対象）や外部パッケージのバージョン追跡。
 
-## Versioning rule
+## バージョニング規則
 
-Increment using [Semantic Versioning](https://semver.org/):
+[Semantic Versioning](https://semver.org/) に従って増分します:
 
-- **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
-- **Minor** (`0.x.0`): new backwards-compatible features or API additions.
-- **Major** (`x.0.0`): breaking changes to the component's public API or schema.
+- **Patch** (`0.1.x`): バグ修正、破壊的でない内部変更。
+- **Minor** (`0.x.0`): 後方互換性のある新機能または API 追加。
+- **Major** (`x.0.0`): コンポーネントの公開 API またはスキーマに対する破壊的変更。
 
 ## 依存関係ルール
 
 Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範囲を使用します。これにより、そのコンポーネントでテスト済みの最新依存バージョンを記録しつつ、より新しい未検証の依存関係がインストールされている場合に Administration のライフサイクル表示で警告できます。
 
-## Adapters
+## アダプター
 
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
@@ -51,23 +51,23 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
-## Gateways
+## ゲートウェイ
 
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.3.1`  |
+| Share                 | `src/gateways/share/`        | `1.3.2`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
-| File Storage (files)  | `src/gateways/files/`        | `2.1.1`  |
+| File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
 | Calendar              | `src/gateways/calendar/`     | `1.2.5`  |
 
-## Core contracts
+## コア契約
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |

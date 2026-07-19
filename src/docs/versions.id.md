@@ -1,32 +1,32 @@
-# Component Versions
+# Versi Komponen
 
-## Overview
+## Gambaran umum
 
-This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
+Dokumen ini melacak versi terkini dari setiap gateway, adapter, dan modul dalam codebase Cognis. Dokumen ini berfungsi sebagai indeks changelog dan referensi cepat untuk menentukan apakah sebuah komponen telah diperbarui sejak rilis sebelumnya.
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
+Setiap gateway, adapter, dan modul memiliki `package.json` dengan field `version`. Saat Anda mengubah sebuah komponen — termasuk logika internal, skema database, API publik, atau format konfigurasi — Anda harus menaikkan versi di `package.json` tersebut sesuai Semantic Versioning. Dokumen ini diperbarui pada saat yang sama. Entri changelog disimpan sebagai file per-PR di `src/docs/changelog/`.
 
-## Responsibilities
+## Tanggung jawab
 
-- Record the current version of every versioned component in the codebase.
-- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
-- Make it straightforward to detect version drift between deployed components and the current codebase.
+- Mencatat versi terkini dari setiap komponen berversi dalam codebase.
+- Menjadi indeks changelog: menautkan dokumentasi per-komponen dan `src/docs/changelog/` untuk riwayat.
+- Memudahkan deteksi drift versi antara komponen yang terpasang dan codebase saat ini.
 
-Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
+Tidak bertanggung jawab untuk: menegakkan kenaikan versi (itu tanggung jawab code review) atau melacak versi paket eksternal.
 
-## Versioning rule
+## Aturan versi
 
-Increment using [Semantic Versioning](https://semver.org/):
+Naikkan versi menggunakan [Semantic Versioning](https://semver.org/):
 
-- **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
-- **Minor** (`0.x.0`): new backwards-compatible features or API additions.
-- **Major** (`x.0.0`): breaking changes to the component's public API or schema.
+- **Patch** (`0.1.x`): perbaikan bug, perubahan internal yang tidak breaking.
+- **Minor** (`0.x.0`): fitur baru yang kompatibel ke belakang atau tambahan API.
+- **Major** (`x.0.0`): perubahan breaking pada API publik atau skema komponen.
 
 ## Aturan dependensi
 
 Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. Ini mencatat versi dependensi terbaru yang telah diuji untuk komponen tersebut, sekaligus memungkinkan tampilan siklus hidup Administrasi memberi peringatan saat dependensi terpasang yang lebih baru mungkin belum diverifikasi.
 
-## Adapters
+## Adapter
 
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
@@ -51,23 +51,23 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
-## Gateways
+## Gateway
 
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.3.1`  |
+| Share                 | `src/gateways/share/`        | `1.3.2`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
-| File Storage (files)  | `src/gateways/files/`        | `2.1.1`  |
+| File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
 | Calendar              | `src/gateways/calendar/`     | `1.2.5`  |
 
-## Core contracts
+## Kontrak inti
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |

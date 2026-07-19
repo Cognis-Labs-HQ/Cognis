@@ -131,7 +131,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("files:list", service.list.bind(service));
     ctx.capabilities.contribute(
         "files:quota:provisionUser",
-        (username: string) => quotaStore.provisionUser(username),
+        async (username: string) => {
+            for (const namespace of registry.list()) {
+                await quotaStore.ensureNamespaceDefault(namespace.id);
+            }
+            await quotaStore.provisionUser(username);
+        },
     );
 
     // Retained for structured logging only (not user-uploaded content) — the
@@ -171,11 +176,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
     ctx.routeRegistry.register(
-        createFileRoutes(service, routeContext),
+        createQuotaAdminRoutes(registry, () => quotaStore, routeContext),
         "files",
     );
     ctx.routeRegistry.register(
-        createQuotaAdminRoutes(registry, () => quotaStore, routeContext),
+        createFileRoutes(service, routeContext),
         "files",
     );
 

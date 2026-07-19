@@ -1,32 +1,32 @@
-# Component Versions
+# Komponentenversionen
 
-## Overview
+## Überblick
 
-This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
+Dieses Dokument erfasst die aktuelle Version jedes Gateways, Adapters und Moduls in der Cognis-Codebasis. Es dient als Changelog-Index und als schnelle Referenz, um zu erkennen, ob eine Komponente seit einer früheren Veröffentlichung aktualisiert wurde.
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
+Jedes Gateway, jeder Adapter und jedes Modul besitzt eine `package.json` mit einem `version`-Feld. Wenn Sie eine Komponente ändern — einschließlich interner Logik, Datenbankschema, öffentlicher API oder Konfigurationsformat — müssen Sie die Version in dieser `package.json` nach Semantic Versioning erhöhen. Dieses Dokument wird gleichzeitig aktualisiert. Changelog-Einträge werden als PR-spezifische Dateien unter `src/docs/changelog/` gespeichert.
 
-## Responsibilities
+## Verantwortlichkeiten
 
-- Record the current version of every versioned component in the codebase.
-- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
-- Make it straightforward to detect version drift between deployed components and the current codebase.
+- Die aktuelle Version jeder versionierten Komponente in der Codebasis festhalten.
+- Als Changelog-Index dienen: Verweise auf komponentenspezifische Dokumentation und `src/docs/changelog/` für die Historie.
+- Versionsdrift zwischen bereitgestellten Komponenten und der aktuellen Codebasis leicht erkennbar machen.
 
-Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
+Nicht verantwortlich für: das Erzwingen von Versionserhöhungen (das ist Aufgabe des Code-Reviews) oder das Nachverfolgen externer Paketversionen.
 
-## Versioning rule
+## Versionierungsregel
 
-Increment using [Semantic Versioning](https://semver.org/):
+Erhöhungen erfolgen nach [Semantic Versioning](https://semver.org/):
 
-- **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
-- **Minor** (`0.x.0`): new backwards-compatible features or API additions.
-- **Major** (`x.0.0`): breaking changes to the component's public API or schema.
+- **Patch** (`0.1.x`): Fehlerbehebungen, nicht brechende interne Änderungen.
+- **Minor** (`0.x.0`): neue rückwärtskompatible Funktionen oder API-Erweiterungen.
+- **Major** (`x.0.0`): brechende Änderungen an öffentlicher API oder Schema der Komponente.
 
 ## Abhängigkeitsregel
 
 Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested-version>`. Dadurch wird die neueste getestete Abhängigkeitsversion festgehalten, während die Administrations-Lebenszyklusansicht warnen kann, wenn eine neuere installierte Abhängigkeit möglicherweise nicht verifiziert ist.
 
-## Adapters
+## Adapter
 
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
@@ -57,17 +57,17 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.3.1`  |
+| Share                 | `src/gateways/share/`        | `1.3.2`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
-| File Storage (files)  | `src/gateways/files/`        | `2.1.1`  |
+| File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
 | Calendar              | `src/gateways/calendar/`     | `1.2.5`  |
 
-## Core contracts
+## Kernverträge
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |

@@ -13,6 +13,36 @@ import type { CoreShareGateway } from "../gateway/index.js";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
 
+function shareRecipientsAllowRequester(
+    tokenRecord: {
+        ownerAccountId?: unknown;
+        accessControls?: { recipients?: unknown };
+    },
+    requesterClaims: { sub?: unknown } | null | undefined,
+): boolean {
+    const recipients = tokenRecord.accessControls?.recipients;
+    if (!Array.isArray(recipients) || recipients.length === 0) {
+        return true;
+    }
+    const requesterId = String(requesterClaims?.sub ?? "").trim();
+    if (!requesterId) {
+        return false;
+    }
+    if (requesterId === String(tokenRecord.ownerAccountId ?? "")) {
+        return true;
+    }
+    return recipients.some((entry) => {
+        if (!entry || typeof entry !== "object") {
+            return false;
+        }
+        const recipient = entry as { type?: unknown; id?: unknown };
+        return (
+            String(recipient.type ?? "") === "user" &&
+            String(recipient.id ?? "") === requesterId
+        );
+    });
+}
+
 export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
     gateway: CoreShareGateway;
@@ -278,6 +308,14 @@ export async function registerShareBootstrapHooks(input: {
             if (!tokenRecord) {
                 return { valid: false, reason: "invalid_token" };
             }
+            const requesterClaims = (
+                stageCtx.input as {
+                    requesterClaims?: { sub?: unknown } | null;
+                }
+            ).requesterClaims;
+            if (!shareRecipientsAllowRequester(tokenRecord, requesterClaims)) {
+                return { valid: false, reason: "recipient_restricted" };
+            }
             stageCtx.data.shareTokenRecord = tokenRecord;
             return { valid: true, tokenRecord };
         },
@@ -297,6 +335,7 @@ export async function registerShareBootstrapHooks(input: {
                     id?: string;
                     expiresAt?: string;
                 };
+                reason?: string;
             } | null;
             const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
@@ -325,7 +364,13 @@ export async function registerShareBootstrapHooks(input: {
                     allowed?: boolean;
                     directAccess?: boolean;
                 } | null);
-            if (!tokenResult?.valid || !resourceResult?.resolved) {
+            if (!tokenResult?.valid) {
+                return {
+                    issued: false,
+                    reason: tokenResult?.reason ?? "invalid_token",
+                };
+            }
+            if (!resourceResult?.resolved) {
                 return { issued: false, reason: "resource_unavailable" };
             }
             if (accessResult && accessResult.allowed === false) {
@@ -389,6 +434,7 @@ export async function registerShareBootstrapHooks(input: {
                 "validate-token",
             ) as {
                 valid?: boolean;
+                reason?: string;
                 tokenRecord?: Record<string, unknown>;
             } | null;
             const resourceResult = getFirstMatchingStageResult(
@@ -423,7 +469,13 @@ export async function registerShareBootstrapHooks(input: {
                     reason?: string;
                     directAccess?: boolean;
                 } | null);
-            if (!tokenResult?.valid || !resourceResult?.resolved) {
+            if (!tokenResult?.valid) {
+                return {
+                    resolved: false,
+                    reason: tokenResult?.reason ?? "invalid_token",
+                };
+            }
+            if (!resourceResult?.resolved) {
                 return { resolved: false, reason: "resource_unavailable" };
             }
             if (accessResult && accessResult.allowed === false) {
