@@ -1,3 +1,5 @@
+import { listEligibleMeetingParticipantProfiles } from "./reuse/participant-profiles.js";
+
 export function registerMeetingParticipantRoutes({
     router,
     requireAuth,
@@ -38,23 +40,19 @@ export function registerMeetingParticipantRoutes({
                 sendJson(res, 200, { data: [] });
                 return;
             }
-            const rawQuery = (requestUrl.searchParams.get("q") ?? "").trim();
-            // Strip leading '@' and normalise case. The profile-store
-            // searchProfiles() contract owns LIKE wildcard escaping for the
-            // underlying DB dialect.
-            const query = rawQuery.replace(/^@/, "").toLowerCase();
+            const query = (requestUrl.searchParams.get("q") ?? "").trim();
             const includeHidden = hasMinRole(claims.role, "admin");
-            const candidates = await profileStore.searchProfiles(query, 50, {
-                includeHidden,
-                requesterAccountId: claims.sub,
-            });
-            const results = candidates
-                .filter((profile) => profile.accountId !== claims.sub)
-                .map((profile) => ({
-                    handle: profile.handle,
-                    displayName: profile.displayName ?? profile.handle,
-                    avatarKey: profile.avatarKey ?? null,
-                }));
+            const candidates = await listEligibleMeetingParticipantProfiles(
+                profileStore,
+                claims.sub,
+                query,
+                { includeHidden, limit: 50 },
+            );
+            const results = candidates.map((profile) => ({
+                handle: profile.handle,
+                displayName: profile.displayName ?? profile.handle,
+                avatarKey: profile.avatarKey ?? null,
+            }));
             sendJson(res, 200, { data: results });
         },
         { access: { minRole: "user" } },

@@ -46,12 +46,23 @@ test("jitsi API logs stored CSP origin registration failures", () => {
     assert.match(source, /operation: "register_stored_jitsi_origin"/);
 });
 
-test("jitsi participant lookup lets admins include hidden profiles", () => {
+test("jitsi participant lookup centralizes eligible profile querying", () => {
     const source = readJitsiApiBundle();
 
     assert.match(source, /includeHidden = hasMinRole\(claims\.role, "admin"\)/);
-    assert.match(source, /searchProfiles\(query, 50, \{\s*includeHidden,/);
+    assert.match(source, /listEligibleMeetingParticipantProfiles\(/);
+    assert.match(source, /listEligibleMeetingParticipantSummaries\(/);
     assert.match(source, /avatarKey: profile\.avatarKey \?\? null/);
+    assert.match(
+        readFileSync(
+            resolve(
+                ROOT,
+                "src/modules/jitsi-meet/api/reuse/participant-profiles.js",
+            ),
+            "utf8",
+        ),
+        /getFollowing\(requesterAccountId\)/,
+    );
 });
 
 test("jitsi meeting creation resolves hidden participants only for admins", () => {
