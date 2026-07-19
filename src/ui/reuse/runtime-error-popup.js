@@ -40,6 +40,7 @@ import { shouldSuppressConnectionRecoveryPopup } from "./api-client.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
 import { copyTextToClipboard } from "./clipboard.js";
+import { applyTheme, getStoredTheme } from "./theme-toggle.js";
 import {
     getCurrentRoutePath,
     normalizeSameOriginRoutePath,
@@ -265,6 +266,7 @@ export async function openRuntimeErrorPopup({
         return;
     }
 
+    applyTheme(getStoredTheme());
     popupOpen = true;
     try {
         const currentRoutePath = getCurrentRoutePath();
