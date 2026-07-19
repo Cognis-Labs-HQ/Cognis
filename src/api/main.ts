@@ -352,7 +352,7 @@ const profileStore = capabilities.get<{
     searchProfiles: (
         query: string,
         limit: number,
-        options?: { includeHidden?: boolean },
+        options?: { includeHidden?: boolean; requesterAccountId?: string },
     ) => Promise<
         Array<{
             accountId?: string;

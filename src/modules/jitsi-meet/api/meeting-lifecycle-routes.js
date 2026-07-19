@@ -204,6 +204,8 @@ export function registerMeetingLifecycleRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -333,6 +335,8 @@ export function registerMeetingLifecycleRoutes({
                 meeting,
                 username: requesterUsername,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!authorized) {
                 sendError(
@@ -434,6 +438,8 @@ export function registerMeetingLifecycleRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 

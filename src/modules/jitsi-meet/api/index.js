@@ -278,7 +278,7 @@ export function registerApiRoutes(router, ctx) {
                 .map((username) => normalizeHandleKey(username))
                 .filter(Boolean),
         );
-        const normalizedRecipients = Array.from(
+        const candidateRecipients = Array.from(
             new Set(
                 (Array.isArray(recipientUsernames) ? recipientUsernames : [])
                     .map((username) => normalizeHandleKey(username))
@@ -286,6 +286,29 @@ export function registerApiRoutes(router, ctx) {
                     .filter((username) => !excludedRecipients.has(username)),
             ),
         );
+        const organizerProfile = organizerUsername
+            ? await profileStore
+                  .getProfileByHandle(organizerUsername)
+                  .catch(() => null)
+            : null;
+        const normalizedRecipients = [];
+        for (const recipientUsername of candidateRecipients) {
+            if (organizerProfile?.accountId) {
+                const recipientProfile = await profileStore
+                    .getProfileByHandle(recipientUsername)
+                    .catch(() => null);
+                if (
+                    recipientProfile?.accountId &&
+                    (await profileStore.isBlocked(
+                        organizerProfile.accountId,
+                        recipientProfile.accountId,
+                    ))
+                ) {
+                    continue;
+                }
+            }
+            normalizedRecipients.push(recipientUsername);
+        }
         const bodyWithMeetingLink = appendMeetingLinkToBody(
             body,
             notificationMeetingId,
