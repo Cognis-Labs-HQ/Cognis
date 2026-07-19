@@ -93,15 +93,15 @@ function renderModulesContent(modules, gateways, deps) {
             const toggleTitle = i18n.t("ui.app.admin.toggle_module");
             const componentConfigScriptUrl =
                 resolveModuleConfigScriptUrl(moduleRecord);
-            const hasConfigButton = componentConfigScriptUrl.length > 0;
-            const settingsButton = hasConfigButton
-                ? `<button type="button" class="module-config-settings-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(moduleRecord.id)}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}" title="${escapeHtml(i18n.t("ui.reuse.settings"))}">⚙</button>`
-                : "";
+            const configAttributes =
+                componentConfigScriptUrl.length > 0
+                    ? ` data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}"`
+                    : "";
 
             return `
-        <details class="module-row" data-module="${moduleRecord.id}">
+        <details class="module-row" data-module="${moduleRecord.id}"${configAttributes}>
           <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${moduleRecord.name}</strong>${settingsButton}</span>
+            <span class="module-row-title"><strong>${moduleRecord.name}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${moduleRecord.id}" ${isModuleEnabled(moduleRecord) ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />

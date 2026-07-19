@@ -91,6 +91,8 @@ export async function openModuleConfigPopup({
     openPopup,
     showToast,
     escapeHtml,
+    isEnabled,
+    setEnabled,
 }) {
     const moduleI18n = await createI18n({
         locale: i18n?.locale,
@@ -111,6 +113,11 @@ export async function openModuleConfigPopup({
         loadFailedKey: "module.nextcloud_whiteboard.load_failed",
         successKey: "module.nextcloud_whiteboard.save_success",
         failedKey: "module.nextcloud_whiteboard.save_failed",
+        powerState: {
+            enabled: isEnabled === true,
+            labelKey: "ui.reuse.enable",
+            onChange: setEnabled,
+        },
         fields: [
             {
                 id: "nextcloud-whiteboard-server-url",
@@ -140,7 +147,7 @@ export async function openModuleConfigPopup({
                     "module.nextcloud_whiteboard.api_key_description",
                 placeholderKey:
                     "module.nextcloud_whiteboard.api_key_placeholder",
-                type: "text",
+                type: "password",
             },
         ],
     });

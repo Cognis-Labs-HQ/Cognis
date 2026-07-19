@@ -207,3 +207,18 @@ test("nextcloud whiteboard presence stores null pointer timestamp when no pointe
     assert.equal(insert.values.pointer_style, null);
     assert.equal(insert.values.pointer_updated_at, null);
 });
+
+test("nextcloud whiteboard store allows configuration before API key is set", async () => {
+    const store = new NextcloudWhiteboardStore({ db: createMemoryDb() });
+    await store.ensureSchema();
+    const saved = await store.saveConfig({
+        serverUrl: "https://whiteboard.example.test",
+        apiKey: "",
+        imageUploadMaxBytes: 4096,
+    });
+
+    assert.equal(saved.serverUrl, "https://whiteboard.example.test");
+    assert.equal(saved.apiKeyConfigured, false);
+    assert.equal(saved.apiKey, "");
+    assert.equal(saved.imageUploadMaxBytes, 4096);
+});
