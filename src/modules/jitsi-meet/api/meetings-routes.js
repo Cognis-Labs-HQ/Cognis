@@ -281,17 +281,24 @@ export function registerMeetingRoutes({
                           .getProfileByHandle(startedByUsername)
                           .catch(() => null)
                     : null;
+                const activeParticipantHandles = Array.isArray(
+                    activeMeeting.activeUsernames,
+                )
+                    ? activeMeeting.activeUsernames
+                    : [];
                 const activeParticipantProfiles =
-                    await profileStore.searchProfiles("", 50, {
-                        includeHidden: false,
-                        requesterAccountId: claims.sub,
-                        followingAccountId: claims.sub,
-                        candidateHandles: Array.isArray(
-                            activeMeeting.activeUsernames,
-                        )
-                            ? activeMeeting.activeUsernames
-                            : [],
-                    });
+                    activeParticipantHandles.length > 0
+                        ? await profileStore.searchProfiles(
+                              "",
+                              activeParticipantHandles.length,
+                              {
+                                  includeHidden: false,
+                                  requesterAccountId: claims.sub,
+                                  followingAccountId: claims.sub,
+                                  candidateHandles: activeParticipantHandles,
+                              },
+                          )
+                        : [];
                 const activeParticipants = activeParticipantProfiles.map(
                     (profile) => ({
                         username: profile.handle,

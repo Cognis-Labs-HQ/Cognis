@@ -52,7 +52,8 @@ test("jitsi participant lookup delegates relationship filtering to profile searc
     assert.match(source, /includeHidden = hasMinRole\(claims\.role, "admin"\)/);
     assert.match(source, /profileStore\.searchProfiles\(query, 50, \{/);
     assert.match(source, /followingAccountId: claims\.sub/);
-    assert.match(source, /candidateHandles: Array\.isArray/);
+    assert.match(source, /candidateHandles: activeParticipantHandles/);
+    assert.match(source, /activeParticipantHandles\.length > 0/);
     assert.match(source, /avatarKey: profile\.avatarKey \?\? null/);
 });
 
