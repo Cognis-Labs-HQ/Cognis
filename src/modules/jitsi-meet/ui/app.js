@@ -615,14 +615,19 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             );
         }
 
-        const syncJitsiTheme = () => {
-            const nextThemeMode = resolveThemeMode();
-            if (nextThemeMode === state.jitsiThemeMode) return;
+        const syncJitsiTheme = (event) => {
+            const nextThemeMode = resolveThemeMode(event?.detail?.theme);
+            const themeChanged = nextThemeMode !== state.jitsiThemeMode;
+            if (!themeChanged && !state.jitsiApi) return;
             state.jitsiThemeMode = nextThemeMode;
             if (!state.jitsiApi) return;
             executeJitsiCommandIfSupported(state.jitsiApi, "overwriteConfig", {
                 preferredTheme: nextThemeMode,
             });
+            // Jitsi only accepts interfaceConfigOverwrite at API creation, so
+            // reload the embed to apply DEFAULT_BACKGROUND to toolbar and
+            // participant surfaces when the Cognis theme changes.
+            if (themeChanged) void openMeetingEmbed();
         };
         const themeObserver = new MutationObserver(syncJitsiTheme);
         themeObserver.observe(document.body, {
@@ -642,6 +647,9 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         }
         signal?.addEventListener("abort", () => themeObserver.disconnect(), {
             once: true,
+        });
+        window.addEventListener("cognis:themechange", syncJitsiTheme, {
+            signal: bindSignal,
         });
         window.addEventListener("storage", syncJitsiTheme, {
             signal: bindSignal,
