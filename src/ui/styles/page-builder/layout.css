@@ -214,6 +214,20 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     overflow: auto;
     min-height: 380px;
 }
+
+.app-page--document-scroll .composer-view-grid {
+    grid-auto-rows: minmax(var(--composer-grid-row-size, 90px), auto);
+}
+
+.app-page--document-scroll .content-grid .widget-card,
+.app-page--document-scroll .content-panel {
+    overflow: visible;
+}
+
+.app-page--document-scroll .content-panel {
+    min-height: 0;
+}
+
 .content-panel,
 .content-panel p,
 .content-panel li,
