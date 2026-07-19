@@ -8,6 +8,7 @@ import { normalizeHandleKey } from "../../../api/reuse/normalize-handle.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import { NextcloudWhiteboardStore } from "./store.js";
 import { registerWhiteboardShareFlowHooks } from "./share-hooks.js";
+import { registerWhiteboardImageRoutes } from "./image-routes.js";
 
 const LIVENESS_TIMEOUT_MS = 5000;
 const PRESENCE_ACTIVE_WINDOW_MS = 15_000;
@@ -214,6 +215,8 @@ export function registerApiRoutes(router, ctx) {
     const resolveShareGuestId = ctx.getCapability("share:resolveGuestId");
     const listSharesByResource = ctx.getCapability("share:listByResource");
     const systemCtx = ctx.getCapability("system:ctx");
+    const registerNamespace = ctx.getCapability("files:registerNamespace");
+    const createNamespaceClient = ctx.getCapability("files:namespace");
 
     if (!dbExecutor || !profileStore) {
         router.get(
@@ -229,6 +232,16 @@ export function registerApiRoutes(router, ctx) {
         );
         return;
     }
+
+    registerNamespace?.({
+        id: "whiteboards",
+        ownerComponent: "nextcloud-whiteboard",
+        acl: { visibility: "private-group" },
+    });
+    const whiteboardFiles = createNamespaceClient?.({
+        namespaceId: "whiteboards",
+        callerComponent: "nextcloud-whiteboard",
+    });
 
     const store = resolveStore(dbExecutor, log);
     const ensureShareFlowHooks = () =>
@@ -429,6 +442,14 @@ export function registerApiRoutes(router, ctx) {
         },
         { access: { minRole: "user" } },
     );
+
+    registerWhiteboardImageRoutes(router, {
+        store,
+        profileStore,
+        resolveShareGuestAccess,
+        resolveWhiteboardUserAccess,
+        whiteboardFiles,
+    });
 
     router.get(
         "/api/v1/modules/nextcloud-whiteboard/whiteboards/session",

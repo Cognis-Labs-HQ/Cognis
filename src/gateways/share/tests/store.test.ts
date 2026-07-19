@@ -31,6 +31,16 @@ class MemoryExecutor {
             );
             return { rows: entries };
         }
+        if (command.option === "UPDATE") {
+            let rowCount = 0;
+            for (const [key, row] of this.rows.entries()) {
+                if (this.matchesWhere(row, command.where ?? [])) {
+                    this.rows.set(key, { ...row, ...command.values });
+                    rowCount += 1;
+                }
+            }
+            return { rowCount };
+        }
         if (command.option === "DELETE") {
             const beforeSize = this.rows.size;
             for (const [key, row] of this.rows.entries()) {
@@ -81,6 +91,8 @@ test("share token schema declares resource and token columns", async () => {
     assert.ok(columnNames.includes("metadata"));
     assert.ok(columnNames.includes("token_value"));
     assert.ok(columnNames.includes("token_hash"));
+    assert.ok(columnNames.includes("password_hash"));
+    assert.ok(columnNames.includes("access_controls"));
 });
 
 test("issue, list, resolve, and delete share tokens", async () => {
@@ -95,6 +107,18 @@ test("issue, list, resolve, and delete share tokens", async () => {
         },
         label: "Class meeting",
         grantedCapabilities: ["meeting:join"],
+        accessControls: {
+            permissions: ["read"],
+            recipients: [
+                {
+                    type: "user",
+                    id: "bob",
+                    label: "Bob",
+                    permissions: ["read"],
+                },
+            ],
+        },
+        password: "secret",
         expiresAt: "",
     });
 
@@ -107,20 +131,55 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.equal(listed.length, 1);
     assert.equal(listed[0].label, "Class meeting");
 
-    const resolved = await store.resolve(issued.tokenValue);
+    assert.equal(await store.resolve(issued.tokenValue), null);
+    const resolved = await store.resolve(issued.tokenValue, "secret");
     assert.ok(resolved);
     assert.equal(resolved?.resourceId, "meeting-1");
     assert.deepEqual(resolved?.metadata, {
         meetingInstanceId: "instance-1",
     });
     assert.deepEqual(resolved?.grantedCapabilities, ["meeting:join"]);
+    assert.deepEqual(resolved?.accessControls.permissions, ["read"]);
+    assert.equal(resolved?.accessControls.watermarkReadonly, true);
+    assert.equal(resolved?.accessControls.recipients[0]?.id, "bob");
 
     const deleted = await store.deleteById({
         shareId: issued.id,
         ownerAccountId: "alice",
     });
     assert.equal(deleted, true);
+    assert.equal(await store.resolve(issued.tokenValue, "secret"), null);
+});
+
+test("updateById edits expiry, permissions, and password controls", async () => {
+    const executor = new MemoryExecutor();
+    const store = new ShareTokenStore(executor as never);
+    const issued = await store.issue({
+        ownerAccountId: "alice",
+        resourceType: "whiteboard",
+        resourceId: "board-1",
+        accessControls: { permissions: ["read"] },
+        expiresAt: "",
+    });
+
+    const expiresAt = new Date(Date.now() + 60_000).toISOString();
+    const updated = await store.updateById({
+        shareId: issued.id,
+        ownerAccountId: "alice",
+        accessControls: { permissions: ["write"] },
+        password: "new-secret",
+        expiresAt,
+    });
+
+    assert.ok(updated);
+    assert.equal(updated?.expiresAt, expiresAt);
+    assert.deepEqual(updated?.accessControls.permissions, ["read", "write"]);
+    assert.equal(updated?.accessControls.watermarkReadonly, false);
     assert.equal(await store.resolve(issued.tokenValue), null);
+    assert.equal(
+        (await store.resolve(issued.tokenValue, "new-secret"))?.id,
+        issued.id,
+    );
 });
 
 test("listByResource returns matching share tokens including recently expired ones", async () => {

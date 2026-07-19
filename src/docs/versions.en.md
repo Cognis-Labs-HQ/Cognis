@@ -22,29 +22,34 @@ Increment using [Semantic Versioning](https://semver.org/):
 - **Minor** (`0.x.0`): new backwards-compatible features or API additions.
 - **Major** (`x.0.0`): breaking changes to the component's public API or schema.
 
+## Dependency rule
+
+Internal Cognis component dependencies use `<=<tested-version>` ranges. This records the latest dependency version the component was tested against while allowing the administration lifecycle view to warn when a newer installed dependency may be unverified.
+
 ## Adapters
 
-| Component             | Path                                | Version  |
-| --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.4`  |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6`  |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.0`  |
-| Local Auth            | `src/adapters/auth/local/`          | `0.2.5`  |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4`  |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1`  |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.1`  |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.1`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.1`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.1`  |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.2`  |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.1`  |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.0`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.11` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.7`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.3`  |
-| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
+| Component             | Path                                | Version |
+| --------------------- | ----------------------------------- | ------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.5` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.3` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.6` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.5` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.2` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.2` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.2` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.2` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.2` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.2` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.2` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.3` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.2` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.1` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.2` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
+| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
 ## Gateways
 
@@ -52,11 +57,11 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.2.6`  |
+| Share                 | `src/gateways/share/`        | `1.3.2`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
-| File Storage (files)  | `src/gateways/files/`        | `1.1.0`  |
+| File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
@@ -66,20 +71,20 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.2.0` |
+| Core Package | `src/core/` | `0.3.0` |
 
 ## API
 
-| Component  | Path       | Version |
-| ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.1.9` |
+| Component  | Path       | Version  |
+| ---------- | ---------- | -------- |
+| API Server | `src/api/` | `0.1.10` |
 
 ## Modules
 
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.29` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.30` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

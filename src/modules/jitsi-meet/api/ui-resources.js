@@ -6,11 +6,26 @@ export function resolveMessagesUiResources(ctx) {
     const uiResourcesCapability = ctx.getCapability?.(
         "social:messages:uiResources",
     );
-    return uiResourcesCapability &&
+    const messagesUiResources =
+        uiResourcesCapability &&
         typeof uiResourcesCapability === "object" &&
         !Array.isArray(uiResourcesCapability)
-        ? uiResourcesCapability
-        : null;
+            ? uiResourcesCapability
+            : null;
+    const profileFileResources = ctx.getCapability?.(
+        "social:profile:fileResources",
+    );
+    const profileFileNamespace =
+        profileFileResources &&
+        typeof profileFileResources === "object" &&
+        !Array.isArray(profileFileResources) &&
+        typeof profileFileResources.namespaceId === "string"
+            ? profileFileResources.namespaceId
+            : null;
+    return {
+        ...(messagesUiResources ?? {}),
+        profileFileNamespace,
+    };
 }
 
 export function resolveSharedMessagesStylesheetUrls(messagesUiResources) {
@@ -38,6 +53,10 @@ export function buildJitsiUiResourcesPayload(messagesUiResources) {
             typeof messagesUiResources?.reactionHelpersModuleUrl === "string"
                 ? messagesUiResources.reactionHelpersModuleUrl
                 : null,
+        profileFileNamespace:
+            typeof messagesUiResources?.profileFileNamespace === "string"
+                ? messagesUiResources.profileFileNamespace
+                : null,
     };
 }
 
@@ -46,6 +65,7 @@ export function buildUnavailableJitsiUiResourcesPayload() {
         languageBaseUrls: JITSI_MODULE_LANGUAGE_BASE_URLS,
         stylesheetUrls: [],
         reactionHelpersModuleUrl: null,
+        profileFileNamespace: null,
     };
 }
 

@@ -2,56 +2,89 @@
 
 ## 概要
 
-このドキュメントはCognisコードベース内のすべてのゲートウェイ、アダプター、モジュールの現在のバージョンを追跡します。Changelogインデックスと迅速なリファレンスとして機能します。
+このドキュメントは、Cognis コードベース内のすべてのゲートウェイ、アダプター、モジュールの現在バージョンを追跡します。これは changelog の索引であり、以前のリリース以降にコンポーネントが更新されたかを判断するためのクイックリファレンスです。
 
-すべてのゲートウェイ、アダプター、モジュールは `version` フィールドを持つ `package.json` を持ちます。コンポーネントを変更する際は、Semantic Versioningに従って `package.json` のバージョンを増分する必要があります。Changelogエントリーは `src/docs/changelog/` 配下のPRごとのファイルとして管理されます。
+各ゲートウェイ、アダプター、モジュールは `version` フィールドを持つ `package.json` を備えています。内部ロジック、データベーススキーマ、公開 API、設定形式など、そのコンポーネントを変更する場合は、Semantic Versioning に従って `package.json` のバージョンを上げる必要があります。このドキュメントも同時に更新します。changelog エントリは `src/docs/changelog/` 配下の PR ごとのファイルとして保存されます。
+
+## 責務
+
+- コードベース内のバージョン管理された各コンポーネントの現在バージョンを記録する。
+- changelog 索引として、コンポーネントごとのドキュメントと履歴用の `src/docs/changelog/` へ導く。
+- デプロイ済みコンポーネントと現在のコードベースとのバージョンドリフトを検出しやすくする。
+
+責務外: バージョン上げの強制（これはコードレビューの対象）や外部パッケージのバージョン追跡。
+
+## バージョニング規則
+
+[Semantic Versioning](https://semver.org/) に従って増分します:
+
+- **Patch** (`0.1.x`): バグ修正、破壊的でない内部変更。
+- **Minor** (`0.x.0`): 後方互換性のある新機能または API 追加。
+- **Major** (`x.0.0`): コンポーネントの公開 API またはスキーマに対する破壊的変更。
+
+## 依存関係ルール
+
+Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範囲を使用します。これにより、そのコンポーネントでテスト済みの最新依存バージョンを記録しつつ、より新しい未検証の依存関係がインストールされている場合に Administration のライフサイクル表示で警告できます。
 
 ## アダプター
 
-| コンポーネント             | パス                                | バージョン |
-| -------------------------- | ----------------------------------- | ---------- |
-| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.4`    |
-| 内部通知                   | `src/adapters/notify/internal/`     | `0.5.2`    |
-| ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
-| ローカル認証               | `src/adapters/auth/local/`          | `0.2.5`    |
-| LDAP 認証                  | `src/adapters/auth/ldap/`           | `0.1.4`    |
-| OIDC認証                   | `src/adapters/auth/oidc/`           | `0.1.1`    |
-| SAML認証                   | `src/adapters/auth/saml/`           | `0.1.1`    |
-| PostgreSQLデータベース     | `src/adapters/db/postgres/`         | `0.1.0`    |
-| MariaDBデータベース        | `src/adapters/db/mariadb/`          | `0.1.0`    |
-| 登録招待                   | `src/adapters/registration/invite/` | `0.1.1`    |
-| 登録トークン               | `src/adapters/registration/token/`  | `0.1.1`    |
-| 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
-| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.11`   |
-| メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
+| コンポーネント        | パス                                | バージョン |
+| --------------------- | ----------------------------------- | ---------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.5`    |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6`    |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.3`    |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.6`    |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.5`    |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.2`    |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.2`    |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.2`    |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5`    |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.2`    |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.2`    |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.2`    |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.2`    |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.3`    |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.2`    |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.1`    |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.2`    |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9`    |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5`    |
+| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`    |
 
 ## ゲートウェイ
 
-| コンポーネント             | パス                         | バージョン |
-| -------------------------- | ---------------------------- | ---------- |
-| データベース (db)          | `src/gateways/db/`           | `1.1.3`    |
-| 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
-| Share                      | `src/gateways/share/`        | `1.2.6`    |
-| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.5`    |
-| 通知 (notify)              | `src/gateways/notify/`       | `1.4.11`   |
-| ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
-| ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
-| 登録                       | `src/gateways/registration/` | `1.1.3`    |
-| ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
-| カレンダー                 | `src/gateways/calendar/`     | `1.2.5`    |
+| コンポーネント        | パス                         | バージョン |
+| --------------------- | ---------------------------- | ---------- |
+| Database (db)         | `src/gateways/db/`           | `1.2.2`    |
+| Authentication (auth) | `src/gateways/auth/`         | `1.5.0`    |
+| Share                 | `src/gateways/share/`        | `1.3.2`    |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`    |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.11`   |
+| Social                | `src/gateways/social/`       | `1.2.7`    |
+| File Storage (files)  | `src/gateways/files/`        | `2.1.2`    |
+| Registration          | `src/gateways/registration/` | `1.1.10`   |
+| Logging               | `src/gateways/logging/`      | `1.5.2`    |
+| Study                 | `src/gateways/study/`        | `1.5.7`    |
+| Calendar              | `src/gateways/calendar/`     | `1.2.5`    |
+
+## コア契約
+
+| コンポーネント | パス        | バージョン |
+| -------------- | ----------- | ---------- |
+| Core Package   | `src/core/` | `0.3.0`    |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| APIサーバー    | `src/api/` | `0.1.3`    |
+| API Server     | `src/api/` | `0.1.10`   |
 
 ## モジュール
 
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
-| 分析                 | `src/modules/analytics/`            | `2.0.1`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`    |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.29`   |
-| Cognis 日本語        | `src/modules/study/languages/ja/`   | `1.2.4`    |
-| Cognis 英語          | `src/modules/study/languages/en/`   | `1.2.2`    |
+| Analytics            | `src/modules/analytics/`            | `2.0.1`    |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`    |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.30`   |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`    |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`    |

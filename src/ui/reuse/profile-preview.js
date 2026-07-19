@@ -39,7 +39,7 @@ async function loadProfilePreview(handle) {
 async function loadAvatarUrl(avatarKey) {
     if (!avatarKey) return null;
     if (avatarUrlCache.has(avatarKey)) return avatarUrlCache.get(avatarKey);
-    const promise = apiFetch(`/api/v1/files/${avatarKey}`)
+    const promise = apiFetch(`/api/v1/files/profile/${avatarKey}`)
         .then(async (res) => {
             if (!res.ok) return null;
             return URL.createObjectURL(await res.blob());

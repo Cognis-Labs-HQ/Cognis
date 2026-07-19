@@ -8,14 +8,18 @@ import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
-import { createFileRoutes } from "./routes/files.js";
+import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
-import type { FileStorageGateway } from "../../../gateways/files/gateway.js";
+import {
+    createProfileFileClient,
+    createProfileNamespaceClientRequest,
+    type ProfileFileClient,
+} from "./routes/profile-file-client.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -127,8 +131,9 @@ export function createProfilePageRoutes(
  *                              (e.g. messages adapter handle resolution).
  *
  * Profile API routes are always registered. Avatar/banner routes return
- * `503 file_storage_unavailable` when the file:gateway capability is absent.
- * File routes are only registered when file:gateway is present.
+ * `503 file_storage_unavailable` when the files gateway's namespaced
+ * capabilities are absent. Avatar/banner uploads register the "profile"
+ * namespace and only activate when files:namespace is present.
  */
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
@@ -164,6 +169,9 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    ctx.capabilities.contribute("social:profile:fileResources", {
+        namespaceId: "profile",
+    });
     ctx.log?.("info", "Profile preference store schema ready.", {
         component: "social-profile-adapter",
     });
@@ -200,8 +208,33 @@ export async function bootstrapSocialAdapter(
         },
     );
 
-    const fileGateway =
-        ctx.capabilities.get<FileStorageGateway>("file:gateway");
+    const registerNamespace = ctx.capabilities.get<
+        (definition: {
+            id: string;
+            ownerComponent: string;
+            acl: { visibility: string };
+        }) => void
+    >("files:registerNamespace");
+    const createNamespaceClient =
+        ctx.capabilities.get<
+            (request: {
+                namespaceId: string;
+                callerComponent: string;
+            }) => Parameters<typeof createProfileFileClient>[0]
+        >("files:namespace");
+
+    let fileGateway: ProfileFileClient | undefined;
+    if (registerNamespace && createNamespaceClient) {
+        registerNamespace({
+            id: "profile",
+            ownerComponent: "social-profile",
+            acl: { visibility: "component-managed" },
+        });
+        fileGateway = createProfileFileClient(
+            createNamespaceClient(createProfileNamespaceClientRequest()),
+        );
+    }
+
     const dispatchNotification =
         ctx.capabilities.get<
             (envelope: {
@@ -252,18 +285,17 @@ export async function bootstrapSocialAdapter(
         "social",
     );
 
-    if (fileGateway) {
-        ctx.registerRoute(
-            createFileRoutes(profileStore, fileGateway, routeContext),
-            "social",
-        );
-        ctx.log?.("info", "Profile adapter: file routes registered.");
-    } else {
+    if (!fileGateway) {
         ctx.log?.(
             "warn",
-            "Profile adapter: file:gateway capability not found — avatar/banner/file routes unavailable.",
+            "Profile adapter: files:* capabilities not found — avatar/banner uploads unavailable.",
         );
     }
+
+    ctx.registerRoute(
+        createFileLimitRoutes(profileStore, routeContext),
+        "social",
+    );
 
     ctx.registerRoute(
         createProfilePageRoutes(routeContext, () => ctx.isGatewayEnabled()),
