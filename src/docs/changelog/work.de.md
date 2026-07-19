@@ -1,5 +1,13 @@
-# Verfügbarkeit der Nextcloud-Whiteboard-Einstellungen
+# Modul-Einstellungen wie bei Adaptern
 
-## Einstellungen melden jetzt fehlende Abhängigkeiten
+## Modulzeilen öffnen jetzt einheitliche Einstellungen
 
-Nextcloud Whiteboard registriert seine Administrations-Endpunkte für die Konfiguration nun auch dann, wenn erforderliche Laufzeitabhängigkeiten fehlen. Dadurch erhält das Einstellungs-Popup eine eindeutige Dienst-nicht-verfügbar-Antwort statt eines 404 für eine fehlende Route.
+Jitsi Meet und Nextcloud Whiteboard öffnen ihre Konfiguration nun direkt über die Modulzeile statt über ein separates Zahnrad und verhalten sich damit wie Adapter-Konfigurationen.
+
+## Einstellungen enthalten Modul-Schalter
+
+Das Modul-Einstellungs-Popup enthält jetzt einen Aktivieren-Schalter, damit Administratoren Konfiguration und Betriebszustand gemeinsam anpassen können.
+
+## Fehlende Abhängigkeiten zeigen einen klaren Einstellungsfehler
+
+Nextcloud Whiteboard registriert seine Einstellungs-Endpunkte weiterhin, wenn erforderliche Laufzeitabhängigkeiten fehlen. Administratoren erhalten dadurch eine Dienst-nicht-verfügbar-Antwort statt eines 404 für eine fehlende Route.

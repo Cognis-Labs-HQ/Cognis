@@ -412,7 +412,9 @@ export function registerApiRoutes(router, ctx) {
             if (!claims) return;
             const body = await readJson(req);
             const serverUrl = normalizeHttpUrl(body.serverUrl);
-            const apiKey = String(body.apiKey ?? "").trim();
+            const existingConfig = await store.getConfig();
+            const apiKey =
+                String(body.apiKey ?? "").trim() || existingConfig.apiKey;
             const imageUploadMaxBytes = Number(
                 body.imageUploadMaxBytes ?? 1048576,
             );

@@ -529,6 +529,7 @@ export async function openConfigFormPopup({
     loadFailedKey,
     successKey,
     failedKey,
+    powerState,
 }) {
     const loadResponse = await apiFetch(loadUrl);
     if (!loadResponse.ok) {
@@ -555,7 +556,9 @@ export async function openConfigFormPopup({
             const descriptionBlock = description
                 ? `<p class="module-settings-popup-description">${escapeHtml(description)}</p>`
                 : "";
-            const inputType = field.type === "url" ? "url" : "text";
+            const inputType = ["url", "number", "password"].includes(field.type)
+                ? field.type
+                : "text";
             return `
       <label class="module-settings-popup-field">
         <span class="module-settings-popup-label">${escapeHtml(label)}</span>
@@ -568,11 +571,22 @@ export async function openConfigFormPopup({
     const noteBlock = noteKey
         ? `<p class="module-settings-popup-note">${escapeHtml(i18n.t(noteKey))}</p>`
         : "";
+    const powerStateEnabled = powerState?.enabled === true;
+    const powerToggleBlock = powerState
+        ? `<div class="provider-popup-toggle-row module-settings-popup-power-row">
+        <span class="provider-popup-toggle-label">${escapeHtml(i18n.t(powerState.labelKey ?? "ui.reuse.enable"))}</span>
+        <label class="switch provider-popup-switch">
+          <input type="checkbox" class="module-settings-popup-power-toggle"${powerStateEnabled ? " checked" : ""} />
+          <span class="slider"></span>
+        </label>
+      </div>`
+        : "";
 
     const action = await openPopup({
         title: i18n.t(titleKey),
         body: () => `
       <div class="module-settings-popup-fields">
+        ${powerToggleBlock}
         ${fieldRows}
       </div>
       ${noteBlock}
@@ -617,6 +631,20 @@ export async function openConfigFormPopup({
     if (!saveResponse.ok) {
         showToast(i18n.t(failedKey), { variant: "error" });
         return false;
+    }
+
+    if (powerState && typeof powerState.onChange === "function") {
+        const powerToggle = popupOverlay.querySelector(
+            ".module-settings-popup-power-toggle",
+        );
+        const requestedPower =
+            powerToggle instanceof HTMLInputElement
+                ? powerToggle.checked
+                : powerStateEnabled;
+        if (requestedPower !== powerStateEnabled) {
+            const powerChanged = await powerState.onChange(requestedPower);
+            if (powerChanged === false) return false;
+        }
     }
 
     showToast(i18n.t(successKey), { variant: "success" });

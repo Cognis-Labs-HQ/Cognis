@@ -947,3 +947,48 @@ test("nextcloud whiteboard config route returns 503 when dependencies are unavai
     assert.equal(res.statusCode, 503);
     assert.equal(res.json().error.code, "service_unavailable");
 });
+
+test("nextcloud whiteboard config save preserves existing API key when omitted", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    await store.saveConfig({
+        serverUrl: "https://whiteboard.example.test",
+        apiKey: "existing-secret-at-least-16-chars",
+        imageUploadMaxBytes: 1048576,
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") return { async getProfile() {} };
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("admin", "admin", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        serverUrl: "https://whiteboard2.example.test",
+                        apiKey: "",
+                        imageUploadMaxBytes: 2048,
+                    }),
+                );
+            },
+        },
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    const saved = await store.getConfig();
+    assert.equal(saved.serverUrl, "https://whiteboard2.example.test");
+    assert.equal(saved.apiKey, "existing-secret-at-least-16-chars");
+    assert.equal(saved.imageUploadMaxBytes, 2048);
+});
