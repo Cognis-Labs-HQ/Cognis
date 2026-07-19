@@ -11,11 +11,8 @@ import {
     ensureFullAccountSession,
 } from "/static/reuse/auth-session.js";
 import { ensureSessionId } from "./session.js";
-import {
-    buildMeetingJoinUrl,
-    resolveJitsiDefaultBackground,
-    resolveThemeMode,
-} from "./meeting-embed.js";
+import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
+import { applyJitsiWindowTheme } from "./jitsi-theme-sync.js";
 import {
     buildChatMarkup,
     buildParticipantsMarkup,
@@ -621,14 +618,20 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
 
         const syncJitsiTheme = (event) => {
             const nextThemeMode = resolveThemeMode(event?.detail?.theme);
-            if (nextThemeMode === state.jitsiThemeMode) return;
+            if (nextThemeMode === state.jitsiThemeMode && !state.jitsiApi) {
+                return;
+            }
             state.jitsiThemeMode = nextThemeMode;
             if (!state.jitsiApi) return;
+            const defaultBackground = applyJitsiWindowTheme(
+                state.jitsiApi,
+                nextThemeMode,
+            );
             executeJitsiCommandIfSupported(state.jitsiApi, "overwriteConfig", {
                 preferredTheme: nextThemeMode,
+                DEFAULT_BACKGROUND: defaultBackground,
                 interfaceConfig: {
-                    DEFAULT_BACKGROUND:
-                        resolveJitsiDefaultBackground(nextThemeMode),
+                    DEFAULT_BACKGROUND: defaultBackground,
                 },
             });
         };
