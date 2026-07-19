@@ -418,12 +418,21 @@ export function registerApiRoutes(router, ctx) {
             const imageUploadMaxBytes = Number(
                 body.imageUploadMaxBytes ?? 1048576,
             );
-            if (!serverUrl || !apiKey) {
+            if (!serverUrl) {
                 sendError(
                     res,
                     400,
                     "bad_request",
-                    "A valid Whiteboard server URL and API key are required.",
+                    "A valid Whiteboard server URL is required.",
+                );
+                return;
+            }
+            if (apiKey && apiKey.length < 16) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "API key must be at least 16 characters for sufficient security.",
                 );
                 return;
             }

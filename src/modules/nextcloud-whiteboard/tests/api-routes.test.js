@@ -992,3 +992,40 @@ test("nextcloud whiteboard config save preserves existing API key when omitted",
     assert.equal(saved.apiKey, "existing-secret-at-least-16-chars");
     assert.equal(saved.imageUploadMaxBytes, 2048);
 });
+
+test("nextcloud whiteboard config save accepts URL updates before an API key is configured", async () => {
+    const db = createMemoryDb();
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") return { async getProfile() {} };
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("admin", "admin", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        serverUrl: "https://whiteboard.example.test",
+                        apiKey: "",
+                        imageUploadMaxBytes: 4096,
+                    }),
+                );
+            },
+        },
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json().data.serverUrl, "https://whiteboard.example.test");
+    assert.equal(res.json().data.apiKeyConfigured, false);
+    assert.equal(res.json().data.imageUploadMaxBytes, 4096);
+});

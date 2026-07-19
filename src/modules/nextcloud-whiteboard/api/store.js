@@ -213,7 +213,7 @@ export class NextcloudWhiteboardStore {
             0,
             Number(imageUploadMaxBytes ?? 1048576),
         );
-        if (normalizedApiKey.length < 16) {
+        if (normalizedApiKey && normalizedApiKey.length < 16) {
             throw new Error(
                 "API key must be at least 16 characters for sufficient security.",
             );
